@@ -11,12 +11,14 @@ import com.google.gson.annotations.Expose;
 public class SolverStats extends Identifiable {
 	@Expose private Solver solver=null;
 	@Expose private Configuration configuration=null;
-	@Expose private int completeJobPairs=0;
-	@Expose private int failedJobPairs=0;
-	@Expose private int correctJobPairs=0;
-	@Expose private int incorrectJobPairs=0;
-	@Expose private int incompleteJobPairs=0;
-	@Expose private double time=0;
+	@Expose private int completeJobPairs=0; //pairs with any finished status except Starexec errors
+	@Expose private int failedJobPairs=0;   //Starexec error pairs
+	@Expose private int correctJobPairs=0;  //7 status with result = expected
+	@Expose private int incorrectJobPairs=0;//7 status with result != expected
+	@Expose private int incompleteJobPairs=0;// any status indicating this pair is being worked on OR FAILED
+	@Expose private int resourceOutJobPairs=0; //status 14-17
+	@Expose private double wallTime=0;
+	@Expose private double cpuTime=0;
 	
 	
 	public SolverStats() {
@@ -24,15 +26,7 @@ public class SolverStats extends Identifiable {
 		this.configuration=new Configuration();
 	}
 	
-	public void incrementTime(double newTime) {
-		this.time+=newTime;
-	}
-	public void setTime(double newTime) {
-		this.time=newTime;
-	}
-	public double getTime() {
-		return this.time;
-	}
+
 	
 	public int getTotalJobPairs() {
 		return completeJobPairs+failedJobPairs+incompleteJobPairs;
@@ -111,5 +105,47 @@ public class SolverStats extends Identifiable {
 	
 	public void incrementFailedJobPairs() {
 		failedJobPairs++;
+	}
+
+	public void setResourceOutJobPairs(int resourceOutJobPairs) {
+		this.resourceOutJobPairs = resourceOutJobPairs;
+	}
+
+	public int getResourceOutJobPairs() {
+		return resourceOutJobPairs;
+	}
+	
+	public void incrementResourceOutPairs(){
+		this.resourceOutJobPairs++;
+	}
+
+
+
+	public void setWallTime(double wallTime) {
+		this.wallTime = wallTime;
+	}
+
+
+
+	public double getWallTime() {
+		return wallTime;
+	}
+    
+	public void incrementWallTime(double time) {
+		this.wallTime+=time;
+	}
+
+
+	public void setCpuTime(double cpuTime) {
+		this.cpuTime = cpuTime;
+	}
+
+
+	public double getCpuTime() {
+		return cpuTime;
+	}
+	
+	public void incrementCpuTime(double time) {
+		this.cpuTime+=time;
 	}
 }

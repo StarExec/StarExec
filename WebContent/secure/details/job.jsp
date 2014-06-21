@@ -133,12 +133,11 @@
 						<tr>
 							<th class="solverHead">solver</th>
 							<th class="configHead">config</th>
-							<th class="completeHead"><span title="Number of job pairs that ran without any errors">complete</span></th>
-							<th class="incompleteHead"><span title="Number of job pairs still waiting to run on the grid engine">incomplete</span></th>
-							<th class="correctHead"><span title="Number of job pairs for which the result matched the expected result">solved</span></th>
+							<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined">solved</span></th>
 							<th class="wrongHead"><span title="Number of job pairs for which the result did not match the expected result">wrong</span></th>
-							<th class="failedHead"><span title="Number of job pairs for which there was a timeout, mem-out, or internal error">failed</span></th>
-							<th class="timeHead"><span title="total wallclock time for all job pairs run">time</span></th>
+							<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+							<th class="incompleteHead"><span title="Number of job pairs still waiting to run on the grid engine">incomplete</span></th>
+							<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run">time</span></th>
 							<th class="pairsInSpaceHead">pairs</th>
 						</tr>
 					</thead>

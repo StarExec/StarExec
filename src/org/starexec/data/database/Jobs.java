@@ -1677,11 +1677,13 @@ public class Jobs {
 			while (results.next()) {
 				SolverStats s=new SolverStats();
 				s.setCompleteJobPairs(results.getInt("complete"));
-				s.setIncompleteJobPairs(0); //we only store things in the stats table when the job is totally done
-				s.setTime(results.getDouble("wallclock"));
+				s.setIncompleteJobPairs(results.getInt("failed")); //we only store things in the stats table when the job is totally done
+				s.setWallTime(results.getDouble("wallclock"));
+				s.setCpuTime(results.getDouble("cpu"));
 				s.setFailedJobPairs(results.getInt("failed"));
 				s.setIncorrectJobPairs(results.getInt("incorrect"));
 				s.setCorrectJobPairs(results.getInt("correct"));
+				s.setResourceOutJobPairs(results.getInt("resource_out"));
 				Solver solver=new Solver();
 				solver.setName(results.getString("solver.name"));
 				solver.setId(results.getInt("solver.id"));
@@ -2872,8 +2874,7 @@ public class Jobs {
 	 * @return A list of SolverStats objects to use in a datatable
 	 * @author Eric Burns
 	 */
-	//NOTE: Many parameters here are unused because we are currently doing client-side processing of our stats
-	//datatables, but they would be used if we ever wanted to switch to server-side processing
+
 	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
 		Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
 		String key=null;
@@ -2894,32 +2895,46 @@ public class Jobs {
 			//update stats info for entry that current job-pair belongs to
 			SolverStats curSolver=SolverStats.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
-			curSolver.incrementTime(jp.getWallclockTime());
-			if ( statusCode.error()) {
+			curSolver.incrementWallTime(jp.getWallclockTime());
+			curSolver.incrementCpuTime(jp.getCpuTimeout());
+			if ( statusCode.failed()) {
 			    curSolver.incrementFailedJobPairs();
-			} else if (statusCode.incomplete()) {
+			} 
+			if ( statusCode.resource()) {
+				curSolver.incrementResourceOutPairs();
+			}
+			if (statusCode.statIncomplete()) {
 			    curSolver.incrementIncompleteJobPairs();
-			} else if (statusCode.complete()) {
+			}
+			if (statusCode.complete()) {
 			    curSolver.incrementCompleteJobPairs();
-			    if (jp.getAttributes()!=null) {
-			    	Properties attrs = jp.getAttributes();
-			    	//if the attributes don't have an expected result, we don't know whether the pair
-			    	//was correct or incorrect
+			}
+			if (statusCode.getVal()==7) {
+				if (jp.getAttributes()!=null) {
+				   	Properties attrs = jp.getAttributes();
+				   	//if the attributes don't have an expected result, we don't know whether the pair
+				   	//was correct or incorrect
 			    	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.containsKey(R.EXPECTED_RESULT)) {
 			    		log.debug("found a pair with both an expected result and a result!");
 			    		if (attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
-			    			//don't know the result, so don't mark as correct or incorrect.
-			    			continue;
-			    		}
-			    		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
-			    			curSolver.incrementIncorrectJobPairs();
+				    		//don't know the result, so don't mark as correct or incorrect.
+				   			continue;
+				   		}
+				   		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+				   			curSolver.incrementIncorrectJobPairs();
 			    		} else {
 			    			curSolver.incrementCorrectJobPairs();
 			    		}
-			    	}
+				   	} else {
+				   		//we mark ones without the attrs as correct
+		    			curSolver.incrementCorrectJobPairs();
+
+				   	}
 			    }
 			}
+			   
 		}
+		
 		List<SolverStats> returnValues=new LinkedList<SolverStats>();
 		for (SolverStats js : SolverStats.values()) {
 			returnValues.add(js);
@@ -3142,14 +3157,16 @@ public class Jobs {
 	private static boolean saveStats(int jobSpaceId, SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,jobSpaceId);
 			procedure.setInt(2,stats.getConfiguration().getId());
 			procedure.setInt(3,stats.getCompleteJobPairs());
 			procedure.setInt(4,stats.getCorrectJobPairs());
 			procedure.setInt(5,stats.getIncorrectJobPairs());
 			procedure.setInt(6,stats.getFailedJobPairs());
-			procedure.setDouble(7,stats.getTime());
+			procedure.setDouble(7,stats.getWallTime());
+			procedure.setDouble(8,stats.getCpuTime());
+			procedure.setInt(9,stats.getResourceOutJobPairs());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {

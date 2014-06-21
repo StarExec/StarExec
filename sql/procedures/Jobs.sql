@@ -127,10 +127,10 @@ CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobSpaceId INT)
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
 DROP PROCEDURE IF EXISTS AddJobStats;
-CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _wallclock DOUBLE)
+CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT)
 	BEGIN
-		INSERT INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, wallclock)
-		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _wallclock);
+		INSERT INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, wallclock,cpu,resource_out)
+		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _wallclock, _cpu,_resource);
 	END //	
 
 -- Gets the cached job results for the hierarchy rooted at the given job space
@@ -273,7 +273,8 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 				bench_id,
 				bench_name,
 				GetJobPairResult(job_pairs.id) AS result,
-				wallclock
+				wallclock,
+				cpu
 		FROM job_pairs 
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //

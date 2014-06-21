@@ -535,7 +535,7 @@ CREATE TABLE job_space_assoc (
 	CONSTRAINT job_space_assoc_child_id FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
 -- Stores a cache of stats for a particular job space. Incomplete pairs are not stored,
--- as we should  never be caching anything that has incomplete pairs
+-- as we only store complete jobs, so incomplete=failed
 -- Author: Eric Burns
 CREATE TABLE job_stats (
 	job_space_id INT NOT NULL,
@@ -545,6 +545,8 @@ CREATE TABLE job_stats (
 	incorrect INT NOT NULL,
 	failed INT NOT NULL,
 	wallclock DOUBLE,
+	cpu DOUBLE,
+	resource_out INT NOT NULL,
 	CONSTRAINT job_stats_job_space_id FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
 );

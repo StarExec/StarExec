@@ -182,7 +182,14 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 1,true);
+				Util.clearOldFiles(R.JOB_LOG_DIR, 30,true);
+			}
+		};
+		/*  Create a task that deletes job logs older than 3 days */
+		final Runnable clearJobScriptTask = new RobustRunnable("clearJobScriptTask") {			
+			@Override
+			protected void dorun() {
+			    log.info("clearJobScriptTask (periodic)");
 				Util.clearOldFiles(R.JOB_INBOX_DIR,1,false);
 				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1,false);
 			}
@@ -218,7 +225,9 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
-		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 12, TimeUnit.SECONDS);
+		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
+		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
+
 		    // taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 
 		    // this task seems to have a number of problems currently, such as leaving jobs paused after it runs
