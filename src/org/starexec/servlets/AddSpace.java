@@ -145,7 +145,7 @@ public class AddSpace extends HttpServlet {
 			int spaceId = Integer.parseInt((String)spaceRequest.getParameter(parentSpace));
 			
 			// Ensure the space name is valid (alphanumeric < SPACE_NAME_LEN chars)
-			if(!Validator.isValidPrimName((String)spaceRequest.getParameter(name))) {
+			if(!Validator.isValidSpaceName((String)spaceRequest.getParameter(name))) {
 				return false;
 			}
 			

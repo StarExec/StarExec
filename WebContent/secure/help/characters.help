@@ -1,0 +1,36 @@
+<h3>Input Restrictions</h3>
+
+<p>This page summarizes the character restrictions that exist for all uploads to StarExec.</p>
+
+<h3>Length Restrictions</h3>
+
+<p>For all primitives except for spaces, the maximum length for a name is 128 characters. Space names may
+have 255 characters. All names must be 1 character at a minimum.</p>
+
+<p>All descriptions must be between 0 and 1024 characters, inclusive. Messages, which are required when
+requesting a queue reservation or trying to join a new community, must be bewtween 2 and 512 characters.</p>
+
+<h3>Character Restrictions</h3>
+
+<p>In all cases, StarExec is case insensitive for validation.</p>
+
+<p>Names for users may only contain letters, hyphens, and whitespace.</p>
+
+<p>Primitive names may contain all of the following characters, but no others. a-z 0-9 whitespace - . + ^ = , ! ? : $ % # @</p>
+
+<p>In descriptions, all characters are permitted except for the following characters. < > " ' % ; ) ( & \ + -</p>
+
+<h3>Regular Expressions</h3>
+
+<p>These are the regular expressions that are applied to validate inputs. If there appears to be 
+a contradiction between these regular expressions and the rules laid out above, then these expressions
+take precedence.
+
+user name pattern="^[A-Za-z\\-\\s']{2,32}$"<br>
+institution name pattern="^[\\w\\-\\s']{2,64}$"<br>
+email pattern="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$"<br>
+url pattern="https?://.\\S+{2,128}"<br>
+name pattern for all primitives="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$" (space names may be 255 characters long)<br>
+request message pattern="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"<br>
+description pattern="^[^<>\"\'%;)(&\\+-]{0,1024}$"<br>
+password pattern="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$"<br></p>

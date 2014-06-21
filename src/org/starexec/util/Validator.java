@@ -21,6 +21,7 @@ public class Validator {
 	private static Pattern patternEmail;
 	private static Pattern patternUrl;
 	private static Pattern patternPrimName;
+	private static Pattern patternSpaceName;
 	private static Pattern patternPrimDesc;
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
@@ -40,6 +41,7 @@ public class Validator {
 	    	patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternSpaceName = Pattern.compile(R.SPACE_NAME_PATTERN,Pattern.CASE_INSENSITIVE);
 	    	patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 	    	patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
@@ -111,11 +113,22 @@ public class Validator {
      * Validates a name and checks that it contains only letters, numbers and dashes
      * 
      * @param name the space's name to check
-     * @return true iff name isn't null, is between 1 and SPACE_NAME_LEN characters and
+     * @return true iff name isn't null, is between 1 and SOLVER_NAME_LEN characters and
      * contains only letters, numbers and dashes
      */
     public static boolean isValidPrimName(String name){   
     	return name!=null && patternPrimName.matcher(name).matches();    	
+    }
+    
+    /**
+     * Validates a name and checks that it contains only letters, numbers and dashes
+     * 
+     * @param name the space's name to check
+     * @return true iff name isn't null, is between 1 and SOLVER_NAME_LEN characters and
+     * contains only letters, numbers and dashes
+     */
+    public static boolean isValidSpaceName(String name){   
+    	return name!=null && patternSpaceName.matcher(name).matches();    	
     }
     
     /**

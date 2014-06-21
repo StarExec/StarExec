@@ -43,6 +43,8 @@
   <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing benchmarks</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing benchmarks</a></li>
   <li class="stub"><a href="/${starexecRoot}/secure/details/recycleBin.help"></a></li>
+  <li class="topicHeader">General</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/help/characters.help">Character Restrictions</a></li>
 </ul>
 </div>
 	
