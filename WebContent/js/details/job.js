@@ -40,7 +40,7 @@ function refreshPanels(){
 	}
 }
 
-function refreshStats(){
+function refreshStats(id){
 	summaryTable.fnProcessingIndicator(true);
 	summaryTable.fnReloadAjax(null,null,true,id,true);
 }
@@ -323,7 +323,8 @@ function initUI(){
 		useWallclock=!useWallclock;
 		setTimeButtonText();
 		refreshPanels();
-		refreshStats();
+		refreshStats(curSpaceId);
+		alert("done");
 	});
 	
 	$("#clearCache").click(function(){
