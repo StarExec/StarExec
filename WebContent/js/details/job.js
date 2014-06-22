@@ -28,9 +28,9 @@ $(document).ready(function(){
 
 function setTimeButtonText(){
 	if (useWallclock){
-		$("#changeTime .ui-button-text").html("use cpu time");
+		$(".changeTime .ui-button-text").html("use cpu time");
 	} else {
-		$("#changeTime .ui-button-text").html("use wall time");
+		$(".changeTime .ui-button-text").html("use wall time");
 	}
 }
 
@@ -249,7 +249,7 @@ function initUI(){
 			primary: "ui-icon-folder-open"
 		}
 	}) ;
-	$("#changeTime").button({
+	$(".changeTime").button({
 		icons: {
 			primary: "ui-icon-refresh"
 		}
@@ -319,7 +319,7 @@ function initUI(){
 		});
 	});
 	
-	$("#changeTime").click(function() {
+	$(".changeTime").click(function() {
 		useWallclock=!useWallclock;
 		setTimeButtonText();
 		refreshPanels();

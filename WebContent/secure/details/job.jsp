@@ -119,16 +119,19 @@
 						 
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
-				<fieldset id="panelActions">
-				<button id="popoutPanels">Popout</button>
-				<button id="collapsePanels">Collapse All</button>
-				<button id="openPanels">Open All</button>
-				<button id="changeTime">Use CPU Time</button>
+				<fieldset id="panelActions" class="tableActions">
+						<button id="popoutPanels">Popout</button>
+						<button id="collapsePanels">Collapse All</button>
+						<button id="openPanels">Open All</button>
+						<button class="changeTime">Use CPU Time</button>
 				</fieldset>
 			</fieldset>
 			
 			<fieldset id="solverSummaryField">
 			<legend>solver summary</legend>
+			<fieldset id="statActions" class="tableActions">
+				<button class="changeTime">Use CPU Time</button>
+			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>
 						<tr>

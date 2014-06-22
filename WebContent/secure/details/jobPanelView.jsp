@@ -43,6 +43,8 @@
 				<fieldset id="panelActions">
 				<button id="collapsePanels">Collapse All</button>
 				<button id="openPanels">Open All</button>
+				<button id="changeTime">Use CPU Time</button>
+				
 				</fieldset>
 			</fieldset>
 					
