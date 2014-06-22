@@ -324,7 +324,6 @@ function initUI(){
 		setTimeButtonText();
 		refreshPanels();
 		refreshStats(curSpaceId);
-		alert("done");
 	});
 	
 	$("#clearCache").click(function(){
@@ -809,7 +808,7 @@ function initializePanels() {
 		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
 		        "iDisplayLength": 1000, // make sure we show every entry
-		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/"+useWallclock,
+		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/",
 		        "sServerMethod" : "POST",
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });
@@ -971,7 +970,7 @@ function extendDataTableFunctions(){
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(  
-			sSource,
+			sSource+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
