@@ -123,6 +123,7 @@
 				<button id="popoutPanels">Popout</button>
 				<button id="collapsePanels">Collapse All</button>
 				<button id="openPanels">Open All</button>
+				<button id="changeTime"></button>
 				</fieldset>
 			</fieldset>
 			

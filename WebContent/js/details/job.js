@@ -4,6 +4,7 @@ var curSpaceId; //stores the ID of the job space that is currently selected from
 var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray=null;
+var useWallclock=true;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
@@ -18,14 +19,31 @@ $(document).ready(function(){
 	//update the tables every 30 seconds
 	setInterval(function() {
 		pairTable.fnDraw(false);
-		for (i=0;i<panelArray.length;i++) {
-			panelArray[i].fnReloadAjax(null,null,true,curSpaceId,false);
-		}
+		refreshPanels();
 	},30000);
 	
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
 });
+
+function setTimeButtonText(){
+	if (useWallclock){
+		$("#changeTime").html("use cpu time");
+	} else {
+		$("#changeTime").html("use wall time");
+	}
+}
+
+function refreshPanels(){
+	for (i=0;i<panelArray.length;i++) {
+		panelArray[i].fnReloadAjax(null,null,true,curSpaceId,false);
+	}
+}
+
+function refreshStats(){
+	summaryTable.fnProcessingIndicator(true);
+	summaryTable.fnReloadAjax(null,null,true,id,true);
+}
 
 function createDownloadRequest(item,type,returnIds,getCompleted) {
 	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
@@ -107,7 +125,7 @@ function clearPanels() {
 
 
 function reloadTables(id) {
-	//we only need to update if we've actually selected a new space
+	//we only need to update if we've actually selected a new space 
 	if (curSpaceId!=id) {
 		curSpaceId=id;
 		summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
@@ -231,7 +249,12 @@ function initUI(){
 			primary: "ui-icon-folder-open"
 		}
 	}) ;
+	$("#changeTime").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
 	
+	});
 	$("#spaceOverviewUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
@@ -294,6 +317,13 @@ function initUI(){
 				$(legend).trigger("click");
 			}
 		});
+	});
+	
+	$("#changeTime").click(function() {
+		useWallclock=!useWallclock;
+		setTimeButtonText();
+		refreshPanels();
+		refreshStats();
 	});
 	
 	$("#clearCache").click(function(){
