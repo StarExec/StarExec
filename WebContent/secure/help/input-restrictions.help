@@ -6,6 +6,9 @@ to StarExec.
 
 <h2>Length Restrictions</h2>
 
+<p>Names for users must be between 2 and 32 characters. Institutions may have 
+between 2 and 64 characters.</p>
+
 <p>For all primitives except for spaces, the maximum length for a name is
 128 characters. Space names may have 255 characters. All names must be at least
 1 character.</p>
@@ -19,7 +22,8 @@ to join a new community, must be bewtween 2 and 512 characters.
 
 <p>In all cases, StarExec is case insensitive for validation.</p>
 
-<p>Names for users may only contain letters, hyphens, and whitespace.</p>
+<p>Names for users may only contain letters, hyphens, and whitespace. Institution names
+may have these characters and also numbers.</p>
 
 <p>Primitive names may contain all of the following characters, but no others:
 <code>a-z 0-9 whitespace - . + ^ = , ! ? : $ % # @</code>

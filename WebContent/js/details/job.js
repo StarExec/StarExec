@@ -28,9 +28,9 @@ $(document).ready(function(){
 
 function setTimeButtonText(){
 	if (useWallclock){
-		$("#changeTime").html("use cpu time");
+		$("#changeTime .ui-button-text").html("use cpu time");
 	} else {
-		$("#changeTime").html("use wall time");
+		$("#changeTime .ui-button-text").html("use wall time");
 	}
 }
 
