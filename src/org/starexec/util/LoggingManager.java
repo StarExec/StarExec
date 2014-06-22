@@ -1,5 +1,8 @@
 package org.starexec.util;
 
+import java.util.Enumeration;
+
+import org.apache.log4j.Category;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -9,15 +12,26 @@ public class LoggingManager {
 	
 	public static void setLoggingLevel(Level level) {
 		Logger.getRootLogger().setLevel(level);
+		
 	}
 	
 	public static boolean setLoggingLevelForClass(Level level, String className) {
-		Logger log=LogManager.exists(className);
-		if (log==null) {
+		
+		if (!loggerExists(className)) {
 			return false;
 		}
-		log.setLevel(level);
+		Logger.getLogger(className).setLevel(level);
 		return true;
+	}
+	
+	public static boolean loggerExists(String className) {
+		 Enumeration<Logger> logs=Logger.getRootLogger().getLoggerRepository().getCurrentLoggers();
+		 while (logs.hasMoreElements()) {
+			 if (logs.nextElement().getName().equals(className)) {
+				 return true;
+			 }
+		 }
+		 return false;
 	}
 	
 	
