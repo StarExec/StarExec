@@ -6,10 +6,12 @@ import org.apache.log4j.Category;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.starexec.data.database.Jobs;
 import org.starexec.jobs.JobManager;
 
 public class LoggingManager {
-	
+	private static final Logger log = Logger.getLogger(LoggingManager.class);
+
 	public static void setLoggingLevel(Level level) {
 		Logger.getRootLogger().setLevel(level);
 		
@@ -26,8 +28,13 @@ public class LoggingManager {
 	
 	public static boolean loggerExists(String className) {
 		 Enumeration<Logger> logs=Logger.getRootLogger().getLoggerRepository().getCurrentLoggers();
+		 
 		 while (logs.hasMoreElements()) {
-			 if (logs.nextElement().getName().equals(className)) {
+			
+			 
+			 Logger log=logs.nextElement();
+			 log.debug("found this logger = "+log.getName());
+			 if (log.getName().equals(className)) {
 				 return true;
 			 }
 		 }
