@@ -648,6 +648,7 @@ function initUI(){
 			height: 850
 		});
 	});
+	setTimeButtonText();
 }
 
 function updateSpaceOverviewGraph() {
@@ -807,7 +808,7 @@ function initializePanels() {
 		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
 		        "iDisplayLength": 1000, // make sure we show every entry
-		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true",
+		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/"+useWallclock,
 		        "sServerMethod" : "POST",
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });
@@ -1000,7 +1001,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	outSpaceId=curSpaceId;
 	
 	$.post(  
-			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false",
+			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
