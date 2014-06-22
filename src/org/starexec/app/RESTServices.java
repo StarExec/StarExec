@@ -3276,27 +3276,30 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
+		boolean success=false;
 		if (level.equalsIgnoreCase("trace")) {
-			LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
 		} else if (level.equalsIgnoreCase("debug")) {
-			LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
 		} else if (level.equalsIgnoreCase("info")) {
-			LoggingManager.setLoggingLevelForClass(Level.INFO,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.INFO,className);
 		} else if (level.equalsIgnoreCase("error")) {
-			LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
 		} else if(level.equalsIgnoreCase("fatal")) {
-			LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
 		} else if (level.equalsIgnoreCase("off")) {
-			LoggingManager.setLoggingLevelForClass(Level.OFF,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.OFF,className);
 		} else if (level.equalsIgnoreCase("warn")) {
-			LoggingManager.setLoggingLevelForClass(Level.WARN,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.WARN,className);
 		} else if (level.equalsIgnoreCase("clear")) {
-			LoggingManager.setLoggingLevelForClass(null,className);
+			success=LoggingManager.setLoggingLevelForClass(null,className);
 		} else {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		return gson.toJson(0);
+		if (!success) {
+			log.debug("could not find logger for class "+className);
+		}
+		return success ? gson.toJson(0) : gson.toJson(ERROR_INVALID_PARAMS);
 	}
 	
 	//Allows the administrator to set the current logging level across the entire system.
