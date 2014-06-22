@@ -16,7 +16,7 @@ $(document).ready(function(){
 
 function setTimeButtonText(){
 	if (useWallclock){
-		$("#changeTime .ui-button-text").html("use cpu time");
+		$("#changeTime .ui-button-text").html("use CPU time");
 	} else {
 		$("#changeTime .ui-button-text").html("use wall time");
 	}
@@ -91,6 +91,7 @@ function getPanelTable(space) {
 }
 
 function initializePanels() {
+	extendDataTableFunctions();
 	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+jobSpaceId,function(spaces) {
 		panelArray=new Array();		
 		for (i=0;i<spaces.length;i++) {
