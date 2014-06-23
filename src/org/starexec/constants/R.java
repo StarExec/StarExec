@@ -186,7 +186,8 @@ public class R {
     public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
     public static long DEFAULT_PAIR_VMEM = 17179869184L;  					// The default limit on memory (in bytes) for job pairs
-    public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
+    //public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
+    public static int NODE_MULTIPLIER = 5;                                  // The number of job scripts to submit is the number of nodes in the queue times this
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
 

@@ -75,11 +75,12 @@ public abstract class JobManager {
 	    for (Queue q : queues) {
 		int qId = q.getId();
 		String qname = q.getName();
+		int nodeCount=Queues.getNodes(qId).size();
 		int queueSize = Queues.getSizeOfQueue(qId);
-		if (queueSize < R.NUM_JOB_SCRIPTS) {
+		if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
 		    List<Job> joblist = Queues.getPendingJobs(qId);
 		    if (joblist.size() > 0) {
-			submitJobs(joblist, q, queueSize);
+			submitJobs(joblist, q, queueSize,nodeCount);
 		    }
 		} else {
 		    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
@@ -137,7 +138,7 @@ public abstract class JobManager {
 	 * @param j The job object containing information about what to run for the job
 	 * @param spaceId The id of the space this job will be placed in
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize) {		
+	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {		
 		log.debug("submitJobs() begins");
 
 		initMainTemplateIf();
@@ -196,9 +197,11 @@ public abstract class JobManager {
 		 */
 
 		int count = queueSize;
+		int jobCount=schedule.size();
+		
 		while (!schedule.isEmpty()) {
 
-			if (count >= R.NUM_JOB_SCRIPTS)
+			if (count >= R.NODE_MULTIPLIER * nodeCount)
 				break; // out of while (!schedule.isEmpty())
 
 			Iterator<SchedulingState> it = schedule.iterator();
@@ -211,14 +214,18 @@ public abstract class JobManager {
 					it.remove();
 					continue;
 				}		
+				int pairsAtATime=Math.min(R.NUM_JOB_PAIRS_AT_A_TIME, (((R.NODE_MULTIPLIER*nodeCount)-count)/jobCount)+1);
+				pairsAtATime=Math.max(pairsAtATime, 1); //ensure we do at least something
 
-				log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME +" pairs "
+				log.info("About to submit "+pairsAtATime +" pairs "
 						+"for job " + s.job.getId() 
 						+ ", queue = "+q.getName() 
 						+ ", user = "+s.job.getUserId());
 
 				int i = 0;
-				while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
+				
+				
+				while (i < pairsAtATime && s.pairIter.hasNext()) {
 
 
 					JobPair pair = s.pairIter.next();

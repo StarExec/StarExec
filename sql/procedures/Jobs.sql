@@ -331,13 +331,12 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _cap INT, IN _statusCode 
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
-CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _cap INT)
+CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
 		WHERE job_id=_id AND (status_code = 1)
-		ORDER BY id ASC
-		LIMIT _cap;
+		ORDER BY id ASC;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id
@@ -619,6 +618,16 @@ CREATE PROCEDURE SetPairsToStatus(IN _jobId INT, In _statusCode INT)
 		UPDATE job_pairs
 		SET status_code = _statusCode
 		WHERE job_id = _jobId;
+	END //
+	
+-- Sets all the pairs of a given job and status to the given status
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS SetPairsOfStatusToStatus;
+CREATE PROCEDURE SetPairsOfStatusToStatus(IN _jobId INT, In _newCode INT, IN _curCode INT)
+	BEGIN
+		UPDATE job_pairs
+		SET status_code = _newCode
+		WHERE job_id = _jobId AND status_code=_curCode;
 	END //
 	
 -- Removes all jobs in the database that are deleted and also orphaned. Runs periodically.

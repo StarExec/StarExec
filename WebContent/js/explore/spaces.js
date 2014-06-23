@@ -9,6 +9,10 @@ var spaceId;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
 
+var spaceChain;   // array of space ids to trigger in order
+var spaceChainIndex=0; //the current index of the space chain
+var openDone=true;
+var spaceChainInterval;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	
@@ -31,10 +35,52 @@ $(document).ready(function(){
 		}
 		
 	},10000);
-
+	
 
 });
+function openSpace(curSp,childId) {
+	$("#exploreList").jstree("open_node", "#" + curSp, function() {
+		$.jstree._focused().select_node("#" + childId, true);	
+	});	
+}
+function getSpaceChain() {
+	chain=new Array();
+	spaces=$("#spaceChain").attr("value").split(",");
+	index=0;
+	for (i=0;i<spaces.length;i++) {
+		if (spaces[i].trim().length>0) {
+			chain[index]=spaces[i];
+		}
+		index=index+1;
+	}
 
+	return chain;
+}
+
+function handleSpaceChain() {
+	spaceChain=getSpaceChain();
+	if (spaceChain.length<2) {
+		return;
+	}
+	p=spaceChain[0];
+
+	spaceChainIndex=1;
+	spaceChainInterval=setInterval(function() {
+		if (spaceChainIndex>=spaceChain.length) {
+			clearInterval(spaceChainInterval);
+		}
+		if (openDone) {
+			openDone=false;
+			c=spaceChain[spaceChainIndex];
+			openSpace(p,c);
+			spaceChainIndex=spaceChainIndex+1;
+			p=c;	
+		}
+		},100);
+		
+		
+	
+}
 
 /**
  * Convenience method for determining if a given fieldset has been expanded or not
@@ -723,6 +769,12 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
 	});				
 }
 
+function setURL(i) {
+	current=window.location.pathname;
+	newURL=current.substring(0,current.indexOf("?"));
+	window.history.replaceState("object or string", "",newURL+"?id="+i);
+}
+
 /**
  * Sends a copy benchmark request to the server
  * @param ids The IDs of the benchmarks to copy
@@ -865,6 +917,7 @@ function initSpaceExplorer(){
 			"ajax" : { 
 				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
 				"data" : function (n) {
+					
 					return { id : n.attr ? n.attr("id") : -1 }; 	// What the default space id should be
 				} 
 			} 
@@ -901,12 +954,17 @@ function initSpaceExplorer(){
 
 		updateButtonIds(id);
 		getSpaceDetails(id);
-
+		setURL(id);
 
 		// Remove all non-permanent tooltips from the page; helps keep
 		// the page from getting filled with hundreds of qtip divs
 		$(".qtip-userTooltip").remove();
 		$(".qtip-expdTooltip").remove();
+	}).bind("loaded.jstree", function(event,data) {
+		handleSpaceChain();
+	}).bind("open_node.jstree",function(event,data) {
+		//alert("here");
+		openDone=true;
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
@@ -1935,14 +1993,7 @@ function populateSpaceDetails(jsonData, id) {
 }
 
 
-/**
- * Expands the given parent space and selects the given child space in the jsTree
- */
-function openSpace(parentId, childId) {
-	$("#exploreList").jstree("open_node", "#" + parentId, function() {
-		$.jstree._focused().select_node("#" + childId, true);	
-	});	
-}
+
 
 
 /**

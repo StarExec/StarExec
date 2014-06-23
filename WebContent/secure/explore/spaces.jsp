@@ -1,12 +1,27 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.*, org.starexec.data.to.*, org.starexec.data.database.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.data.security.*,org.starexec.util.*, org.starexec.data.to.*, org.starexec.data.database.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
-	
-	//System.out.println("start");
 	int uid=SessionUtil.getUserId(request);
-	//System.out.println(uid);
+
+	try {
+		int spaceId=Integer.parseInt(request.getParameter("id"));
+		if (SpaceSecurity.canUserSeeSpace(spaceId,uid)==0 && spaceId > 0) {
+			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
+			StringBuilder stringChain=new StringBuilder();
+			for (Integer id : idChain) {
+				stringChain.append(id);
+				stringChain.append(",");
+			}
+			stringChain.delete(stringChain.length()-1,stringChain.length());
+			request.setAttribute("spaceChain",stringChain.toString());
+		}
+
+	} catch (Exception e) {
+		// we don't need the id, so we can just ignore errors here. It may not exist
+	}
+
 	request.setAttribute("userId",uid);
 	
 	request.setAttribute("cacheType1",CacheType.CACHE_SPACE.getVal());
@@ -18,6 +33,7 @@
 %>
 <star:template title="space explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
+	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
 		<h3>spaces</h3>
 		 

@@ -2120,7 +2120,33 @@ public class Jobs {
 		return sb.toString();
 	}
 	
-	
+	/**
+	 * Sets all the job pairs of a given status code and job to pending. Used to rerun
+	 * pairs that didn't work in an initial job run
+	 * @param jobId The id of the job in question
+	 * @param statusCode The status code of pairs that should be rerun
+	 * @return true on success and false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean setPairsToPending(int jobId, int statusCode) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetPairsOfStatusToStatus(?,?,?)}");
+			procedure.setInt(1,jobId);
+			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			procedure.setInt(3,statusCode);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("setPairStatusByJob says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	} 
 		
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
@@ -2135,9 +2161,8 @@ public class Jobs {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 try {
-			procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
+			procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);					
-			procedure.setInt(2, R.NUM_JOB_SCRIPTS);
 			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 			//we map ID's to  primitives so we don't need to query the database repeatedly for them
@@ -2895,8 +2920,7 @@ public class Jobs {
 			//update stats info for entry that current job-pair belongs to
 			SolverStats curSolver=SolverStats.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
-			curSolver.incrementWallTime(jp.getWallclockTime());
-			curSolver.incrementCpuTime(jp.getCpuTime());
+			
 			if ( statusCode.failed()) {
 			    curSolver.incrementFailedJobPairs();
 			} 
@@ -2923,9 +2947,15 @@ public class Jobs {
 				   		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
 				   			curSolver.incrementIncorrectJobPairs();
 			    		} else {
+			    			//time is only counted for the pairs that were correct
+			    			curSolver.incrementWallTime(jp.getWallclockTime());
+			    			curSolver.incrementCpuTime(jp.getCpuTime());
 			    			curSolver.incrementCorrectJobPairs();
 			    		}
 				   	} else {
+				   		//time is only counted for the pairs that are correct
+				   		curSolver.incrementWallTime(jp.getWallclockTime());
+						curSolver.incrementCpuTime(jp.getCpuTime());
 				   		//we mark ones without the attrs as correct
 		    			curSolver.incrementCorrectJobPairs();
 

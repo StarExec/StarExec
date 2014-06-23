@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -102,6 +103,36 @@ public class Spaces {
 		}
 		return -1;
 	}
+	/**
+	 * Gets a list of all space ids in the path between the root space and the given space. In the list
+	 * the root space will be the first id and the given space will be the last. The ids are ordered along
+	 * the hierarchy. If the root (or anything smaller) is given, a size 1 list containing the root id is returned
+	 * @param spaceId The ID of the space to get the chain for
+	 * @return
+	 * @author Eric Burns
+	 */
+	public static List<Integer> getChainToRoot(int spaceId) {
+		List<Integer> idChain=new ArrayList<Integer>();
+		if (spaceId<=1) {
+			idChain.add(1);
+			return idChain;
+		}
+		idChain.add(spaceId);
+		HashSet<Integer> alreadySeen=new HashSet<Integer>();
+		while (spaceId>1) {
+			if (alreadySeen.contains(spaceId)) {
+				log.error("there was a cycle in the space heirarchy!");
+				return null; // found a cycle in the space hierarchy
+			}
+			alreadySeen.add(spaceId);
+			spaceId=Spaces.getParentSpace(spaceId);
+			idChain.add(spaceId);
+		}
+		Collections.reverse(idChain);
+		System.out.println("done");
+		return idChain;
+	}
+	
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a
 	 * default permission record for the space, and adds a new association

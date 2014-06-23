@@ -774,7 +774,8 @@ function getPanelTable(space) {
 			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
 					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
 			"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
-			"<th class=\"solvedHead\">solved</th> <th class=\"timeHead\">time</th> </tr>" +
+			"<th class=\"solvedHead\" title=\"Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors\">solved</th> " +
+			"<th class=\"timeHead\" title=\"total wallclock or cpu time for all job pairs run that were solved correctly\">time</th> </tr>" +
 			"</thead>" +
 			"<tbody></tbody> </table></fieldset>";
 	return table;
