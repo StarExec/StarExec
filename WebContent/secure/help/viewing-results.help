@@ -1,1 +1,44 @@
-<p>Nothing yet.</p>
+<h1>Viewing results</h3>
+
+<p>To view the results of a job navigate to the job's space and expand the jobs 
+list. You will see all jobs within the space as well as a brief overview of 
+the state of each job.
+</p>
+
+
+<h2>Job details</h2>
+
+<p>Click the desired job's name to get more details.
+The job details page will show general information about the job as well as 
+a listing of all of it pairs.
+</p>
+
+
+<h2>Job pair details</h2>
+
+<p>To get more details about a pair, click on the pair's row.
+The pair details page shows the most information about a job pair. 
+If an attribute or statistic is unclear, hover your mouse over it to get 
+a tool tip description.
+</p>
+
+<p>If the job pair was run successfully, you will have the option to view its 
+output. Click the output list to have the job pair's combined stdout/stderr 
+contents displayed in the browser. 
+<!--This preview shows at most 100 lines of output. 
+To get the full output, select the popout button.  
+-->
+</p>
+
+
+<h2>Downloading job info</h2>
+
+<p>You can also download individual outputs from job pairs or all of the outputs 
+from the original job's page.
+You will also have the option to view the job's log within the browser. 
+This log includes all actions that took place internally in StarExec during 
+the various stages of the job execution pipeline. It can be useful for debugging
+if you are not sure why your job failed. Select the job log list to view 
+the pair's log.
+</p>
+
