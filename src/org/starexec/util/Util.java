@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -582,12 +583,23 @@ public class Util {
 	}
     }
 	
+    public static String makeCommaSeparatedList(List<Integer> nums) {
+    	StringBuilder sb=new StringBuilder();
+    	for (Integer id : nums) {
+    		sb.append(id);
+    		sb.append(",");
+    	}
+    	sb.delete(sb.length()-1, sb.length());
+    	return sb.toString(); 
+    	
+    }
+    
     /**
      * Deletes all files in the given directory that are as old as, or older than the specified number of days
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
      */
-    public static void clearOldFiles(String directory, int daysAgo){
+    public static void clearOldFiles(String directory, int daysAgo,boolean includeDirs){
 	try {
 	    File dir = new File(directory);
 			
@@ -598,12 +610,22 @@ public class Util {
 	    // Subtract days from the current time
 	    Calendar calendar = Calendar.getInstance();
 	    calendar.add(Calendar.DATE, -daysAgo);			
-			
 	    // Create a new filter for files older than this new time
 	    IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
-			
+	    Collection<File> outdatedFiles;
 	    // Get all of the outdated files
-	    Collection<File> outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
+	    if (!includeDirs) {
+		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
+		    
+	    } else {
+	    	IOFileFilter dateDirFilter=FileFilterUtils.makeDirectoryOnly(dateFilter);
+	    	
+	    	File[] files=dir.listFiles((FileFilter)dateFilter);
+	    	outdatedFiles=new ArrayList<File>();
+	    	for (File f : files) {
+	    		outdatedFiles.add(f);
+	    	}
+	    }
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 	    // Remove them all
 	    for(File f : outdatedFiles) {

@@ -41,14 +41,21 @@ public class Status {
 		public int getVal() {
 			return this.val;			
 		}				
-		public boolean error() {
-		    return (val >= 8 && val <= 18) || val == 0;
+		public boolean resource() {
+		    return (val >= 14 && val <= 17);
+		}
+		public boolean failed(){
+			return ((val>=8 && val<=13) ||val==18);
 		}
 		public boolean incomplete() {
-		    return (val<=6 || val==19 || val == 20 || val == 21);
+		    return (val<=6 || val>=19);
+		}
+		//incomplete as it is defined for stats
+		public boolean statIncomplete(){
+			return (val!=7 && !(val>=14 &&val<=17));
 		}
 		public boolean complete() {
-		    return val==7;
+		    return val==7 || (val>=14 &&val<=17);
 		}
 		static public StatusCode toStatusCode(int code) {
 		    switch (code) {

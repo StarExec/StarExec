@@ -1,9 +1,9 @@
 #topicList a.active {
-	border: 1px dashed #008d03;
+	border: 1px dashed rgb(230, 46, 37);
 }
 
 #topicList a:hover{
-	background-color: #008d03;
+  background-color: rgb(230, 46, 37);
 	border-radius:2px;
 }
 
@@ -36,20 +36,50 @@
 	min-height:700px;
 }
 
+
+#detailPanel a:link, #detailPanel a:visited {
+  color: rgb(230, 46, 37);
+	text-decoration: none;
+}
+
+#detailPanel a:hover {
+  color: white;
+  background-color: rgb(230, 46, 37);
+	border-radius:2px;
+}
+
+
 #detailPanel hr {
 	border-top: solid 1px #666666;
 }
 
-#detailPanel h3 {
-	color: #999999;
-	font-size: 24px;
-	margin-bottom: 5px;
+#detailPanel strong {
+	color: #898989;
+}
+
+#detailPanel h1 {
+	font-size: 26px;
+	padding-top: 6px;
+	padding-bottom: 6px;
 }
 
 #detailPanel h2 {
 	color: #898989;
-	font-size: 18px;
-	margin-bottom: 4px;
+	font-size: 22px;
+	padding-top: 6px;
+	padding-bottom: 4px;
+}
+
+#detailPanel h3 {
+	color: #999999;
+	font-size: 20px;
+	padding-top: 6px;
+	padding-bottom: 2px;
+}
+
+#detailPanel p {
+	margin-top: 1em;
+	margin-bottom: 1em;
 }
 
 #detailPanel p.accent {
@@ -57,8 +87,25 @@
 	font-style: italic;
 }
 
-#detailPanel p {
-	margin: 10px;
+#detailPanel ul {
+	margin-left: 40px;
+	margin-bottom: 18px;
+}
+
+#detailPanel ul li {
+	margin-bottom: 10px;
+}
+
+#detailPanel code {
+	font-size: 19px;
+}
+
+#detailPanel dl dd {
+	margin-left: 80px;
+}
+
+#detailPanel dl dt {
+	color: #898989;
 }
 
 #topicList .topicHeader {

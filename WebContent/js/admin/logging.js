@@ -46,7 +46,7 @@ function initUI(){
 				if (returnCode=="0") {
 					showMessage("success","log level changed successfully",5000);
 				} else {
-					showMessage("error","There was an error while changing the log level",5000);
+					showMessage("error","There was an error while changing the log level-- the class may not have existed",5000);
 				}
 			},
 			"json"

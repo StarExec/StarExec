@@ -45,13 +45,17 @@ thead {
 	width:inherit;
 }
 
-.completeHead, .correctHead {
-	width: 11%;
+#solveTbl > thead {
+    font-size: 95%;
+}
+
+.solvedHead, .resourceHead {
+	width: 13%;
 	max-width:11%;
 }
 
 .incompleteHead {
-	width: 18%;
+	width: 16%;
 	max-width:18%;
 }
 
@@ -61,12 +65,12 @@ thead {
 	max-width:10%;
 }
 
-.solverHead, .failedHead, .wrongHead {
-	width: 10%;
+.solverHead, .wrongHead {
+	width: 12%;
 	max-width:10%;
 }
 .timeHead, .pairsInSpaceHead {
-	width: 10%;
+	width: 12%;
 	max-width:10%;
 }
 
@@ -174,7 +178,7 @@ margin-top:5px;
 	padding-left:0px;
 	word-wrap:break-word;
 }
-#subspaceSummaryField #panelActions {
+#subspaceSummaryField #panelActions, #solverSummaryField #statActions {
 	width:97%;
 	border-color: black;
 	border-style: none none solid;

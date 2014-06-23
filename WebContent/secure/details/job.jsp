@@ -119,26 +119,29 @@
 						 
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
-				<fieldset id="panelActions">
-				<button id="popoutPanels">Popout</button>
-				<button id="collapsePanels">Collapse All</button>
-				<button id="openPanels">Open All</button>
+				<fieldset id="panelActions" class="tableActions">
+						<button id="popoutPanels">Popout</button>
+						<button id="collapsePanels">Collapse All</button>
+						<button id="openPanels">Open All</button>
+						<button class="changeTime">Use CPU Time</button>
 				</fieldset>
 			</fieldset>
 			
 			<fieldset id="solverSummaryField">
 			<legend>solver summary</legend>
+			<fieldset id="statActions" class="tableActions">
+				<button class="changeTime">Use CPU Time</button>
+			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>
 						<tr>
 							<th class="solverHead">solver</th>
 							<th class="configHead">config</th>
-							<th class="completeHead"><span title="Number of job pairs that ran without any errors">complete</span></th>
-							<th class="incompleteHead"><span title="Number of job pairs still waiting to run on the grid engine">incomplete</span></th>
-							<th class="correctHead"><span title="Number of job pairs for which the result matched the expected result">solved</span></th>
+							<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined">solved</span></th>
 							<th class="wrongHead"><span title="Number of job pairs for which the result did not match the expected result">wrong</span></th>
-							<th class="failedHead"><span title="Number of job pairs for which there was a timeout, mem-out, or internal error">failed</span></th>
-							<th class="timeHead"><span title="total wallclock time for all job pairs run">time</span></th>
+							<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+							<th class="incompleteHead"><span title="Number of job pairs still waiting to run on the grid engine">incomplete</span></th>
+							<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run">time</span></th>
 							<th class="pairsInSpaceHead">pairs</th>
 						</tr>
 					</thead>
@@ -241,6 +244,15 @@
 							<td>created</td>			
 							<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
 						</tr>					
+						<tr title="the preprocessor that was used to process benchmarks for this job">
+							<td>preprocessor</td>
+							<c:if test="${not empty job.preProcessor}">			
+							<td title="${job.preProcessor.description}">${job.preProcessor.name}</td>
+							</c:if>
+							<c:if test="${empty job.preProcessor}">			
+							<td>none</td>
+							</c:if>
+						</tr>
 						<tr title="the postprocessor that was used to process output for this job">
 							<td>postprocessor</td>
 							<c:if test="${not empty job.postProcessor}">			
@@ -329,6 +341,8 @@
 				</div>	
 				<div id="dialog-return-ids" title="return ids">
 					<p><span id="dialog-return-ids-txt"></span></p>
+					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
+					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br></p>
 				</div>
 				<div id="dialog-solverComparison" title="solver comparison chart">
 					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>

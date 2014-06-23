@@ -53,6 +53,11 @@ class CommandParser {
 		}
 	}
 	
+	private void printID(int id) {
+		System.out.println("id="+id);
+
+	}
+	
 	/**
 	 * Handles all commands that start with "push," which are commands
 	 * for uploading things.
@@ -63,7 +68,7 @@ class CommandParser {
 	 */
 	protected int handlePushCommand(String c, HashMap<String,String> commandParams) {
 		try {
-		    
+		    List<Integer> ids=null;
 			int serverStatus;
 
 			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
@@ -74,11 +79,15 @@ class CommandParser {
 				serverStatus=parser.uploadPostProc(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
-			}  else if (c.equals(R.COMMAND_PUSHSPACEXML)) {
-			    serverStatus=parser.uploadXML(commandParams,false);
-
-			} else if (c.equals(R.COMMAND_PUSHJOBXML)) { 
-			    serverStatus=parser.uploadXML(commandParams,true);
+			}  else if (c.equals(R.COMMAND_PUSHSPACEXML) || c.equals(R.COMMAND_PUSHJOBXML)) {
+				boolean isJobXML= c.equals(R.COMMAND_PUSHJOBXML);
+			    ids=parser.uploadXML(commandParams,isJobXML);
+			    if (ids.size()==0){
+			    	serverStatus=Status.ERROR_INTERNAL;
+			    } else {
+			    	//if the first value is positive, it is an id and we were successful. Otherwise, it is an error code
+			    	serverStatus=Math.min(0, ids.get(0));
+			    }
 			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}
@@ -87,13 +96,18 @@ class CommandParser {
 			}
 			if (serverStatus>0) {
 				if (returnIDsOnUpload) {
-					System.out.println("id="+serverStatus);
+					printID(serverStatus);
 				}
 				return 0;
 			}
+			if (ids!=null && serverStatus==0 && returnIDsOnUpload) {
+				for (Integer id : ids) {
+					printID(id);
+				}
+			}
 			return serverStatus;
 		} catch (Exception e) {
-		    System.out.println("CommandParser.java : " + e);
+		    //System.out.println("CommandParser.java : " + e);
 			return Status.ERROR_INTERNAL;
 		}
 	}
@@ -173,26 +187,34 @@ class CommandParser {
 	protected int handleCopyCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			int serverStatus=0;
-			
+			List<Integer> ids=null;
 			if (c.equals(R.COMMAND_COPYSOLVER)) {
-				serverStatus=parser.copyPrimitives(commandParams, true,"solver");
+				ids=parser.copyPrimitives(commandParams,"solver");
+				serverStatus=Math.min(0, ids.get(0));
 			} else if (c.equals(R.COMMAND_LINKSOLVER)) {
-				serverStatus=parser.copyPrimitives(commandParams, false,"solver");
+				serverStatus=parser.linkPrimitives(commandParams,"solver");
 			}  else if (c.equals(R.COMMAND_COPYBENCH)) {
-				serverStatus=parser.copyPrimitives(commandParams, true,"benchmark");
+				ids=parser.copyPrimitives(commandParams,"benchmark");
+				serverStatus=Math.min(0, ids.get(0));
 			} else if(c.equals(R.COMMAND_LINKBENCH))  {
-				serverStatus=parser.copyPrimitives(commandParams, false,"benchmark");;
+				serverStatus=parser.linkPrimitives(commandParams, "benchmark");;
 			} else if (c.equals(R.COMMAND_COPYSPACE)) {
 				
-				serverStatus=parser.copyPrimitives(commandParams,true,"space");
+				ids=parser.copyPrimitives(commandParams,"space");
+				serverStatus=Math.min(0, ids.get(0));
 			} else if (c.equals(R.COMMAND_LINKJOB)) {
-				serverStatus=parser.copyPrimitives(commandParams,false,"job");
+				serverStatus=parser.linkPrimitives(commandParams,"job");
 			} else if (c.equals(R.COMMAND_LINKUSER)) {
-				serverStatus=parser.copyPrimitives(commandParams, false, "user");
+				serverStatus=parser.linkPrimitives(commandParams, "user");
 			}
 			else {
 				
 				return Status.ERROR_BAD_COMMAND;
+			}
+			if (serverStatus==0 && ids!=null && returnIDsOnUpload) {
+				for (Integer id : ids) {
+					printID(id);
+				}
 			}
 			
 			return serverStatus;

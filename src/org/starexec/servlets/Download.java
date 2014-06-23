@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -123,7 +124,12 @@ public class Download extends HttpServlet {
 				Integer jobId = Integer.parseInt(request.getParameter("id"));
 				String lastSeen=request.getParameter("since");
 				String returnids=request.getParameter("returnids");
+				String getCompleted=request.getParameter("getcompleted");
 				Boolean ids=false;
+				Boolean complete=false;
+				if (getCompleted!=null) {
+					complete=Boolean.parseBoolean(getCompleted);
+				}
 				if (returnids!=null) {
 					ids=Boolean.parseBoolean(returnids);
 				}
@@ -131,9 +137,11 @@ public class Download extends HttpServlet {
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
+				log.debug("getCompleted = "+complete);
+				log.debug("returnids = "+ids);
 				shortName="Job"+jobId+"_info";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleJob(jobId, u.getId(), ".zip", response, since,ids);
+				success = handleJob(jobId, u.getId(), ".zip", response, since,ids,complete);
 			}  else if (request.getParameter("type").equals("space")) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
@@ -184,7 +192,7 @@ public class Download extends HttpServlet {
 				Integer since=null;
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
-					System.out.println("found since = "+lastSeen);
+					//System.out.println("found since = "+lastSeen);
 				}
 				shortName="Job"+jobId+"_output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
@@ -412,7 +420,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static boolean handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds) throws Exception {    	
+	private static boolean handleJob(Integer jobId, int userId, String format, HttpServletResponse response, Integer since, Boolean returnIds, Boolean onlyCompleted) throws Exception {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		
 		if (Permissions.canUserSeeJob(jobId, userId)) {
@@ -443,7 +451,7 @@ public class Download extends HttpServlet {
 			}
 
 			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
-			String jobFile = CreateJobCSV(job, returnIds);
+			String jobFile = CreateJobCSV(job, returnIds,onlyCompleted);
 			ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(),"",false);
 
 			return true;
@@ -462,11 +470,11 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static String CreateJobCSV(Job job, Boolean returnIds) throws IOException {
+	private static String CreateJobCSV(Job job, Boolean returnIds, Boolean getOnlyCompleted) throws IOException {
 		log.debug("CreateJobCSV called with returnIds set to "+returnIds);
 		StringBuilder sb = new StringBuilder();
 		sb.delete(0, sb.length());
-		sb.append(R.NEW_JOB_OUTPUT_DIR);
+		sb.append(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR);
 		sb.append(File.separator);
 		//sb.append(job.getUserId());
 		
@@ -487,7 +495,12 @@ public class Download extends HttpServlet {
 			sb.append("pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time,wallclock time,result");
 		}
 		
-
+		HashMap<Integer,String> expectedValues=Jobs.getAllAttrsOfNameForJob(job.getId(),R.EXPECTED_RESULT);
+		for (JobPair jp : pairs) {
+			if (expectedValues.containsKey(jp.getBench().getId())) {
+				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
+			}
+		}
 		/* use the attribute names for the first completed job pair (if any) for more headings for the table
 	    We will put result first, then expected if it is there; other attributes follow */
 		Set<String> attrNames = job.attributeNames(); 
@@ -512,6 +525,13 @@ public class Download extends HttpServlet {
 		
 		while(itr.hasNext()) {
 			JobPair pair = itr.next();
+			//users can optionally get only completed pairs
+			if (getOnlyCompleted) {
+				if (pair.getStatus().getCode().incomplete()) {
+					log.debug("found an incomplete pair to exclude!");
+					continue;
+				}
+			}
 			if (returnIds) {
 				sb.append(pair.getId());
 				sb.append(",");
@@ -688,24 +708,31 @@ public class Download extends HttpServlet {
 	//TODO: This can be made more efficient by simply copying the hierarchy into the output stream insead of storing it first.
 	private boolean handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws Exception {
 		// If we can see this space AND the space is downloadable...
-
-		if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
-			
-			
-			String baseFileName=space.getName();
-			File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
-			
-			storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
-			ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
-			if(tempDir.exists()){
-				tempDir.delete();
+		try {
+			if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
+				
+				
+				String baseFileName=space.getName();
+				File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
+				
+				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
+				ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
+				if(tempDir.exists()){
+					
+						FileUtils.deleteDirectory(tempDir);
+						log.debug("space directory exists = "+tempDir.exists());
+					
+					
+				}
+				
+				
+				return true;
 			}
-			
-			
-			return true;
-		}
-		else {
-			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			else {
+				//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			}
+		} catch (Exception e) {
+			log.error("unable to delete directory because "+e.getMessage(),e);
 		}
 		return false;
 	}

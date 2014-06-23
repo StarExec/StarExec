@@ -2,12 +2,13 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags"%>
 
 <star:template title="StarExec" css="about">
-	<style type="text/css">
+<!-- 	<style type="text/css">
 		#content a:link {
 			text-decoration: underline;
 			color: #ae0000;
 		}
-	</style>
+	</style> 
+-->
 	<p id="advisory">StarExec is a cross community logic solving service
 	developed at the University of Iowa under the direction of principal
 	investigators Aaron Stump (Iowa), Geoff Sutcliffe (University
@@ -32,6 +33,7 @@
 	</li>
 	</li>community members to perform comparative evaluations of logic solvers 
 	on public or private benchmark problems.
+  </ul>
 	</p>
 
 	<p>The first public events ran on StarExec in Summer 2013 (CoCo 2013 and SMT-EVAL 2013). 

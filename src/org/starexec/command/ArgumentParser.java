@@ -8,6 +8,7 @@ package org.starexec.command;
  */
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -197,6 +198,30 @@ class ArgumentParser {
 			return Status.ERROR_SERVER;
 		}
 	}
+	
+	/**
+	 * Sends a link request to the StarExec server and returns a status code
+	 * indicating the result of the request
+	 * @param commandParams The parameters given by the user at the command line.
+	 * @param copy True if a copy should be performed, and false if a link should be performed.
+	 * @param type The type of primitive being copied.
+	 * @return An integer error code where 0 indicates success and a negative number is an error.
+	 */
+	protected int linkPrimitives(HashMap<String,String> commandParams, String type) {
+		try {
+			int valid=Validator.isValidCopyRequest(commandParams, type);
+			if (valid<0) {
+				return valid;
+			}
+			
+			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			return con.linkPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
+					commandParams.containsKey(R.PARAM_HIERARCHY),type);
+		
+		} catch (Exception e) {
+			return Status.ERROR_SERVER;
+		}
+	}
 
 	
 	/**
@@ -207,20 +232,23 @@ class ArgumentParser {
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
-	protected int copyPrimitives(HashMap<String,String> commandParams, boolean copy, String type) {
+	protected List<Integer> copyPrimitives(HashMap<String,String> commandParams, String type) {
+		List<Integer> fail=new ArrayList<Integer>();
 		try {
 			int valid=Validator.isValidCopyRequest(commandParams, type);
 			if (valid<0) {
-				return valid;
+				fail.add(valid);
+				return fail;
 			}
 			
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
-			return con.copyOrLinkPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
-					copy,commandParams.containsKey(R.PARAM_HIERARCHY),type);
+			return con.copyPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
+					commandParams.containsKey(R.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
-		}
+			fail.add(Status.ERROR_SERVER);
+			e.printStackTrace();
+			return fail;		}
 	}
 	
 	
@@ -368,7 +396,7 @@ class ArgumentParser {
 			//First, put in the request for the server to generate the desired archive			
 			return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),
 					commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(R.PARAM_INCLUDE_IDS),
-					hierarchy,procClass);
+					hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED));
 
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
@@ -652,21 +680,23 @@ class ArgumentParser {
 	 * @author Julio Cervantes
 	 */
 	
-    protected int uploadXML(HashMap<String, String> commandParams,boolean isJobXML) {
-		try {
-		   
+    protected List<Integer> uploadXML(HashMap<String, String> commandParams,boolean isJobXML) {
+		   List<Integer> fail=new ArrayList<Integer>();
+
+    	try {
 			int valid=Validator.isValidUploadXMLRequest(commandParams);
 			if (valid<0) {
-				return valid;
+				fail.add(valid);
+				return fail;
 			}
 			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
 			
 		} catch (Exception e) {
 
-		    System.out.println("ArgumentParser.java : " +e);
+		    //System.out.println("ArgumentParser.java : " +e);
 		  
-		    
-			return Status.ERROR_SERVER;
+		    fail.add(Status.ERROR_SERVER);
+			return fail;
 		}
 	}
 	

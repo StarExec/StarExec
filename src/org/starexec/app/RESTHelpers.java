@@ -2393,7 +2393,7 @@ public class RESTHelpers {
 
 	public static JsonObject convertSolverStatsToJsonObject(
 			List<SolverStats> stats, int totalRecords,
-			int totalRecordsAfterQuery, int syncValue, int spaceId, int jobId, boolean shortFormat) {
+			int totalRecordsAfterQuery, int syncValue, int spaceId, int jobId, boolean shortFormat, boolean wallTime) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2442,12 +2442,16 @@ public class RESTHelpers {
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(solverLink));
 				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive(js.getCompleteJobPairs()));
-				entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
-				entry.add(new JsonPrimitive(js.getCorrectJobPairs()));
+				entry.add(new JsonPrimitive(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs()));
 				entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
-				entry.add(new JsonPrimitive(js.getFailedJobPairs()));
-				entry.add(new JsonPrimitive(js.getTime()));
+				entry.add(new JsonPrimitive(js.getResourceOutJobPairs()));
+
+				entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+				if (wallTime) {
+					entry.add(new JsonPrimitive(js.getWallTime()));
+				} else {
+					entry.add(new JsonPrimitive(js.getCpuTime()));
+				}
 				entry.add(new JsonPrimitive(pairsInSpaceLink));
 				dataTablePageEntries.add(entry);
 			} else {
@@ -2457,8 +2461,12 @@ public class RESTHelpers {
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(solverLink));
 				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive((js.getCorrectJobPairs()) +" / "+js.getTotalJobPairs() ));
-				entry.add(new JsonPrimitive(js.getTime()));
+				entry.add(new JsonPrimitive((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs() ));
+				if (wallTime) {
+					entry.add(new JsonPrimitive(js.getWallTime()));
+				} else {
+					entry.add(new JsonPrimitive(js.getCpuTime()));
+				}
 				dataTablePageEntries.add(entry);
 			}
 			

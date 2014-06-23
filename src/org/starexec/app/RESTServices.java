@@ -13,7 +13,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -595,9 +597,9 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}")
+	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		int status=JobSecurity.canUserSeeJob(jobId, userId);
@@ -607,7 +609,8 @@ public class RESTServices {
 		
 		
 		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,shortFormat);
+
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,shortFormat,wallclock);
 
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
@@ -1631,45 +1634,53 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
 	
-	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
-		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
-				|| !Util.paramExists("copyToSubspaces", request)
-				|| !Util.paramExists("copy", request)
-				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
-				|| !Validator.isValidBool(request.getParameter("copy"))){
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
-		
-		// Get the id of the user who initiated the request
-		int requestUserId = SessionUtil.getUserId(request);
-		
-		// Get the space the solver is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
-		
-		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
-		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
-		
-		//Get the flag that indicates whether the solver is being copied or linked
-		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
-		// Convert the solvers to copy to an int list
-		List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
-		
+	public String copySolverToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request,@Context HttpServletResponse response) {
+		log.debug("entering the copy function");
+		try {
+			// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+			if(null == request.getParameterValues("selectedIds[]") 
+					|| !Util.paramExists("fromSpace", request)
+					|| !Util.paramExists("copyToSubspaces", request)
+					|| !Util.paramExists("copy", request)
+					|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
+					|| !Validator.isValidBool(request.getParameter("copy"))){
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
 			
-		int status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
-		if (status!=0) {
-			return gson.toJson(status);
+			// Get the id of the user who initiated the request
+			int requestUserId = SessionUtil.getUserId(request);
+			
+			// Get the space the solver is being copied from
+			int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
+			
+			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
+			boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
+			
+			//Get the flag that indicates whether the solver is being copied or linked
+			boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
+			// Convert the solvers to copy to an int list
+			List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
+			
+				
+			int status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
+			if (status!=0) {
+				return gson.toJson(status);
+			}
+			if (copy) {
+				List<Solver> oldSolvers=Solvers.get(selectedSolvers);
+				List<Integer>newSolverIds=new ArrayList<Integer>();
+				newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
+				selectedSolvers=newSolverIds;
+				response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));		
+			}
+			
+			//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
+			return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		if (copy) {
-			List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-			List<Integer>newSolverIds=new ArrayList<Integer>();
-			newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
-			selectedSolvers=newSolverIds;
-		}
-		//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
-		return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-		
+		return gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1691,7 +1702,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
-	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") 
@@ -1718,7 +1729,10 @@ public class RESTServices {
 		}
 		if (copy) {
 			List<Benchmark> oldBenchs=Benchmarks.get(selectedBenchs,true);
-			Benchmarks.copyBenchmarks(oldBenchs, requestUserId, spaceId);		
+			List<Integer> benches=Benchmarks.copyBenchmarks(oldBenchs, requestUserId, spaceId);	
+			response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(benches)));
+
+			
 			return gson.toJson(0);
 		} else {
 			// Return a value based on results from database operation
@@ -2843,7 +2857,7 @@ public class RESTServices {
 	@POST
 	@Path("/spaces/{spaceId}/copySpace")
 	@Produces("application/json")
-	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("fromSpace", request)
@@ -2866,7 +2880,7 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-
+		List<Integer>newSpaceIds = new ArrayList<Integer>();
 		// Add the subSpaces to the destination space
 		if (!copyHierarchy) {
 			for (int id : selectedSubSpaces) {
@@ -2875,15 +2889,22 @@ public class RESTServices {
 				if (newSpaceId == 0){
 					return gson.toJson(ERROR_DATABASE);
 				}
+				newSpaceIds.add(newSpaceId);
+
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
+				//TODO: Should this return a list of ids of every space in the hierarchy?
 				int newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
 				if (newSpaceId == 0){
 					return gson.toJson(ERROR_DATABASE);
 				}
+				newSpaceIds.add(newSpaceId);
+
 			}
 		}
+		response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(newSpaceIds)));
+
 		return gson.toJson(0);
 	}
 	
@@ -3255,27 +3276,30 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
+		boolean success=false;
 		if (level.equalsIgnoreCase("trace")) {
-			LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
 		} else if (level.equalsIgnoreCase("debug")) {
-			LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
 		} else if (level.equalsIgnoreCase("info")) {
-			LoggingManager.setLoggingLevelForClass(Level.INFO,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.INFO,className);
 		} else if (level.equalsIgnoreCase("error")) {
-			LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
 		} else if(level.equalsIgnoreCase("fatal")) {
-			LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
 		} else if (level.equalsIgnoreCase("off")) {
-			LoggingManager.setLoggingLevelForClass(Level.OFF,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.OFF,className);
 		} else if (level.equalsIgnoreCase("warn")) {
-			LoggingManager.setLoggingLevelForClass(Level.WARN,className);
+			success=LoggingManager.setLoggingLevelForClass(Level.WARN,className);
 		} else if (level.equalsIgnoreCase("clear")) {
-			LoggingManager.setLoggingLevelForClass(null,className);
+			success=LoggingManager.setLoggingLevelForClass(null,className);
 		} else {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		return gson.toJson(0);
+		if (!success) {
+			log.debug("could not find logger for class "+className);
+		}
+		return success ? gson.toJson(0) : gson.toJson(ERROR_INVALID_PARAMS);
 	}
 	
 	//Allows the administrator to set the current logging level across the entire system.

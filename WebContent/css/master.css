@@ -275,7 +275,8 @@ ul.horizontal li {
 
 
 #pageHeader nav ul li:hover {
-	background-color: #3b0264;
+/* 	background-color: #3b0264; */
+	background-color: #ae0000;
 }
 
 /******************** Main Submenus *************************/
@@ -302,7 +303,8 @@ ul.horizontal li {
 }
 
 #pageHeader nav ul li ul.subnav li:hover{
-	background: #dc6f04;
+	/* background: #dc6f04; */
+	background: rgb(230, 46, 37);
 }
 
 #pageHeader nav ul li ul.subnav li a {

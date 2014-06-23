@@ -1,0 +1,55 @@
+<h1>Uploading benchmarks</h1>
+
+<p>Benchmarks are single text files that are fed to solvers when jobs are created. 
+The name of a benchmark can be any legal file name in Linux, with a maximum length 
+of 255 characters.
+Benchmarks must be uploaded as an archive in one of the following archive formats 
+(and have the corresponding suffix): 
+<code>tar</code>, <code>tar.gz</code>, <code>tgz</code>, and <code>zip</code>.
+The archive can contain multiple files and directories. 
+However, every file contained in the archive will be treated as a benchmark,
+so make sure to remove any non-benchmark files before creating the archive.
+</p>
+
+<h2>Benchmarks info</h2>
+
+<p>To upload benchmarks navigate to a space where you have permissions to do so
+and choose the action "upload benchmarks" from the list at the bottom of the space 
+explorer page.
+Once you do that, you will be asked for several pieces of information, 
+as described next.
+
+<ul>
+<li>You specify if you want upload the benchmarks from a local disk or from a web address.
+</li>
+<li>You specify how one of two ways to treat the directory structure of the archive:
+ignore it or convert it to a space structure.
+In the first case, StarExec will recursively find all files within the archive and 
+add them to the destination space. 
+In the second case, for every (sub)directory in your archive, StarExec will create 
+a space with the same name and place the directory's file in that space.
+(Any files in the archive's top level directory will be placed directy in the 
+chosen destination space.)
+</li>
+<li>You set the default permissions for any spaces that are created as 
+a result of the benchmark upload.
+See the <a href="https://wiki.uiowa.edu/display/stardev/User+Guide#UserGuide-Permissions">User Guide</a> for more details on permissions.
+</li>
+<li>You specify the type of benchmarks you are uploading. Each benchmark will be 
+validated by a benchmark processor corresponding to that type.
+</li>
+<li>You choose whether to allow other users who can see your benchmarks 
+to download the benchmarks you are uploading, or otherwise see their contents. 
+</li>
+<li>You specify if the benchmarks are dependent on a previously uploaded set 
+of benchmarks, such as a set of axioms.
+If so, you also chose from a list the root space for those previous benchmarks. 
+</li>
+</ul>
+</p>
+
+<p>After the archive is uploaded, you will be taken to an upload status page 
+that will update you on the progress of processing your upload and inform you 
+if any benchmarks fail validation.
+</p>
+

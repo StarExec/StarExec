@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,15 +55,17 @@ public class UploadSpaceXML extends HttpServlet {
 					return;
 				} 
 				
-				BatchUtil result = this.handleXMLFile(userId, form);				
+				List<Integer> ids = this.handleXMLFile(userId, form);				
 			
 				// Note: Inherit users is handled in BatchUtil's createSpaceFromElement(...)
 				
 				// Redirect based on success/failure
-				if(result.getSpaceCreationSuccess()) {
+				if(ids!=null) {
+					response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(ids)));
+
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Space XML - " + result.getErrorMessage());	
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Space XML - ");// + result.getErrorMessage());	
 				}									
 			} else {
 				// Got a non multi-part request, invalid
@@ -79,7 +84,7 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	public BatchUtil handleXMLFile(int userId, HashMap<String, Object> form) throws Exception {
+	public List<Integer> handleXMLFile(int userId, HashMap<String, Object> form) throws Exception {
 		try {
 			log.debug("Handling Upload of XML File from User " + userId);
 			FileItem item = (FileItem)form.get(UploadSpaceXML.UPLOAD_FILE);		
@@ -103,12 +108,21 @@ public class UploadSpaceXML extends HttpServlet {
 			@SuppressWarnings("unused")
 			Boolean result = false;
 			Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
+			List<Integer> spaceIds=new ArrayList<Integer>();
 			for (File file:uniqueDir.listFiles())
 			{
-				result = batchUtil.createSpacesFromFile(file, userId, spaceId);		
+				List<Integer> current=new ArrayList<Integer>();
+				
+				current = batchUtil.createSpacesFromFile(file, userId, spaceId);
+				if (current!=null) {
+					spaceIds.addAll(current);
+				}
 			}
+			if (batchUtil.getSpaceCreationSuccess()) {
+				return spaceIds;
 
-			return batchUtil;
+			}
+			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}

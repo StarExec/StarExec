@@ -1,19 +1,33 @@
 var jobSpaceId; //stores the ID of the job space that is currently selected from the space viewer
 var jobId; //the ID of the job being viewed
 var panelArray=null;
+var useWallclock=true;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");	
 	jobSpaceId=$("#spaceId").attr("value");
 
 	//update the tables every 5 seconds
 	setInterval(function() {
-		for (i=0;i<panelArray.length;i++) {
-			panelArray[i].fnReloadAjax(null,null,true);
-		}
+		refreshPanels();
 	},5000);
 	initUI();
 	initializePanels();
 });
+
+function setTimeButtonText(){
+	if (useWallclock){
+		$("#changeTime .ui-button-text").html("use CPU time");
+	} else {
+		$("#changeTime .ui-button-text").html("use wall time");
+	}
+}
+
+function refreshPanels(){
+	for (i=0;i<panelArray.length;i++) {
+		panelArray[i].fnReloadAjax(null,null,true);
+	}
+}
+
 
 function initUI() {
 	$("#collapsePanels").button( {
@@ -26,6 +40,17 @@ function initUI() {
 			primary: "ui-icon-folder-open"
 		}
 	}) ;
+	$("#changeTime").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
+	
+	});
+	$("#changeTime").click(function() {
+		useWallclock=!useWallclock;
+		setTimeButtonText();
+		refreshPanels();
+	});
 	$("#pageHeader").hide();
 	$("#pageFooter").hide();
 	$("#collapsePanels").click(function() {
@@ -66,6 +91,7 @@ function getPanelTable(space) {
 }
 
 function initializePanels() {
+	extendDataTableFunctions();
 	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+jobSpaceId,function(spaces) {
 		panelArray=new Array();		
 		for (i=0;i<spaces.length;i++) {
@@ -80,7 +106,7 @@ function initializePanels() {
 		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
 		        "iDisplayLength": 1000, // make sure we show every entry
-		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true",
+		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/",
 		        "sServerMethod" : "POST",
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });
@@ -95,13 +121,7 @@ function initializePanels() {
 		$(".panelField").expandable();
 	});
 	
-
-	
 }
-
-
-	
-
 
 
 /**
@@ -170,7 +190,7 @@ function extendDataTableFunctions(){
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(  
-			sSource,
+			sSource+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these

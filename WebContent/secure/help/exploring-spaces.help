@@ -1,6 +1,5 @@
-<h3>The Space Explorer</h3>
 
-<br>
+<h1>Exploring spaces</h1>
 
 <h2>Overview</h2>
 
@@ -12,11 +11,9 @@ you can make certain kinds of modifications to spaces.  See the
 actions at the very bottom of the right part of the page, for things
 you can do in a particular space. </p>
 
-<br>
-
 <h2>Creating spaces</h2>
 
-To create a new subspace of a space for which you have permission to
+<p>To create a new subspace of a space for which you have permission to
 add spaces (for example, your personal space in a community you have
 joined), select "add subspace" from the list of actions at the bottom
 of the space explorer page.  When adding a subspace, there are several
@@ -27,18 +24,17 @@ parent space, to become members of the new subspace.  If you choose
 the sticky leaders option, then you will always be added as a leader
 of any subspace created below the current one, even if another user
 (which you have granted permissions for adding subspaces) creates it.
+</p>
 
 <h2>Modifying spaces</h2>
 
-<h1>Copying primitives</h1>
-
-<p>To copy primitives (users, solvers, benchmarks, or jobs), select them
+<p><strong>Copying primitives.</strong>
+To copy primitives (users, solvers, benchmarks, or jobs), select them
 from the main panel of the space explorer, and then drag them to the
 desired space in the tree view on the left part of the page.</p>
 
-<h1>Changing permissions</h1>
-
-<p>If you are a space leader (typically if you created a space), you
+<p><strong>Changing permissions.</strong>
+If you are a space leader (typically if you created a space), you
 can change the permissions a user in your space has for modifying that
 space.  To do this, move your mouse over the user in the list of users
 shown in the main panel of the space explorer page.  A tooltip menu
@@ -51,5 +47,7 @@ selecting "edit space" from the list of actions at the bottom of the
 space explorer page.</p>
 
 
-
+<!--
 <p>[more documentation to come]</p>
+-->
+
