@@ -99,10 +99,10 @@ public class JobUtil {
 					errorMessage = "Job elements must include a 'name' attribute.";
 					return null;
 				}
-				log.debug("Space Name = " + name);
-				if (name.length()<2){
+				log.debug("Job Name = " + name);
+				if (name.length()<1){
 					log.debug("Name was not long enough");
-					errorMessage = name + "is not a valid name.  It must have two characters.";
+					errorMessage = name + "is not a valid name.  It must have one characters.";
 					return null;
 				}
 				
@@ -245,7 +245,7 @@ public class JobUtil {
 		
 		}
 		catch (Exception e) {
-			log.error(e);
+			log.error(e.getMessage(),e);
 			errorMessage = "Something went wrong when creating your job.";
 			return -1;
 		}

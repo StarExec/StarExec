@@ -23,7 +23,6 @@ class JsonHandler {
 		    builder.append(line).append("\n");
 		}
 		JsonParser parser=new JsonParser();
-		System.out.println(builder.toString());
 		return parser.parse(builder.toString());
 		
 	}

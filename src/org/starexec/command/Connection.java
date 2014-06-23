@@ -507,7 +507,7 @@ public class Connection {
 			}
 			return ids;
 		} catch (Exception e) {
-		    System.out.println("Connection.java : "+e);
+		    //System.out.println("Connection.java : "+e);
 		    ids.add(Status.ERROR_SERVER);  
 			return ids;
 		}
@@ -1125,12 +1125,11 @@ public class Connection {
 				return fail;
 			} 
 			else {
-				System.out.println("fail");
 				fail.add(Status.ERROR_SERVER);
 				return fail;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			fail.add(Status.ERROR_SERVER);
 			return fail;
 		}
@@ -1293,8 +1292,6 @@ public class Connection {
 	    **/
 		
 	    HttpResponse response=client.execute(post);
-
-			
 			
 	    setSessionIDIfExists(response.getAllHeaders());
 			
@@ -1306,10 +1303,7 @@ public class Connection {
 		System.out.println(line);
 		
 	    }
-	    
-			
-	    
-			
+
 	    int code = response.getStatusLine().getStatusCode();
 	    //if space, gives 200 code.  if job, gives 302
 	    if (code !=200 && code != 302 ) {
@@ -1330,8 +1324,7 @@ public class Connection {
 	 * Lists the IDs and names of some kind of primitives in a given space
 	 * @param urlParams Parameters to be encoded into the URL to send to the server
 	 * @param commandParams Parameters given by the user at the command line
-	 * @return An integer error code with 0 indicating success and a negative number indicating an
-	 * error
+	 * @return A HashMap mapping integer ids to string names
 	 * @author Eric Burns
 	 */
 	protected HashMap<Integer,String> getPrims(Integer spaceID, Integer limit, boolean forUser, String type) {

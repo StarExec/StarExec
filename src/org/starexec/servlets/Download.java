@@ -192,7 +192,7 @@ public class Download extends HttpServlet {
 				Integer since=null;
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
-					System.out.println("found since = "+lastSeen);
+					//System.out.println("found since = "+lastSeen);
 				}
 				shortName="Job"+jobId+"_output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");

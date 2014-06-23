@@ -119,8 +119,8 @@ public class UploadJobXML extends HttpServlet {
 			}
 			if (jobUtil.getJobCreationSuccess()) {
 				return jobIds;
-
 			} 
+			log.debug(jobUtil.getErrorMessage());
 			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

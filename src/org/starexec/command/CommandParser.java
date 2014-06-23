@@ -80,8 +80,8 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML) || c.equals(R.COMMAND_PUSHJOBXML)) {
-				
-			    ids=parser.uploadXML(commandParams,false);
+				boolean isJobXML= c.equals(R.COMMAND_PUSHJOBXML);
+			    ids=parser.uploadXML(commandParams,isJobXML);
 			    if (ids.size()==0){
 			    	serverStatus=Status.ERROR_INTERNAL;
 			    } else {
