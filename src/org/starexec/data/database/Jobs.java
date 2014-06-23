@@ -2895,8 +2895,7 @@ public class Jobs {
 			//update stats info for entry that current job-pair belongs to
 			SolverStats curSolver=SolverStats.get(key);
 			StatusCode statusCode=jp.getStatus().getCode();
-			curSolver.incrementWallTime(jp.getWallclockTime());
-			curSolver.incrementCpuTime(jp.getCpuTime());
+			
 			if ( statusCode.failed()) {
 			    curSolver.incrementFailedJobPairs();
 			} 
@@ -2921,11 +2920,16 @@ public class Jobs {
 				   			continue;
 				   		}
 				   		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
-				   			curSolver.incrementIncorrectJobPairs();
+				   			
+							curSolver.incrementIncorrectJobPairs();
 			    		} else {
-			    			curSolver.incrementCorrectJobPairs();
+			    			curSolver.incrementWallTime(jp.getWallclockTime());
+							curSolver.incrementCpuTime(jp.getCpuTime());
+							curSolver.incrementCorrectJobPairs();
 			    		}
 				   	} else {
+						curSolver.incrementWallTime(jp.getWallclockTime());
+						curSolver.incrementCpuTime(jp.getCpuTime());
 				   		//we mark ones without the attrs as correct
 		    			curSolver.incrementCorrectJobPairs();
 
