@@ -1867,7 +1867,7 @@ public class Jobs {
 			    
 			    jp.getStatus().setCode(results.getInt("status_code"));
 			    jp.getBench().setId(results.getInt("bench_id"));
-			    jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
+			    jp.getConfiguration().setId(results.getInt("config_id"));
 			    returnList.add(jp);
 			}			
 			Common.safeClose(results);
