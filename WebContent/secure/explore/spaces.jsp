@@ -31,11 +31,11 @@
 	
 	
 %>
-<star:template title="space explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
+<star:template title="Space Explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
-		<h3>spaces</h3>
+		<h3>Spaces</h3>
 		 
 		<ul id="exploreList">
 		</ul>

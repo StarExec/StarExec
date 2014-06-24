@@ -210,6 +210,7 @@ ul.horizontal li {
 	margin-bottom: 8px;	
 }
 
+
 #loader {
 	position: absolute;
 	top: 10px;
@@ -352,3 +353,38 @@ ul.horizontal li {
 #helpTag.pageFound {
 	text-decoration:underline;
 }
+
+/************ Support page *************/
+
+/* maybe it should go in its own style file */
+
+#support a:link, #support a:visited {
+  color: rgb(230, 46, 37);
+	text-decoration: none;
+}
+
+#support a:hover {
+  color: white;
+  background-color: rgb(230, 46, 37);
+	border-radius:2px;
+}
+
+#support ul {
+	margin-left: 40px;
+	margin-bottom: 18px;
+}
+
+#support ul li {
+	margin-bottom: 10px;
+}
+
+#support strong {
+	color: #898989;
+}
+
+#support p {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+

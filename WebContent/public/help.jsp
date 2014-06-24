@@ -3,10 +3,11 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <star:template title="StarExec Support">
-    <br>		
-		<li>
+  <div id="support"><br>		
+	<ul id="support">
+   	<li>
 			<a href="/${starexecRoot}/secure/help.jsp">On-page documentation</a>, 
-			also available via the Help link at the top of the page
+			also available (if logged in) via the Help link at the top of the page
 			<br><br>
 		</li>
 		<li>
@@ -33,6 +34,6 @@
 			for those intestered in development aspects
 			<br>
 		</li>
-		<br/>
-    <br/>
+  </ul>
+ </div>
 </star:template>

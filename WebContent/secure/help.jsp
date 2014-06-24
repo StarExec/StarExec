@@ -28,20 +28,20 @@
 <div id="helpTopics">
  <ul id="topicList">
   <li class="topicHeader">Exploring</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/exploring-spaces.help">Exploring spaces</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/exploring-communities.help">Exploring communities</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/checking-cluster.help">Checking cluster status</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/cluster.help">Checking cluster status</a></li>
   <li class="topicHeader">Jobs</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/running-jobs.help">Running jobs</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-results.help">Viewing results</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/job.help">Running jobs</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/job.help">Viewing results</a></li>
   <li class="topicHeader">Solvers</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/uploading-solvers.help">Uploading solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-solvers.help">Viewing solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/editing-solvers.help">Editing solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/solver.help">Uploading solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
   <li class="topicHeader">Benchmarks</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/uploading-benchmarks.help">Uploading benchmarks</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/viewing-benchmarks.help">Viewing benchmarks</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/editing-benchmarks.help">Editing benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Uploading benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/benchmark.help">Viewing benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/edit/benchmark.help">Editing benchmarks</a></li>
   <li class="topicHeader">General</li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/input-restrictions.help">Input restrictions</a></li>
 </ul>
