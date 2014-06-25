@@ -124,7 +124,6 @@ public class JobPairs {
 		return false;
 	}
 	
-	//TODO: Is this secure? What permissions does this script have?
 	/**
 	 * Runs the given post processor on the given pair and returns the properties that were obtained
 	 * @param pairId The ID of the pair in question
@@ -242,15 +241,14 @@ public class JobPairs {
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
 	 */ 
-	private static int compareJobPairInts(JobPair jp1, JobPair jp2, int sortIndex, boolean ASC) {
+	private static int compareJobPairNums(JobPair jp1, JobPair jp2, boolean ASC) {
 		int answer=0;
 		try {
 			double db1=0;
 			double db2=0;
-			if (sortIndex==2) {
-				db1=jp1.getWallclockTime();
-				db2=jp2.getWallclockTime();
-			}
+			db1=jp1.getWallclockTime();
+			db2=jp2.getWallclockTime();
+			
 			//if db1> db2, then db2 should go first
 			if (db1>db2) {
 				answer=1;
@@ -270,9 +268,11 @@ public class JobPairs {
 	 * @param jp1 The first job pair
 	 * @param jp2 The second job pair
 	 * @param sortIndex the value to sort on
-	 * 0 = benchmark name
-	 * 1 = status name
-	 * 3 = starexec-result attr
+	 * 0 = solver name
+	 * 1 = config name
+	 * 2 = benchmark name
+	 * 3 = status name
+	 * 5 = starexec-result attr
 	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
@@ -282,16 +282,22 @@ public class JobPairs {
 		try {
 			String str1=null;
 			String str2=null;
-			if (sortIndex==1) {
+			if (sortIndex==3) {
 				str1=jp1.getStatus().getStatus();
 				str2=jp2.getStatus().getStatus();
 			}
-			else if (sortIndex==3) {
+			else if (sortIndex==5) {
 				str1=jp1.getAttributes().getProperty(R.STAREXEC_RESULT);
 				str2=jp2.getAttributes().getProperty(R.STAREXEC_RESULT);
-			} else {
+			} else if (sortIndex==2) {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
+			} else if (sortIndex==1) {
+				str1=jp1.getConfiguration().getName();
+				str2=jp2.getConfiguration().getName();
+			} else {
+				str1=jp1.getSolver().getName();
+				str2=jp2.getSolver().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			if (str1.compareTo(str2)>0) {
@@ -327,7 +333,8 @@ public class JobPairs {
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
 			try {
-				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)) {
+				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
+						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery)) {
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
@@ -709,11 +716,13 @@ public class JobPairs {
 	 * containing all the JobPairs
 	 * @param list1 The first list to merge
 	 * @param list2 The second list to merge
-	 * @param sortColumn The column to sort on. 0 = benchmark name
-	 * 0 = benchmark name
-	 * 1 = status name
-	 * 2 = wallclock time
-	 * 3 = starexec-result attr
+	 * @param sortColumn The column to sort on.
+	 * 0 = solver name
+	 * 1 = config name
+	 * 2 = benchmark name
+	 * 3 = status name
+	 * 4 = wallclock time
+	 * 5 = starexec-result attr
 	 * any other = solver name
 	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
 	 * @return A single list containing all the elements of lists 1 and 2 in sorted order
@@ -725,10 +734,10 @@ public class JobPairs {
 		int first;
 		List<JobPair> mergedList=new ArrayList<JobPair>();
 		while (list1Index<list1.size() && list2Index<list2.size()) {
-			if (sortColumn!=2) {
+			if (sortColumn!=4) {
 				first=compareJobPairStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
 			} else {
-				first=compareJobPairInts(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
+				first=compareJobPairNums(list1.get(list1Index),list2.get(list2Index),ASC);
 			}
 			if (first==0) {
 				mergedList.add(list1.get(list1Index));

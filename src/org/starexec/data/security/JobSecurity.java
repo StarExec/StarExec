@@ -57,6 +57,18 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	public static int canUserRerunPairs(int jobId, int userId) {
+		Job job=Jobs.get(jobId);
+		if (job==null) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		boolean isAdmin=Users.isAdmin(userId);
+		
+		if (job.getUserId()!=userId && !isAdmin) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
 	
 	/**
 	 * Checks to see if the given user has permission to pause the given job

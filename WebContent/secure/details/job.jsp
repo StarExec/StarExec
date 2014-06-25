@@ -140,6 +140,7 @@
 							<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If the result is starexec-unknown it is not counted">solved</span></th>
 							<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the result is starexec-unknown it is not counted.">wrong</span></th>
 							<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+							<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 							<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run, are running right now, or had a system error, which does not include timeouts and memouts">incomplete</span></th>
 							<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
 							<th class="pairsInSpaceHead">pairs</th>
@@ -296,7 +297,8 @@
 			<fieldset id="actionField">
 				<legend>actions</legend>
 				<ul id="actionList">
-					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
+				<!-- TODO: Remove the since parameter here -->
+					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}&since=1" >job output</a></li>
 					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${jobId}" >job xml download</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
 					<c:if test="${isAdmin}">

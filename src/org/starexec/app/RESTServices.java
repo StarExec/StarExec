@@ -66,6 +66,7 @@ import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.test.TestManager;
@@ -328,6 +329,47 @@ public class RESTServices {
 		
 		
 		return "not available";
+	}
+	
+	/**
+	 * Reruns all the pairs in the given job that have the given status code
+	 * @param id The ID of the job to rerun pairs for
+	 * @param statusCode The status code that all the pairs to be rerun have curently
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunpairs/{id}/{status}")
+	@Produces("application/json")	
+	public String rerunJobPairs(@PathParam("id") int id, @PathParam("status") int statusCode, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunPairs(id, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		return Jobs.setPairsToPending(id, statusCode) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	/**
+	 * Reruns all the pairs in the given job that have the given status code and have 0 as their runtime
+	 * @param id The ID of the job to rerun pairs for
+	 * @param statusCode The status code that all the pairs to be rerun have curently
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunpairs/{id}")
+	@Produces("application/json")	
+	public String rerunTimelessJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunPairs(id, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		return Jobs.setTimelessPairsToPending(id, StatusCode.STATUS_COMPLETE.getVal()) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
 	}
 	
 	/**

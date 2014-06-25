@@ -45,6 +45,8 @@
 		<table id="pairTbl" class="shaded">
 			<thead>
 				<tr>
+					<th id="solverHead">solver</th>
+					<th id="configHead">config</th>
 					<th id="benchHead">benchmark</th>
 					<th>status</th>
 					<th>time</th>

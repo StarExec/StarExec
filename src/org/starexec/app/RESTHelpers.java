@@ -2445,7 +2445,7 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs()));
 				entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
 				entry.add(new JsonPrimitive(js.getResourceOutJobPairs()));
-
+				entry.add(new JsonPrimitive(js.getUnknown()));
 				entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
 				if (wallTime) {
 					entry.add(new JsonPrimitive(js.getWallTime()));

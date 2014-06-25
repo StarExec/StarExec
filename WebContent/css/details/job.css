@@ -46,31 +46,31 @@ thead {
 }
 
 #solveTbl > thead {
-    font-size: 95%;
+    font-size: 90%;
 }
 
 .solvedHead, .resourceHead {
-	width: 13%;
+	width: 11%;
 	max-width:11%;
 }
 
 .incompleteHead {
-	width: 16%;
+	width: 18%;
 	max-width:18%;
 }
 
 
-.configHead { 
+.configHead, .unknownHead { 
 	width: 10%;
 	max-width:10%;
 }
 
 .solverHead, .wrongHead {
-	width: 12%;
+	width: 10%;
 	max-width:10%;
 }
 .timeHead, .pairsInSpaceHead {
-	width: 12%;
+	width: 10%;
 	max-width:10%;
 }
 

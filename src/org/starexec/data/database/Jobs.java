@@ -483,6 +483,9 @@ public class Jobs {
 			log.debug("stats already cached in database");
 			return stats;
 		}
+		//we will cache the stats only if the job is complete before
+		boolean isJobComplete=Jobs.isJobComplete(jobId);
+
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
 		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobSpaceId);
@@ -503,11 +506,10 @@ public class Jobs {
 			}
 		}
 		
-		
-		
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
-		
-		saveStats(jobId,jobSpaceId,newStats);
+		if (isJobComplete) {
+			saveStats(jobId,jobSpaceId,newStats);
+		}
 		
 		return newStats;
 	}
@@ -1335,6 +1337,39 @@ public class Jobs {
 		return null;
 	}
 	
+	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results) {
+		List<JobPair> pairs = new ArrayList<JobPair>();
+
+		try{
+			while (results.next()) {
+				JobPair jp = new JobPair();
+				jp.setJobId(jobId);
+				jp.setId(results.getInt("id"));
+				jp.setWallclockTime(results.getDouble("wallclock"));
+				jp.setCpuUsage(results.getDouble("cpu"));
+				Benchmark bench = jp.getBench();
+				bench.setId(results.getInt("bench_id"));
+				bench.setName(results.getString("bench_name"));
+				
+				jp.getSolver().setId(results.getInt("solver_id"));
+				jp.getSolver().setName(results.getString("solver_name"));
+				jp.getConfiguration().setId(results.getInt("config_id"));
+				jp.getConfiguration().setName(results.getString("config_name"));
+				jp.getSolver().addConfiguration(jp.getConfiguration());
+				Status status = jp.getStatus();
+				status.setCode(results.getInt("status_code"));
+
+				Properties attributes = jp.getAttributes();
+				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+				pairs.add(jp);	
+			}
+			return pairs;
+		} catch (Exception e) {
+			log.error("getJobPairsForDataTable says "+e.getMessage(),e);
+		}
+
+		return null;
+	}
 	/**
 	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
 	 * and used the configuration with the given ID
@@ -1344,8 +1379,49 @@ public class Jobs {
 	 * @return A List of JobPair objects
 	 * @author Eric Burns
 	 */
-	
 	public static List<JobPair> getJobPairsForTableByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
+		return getJobPairsForTableInJobSpace(jobId,jobSpaceId,configId,hierarchy,"{CALL GetJobPairsForTableByConfigInJobSpace(?, ?)}");
+	}
+	
+	/**
+	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
+	 * and used the solver with the given ID
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job_space in question
+	 * @param solverId The ID of the solver in question
+	 * @return A List of JobPair objects
+	 * @author Eric Burns
+	 */
+	
+	public static List<JobPair> getJobPairsForTableBySolverInJobSpace(int jobId,int jobSpaceId, int solverId, boolean hierarchy) {
+		return getJobPairsForTableInJobSpace(jobId,jobSpaceId,solverId,hierarchy,"{CALL GetJobPairsForTableBySolverInJobSpace(?, ?)}");
+	}
+	
+	/**
+	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
+	 * and had the given status_code
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The ID of the job_space in question
+	 * @param status The status_code in question
+	 * @return A List of JobPair objects
+	 * @author Eric Burns
+	 */
+	
+	public static List<JobPair> getJobPairsForTableByStatusInJobSpace(int jobId,int jobSpaceId, int status, boolean hierarchy) {
+		return getJobPairsForTableInJobSpace(jobId,jobSpaceId,status,hierarchy,"{CALL GetJobPairsForTableByStatusInJobSpace(?, ?)}");
+	}
+	
+	/**
+	 * Gets all the job pairs necessary to view in a datatable for a job space 
+	 * @param jobId The id of the job in question
+	 * @param jobSpaceId The id of the job_space id in question
+	 * @param id
+	 * @param hierarchy Get pairs for the full hierarchy if true
+	 * @param query The SQL query that will be called
+	 * @return
+	 */
+	
+	private static List<JobPair> getJobPairsForTableInJobSpace(int jobId,int jobSpaceId, int id, boolean hierarchy, String query) {
 		long a=System.currentTimeMillis();
 		log.debug("beginning function getJobPairsForTableByConfigInJobSpace");
 		Connection con = null;	
@@ -1355,41 +1431,21 @@ public class Jobs {
 		try {			
 			con = Common.getConnection();	
 
-			log.info("getting detailed pairs for job " + jobId +" with configId = "+configId+" in space "+jobSpaceId);
+			log.info("getting detailed pairs for job " + jobId +" with configId = "+id+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			procedure = con.prepareCall("{CALL GetJobPairsForTableByConfigInJobSpace(?, ?)}");
+			procedure = con.prepareCall(query);
 			procedure.setInt(1,jobSpaceId);
-			procedure.setInt(2,configId);
+			procedure.setInt(2,id);
 
 			results = procedure.executeQuery();
-			log.debug("executing query took "+(System.currentTimeMillis()-a));
-			List<JobPair> pairs = new ArrayList<JobPair>();
-			
-			while (results.next()) {
-				JobPair jp = new JobPair();
-				jp.setJobId(jobId);
-				jp.setId(results.getInt("id"));
-				jp.setWallclockTime(results.getDouble("wallclock"));
-				Benchmark bench = jp.getBench();
-				bench.setId(results.getInt("bench_id"));
-				bench.setName(results.getString("bench_name"));
-				
-				Status status = jp.getStatus();
-				status.setCode(results.getInt("status_code"));
-
-				Properties attributes = jp.getAttributes();
-				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
-				pairs.add(jp);	
-			}
-			log.debug("processing pairs took "+(System.currentTimeMillis()-a));
-
+			List<JobPair> pairs = getJobPairsForDataTable(jobId,results);
 			
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 				log.debug("getting subspaces took "+(System.currentTimeMillis()-a));
 
 				for (Space s : subspaces) {
-					pairs.addAll(getJobPairsForTableByConfigInJobSpace(jobId,s.getId(),configId,false));
+					pairs.addAll(getJobPairsForTableInJobSpace(jobId,s.getId(),id,false,query));
 				}
 			}
 			return pairs;
@@ -2121,6 +2177,35 @@ public class Jobs {
 	}
 	
 	/**
+	 * Sets all the job pairs of a given status code and job to pending if their cpu or wallclock
+	 * time is 0. Used to rerun pairs that didn't work in an initial job run
+	 * @param jobId The id of the job in question
+	 * @param statusCode The status code of pairs that should be rerun
+	 * @return true on success and false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean setTimelessPairsToPending(int jobId, int statusCode) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetTimelessPairsToStatus(?,?,?)}");
+			procedure.setInt(1,jobId);
+			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			procedure.setInt(3,statusCode);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	} 
+	
+	
+	/**
 	 * Sets all the job pairs of a given status code and job to pending. Used to rerun
 	 * pairs that didn't work in an initial job run
 	 * @param jobId The id of the job in question
@@ -2140,7 +2225,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("setPairStatusByJob says "+e.getMessage(),e);
+			log.error("setPairsToPending says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -3117,8 +3202,6 @@ public class Jobs {
 				throw new Exception("Couldn't clear out the cache of job stats");
 			}
 
-			
-			
 			procedure=con.prepareCall("{CALL PrepareJobForPostProcessing(?,?,?,?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,processorId);
@@ -3147,6 +3230,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */	
 	public static boolean saveStats(int jobId, int jobSpaceId,List<SolverStats> stats) {
+		
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = "+jobId+" were not saved because the job is incomplete");
 			return false; //don't save stats if the job is not complete
