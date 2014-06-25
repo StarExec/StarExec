@@ -608,7 +608,7 @@ public class Download extends HttpServlet {
 
 				String [] spaces=path.split("/");
 				
-					
+				JobPairs.getFilePath(p);
 				for (int index=0;index<spaces.length;index++) {
 					zipFileName.append(spaces[index]);
 					zipFileName.append(File.separator);
