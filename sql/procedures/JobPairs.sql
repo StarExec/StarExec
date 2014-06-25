@@ -52,7 +52,7 @@ CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128))
 		SELECT id FROM nodes WHERE name=_nodeName INTO _nodeId;
 
                 -- record an error for job pairs that we think are still running on this node (they should not be, with 1 sandbox only)
-		UPDATE job_pairs SET status_code = 10 where node_id = _nodeID and status_code = 4;
+		UPDATE job_pairs SET status_code = 10 where node_id = _nodeID and (status_code=3 or status_code=4 or status_code=5);
 
 		UPDATE job_pairs SET node_id=_nodeId WHERE id = _jobPairId;
 	END //
