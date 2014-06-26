@@ -2061,6 +2061,7 @@ function checkPermissions(perms, id) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
 		$('#editSpace').fadeIn('fast');
+		$('#editSpacePermissions').fadeIn('fast');
 		$('#reserveQueue').fadeIn('fast');
 
 		handlePublicButton(id);
@@ -2068,6 +2069,7 @@ function checkPermissions(perms, id) {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
+		$('#editSpacePermissions').fadeOut('fast');
 		$('#makePublic').fadeOut('fast');
 		$('#makePrivate').fadeOut('fast');
 		$('#reserveQueue').fadeOut('fast');
@@ -2115,6 +2117,7 @@ function checkPermissions(perms, id) {
  */
 function updateButtonIds(id) {
 	$('#editSpace').attr('href', starexecRoot+"secure/edit/space.jsp?id=" + id);
+	$('#editSpacePermissions').attr('href', starexecRoot+"secure/edit/spacePermissions.jsp?id=" + id);
 	$('#addSpace').attr('href', starexecRoot+"secure/add/space.jsp?sid=" + id);
 	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
