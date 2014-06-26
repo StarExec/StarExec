@@ -32,7 +32,7 @@ function initUI() {
 	
 	$("#rerunTimelessPairs").click(function() {
 		$.post(
-				starexecRoot+"services/jobs/rerunpairs/"+jobId+,
+				starexecRoot+"services/jobs/rerunpairs/"+jobId,
 				function(returnCode) {
 					if (returnCode<0) {
 						showMessage('error',"There was an rerunning pairs for this job",5000);

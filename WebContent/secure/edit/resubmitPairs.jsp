@@ -9,7 +9,7 @@
 				
 		
 		Job j=null;
-		if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
+		//if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
 			
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			
@@ -17,13 +17,13 @@
 			request.setAttribute("jobId",jobId);
 			
 			
-		} else {
-			if (Jobs.isJobDeleted(jobId)) {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
-			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
-			}
-		}
+		//} else {
+			//if (Jobs.isJobDeleted(jobId)) {
+			//	response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
+			//} else {
+			//	response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+			//}
+		//}
 	} catch (NumberFormatException nfe) {
 		nfe.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
@@ -33,10 +33,10 @@
 	}
 %>
 
-<star:template title="rerun pairs for ${job.name}" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, edit/resubmitPairs, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
+<star:template title="rerun pairs for ${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, edit/resubmitPairs, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table">			
 	<p id="displayJobID" class="accent">id  = ${jobId}</p>
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
-		<div id="detailPanel" class="jobDetails">
+		<div id="detailPanel">
 	
 			<fieldset id="detailField">
 				<legend>select status</legend>
