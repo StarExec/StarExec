@@ -1,2 +1,0 @@
-#!/bin/bash
-mysqldump -u'root' -p'star3x3c2011!' --no-create-info prod_starexec > "`date +%d.%m.%Y_%H:%M`_backup.sql"
