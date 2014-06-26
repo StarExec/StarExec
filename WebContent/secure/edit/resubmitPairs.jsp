@@ -33,7 +33,7 @@
 	}
 %>
 
-<star:template title="rerun pairs for ${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, edit/resubmitPairs, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table">			
+<star:template title="rerun pairs for ${job.name}" js="lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, edit/resubmitPairs, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="edit/resubmitPairs, common/table">			
 	<p id="displayJobID" class="accent">id  = ${jobId}</p>
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 		<div id="detailPanel">
