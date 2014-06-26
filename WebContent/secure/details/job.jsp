@@ -297,8 +297,7 @@
 			<fieldset id="actionField">
 				<legend>actions</legend>
 				<ul id="actionList">
-				<!-- TODO: Remove the since parameter here -->
-					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}&since=1" >job output</a></li>
+					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
 					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${jobId}" >job xml download</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
 					<c:if test="${isAdmin}">
@@ -311,7 +310,7 @@
 					
 					<c:if test="${job.userId == userId or isAdmin}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
-						
+						<li><a href="/${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${jobId}" id="rerunPairs">rerun pairs</a></li>
 							<c:if test="${isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>

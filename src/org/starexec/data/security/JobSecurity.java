@@ -11,6 +11,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Status.StatusCode;
 
 public class JobSecurity {
 	
@@ -54,6 +55,17 @@ public class JobSecurity {
 			return SecurityStatusCodes.ERROR_JOB_INCOMPLETE;
 		}
 		
+		return 0;
+	}
+	
+	public static int canUserRerunPairs(int jobId, int userId, int statusode) {
+		int result= canUserRerunPairs(jobId, userId);
+		if(result!=0) {
+			return result;
+		}
+		if (statusode<StatusCode.STATUS_COMPLETE.getVal() || statusode>StatusCode.ERROR_GENERAL.getVal()) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
 		return 0;
 	}
 	

@@ -13,6 +13,7 @@ var spaceChain;   // array of space ids to trigger in order
 var spaceChainIndex=0; //the current index of the space chain
 var openDone=true;
 var spaceChainInterval;
+var usingSpaceChain=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	
@@ -62,6 +63,7 @@ function handleSpaceChain() {
 	if (spaceChain.length<2) {
 		return;
 	}
+	usingSpaceChain=true;
 	p=spaceChain[0];
 
 	spaceChainIndex=1;

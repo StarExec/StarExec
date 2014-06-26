@@ -343,7 +343,7 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String rerunJobPairs(@PathParam("id") int id, @PathParam("status") int statusCode, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserRerunPairs(id, userId);
+		int status=JobSecurity.canUserRerunPairs(id, userId,statusCode);
 		if (status!=0) {
 			return gson.toJson(status);
 		}

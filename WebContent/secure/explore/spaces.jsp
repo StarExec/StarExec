@@ -16,6 +16,9 @@
 			}
 			stringChain.delete(stringChain.length()-1,stringChain.length());
 			request.setAttribute("spaceChain",stringChain.toString());
+		} else {
+			request.setAttribute("spaceChain","1");
+
 		}
 
 	} catch (Exception e) {

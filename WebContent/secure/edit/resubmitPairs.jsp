@@ -9,7 +9,7 @@
 				
 		
 		Job j=null;
-		//if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
+		if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
 			
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			
@@ -17,13 +17,13 @@
 			request.setAttribute("jobId",jobId);
 			
 			
-		//} else {
-		//	if (Jobs.isJobDeleted(jobId)) {
-		//		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
-		//	} else {
-		//		response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
-		//	}
-		//}
+		} else {
+			if (Jobs.isJobDeleted(jobId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+			}
+		}
 	} catch (NumberFormatException nfe) {
 		nfe.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
