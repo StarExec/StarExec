@@ -216,6 +216,13 @@ function initUI(){
 		}
     });
 
+	
+	$("#rerunPairs").button({
+		icons: {
+			primary: "ui-icon-arrowreturnthick-1-e"
+		}
+    });
+	
 	$("#jobXMLDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"

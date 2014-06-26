@@ -297,9 +297,9 @@
 			<fieldset id="actionField">
 				<legend>actions</legend>
 				<ul id="actionList">
-					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${jobId}" >job output</a></li>
-					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${jobId}" >job xml download</a></li>
-					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${jobId}">job information</a></li>
+					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
+					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
+					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 					<c:if test="${isAdmin}">
 						<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
 						<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
@@ -310,7 +310,7 @@
 					
 					<c:if test="${job.userId == userId or isAdmin}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
-						<li><a href="/${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${jobId}" id="rerunPairs">rerun pairs</a></li>
+						<li><a href="/${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
 							<c:if test="${isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>
