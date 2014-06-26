@@ -2,7 +2,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <header id="pageHeader">
-	<a href="/${starexecRoot}/secure/index.jsp"><img src="/${starexecRoot}/images/starlogo.png" alt="Starexec Logo"></a>
+	<a href="/${starexecRoot}/secure/index.jsp"><img src="/${starexecRoot}/images/starlogo.png" alt="StarExec Logo"></a>
 	
 	<c:if test="${not empty user && user.role != 'unauthorized' && user.role != 'suspended'}">
 		<nav>
@@ -48,9 +48,7 @@
 			            <li class="round"><a href="/${starexecRoot}/secure/explore/cluster.jsp">Status</a></li>  			             
 			        </ul>  
 				</li>			
-				<li class="round" id="helpTab">
-					<a id="helpTag" href="/${starexecRoot}/secure/help.jsp">Help</a>
-				</li>
+				<li class="round" id="helpTab"><a id="helpTag" href="/${starexecRoot}/secure/help.jsp">Help</a></li>
 			</ul>
 		</nav>
 	</c:if>

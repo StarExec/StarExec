@@ -16,12 +16,12 @@
 			<table id="details" class="shaded">
 				<thead>
 					<tr>
-						<th>job</th>
-						<th>user</th>	
-						<th id="benchHead">benchmark</th>
-						<th>solver</th>
-						<th>config</th>
-						<th>path</th>					
+						<th>Job</th>
+						<th>User</th>	
+						<th id="benchHead">Benchmark</th>
+						<th>Solver</th>
+						<th>Config</th>
+						<th>Path</th>					
 					</tr>
 				</thead>	
 				<tbody>

@@ -1,1 +1,50 @@
-<p>Nothing yet.</p>
+<h1>Accessing benchmarks</h3>
+
+<p>To view benchmarks contained in a space navigate to the space and expand the benchmark 
+list. You will see a list of all the benchmarks in that space and their associated type.
+</p>
+
+<h2>Benchmark details</h2>
+
+<p>Click a benchmark's name to get more details on that benchmark on a new page.
+In addition to additional details about the benchmarks type, this page will show
+a number of system-level attributes (such as description, owner, size, and so on)
+for the benchmark as well as type-specific attributes.
+With a couple of exceptions (see the 
+<a href="https://wiki.uiowa.edu/display/stardev/User+Guide#UserGuide-BenchmarkTypes">
+User Guide</a>), the latter are user-defined attributes whose values are extracted 
+from the benchmark at upload time by a type-specific preprocessor previously uploaded
+by a community leader.
+</p>
+
+<h3>Benchmark content</h3>
+
+<p>Clicking on the "contents" box in the benchmark details page shows the actual 
+benchmark in a text window.
+For benchmarks that are too large to fit in that window you can also click 
+on the "popout" link to have the benchmark shown in its entirety in a new page.
+</p>
+
+
+<h3>Downloading a single benchmark</h3>
+
+<p>The benchmark details page provides also the option to save the benchmark
+on the local disk.
+</p>
+
+<h2>Downloading all benchmarks in a space</h2> 
+
+<p>To download all the benchmarks within a space navigate to that space and simply click 
+on the "download space" action.
+Then you will be given the choice to download also the solvers in that space or
+just the benchmarks.
+</p>
+
+<p>The benchmarks will be provided in a zip archive.
+You can chose whether the content of that archive should be limited to just 
+the benchmark directly contained in the space or include also all the benchmarks 
+contained in any of its subspaces.
+In the latter case, the benchmarks will be stored in a directory structure 
+that mirrors the subspace hierarchy.
+</p>
+

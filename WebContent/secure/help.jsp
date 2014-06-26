@@ -31,17 +31,17 @@
   <li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/explore/cluster.help">Checking cluster status</a></li>
+  <li class="topicHeader">Benchmarks</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Adding benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/benchmark.help">Accessing benchmarks</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/edit/benchmark.help">Editing benchmarks</a></li>
+  <li class="topicHeader">Solvers</li>
+  <li class="subject"><a href="/${starexecRoot}/secure/add/solver.help">Adding solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
   <li class="topicHeader">Jobs</li>
   <li class="subject"><a href="/${starexecRoot}/secure/add/job.help">Running jobs</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/details/job.help">Viewing results</a></li>
-  <li class="topicHeader">Solvers</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/add/solver.help">Uploading solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
-  <li class="topicHeader">Benchmarks</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Uploading benchmarks</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/details/benchmark.help">Viewing benchmarks</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/edit/benchmark.help">Editing benchmarks</a></li>
   <li class="topicHeader">General</li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/input-restrictions.help">Input restrictions</a></li>
 </ul>

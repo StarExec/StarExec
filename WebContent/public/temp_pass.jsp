@@ -1,13 +1,13 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="password reset" css="accounts/password_reset" js="accounts/temp_pass">	
-	<p>a temporary password has been generated for you, after you login with it you can change it</p>
+<star:template title="Password reset" css="accounts/password_reset" js="accounts/temp_pass">	
+	<p>A temporary password has been generated for you - you can change it after you log in with it</p>
 	<form id="resetForm">	
 	<fieldset>			
-		<legend>password information</legend>
+		<legend>Password information</legend>
 		<table>								
 			<tr>
-				<td class="label">temporary password:</td>
+				<td class="label">Temporary password:</td>
 				<td><input id="temp_pass" type="text" readonly="readonly" value="${pwd}"/></td>
 			</tr>
 		</table>		
