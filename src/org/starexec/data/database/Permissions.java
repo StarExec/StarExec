@@ -389,6 +389,7 @@ public class Permissions {
 
 	}
 
+	
 	/**
 	 * Retrieves the user's maximum set of permissions in a space.
 	 * @param userId The user to get permissions for	

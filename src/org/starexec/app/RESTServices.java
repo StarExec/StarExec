@@ -598,6 +598,39 @@ public class RESTServices {
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
+
+	/**
+	 * Handles a request to get a test graph
+	 * @author Julio Cervantes
+	 * @return A json string containing the path to the newly created png chart as well as
+	 * an image map linking points to benchmarks
+	 */
+	@POST
+	@Path("/secure/explore/testgraph")
+	@Produces("application/json")	
+	public String getTestGraph(@Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		String chartPath = null;
+		
+		/**
+		int status= JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		**/
+		
+		chartPath=Statistics.makeTestChart();
+		if (chartPath==null) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+
+		JsonObject json=new JsonObject();
+		json.addProperty("src", chartPath);
+		
+		
+		return gson.toJson(json);
+	}
+
 	/**
 	 * Handles a request to get a solver comparison graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -2659,7 +2692,47 @@ public class RESTServices {
 		}
 	}
 	
-	
+    /**
+     * Changes the permissions of a given user for a space hierarchy
+     *@author Julio Cervantes
+     *
+     **/
+    @POST
+	@Path("/space/{spaceId}/edit/perm/hier/{userId}")
+	@Produces("application/json")
+	public String editUserPermissionsHier(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request){
+
+	    // Ensure the user attempting to edit permissions is a leader
+	    int currentUserId = SessionUtil.getUserId(request);
+	    log.info("currentUserId: " + currentUserId + ", requestChangeId: " + userId + ", spaceId: " + spaceId);
+	    List<Integer> permittedSpaces = SpaceSecurity.getUpdatePermissionSpaces(spaceId, userId, currentUserId);
+	    log.info("permittedSpaces: " + permittedSpaces);
+
+	    // Configure a new permission object
+	    Permission newPerm = new Permission(false);
+	    newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
+	    newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+	    newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
+	    newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+	    newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
+	    newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+	    newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
+	    newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+	    newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
+	    newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+	    newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));			
+	    
+	    // Update database with new permissions
+	    for(Integer permittedSpaceId : permittedSpaces){
+		if(permittedSpaceId != null){
+		    Permissions.set(userId,permittedSpaceId.intValue(),newPerm);
+		}
+	    }
+
+	    return gson.toJson(0);
+    }
+
+    
 	/**
 	 * Changes the permissions of a given user for a given space
 	 * 

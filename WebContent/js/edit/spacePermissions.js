@@ -575,76 +575,89 @@ function checkBoxes(name, value) {
 	}
 }
 
+/**
+ * 
+ * @param hier boolean should behave hierarchically?
+ **/
+function changePermissions(hier){
 
+    var url = starexecRoot+"services/space/" + spaceId + "/edit/perm/";
+    if(hier){
+	url = url + "hier/";
+    }
+    url = url + lastSelectedUserId;
+
+    $('#dialog-confirm-update').dialog('close');
+    var data = 
+	{		addBench	: $("#addBench").is(':checked'),
+			addJob		: $("#addJob").is(':checked'),
+			addSolver	: $("#addSolver").is(':checked'),
+			addSpace	: $("#addSpace").is(':checked'),
+			addUser		: $("#addUser").is(':checked'),
+			removeBench	: $("#removeBench").is(':checked'),
+			removeJob	: $("#removeJob").is(':checked'),
+			removeSolver: $("#removeSolver").is(':checked'),
+			removeSpace	: $("#removeSpace").is(':checked'),
+			removeUser	: $("#removeUser").is(':checked'),
+			isLeader 	: $("#leaderStatus").is(':checked'),
+	};
+    // Pass data to server via AJAX
+    $.post(
+	   url,
+	   data,
+	   function(returnCode) {
+	       switch (returnCode) {
+	       case 0:
+		   showMessage('success', "user's permission were successfuly updated", 5000);
+										
+		   //need to make sure data is in form populateDetails understands
+		   var newDataFormat = {perm : data};
+		   newDataFormat.perm["addBenchmark"] = newDataFormat.perm.addBench;
+		   populateDetails(newDataFormat);
+		   //window.location = starexecRoot+'secure/admin/permissions.jsp?id=' + userId;
+		   break;
+	       case 1:
+		   showMessage('error', "space details were not updated; please try again", 5000);
+		   break;
+	       case 2:
+		   showMessage('error', "only a leader of this space can modify its details", 5000);
+		   break;
+	       case 7:
+		   showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
+		   break;
+	       default:
+		   showMessage('error', "invalid parameters", 5000);
+		   break;
+	       }
+	   },
+	   "json"
+	   );
+
+}
 
 /**
  * sets up buttons in space permissions page
  * @author Julio Cervantes
  */
 function setUpButtons() {
-        $('#dialog-confirm-update').hide();
+    $('#dialog-confirm-update').hide();
 
-	$("#savePermChanges").unbind("click");
-	$("#savePermChanges").click(function(){
-		$("#dialog-confirm-update-txt").text("are you sure you want to edit this user's permissions for this space?");
+    $("#savePermChanges").unbind("click");
+    $("#savePermChanges").click(function(){
+	    $("#dialog-confirm-update-txt").text("how do you want the permission changes to take effect?");
 		
-		$("#dialog-confirm-update").dialog({
-			modal: true,
+	    $("#dialog-confirm-update").dialog({
+		    modal: true,
 			width: 380,
 			height: 165,
 			buttons: {
-				'OK': function() {
-					$('#dialog-confirm-update').dialog('close');
-					var data = 
-					{		addBench	: $("#addBench").is(':checked'),
-							addJob		: $("#addJob").is(':checked'),
-							addSolver	: $("#addSolver").is(':checked'),
-							addSpace	: $("#addSpace").is(':checked'),
-							addUser		: $("#addUser").is(':checked'),
-							removeBench	: $("#removeBench").is(':checked'),
-							removeJob	: $("#removeJob").is(':checked'),
-							removeSolver: $("#removeSolver").is(':checked'),
-							removeSpace	: $("#removeSpace").is(':checked'),
-							removeUser	: $("#removeUser").is(':checked'),
-							isLeader 	: $("#leaderStatus").is(':checked'),
-					};
-					// Pass data to server via AJAX
-					$.post(
-							starexecRoot+"services/space/" + spaceId + "/edit/perm/" + lastSelectedUserId,
-							data,
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "user's permission were successfuly updated", 5000);
-										
-										//need to make sure data is in form populateDetails understands
-										var newDataFormat = {perm : data};
-										newDataFormat.perm["addBenchmark"] = newDataFormat.perm.addBench;
-										populateDetails(newDataFormat);
-										//window.location = starexecRoot+'secure/admin/permissions.jsp?id=' + userId;
-										break;
-									case 1:
-										showMessage('error', "space details were not updated; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only a leader of this space can modify its details", 5000);
-										break;
-									case 7:
-										showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
-								}
-							},
-							"json"
-					);
-			},
-			"cancel": function() {
+			    "change only this space": function(){ changePermissions(false)},
+			    "change this space's hierarchy" : function(){changePermissions(true)},
+			    "cancel": function() {
 				
 				$(this).dialog("close");
-			}
-			}
+			    }
+		    }
 		});
 	});
 	

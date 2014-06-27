@@ -843,27 +843,66 @@ public class SpaceSecurity {
 		
 		return 0;
 	}
+    
+    /**
+     * Checks to see whether the permissions of one user in a particular space's hierarchy can be updated by another user
+     * @param spaceId The ID of the space in question
+     * @param userIdBeingUpdated The ID of the user who would have their permissions updated
+     * @param requestUserId The Id of the user making the request
+     * @return list of spaces where permissions can be changed
+     */
+    public static List<Integer> getUpdatePermissionSpaces(int spaceId, int userIdBeingUpdated, int requestUserId){
+	//TODO :  make more efficient? (right now querying database for every space in hierarchy to check permissions)
 	
-	/**
-	 * Checks to see whether the permissions of one user in a particular space can be updated by another user
-	 * @param spaceId The ID of the space in question
-	 * @param userIdBeingUpdated The ID of the user who would have their permissions updated
-	 * @param requestUserId The Id of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
-	 */
-	public static int canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId) {
-		Permission perm = Permissions.get(requestUserId, spaceId);
-		if(perm == null || !perm.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
-		}
-		
-		// Ensure the user to edit the permissions of isn't themselves a leader
-		perm = Permissions.get(userIdBeingUpdated, spaceId);
-		if(perm.isLeader() && !Users.isAdmin(requestUserId)){
-			return SecurityStatusCodes.ERROR_CANT_EDIT_LEADER_PERMS;
-		}		
-		
-		return 0;
+	
+	List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+	spaceIds.add(spaceId);
+	
+	
+	List<Space> subspaces = Spaces.trimSubSpaces(userIdBeingUpdated, Spaces.getSubSpaceHierarchy(spaceId, userIdBeingUpdated));
+	
+	for (Space s : subspaces) {
+	    spaceIds.add(s.getId());
+
 	}
+		
+	int status;
+    
+	List<Integer> permittedSpaceIds = new ArrayList<Integer>();
+	for (Integer sid : spaceIds) {
+	    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
+	    if (status==0) {
+		permittedSpaceIds.add(sid);
+	    }
+	}
+
+	log.info("nullCount: " + nullCount);
+
+	return permittedSpaceIds;
+    }
+    /**
+     * Checks to see whether the permissions of one user in a particular space can be updated by another user
+     * @param spaceId The ID of the space in question
+     * @param userIdBeingUpdated The ID of the user who would have their permissions updated
+     * @param requestUserId The Id of the user making the request
+     * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+     */
+    public static int canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId) {
+
+
+	Permission perm = Permissions.get(requestUserId, spaceId);
+	if(perm == null || !perm.isLeader()) {
+	    return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+	}
+	
+	// Ensure the user to edit the permissions of isn't themselves a leader
+	perm = Permissions.get(userIdBeingUpdated, spaceId);
+
+	if(perm.isLeader() && !Users.isAdmin(requestUserId)){
+	    return SecurityStatusCodes.ERROR_CANT_EDIT_LEADER_PERMS;
+	}		
+		
+	return 0;
+    }
 
 }
