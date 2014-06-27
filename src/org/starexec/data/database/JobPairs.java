@@ -315,7 +315,7 @@ public class JobPairs {
 	
 	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type) {
 
-		
+		log.debug("filtering pairs by type with type = "+type);
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 
 		if (type.equals("incomplete")) {
@@ -326,7 +326,7 @@ public class JobPairs {
 			}
 		} else if (type.equals("resource")) {
 			for (JobPair jp : pairs) {
-				if (jp.getStatus().getCode().statIncomplete()) {
+				if (jp.getStatus().getCode().resource()) {
 					filteredPairs.add(jp);
 				}
 			}

@@ -2,8 +2,11 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%
 	try {
-		String reference=request.getHeader("referer");
-		if (reference!=null) {
+		
+		String reference=request.getParameter("ref");
+		if (reference==null) {
+			//there was no ref parameter, so try and use the actual referer
+			reference=request.getHeader("referer");
 			int argIndex=reference.indexOf("?");
 			//first, get the referring URL down to just the path without any arguments
 			if (argIndex>=0) {
@@ -13,7 +16,12 @@
 			reference=reference.substring(0,reference.length()-4)+".help";
 			
 			reference=reference.substring(reference.indexOf("/secure/")+1);
+			
 			reference=Util.docRoot(reference);
+
+	
+		}
+		if (reference!=null) {
 			request.setAttribute("ref",reference);
 			
 		}
@@ -25,6 +33,7 @@
 <star:template title="Help Pages" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, help/help, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, help/help">			
 
 <span id="reference" href="${ref}"></span>
+
 <div id="helpTopics">
  <ul id="topicList">
   <li class="topicHeader">Exploring</li>

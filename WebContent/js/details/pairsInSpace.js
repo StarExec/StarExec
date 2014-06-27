@@ -13,8 +13,6 @@ $(document).ready(function(){
 	
 });
 
-
-
 /**
  * Initializes the user-interface
  */

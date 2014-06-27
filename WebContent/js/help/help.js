@@ -3,6 +3,13 @@ $(document).ready(function(){
 	findReferringFile();
 });
 
+//adds the help page to the url
+function setURL(i) {
+	current=window.location.pathname;
+	newURL=current.substring(0,current.indexOf("?"));
+	window.history.replaceState("current page", "",newURL+"?ref="+i);
+}
+
 /**
  * Removes the "active" class from every topic link
  */
@@ -32,6 +39,7 @@ function getHTML(URL) {
 				selectMatchingReference(stubURL);
 			} else {
 				$( "#detailPanel" ).html( data );
+				setURL(URL);
 			}
 			
 	},"html").error(function(){
