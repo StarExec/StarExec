@@ -313,6 +313,83 @@ public class JobPairs {
 		return answer;
 	}
 	
+	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type) {
+
+		
+		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+
+		if (type.equals("incomplete")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().statIncomplete()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} else if (type.equals("resource")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().statIncomplete()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} else if (type.equals("solved")) {
+			for (JobPair jp : pairs) {
+				if (JobPairs.isPairCorrect(jp)==0) {
+					filteredPairs.add(jp);
+				}
+			}
+		}  else if (type.equals("wrong")) {
+			for (JobPair jp : pairs) {
+				if (JobPairs.isPairCorrect(jp)==1) {
+					filteredPairs.add(jp);
+				}
+			}
+		}  else if (type.equals("unknown")) {
+			for (JobPair jp : pairs) {
+				if (JobPairs.isPairCorrect(jp)==2) {
+					filteredPairs.add(jp);
+				}
+			}
+		}else {
+			filteredPairs=pairs;
+		}
+		return filteredPairs;
+	}
+	/**
+	 * Checks whether a given pair is correct
+	 * @param jp
+	 * @return
+	 * -1 == pair is not complete
+	 * 0 == pair is correct
+	 * 1 == pair is incorrect
+	 * 2 == pair is unknown
+	 */
+	public static int isPairCorrect(JobPair jp) {
+		StatusCode statusCode=jp.getStatus().getCode();
+
+		if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
+			if (jp.getAttributes()!=null) {
+			   	Properties attrs = jp.getAttributes();
+			   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
+		    		//don't know the result, so don't mark as correct or incorrect.	
+			   		return 2;
+	    		} else if (attrs.containsKey(R.EXPECTED_RESULT)) {
+	    			//no result is counted as wrong
+		    		if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+			   			return 1;
+		    		} else {
+		    			return 0;
+		    		}
+			   	} else {
+				   	//if the attributes don't have an expected result, we will just mark as correct
+			   		return 0;
+
+			   	}
+		    } else {
+		    	return 0;
+		    }
+		} else {
+			return -1;
+		}
+	}
 	
 	/**
 	 * Filters a list of job pairs against some search query. The query is compared to 

@@ -1,6 +1,13 @@
-var summaryTable;
 var pairTable;
+var pairType;
+var jobId;
+var spaceId;
+var configId;
 $(document).ready(function(){
+	jobId = getParameterByName('id');
+	spaceId=getParameterByName('sid');
+	configId=getParameterByName("configid");
+	pairType=getParameterByName("pairName");
 	initUI();
 	initDataTables();
 	
@@ -24,9 +31,6 @@ function initUI(){
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
 
-
-	
-	
 }
 
 /**
@@ -44,8 +48,6 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
-	
-
 	
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
@@ -80,11 +82,9 @@ function extendDataTableFunctions(){
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	var jobId = getParameterByName('id');
-	var spaceId=getParameterByName('sid');
-	var configId=getParameterByName("configid");
+
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId,
+			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+pairType,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){

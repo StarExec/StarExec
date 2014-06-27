@@ -493,25 +493,30 @@ public class RESTServices {
 	 * Returns the next page of entries for a job pairs table
 	 *
 	 * @param jobId the id of the job to get the next page of job pairs for
+	 * @param jobspaceid The id of the job space at the root if the hierarchy we want pairs for
+	 * @param type The type of pairs to return
 	 * @param request the object containing the DataTable information
 	 * @return a JSON object representing the next page of job pair entries if successful,<br>
 	 * 		1 if the request fails parameter validation,<br> 
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		int status=JobSecurity.canUserSeeJob(jobId, userId);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
+		if (!JobSecurity.isValidGetPairType(type)) {
+			return gson.toJson(SecurityStatusCodes.ERROR_INVALID_PARAMS);
+		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}

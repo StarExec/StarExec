@@ -28,6 +28,19 @@ public class JobSecurity {
 		}
 		return 0;
 	}
+	/**
+	 * Checks whether a given string is a valid type for the pairsInSpace page
+	 * @param type The string to check
+	 * @return True if valid and false otherwise
+	 */
+	public static boolean isValidGetPairType(String type) {
+		if (type.equals("all") || type.equals("solved") || type.equals("incomplete") || type.equals("wrong") ||
+				type.equals("unknown") || type.equals("resource")) {
+			return true;
+		}
+		return false;
+		
+	}
 	
 	/**
 	 * Checks to see if the given user has permission to run a new post processor on the given job

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,6 +7,7 @@
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		int configId=Integer.parseInt(request.getParameter("configid"));
+		String type=request.getParameter("type");
 		Job j=null;
 		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
 		
@@ -15,13 +16,14 @@
 		}
 		
 		
-		if(j != null) {	
+		if(j != null && JobSecurity.isValidGetPairType(type)) {	
 			Space s=Spaces.getJobSpace(jobSpaceId);
 			request.setAttribute("space",s);
 			request.setAttribute("configId",configId);
 			Solver solver =Solvers.getSolverByConfig(configId,true);
 			request.setAttribute("solver",solver);
 			request.setAttribute("jobId", jobId);
+			request.setAttribute("pairType",type);
 		} else {
 				if (Jobs.isJobDeleted(jobId)) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -40,6 +42,7 @@
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
 	<span style="display:none" id="configId" value="${configId}" > </span>
+	<span style="display:none" id="pairType" value="${pairType}" > </span>
 	<fieldset id="#pairTblField">	
 	<legend>job pairs</legend>	
 		<table id="pairTbl" class="shaded">

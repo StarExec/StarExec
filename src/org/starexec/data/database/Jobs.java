@@ -1162,12 +1162,14 @@ public class Jobs {
 	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals) {
+	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
+			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals, String type) {
 		long a=System.currentTimeMillis();
 		//get all of the pairs first, then carry out sorting and filtering
 		//PERFMORMANCE NOTE: this call takes over 99.5% of the total time this function takes
 		List<JobPair> pairs=Jobs.getJobPairsForTableByConfigInJobSpace(jobId,jobSpaceId,configId,true);
 		log.debug("getting all the pairs by config in job space took "+(System.currentTimeMillis()-a));
+		pairs=JobPairs.filterPairsByType(pairs, type);
 		totals[0]=pairs.size();
 		List<JobPair> returnList=new ArrayList<JobPair>();
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
@@ -3019,35 +3021,16 @@ public class Jobs {
 			    curSolver.incrementCompleteJobPairs();
 			}
 			
-			
-			if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
-				if (jp.getAttributes()!=null) {
-				   	Properties attrs = jp.getAttributes();
-				   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
-			    		//don't know the result, so don't mark as correct or incorrect.	
-				   		
-		    		} else if (attrs.containsKey(R.EXPECTED_RESULT)) {
-		    			//no result is counted as wrong
-			    		if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
-				   			curSolver.incrementIncorrectJobPairs();
-			    		} else {
-			    			//time is only counted for the pairs that were correct
-			    			curSolver.incrementWallTime(jp.getWallclockTime());
-			    			curSolver.incrementCpuTime(jp.getCpuTime());
-			    			curSolver.incrementCorrectJobPairs();
-			    		}
-				   	} else {
-					   	//if the attributes don't have an expected result, we will just mark as correct
+			int correct=JobPairs.isPairCorrect(jp);
+			if (correct==0) {
+				curSolver.incrementWallTime(jp.getWallclockTime());
+    			curSolver.incrementCpuTime(jp.getCpuTime());
+    			curSolver.incrementCorrectJobPairs();
+			} else if (correct==1) {
+	   			curSolver.incrementIncorrectJobPairs();
 
-				   		//time is only counted for the pairs that are correct
-				   		curSolver.incrementWallTime(jp.getWallclockTime());
-						curSolver.incrementCpuTime(jp.getCpuTime());
-				   		//we mark ones without the attrs as correct
-		    			curSolver.incrementCorrectJobPairs();
-
-				   	}
-			    }
 			}
+			
 			   
 		}
 		

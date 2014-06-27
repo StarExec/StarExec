@@ -1061,7 +1061,7 @@ public class RESTHelpers {
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId, HttpServletRequest request) {
+			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type) {
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
 				Primitive.JOB_PAIR, request);
 		if (null == attrMap) {
@@ -1087,7 +1087,7 @@ public class RESTHelpers {
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
 						jobId, // Parent space id
-						jobSpaceId, configId, totals);
+						jobSpaceId, configId, totals,type);
 		
 		totalJobs = totals[0];
 
@@ -2430,23 +2430,75 @@ public class RESTHelpers {
 			if (!shortFormat) {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?sid="
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=all&sid="
 								+ spaceId + "&configid="
 								+ js.getConfiguration().getId() + "&id=" + jobId));
 				sb.append("\" target=\"_blank\" >");
 				sb.append("view pairs");
 				RESTHelpers.addImg(sb);
 				String pairsInSpaceLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=solved&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs());
+				RESTHelpers.addImg(sb);
+				String solvedLink = sb.toString();
+				
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=wrong&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getIncorrectJobPairs());
+				RESTHelpers.addImg(sb);
+				String wrongLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=resource&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getResourceOutJobPairs());
+				RESTHelpers.addImg(sb);
+				String resourceLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getUnknown());
+				RESTHelpers.addImg(sb);
+				String unknownLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=incomplete&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getIncompleteJobPairs());
+				RESTHelpers.addImg(sb);
+				String incompleteLink = sb.toString();
+				
 				// Create an object, and inject the above HTML, to represent an
 				// entry in the DataTable
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(solverLink));
 				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs()));
-				entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
-				entry.add(new JsonPrimitive(js.getResourceOutJobPairs()));
-				entry.add(new JsonPrimitive(js.getUnknown()));
-				entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+				entry.add(new JsonPrimitive(solvedLink));
+				entry.add(new JsonPrimitive(wrongLink));
+				entry.add(new JsonPrimitive(resourceLink));
+				entry.add(new JsonPrimitive(unknownLink));
+				entry.add(new JsonPrimitive(incompleteLink));
 				if (wallTime) {
 					entry.add(new JsonPrimitive(js.getWallTime()));
 				} else {
