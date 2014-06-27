@@ -7,7 +7,7 @@ $(document).ready(function(){
 	jobId = getParameterByName('id');
 	spaceId=getParameterByName('sid');
 	configId=getParameterByName("configid");
-	pairType=getParameterByName("pairName");
+	pairType=getParameterByName("type");
 	initUI();
 	initDataTables();
 	
