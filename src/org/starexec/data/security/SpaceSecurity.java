@@ -876,8 +876,6 @@ public class SpaceSecurity {
 	    }
 	}
 
-	log.info("nullCount: " + nullCount);
-
 	return permittedSpaceIds;
     }
     /**
