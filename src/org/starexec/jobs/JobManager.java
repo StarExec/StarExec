@@ -214,10 +214,9 @@ public abstract class JobManager {
 					it.remove();
 					continue;
 				}		
-				int pairsAtATime=Math.min(R.NUM_JOB_PAIRS_AT_A_TIME, (((R.NODE_MULTIPLIER*nodeCount)-count)/jobCount)+1);
-				pairsAtATime=Math.max(pairsAtATime, 1); //ensure we do at least something
+				
 
-				log.info("About to submit "+pairsAtATime +" pairs "
+				log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
 						+"for job " + s.job.getId() 
 						+ ", queue = "+q.getName() 
 						+ ", user = "+s.job.getUserId());
@@ -225,7 +224,7 @@ public abstract class JobManager {
 				int i = 0;
 				
 				
-				while (i < pairsAtATime && s.pairIter.hasNext()) {
+				while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 
 
 					JobPair pair = s.pairIter.next();

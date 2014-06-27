@@ -3018,18 +3018,17 @@ public class Jobs {
 			if (statusCode.complete()) {
 			    curSolver.incrementCompleteJobPairs();
 			}
-			if (statusCode.getVal()==7) {
+			
+			
+			if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
 				if (jp.getAttributes()!=null) {
 				   	Properties attrs = jp.getAttributes();
-				   	//if the attributes don't have an expected result, we don't know whether the pair
-				   	//was correct or incorrect
-			    	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.containsKey(R.EXPECTED_RESULT)) {
-			    		log.debug("found a pair with both an expected result and a result!");
-			    		if (attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
-				    		//don't know the result, so don't mark as correct or incorrect.
-				   			continue;
-				   		}
-				   		if (!attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+				   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
+			    		//don't know the result, so don't mark as correct or incorrect.	
+				   		
+		    		} else if (attrs.containsKey(R.EXPECTED_RESULT)) {
+		    			//no result is counted as wrong
+			    		if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
 				   			curSolver.incrementIncorrectJobPairs();
 			    		} else {
 			    			//time is only counted for the pairs that were correct
@@ -3038,6 +3037,8 @@ public class Jobs {
 			    			curSolver.incrementCorrectJobPairs();
 			    		}
 				   	} else {
+					   	//if the attributes don't have an expected result, we will just mark as correct
+
 				   		//time is only counted for the pairs that are correct
 				   		curSolver.incrementWallTime(jp.getWallclockTime());
 						curSolver.incrementCpuTime(jp.getCpuTime());

@@ -27,7 +27,7 @@ function initUI() {
 					if (returnCode==0) {
 						showMessage('success',"Pairs were successfully submitted to be rerun",5000);
 					} else {
-						showMessage('error',"There was an rerunning pairs for this job",5000);
+						showMessage('error',"There was an error rerunning pairs for this job",5000);
 					}
 				},
 				"json");
@@ -40,7 +40,7 @@ function initUI() {
 					if (returnCode==0) {
 						showMessage('success',"Pairs were successfully submitted to be rerun",5000);
 					} else {
-						showMessage('error',"There was an rerunning pairs for this job",5000);
+						showMessage('error',"There was an error rerunning pairs for this job",5000);
 					}
 				},
 				"json");

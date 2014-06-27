@@ -8,7 +8,6 @@ var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
-
 var spaceChain;   // array of space ids to trigger in order
 var spaceChainIndex=0; //the current index of the space chain
 var openDone=true;
@@ -16,7 +15,7 @@ var spaceChainInterval;
 var usingSpaceChain=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
-	
+	usingSpaceChain=(getSpaceChain().length>1); //check whether to turn off cookies
 	// Build the tooltip styles (i.e. dimensions, color, etc)
 	initTooltipStyles();
 
@@ -63,7 +62,6 @@ function handleSpaceChain() {
 	if (spaceChain.length<2) {
 		return;
 	}
-	usingSpaceChain=true;
 	p=spaceChain[0];
 
 	spaceChainIndex=1;
@@ -771,6 +769,8 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
 	});				
 }
 
+
+//adds the space id to the url as a parameter
 function setURL(i) {
 	current=window.location.pathname;
 	newURL=current.substring(0,current.indexOf("?"));
@@ -912,6 +912,10 @@ function getDragClone(event) {
 function initSpaceExplorer(){
 	// Set the path to the css theme for the jstree plugin
 	$.jstree._themes = starexecRoot+"css/jstree/";
+	plugins = [ "types", "themes", "json_data", "ui"];
+	if (!usingSpaceChain) {
+		plugins[4]="cookies";
+	}
 	var id;
 	// Initialize the jstree plugin for the explorer list
 	$("#exploreList").jstree({  
@@ -947,7 +951,7 @@ function initSpaceExplorer(){
 			"selected_parent_close" : "select_parent",			
 			"initially_select" : [ "1" ]			
 		},
-		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
+		"plugins" : plugins,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
@@ -956,7 +960,7 @@ function initSpaceExplorer(){
 
 		updateButtonIds(id);
 		getSpaceDetails(id);
-		setURL(id);
+		//setURL(id); don't need to do this anymore
 
 		// Remove all non-permanent tooltips from the page; helps keep
 		// the page from getting filled with hundreds of qtip divs
