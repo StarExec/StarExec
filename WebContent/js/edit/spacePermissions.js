@@ -470,19 +470,23 @@ function populateSpaceDetails(jsonData, id) {
 	} else {
 		// Or else the user can see the space, make sure the info table fieldsets are visible
 		$('#userField').show();
-		curIsLeader = jsonData.perm.isLeader
+
 	}
 
 	// Update the selected space id
 	spaceId = jsonData.space.id;
 	spaceName = jsonData.space.name;
+	//if not root
+	if(spaceId != "1"){
+	    curIsLeader = jsonData.perm.isLeader
+	}
 
 	// Populate space defaults
 	$('#spaceName').fadeOut('fast', function(){
 		$('#spaceName').text(jsonData.space.name).fadeIn('fast');
 	});
 	$('#spaceLeader').fadeOut('fast', function(){
-		if(curIsLeader){
+		if(curIsLeader && (spaceId != "1")){
 		    $('#spaceLeader').text("leader of current space").fadeIn('fast');
 		}
 	    });
@@ -526,7 +530,7 @@ function populateDetails(data) {
 	    showMessage("error","permissions seem to be null",5000);
 	} else {
 	    $('#currentPerms').show();
-	    if(curIsLeader){
+	    if(curIsLeader && (spaceId != "1")){
 		$('#permCheckboxes').show();
 	    }
 	
