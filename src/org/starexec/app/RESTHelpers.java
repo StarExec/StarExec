@@ -1057,7 +1057,7 @@ public class RESTHelpers {
     		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY)));
     	}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,false);
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
@@ -1098,7 +1098,7 @@ public class RESTHelpers {
     
        attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),false);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,false);
 	}
 
 	/**
@@ -1747,7 +1747,7 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver) {
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver, boolean useWallclock) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1817,9 +1817,16 @@ public class RESTHelpers {
     		}
     		
     		entry.add(new JsonPrimitive(status));
-    		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
+    		if (useWallclock) {
+    			double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
+        		
+        		entry.add(new JsonPrimitive(displayWC + " s"));
+    		} else {
+    			double displayCpu = Math.round(jp.getCpuTime()*100)/100.0;		    	
+        		
+        		entry.add(new JsonPrimitive(displayCpu + " s"));
+    		}
     		
-    		entry.add(new JsonPrimitive(displayWC + " s"));
     		entry.add(new JsonPrimitive(jp.getStarexecResult()));    		
     		dataTablePageEntries.add(entry);
     	}

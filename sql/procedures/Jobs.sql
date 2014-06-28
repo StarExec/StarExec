@@ -319,6 +319,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 				bench_name,
 				status_code,
 				GetJobPairResult(job_pairs.id) AS result,
+				GetJobPairExpectedResult(job_pairs.id) AS expected,
 				wallclock,
 				cpu
 		FROM job_pairs 

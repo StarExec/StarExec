@@ -56,6 +56,23 @@ CREATE FUNCTION GetJobPairResult(_jobPairId INT)
 		RETURN IFNULL(result, '--');
 	END //
 	
+-- Returns the result of a job pair
+-- Author: Eric Burns
+DROP FUNCTION IF EXISTS GetJobPairResultExpectedResult;
+CREATE FUNCTION GetJobPairResultExpectedResult(_jobPairId INT)
+	RETURNS VARCHAR(128)
+	BEGIN
+		DECLARE result VARCHAR(128);
+		
+		SELECT attr_value INTO result 
+		FROM bench_attributes
+		JOIN job_pairs ON job_pairs.bench_id=bench_attributes.bench_id
+		WHERE job_pairs.id = _jobPairId 
+		AND attr_key = "starexec-expected-result";
+		
+		RETURN IFNULL(result, '--');
+	END //
+	
 -- Gets the job ID of the job that contains the job pair with the given id
 -- Author: Eric Burns
 DROP FUNCTION IF EXISTS GetJobId;

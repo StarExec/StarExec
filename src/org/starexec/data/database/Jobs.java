@@ -1339,6 +1339,14 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * Makes all the job pair objects from a ResultSet formed from querying the database
+	 * for fields needed on the pairsInSpace table
+	 * @param jobId The ID of the job containing all these pairs
+	 * @param results
+	 * @return The list of job pairs or null on failure
+	 */
+	
 	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results) {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 
@@ -1360,9 +1368,10 @@ public class Jobs {
 				jp.getSolver().addConfiguration(jp.getConfiguration());
 				Status status = jp.getStatus();
 				status.setCode(results.getInt("status_code"));
-
+				
 				Properties attributes = jp.getAttributes();
 				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+				attributes.setProperty(R.EXPECTED_RESULT, results.getString("expected"));
 				pairs.add(jp);	
 			}
 			return pairs;

@@ -368,10 +368,13 @@ public class JobPairs {
 		if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
 			if (jp.getAttributes()!=null) {
 			   	Properties attrs = jp.getAttributes();
+			   	
 			   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
 		    		//don't know the result, so don't mark as correct or incorrect.	
 			   		return 2;
-	    		} else if (attrs.containsKey(R.EXPECTED_RESULT)) {
+			   		
+			   	// the expected result -- just means that no expected result actually existed
+	    		} else if (attrs.containsKey(R.EXPECTED_RESULT) && !attrs.get(R.EXPECTED_RESULT).equals("--")) {
 	    			//no result is counted as wrong
 		    		if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
 			   			return 1;
