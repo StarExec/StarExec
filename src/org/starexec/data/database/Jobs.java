@@ -1209,7 +1209,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
-			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals, String type) {
+			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals, String type, boolean wallclock) {
 		long a=System.currentTimeMillis();
 		//get all of the pairs first, then carry out sorting and filtering
 		//PERFMORMANCE NOTE: this call takes over 99.5% of the total time this function takes
@@ -1222,7 +1222,7 @@ public class Jobs {
 		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
 
 		totals[1]=pairs.size();
-		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC);
+		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC,wallclock);
 		log.debug("sorting pairs took "+(System.currentTimeMillis()-a));
 
 		if (startingRecord>=pairs.size()) {

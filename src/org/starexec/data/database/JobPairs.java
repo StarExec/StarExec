@@ -241,13 +241,19 @@ public class JobPairs {
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
 	 */ 
-	private static int compareJobPairNums(JobPair jp1, JobPair jp2, boolean ASC) {
+	private static int compareJobPairNums(JobPair jp1, JobPair jp2, boolean ASC, boolean isWallclock) {
 		int answer=0;
 		try {
 			double db1=0;
 			double db2=0;
-			db1=jp1.getWallclockTime();
-			db2=jp2.getWallclockTime();
+			if (isWallclock) {
+				db1=jp1.getWallclockTime();
+				db2=jp2.getWallclockTime();
+			} else {
+				db1=jp1.getCpuTime();
+				db2=jp2.getCpuTime();
+			}
+			
 			
 			//if db1> db2, then db2 should go first
 			if (db1>db2) {
@@ -809,7 +815,7 @@ public class JobPairs {
 	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
 	 * @return A single list containing all the elements of lists 1 and 2 in sorted order
 	 */
-	private static List<JobPair> mergeJobPairs(List<JobPair> list1, List<JobPair> list2, int sortColumn, boolean ASC) {
+	private static List<JobPair> mergeJobPairs(List<JobPair> list1, List<JobPair> list2, int sortColumn, boolean ASC, boolean wallclock) {
 		
 		int list1Index=0;
 		int list2Index=0;
@@ -819,7 +825,7 @@ public class JobPairs {
 			if (sortColumn!=4) {
 				first=compareJobPairStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
 			} else {
-				first=compareJobPairNums(list1.get(list1Index),list2.get(list2Index),ASC);
+				first=compareJobPairNums(list1.get(list1Index),list2.get(list2Index),ASC,wallclock);
 			}
 			if (first==0) {
 				mergedList.add(list1.get(list1Index));
@@ -844,14 +850,14 @@ public class JobPairs {
 	 * @return
 	 */
 	
-	protected static List<JobPair> mergeSortJobPairs(List<JobPair> pairs,int sortColumn,boolean ASC) {
+	protected static List<JobPair> mergeSortJobPairs(List<JobPair> pairs,int sortColumn,boolean ASC, boolean wallclock) {
 		if (pairs.size()<=1) {
 			return pairs;
 		}
 		int middle=pairs.size()/2;
-		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC);
-		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC);
-		return mergeJobPairs(list1,list2,sortColumn,ASC);
+		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC,wallclock);
+		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC,wallclock);
+		return mergeJobPairs(list1,list2,sortColumn,ASC,wallclock);
 	}
 
 	/**

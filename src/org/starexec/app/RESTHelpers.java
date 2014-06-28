@@ -1087,7 +1087,7 @@ public class RESTHelpers {
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
 						jobId, // Parent space id
-						jobSpaceId, configId, totals,type);
+						jobSpaceId, configId, totals,type,wallclock);
 		
 		totalJobs = totals[0];
 
