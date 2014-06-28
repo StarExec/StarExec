@@ -363,12 +363,14 @@ public class JobPairs {
 	 * 2 == pair is unknown
 	 */
 	public static int isPairCorrect(JobPair jp) {
+		log.debug("checking whether pair with id = "+jp.getId() +" is correct");
 		StatusCode statusCode=jp.getStatus().getCode();
 
 		if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
 			if (jp.getAttributes()!=null) {
 			   	Properties attrs = jp.getAttributes();
-			   	
+			   	log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
+			   	log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
 			   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
 		    		//don't know the result, so don't mark as correct or incorrect.	
 			   		return 2;

@@ -59,7 +59,7 @@ CREATE FUNCTION GetJobPairResult(_jobPairId INT)
 -- Returns the result of a job pair
 -- Author: Eric Burns
 DROP FUNCTION IF EXISTS GetJobPairExpectedResult;
-CREATE FUNCTION GetJobPairtExpectedResult(_jobPairId INT)
+CREATE FUNCTION GetJobPairExpectedResult(_jobPairId INT)
 	RETURNS VARCHAR(128)
 	BEGIN
 		DECLARE expected VARCHAR(128);
