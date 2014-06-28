@@ -123,6 +123,17 @@ CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobSpaceId INT)
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_space_id=_jobSpaceId;
 	END //
+	
+-- Gets attributes for every job pair in a job that resides in the given job space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobAttrsInJobSpaceByKey;
+CREATE PROCEDURE GetJobAttrsInJobSpaceByKey(IN _jobSpaceId INT, IN _key VARCHAR(128))
+	BEGIN
+		SELECT pair.id, attr.attr_key, attr.attr_value
+		FROM job_pairs AS pair 
+			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
+			WHERE pair.job_space_id=_jobSpaceId AND attr_key=_key;
+	END //
 
 -- Adds a new job stats record to the database
 -- Author : Eric Burns

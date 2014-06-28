@@ -882,6 +882,34 @@ public class Jobs {
 	}
 	
 	/**
+	 * Gets attributes with the given key for all pairs in a given job space
+	 * @param con The open connection to make the query on
+	 * @param jobSpaceId The ID of the job space containing the pairs
+	 * @param key the key of the attributes to retrieve
+	 * @return A HashMap mapping job pair IDs to attributes
+	 * @author Eric Burns
+	 */
+	
+	protected static HashMap<Integer,Properties> getJobAttributesInJobSpaceByKey(Connection con,int jobSpaceId, String key) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		 try {
+				
+			procedure = con.prepareCall("{CALL GetJobAttrsInJobSpaceByKey(?,?)}");
+			procedure.setInt(1,jobSpaceId);
+			procedure.setString(2,key);
+			results = procedure.executeQuery();
+			return processAttrResults(results);
+		} catch (Exception e) {
+			log.error("getJobAttrsInJobSpace says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	/**
 	 * Gets attributes for all pairs in a given job space
 	 * @param con The open connection to make the query on
 	 * @param jobId The ID of the job in question
@@ -908,11 +936,29 @@ public class Jobs {
 		return null;
 	}
 	
-	
+	/**
+	 * Gets attributes of the given key for every job pair in the given job space
+	 * @param jobSpaceId The ID of the job space containing the pairs
+	 * @param key The key of the attribute to retrieve
+	 * @return A HashMap mapping integer job-pair IDs to Properties objects representing
+	 * their attributes
+	 * @author Eric Burns
+	 */
+	public static HashMap<Integer,Properties> getJobAttributesInJobSpaceByKey(int jobSpaceId, String key) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getJobAttributesInJobSpaceByKey(con,jobSpaceId,key);
+		} catch (Exception e) {
+			log.error("getJobAttributes says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
 
 	/**
 	 * Gets all attributes for every job pair in the given job space
-	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The ID of the job space containing the pairs
 	 * @return A HashMap mapping integer job-pair IDs to Properties objects representing
 	 * their attributes
@@ -1319,9 +1365,10 @@ public class Jobs {
 			
 			List<JobPair> pairs=processStatResults(results);
 			Common.safeClose(results);
-			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpace(jobSpaceId);
+			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpaceByKey(jobSpaceId,R.STAREXEC_RESULT);
 			for (JobPair jp : pairs) {
 				if (attrs.containsKey(jp.getId())) {
+					log.debug("size of attrs is = " + attrs.get(jp.getId()).size());
 					jp.setAttributes(attrs.get(jp.getId()));
 				}
 
