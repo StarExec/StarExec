@@ -189,6 +189,9 @@
 			</fieldset>
 			<fieldset id="pairTblField">
 				<legend>job pairs</legend>	
+				<fieldset id="pairActions" class="tableActions">
+					<button class="changeTime">Use CPU Time</button>
+				</fieldset>
 				<table id="pairTbl" class="shaded">
 					<thead>
 						<tr>

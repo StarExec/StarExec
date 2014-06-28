@@ -1014,7 +1014,7 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
 	}
 	
-	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false,false);
 
@@ -1057,11 +1057,11 @@ public class RESTHelpers {
     		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY)));
     	}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,false);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type) {
+			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock) {
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
 				Primitive.JOB_PAIR, request);
 		if (null == attrMap) {
@@ -1098,7 +1098,7 @@ public class RESTHelpers {
     
        attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,false);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
 	}
 
 	/**

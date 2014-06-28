@@ -3,6 +3,7 @@ var pairType;
 var jobId;
 var spaceId;
 var configId;
+var useWallclock=true;
 $(document).ready(function(){
 	jobId = getParameterByName('id');
 	spaceId=getParameterByName('sid');
@@ -10,14 +11,34 @@ $(document).ready(function(){
 	pairType=getParameterByName("type");
 	initUI();
 	initDataTables();
-	
+	setTimeButtonText();	
 });
+
+function setTimeButtonText(){
+	if (useWallclock){
+		$(".changeTime .ui-button-text").html("use CPU time");
+	} else {
+		$(".changeTime .ui-button-text").html("use wall time");
+	}
+}
+
 
 /**
  * Initializes the user-interface
  */
 function initUI(){
+	$(".changeTime").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
 	
+	});
+	
+	$(".changeTime").click(function() {
+		useWallclock=!useWallclock;
+		setTimeButtonText();
+		pairTable.fnDraw(false);
+	});
 	$('#pairTbl tbody').delegate("a", "click", function(event) {
 		event.stopPropogation();
 	});
@@ -82,7 +103,7 @@ function extendDataTableFunctions(){
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+pairType,
+			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+pairType+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){

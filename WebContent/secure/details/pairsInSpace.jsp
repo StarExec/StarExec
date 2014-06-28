@@ -7,6 +7,7 @@
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		int configId=Integer.parseInt(request.getParameter("configid"));
+		
 		String type=request.getParameter("type");
 		Job j=null;
 		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
@@ -24,6 +25,7 @@
 			request.setAttribute("solver",solver);
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairType",type);
+			
 		} else {
 				if (Jobs.isJobDeleted(jobId)) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -45,6 +47,9 @@
 	<span style="display:none" id="pairType" value="${pairType}" > </span>
 	<fieldset id="#pairTblField">	
 	<legend>job pairs</legend>	
+	<fieldset id="pairActions" class="tableActions">
+		<button class="changeTime">Use CPU Time</button>
+	</fieldset>
 		<table id="pairTbl" class="shaded">
 			<thead>
 				<tr>

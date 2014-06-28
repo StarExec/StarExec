@@ -178,7 +178,7 @@ margin-top:5px;
 	padding-left:0px;
 	word-wrap:break-word;
 }
-#subspaceSummaryField #panelActions, #solverSummaryField #statActions {
+#subspaceSummaryField #panelActions, #solverSummaryField #statActions, #pairTblField #pairActions {
 	width:97%;
 	border-color: black;
 	border-style: none none solid;

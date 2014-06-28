@@ -331,6 +331,7 @@ function initUI(){
 		setTimeButtonText();
 		refreshPanels();
 		refreshStats(curSpaceId);
+		pairTable.fnDraw(false);
 	});
 	
 	$("#clearCache").click(function(){
@@ -1058,7 +1059,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	outSpaceId=curSpaceId;
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+outSpaceId,
+			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request
