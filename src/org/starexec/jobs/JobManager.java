@@ -77,6 +77,7 @@ public abstract class JobManager {
 		String qname = q.getName();
 		int nodeCount=Queues.getNodes(qId).size();
 		int queueSize = Queues.getSizeOfQueue(qId);
+		log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +"pairs");
 		if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
 		    List<Job> joblist = Queues.getPendingJobs(qId);
 		    if (joblist.size() > 0) {

@@ -600,6 +600,9 @@ public class Download extends HttpServlet {
 	
 	
 	private static boolean addJobPairsToZipOutput(int jobId, List<JobPair> pairs, HttpServletResponse response) {
+		if (pairs.size()==0) {
+			return true; // don't try to make a zip if there are no pairs
+		}
 		try {
 			String baseName="Job"+String.valueOf(jobId)+"_output_new";
 			ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());

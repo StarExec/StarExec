@@ -1919,6 +1919,7 @@ public class Jobs {
 			while (results.next()) {
 				JobPair pair=new JobPair();
 				pair.setJobId(jobId);
+				pair.setId(results.getInt("id"));
 				pair.setPath(results.getString("path"));
 				pair.getSolver().setName(results.getString("solver_name"));
 				pair.getConfiguration().setName(results.getString("config_name"));
