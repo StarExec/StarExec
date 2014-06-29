@@ -55,7 +55,7 @@ public abstract class JobManager {
 
     public synchronized static boolean checkPendingJobs(){
     	try {
-    		log.debug("about to check if the sysyem is paused");
+    		log.debug("about to check if the system is paused");
 	    if (Jobs.isSystemPaused()) { 
     	    	log.info("Not adding more job pairs to any queues, as the system is paused");
     	    	return false;
@@ -82,10 +82,12 @@ public abstract class JobManager {
 		String qname = q.getName();
 		int nodeCount=Queues.getNodes(qId).size();
 		int queueSize = Queues.getSizeOfQueue(qId);
-		log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +"pairs");
+		log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
 		if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
 		    List<Job> joblist = Queues.getPendingJobs(qId);
+		    log.debug("about to submit this many jobs "+joblist.size());
 		    if (joblist.size() > 0) {
+		    	
 			submitJobs(joblist, q, queueSize,nodeCount);
 		    }
 		} else {
@@ -145,131 +147,138 @@ public abstract class JobManager {
 	 * @param spaceId The id of the space this job will be placed in
 	 */
 	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {		
-		log.debug("submitJobs() begins");
+		try {
 
-		initMainTemplateIf();
-
-		LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-
-		// add all the jobs in jobList to a SchedulingState in the schedule.
-		for (Job job : joblist) {
-			// jobTemplate is a version of mainTemplate customized for this job
-			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
-			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
-			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
-			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-
-			//Post processor
-			Processor processor = job.getPostProcessor();
-			if (processor == null) {
-				log.debug("Postprocessor is null.");
-				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
-			}
-			else {
-				String path = processor.getFilePath();
-				log.debug("Postprocessor path is "+path+".");
-				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
-			}
 			
-			//pre processor
-			processor = job.getPreProcessor();
-			if (processor == null) {
-				log.debug("Preprocessor is null.");
-				jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "null");
+			log.debug("submitJobs() begins");
+
+			initMainTemplateIf();
+
+			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
+
+			// add all the jobs in jobList to a SchedulingState in the schedule.
+			for (Job job : joblist) {
+				// jobTemplate is a version of mainTemplate customized for this job
+				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
+				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
+				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
+				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+
+				//Post processor
+				Processor processor = job.getPostProcessor();
+				if (processor == null) {
+					log.debug("Postprocessor is null.");
+					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
+				}
+				else {
+					String path = processor.getFilePath();
+					log.debug("Postprocessor path is "+path+".");
+					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
+				}
+				
+				//pre processor
+				processor = job.getPreProcessor();
+				if (processor == null) {
+					log.debug("Preprocessor is null.");
+					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "null");
+				}
+				else {
+					String path = processor.getFilePath();
+					log.debug("Preprocessor path is "+path+".");
+					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
+				}
+
+				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
+
+				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+
+				schedule.add(s);
 			}
-			else {
-				String path = processor.getFilePath();
-				log.debug("Preprocessor path is "+path+".");
-				jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
-			}
 
-			Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
+			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
 
-			SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+			/*
+			 * we are going to loop through the schedule adding a few job
+			 * pairs at a time to SGE.  If the count of jobs enqueued
+			 * (starting from how many jobs we though we had enqueued when
+			 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
+			 * then we will not continue with our next pass through the
+			 * schedule.  
+			 *
+			 */
 
-			schedule.add(s);
-		}
+			int count = queueSize;
+			int jobCount=schedule.size();
+			
+			while (!schedule.isEmpty()) {
 
-		log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
+				if (count >= R.NODE_MULTIPLIER * nodeCount)
+					break; // out of while (!schedule.isEmpty())
 
-		/*
-		 * we are going to loop through the schedule adding a few job
-		 * pairs at a time to SGE.  If the count of jobs enqueued
-		 * (starting from how many jobs we though we had enqueued when
-		 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
-		 * then we will not continue with our next pass through the
-		 * schedule.  
-		 *
-		 */
+				Iterator<SchedulingState> it = schedule.iterator();
 
-		int count = queueSize;
-		int jobCount=schedule.size();
-		
-		while (!schedule.isEmpty()) {
+				while (it.hasNext()) {
+					SchedulingState s = it.next();
 
-			if (count >= R.NODE_MULTIPLIER * nodeCount)
-				break; // out of while (!schedule.isEmpty())
-
-			Iterator<SchedulingState> it = schedule.iterator();
-
-			while (it.hasNext()) {
-				SchedulingState s = it.next();
-
-				if (!s.pairIter.hasNext()) {
-					// we will remove this SchedulingState from the schedule, since it is out of job pairs
-					it.remove();
-					continue;
-				}		
-				
-
-				log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
-						+"for job " + s.job.getId() 
-						+ ", queue = "+q.getName() 
-						+ ", user = "+s.job.getUserId());
-
-				int i = 0;
-				
-				
-				while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
-
-
-					JobPair pair = s.pairIter.next();
-					if (pair.getSolver()==null || pair.getBench()==null) {
-						// if the solver or benchmark is null, they were deleted. Indicate that the pair's
-						//submission failed and move on
-						JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
+					if (!s.pairIter.hasNext()) {
+						// we will remove this SchedulingState from the schedule, since it is out of job pairs
+						it.remove();
 						continue;
-					}
-					i++;
-					log.debug("About to submit pair " + pair.getId());
+					}		
+					
 
-					try {
-						// Write the script that will run this individual pair				
-						String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
+					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
+							+"for job " + s.job.getId() 
+							+ ", queue = "+q.getName() 
+							+ ", user = "+s.job.getUserId());
 
-						// do this first, before we submit to grid engine, to avoid race conditions
-						JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+					int i = 0;
+					
+					
+					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 
-						// Submit to the grid engine
-						int sgeId = JobManager.submitScript(scriptPath, pair);
 
-						// If the submission was successful
-						if(sgeId >= 0) {											
-							log.info("Submission of pair "+pair.getId() + " successful.");
-							JobPairs.updateGridEngineId(pair.getId(), sgeId);
+						JobPair pair = s.pairIter.next();
+						if (pair.getSolver()==null || pair.getBench()==null) {
+							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
+							//submission failed and move on
+							JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
+							continue;
 						}
-						else {
-							log.warn("Error submitting pair "+pair.getId() + " to SGE.");
-							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-						}
-						count++;
-					} catch(Exception e) {
-						log.error("submitJobs() received exception " + e.getMessage(), e);
-					}
-				}	
-			} // end iterating once through the schedule
-		} // end looping until schedule is empty or we have submitted enough job pairs
+						i++;
+						log.debug("About to submit pair " + pair.getId());
 
+						try {
+							// Write the script that will run this individual pair				
+							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
+
+							// do this first, before we submit to grid engine, to avoid race conditions
+							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+
+							// Submit to the grid engine
+							int sgeId = JobManager.submitScript(scriptPath, pair);
+
+							// If the submission was successful
+							if(sgeId >= 0) {											
+								log.info("Submission of pair "+pair.getId() + " successful.");
+								JobPairs.updateGridEngineId(pair.getId(), sgeId);
+							}
+							else {
+								log.warn("Error submitting pair "+pair.getId() + " to SGE.");
+								JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
+							}
+							count++;
+						} catch(Exception e) {
+							log.error("submitJobs() received exception " + e.getMessage(), e);
+						}
+					}	
+				} // end iterating once through the schedule
+			} // end looping until schedule is empty or we have submitted enough job pairs
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
 	} // end submitJobs()
 
 

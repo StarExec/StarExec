@@ -50,8 +50,8 @@ thead {
 }
 
 .solvedHead, .resourceHead {
-	width: 11%;
-	max-width:11%;
+	width: 12%;
+	max-width:12%;
 }
 
 .incompleteHead {
@@ -61,15 +61,15 @@ thead {
 
 
 .configHead, .unknownHead { 
-	width: 10%;
-	max-width:10%;
+	width: 12%;
+	max-width:12%;
 }
 
 .solverHead, .wrongHead {
-	width: 10%;
-	max-width:10%;
+	width: 12%;
+	max-width:12%;
 }
-.timeHead, .pairsInSpaceHead {
+.timeHead {
 	width: 10%;
 	max-width:10%;
 }

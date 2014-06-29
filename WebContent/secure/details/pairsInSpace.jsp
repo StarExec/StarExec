@@ -49,6 +49,15 @@
 	<legend>job pairs</legend>	
 	<fieldset id="pairActions" class="tableActions">
 		<button class="changeTime">Use CPU Time</button>
+		<label for="pairFilter">filter pairs</label>
+		<select id="pairFilter">
+			<option value="all">all</option>
+			<option value="solved">solved</option>
+			<option value="wrong">wrong</option>
+			<option value="resource">resource out</option>		
+			<option value="unknown">unknown</option>		
+			<option value="incomplete">incomplete</option>
+		</select>
 	</fieldset>
 		<table id="pairTbl" class="shaded">
 			<thead>

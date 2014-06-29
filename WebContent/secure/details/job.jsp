@@ -143,7 +143,6 @@
 							<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 							<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run, are running right now, or had a system error, which does not include timeouts and memouts">incomplete</span></th>
 							<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
-							<th class="pairsInSpaceHead">pairs</th>
 						</tr>
 					</thead>
 					<tbody>

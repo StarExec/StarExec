@@ -9,6 +9,9 @@ $(document).ready(function(){
 	spaceId=getParameterByName('sid');
 	configId=getParameterByName("configid");
 	pairType=getParameterByName("type");
+	$('.id_100 ').attr('selected','selected');
+	$('#pairFilter option[value='+pairType+']').attr('selected','selected');
+
 	initUI();
 	initDataTables();
 	setTimeButtonText();	
@@ -49,7 +52,9 @@ function initUI(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
-
+	$("#pairFilter").change(function(){
+		pairTable.fnDraw(false);
+	});
 }
 
 /**
@@ -101,9 +106,10 @@ function extendDataTableFunctions(){
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
+	curType = $('#pairFilter').find(":selected").attr("value");
 
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+pairType+"/"+useWallclock,
+			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){

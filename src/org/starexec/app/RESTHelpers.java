@@ -2435,15 +2435,7 @@ public class RESTHelpers {
 			RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
 			if (!shortFormat) {
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=all&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
-				sb.append("\" target=\"_blank\" >");
-				sb.append("view pairs");
-				RESTHelpers.addImg(sb);
-				String pairsInSpaceLink = sb.toString();
+				
 				
 				sb = new StringBuilder();
 				sb.append("<a href=\""
@@ -2511,7 +2503,6 @@ public class RESTHelpers {
 				} else {
 					entry.add(new JsonPrimitive(js.getCpuTime()));
 				}
-				entry.add(new JsonPrimitive(pairsInSpaceLink));
 				dataTablePageEntries.add(entry);
 			} else {
 				
