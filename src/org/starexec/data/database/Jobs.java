@@ -2295,7 +2295,7 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemoveTimelessPairsOfStatusFromCompleted(?,?)}");
+			procedure=con.prepareCall("{CALL RemoveTimelessPairsOfStatusFromComplete(?,?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, statusCode);
 			procedure.executeUpdate();
@@ -2329,7 +2329,7 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemovePairsOfStatusFromCompleted(?,?)}");
+			procedure=con.prepareCall("{CALL RemovePairsOfStatusFromComplete(?,?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, statusCode);
 			procedure.executeUpdate();

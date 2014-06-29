@@ -52,7 +52,7 @@
 				<legend>actions</legend>
 				<ul id="actionList">
 					<li><a id="rerunPairs" >rerun pairs with selected status</a></li>
-					<li><a id="rerunTimelessPairs" >rerun pairs with time 0</a></li>
+					<li><a id="rerunTimelessPairs" title="reruns all completed pairs and resource-out pairs in this job that have a wallclock or cpu time of 0">rerun pairs with time 0</a></li>
 					
 				</ul>
 			</fieldset>	
