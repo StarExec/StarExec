@@ -1694,14 +1694,14 @@ public class Connection {
 					this.setJobInfoCompletion(id, lastSeen);
 					curPairs=getJobInfoPairCount(id);
 					incrementJobInfoPairsSeen(id,pairsFound);
-					System.out.println("pairs found ="+curPairs+"-"+(curPairs+pairsFound)+"/"+totalPairs);					
+					System.out.println("pairs found ="+(curPairs+1)+"-"+(curPairs+pairsFound)+"/"+totalPairs);					
 					
 				} else if (urlParams.get(R.FORMPARAM_TYPE).equals("j_outputs")) {
 					this.setJobOutCompletion(id, lastSeen);
 					curPairs=getJobOutPairCount(id);
 
 					incrementJobOutPairsSeen(id,pairsFound);
-					System.out.println("pairs found ="+curPairs+"-"+(curPairs+pairsFound)+"/"+totalPairs);
+					System.out.println("pairs found ="+(curPairs+1)+"-"+(curPairs+pairsFound)+"/"+totalPairs);
 
 				}
 			}

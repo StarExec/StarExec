@@ -1599,7 +1599,7 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL countPairsForJob(?}");
+			procedure=con.prepareCall("{CALL countPairsForJob(?)}");
 			procedure.setInt(1, jobId);
 			results=procedure.executeQuery();
 			
