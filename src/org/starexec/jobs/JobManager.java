@@ -55,10 +55,11 @@ public abstract class JobManager {
 
     public synchronized static boolean checkPendingJobs(){
     	try {
+    		log.debug("about to check if the sysyem is paused");
 	    if (Jobs.isSystemPaused()) { 
     	    	log.info("Not adding more job pairs to any queues, as the system is paused");
     	    	return false;
-    	    }
+    	}
         
 	    /*If a job's queue is null or the queue is empty,
 	      pause the job if it is not already deleted or paused 
@@ -71,8 +72,12 @@ public abstract class JobManager {
 		    }
 		}
 	    } */
+	    log.debug("about to get all queues");
+	    
 	    List<Queue> queues = Queues.getAll();
+	    log.debug("found this many queues "+queues.size());
 	    for (Queue q : queues) {
+	    	log.debug("about to submit to queue "+q.getId());
 		int qId = q.getId();
 		String qname = q.getName();
 		int nodeCount=Queues.getNodes(qId).size();
