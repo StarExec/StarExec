@@ -900,6 +900,14 @@ public class JobPairs {
 		return jp;
 	}
 	
+	
+	/**
+	 * Sets the status of a given job pair to the given status
+	 * @param pairId
+	 * @param statusCode
+	 * @param con
+	 * @return
+	 */
 	public static boolean setPairStatus(int pairId, int statusCode, Connection con) {
 		CallableStatement procedure= null;
 		try{

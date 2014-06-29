@@ -18,3 +18,7 @@ fieldset {
 	margin-top:0px;
 	padding-top:0px;
 }
+
+#pairActions > select {
+    width: 20%;
+}

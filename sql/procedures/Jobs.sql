@@ -679,6 +679,23 @@ CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID 
 		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId;
 	END //
 
+	
+DROP PROCEDURE IF EXISTS RemovePairsOfStatusFromComplete;
+CREATE PROCEDURE RemovePairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
+	BEGIN 
+		DELETE job_pair_completion FROM job_pair_completion
+		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
+		WHERE job_id=_jobId AND status_code=_status;
+	END //
+	
+	
+DROP PROCEDURE IF EXISTS RemoveTimelessPairsOfStatusFromComplete;
+CREATE PROCEDURE RemoveTimelessPairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
+	BEGIN 
+		DELETE job_pair_completion FROM job_pair_completion
+		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
+		WHERE job_id=_jobId AND status_code=_status AND (wallclock=0 OR cpu=0);
+	END //
 -- Sets all the pairs of a given job to the given status
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS SetPairsToStatus;

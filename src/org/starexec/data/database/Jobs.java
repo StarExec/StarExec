@@ -2265,6 +2265,24 @@ public class Jobs {
 	}
 	
 	/**
+	 * Sets job pairs with wallclock time 0 back to pending. Only pairs that are 
+	 * complete or had a resource out are reset
+	 * @param jobId
+	 * @return
+	 */
+	
+	public static boolean setTimelessPairsToPending(int jobId) {
+		boolean success=true;
+		success=success  && setTimelessPairsToPending(jobId,StatusCode.STATUS_COMPLETE.getVal());
+		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_CPU.getVal());
+		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_FILE_WRITE.getVal());
+		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_MEM.getVal());
+		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_RUNTIME.getVal());
+
+		return success;
+	}
+	
+	/**
 	 * Sets all the job pairs of a given status code and job to pending if their cpu or wallclock
 	 * time is 0. Used to rerun pairs that didn't work in an initial job run
 	 * @param jobId The id of the job in question
@@ -2277,6 +2295,11 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemoveTimelessPairsOfStatusFromCompleted(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, statusCode);
+			procedure.executeUpdate();
+			
 			procedure=con.prepareCall("{CALL SetTimelessPairsToStatus(?,?,?)}");
 			procedure.setInt(1,jobId);
 			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
@@ -2306,6 +2329,10 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemovePairsOfStatusFromCompleted(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, statusCode);
+			procedure.executeUpdate();
 			procedure=con.prepareCall("{CALL SetPairsOfStatusToStatus(?,?,?)}");
 			procedure.setInt(1,jobId);
 			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());

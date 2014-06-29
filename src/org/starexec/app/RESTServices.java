@@ -368,7 +368,7 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-		return Jobs.setTimelessPairsToPending(id, StatusCode.STATUS_COMPLETE.getVal()) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.setTimelessPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 
 	}
 	

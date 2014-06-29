@@ -65,7 +65,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 		UPDATE job_pairs
 		SET status_code=_statusCode
 		WHERE id=_jobPairId ;
-		IF _statusCode>6 THEN
+		IF (_statusCode>6 AND _statusCode<19) THEN
 			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
 		END IF;
 	END //
