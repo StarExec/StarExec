@@ -430,16 +430,20 @@ public class Download extends HttpServlet {
 				job = Jobs.getDetailed(jobId);
 			} else {
 				job=Jobs.getDetailed(jobId,since);
-
+				log.debug("found this many new job pairs "+job.getJobPairs().size());
 				//we want to find the largest completion ID seen and send that back to the client
 				//so that they know what to ask for next time (mostly for StarexecCommand)
 				int maxCompletion=since;
 				for (JobPair x : job.getJobPairs()) {
+					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
 						maxCompletion=x.getCompletionId();
 					}
 				}
+				
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+				response.addCookie(new Cookie("Pairs-Found",String.valueOf(job.getJobPairs().size())));
+				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
 				boolean jobComplete=Jobs.isJobComplete(jobId);
 				try {
 					if (jobComplete) {
@@ -667,10 +671,13 @@ public class Download extends HttpServlet {
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
 				for (JobPair x : pairs) {
+					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
 						maxCompletion=x.getCompletionId();
 					}
 				}
+				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairs.size())));
+				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
 				Download.addJobPairsToZipOutput(jobId,pairs,response);

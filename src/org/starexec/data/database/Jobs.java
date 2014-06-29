@@ -1276,6 +1276,7 @@ public class Jobs {
 				jp.setJobId(jobId);
 				jp.setId(results.getInt("job_pairs.id"));
 				jp.setWallclockTime(results.getDouble("wallclock"));
+				jp.setCpuUsage(results.getDouble("cpu"));
 				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));
 				bench.setName(results.getString("bench_name"));
@@ -1586,6 +1587,34 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return null;
+	}
+	/**
+	 * Returns the count of all pairs in a job
+	 * @param jobId
+	 * @return
+	 */
+	public static int getPairCount(int jobId) {
+		Connection con=null;
+		ResultSet results=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL countPairsForJob(?}");
+			procedure.setInt(1, jobId);
+			results=procedure.executeQuery();
+			
+			if (results.next()) {
+				return results.getInt("count");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+
+		}
+		return -1;
 	}
 	
 	/**

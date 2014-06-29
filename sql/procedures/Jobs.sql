@@ -359,6 +359,17 @@ CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
 		WHERE job_space_id =_jobSpaceId;
 	END //
 	
+	
+-- Counts the number of pairs in a job
+-- Author Eric Burns
+DROP PROCEDURE IF EXISTS countPairsForJob;
+CREATE PROCEDURE countPairsForJob(IN _id INT)
+	BEGIN 
+		SELECT COUNT(*) AS count 
+		FROM job_pairs
+		WHERE job_id=_id;
+	END //
+	
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetNewCompletedJobPairsByJob;
@@ -369,7 +380,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-						JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
+						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 
 					   INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
