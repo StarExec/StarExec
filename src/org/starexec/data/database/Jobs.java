@@ -2268,17 +2268,20 @@ public class Jobs {
 	 * Sets job pairs with wallclock time 0 back to pending. Only pairs that are 
 	 * complete or had a resource out are reset
 	 * @param jobId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	
 	public static boolean setTimelessPairsToPending(int jobId) {
 		boolean success=true;
+		//only continue if we could actually clear the job stats
 		success=success  && setTimelessPairsToPending(jobId,StatusCode.STATUS_COMPLETE.getVal());
 		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_CPU.getVal());
 		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_FILE_WRITE.getVal());
 		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_MEM.getVal());
 		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_RUNTIME.getVal());
-
+		
+		// the cache must be cleared AFTER changing the pair status codes!
+		success=success && Jobs.removeCachedJobStats(jobId);
 		return success;
 	}
 	
@@ -2290,7 +2293,7 @@ public class Jobs {
 	 * @return true on success and false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean setTimelessPairsToPending(int jobId, int statusCode) {
+	private static boolean setTimelessPairsToPending(int jobId, int statusCode) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
@@ -2338,7 +2341,11 @@ public class Jobs {
 			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
 			procedure.setInt(3,statusCode);
 			procedure.executeUpdate();
-			return true;
+			
+			// the cache must be cleared AFTER changing the pair status codes!
+			boolean success=Jobs.removeCachedJobStats(jobId);
+
+			return success;
 		} catch (Exception e) {
 			log.error("setPairsToPending says "+e.getMessage(),e);
 		} finally {
