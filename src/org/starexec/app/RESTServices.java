@@ -619,7 +619,7 @@ public class RESTServices {
 		}
 		**/
 		
-		chartPath=Statistics.makeTestChart();
+		//chartPath=Statistics.makeTestChart();
 		if (chartPath==null) {
 			return gson.toJson(ERROR_DATABASE);
 		}

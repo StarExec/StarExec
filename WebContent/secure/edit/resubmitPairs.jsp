@@ -12,6 +12,9 @@
 		if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
 			
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
+			for (Status.StatusCode code : filteredCodes) {
+				code.setCount(Jobs.countPairsByStatus(jobId,code.getVal()));
+			}
 			request.setAttribute("codes",filteredCodes);
 			request.setAttribute("jobId",jobId);
 			request.setAttribute("timelessCount",Jobs.countTimelessPairs(jobId));

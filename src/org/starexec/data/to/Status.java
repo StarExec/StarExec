@@ -39,6 +39,7 @@ public class Status {
 		STATUS_PROCESSING(22);
 		
 		private int val;
+		private int count;
 		
 		private StatusCode(int val) {
 			this.val = val;			
@@ -60,8 +61,12 @@ public class Status {
 		    return (val<=6 || val>=19);
 		}
 		
-		public int getCount(int jobId) {
-			return Jobs.countPairsByStatus(jobId, this.getVal());
+		public void setCount(int c) {
+			this.count=c;
+		}
+		
+		public int getCount() {
+			return this.count;
 		}
 		//incomplete as it is defined for stats
 		public boolean statIncomplete(){

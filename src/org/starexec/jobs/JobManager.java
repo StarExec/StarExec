@@ -525,7 +525,6 @@ public abstract class JobManager {
 		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
 
 		// Pair up the solvers and benchmarks
-		int pairCount = 0;//temporarily, we're limiting number of job pairs.
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
@@ -538,11 +537,7 @@ public abstract class JobManager {
 				pair.setPath(SP.get(spaceId));
 				pair.setMaxMemory(memoryLimit);
 				j.addJobPair(pair);
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-					return;	
-				}
+				
 			}
 		}
 	}
@@ -568,7 +563,6 @@ public abstract class JobManager {
 		Space space = Spaces.get(spaceId);
 		JobPair pair;
 
-		int pairCount = 0;
 		//Skip over the benchmarks already done and only retrieve the next benchmark to create a job pair with
 		log.debug("b = " + b);
 		for (Solver solver: s) {
@@ -591,11 +585,7 @@ public abstract class JobManager {
 				log.debug("Pair PATH = " + pair.getPath());
 				j.addJobPair(pair);
 
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-					return;
-				}
+				
 			}
 		}
 	}
@@ -621,7 +611,6 @@ public abstract class JobManager {
 		List<Configuration> configs;
 		JobPair pair;
 
-		int pairCount = 0;
 		for (Benchmark b : benchmarks) {
 			log.debug("BENCH PATH = " + b.getPath());
 			for (Solver s : solvers) {
@@ -648,11 +637,7 @@ public abstract class JobManager {
 					log.debug("pair path = " + pair.getPath());
 					j.addJobPair(pair);
 
-					pairCount++;
-					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-						return;
-					}
+					
 				}
 			}
 		}
@@ -676,7 +661,6 @@ public abstract class JobManager {
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 
 		// Pair up the solvers and benchmarks
-		int pairCount = 0;//temporarily, we're limiting number of job pairs.
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
@@ -688,11 +672,7 @@ public abstract class JobManager {
 				pair.setPath(SP.get(spaceId));
 				pair.setMaxMemory(memoryLimit);
 				j.addJobPair(pair);
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-					return;
-				}	
+					
 			}
 		}
 
@@ -714,11 +694,7 @@ public abstract class JobManager {
 					pair.setMaxMemory(memoryLimit);
 					pair.setSpace(Spaces.get(space));
 					j.addJobPair(pair);
-					pairCount++;
-					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-						return;
-					}	
+					
 				}
 			}
 		}
@@ -747,7 +723,6 @@ public abstract class JobManager {
 	public static void addJobPairsRobinSelected(Job j, int userId, int cpuLimit, int runLimit,long memoryLimit, int space_id, Benchmark benchmark, List<Solver> solvers, HashMap<Integer, String> SP) {
 		log.debug("Attempting to add job-pairs in round-robin traversal on selected solvers");
 
-		int pairCount = 0;
 
 		for(Solver solver : solvers) {
 			JobPair pair = new JobPair();
@@ -759,11 +734,7 @@ public abstract class JobManager {
 			pair.setPath(SP.get(space_id));
 			pair.setMaxMemory(memoryLimit);
 			j.addJobPair(pair);
-			pairCount++;
-			log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-			if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-				return;
-			}
+			
 		}
 	}
 }
