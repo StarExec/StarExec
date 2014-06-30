@@ -15,6 +15,7 @@
 			
 			request.setAttribute("codes",filteredCodes);
 			request.setAttribute("jobId",jobId);
+			request.setAttribute("timelessCount",Jobs.countTimelessPairs(jobId));
 		//} else {
 			//if (Jobs.isJobDeleted(jobId)) {
 			//	response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -50,7 +51,7 @@
 				<legend>actions</legend>
 				<ul id="actionList">
 					<li><a id="rerunPairs" >rerun pairs with selected status</a></li>
-					<li><a id="rerunTimelessPairs" title="reruns all completed pairs and resource-out pairs in this job that have a wallclock or cpu time of 0">rerun pairs with time 0</a></li>
+					<li><a id="rerunTimelessPairs" title="reruns all completed pairs and resource-out pairs in this job that have a wallclock or cpu time of 0">rerun pairs with time 0 (${timelessCount} pairs)</a></li>
 					
 				</ul>
 			</fieldset>	

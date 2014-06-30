@@ -738,11 +738,21 @@ CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 	
 -- Gives back the number of pairs with the given status
 DROP PROCEDURE IF EXISTS CountPairsByStatusByJob;
-CREATE PROCEDURE CounPairsByStatusByJob(IN _jobId INT, IN _status INT)
+CREATE PROCEDURE CountPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	BEGIN
 		SELECT COUNT(*) AS count
 		FROM job_pairs 
 		WHERE job_pairs.job_id=_jobId and _status=status_code;
+	END //
+	
+	
+-- Gives back the number of pairs with the given status
+DROP PROCEDURE IF EXISTS CountTimelessPairsByStatusByJob;
+CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
+	BEGIN
+		SELECT COUNT(*) AS count
+		FROM job_pairs 
+		WHERE job_pairs.job_id=_jobId and _status=status_code AND (wallclock=0 OR cpu=0);
 	END //
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor

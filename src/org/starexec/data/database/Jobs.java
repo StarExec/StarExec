@@ -2265,6 +2265,27 @@ public class Jobs {
 	}
 	
 	/**
+	 * Counts the pairs that would be rerun if the user decided to rerun all timeless pairs
+	 * @param jobId The id of the job to count for
+	 * @return The count on success or -1 on failure
+	 */
+	
+	public static int countTimelessPairs(int jobId) {
+		int c1 = Jobs.countTimelessPairsByStatus(jobId, StatusCode.STATUS_COMPLETE.getVal());
+		int c2 = Jobs.countTimelessPairsByStatus(jobId, StatusCode.EXCEED_CPU.getVal());
+		int c3 = Jobs.countTimelessPairsByStatus(jobId, StatusCode.EXCEED_FILE_WRITE.getVal());
+		int c4 = Jobs.countTimelessPairsByStatus(jobId, StatusCode.EXCEED_MEM.getVal());
+		int c5 = Jobs.countTimelessPairsByStatus(jobId, StatusCode.EXCEED_RUNTIME.getVal());
+		 
+		//on failure
+		if (c1==-1 || c2==-1 || c3==-1 || c4==-1 || c5==-5) {
+			return -1;
+		}
+		
+		return c1+c2+c3+c4+c5;
+	}
+	
+	/**
 	 * Sets job pairs with wallclock time 0 back to pending. Only pairs that are 
 	 * complete or had a resource out are reset
 	 * @param jobId
@@ -2549,6 +2570,39 @@ public class Jobs {
 		//}
 	}
 	
+	
+	
+	
+	/**
+	 * Returns the count of pairs with the given status code in the given job where either
+	 * cpu or wallclock is 0
+	 * @param jobId
+	 * @param statusCode
+	 * @return The count or -1 on failure
+	 */
+	private static int countTimelessPairsByStatus(int jobId, int statusCode) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL CountTimelessPairsByStatusByJob(?,?)}");
+			procedure.setInt(1,jobId);
+			procedure.setInt(2,statusCode);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("count");
+			}
+		} catch (Exception e) {
+			log.error("countPairsByStatus says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return -1;
+	}
 	
 	/**
 	 * Returns the count of pairs with the given status code in the given job
