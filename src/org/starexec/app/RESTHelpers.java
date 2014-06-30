@@ -1014,7 +1014,7 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
 	}
 	
-	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false,false);
 
@@ -1057,11 +1057,11 @@ public class RESTHelpers {
     		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY)));
     	}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId, HttpServletRequest request) {
+			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock) {
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
 				Primitive.JOB_PAIR, request);
 		if (null == attrMap) {
@@ -1087,7 +1087,7 @@ public class RESTHelpers {
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
 						jobId, // Parent space id
-						jobSpaceId, configId, totals);
+						jobSpaceId, configId, totals,type,wallclock);
 		
 		totalJobs = totals[0];
 
@@ -1098,7 +1098,7 @@ public class RESTHelpers {
     
        attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),false);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
 	}
 
 	/**
@@ -1747,7 +1747,7 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver) {
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver, boolean useWallclock) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1817,9 +1817,16 @@ public class RESTHelpers {
     		}
     		
     		entry.add(new JsonPrimitive(status));
-    		double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
+    		if (useWallclock) {
+    			double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
+        		
+        		entry.add(new JsonPrimitive(displayWC + " s"));
+    		} else {
+    			double displayCpu = Math.round(jp.getCpuTime()*100)/100.0;		    	
+        		
+        		entry.add(new JsonPrimitive(displayCpu + " s"));
+    		}
     		
-    		entry.add(new JsonPrimitive(displayWC + " s"));
     		entry.add(new JsonPrimitive(jp.getStarexecResult()));    		
     		dataTablePageEntries.add(entry);
     	}
@@ -2428,31 +2435,74 @@ public class RESTHelpers {
 			RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
 			if (!shortFormat) {
+				
+				
 				sb = new StringBuilder();
 				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?sid="
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=solved&sid="
 								+ spaceId + "&configid="
 								+ js.getConfiguration().getId() + "&id=" + jobId));
 				sb.append("\" target=\"_blank\" >");
-				sb.append("view pairs");
+				sb.append(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs());
 				RESTHelpers.addImg(sb);
-				String pairsInSpaceLink = sb.toString();
+				String solvedLink = sb.toString();
+				
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=wrong&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getIncorrectJobPairs());
+				RESTHelpers.addImg(sb);
+				String wrongLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=resource&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getResourceOutJobPairs());
+				RESTHelpers.addImg(sb);
+				String resourceLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getUnknown());
+				RESTHelpers.addImg(sb);
+				String unknownLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=incomplete&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getIncompleteJobPairs());
+				RESTHelpers.addImg(sb);
+				String incompleteLink = sb.toString();
+				
 				// Create an object, and inject the above HTML, to represent an
 				// entry in the DataTable
 				JsonArray entry = new JsonArray();
 				entry.add(new JsonPrimitive(solverLink));
 				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs()));
-				entry.add(new JsonPrimitive(js.getIncorrectJobPairs()));
-				entry.add(new JsonPrimitive(js.getResourceOutJobPairs()));
-
-				entry.add(new JsonPrimitive(js.getIncompleteJobPairs()));
+				entry.add(new JsonPrimitive(solvedLink));
+				entry.add(new JsonPrimitive(wrongLink));
+				entry.add(new JsonPrimitive(resourceLink));
+				entry.add(new JsonPrimitive(unknownLink));
+				entry.add(new JsonPrimitive(incompleteLink));
 				if (wallTime) {
 					entry.add(new JsonPrimitive(js.getWallTime()));
 				} else {
 					entry.add(new JsonPrimitive(js.getCpuTime()));
 				}
-				entry.add(new JsonPrimitive(pairsInSpaceLink));
 				dataTablePageEntries.add(entry);
 			} else {
 				

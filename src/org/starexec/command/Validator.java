@@ -33,6 +33,7 @@ public class Validator {
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
+	private static String[] allowedNewDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_SINCE};
 	private static String[] allowedDownloadSpaceParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_EXCLUDE_BENCHMARKS,R.PARAM_EXCLUDE_SOLVERS};
 	private static String[] allowedDownloadCSVParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_INCLUDE_IDS, R.PARAM_ONLY_COMPLETED};
 	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
@@ -254,7 +255,7 @@ public class Validator {
 	 * @return 0 if the request is valid, and a negative error code if it is not
 	 * @author Eric Burns
 	 */
-	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type) {
+	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type,Integer since) {
 		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -278,7 +279,13 @@ public class Validator {
 			findUnnecessaryParams(allowedDownloadSpaceParams,commandParams);
 		} 
 		else {
-			findUnnecessaryParams(allowedDownloadParams,commandParams);
+			if (since==null) {
+				findUnnecessaryParams(allowedDownloadParams,commandParams);
+
+			} else {
+				findUnnecessaryParams(allowedNewDownloadParams,commandParams);
+
+			}
 		}
 		
 		return 0;

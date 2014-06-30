@@ -299,6 +299,8 @@ public class UploadSolver extends HttpServlet {
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
 				buildstr=Util.executeCommand(command, null,tempDir);
+				build=true;
+				log.debug("got back the output "+buildstr);
 			}
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
@@ -365,8 +367,14 @@ public class UploadSolver extends HttpServlet {
 			int solver_Success = Solvers.add(newSolver, spaceId);
 			if (solver_Success>0 && build) {
 				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
+				log.debug("output file = "+buildOutputFile.getAbsolutePath());
 				buildOutputFile.getParentFile().mkdirs();
-				FileUtils.writeStringToFile(buildOutputFile, buildstr);
+				try {
+					FileUtils.writeStringToFile(buildOutputFile, buildstr);
+
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}
 			}
 			returnArray[0] = solver_Success;
 			return returnArray;

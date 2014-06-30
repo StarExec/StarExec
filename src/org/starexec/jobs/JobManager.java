@@ -55,10 +55,11 @@ public abstract class JobManager {
 
     public synchronized static boolean checkPendingJobs(){
     	try {
+    		log.debug("about to check if the system is paused");
 	    if (Jobs.isSystemPaused()) { 
     	    	log.info("Not adding more job pairs to any queues, as the system is paused");
     	    	return false;
-    	    }
+    	}
         
 	    /*If a job's queue is null or the queue is empty,
 	      pause the job if it is not already deleted or paused 
@@ -71,15 +72,23 @@ public abstract class JobManager {
 		    }
 		}
 	    } */
+	    log.debug("about to get all queues");
+	    
 	    List<Queue> queues = Queues.getAll();
+	    log.debug("found this many queues "+queues.size());
 	    for (Queue q : queues) {
+	    	log.debug("about to submit to queue "+q.getId());
 		int qId = q.getId();
 		String qname = q.getName();
+		int nodeCount=Queues.getNodes(qId).size();
 		int queueSize = Queues.getSizeOfQueue(qId);
-		if (queueSize < R.NUM_JOB_SCRIPTS) {
+		log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
+		if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
 		    List<Job> joblist = Queues.getPendingJobs(qId);
+		    log.debug("about to submit this many jobs "+joblist.size());
 		    if (joblist.size() > 0) {
-			submitJobs(joblist, q, queueSize);
+		    	
+			submitJobs(joblist, q, queueSize,nodeCount);
 		    }
 		} else {
 		    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
@@ -137,127 +146,139 @@ public abstract class JobManager {
 	 * @param j The job object containing information about what to run for the job
 	 * @param spaceId The id of the space this job will be placed in
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize) {		
-		log.debug("submitJobs() begins");
+	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {		
+		try {
 
-		initMainTemplateIf();
-
-		LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-
-		// add all the jobs in jobList to a SchedulingState in the schedule.
-		for (Job job : joblist) {
-			// jobTemplate is a version of mainTemplate customized for this job
-			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
-			jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
-			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
-			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-
-			//Post processor
-			Processor processor = job.getPostProcessor();
-			if (processor == null) {
-				log.debug("Postprocessor is null.");
-				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
-			}
-			else {
-				String path = processor.getFilePath();
-				log.debug("Postprocessor path is "+path+".");
-				jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
-			}
 			
-			//pre processor
-			processor = job.getPreProcessor();
-			if (processor == null) {
-				log.debug("Preprocessor is null.");
-				jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "null");
+			log.debug("submitJobs() begins");
+
+			initMainTemplateIf();
+
+			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
+
+			// add all the jobs in jobList to a SchedulingState in the schedule.
+			for (Job job : joblist) {
+				// jobTemplate is a version of mainTemplate customized for this job
+				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
+				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
+				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
+				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+
+				//Post processor
+				Processor processor = job.getPostProcessor();
+				if (processor == null) {
+					log.debug("Postprocessor is null.");
+					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
+				}
+				else {
+					String path = processor.getFilePath();
+					log.debug("Postprocessor path is "+path+".");
+					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
+				}
+				
+				//pre processor
+				processor = job.getPreProcessor();
+				if (processor == null) {
+					log.debug("Preprocessor is null.");
+					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "null");
+				}
+				else {
+					String path = processor.getFilePath();
+					log.debug("Preprocessor path is "+path+".");
+					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
+				}
+
+				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
+
+				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+
+				schedule.add(s);
 			}
-			else {
-				String path = processor.getFilePath();
-				log.debug("Preprocessor path is "+path+".");
-				jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
-			}
 
-			Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
+			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
 
-			SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+			/*
+			 * we are going to loop through the schedule adding a few job
+			 * pairs at a time to SGE.  If the count of jobs enqueued
+			 * (starting from how many jobs we though we had enqueued when
+			 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
+			 * then we will not continue with our next pass through the
+			 * schedule.  
+			 *
+			 */
 
-			schedule.add(s);
-		}
+			int count = queueSize;
+			int jobCount=schedule.size();
+			
+			while (!schedule.isEmpty()) {
 
-		log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
+				if (count >= R.NODE_MULTIPLIER * nodeCount)
+					break; // out of while (!schedule.isEmpty())
 
-		/*
-		 * we are going to loop through the schedule adding a few job
-		 * pairs at a time to SGE.  If the count of jobs enqueued
-		 * (starting from how many jobs we though we had enqueued when
-		 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
-		 * then we will not continue with our next pass through the
-		 * schedule.  
-		 *
-		 */
+				Iterator<SchedulingState> it = schedule.iterator();
 
-		int count = queueSize;
-		while (!schedule.isEmpty()) {
+				while (it.hasNext()) {
+					SchedulingState s = it.next();
 
-			if (count >= R.NUM_JOB_SCRIPTS)
-				break; // out of while (!schedule.isEmpty())
-
-			Iterator<SchedulingState> it = schedule.iterator();
-
-			while (it.hasNext()) {
-				SchedulingState s = it.next();
-
-				if (!s.pairIter.hasNext()) {
-					// we will remove this SchedulingState from the schedule, since it is out of job pairs
-					it.remove();
-					continue;
-				}		
-
-				log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME +" pairs "
-						+"for job " + s.job.getId() 
-						+ ", queue = "+q.getName() 
-						+ ", user = "+s.job.getUserId());
-
-				int i = 0;
-				while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
-
-
-					JobPair pair = s.pairIter.next();
-					if (pair.getSolver()==null || pair.getBench()==null) {
-						// if the solver or benchmark is null, they were deleted. Indicate that the pair's
-						//submission failed and move on
-						JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
+					if (!s.pairIter.hasNext()) {
+						// we will remove this SchedulingState from the schedule, since it is out of job pairs
+						it.remove();
 						continue;
-					}
-					i++;
-					log.debug("About to submit pair " + pair.getId());
+					}		
+					
 
-					try {
-						// Write the script that will run this individual pair				
-						String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
+					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
+							+"for job " + s.job.getId() 
+							+ ", queue = "+q.getName() 
+							+ ", user = "+s.job.getUserId());
 
-						// do this first, before we submit to grid engine, to avoid race conditions
-						JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+					int i = 0;
+					
+					
+					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 
-						// Submit to the grid engine
-						int sgeId = JobManager.submitScript(scriptPath, pair);
 
-						// If the submission was successful
-						if(sgeId >= 0) {											
-							log.info("Submission of pair "+pair.getId() + " successful.");
-							JobPairs.updateGridEngineId(pair.getId(), sgeId);
+						JobPair pair = s.pairIter.next();
+						if (pair.getSolver()==null || pair.getBench()==null) {
+							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
+							//submission failed and move on
+							JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
+							continue;
 						}
-						else {
-							log.warn("Error submitting pair "+pair.getId() + " to SGE.");
-							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-						}
-						count++;
-					} catch(Exception e) {
-						log.error("submitJobs() received exception " + e.getMessage(), e);
-					}
-				}	
-			} // end iterating once through the schedule
-		} // end looping until schedule is empty or we have submitted enough job pairs
+						i++;
+						log.debug("About to submit pair " + pair.getId());
 
+						try {
+							// Write the script that will run this individual pair				
+							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
+
+							// do this first, before we submit to grid engine, to avoid race conditions
+							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+
+							// Submit to the grid engine
+							int sgeId = JobManager.submitScript(scriptPath, pair);
+
+							// If the submission was successful
+							if(sgeId >= 0) {											
+								log.info("Submission of pair "+pair.getId() + " successful.");
+								JobPairs.updateGridEngineId(pair.getId(), sgeId);
+							}
+							else {
+								log.warn("Error submitting pair "+pair.getId() + " to SGE.");
+								JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
+							}
+							count++;
+						} catch(Exception e) {
+							log.error("submitJobs() received exception " + e.getMessage(), e);
+						}
+					}	
+				} // end iterating once through the schedule
+			} // end looping until schedule is empty or we have submitted enough job pairs
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
 	} // end submitJobs()
 
 
@@ -504,7 +525,6 @@ public abstract class JobManager {
 		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
 
 		// Pair up the solvers and benchmarks
-		int pairCount = 0;//temporarily, we're limiting number of job pairs.
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
@@ -517,11 +537,7 @@ public abstract class JobManager {
 				pair.setPath(SP.get(spaceId));
 				pair.setMaxMemory(memoryLimit);
 				j.addJobPair(pair);
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-					return;	
-				}
+				
 			}
 		}
 	}
@@ -541,17 +557,20 @@ public abstract class JobManager {
 	 * @param b the particular benchmark to get job pairs for
 	 * @param s the list of the solvers in the particular space to get job pairs for
 	 * @param c the list of the configurations of the solver in the particular space to get job pairs for
+	 * @returns error message if problem, null otherwise
 	 */
-	public static void addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc, HashMap<Integer, String> SP) {
+	public static String addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc, HashMap<Integer, String> SP) {
 		log.debug("Attempting to add job pairs in breadth-first search");
 		Space space = Spaces.get(spaceId);
 		JobPair pair;
 
-		int pairCount = 0;
 		//Skip over the benchmarks already done and only retrieve the next benchmark to create a job pair with
 		log.debug("b = " + b);
 		for (Solver solver: s) {
 			List<Configuration> Configs = sc.get(solver);
+			if (Configs.size() == 0) 
+			    return new String("Solver " + solver.getName() + " does not have any configurations, so we are" 
+					      + " aborting creating this job.");
 			for (Configuration config : Configs) {
 				Solver clone = JobManager.cloneSolver(solver);
 				// Now we're going to work with this solver with this configuration
@@ -570,13 +589,10 @@ public abstract class JobManager {
 				log.debug("Pair PATH = " + pair.getPath());
 				j.addJobPair(pair);
 
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-					return;
-				}
+				
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -590,8 +606,9 @@ public abstract class JobManager {
 	 * @param clockTimeout the Clock Timeout for the job 
 	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 * @param spaceId the id of the space to build the job pairs from
+	 * @returns an error message if there was a problem, and null otherwise.
 	 */
-	public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, HashMap<Integer, String> SP) {
+	public static String addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, HashMap<Integer, String> SP) {
 		Space space = Spaces.get(spaceId);
 
 		// Get the benchmarks and solvers from this space
@@ -600,13 +617,15 @@ public abstract class JobManager {
 		List<Configuration> configs;
 		JobPair pair;
 
-		int pairCount = 0;
 		for (Benchmark b : benchmarks) {
 			log.debug("BENCH PATH = " + b.getPath());
 			for (Solver s : solvers) {
 			    log.debug("solver = " + s.getName());
 				// Get the configurations for the current solver
 				configs = Solvers.getConfigsForSolver(s.getId());
+				if (configs.size() == 0) 
+				    return new String("Solver " + s.getName() + " does not have any configurations, so we are" 
+						      + " aborting creating this job.");
 				for (Configuration c : configs) {
 
 				    log.debug("configuration = " + c.getName());
@@ -627,14 +646,11 @@ public abstract class JobManager {
 					log.debug("pair path = " + pair.getPath());
 					j.addJobPair(pair);
 
-					pairCount++;
-					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-						return;
-					}
+					
 				}
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -655,7 +671,6 @@ public abstract class JobManager {
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 
 		// Pair up the solvers and benchmarks
-		int pairCount = 0;//temporarily, we're limiting number of job pairs.
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
@@ -667,11 +682,7 @@ public abstract class JobManager {
 				pair.setPath(SP.get(spaceId));
 				pair.setMaxMemory(memoryLimit);
 				j.addJobPair(pair);
-				pairCount++;
-				log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-				if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-					return;
-				}	
+					
 			}
 		}
 
@@ -693,11 +704,7 @@ public abstract class JobManager {
 					pair.setMaxMemory(memoryLimit);
 					pair.setSpace(Spaces.get(space));
 					j.addJobPair(pair);
-					pairCount++;
-					log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-					if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-						return;
-					}	
+					
 				}
 			}
 		}
@@ -726,7 +733,6 @@ public abstract class JobManager {
 	public static void addJobPairsRobinSelected(Job j, int userId, int cpuLimit, int runLimit,long memoryLimit, int space_id, Benchmark benchmark, List<Solver> solvers, HashMap<Integer, String> SP) {
 		log.debug("Attempting to add job-pairs in round-robin traversal on selected solvers");
 
-		int pairCount = 0;
 
 		for(Solver solver : solvers) {
 			JobPair pair = new JobPair();
@@ -738,11 +744,7 @@ public abstract class JobManager {
 			pair.setPath(SP.get(space_id));
 			pair.setMaxMemory(memoryLimit);
 			j.addJobPair(pair);
-			pairCount++;
-			log.info("Pair Count = " + pairCount + ", Limit = " + R.TEMP_JOBPAIR_LIMIT);
-			if (pairCount >= R.TEMP_JOBPAIR_LIMIT){
-				return;
-			}
+			
 		}
 	}
 }

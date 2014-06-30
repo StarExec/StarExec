@@ -11,6 +11,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Status.StatusCode;
 
 public class JobSecurity {
 	
@@ -26,6 +27,19 @@ public class JobSecurity {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
 		return 0;
+	}
+	/**
+	 * Checks whether a given string is a valid type for the pairsInSpace page
+	 * @param type The string to check
+	 * @return True if valid and false otherwise
+	 */
+	public static boolean isValidGetPairType(String type) {
+		if (type.equals("all") || type.equals("solved") || type.equals("incomplete") || type.equals("wrong") ||
+				type.equals("unknown") || type.equals("resource")) {
+			return true;
+		}
+		return false;
+		
 	}
 	
 	/**
@@ -57,6 +71,29 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	public static int canUserRerunPairs(int jobId, int userId, int statusode) {
+		int result= canUserRerunPairs(jobId, userId);
+		if(result!=0) {
+			return result;
+		}
+		if (statusode<StatusCode.STATUS_COMPLETE.getVal() || statusode>StatusCode.ERROR_GENERAL.getVal()) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		return 0;
+	}
+	
+	public static int canUserRerunPairs(int jobId, int userId) {
+		Job job=Jobs.get(jobId);
+		if (job==null) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		boolean isAdmin=Users.isAdmin(userId);
+		
+		if (job.getUserId()!=userId && !isAdmin) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		return 0;
+	}
 	
 	/**
 	 * Checks to see if the given user has permission to pause the given job

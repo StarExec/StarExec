@@ -1,18 +1,47 @@
-var summaryTable;
 var pairTable;
+var pairType;
+var jobId;
+var spaceId;
+var configId;
+var useWallclock=true;
 $(document).ready(function(){
+	jobId = getParameterByName('id');
+	spaceId=getParameterByName('sid');
+	configId=getParameterByName("configid");
+	pairType=getParameterByName("type");
+	$('.id_100 ').attr('selected','selected');
+	$('#pairFilter option[value='+pairType+']').attr('selected','selected');
+
 	initUI();
 	initDataTables();
-	
+	setTimeButtonText();	
 });
 
+function setTimeButtonText(){
+	if (useWallclock){
+		$(".changeTime .ui-button-text").html("use CPU time");
+	} else {
+		$(".changeTime .ui-button-text").html("use wall time");
+	}
+}
 
 
 /**
  * Initializes the user-interface
  */
 function initUI(){
+	$(".changeTime").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
 	
+	});
+	
+	$(".changeTime").click(function() {
+		useWallclock=!useWallclock;
+		setTimeButtonText();
+		pairTable.fnDraw(false);
+	});
 	$('#pairTbl tbody').delegate("a", "click", function(event) {
 		event.stopPropogation();
 	});
@@ -23,10 +52,9 @@ function initUI(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
-
-
-	
-	
+	$("#pairFilter").change(function(){
+		pairTable.fnDraw(false);
+	});
 }
 
 /**
@@ -44,8 +72,6 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
-	
-
 	
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
@@ -80,11 +106,10 @@ function extendDataTableFunctions(){
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	var jobId = getParameterByName('id');
-	var spaceId=getParameterByName('sid');
-	var configId=getParameterByName("configid");
+	curType = $('#pairFilter').find(":selected").attr("value");
+
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId,
+			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){

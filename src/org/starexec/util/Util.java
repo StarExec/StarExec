@@ -392,28 +392,28 @@ public class Util {
 	
 
     protected static String drainInputStream(InputStream s) {
-	InputStreamReader ins = new InputStreamReader(s);
-	BufferedReader reader = new BufferedReader(ins);		
-
-	String line = null;
-	StringBuilder sb = new StringBuilder();
-	try {
-	    while ((line = reader.readLine()) != null)
-		sb.append(line + System.getProperty("line.separator"));
-	    reader.close();
-	}
-	catch (IOException e) {
-	    log.warn("drainInputStream caught: "+e.toString(), e);
-	}
-	finally {
-	    try {
-		reader.close();
-	    }
-	    catch (Exception e) {
-		log.warn("Caught exception closing reader while draining streams.");
-	    }
-	}
-	return sb.toString();
+		InputStreamReader ins = new InputStreamReader(s);
+		BufferedReader reader = new BufferedReader(ins);		
+	
+		String line = null;
+		StringBuilder sb = new StringBuilder();
+		try {
+		    while ((line = reader.readLine()) != null)
+			sb.append(line + System.getProperty("line.separator"));
+		    reader.close();
+		}
+		catch (IOException e) {
+		    log.warn("drainInputStream caught: "+e.toString(), e);
+		}
+		finally {
+		    try {
+			reader.close();
+		    }
+		    catch (Exception e) {
+			log.warn("Caught exception closing reader while draining streams.");
+		    }
+		}
+		return sb.toString();
     }
 
 

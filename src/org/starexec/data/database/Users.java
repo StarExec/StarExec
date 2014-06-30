@@ -1073,7 +1073,7 @@ public class Users {
 	}
 	
 	/**
-	 * Checks to see whether the given user is an admin
+	 * Checks to see whether the given user is unauthorized
 	 * @param userId
 	 * @return
 	 */
@@ -1083,7 +1083,7 @@ public class Users {
 	}
 	
 	/**
-	 * Checks to see whether the given user is an admin
+	 * Checks to see whether the given user is suspended
 	 * @param userId
 	 * @return
 	 */
@@ -1093,7 +1093,7 @@ public class Users {
 	}
 	
 	/**
-	 * Checks to see whether the given user is an admin
+	 * Checks to see whether the given user is a normal user
 	 * @param userId
 	 * @return
 	 */

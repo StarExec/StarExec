@@ -1,0 +1,27 @@
+#!/bin/bash
+
+LINES=20
+LOGDIR=/project/tomcat-webapps/logs
+LOG=starexec.log
+
+if [ $# -gt 1 ] 
+then
+	echo 'Only 1 argument please (lines for tail)'
+	exit 1
+elif [ $# -eq 1 ]
+then
+	LINES=$1
+fi
+
+DATE=`date +%F`
+
+clear
+#echo Showing $LINES lines for each logfile on $DATE.
+
+#tail -n $LINES $LOGDIR/catalina.
+echo STARLOG - showing last $LINES lines
+echo
+tail -n $LINES $LOGDIR/$LOG
+#tail -n $LINES $LOGDIR/*$DATE* 2>/dev/null
+
+exit 0

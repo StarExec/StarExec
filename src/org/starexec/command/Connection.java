@@ -60,8 +60,12 @@ public class Connection {
 	HttpClient client=null;
 	private String username,password;
 	
-	private HashMap<Integer,Integer> job_info_indices;
+	private HashMap<Integer,Integer> job_info_indices; //these two map job ids to the max completion index
 	private HashMap<Integer,Integer> job_out_indices;
+	
+	private HashMap<Integer,Integer> jobInfoPairCount; //these two map job ids to the number of pairs seen
+	private HashMap<Integer,Integer> jobOutPairCount;
+
 	
 	@SuppressWarnings("deprecation")
 	
@@ -128,6 +132,9 @@ public class Connection {
 		client.getParams();
 		setInfoIndices(con.getInfoIndices());
 		setOutputIndices(con.getOutputIndices());
+		setJobOutPairCount(con.getJobOutPairCount());
+		setJobInfoPairCount(con.getJobInfoPairCount());
+		
 	}
 	
 	/**
@@ -159,6 +166,9 @@ public class Connection {
 		client=getClient();
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,Integer>());
+		setJobOutPairCount(new HashMap<Integer,Integer>());
+		setJobInfoPairCount(new HashMap<Integer,Integer>());
+		
 	}
 
 	protected void setBaseURL(String baseURL) {
@@ -1650,7 +1660,7 @@ public class Connection {
 				lastSeen=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Completion"));
 				
 				//indicates there was no new information
-				if (lastSeen<=Integer.parseInt(urlParams.get(R.FORMPARAM_SINCE))) {
+				if (lastSeen<=since) {
 					
 					response.getEntity().getContent().close();
 					if (done!=null) {
@@ -1658,7 +1668,7 @@ public class Connection {
 						return R.SUCCESS_JOBDONE;
 					}
 					
-					//don't save a empty files
+					//don't save empty files
 					return R.SUCCESS_NOFILE;
 				}
 			}
@@ -1676,13 +1686,24 @@ public class Connection {
 			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
 			if (urlParams.containsKey(R.FORMPARAM_SINCE) && lastSeen>=0) {
+				//TODO: handle these prints better
+				Integer totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
+				Integer pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
+				int curPairs=0;
 				if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
-					this.setJobInfoCompletion(Integer.parseInt(urlParams.get("id")), lastSeen);
+					this.setJobInfoCompletion(id, lastSeen);
+					curPairs=getJobInfoPairCount(id);
+					incrementJobInfoPairsSeen(id,pairsFound);
+					System.out.println("pairs found ="+(curPairs+1)+"-"+(curPairs+pairsFound)+"/"+totalPairs);					
 					
 				} else if (urlParams.get(R.FORMPARAM_TYPE).equals("j_outputs")) {
-					this.setJobOutCompletion(Integer.parseInt(urlParams.get("id")), lastSeen);
+					this.setJobOutCompletion(id, lastSeen);
+					curPairs=getJobOutPairCount(id);
+
+					incrementJobOutPairsSeen(id,pairsFound);
+					System.out.println("pairs found ="+(curPairs+1)+"-"+(curPairs+pairsFound)+"/"+totalPairs);
+
 				}
-				
 			}
 			if (done!=null) {
 				return R.SUCCESS_JOBDONE;
@@ -1848,6 +1869,62 @@ public class Connection {
 		} 
 		return job_info_indices.get(jobID);
 	}
+
+	protected void setJobInfoPairCount(HashMap<Integer,Integer> jobInfoPairCount) {
+		this.jobInfoPairCount = jobInfoPairCount;
+	}
+
+	protected HashMap<Integer,Integer> getJobInfoPairCount() {
+		
+		return jobInfoPairCount;
+	}
+
+	protected void setJobOutPairCount(HashMap<Integer,Integer> jobOutPairCount) {
+		this.jobOutPairCount = jobOutPairCount;
+	}
+
+	protected HashMap<Integer,Integer> getJobOutPairCount() {
+		return jobOutPairCount;
+	}
 	
+	/**
+	 * Gets the number of pairs already seen for info downloads on the given job.
+	 * @param jobID The ID of a job on StarExec
+	 */
+	protected int getJobInfoPairCount(int jobID) {
+		if (!jobInfoPairCount.containsKey(jobID)) {
+			jobInfoPairCount.put(jobID, 0);
+		} 
+		return jobInfoPairCount.get(jobID);
+	}
+	
+	/**
+	 * Gets the number of pairs already seen for output downloads on the given job.
+	 * @param jobID The ID of a job on StarExec
+	 */
+	protected int getJobOutPairCount(int jobID) {
+		if (!jobOutPairCount.containsKey(jobID)) {
+			jobOutPairCount.put(jobID, 0);
+		} 
+		return jobOutPairCount.get(jobID);
+	}
+	
+	/**
+	 * Increases pairs seen on the given job by the given amount
+	 * @param jobID An ID of a job on StarExec
+	 * @param newPairs the number to increment by
+	 */
+	protected void incrementJobInfoPairsSeen(int jobID,int newPairs) {
+		jobInfoPairCount.put(jobID,getJobInfoPairCount(jobID)+newPairs);
+	}
+	
+	/**
+	 * Increases pairs seen on the given job by the given amount
+	 * @param jobID An ID of a job on StarExec
+	 * @param newPairs the number to increment by
+	 */
+	protected void incrementJobOutPairsSeen(int jobID,int newPairs) {
+		jobOutPairCount.put(jobID,getJobOutPairCount(jobID)+newPairs);
+	}
 }
 

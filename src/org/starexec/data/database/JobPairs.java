@@ -124,7 +124,6 @@ public class JobPairs {
 		return false;
 	}
 	
-	//TODO: Is this secure? What permissions does this script have?
 	/**
 	 * Runs the given post processor on the given pair and returns the properties that were obtained
 	 * @param pairId The ID of the pair in question
@@ -242,15 +241,20 @@ public class JobPairs {
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
 	 */ 
-	private static int compareJobPairInts(JobPair jp1, JobPair jp2, int sortIndex, boolean ASC) {
+	private static int compareJobPairNums(JobPair jp1, JobPair jp2, boolean ASC, boolean isWallclock) {
 		int answer=0;
 		try {
 			double db1=0;
 			double db2=0;
-			if (sortIndex==2) {
+			if (isWallclock) {
 				db1=jp1.getWallclockTime();
 				db2=jp2.getWallclockTime();
+			} else {
+				db1=jp1.getCpuTime();
+				db2=jp2.getCpuTime();
 			}
+			
+			
 			//if db1> db2, then db2 should go first
 			if (db1>db2) {
 				answer=1;
@@ -270,9 +274,11 @@ public class JobPairs {
 	 * @param jp1 The first job pair
 	 * @param jp2 The second job pair
 	 * @param sortIndex the value to sort on
-	 * 0 = benchmark name
-	 * 1 = status name
-	 * 3 = starexec-result attr
+	 * 0 = solver name
+	 * 1 = config name
+	 * 2 = benchmark name
+	 * 3 = status name
+	 * 5 = starexec-result attr
 	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
@@ -282,16 +288,22 @@ public class JobPairs {
 		try {
 			String str1=null;
 			String str2=null;
-			if (sortIndex==1) {
+			if (sortIndex==3) {
 				str1=jp1.getStatus().getStatus();
 				str2=jp2.getStatus().getStatus();
 			}
-			else if (sortIndex==3) {
+			else if (sortIndex==5) {
 				str1=jp1.getAttributes().getProperty(R.STAREXEC_RESULT);
 				str2=jp2.getAttributes().getProperty(R.STAREXEC_RESULT);
-			} else {
+			} else if (sortIndex==2) {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
+			} else if (sortIndex==1) {
+				str1=jp1.getConfiguration().getName();
+				str2=jp2.getConfiguration().getName();
+			} else {
+				str1=jp1.getSolver().getName();
+				str2=jp2.getSolver().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			if (str1.compareTo(str2)>0) {
@@ -307,6 +319,88 @@ public class JobPairs {
 		return answer;
 	}
 	
+	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type) {
+
+		log.debug("filtering pairs by type with type = "+type);
+		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+
+		if (type.equals("incomplete")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().statIncomplete()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} else if (type.equals("resource")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().resource()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} else if (type.equals("solved")) {
+			for (JobPair jp : pairs) {
+				if (JobPairs.isPairCorrect(jp)==0) {
+					filteredPairs.add(jp);
+				}
+			}
+		}  else if (type.equals("wrong")) {
+			for (JobPair jp : pairs) {
+				if (JobPairs.isPairCorrect(jp)==1) {
+					filteredPairs.add(jp);
+				}
+			}
+		}  else if (type.equals("unknown")) {
+			for (JobPair jp : pairs) {
+				if (JobPairs.isPairCorrect(jp)==2) {
+					filteredPairs.add(jp);
+				}
+			}
+		}else {
+			filteredPairs=pairs;
+		}
+		return filteredPairs;
+	}
+	/**
+	 * Checks whether a given pair is correct
+	 * @param jp
+	 * @return
+	 * -1 == pair is not complete
+	 * 0 == pair is correct
+	 * 1 == pair is incorrect
+	 * 2 == pair is unknown
+	 */
+	public static int isPairCorrect(JobPair jp) {
+		log.debug("checking whether pair with id = "+jp.getId() +" is correct");
+		StatusCode statusCode=jp.getStatus().getCode();
+
+		if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
+			if (jp.getAttributes()!=null) {
+			   	Properties attrs = jp.getAttributes();
+			   	log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
+			   	log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
+			   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
+		    		//don't know the result, so don't mark as correct or incorrect.	
+			   		return 2;
+			   		
+			   	// the expected result -- just means that no expected result actually existed
+	    		} else if (attrs.containsKey(R.EXPECTED_RESULT) && !attrs.get(R.EXPECTED_RESULT).equals("--")) {
+	    			//no result is counted as wrong
+		    		if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+			   			return 1;
+		    		} else {
+		    			return 0;
+		    		}
+			   	} else {
+				   	//if the attributes don't have an expected result, we will just mark as correct
+			   		return 0;
+
+			   	}
+		    } else {
+		    	return 0;
+		    }
+		} else {
+			return -1;
+		}
+	}
 	
 	/**
 	 * Filters a list of job pairs against some search query. The query is compared to 
@@ -327,7 +421,8 @@ public class JobPairs {
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
 			try {
-				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)) {
+				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
+						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery)) {
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
@@ -709,26 +804,28 @@ public class JobPairs {
 	 * containing all the JobPairs
 	 * @param list1 The first list to merge
 	 * @param list2 The second list to merge
-	 * @param sortColumn The column to sort on. 0 = benchmark name
-	 * 0 = benchmark name
-	 * 1 = status name
-	 * 2 = wallclock time
-	 * 3 = starexec-result attr
+	 * @param sortColumn The column to sort on.
+	 * 0 = solver name
+	 * 1 = config name
+	 * 2 = benchmark name
+	 * 3 = status name
+	 * 4 = wallclock time
+	 * 5 = starexec-result attr
 	 * any other = solver name
 	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
 	 * @return A single list containing all the elements of lists 1 and 2 in sorted order
 	 */
-	private static List<JobPair> mergeJobPairs(List<JobPair> list1, List<JobPair> list2, int sortColumn, boolean ASC) {
+	private static List<JobPair> mergeJobPairs(List<JobPair> list1, List<JobPair> list2, int sortColumn, boolean ASC, boolean wallclock) {
 		
 		int list1Index=0;
 		int list2Index=0;
 		int first;
 		List<JobPair> mergedList=new ArrayList<JobPair>();
 		while (list1Index<list1.size() && list2Index<list2.size()) {
-			if (sortColumn!=2) {
+			if (sortColumn!=4) {
 				first=compareJobPairStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
 			} else {
-				first=compareJobPairInts(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
+				first=compareJobPairNums(list1.get(list1Index),list2.get(list2Index),ASC,wallclock);
 			}
 			if (first==0) {
 				mergedList.add(list1.get(list1Index));
@@ -753,14 +850,14 @@ public class JobPairs {
 	 * @return
 	 */
 	
-	protected static List<JobPair> mergeSortJobPairs(List<JobPair> pairs,int sortColumn,boolean ASC) {
+	protected static List<JobPair> mergeSortJobPairs(List<JobPair> pairs,int sortColumn,boolean ASC, boolean wallclock) {
 		if (pairs.size()<=1) {
 			return pairs;
 		}
 		int middle=pairs.size()/2;
-		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC);
-		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC);
-		return mergeJobPairs(list1,list2,sortColumn,ASC);
+		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC,wallclock);
+		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC,wallclock);
+		return mergeJobPairs(list1,list2,sortColumn,ASC,wallclock);
 	}
 
 	/**
@@ -803,6 +900,14 @@ public class JobPairs {
 		return jp;
 	}
 	
+	
+	/**
+	 * Sets the status of a given job pair to the given status
+	 * @param pairId
+	 * @param statusCode
+	 * @param con
+	 * @return
+	 */
 	public static boolean setPairStatus(int pairId, int statusCode, Connection con) {
 		CallableStatement procedure= null;
 		try{

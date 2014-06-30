@@ -50,7 +50,7 @@ CREATE PROCEDURE GetEnqueuedJobs(IN _queueId INT)
 	END //
 	
 	
--- Retrieves the number of jobs with pending job pairs for the given queue
+-- Retrieves the number of enqueued job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
 -- TODO: This might be slow. Think about a possible index on queueId?
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
@@ -63,28 +63,26 @@ CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 -- Retrieves basic info about enqueued job pairs for the given queue id
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;
-CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT, IN _cap INT)
+CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 		WHERE (enqueued.queue_id = _id AND status_code = 2)
-		ORDER BY job_pairs.sge_id ASC
-		LIMIT _cap;
+		ORDER BY job_pairs.sge_id ASC;
 	END //
 	
 -- Retrieves basic info about running job pairs for the given node id
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetRunningJobPairsByQueue;
-CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT, IN _cap INT)
+CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs
 		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
-		ORDER BY sge_id ASC
-		LIMIT _cap;
-	END //	
+		ORDER BY sge_id ASC;
+		END //	
 	
 -- Count the number of queues in a specific space with a specific name
 -- Author: Wyatt Kaiser

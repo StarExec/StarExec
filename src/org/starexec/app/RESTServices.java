@@ -66,6 +66,7 @@ import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.test.TestManager;
@@ -331,6 +332,47 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Reruns all the pairs in the given job that have the given status code
+	 * @param id The ID of the job to rerun pairs for
+	 * @param statusCode The status code that all the pairs to be rerun have curently
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunpairs/{id}/{status}")
+	@Produces("application/json")	
+	public String rerunJobPairs(@PathParam("id") int id, @PathParam("status") int statusCode, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunPairs(id, userId,statusCode);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		return Jobs.setPairsToPending(id, statusCode) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	/**
+	 * Reruns all the pairs in the given job that have the given status code and have 0 as their runtime
+	 * @param id The ID of the job to rerun pairs for
+	 * @param statusCode The status code that all the pairs to be rerun have curently
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunpairs/{id}")
+	@Produces("application/json")	
+	public String rerunTimelessJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunPairs(id, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		return Jobs.setTimelessPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	/**
 	 * @return a string that holds the std out of job pair with the given id
 	 * @author Tyler Jensen
 	 */
@@ -451,25 +493,30 @@ public class RESTServices {
 	 * Returns the next page of entries for a job pairs table
 	 *
 	 * @param jobId the id of the job to get the next page of job pairs for
+	 * @param jobspaceid The id of the job space at the root if the hierarchy we want pairs for
+	 * @param type The type of pairs to return
 	 * @param request the object containing the DataTable information
 	 * @return a JSON object representing the next page of job pair entries if successful,<br>
 	 * 		1 if the request fails parameter validation,<br> 
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
-	 * @author Todd Elvers
+	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		int status=JobSecurity.canUserSeeJob(jobId, userId);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
+		if (!JobSecurity.isValidGetPairType(type)) {
+			return gson.toJson(SecurityStatusCodes.ERROR_INVALID_PARAMS);
+		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type,wallclock);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -485,9 +532,9 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		int status = JobSecurity.canUserSeeJob(jobId, userId);
@@ -496,7 +543,7 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock);
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
@@ -551,6 +598,39 @@ public class RESTServices {
 		log.debug("chartPath = "+chartPath);
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
+
+	/**
+	 * Handles a request to get a test graph
+	 * @author Julio Cervantes
+	 * @return A json string containing the path to the newly created png chart as well as
+	 * an image map linking points to benchmarks
+	 */
+	@POST
+	@Path("/secure/explore/testgraph")
+	@Produces("application/json")	
+	public String getTestGraph(@Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		String chartPath = null;
+		
+		/**
+		int status= JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		**/
+		
+		//chartPath=Statistics.makeTestChart();
+		if (chartPath==null) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+
+		JsonObject json=new JsonObject();
+		json.addProperty("src", chartPath);
+		
+		
+		return gson.toJson(json);
+	}
+
 	/**
 	 * Handles a request to get a solver comparison graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -1937,32 +2017,38 @@ public class RESTServices {
 	@Path("/restore/solver")
 	@Produces("application/json")
 	public String restoreSolvers(@Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		
-		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedIds[]")){
-			return gson.toJson(ERROR_IDS_NOT_GIVEN);
-		}
-		
-		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedIds[]")){
-			selectedSolvers.add(Integer.parseInt(id));
-		}
-		
-		int status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		
-		for (int id : selectedSolvers) {
+		try {
+			int userId = SessionUtil.getUserId(request);
 			
-			boolean success=Solvers.restore(id);
-			if (!success) {
-				return gson.toJson(ERROR_DATABASE);
+			// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+			if(null == request.getParameterValues("selectedIds[]")){
+				return gson.toJson(ERROR_IDS_NOT_GIVEN);
 			}
+
+			// Extract the String solver id's and convert them to Integer
+			ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+			for(String id : request.getParameterValues("selectedIds[]")){
+				selectedSolvers.add(Integer.parseInt(id));
+			}
+
+			int status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
+			if (status!=0) {
+				return gson.toJson(status);
+			}
+
+			for (int id : selectedSolvers) {
+				
+				boolean success=Solvers.restore(id);
+				if (!success) {
+					return gson.toJson(ERROR_DATABASE);
+				}
+			}
+			return gson.toJson(0);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		return gson.toJson(0);
+		return gson.toJson(ERROR_DATABASE);
+		
 	}
 	
 	/**
@@ -2612,7 +2698,47 @@ public class RESTServices {
 		}
 	}
 	
-	
+    /**
+     * Changes the permissions of a given user for a space hierarchy
+     *@author Julio Cervantes
+     *
+     **/
+    @POST
+	@Path("/space/{spaceId}/edit/perm/hier/{userId}")
+	@Produces("application/json")
+	public String editUserPermissionsHier(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request){
+
+	    // Ensure the user attempting to edit permissions is a leader
+	    int currentUserId = SessionUtil.getUserId(request);
+	    log.info("currentUserId: " + currentUserId + ", requestChangeId: " + userId + ", spaceId: " + spaceId);
+	    List<Integer> permittedSpaces = SpaceSecurity.getUpdatePermissionSpaces(spaceId, userId, currentUserId);
+	    log.info("permittedSpaces: " + permittedSpaces);
+
+	    // Configure a new permission object
+	    Permission newPerm = new Permission(false);
+	    newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
+	    newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+	    newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
+	    newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+	    newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
+	    newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+	    newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
+	    newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+	    newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
+	    newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+	    newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));			
+	    
+	    // Update database with new permissions
+	    for(Integer permittedSpaceId : permittedSpaces){
+		if(permittedSpaceId != null){
+		    Permissions.set(userId,permittedSpaceId.intValue(),newPerm);
+		}
+	    }
+
+	    return gson.toJson(0);
+    }
+
+    
 	/**
 	 * Changes the permissions of a given user for a given space
 	 * 

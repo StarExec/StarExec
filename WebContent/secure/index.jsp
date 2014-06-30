@@ -13,32 +13,32 @@
     		response.sendRedirect(redirectURL);
 		}
 %>
-<star:template title="starexec preview">
+<star:template title="Starexec Preview">
 	<c:if test="${user.role == 'unauthorized'}">
 		<p>
-			<strong>you have not yet been authorized to use the StarExec
+			<strong>You have not yet been authorized to use the StarExec
 				services.</strong>
 		</p>
 		<br />
-		<p>the leaders of the community you selected during registration
+		<p>The leaders of the community you selected during registration
 			will be notified of your request to join shortly.</p>
-		<p>once a leader of that community has approved your request, you
-			will receive an email from us. at that point your registration will
+		<p>Once a leader of that community has approved your request, you
+			will receive an email from us. At that point your registration will
 			be complete and you will be free to login and begin using our
-			service.  you may login as a guest user to explore our public offerings.</p>
+			service.  You may login as a guest user to explore our public offerings.</p>
 		<br />
-		<p>thank you for your patience!</p>
-		<p>you will be automatically logged out after 20 seconds.</p>
+		<p>Thanks for your patience!</p>
+		<p>You will be automatically logged out in 20 seconds.</p>
 		<script language="javascript">
 			setTimeout(logout, 20000);
 		</script>
 	</c:if>
 	<c:if test="${user.role == 'suspended'}">
 		<p>
-			<strong>You have been suspended and have indefinitely lost access to StarExec services</strong>
+			<strong>You have been suspended and have indefinitely lost access to StarExec services.</strong>
 		</p>
 		<br />
-		<p>you will be automatically logged out after 20 seconds.</p>
+		<p>You will be automatically logged out in 20 seconds.</p>
 		<script language="javascript">
 			setTimeout(logout, 20000);
 		</script>
@@ -60,21 +60,21 @@
 		<br />
 		<br />
 		<li><a
-			href="http://starexec.cs.uiowa.edu/starexec/public/quickReference.jsp">quick
-				reference</a></li>
-		<li><a href="http://wiki.uiowa.edu/display/stardev/User+Guide">user
-				guide</a></li>
-		<li><a href="http://wiki.uiowa.edu/display/stardev/Home">public
+			href="http://starexec.cs.uiowa.edu/starexec/public/quickReference.jsp">Quick
+				Reference</a></li>
+		<li><a href="http://wiki.uiowa.edu/display/stardev/User+Guide">User
+				Guide</a></li>
+		<li><a href="http://wiki.uiowa.edu/display/stardev/Home">Public
 				dev wiki</a></li>
 
 		<li><a
-			href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Feedback">give
+			href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Feedback">Give
 				feedback</a></li>
 		<li><a
-			href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Bug Report">report
+			href="mailto:${contactEmail}?subject=[Starexec ${buildVersion}] Bug Report">Report
 				bug</a></li>
 		<br />
 		<br />
-		<p>this build was last updated on ${buildDate}</p>
+		<p>This build was last updated on ${buildDate}</p>
 	</c:if>
 </star:template>

@@ -87,8 +87,13 @@ function createDir {
 log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
+
+copyOutput
+
+
 # cleared below if no error
 JOB_ERROR="1";
+
 
 if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
   true 
@@ -107,7 +112,7 @@ else
   sendStatus $STATUS_FINISHING
 fi
 
-copyOutput
+
 
 cleanWorkspace
 

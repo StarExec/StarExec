@@ -46,31 +46,31 @@ thead {
 }
 
 #solveTbl > thead {
-    font-size: 95%;
+    font-size: 90%;
 }
 
 .solvedHead, .resourceHead {
-	width: 13%;
-	max-width:11%;
+	width: 12%;
+	max-width:12%;
 }
 
 .incompleteHead {
-	width: 16%;
+	width: 18%;
 	max-width:18%;
 }
 
 
-.configHead { 
-	width: 10%;
-	max-width:10%;
+.configHead, .unknownHead { 
+	width: 12%;
+	max-width:12%;
 }
 
 .solverHead, .wrongHead {
 	width: 12%;
-	max-width:10%;
+	max-width:12%;
 }
-.timeHead, .pairsInSpaceHead {
-	width: 12%;
+.timeHead {
+	width: 10%;
 	max-width:10%;
 }
 
@@ -178,7 +178,7 @@ margin-top:5px;
 	padding-left:0px;
 	word-wrap:break-word;
 }
-#subspaceSummaryField #panelActions, #solverSummaryField #statActions {
+#subspaceSummaryField #panelActions, #solverSummaryField #statActions, #pairTblField #pairActions {
 	width:97%;
 	border-color: black;
 	border-style: none none solid;

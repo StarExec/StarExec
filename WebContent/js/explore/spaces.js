@@ -8,10 +8,14 @@ var jobTable;
 var spaceId;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
-
+var spaceChain;   // array of space ids to trigger in order
+var spaceChainIndex=0; //the current index of the space chain
+var openDone=true;
+var spaceChainInterval;
+var usingSpaceChain=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
-	
+	usingSpaceChain=(getSpaceChain().length>1); //check whether to turn off cookies
 	// Build the tooltip styles (i.e. dimensions, color, etc)
 	initTooltipStyles();
 
@@ -31,10 +35,52 @@ $(document).ready(function(){
 		}
 		
 	},10000);
-
+	
 
 });
+function openSpace(curSp,childId) {
+	$("#exploreList").jstree("open_node", "#" + curSp, function() {
+		$.jstree._focused().select_node("#" + childId, true);	
+	});	
+}
+function getSpaceChain() {
+	chain=new Array();
+	spaces=$("#spaceChain").attr("value").split(",");
+	index=0;
+	for (i=0;i<spaces.length;i++) {
+		if (spaces[i].trim().length>0) {
+			chain[index]=spaces[i];
+		}
+		index=index+1;
+	}
 
+	return chain;
+}
+
+function handleSpaceChain() {
+	spaceChain=getSpaceChain();
+	if (spaceChain.length<2) {
+		return;
+	}
+	p=spaceChain[0];
+
+	spaceChainIndex=1;
+	spaceChainInterval=setInterval(function() {
+		if (spaceChainIndex>=spaceChain.length) {
+			clearInterval(spaceChainInterval);
+		}
+		if (openDone) {
+			openDone=false;
+			c=spaceChain[spaceChainIndex];
+			openSpace(p,c);
+			spaceChainIndex=spaceChainIndex+1;
+			p=c;	
+		}
+		},100);
+		
+		
+	
+}
 
 /**
  * Convenience method for determining if a given fieldset has been expanded or not
@@ -723,6 +769,14 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
 	});				
 }
 
+
+//adds the space id to the url as a parameter
+function setURL(i) {
+	current=window.location.pathname;
+	newURL=current.substring(0,current.indexOf("?"));
+	window.history.replaceState("object or string", "",newURL+"?id="+i);
+}
+
 /**
  * Sends a copy benchmark request to the server
  * @param ids The IDs of the benchmarks to copy
@@ -858,6 +912,10 @@ function getDragClone(event) {
 function initSpaceExplorer(){
 	// Set the path to the css theme for the jstree plugin
 	$.jstree._themes = starexecRoot+"css/jstree/";
+	plugins = [ "types", "themes", "json_data", "ui"];
+	if (!usingSpaceChain) {
+		plugins[4]="cookies";
+	}
 	var id;
 	// Initialize the jstree plugin for the explorer list
 	$("#exploreList").jstree({  
@@ -865,6 +923,7 @@ function initSpaceExplorer(){
 			"ajax" : { 
 				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
 				"data" : function (n) {
+					
 					return { id : n.attr ? n.attr("id") : -1 }; 	// What the default space id should be
 				} 
 			} 
@@ -892,7 +951,7 @@ function initSpaceExplorer(){
 			"selected_parent_close" : "select_parent",			
 			"initially_select" : [ "1" ]			
 		},
-		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
+		"plugins" : plugins,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
@@ -901,12 +960,17 @@ function initSpaceExplorer(){
 
 		updateButtonIds(id);
 		getSpaceDetails(id);
-
+		//setURL(id); don't need to do this anymore
 
 		// Remove all non-permanent tooltips from the page; helps keep
 		// the page from getting filled with hundreds of qtip divs
 		$(".qtip-userTooltip").remove();
 		$(".qtip-expdTooltip").remove();
+	}).bind("loaded.jstree", function(event,data) {
+		handleSpaceChain();
+	}).bind("open_node.jstree",function(event,data) {
+		//alert("here");
+		openDone=true;
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
@@ -1935,14 +1999,7 @@ function populateSpaceDetails(jsonData, id) {
 }
 
 
-/**
- * Expands the given parent space and selects the given child space in the jsTree
- */
-function openSpace(parentId, childId) {
-	$("#exploreList").jstree("open_node", "#" + parentId, function() {
-		$.jstree._focused().select_node("#" + childId, true);	
-	});	
-}
+
 
 
 /**
@@ -2008,6 +2065,7 @@ function checkPermissions(perms, id) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
 		$('#editSpace').fadeIn('fast');
+		$('#editSpacePermissions').fadeIn('fast');
 		$('#reserveQueue').fadeIn('fast');
 
 		handlePublicButton(id);
@@ -2015,6 +2073,7 @@ function checkPermissions(perms, id) {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
+		$('#editSpacePermissions').fadeOut('fast');
 		$('#makePublic').fadeOut('fast');
 		$('#makePrivate').fadeOut('fast');
 		$('#reserveQueue').fadeOut('fast');
@@ -2062,6 +2121,7 @@ function checkPermissions(perms, id) {
  */
 function updateButtonIds(id) {
 	$('#editSpace').attr('href', starexecRoot+"secure/edit/space.jsp?id=" + id);
+	$('#editSpacePermissions').attr('href', starexecRoot+"secure/edit/spacePermissions.jsp?id=" + id);
 	$('#addSpace').attr('href', starexecRoot+"secure/add/space.jsp?sid=" + id);
 	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);

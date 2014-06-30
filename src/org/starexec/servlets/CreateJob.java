@@ -129,8 +129,9 @@ public class CreateJob extends HttpServlet {
 		String benchMethod = request.getParameter(benchChoice);
 		String traversal2 = request.getParameter(traversal);
 		//Depending on our run selection, handle each case differently
+		String err = null;
 		if (selection.equals("runAllBenchInSpace")) {
-			JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, space, SP);
+		    err = JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, space, SP);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 
@@ -139,7 +140,10 @@ public class CreateJob extends HttpServlet {
 			spaces.add(0, Spaces.get(space));
 			if (traversal2.equals("depth")) {
 				for (Space s : spaces) {
-					JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, s.getId(), SP);
+				    err = JobManager.addJobPairsFromSpace(j, userId, cpuLimit, runLimit, memoryLimit, 
+									  s.getId(), SP);
+				    if (err != null)
+					break;
 				}
 				log.debug("added all the job pairs from every space");
 			} else {
@@ -169,9 +173,15 @@ public class CreateJob extends HttpServlet {
 						BSC bsc = SpaceToBSC.get(s);
 						if (bsc.b.size() > i) {
 							log.debug("Calling addJobPairsRobin function: i= " + i);
-							JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit,memoryLimit, s.getId(), bsc.b.get(i), bsc.s, bsc.sc, SP);
+							err = JobManager.addJobPairsRobin(j, userId, cpuLimit, runLimit,
+											  memoryLimit, s.getId(), bsc.b.get(i), 
+											  bsc.s, bsc.sc, SP);
+							if (err != null)
+							    break;
 						}
 					}
+					if (err != null)
+					    break;
 				}
 			}
 		} else { //hierarchy OR choice
@@ -238,6 +248,11 @@ public class CreateJob extends HttpServlet {
 			}
 		}
 		
+		if (err != null) {
+		    response.sendError(HttpServletResponse.SC_BAD_REQUEST, err);
+		    return;
+		}
+
 		if (j.getJobPairs().size() == 0) {
 			// No pairs in the job means something went wrong; error out
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");

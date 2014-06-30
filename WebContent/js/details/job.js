@@ -216,6 +216,13 @@ function initUI(){
 		}
     });
 
+	
+	$("#rerunPairs").button({
+		icons: {
+			primary: "ui-icon-arrowreturnthick-1-e"
+		}
+    });
+	
 	$("#jobXMLDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -324,6 +331,7 @@ function initUI(){
 		setTimeButtonText();
 		refreshPanels();
 		refreshStats(curSpaceId);
+		pairTable.fnDraw(false);
 	});
 	
 	$("#clearCache").click(function(){
@@ -769,7 +777,7 @@ function getPanelTable(space) {
 	spaceName=space.attr("name");
 	spaceId=parseInt(space.attr("id"));
 	
-table="<fieldset class=\"panelField\">" +
+	table="<fieldset class=\"panelField\">" +
 			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
 			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
 					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
@@ -778,7 +786,6 @@ table="<fieldset class=\"panelField\">" +
 			"<th class=\"timeHead\" title=\"total wallclock or cpu time for all job pairs run that were solved correctly\">time</th> </tr>" +
 			"</thead>" +
 			"<tbody></tbody> </table></fieldset>";
-
 	return table;
 	
 }
@@ -1052,7 +1059,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	outSpaceId=curSpaceId;
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+outSpaceId,
+			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request

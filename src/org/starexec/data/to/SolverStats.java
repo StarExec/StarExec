@@ -148,4 +148,8 @@ public class SolverStats extends Identifiable {
 	public void incrementCpuTime(double time) {
 		this.cpuTime+=time;
 	}
+	
+	public int getUnknown(){
+		return completeJobPairs - (resourceOutJobPairs + correctJobPairs + incorrectJobPairs);
+	}
 }

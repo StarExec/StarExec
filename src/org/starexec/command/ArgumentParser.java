@@ -387,7 +387,7 @@ class ArgumentParser {
 	protected int downloadArchive(String type,Integer since,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
 		try {
 			Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			 
-			int valid=Validator.isValidDownloadRequest(commandParams,type);
+			int valid=Validator.isValidDownloadRequest(commandParams,type,since);
 			if (valid<0) {
 				return valid;
 			}

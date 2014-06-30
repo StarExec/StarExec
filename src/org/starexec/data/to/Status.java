@@ -1,5 +1,11 @@
 package org.starexec.data.to;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.starexec.data.database.Jobs;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -33,14 +39,18 @@ public class Status {
 		STATUS_PROCESSING(22);
 		
 		private int val;
+		private int count;
 		
 		private StatusCode(int val) {
 			this.val = val;			
-		}				
+		}		
 		
 		public int getVal() {
 			return this.val;			
-		}				
+		}	
+		public String getStatus() {
+			return Status.getStatus(this.val);
+		}
 		public boolean resource() {
 		    return (val >= 14 && val <= 17);
 		}
@@ -49,6 +59,14 @@ public class Status {
 		}
 		public boolean incomplete() {
 		    return (val<=6 || val>=19);
+		}
+		
+		public void setCount(int c) {
+			this.count=c;
+		}
+		
+		public int getCount() {
+			return this.count;
 		}
 		//incomplete as it is defined for stats
 		public boolean statIncomplete(){
@@ -208,6 +226,8 @@ public class Status {
 		return "unknown";
 	}
 	
+	
+	
 
 
 	@Expose private StatusCode code = StatusCode.STATUS_UNKNOWN;
@@ -218,6 +238,21 @@ public class Status {
 	 */
 	public StatusCode getCode() {
 		return code;
+	}
+	
+	/**
+	 * Gets all the status codes for which a user is allowed to rerun pairs
+	 */
+	
+	public static List<StatusCode> rerunCodes() {
+		Status.StatusCode[] codes=Status.StatusCode.values();
+		List<Status.StatusCode> filteredCodes=new ArrayList<Status.StatusCode>();
+		for (Status.StatusCode code: codes) {
+			if (code.getVal()>6 && code.getVal()<19) {
+				filteredCodes.add(code);
+			}
+		}
+		return filteredCodes;
 	}
 	
 	/**

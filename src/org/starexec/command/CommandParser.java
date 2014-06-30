@@ -644,7 +644,8 @@ class CommandParser {
 				if (status!=R.SUCCESS_NOFILE) {
 					infoCounter+=1;
 				} else {
-					System.out.println("No new results");
+					System.out.println(R.successMessages.get(R.SUCCESS_NOFILE));
+
 				}
 				if (status==R.SUCCESS_JOBDONE) {
 					
@@ -660,7 +661,7 @@ class CommandParser {
 				if (status!=R.SUCCESS_NOFILE) {
 					outputCounter+=1;
 				} else {
-					System.out.println("No new results");
+					System.out.println(R.successMessages.get(R.SUCCESS_NOFILE));
 				}
 				
 				if (status==R.SUCCESS_JOBDONE) {

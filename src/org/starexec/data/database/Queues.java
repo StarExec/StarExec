@@ -356,9 +356,8 @@ public class Queues {
 		ResultSet results = null;
 		
 		try {
-			 procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?,?)}");
+			 procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?)}");
 			procedure.setInt(1, qId);					
-			procedure.setInt(2, R.NUM_JOB_SCRIPTS);
 			 results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 
@@ -821,9 +820,8 @@ public class Queues {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?,?)}");
+			procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?)}");
 			procedure.setInt(1, qId);					
-			procedure.setInt(2, R.NUM_JOB_SCRIPTS);
 			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 
@@ -876,7 +874,7 @@ public class Queues {
 	}
 	
 	/**
-	 * Returns the number of jobs with enqueued pairs in the given queue
+	 * Returns the number of job pairs enqueued in the given queue
 	 * @param queueId The queue in question
 	 * @return The integer number of jobs, or null on failure
 	 */

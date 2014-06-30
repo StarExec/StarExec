@@ -123,6 +123,17 @@ CREATE PROCEDURE GetJobAttrsInJobSpace(IN _jobSpaceId INT)
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_space_id=_jobSpaceId;
 	END //
+	
+-- Gets attributes for every job pair in a job that resides in the given job space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobAttrsInJobSpaceByKey;
+CREATE PROCEDURE GetJobAttrsInJobSpaceByKey(IN _jobSpaceId INT, IN _key VARCHAR(128))
+	BEGIN
+		SELECT pair.id, attr.attr_key, attr.attr_value
+		FROM job_pairs AS pair 
+			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
+			WHERE pair.job_space_id=_jobSpaceId AND attr_key=_key;
+	END //
 
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
@@ -262,21 +273,68 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _jobSpaceId INT, IN _co
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //	
 	
--- Retrieves info about job pairs for a given job in a given space with a given configuration,
+-- Retrieves info about job pairs for a given job in a given space with a given status code,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsForTableByStatusInJobSpace;
+CREATE PROCEDURE GetJobPairsForTableByStatusInJobSpace(IN _jobSpaceId INT, IN _status INT)
 	BEGIN
-		SELECT job_pairs.id, 
-				job_pairs.status_code,
+		SELECT id, 
+				solver_id,
+				solver_name,
+				config_id,
+				config_name,
+				bench_id,
+				status_code,
+				bench_name,
+				GetJobPairResult(job_pairs.id) AS result,
+				wallclock,
+				cpu
+		FROM job_pairs 
+		WHERE job_space_id=_jobSpaceId AND status_code=_status;
+	END //
+
+-- Retrieves info about job pairs for a given job in a given space with a given solver,
+-- getting back only the data required to populate a client side datatable
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsForTableBySolverInJobSpace;
+CREATE PROCEDURE GetJobPairsForTableBySolverInJobSpace(IN _jobSpaceId INT, IN _solverId INT)
+	BEGIN
+		SELECT id, 
+				solver_id,
+				solver_name,
+				config_id,
+				config_name,
+				status_code,
 				bench_id,
 				bench_name,
 				GetJobPairResult(job_pairs.id) AS result,
 				wallclock,
 				cpu
 		FROM job_pairs 
-		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+		WHERE job_space_id=_jobSpaceId AND solver_id=_solverId;
+	END //
+	
+-- Retrieves info about job pairs for a given job in a given space with a given configuration,
+-- getting back only the data required to populate a client side datatable
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
+CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
+	BEGIN
+		SELECT id, 
+				solver_id,
+				solver_name,
+				config_id,
+				config_name,
+				bench_id,
+				bench_name,
+				status_code,
+				GetJobPairResult(job_pairs.id) AS result,
+				GetJobPairExpectedResult(job_pairs.id) AS expected,
+				wallclock,
+				cpu
+		FROM job_pairs 
+		WHERE job_space_id=_jobSpaceId AND config_id=_configId;
 	END //
 
 -- Gets all the attribute values for benchmarks in the given job
@@ -301,6 +359,17 @@ CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
 		WHERE job_space_id =_jobSpaceId;
 	END //
 	
+	
+-- Counts the number of pairs in a job
+-- Author Eric Burns
+DROP PROCEDURE IF EXISTS countPairsForJob;
+CREATE PROCEDURE countPairsForJob(IN _id INT)
+	BEGIN 
+		SELECT COUNT(*) AS count 
+		FROM job_pairs
+		WHERE job_id=_id;
+	END //
+	
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetNewCompletedJobPairsByJob;
@@ -311,7 +380,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-						JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
+						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 
 					   INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
@@ -331,13 +400,12 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _cap INT, IN _statusCode 
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
-CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _cap INT)
+CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
 		WHERE job_id=_id AND (status_code = 1)
-		ORDER BY id ASC
-		LIMIT _cap;
+		ORDER BY id ASC;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id
@@ -606,11 +674,28 @@ CREATE PROCEDURE SetNewColumns()
 DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfoByJob;
 CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID INT)
 	BEGIN
-		SELECT path,solver_name,config_name,bench_name, complete.completion_id FROM job_pairs
+		SELECT path,solver_name,config_name,bench_name, complete.completion_id, id FROM job_pairs
 			JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId;
 	END //
 
+	
+DROP PROCEDURE IF EXISTS RemovePairsOfStatusFromComplete;
+CREATE PROCEDURE RemovePairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
+	BEGIN 
+		DELETE job_pair_completion FROM job_pair_completion
+		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
+		WHERE job_id=_jobId AND status_code=_status;
+	END //
+	
+	
+DROP PROCEDURE IF EXISTS RemoveTimelessPairsOfStatusFromComplete;
+CREATE PROCEDURE RemoveTimelessPairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
+	BEGIN 
+		DELETE job_pair_completion FROM job_pair_completion
+		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
+		WHERE job_id=_jobId AND status_code=_status AND (wallclock=0 OR cpu=0);
+	END //
 -- Sets all the pairs of a given job to the given status
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS SetPairsToStatus;
@@ -619,6 +704,26 @@ CREATE PROCEDURE SetPairsToStatus(IN _jobId INT, In _statusCode INT)
 		UPDATE job_pairs
 		SET status_code = _statusCode
 		WHERE job_id = _jobId;
+	END //
+
+-- Sets all pairs with time 0 and the given status to a new status
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetTimelessPairsToStatus;
+CREATE PROCEDURE SetTimelessPairsToStatus(IN _jobId INT, IN _newCode INT, IN _curCode INT)
+	BEGIN 
+		UPDATE job_pairs
+		SET status_code = _newCode
+		WHERE job_id = _jobId AND status_code=_curCode AND (wallclock=0 OR cpu=0);
+	END //
+	
+-- Sets all the pairs of a given job and status to the given status
+-- Author: Eric Burns	
+DROP PROCEDURE IF EXISTS SetPairsOfStatusToStatus;
+CREATE PROCEDURE SetPairsOfStatusToStatus(IN _jobId INT, IN _newCode INT, IN _curCode INT)
+	BEGIN
+		UPDATE job_pairs
+		SET status_code = _newCode
+		WHERE job_id = _jobId AND status_code=_curCode;
 	END //
 	
 -- Removes all jobs in the database that are deleted and also orphaned. Runs periodically.
@@ -631,13 +736,23 @@ CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 		WHERE deleted=true AND job_assoc.space_id IS NULL;
 	END //
 	
--- Gives back the number of pairs that are awaiting post_processing for a given job
-DROP PROCEDURE IF EXISTS CountProcessingPairsByJob;
-CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT, IN _processingStatus INT)
+-- Gives back the number of pairs with the given status
+DROP PROCEDURE IF EXISTS CountPairsByStatusByJob;
+CREATE PROCEDURE CountPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	BEGIN
-		SELECT COUNT(*) AS processing
+		SELECT COUNT(*) AS count
 		FROM job_pairs 
-		WHERE job_pairs.job_id=_jobId and _processingStatus=status_code;
+		WHERE job_pairs.job_id=_jobId and _status=status_code;
+	END //
+	
+	
+-- Gives back the number of pairs with the given status
+DROP PROCEDURE IF EXISTS CountTimelessPairsByStatusByJob;
+CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
+	BEGIN
+		SELECT COUNT(*) AS count
+		FROM job_pairs 
+		WHERE job_pairs.job_id=_jobId and _status=status_code AND (wallclock=0 OR cpu=0);
 	END //
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor
