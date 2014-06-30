@@ -557,8 +557,9 @@ public abstract class JobManager {
 	 * @param b the particular benchmark to get job pairs for
 	 * @param s the list of the solvers in the particular space to get job pairs for
 	 * @param c the list of the configurations of the solver in the particular space to get job pairs for
+	 * @returns error message if problem, null otherwise
 	 */
-	public static void addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc, HashMap<Integer, String> SP) {
+	public static String addJobPairsRobin(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, Benchmark b, List<Solver> s, HashMap<Solver, List<Configuration>> sc, HashMap<Integer, String> SP) {
 		log.debug("Attempting to add job pairs in breadth-first search");
 		Space space = Spaces.get(spaceId);
 		JobPair pair;
@@ -567,6 +568,9 @@ public abstract class JobManager {
 		log.debug("b = " + b);
 		for (Solver solver: s) {
 			List<Configuration> Configs = sc.get(solver);
+			if (Configs.size() == 0) 
+			    return new String("Solver " + solver.getName() + " does not have any configurations, so we are" 
+					      + " aborting creating this job.");
 			for (Configuration config : Configs) {
 				Solver clone = JobManager.cloneSolver(solver);
 				// Now we're going to work with this solver with this configuration
@@ -588,6 +592,7 @@ public abstract class JobManager {
 				
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -601,8 +606,9 @@ public abstract class JobManager {
 	 * @param clockTimeout the Clock Timeout for the job 
 	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 * @param spaceId the id of the space to build the job pairs from
+	 * @returns an error message if there was a problem, and null otherwise.
 	 */
-	public static void addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, HashMap<Integer, String> SP) {
+	public static String addJobPairsFromSpace(Job j, int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, HashMap<Integer, String> SP) {
 		Space space = Spaces.get(spaceId);
 
 		// Get the benchmarks and solvers from this space
@@ -617,6 +623,9 @@ public abstract class JobManager {
 			    log.debug("solver = " + s.getName());
 				// Get the configurations for the current solver
 				configs = Solvers.getConfigsForSolver(s.getId());
+				if (configs.size() == 0) 
+				    return new String("Solver " + s.getName() + " does not have any configurations, so we are" 
+						      + " aborting creating this job.");
 				for (Configuration c : configs) {
 
 				    log.debug("configuration = " + c.getName());
@@ -641,6 +650,7 @@ public abstract class JobManager {
 				}
 			}
 		}
+		return null;
 	}
 
 	/**
