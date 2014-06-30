@@ -2594,7 +2594,7 @@ public class Jobs {
 				return results.getInt("count");
 			}
 		} catch (Exception e) {
-			log.error("countPairsByStatus says "+e.getMessage(),e);
+			log.error("countTimelessPairsByStatus says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

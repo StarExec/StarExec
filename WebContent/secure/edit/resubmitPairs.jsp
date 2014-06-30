@@ -11,9 +11,9 @@
 		Job j=null;
 		//if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
 			
-			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
+			//List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			
-			request.setAttribute("codes",filteredCodes);
+			//request.setAttribute("codes",filteredCodes);
 			request.setAttribute("jobId",jobId);
 			request.setAttribute("timelessCount",Jobs.countTimelessPairs(jobId));
 		//} else {
@@ -40,9 +40,15 @@
 			<fieldset id="detailField">
 				<legend>select status</legend>
 				<select id="statusCodeSelect">
-					<c:forEach var="code" items="${codes}">
-						<option value="${code.getVal()}">${code.getStatus()} (${code.getVal()})-- ${Jobs.countPairsByStatus(jobId,code.getVal())}</option>
-					</c:forEach>
+					<%
+						List<Status.StatusCode> filteredCodes=Status.rerunCodes();
+						int jobId = Integer.parseInt(request.getParameter("id"));
+						for (Status.StatusCode code: filteredCodes) {
+							System.out.println("<option value="+code.getVal()+">"+code.getStatus()+"("+code.getVal()+" -- "+Jobs.countPairsByStatus(jobId,code.getVal())+"</option>");
+						}
+					
+					%>
+			
 				
 				</select>
 				

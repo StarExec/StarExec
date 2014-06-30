@@ -366,8 +366,14 @@ public class UploadSolver extends HttpServlet {
 			int solver_Success = Solvers.add(newSolver, spaceId);
 			if (solver_Success>0 && build) {
 				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
+				log.debug("output file = "+buildOutputFile.getAbsolutePath());
 				buildOutputFile.getParentFile().mkdirs();
-				FileUtils.writeStringToFile(buildOutputFile, buildstr);
+				try {
+					FileUtils.writeStringToFile(buildOutputFile, buildstr);
+
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}
 			}
 			returnArray[0] = solver_Success;
 			return returnArray;
