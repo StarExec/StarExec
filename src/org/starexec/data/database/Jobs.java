@@ -2543,27 +2543,34 @@ public class Jobs {
 		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_OUTPUT);
 		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV);
 		//Cache.invalidateAndDeleteCache(jobId, CacheType.CACHE_JOB_CSV_NO_IDS);
-		List<JobPair> pairs = Jobs.getPairs(jobId);
-		for (JobPair pair : pairs) {
+		//List<JobPair> pairs = Jobs.getPairs(jobId);
+		//for (JobPair pair : pairs) {
 			//Cache.invalidateAndDeleteCache(pair.getId(), CacheType.CACHE_JOB_PAIR);
-		}
+		//}
 	}
 	
-	public static int CountProcessingPairsByJob(int jobId) {
+	
+	/**
+	 * Returns the count of pairs with the given status code in the given job
+	 * @param jobId
+	 * @param statusCode
+	 * @return The count or -1 on failure
+	 */
+	public static int countPairsByStatus(int jobId, int statusCode) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL CountProcessingPairsByJob(?,?)}");
+			procedure=con.prepareCall("{CALL CountPairsByStatusByJob(?,?)}");
 			procedure.setInt(1,jobId);
-			procedure.setInt(2,StatusCode.STATUS_PROCESSING.getVal());
+			procedure.setInt(2,statusCode);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				return results.getInt("processing");
+				return results.getInt("count");
 			}
 		} catch (Exception e) {
-			log.error("doesJobHaveProcessingPairs says "+e.getMessage(),e);
+			log.error("countPairsByStatus says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2571,6 +2578,12 @@ public class Jobs {
 		}
 		
 		return -1;
+	}
+	
+	
+	public static int CountProcessingPairsByJob(int jobId) {
+		return countPairsByStatus(jobId,StatusCode.STATUS_PROCESSING.getVal());
+	
 	}
 	/**
 	 * Returns whether the given job has any pairs that are currently waiting
@@ -2606,25 +2619,7 @@ public class Jobs {
 	 * @return The integer number of pending pairs. -1 is returned on error
 	 */
 	public static int countPendingPairs(int jobId) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL CountPendingPairs(?)}");
-			procedure.setInt(1, jobId);
-			results=procedure.executeQuery();
-			if (results.next()) {
-				return results.getInt("pending");
-			}
-		} catch(Exception e) {
-			log.error("countPendingPairs says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return -1;
+		return Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
 	}
 	
 	public static JobStatus getJobStatusCode(int jobId) {

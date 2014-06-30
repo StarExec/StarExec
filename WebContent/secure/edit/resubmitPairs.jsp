@@ -15,8 +15,6 @@
 			
 			request.setAttribute("codes",filteredCodes);
 			request.setAttribute("jobId",jobId);
-			
-			
 		//} else {
 			//if (Jobs.isJobDeleted(jobId)) {
 			//	response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -42,7 +40,7 @@
 				<legend>select status</legend>
 				<select id="statusCodeSelect">
 					<c:forEach var="code" items="${codes}">
-						<option value="${code.getVal()}">${code.getStatus()} (${code.getVal()})</option>
+						<option value="${code.getVal()}">${code.getStatus()} (${code.getVal()})-- ${Jobs.countPairsByStatus(jobId,code.getVal())}</option>
 					</c:forEach>
 				
 				</select>

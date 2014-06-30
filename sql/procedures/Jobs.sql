@@ -736,13 +736,13 @@ CREATE PROCEDURE RemoveDeletedOrphanedJobs()
 		WHERE deleted=true AND job_assoc.space_id IS NULL;
 	END //
 	
--- Gives back the number of pairs that are awaiting post_processing for a given job
-DROP PROCEDURE IF EXISTS CountProcessingPairsByJob;
-CREATE PROCEDURE CountProcessingPairsByJob(IN _jobId INT, IN _processingStatus INT)
+-- Gives back the number of pairs with the given status
+DROP PROCEDURE IF EXISTS CountPairsByStatusByJob;
+CREATE PROCEDURE CounPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	BEGIN
-		SELECT COUNT(*) AS processing
+		SELECT COUNT(*) AS count
 		FROM job_pairs 
-		WHERE job_pairs.job_id=_jobId and _processingStatus=status_code;
+		WHERE job_pairs.job_id=_jobId and _status=status_code;
 	END //
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor

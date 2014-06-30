@@ -299,6 +299,7 @@ public class UploadSolver extends HttpServlet {
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
 				buildstr=Util.executeCommand(command, null,tempDir);
+				log.debug("got back the output "+buildstr);
 			}
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
