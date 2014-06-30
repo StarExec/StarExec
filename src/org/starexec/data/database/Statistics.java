@@ -1,6 +1,7 @@
 package org.starexec.data.database;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -31,6 +32,9 @@ import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.Range;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -152,6 +156,59 @@ public class Statistics {
 			map.put(meta.getColumnName(i), result.getString(i));
 		}
 		return map;
+	}
+
+    private static PieDataset createTestDataset() {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        dataset.setValue("One", new Double(43.2));
+        dataset.setValue("Two", new Double(10.0));
+        dataset.setValue("Three", new Double(27.5));
+        dataset.setValue("Four", new Double(17.5));
+        dataset.setValue("Five", new Double(11.0));
+        dataset.setValue("Six", new Double(19.4));
+        return dataset;        
+    }
+
+	/**
+	 * Creates test chart
+	 * @return A list of strings of size 2, where the first string is the path to the new graph
+	 * and the second string is an HTML image map. Returns null on failure.
+	 * @author Julio Cervantes
+	 */
+	
+	public static String makeTestChart() {
+		try {
+				
+			log.info("making test chart");
+
+			PieDataset dataset = createTestDataset();
+
+			JFreeChart chart = ChartFactory.createPieChart(
+			 "Pie Chart Demo 1",  // chart title
+                         dataset,             // data
+                         true,               // include legend
+                         true,
+                         false
+                         );
+
+                         PiePlot plot = (PiePlot) chart.getPlot();
+			 plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 12));
+			 plot.setNoDataMessage("No data available");
+			 plot.setCircular(true);
+			 plot.setLabelGap(0.02);
+
+			 String filename="test.png";
+			 File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
+			 
+			 ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+
+			 return Util.docRoot(R.JOBGRAPH_FILE_DIR+"/" + filename);
+			
+
+		} catch (Exception e) {
+			log.error("makeTestChart says "+e.getMessage(),e);
+		}
+		return null;
 	}
 	
 	/**
