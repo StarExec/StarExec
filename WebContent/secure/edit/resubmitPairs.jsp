@@ -9,20 +9,19 @@
 				
 		
 		Job j=null;
-		//if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
+		if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
 			
-			//List<Status.StatusCode> filteredCodes=Status.rerunCodes();
-			
-			//request.setAttribute("codes",filteredCodes);
+			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
+			request.setAttribute("codes",filteredCodes);
 			request.setAttribute("jobId",jobId);
 			request.setAttribute("timelessCount",Jobs.countTimelessPairs(jobId));
-		//} else {
-			//if (Jobs.isJobDeleted(jobId)) {
-			//	response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
-			//} else {
-			//	response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
-			//}
-		//}
+		} else {
+			if (Jobs.isJobDeleted(jobId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+			}
+		}
 	} catch (NumberFormatException nfe) {
 		nfe.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
@@ -40,15 +39,9 @@
 			<fieldset id="detailField">
 				<legend>select status</legend>
 				<select id="statusCodeSelect">
-					<%
-						List<Status.StatusCode> filteredCodes=Status.rerunCodes();
-						int jobId = Integer.parseInt(request.getParameter("id"));
-						for (Status.StatusCode code: filteredCodes) {
-							System.out.println("<option value="+code.getVal()+">"+code.getStatus()+"("+code.getVal()+" -- "+Jobs.countPairsByStatus(jobId,code.getVal())+"</option>");
-						}
-					
-					%>
-			
+					<c:forEach var="code" items="${codes}">
+						<option value="${code.getVal()}">${code.getStatus()} (${code.getVal()})-- ${code.getCount()}</option>
+					</c:forEach>
 				
 				</select>
 				

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.starexec.data.database.Jobs;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -56,6 +58,10 @@ public class Status {
 		}
 		public boolean incomplete() {
 		    return (val<=6 || val>=19);
+		}
+		
+		public int getCount(int jobId) {
+			return Jobs.countPairsByStatus(jobId, this.getVal());
 		}
 		//incomplete as it is defined for stats
 		public boolean statIncomplete(){
