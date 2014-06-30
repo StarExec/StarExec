@@ -315,12 +315,14 @@ function restoreSelected(prim) {
 				$.post(  
 						starexecRoot +"services/restore/"+prim, 
 						{selectedIds : getSelectedRows(table)},
-						function(nextDataTablePage){
+						function(code){
 							destroyDialog();
-							switch(nextDataTablePage){
+							switch(code){
 								case 1:
 									showMessage('error', "Internal error restoring "+prim+"s", 5000);
 									break;
+								case 2:
+									showMessage('error', "you do not have permission to delete the selected solver",5000);
 								default:
 									solverTable.fnDraw(false);
 									benchTable.fnDraw(false);

@@ -253,7 +253,8 @@ public class SolverSecurity {
 	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	public static int canUserRestoreSolver(int solverId, int userId) {
-		Solver solver = Solvers.get(solverId);
+		
+		Solver solver = Solvers.getIncludeDeleted(solverId);
 		if (solver==null) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}

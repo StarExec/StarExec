@@ -2017,32 +2017,38 @@ public class RESTServices {
 	@Path("/restore/solver")
 	@Produces("application/json")
 	public String restoreSolvers(@Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		
-		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
-		if(null == request.getParameterValues("selectedIds[]")){
-			return gson.toJson(ERROR_IDS_NOT_GIVEN);
-		}
-		
-		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
-		for(String id : request.getParameterValues("selectedIds[]")){
-			selectedSolvers.add(Integer.parseInt(id));
-		}
-		
-		int status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		
-		for (int id : selectedSolvers) {
+		try {
+			int userId = SessionUtil.getUserId(request);
 			
-			boolean success=Solvers.restore(id);
-			if (!success) {
-				return gson.toJson(ERROR_DATABASE);
+			// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
+			if(null == request.getParameterValues("selectedIds[]")){
+				return gson.toJson(ERROR_IDS_NOT_GIVEN);
 			}
+
+			// Extract the String solver id's and convert them to Integer
+			ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+			for(String id : request.getParameterValues("selectedIds[]")){
+				selectedSolvers.add(Integer.parseInt(id));
+			}
+
+			int status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
+			if (status!=0) {
+				return gson.toJson(status);
+			}
+
+			for (int id : selectedSolvers) {
+				
+				boolean success=Solvers.restore(id);
+				if (!success) {
+					return gson.toJson(ERROR_DATABASE);
+				}
+			}
+			return gson.toJson(0);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		return gson.toJson(0);
+		return gson.toJson(ERROR_DATABASE);
+		
 	}
 	
 	/**
