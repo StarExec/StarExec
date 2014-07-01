@@ -511,6 +511,8 @@ public class Queues {
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
 				jp.setConfiguration(c);
+				jp.getSolver().addConfiguration(c);
+
 				Status stat = new Status();
 
 				stat.setCode(results.getInt("status_code"));
@@ -576,6 +578,7 @@ public class Queues {
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
 				jp.setConfiguration(c);
+				jp.getSolver().addConfiguration(c);
 				Status stat = new Status();
 
 				stat.setCode(results.getInt("status_code"));
