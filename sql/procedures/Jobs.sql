@@ -80,7 +80,7 @@ CREATE PROCEDURE CountOlderPairs(IN _id INT, IN _since INT)
 	BEGIN
 		SELECT COUNT(*) AS count
 		FROM job_pairs JOIN job_pair_completion ON id=pair_id
-		WHERE completion_id<=_since;
+		WHERE completion_id<=_since and job_id=_id;
 	END //
 	
 -- Returns the number of jobs pairs for a given job that match a given query
