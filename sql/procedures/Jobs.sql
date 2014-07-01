@@ -73,6 +73,16 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpace(IN _jobSpaceId INT)
 		WHERE job_space_id=_jobSpaceId;
 	END //
 	
+-- Counts the number of pairs in a job with a completion index <= the given
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS CountOlderPairs;
+CREATE PROCEDURE CountOlderPairs(IN _id INT, IN _since INT)
+	BEGIN
+		SELECT COUNT(*) AS count
+		FROM job_pairs JOIN job_pair_completion ON id=pair_id
+		WHERE completion_id<=_since;
+	END //
+	
 -- Returns the number of jobs pairs for a given job that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpaceWithQuery;

@@ -268,6 +268,31 @@ public class Jobs {
 		}
 		return false;
 	}
+	
+	public static int countOlderPairs(int jobId, int since) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL CountOlderPairs(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, since);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("count");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+
+		}
+		return -1;
+	}
 	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
 	 * in the database jobs table to true. If  the job is referenced by no spaces,
