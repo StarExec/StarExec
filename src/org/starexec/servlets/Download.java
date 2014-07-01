@@ -329,8 +329,6 @@ public class Download extends HttpServlet {
 				File schema = new File(R.STAREXEC_ROOT + File.separator + "public/batchJobSchema.xsd");
 				files.add(schema);
 			
-			
-
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
 			
 			return true;
@@ -627,6 +625,7 @@ public class Download extends HttpServlet {
 				zipFileName.append(p.getConfiguration().getName());
 				zipFileName.append(File.separator);
 				zipFileName.append(file.getName());
+				
 				ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
 				
 				
@@ -715,25 +714,23 @@ public class Download extends HttpServlet {
 	 * @author Ruoyu Zhang + Eric Burns
 	 */
 	
-	//TODO: This can be made more efficient by simply copying the hierarchy into the output stream insead of storing it first.
 	private boolean handleSpace(Space space, int uid, String format, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws Exception {
 		// If we can see this space AND the space is downloadable...
 		try {
 			if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
 				
 				
-				String baseFileName=space.getName();
-				File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
-				
-				storeSpaceHierarchy(space, uid, tempDir.getAbsolutePath(), includeBenchmarks,includeSolvers,hierarchy,null);
-				ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
-				if(tempDir.exists()){
-					
-						FileUtils.deleteDirectory(tempDir);
-						log.debug("space directory exists = "+tempDir.exists());
-					
-					
-				}
+				//String baseFileName=space.getName();
+				//File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
+				ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
+
+				storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks,includeSolvers,hierarchy,null,stream);
+				stream.close();
+				//ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
+				//if(tempDir.exists()){
+				//		FileUtils.deleteDirectory(tempDir);
+				//		log.debug("space directory exists = "+tempDir.exists());
+				//}
 				
 				
 				return true;
@@ -762,21 +759,15 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang + Eric Burns
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive, String solverPath) throws IOException {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive, String solverPath, ZipOutputStream stream) throws Exception {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
-			File tempDir = new File(dest);
-			log.debug("[new directory] temp dir = " + dest);
-			tempDir.mkdirs();
-
 			if (includeBenchmarks) {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
-				//File benchmarkDir=new File(tempDir,"benchmarks");
-				//benchmarkDir.mkdirs();
+
 				for(Benchmark b: benchList){
 					if(b.isDownloadable() || b.getUserId()==uid ){
-						FileUtils.copyFileToDirectory(new File(b.getPath()), tempDir); // Was benchmarkDir
-					
+						ArchiveUtil.addFileToArchive(stream, new File(b.getPath()), dest+File.separator+b.getName());					
 					}
 				}
 			}
@@ -790,54 +781,34 @@ public class Download extends HttpServlet {
 				} else{
 					solverList=Solvers.getBySpace(space.getId());
 				}
-					
-					
-				File solverDir=new File(tempDir,"solvers");
-				solverDir.mkdirs();
+
 				if (solverPath==null) {
 					
 					for (Solver s : solverList) {
 						if (s.isDownloadable() || s.getUserId()==uid) {
-							String solverDirectoryName=(new File(s.getPath())).getName();
-							FileUtils.copyDirectoryToDirectory(new File(s.getPath()),solverDir);
-							//give solver directory a better name-- ID is included to ensure uniqueness
-							(new File(solverDir,solverDirectoryName)).renameTo(new File(solverDir,s.getName()+s.getId()));
+							ArchiveUtil.addDirToArchive(stream, new File(s.getPath()), dest+File.separator+"solvers"+File.separator+s.getId());
+							
 						}
 					}
-					solverPath=solverDir.getAbsolutePath();
-				} //else {
-					//for (Solver s : solverList) {
-						//File existingSolver=new File(solverPath,s.getName()+s.getId());
-						//File linkDir=new File(solverDir,s.getName()+s.getId());
-						//not working currently, for now, just don't put solvers in the individual spaces
-						//Files.createSymbolicLink(Paths.get(linkDir.getAbsolutePath()), Paths.get(existingSolver.getAbsolutePath()));
-					//}
-				//}
-				
+				} 
 			}
-			//write the description of the current space to a file
-			File description = new File(tempDir + File.separator + R.DESC_PATH);
-			FileWriter fw = new FileWriter(description.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(space.getDescription());
-			bw.close();
-			fw.close();
+
 			
+			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest+File.separator+R.DESC_PATH);
 			
 			//if we aren't getting subspaces, we're done
 			if (!recursive) {
 				return;
 			}
 
-
 			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid);
 			if(subspaceList ==  null || subspaceList.size() == 0){
 				return;
 			}
-
+			//TODO: rethink the solver path variable
 			for(Space s: subspaceList){
 				String subDir = dest + File.separator + s.getName();
-				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,includeSolvers,recursive,solverPath);
+				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,includeSolvers,recursive,"fake",stream);
 			}
 			return;
 		}
@@ -867,7 +838,7 @@ public class Download extends HttpServlet {
 					request.getParameter("type").equals("reupload") ||
 					request.getParameter("type").equals("bench") ||
 					request.getParameter("type").equals("spaceXML") ||
-			                request.getParameter("type").equals("jobXML") ||
+			        request.getParameter("type").equals("jobXML") ||
 					request.getParameter("type").equals("jp_output") ||
 					request.getParameter("type").equals("job") ||
 					request.getParameter("type").equals("j_outputs") ||

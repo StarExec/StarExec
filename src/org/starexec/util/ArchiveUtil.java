@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -428,6 +429,16 @@ public class ArchiveUtil {
 		}
 		
 	}
+	
+	public static void addStringToArchive(ZipOutputStream zos, String str, String zipFileName) throws Exception {
+		ZipEntry entry=new ZipEntry(zipFileName);
+		zos.putNextEntry(entry);
+		PrintWriter writer=new PrintWriter(zos);
+		writer.write(str);
+		writer.flush();
+		zos.closeEntry();
+	}
+	
 	
 	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws Exception {
 		ZipEntry entry=new ZipEntry(zipFileName);
