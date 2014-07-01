@@ -2692,6 +2692,23 @@ public class Jobs {
 		}
 		return false;
 	}
+	
+	/**
+	 * Counts the number of pairs a job has that are not complete (status between 1 and 6)
+	 * @param jobId
+	 * @return
+	 */
+	
+	public static int countIncompletePairs(int jobId) {
+		return Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal()) +
+		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_ENQUEUED.getVal()) +
+		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_PREPARING.getVal()) +
+		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_FINISHING.getVal()) +
+		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_RUNNING.getVal()) +
+		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_WAIT_RESULTS.getVal());
+
+	}
+	
 	/**
 	 * Returns the number of job pairs that are pending for the current job
 	 * @param jobId The ID of the job in question
@@ -2720,7 +2737,7 @@ public class Jobs {
 			}
 
 			//if the job is not paused and no pending pairs remain, it is done
-			if (countPendingPairs(jobId)==0) {
+			if (countIncompletePairs(jobId)==0) {
 				status.setCode(JobStatusCode.STATUS_COMPLETE);
 				return status;
 			} 
