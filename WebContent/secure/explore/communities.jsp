@@ -45,7 +45,7 @@
 				</thead>			
 			</table>
 		</fieldset>
-		<fieldset id="graph">
+		<fieldset id="graph" hidden>
 			<legend class="expd">graphs</legend>
 			<img id="communityOverview" src="/${starexecRoot}/images/loadingGraph.png" width="300" height="300" />
 			<fieldset id="options">
