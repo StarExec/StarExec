@@ -410,12 +410,14 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _cap INT, IN _statusCode 
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
-CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT)
+CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
+		
 		WHERE job_id=_id AND (status_code = 1)
-		ORDER BY id ASC;
+		ORDER BY id ASC
+		LIMIT _limit;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id

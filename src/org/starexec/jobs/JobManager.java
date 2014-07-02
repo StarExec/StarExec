@@ -188,7 +188,8 @@ public abstract class JobManager {
 					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
 				}
 
-				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId()).iterator();
+				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, ((nodeCount*R.NODE_MULTIPLIER)-queueSize)/joblist.size() + 1);
+				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId(),limit).iterator();
 
 				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 
@@ -208,7 +209,6 @@ public abstract class JobManager {
 			 */
 
 			int count = queueSize;
-			int jobCount=schedule.size();
 			
 			while (!schedule.isEmpty()) {
 

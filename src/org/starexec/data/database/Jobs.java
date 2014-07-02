@@ -2409,27 +2409,23 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
-	protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId) throws Exception {	
+	protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId,int limit) throws Exception {	
 
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 try {
-			procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?)}");
-			procedure.setInt(1, jobId);					
+			procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
+			procedure.setInt(1, jobId);				
+			procedure.setInt(2,limit);
 			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 			//we map ID's to  primitives so we don't need to query the database repeatedly for them
 			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
 			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
 			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
-				int nodeId=results.getInt("node_id");
-				if (!nodes.containsKey(nodeId)) {
-					nodes.put(nodeId, Cluster.getNodeDetails(nodeId));
-				}
-				jp.setNode(nodes.get(nodeId));	
+				
 				//we need to check to see if the benchId and configId are null, since they might
 				//have been deleted while the the job is still pending
 				Integer benchId=results.getInt("bench_id");
@@ -2441,21 +2437,24 @@ public class Jobs {
 					jp.setBench(benchmarks.get(benchId));
 				}
 				Integer configId=results.getInt("config_id");
+				String configName=results.getString("config_name");
+				Configuration c=new Configuration();
+				c.setId(configId);
+				c.setName(configName);
+				jp.setConfiguration(c);
+
 				if (configId!=null) {
 					if (!configs.containsKey(configId)) {
 						solvers.put(configId, Solvers.getSolverByConfig(configId, false));
-						configs.put(configId, Solvers.getConfiguration(configId));	
 					}
 					jp.setSolver(solvers.get(configId));
-					jp.setConfiguration(configs.get(configId));
-					
+					jp.getSolver().addConfiguration(c);
 				}
 				
 				Status s = new Status();
 
 				s.setCode(results.getInt("status_code"));
 				jp.setStatus(s);
-				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
 				returnList.add(jp);
 			}			
 
@@ -2477,12 +2476,12 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Benton McCune
 	 */
-	public static List<JobPair> getPendingPairsDetailed(int jobId) {
+	public static List<JobPair> getPendingPairsDetailed(int jobId, int limit) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getPendingPairsDetailed(con, jobId);
+			return getPendingPairsDetailed(con, jobId,limit);
 		} catch (Exception e){			
 			log.error("getPendingPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
 		} finally {
