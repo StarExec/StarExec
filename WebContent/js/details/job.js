@@ -625,6 +625,8 @@ function initUI(){
 	$("#actionField").expandable(true);
 	
 	
+	$("#subspaceSummaryField").expandable(false);
+	
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
 	$("#spaceOverviewUpdate").click(function() {
 	  	updateSpaceOverviewGraph();
@@ -793,12 +795,15 @@ function getPanelTable(space) {
 function initializePanels() {
 	sentSpaceId=curSpaceId;
 	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+sentSpaceId,function(spaces) {
-		panelArray=new Array();		
+		panelArray=new Array();
+		var open=true;
 		if (spaces.length==0) {
 			$("#subspaceSummaryField").hide();
 		}else {
 			$("#subspaceSummaryField").show();
+			
 		}
+		
 		for (i=0;i<spaces.length;i++) {
 			
 			space=$(spaces[i]);
@@ -822,6 +827,7 @@ function initializePanels() {
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });
 		}
+		
 		$(".viewSubspace").each(function() {
 			$(this).click(function() {
 				spaceId=$(this).parents("table.panel").attr("spaceId");
