@@ -1,13 +1,31 @@
 $(document).ready(function(){	
+	
+	$(".subject a").each(function(){
+		url=makeFullURL($(this).attr("href"));
+		$(this).attr("href",url);
+	});
 	attachClickEvents();
 	findReferringFile();
 });
 
 //adds the help page to the url
 function setURL(i) {
+	window.history.replaceState("current page", "",makeFullURL(i));
+}
+
+
+//gets the current URL with no parameters
+function getBaseURL() {
 	current=window.location.pathname;
-	newURL=current.substring(0,current.indexOf("?"));
-	window.history.replaceState("current page", "",newURL+"?ref="+i);
+	return current.substring(0,current.indexOf("?"));
+}
+
+function makeFullURL(ref) {
+	return getBaseURL()+"?ref="+ref;
+}
+
+function getRef(url) {
+	return url.substring(url.indexOf("?ref=")+5);
 }
 
 /**
@@ -56,7 +74,7 @@ function attachClickEvents() {
 	$("#topicList a").click(function(event) {
 		removeActiveLinks();
 		$(this).addClass("active");
-		getHTML($(this).attr("href"));
+		getHTML(getRef($(this).attr("href")));
 		return false; // this ensures that we don't actually follow the link
 	});
 }
@@ -73,6 +91,6 @@ function selectMatchingReference(reference) {
  * then the main help page is loaded.
  */
 function findReferringFile() {
-	reference=$("#reference").attr("href");
+	reference=makeFullURL($("#reference").attr("href"));
 	selectMatchingReference(reference);
 }
