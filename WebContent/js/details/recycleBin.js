@@ -112,14 +112,11 @@ $(document).ready(function(){
         "fnServerData"	: fnRecycledPaginationHandler
     });
 	
-	$("#rbenchmarks").delegate("tr","mousedown", function(){
+	$("#rbenchmarks, #rsolvers").delegate("tr","mousedown", function(){
 		$(this).toggleClass("row_selected");
 		handleClassChange();
 	});
-	$("#rsolvers").delegate("tr","mousedown", function(){
-		$(this).toggleClass("row_selected");
-		handleClassChange();
-	});
+
 	handleClassChange();
 	
 });
@@ -322,7 +319,7 @@ function restoreSelected(prim) {
 									showMessage('error', "Internal error restoring "+prim+"s", 5000);
 									break;
 								case 2:
-									showMessage('error', "you do not have permission to delete the selected solver",5000);
+									showMessage('error', "you do not have permission to restore the selected prims",5000);
 								default:
 									solverTable.fnDraw(false);
 									benchTable.fnDraw(false);
