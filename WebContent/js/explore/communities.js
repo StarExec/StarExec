@@ -67,7 +67,12 @@ $(document).ready(function(){
 	$("#downloadPreProcessors").fadeOut('fast');
 	
 	
-	
+	$('#communityOverviewUpdate').button( {
+		icons: {
+		    primary: "ui-icon-arrowrefresh-1-e"
+			
+    }});
+
 	$('#joinComm').button({
 		icons: {
 			secondary: "ui-icon-plus"
@@ -102,6 +107,9 @@ $(document).ready(function(){
 	});
 	
 	initDialogs();
+	$("#communityOverviewUpdate").click(function() {
+	  	updateCommunityOverviewGraph();
+	});
 	$("#leaveComm").click(function(){
 		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
 			
@@ -131,6 +139,32 @@ $(document).ready(function(){
 		downloadProcs(id, "pre");
 	});
 });
+
+/**
+ * refreshes graph in community page
+ */
+function updateCommunityOverviewGraph() {
+
+	$.post(
+			starexecRoot+"services/secure/explore/testgraph",
+			function(returnCode) {
+				
+				switch (returnCode) {
+				
+				case "1":
+					showMessage('error',"an internal error occured while processing your request: please try again",5000);
+					$("#communityOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+					break;
+				default:
+				    jsonObject=$.parseJSON(returnCode);
+				    src=jsonObject.src;
+				    $("#communityOverview").attr("src",src);
+					
+				}
+			},
+			"text"
+	);
+}
 
 /**
  * Hides all jquery ui dialogs for page startup

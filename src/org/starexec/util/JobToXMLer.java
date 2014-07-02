@@ -44,6 +44,7 @@ public class JobToXMLer {
 	 *  @throws Exception   
 	 */	
     public File generateXMLfile(Job job, int userId) throws Exception{
+	//TODO : attributes are being sorted alphabetically, is there a way to keep order of insertion instead?
     	
 	log.info("Start generating XML for Job = " +job.getId());	
 			
@@ -164,8 +165,8 @@ public class JobToXMLer {
 		jobElement.setAttributeNode(memLimit);
 		
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
-		log.info("Length of jobpairs list Cesar: " + pairs.size());
-		int count = 1;
+		log.info("Length of jobpairs list Simple: " + pairs.size());
+		
 		
 		for (JobPair jobpair:pairs){
 			Element jp = doc.createElement("JobPair");
@@ -179,8 +180,8 @@ public class JobToXMLer {
 			jp.setAttributeNode(configID);
 
 			jobElement.appendChild(jp);
-			log.info("jobpair #" + count + " : " + jobpair.getStatus().getCode().getVal() + " " + jobpair.getStatus().getDescription() );
-			count++;
+			
+			
 		}
 		
 		return jobElement;

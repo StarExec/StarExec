@@ -64,6 +64,7 @@ public class BatchUtil {
 	 *  @throws Exception   
 	 */	
     public File generateXMLfile(Space space, int userId, boolean includeAttributes) throws Exception{
+	//TODO : attributes are being sorted alphabetically, want to preserve order of insertion instead
 		log.debug("Generating XML for Space = " +space.getId());			
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		
