@@ -32,7 +32,7 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 -- Retrieves all jobs with pending job pairs for the given queue
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetPendingJobs;
-CREATE PROCEDURE GetPendingJobs(IN _queueId INT, IN _status INT)
+CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
 		SELECT distinct jobs.id, user_id,name,pre_processor,post_processor,seed,primary_space
 		FROM jobs

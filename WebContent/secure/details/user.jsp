@@ -143,7 +143,7 @@
 			</table>
 			<fieldset id="benchActions" class="actionField">
 				<legend>actions</legend>
-				<button prim="bench" id="recycleBench" class="recycleButton">recycle selected</button>
+				<button prim="benchmark" id="recycleBench" class="recycleButton">recycle selected</button>
 			</fieldset>
 		</fieldset>			
 		<fieldset id="jobField">
