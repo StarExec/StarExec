@@ -44,7 +44,7 @@
     	 <attribute name="rem-space-perm" type="boolean" use="optional"></attribute>
     	 <attribute name="rem-user-perm" type="boolean" use="optional"></attribute>
     	 
-    	 <!-- This should not be null and must have at least 3 characters -->
+    	 <!-- This should not be null and must have at least 1 character -->
     	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
     </complexType>
 

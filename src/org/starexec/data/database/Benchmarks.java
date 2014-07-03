@@ -760,7 +760,7 @@ public class Benchmarks {
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 
 				//make sure the name is valid
-				if (Validator.isValidPrimName(f.getName())) {
+				if (Validator.isValidBenchName(f.getName())) {
 					Processor t = new Processor();
 					t.setId(typeId);
 
@@ -839,7 +839,7 @@ public class Benchmarks {
 				Uploads.incrementTotalSpaces(statusId);//for upload status page
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 
-				if (Validator.isValidPrimName(f.getName())) {
+				if (Validator.isValidBenchName(f.getName())) {
 					Processor t = new Processor();
 					t.setId(typeId);
 

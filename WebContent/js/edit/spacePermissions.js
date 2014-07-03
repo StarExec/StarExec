@@ -529,9 +529,11 @@ function populateDetails(data) {
 	if (data.perm == null) {
 	    showMessage("error","permissions seem to be null",5000);
 	} else {
-	    $('#currentPerms').show();
 	    if(curIsLeader && (spaceId != "1")){
 		$('#permCheckboxes').show();
+	    }
+	    else{
+		$('#currentPerms').show();
 	    }
 	
 	    
@@ -609,11 +611,9 @@ function changePermissions(hier){
 	       switch (returnCode) {
 	       case 0:
 		   showMessage('success', "user's permission were successfuly updated", 5000);
-										
-		   //need to make sure data is in form populateDetails understands
-		   var newDataFormat = {perm : data};
-		   newDataFormat.perm["addBenchmark"] = newDataFormat.perm.addBench;
-		   populateDetails(newDataFormat);
+		   
+		   //TODO : inefficient since I should already have all information I need
+		   getPermissionDetails(lastSelectedUserId,spaceId);
 		   //window.location = starexecRoot+'secure/admin/permissions.jsp?id=' + userId;
 		   break;
 	       case 1:

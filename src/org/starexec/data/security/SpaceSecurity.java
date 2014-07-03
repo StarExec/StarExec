@@ -892,13 +892,15 @@ public class SpaceSecurity {
 	if(perm == null || !perm.isLeader()) {
 	    return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 	}
-	
+	/**
 	// Ensure the user to edit the permissions of isn't themselves a leader
 	perm = Permissions.get(userIdBeingUpdated, spaceId);
 
 	if(perm.isLeader() && !Users.isAdmin(requestUserId)){
+	    //TODO : this status code is obsolete since leaders can change other leader's permissions
 	    return SecurityStatusCodes.ERROR_CANT_EDIT_LEADER_PERMS;
-	}		
+	}	
+	**/	
 		
 	return 0;
     }

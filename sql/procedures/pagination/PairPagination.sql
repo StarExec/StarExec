@@ -406,7 +406,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 -- Gets the next page of job pairs running on a given node for a datatable
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfRunningJobPairs;
-CREATE PROCEDURE GetNextPageOfRunningJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _id INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfRunningJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _sortASC BOOLEAN, IN _id INT)
 	BEGIN
 		
 			IF (_sortASC = TRUE) THEN
@@ -427,7 +427,7 @@ CREATE PROCEDURE GetNextPageOfRunningJobPairs(IN _startingRecord INT, IN _record
 	
 -- Gets the next page of job pairs enqueued in a given queue for a datatable
 DROP PROCEDURE IF EXISTS GetNextPageOfEnqueuedJobPairs;
-CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _id INT, IN _query TEXT)
+CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _sortASC BOOLEAN, IN _id INT)
 	BEGIN
 		
 			IF (_sortASC = TRUE) THEN

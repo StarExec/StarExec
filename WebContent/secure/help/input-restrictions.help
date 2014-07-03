@@ -9,13 +9,13 @@ to StarExec.
 <p>Names for users must be between 2 and 32 characters. Institutions may have 
 between 2 and 64 characters.</p>
 
-<p>For all primitives except for spaces, the maximum length for a name is
-128 characters. Space names may have 255 characters. All names must be at least
+<p>For all primitives except for spaces and benchmarks, the maximum length for a name is
+128 characters. Spaces and benchmarks may have 250 characters. All names must be at least
 1 character.</p>
 
 <p>All descriptions must be between 0 and 1024 characters, inclusive. 
 Messages, which are required when requesting a queue reservation or trying 
-to join a new community, must be bewtween 2 and 512 characters.
+to join a new community, must be between 2 and 512 characters.
 </p>
 
 <h2>Character Restrictions</h2>
@@ -50,7 +50,7 @@ and the rules laid out above, then these expressions take precedence:
   <dd><code>"https?://.\\S+{2,128}"</code></dd>
 <dt>name pattern for all primitives</dt>
   <dd><code>"^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$"code</dd>
-  <dd>(space names may be 255 characters long)</dd>
+  <dd>(space and benchmark names may be 250 characters long)</dd>
 <dt>request message pattern</dt>
   <dd><code>"^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"</code></dd>
 <dt>description pattern</dt>

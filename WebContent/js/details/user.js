@@ -1,14 +1,31 @@
 var jobTable;
+var benchTable;
+var solverTable;
 $(document).ready(function(){
 	
 	// Hide loading images by default
 	$('legend img').hide();
+	$("#dialog-confirm-delete").hide();
+	$("#dialog-confirm-recycle").hide();
 	$("fieldset:not(:first)").expandable(true);
 	
 	$('.popoutLink').button({
 		icons: {
 			secondary: "ui-icon-newwin"
     }});
+	
+	$(".recycleButton, .deleteButton").button({
+		icons: {
+			primary: "ui-icon-trash"
+	}
+	});
+	
+	$(".recycleButton").click(function() {
+		recycleSelected($(this).attr("prim"));
+	});
+	$("#deleteJob").click(function() {
+		deleteSelectedJobs();
+	});
 	
 	$('#editButton').button({
 		icons: {
@@ -27,7 +44,7 @@ $(document).ready(function(){
 
 
 	//Initiate job table
-	$('#jobs').dataTable( {
+	jobTable=$('#jobs').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -38,7 +55,7 @@ $(document).ready(function(){
     });
 	
 	//Initiate solver table
-	$('#solvers').dataTable( {
+	solverTable=$('#solvers').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -50,7 +67,7 @@ $(document).ready(function(){
     
 	
 	//Initiate benchmark table
-	$('#benchmarks').dataTable( {
+	benchTable=$('#benchmarks').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -59,6 +76,11 @@ $(document).ready(function(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });
+	
+	$(".selectableTable").delegate("tr","mousedown", function(){
+		$(this).toggleClass("row_selected");
+		handleSelectChange();
+	});
 	
 });
 
@@ -184,7 +206,125 @@ function colorizeJobStatistics(){
 				lightness: 0 
 			}
 	);
+}
 
+function handleSelectChange() {
+	if ($("#benchmarks tr.row_selected").length>0) {
+			$("#recycleBenchmark").show();
+		
+	}   else {
+		$("#recycleBenchmark").hide();
 
+	}
+	if ($("#solvers tr.row_selected").length>0) {
+			$("#recycleSolver").show();	
+	} else {
+		$("#recycleSolver").hide();
+	}
+	if ($("#jobs tr.row_selected").length>0) {
+		$("#deleteJob").show();	
+	} else {
+		$("#deleteJob").hide();
+	}
+	
+}
 
+/**
+ * For a given dataTable, this extracts the id's of the rows that have been
+ * selected by the user
+ * 
+ * @param dataTable the particular dataTable to extract the id's from
+ * @returns {Array} list of id values for the selected rows
+ * @author Todd Elvers
+ */
+function getSelectedRows(dataTable){
+	var idArray = new Array();
+	var rows = $(dataTable).children('tbody').children('tr.row_selected');
+	$.each(rows, function(i, row) {
+		idArray.push($(this).children('td:first').children('input').val());
+	});
+	return idArray;
+}
+
+function recycleSelected(prim) {
+	$('#dialog-confirm-recycle-txt').text('Are you sure you want to recycle all the selected ' +prim +'(s)?');
+	if (prim=="solver") {
+		table=solverTable;
+	} else {
+		table=benchTable;
+	}
+	// Display the confirmation dialog
+	$('#dialog-confirm-recycle').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'recycle': function() {
+				$("#dialog-confirm-recycle").dialog("close");
+				createDialog("Recycling the selected "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
+				$.post(  
+						starexecRoot +"services/recycle/"+prim, 
+						{selectedIds : getSelectedRows(table)},
+						function(code){
+							destroyDialog();
+							switch(code){
+								case 1:
+									showMessage('error', "Internal error recycling "+prim+"s", 5000);
+									break;
+								case 2:
+									showMessage('error', "you do not have permission to recycle the given prims",5000);
+								default:
+									solverTable.fnDraw(false);
+									benchTable.fnDraw(false);
+									handleSelectChange();
+			 						break;
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error recycling "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
+function deleteSelectedJobs() {
+	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected job(s)? After deletion, they can not be recovered');
+	table=jobTable
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'delete permanently': function() {
+				$("#dialog-confirm-delete").dialog("close");
+				createDialog("Deleting the selected job(s), please wait. This will take some time for large numbers of jobs(s).");
+				$.post(  
+						starexecRoot +"services/delete/job", 
+						{selectedIds : getSelectedRows(table)},
+						function(nextDataTablePage){
+							destroyDialog();
+							switch(nextDataTablePage){
+								case 1:
+									showMessage('error', "Internal error deleting job(s)", 5000);
+									break;
+								default:
+									jobTable.fnDraw(false);
+									handleSelectChange();
+			 						break;
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error deleting job(s)",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
 }

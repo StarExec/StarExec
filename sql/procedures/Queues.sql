@@ -30,26 +30,16 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 	END //
 
 -- Retrieves all jobs with pending job pairs for the given queue
--- Author: Benton McCune and Aaron Stump
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
-		SELECT *
+		SELECT distinct jobs.id, user_id,name,pre_processor,post_processor,seed,primary_space
 		FROM jobs
-		WHERE id in (select distinct job_id from job_pairs where status_code=1 and queue_id = _queueId);
+		JOIN job_pairs ON job_pairs.job_id=jobs.id
+		WHERE status_code=1 and queue_id = _queueId;
 	END //
-	
--- Retrieves all jobs with enqueued job pairs for the given queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEnqueuedJobs;
-CREATE PROCEDURE GetEnqueuedJobs(IN _queueId INT)
-	BEGIN
-		SELECT *
-		FROM jobs
-		WHERE id in (select distinct job_id from job_pairs where status_code=2 and queue_id = _queueId);
-	END //
-	
-	
+		
 -- Retrieves the number of enqueued job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
 -- TODO: This might be slow. Think about a possible index on queueId?

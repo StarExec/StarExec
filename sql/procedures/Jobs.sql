@@ -73,6 +73,16 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpace(IN _jobSpaceId INT)
 		WHERE job_space_id=_jobSpaceId;
 	END //
 	
+-- Counts the number of pairs in a job with a completion index <= the given
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS CountOlderPairs;
+CREATE PROCEDURE CountOlderPairs(IN _id INT, IN _since INT)
+	BEGIN
+		SELECT COUNT(*) AS count
+		FROM job_pairs JOIN job_pair_completion ON id=pair_id
+		WHERE completion_id<=_since and job_id=_id;
+	END //
+	
 -- Returns the number of jobs pairs for a given job that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpaceWithQuery;
@@ -318,6 +328,7 @@ CREATE PROCEDURE GetJobPairsForTableBySolverInJobSpace(IN _jobSpaceId INT, IN _s
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
+-- TODO: use a join instead of calling these functions (time trial after job_space_closure)
 DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
 CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
@@ -400,12 +411,14 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _cap INT, IN _statusCode 
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
-CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT)
+CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
+		
 		WHERE job_id=_id AND (status_code = 1)
-		ORDER BY id ASC;
+		ORDER BY id ASC
+		LIMIT _limit;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id

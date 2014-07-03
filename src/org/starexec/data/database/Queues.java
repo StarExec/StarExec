@@ -11,9 +11,12 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
@@ -300,48 +303,7 @@ public class Queues {
 		return null;
 	}
 	
-	/**
-     * Gets jobs with pending job pairs for the given queue
-     * @param queueId the id of the queue
-     * @return the list of Jobs for that queue which have pending job pairs
-     * @author Ben McCune and Aaron Stump
-     */
-	public static List<Job> getEnqueuedJobs(int queueId) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetEnqueuedJobs(?)}");					
-			procedure.setInt(1, queueId);					
-			 results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
-
-			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));	
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.getQueue().setId(results.getInt("queue_id"));
-				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
-
-				jobs.add(j);				
-			}							
-			return jobs;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
+	
 	
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
@@ -481,13 +443,11 @@ public class Queues {
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, id);
-			procedure.setString(6, searchQuery);
+			procedure.setBoolean(3, isSortedASC);
+			procedure.setInt(4, id);
 			
 			
 			 results = procedure.executeQuery();
@@ -495,19 +455,27 @@ public class Queues {
 			
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
-				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
+				Benchmark b=new Benchmark();
+				b.setId(results.getInt("bench_id"));
+				b.setName(results.getString("bench_name"));
+				jp.setBench(b);
 				
-				jp.setBench(Benchmarks.getIncludeDeletedAndRecycled(results.getInt("bench_id"),false));
-				log.debug(jp.getBench());
+				Solver s=new Solver();
+				s.setId(results.getInt("solver_id"));
+				s.setName(results.getString("solver_name"));
+				jp.setSolver(s);
 				
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),true));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-				Status s = new Status();
+				Configuration c = new Configuration();
+				c.setId(results.getInt("config_id"));
+				c.setName(results.getString("config_name"));
+				jp.setConfiguration(c);
+				jp.getSolver().addConfiguration(c);
 
-				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
-				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+				Status stat = new Status();
+
+				stat.setCode(results.getInt("status_code"));
+				jp.setStatus(stat);
 				returnList.add(jp);
 			}			
 			log.debug("the returnlist had "+returnList.size()+" items");
@@ -542,30 +510,38 @@ public class Queues {
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, id);
-			procedure.setString(6, searchQuery);
+			procedure.setBoolean(3, isSortedASC);
+			procedure.setInt(4, id);
 			
 			
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
-				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
+				Benchmark b=new Benchmark();
+				b.setId(results.getInt("bench_id"));
+				b.setName(results.getString("bench_name"));
+				jp.setBench(b);
 				
-				Status s = new Status();
-				s.setCode(results.getInt("status_code"));
+				Solver s=new Solver();
+				s.setId(results.getInt("solver_id"));
+				s.setName(results.getString("solver_name"));
+				jp.setSolver(s);
 				
-				jp.setStatus(s);
-				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
+				Configuration c = new Configuration();
+				c.setId(results.getInt("config_id"));
+				c.setName(results.getString("config_name"));
+				jp.setConfiguration(c);
+				jp.getSolver().addConfiguration(c);
+				Status stat = new Status();
+
+				stat.setCode(results.getInt("status_code"));
+				jp.setStatus(stat);
 				returnList.add(jp);
 			}			
 
@@ -643,14 +619,14 @@ public class Queues {
 
 			while(results.next()){
 				Job j = new Job();
-				j.setId(results.getInt("id"));
+				j.setId(results.getInt("jobs.id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));	
+				//j.setDescription(results.getString("description"));				
+				//j.setCreateTime(results.getTimestamp("created"));	
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setSeed(results.getLong("seed"));
-				j.getQueue().setId(results.getInt("queue_id"));
+				j.getQueue().setId(queueId);
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
 

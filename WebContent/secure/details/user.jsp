@@ -48,7 +48,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/spaces, details/shared">
+<star:template title="${t_user.fullName}" js="common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/user, common/delaySpinner, common/table, explore/spaces, details/shared">
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>				
@@ -118,7 +118,7 @@
 		</fieldset>
 		<fieldset id="solverField">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
-			<table id="solvers" uid=${t_user.id}>
+			<table id="solvers" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
 						<th> name </th>
@@ -126,10 +126,14 @@
 					</tr>
 				</thead>
 			</table>
+			<fieldset id="solverActions" class="actionField">
+				<legend>actions</legend>
+				<button prim="solver" id="recycleSolver" class="recycleButton">recycle selected</button>
+			</fieldset>
 		</fieldset>
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
-			<table id="benchmarks" uid=${t_user.id}>
+			<table id="benchmarks" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
 						<th> name</th>
@@ -137,10 +141,14 @@
 					</tr>
 				</thead>		
 			</table>
+			<fieldset id="benchActions" class="actionField">
+				<legend>actions</legend>
+				<button prim="benchmark" id="recycleBench" class="recycleButton">recycle selected</button>
+			</fieldset>
 		</fieldset>			
 		<fieldset id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
-			<table id="jobs" uid=${t_user.id}>
+			<table id="jobs" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
 						<th>name</th>
@@ -152,6 +160,10 @@
 					</tr>
 				</thead>			
 			</table>
+			<fieldset id="jobActions" class="actionField">
+				<legend>actions</legend>
+				<button id="deleteJob" class="deleteButton">delete selected</button>
+			</fieldset>
 		</fieldset>
 		
 			
@@ -160,5 +172,12 @@
 			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
 			<a id="recycleBinButton" href="/${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
+		
+		<div id="dialog-confirm-delete" title="confirm delete">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+		</div>
+		<div id="dialog-confirm-recycle" title="confirm recycle">
+			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-recycle-txt"></span></p>
+		</div>
 	</c:if>
 </star:template>

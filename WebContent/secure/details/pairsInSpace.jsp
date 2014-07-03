@@ -62,9 +62,9 @@
 		<table id="pairTbl" class="shaded">
 			<thead>
 				<tr>
+					<th id="benchHead">benchmark</th>
 					<th id="solverHead">solver</th>
 					<th id="configHead">config</th>
-					<th id="benchHead">benchmark</th>
 					<th>status</th>
 					<th>time</th>
 					<th>result</th>	

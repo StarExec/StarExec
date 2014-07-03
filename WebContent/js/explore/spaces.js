@@ -302,7 +302,7 @@ function initDraggable(table) {
 	// Using jQuery UI, make the first column in each row draggable
 	rows.draggable({
 		cursorAt: { cursor: 'move', left: -1, bottom: -1},	// Set the cursor to the move icon and make it start in the corner of the helper		
-		containment: 'document',							// Allow the element to be dragged anywhere in the document
+		//containment: 'document',							// Allow the element to be dragged anywhere in the document
 		distance: 20,										// Only trigger a drag when the distanced dragged is > 20 pixels
 		scroll: true,										// Scroll with the page as the item is dragged if needed
 		helper: getDragClone,								// The method that returns the 'cloned' element that is dragged

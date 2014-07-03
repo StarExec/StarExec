@@ -153,7 +153,8 @@ margin-top:5px;
 
 #subspaceSummaryField table.panel {
 	font-size:70%;
-	
+	width:100% !important;
+	min-width:100% !important;
 }
 
 #subspaceSummaryField legend {
