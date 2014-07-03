@@ -628,10 +628,12 @@ public class Download extends HttpServlet {
 				zipFileName.append(p.getConfiguration().getName());
 				zipFileName.append(File.separator);
 				zipFileName.append(file.getName());
-				
-				ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
-				
-				
+				if (file.exists()) {
+					ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+
+				} else {
+					ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
+				}
 			}
 			stream.close();
 			return true;
