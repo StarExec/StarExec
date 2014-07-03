@@ -22,7 +22,7 @@ public class R {
 	
 	
     //maximum length properties
-    public static int SPACE_NAME_LEN=255;
+    public static int SPACE_NAME_LEN=250;
     public static int SPACE_DESC_LEN=1024;
     public static int USER_FIRST_LEN=32;
     public static int USER_LAST_LEN=32;
@@ -30,13 +30,13 @@ public class R {
     public static int EMAIL_LEN=64;
     public static int PASSWORD_LEN=20;
     public static int MSG_LEN=512;
-    public static int BENCH_NAME_LEN=64;
+    public static int BENCH_NAME_LEN=250;
     public static int BENCH_DESC_LEN=1024;
     public static int COMMUNITY_NAME_LEN=64;
     public static int COMMUNITY_DESC_LEN=300;
-    public static int CONFIGURATION_NAME_LEN=64;
+    public static int CONFIGURATION_NAME_LEN=128;
     public static int CONFIGURATION_DESC_LEN=1024;
-    public static int SOLVER_NAME_LEN=64;
+    public static int PRIM_NAME_LEN=64;
     public static int SOLVER_DESC_LEN=1024;
     public static int JOB_NAME_LEN=64;
     public static int JOB_DESC_LEN=1024;
@@ -57,7 +57,8 @@ public class R {
     public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
     //public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
     public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
-    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SOLVER_NAME_LEN)+"}$";
+    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(PRIM_NAME_LEN)+"}$";
+    public static String BENCH_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(BENCH_NAME_LEN)+"}$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,"+R.MSG_LEN+"}$";
     public static String PRIMITIVE_DESC_PATTERN="^[^<>\"\'%;)(&\\+-]{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
@@ -131,7 +132,6 @@ public class R {
     public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
     public static String DEPENDFILE_FORMAT = null;							// The filename format for dependencies
     public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
-    public static int TEMP_JOBPAIR_LIMIT = 999999;						    // A temporary limit to the number of job pairs
 	
     // Misc application properties
     public static String STAREXEC_SERVERNAME = null;

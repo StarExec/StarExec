@@ -162,7 +162,7 @@ public class BenchmarkSecurity {
 	
 	public static int canUserEditBenchmark(int benchId, String name,String desc, int userId) {
 		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(name)
+		if(!Validator.isValidBenchName(name)
 				|| !Validator.isValidPrimDescription(desc)) { 
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}

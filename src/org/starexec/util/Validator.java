@@ -27,6 +27,7 @@ public class Validator {
 	private static Pattern patternRequestMsg;
 	private static Pattern patternDate;
 	private static Pattern patternDouble;
+	private static Pattern patternBenchName;
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	
     public static void initialize() {
@@ -41,6 +42,7 @@ public class Validator {
 	    	patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
+	    	patternBenchName = Pattern.compile(R.BENCH_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternSpaceName = Pattern.compile(R.SPACE_NAME_PATTERN,Pattern.CASE_INSENSITIVE);
 	    	patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
@@ -113,11 +115,23 @@ public class Validator {
      * Validates a name and checks that it contains only letters, numbers and dashes
      * 
      * @param name the space's name to check
-     * @return true iff name isn't null, is between 1 and SOLVER_NAME_LEN characters and
+     * @return true iff name isn't null, is between 1 and PRIM_NAME_LEN characters and
      * contains only letters, numbers and dashes
      */
+    //TODO: We need to break this down into the individual primitives
     public static boolean isValidPrimName(String name){   
     	return name!=null && patternPrimName.matcher(name).matches();    	
+    }
+    
+    /**
+     * Validates a name and checks that it contains only letters, numbers and dashes
+     * 
+     * @param name the space's name to check
+     * @return true iff name isn't null, is between 1 and Bench_NAME_LEN characters and
+     * contains only letters, numbers and dashes
+     */
+    public static boolean isValidBenchName(String name){   
+    	return name!=null && patternBenchName.matcher(name).matches();    	
     }
     
     /**
