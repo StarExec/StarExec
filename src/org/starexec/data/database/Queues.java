@@ -303,48 +303,7 @@ public class Queues {
 		return null;
 	}
 	
-	/**
-     * Gets jobs with pending job pairs for the given queue
-     * @param queueId the id of the queue
-     * @return the list of Jobs for that queue which have pending job pairs
-     * @author Ben McCune and Aaron Stump
-     */
-	public static List<Job> getEnqueuedJobs(int queueId) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetEnqueuedJobs(?)}");					
-			procedure.setInt(1, queueId);					
-			 results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
-
-			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));	
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.getQueue().setId(results.getInt("queue_id"));
-				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
-
-				jobs.add(j);				
-			}							
-			return jobs;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
+	
 	
 	/**
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
@@ -660,14 +619,14 @@ public class Queues {
 
 			while(results.next()){
 				Job j = new Job();
-				j.setId(results.getInt("id"));
+				j.setId(results.getInt("jobs.id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));	
+				//j.setDescription(results.getString("description"));				
+				//j.setCreateTime(results.getTimestamp("created"));	
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setSeed(results.getLong("seed"));
-				j.getQueue().setId(results.getInt("queue_id"));
+				j.getQueue().setId(queueId);
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
 

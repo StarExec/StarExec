@@ -328,6 +328,7 @@ CREATE PROCEDURE GetJobPairsForTableBySolverInJobSpace(IN _jobSpaceId INT, IN _s
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
+-- TODO: use a join instead of calling these functions (time trial after job_space_closure)
 DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
 CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
