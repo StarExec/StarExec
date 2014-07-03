@@ -445,14 +445,7 @@ public class Download extends HttpServlet {
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(job.getJobPairs().size())));
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
-				boolean jobComplete=Jobs.isJobComplete(jobId);
-				try {
-					if (jobComplete) {
-						response.addCookie(new Cookie("Job-Complete","true"));
-					}
-				} catch (Exception e) {
-					log.error(e);
-				}
+				
 			}
 
 			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
@@ -658,15 +651,7 @@ public class Download extends HttpServlet {
 		// If the user can actually see the job the pair is apart of
 		if (Permissions.canUserSeeJob(jobId, userId)) {
 			log.debug("confirmed user can download job = "+jobId);
-			boolean jobComplete=Jobs.isJobComplete(jobId);
-			//if there are no pending pairs, the job is done
-			try {
-				if (jobComplete) {
-					response.addCookie(new Cookie("Job-Complete","true"));
-				}
-			} catch (Exception e) {
-				log.error(e);
-			}
+			
 
 			//if we only want the new job pairs
 			if (since!=null) {

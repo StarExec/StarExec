@@ -1629,7 +1629,7 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
 			int lastSeen=-1;
-			String done=null;
+			Boolean done=false;
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			
@@ -1647,18 +1647,26 @@ public class Connection {
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			
+			//TODO: handle these prints better
+			Integer totalPairs=null;
+			Integer pairsFound=null;
+			Integer oldPairs=null;
 			//if we're sending 'since,' it means this is a request for new job data
 			if (urlParams.containsKey(R.FORMPARAM_SINCE)) {
 				
+				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
+				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
+				oldPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Older-Pairs"));
+				
 				//check to see if the job is complete
-				done=HTMLParser.extractCookie(response.getAllHeaders(),"Job-Complete");
+				done=totalPairs==(pairsFound+oldPairs);
 				lastSeen=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Completion"));
 				
 				//indicates there was no new information
 				if (lastSeen<=since) {
 					
 					response.getEntity().getContent().close();
-					if (done!=null) {
+					if (done) {
 						
 						return R.SUCCESS_JOBDONE;
 					}
@@ -1681,22 +1689,19 @@ public class Connection {
 			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
 			if (urlParams.containsKey(R.FORMPARAM_SINCE) && lastSeen>=0) {
-				//TODO: handle these prints better
-				Integer totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
-				Integer pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
-				Integer curPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Older-Pairs"));
+				
 				if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
 					this.setJobInfoCompletion(id, lastSeen);
-					System.out.println("pairs found ="+(curPairs+1)+"-"+(curPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");					
+					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");					
 					
 				} else if (urlParams.get(R.FORMPARAM_TYPE).equals("j_outputs")) {
 					this.setJobOutCompletion(id, lastSeen);
 
-					System.out.println("pairs found ="+(curPairs+1)+"-"+(curPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
 
 				}
 			}
-			if (done!=null) {
+			if (done) {
 				return R.SUCCESS_JOBDONE;
 			}
 			return 0;
