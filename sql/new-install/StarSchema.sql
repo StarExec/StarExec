@@ -526,6 +526,15 @@ CREATE TABLE job_spaces (
 	PRIMARY KEY (id)
 );
 
+-- The set of all associations between each job space and it's descendants
+CREATE TABLE job_space_closure (
+	ancestor INT NOT NULL,
+	descendant INT NOT NULL,
+	UNIQUE KEY (ancestor, descendant),
+	CONSTRAINT job_space_ancestor FOREIGN KEY (ancestor) REFERENCES job_spaces(id) ON DELETE CASCADE,
+	CONSTRAINT job_space_descendant FOREIGN KEY (descendant) REFERENCES job_spaces(id) ON DELETE CASCADE
+);
+
 
 -- Saves associations between spaces relevent to a particular job
 -- Author: Eric Burns

@@ -17,7 +17,7 @@ only exception to this rule is the admin.  No one can change the admin's permiss
 <li>Click save to save permission changes.</li>
 <li>Decide if you want the changes to take place only in the selected space or hierarchically (relative to selected space).</li>
 </ol>
-<p>
+</p>
 
 <h2>Notes on editing permissions</h2>
 

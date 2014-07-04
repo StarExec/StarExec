@@ -186,6 +186,81 @@ public class Spaces {
 		}
 		return -1;
 	}
+	private static boolean addToJobSpaceClosure(int ancestor, int descendant, Connection con) {
+		CallableStatement procedure = null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL InsertIntoJobSpaceClosure(?,?)}");
+			procedure.setInt(1, ancestor);
+			procedure.setInt(2,descendant);
+			procedure.executeUpdate();
+			
+			return true;
+			
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Adds every entry necessary in the closure table where the given space is the root
+	 * @param jobSpaceId
+	 * @return
+	 */
+	public static boolean updateJobSpaceClosureTable(int jobSpaceId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			Common.beginTransaction(con);
+			boolean success=updateJobSpaceClosureTable(jobSpaceId,con);
+			if (!success) {
+				Common.doRollback(con);
+				return false;
+			}
+			Common.endTransaction(con);
+			return true;
+
+		} catch (Exception e) {
+			Common.doRollback(con);
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+
+		}
+		return false;
+	}
+	
+	/**
+	 * Adds every entry necessary in the closure table where the given space is the root
+	 * @param jobSpaceId
+	 * @return
+	 */
+	public static boolean updateJobSpaceClosureTable(int jobSpaceId, Connection con) {
+		try {
+			Space root=new Space();
+			root.setId(jobSpaceId);
+			List<Space> spaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+			spaces.add(root);
+			for (Space s : spaces) {
+				boolean success=addToJobSpaceClosure(root.getId(),s.getId(),con);
+				if (!success) {
+					return false;
+				}
+			}
+			return true;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+
+		}
+		return false;
+	}
 	
 	/**
 	 * Adds a new job space to the job space table
@@ -388,6 +463,28 @@ public class Spaces {
 			Common.safeClose(results);
 		}
 		
+		return null;
+	}
+	
+	public static List<Integer> getAllJobSpaces() {
+		Connection con=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			List<Integer> ids=new ArrayList<Integer>();
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetAllJobSpaceIds()}");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
 		return null;
 	}
 	

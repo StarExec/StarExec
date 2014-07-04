@@ -86,7 +86,7 @@ public class Jobs {
 				idMap.put(id, jobSpaceId);
 			}
 			
-			//next, use the current hierarchy information to create a job space heirarchy
+			//next, use the current hierarchy information to create a job space hierarchy
 			for (int id : idMap.keySet()) {
 				log.debug("getting subspaces for space = "+id);
 				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
@@ -99,6 +99,12 @@ public class Jobs {
 					}
 				}
 			}
+			//next, update the closure table. This needs to be done after the hierarchy information is in place!
+			for (int id : idMap.keySet()) {
+				Spaces.updateJobSpaceClosureTable(id,con);
+			}
+			
+			
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
@@ -142,6 +148,18 @@ public class Jobs {
 
 		return false;
 	}
+	
+	
+	public static boolean addAllJobSpaceClosureEntries() {
+		boolean success=true;
+		List<Integer> ids=Spaces.getAllJobSpaces();
+		for (Integer i : ids) {
+			success=success && Spaces.updateJobSpaceClosureTable(i);
+		}
+		
+		return success;
+	}
+ 	
 	
 	/**
 	 * Adds a job record to the database. This is a helper method for the Jobs.add method
@@ -3567,6 +3585,11 @@ public class Jobs {
 			//a red error screen when viewing them
 			if (p.size()==0) {
 				primarySpaceId=Spaces.addJobSpace("job space");
+				Spaces.updateJobSpaceClosureTable(primarySpaceId);
+			}
+			
+			for (int id : namesToIds.values()) {
+				Spaces.updateJobSpaceClosureTable(id);
 			}
 			log.debug("setupjobpairs-- done looking at pairs, updating the database");
 			JobPairs.UpdateJobSpaces(p);

@@ -29,6 +29,20 @@ CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), OUT id INT)
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 
+	
+-- Gets the id of every job space in the database
+DROP PROCEDURE IF EXISTS GetAllJobSpaceIds;
+CREATE PROCEDURE GetAllJobSpaceIds()
+	BEGIN
+		SELECT id FROM job_spaces;
+	END //
+	
+DROP PROCEDURE IF EXISTS InsertIntoJobSpaceClosure;
+CREATE PROCEDURE InsertIntoJobSpaceClosure(IN _ancestor INT, IN _descendant INT)
+	BEGIN
+		INSERT IGNORE INTO job_space_closure (ancestor, descendant) VALUES (_ancestor,_descendant);
+	END //
+	
 -- Adds an association between two spaces
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AssociateSpaces;
