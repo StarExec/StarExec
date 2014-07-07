@@ -304,7 +304,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				solver_name,
 				config_id,
 				config_name,
-				bench_id,
+				job_pairs.bench_id,
 				bench_name,
 				status_code,
 				job_attributes.attr_value AS result,
