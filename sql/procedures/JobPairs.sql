@@ -140,6 +140,6 @@ DROP PROCEDURE IF EXISTS RemovePairFromCompletedTable;
 CREATE PROCEDURE RemovePairFromCompletedTable(IN _id INT)
 	BEGIN
 		DELETE FROM job_pair_completion
-		WHERE pair_id=_id
+		WHERE pair_id=_id;
 	END //
 DELIMITER ; -- this should always be at the end of the file
