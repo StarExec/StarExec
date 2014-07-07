@@ -608,6 +608,32 @@ public class JobPairs {
 	}
 	
 	/**
+	 * Removes a specific pair from the job_pair_completion table
+	 * @param pairId The ID of the pair being removed
+	 * @return True on success and false otherwise
+	 */
+	
+	public static boolean removePairFromCompletedTable(int pairId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL RemovePairFromCompletedTable(?)");
+			procedure.setInt(1,pairId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+	
+	/**
      * Returns the log of a job pair by reading
      * in the physical log file into a string.
      * @param pairId The id of the pair to get the log for

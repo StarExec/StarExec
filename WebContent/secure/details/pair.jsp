@@ -22,6 +22,7 @@
 			request.setAttribute("usr", u);
 			request.setAttribute("output",output);
 			request.setAttribute("log",log);
+			request.setAttribute("curuser",userId);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to view this job pair");
 		}
@@ -33,6 +34,7 @@
 %>
 
 <star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared">			
+	<span id="pairId" value="${pair.id}"></span>
 	<fieldset id="fieldDetails">
 		<legend>details</legend>
 		<table id="detailTable" class="shaded">
@@ -216,7 +218,10 @@
 	<fieldset id="fieldActions">
 	<legend>actions</legend>
 		<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
-		<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>	
+		<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>
+		<c:if test="${curUser==usr.id}">
+			<button id="rerunPair">rerun pair</button>
+		</c:if>
 	</fieldset>
 	
 </star:template>

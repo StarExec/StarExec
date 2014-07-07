@@ -825,6 +825,29 @@ public class Connection {
 	}
 	
 	/**
+	 * Reruns the job pair with the given ID
+	 * @param pairID
+	 * @return
+	 */
+	
+	public int rerunPair(Integer pairID) {
+		try {
+			String URL=baseURL+R.URL_RERUNPAIR;
+			URL=URL.replace("{id}", pairID.toString());
+			HttpPost post=new HttpPost(URL);
+			post=(HttpPost) setHeaders(post);
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
+			HttpResponse response=client.execute(post);
+			setSessionIDIfExists(response.getAllHeaders());
+			response.getEntity().getContent().close();
+			return 0;
+			
+		} catch (Exception e) {
+			return Status.ERROR_SERVER; 
+		}
+	}
+	
+	/**
 	 * Pauses or resumes a job depending on the value of pause
 	 * @param commandParams Parameters given by the user at the command line
 	 * @param pause Pauses a job if true and resumes it if false

@@ -19,6 +19,35 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-arrowthick-1-s"
     }});
+	$("#rerunPair").button( {
+		icons: {
+			primary: "ui-icon-arrowrefresh-1-e"
+	}});
+	
+	$("#rerunPair").click(function() {
+
+					
+					$.post(
+							starexecRoot+"services/jobs/pairs/rerun/" + $("#pairId").attr("value"),
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										window.location = starexecRoot+'secure/explore/spaces.jsp';
+										break;
+									case 1:
+										showMessage('error', "The job was not deleted; please try again.", 5000);
+										break;
+									case 2:
+										showMessage('error', "Only the owner of this job can delete it.", 5000);
+										break;
+									default:
+										showMessage('error', "Invalid parameters.", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+	});
 	
 	$('#fieldDetails').expandable(false);
 	$('#fieldStats').expandable(true);

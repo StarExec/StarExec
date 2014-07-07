@@ -2311,6 +2311,17 @@ public class Jobs {
 		return success;
 	}
 	
+	public static boolean rerunPair(int jobId, int pairId) {
+		boolean success=true;
+		JobPairs.removePairFromCompletedTable(pairId);
+		JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
+		
+		// the cache must be cleared AFTER changing the pair status code!
+		success=success && Jobs.removeCachedJobStats(jobId);
+		
+		return success;
+	}
+	
 	/**
 	 * Sets all the job pairs of a given status code and job to pending if their cpu or wallclock
 	 * time is 0. Used to rerun pairs that didn't work in an initial job run

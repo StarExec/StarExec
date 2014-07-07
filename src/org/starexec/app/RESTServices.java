@@ -490,6 +490,30 @@ public class RESTServices {
 	}	
 	
 	/**
+	 * Handles a request to rerun a single job pair
+	 * 
+	 * @param pairId The ID of the pair to rerun
+	 * @param request
+	 * @return
+	 */
+	
+	@POST
+	@Path("/jobs/pairs/rerun/{pairid}")
+	@Produces("application/json")	
+	public String rerunJobPair(@PathParam("pairid") int pairId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		int jobId=JobPairs.getPair(pairId).getJobId();
+		JobSecurity.canUserRerunPairs(jobId, userId);
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		boolean success=Jobs.rerunPair(jobId, pairId);
+		
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
 	 * Returns the next page of entries for a job pairs table
 	 *
 	 * @param jobId the id of the job to get the next page of job pairs for

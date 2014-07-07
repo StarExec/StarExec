@@ -296,8 +296,8 @@ CREATE PROCEDURE CountClosureEntriesByAncestor(IN _id INT)
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
 -- TODO: use a join instead of calling these functions (time trial after job_space_closure)
-DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
 		SELECT id, 
 				solver_id,
