@@ -55,7 +55,8 @@ public class UploadSpaceXML extends HttpServlet {
 					return;
 				} 
 				
-				List<Integer> ids = this.handleXMLFile(userId, form);				
+				BatchUtil batchUtil = new BatchUtil();
+				List<Integer> ids = this.handleXMLFile(userId, form, batchUtil);				
 			
 				// Note: Inherit users is handled in BatchUtil's createSpaceFromElement(...)
 				
@@ -65,7 +66,8 @@ public class UploadSpaceXML extends HttpServlet {
 
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Space XML - ");// + result.getErrorMessage());	
+				    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+						       "Failed to upload Space XML:\n" + batchUtil.getErrorMessage());
 				}									
 			} else {
 				// Got a non multi-part request, invalid
@@ -82,9 +84,10 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @author Benton McCune
 	 * @param userId the user ID of the user making the upload request
 	 * @param form the HashMap representation of the upload request
+	 * @param batchUtil a BatchUtil object we can use for setting an error message if a problem is encountered.
 	 * @throws Exception 
 	 */
-	public List<Integer> handleXMLFile(int userId, HashMap<String, Object> form) throws Exception {
+    public List<Integer> handleXMLFile(int userId, HashMap<String, Object> form, BatchUtil batchUtil) throws Exception {
 		try {
 			log.debug("Handling Upload of XML File from User " + userId);
 			FileItem item = (FileItem)form.get(UploadSpaceXML.UPLOAD_FILE);		
@@ -103,7 +106,6 @@ public class UploadSpaceXML extends HttpServlet {
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
 			
-			BatchUtil batchUtil = new BatchUtil();
 			//Typically there will just be 1 file, but might as well allow more
 			@SuppressWarnings("unused")
 			Boolean result = false;
