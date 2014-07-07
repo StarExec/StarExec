@@ -1485,6 +1485,7 @@ public class Jobs {
 	 */
 	
 	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobId,int jobSpaceId, int id) {
+		Spaces.updateJobSpaceClosureTable(jobSpaceId);
 		long a=System.currentTimeMillis();
 		log.debug("beginning function getJobPairsForTableByConfigInJobSpace");
 		Connection con = null;	
