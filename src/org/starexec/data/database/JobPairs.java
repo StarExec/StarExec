@@ -274,9 +274,9 @@ public class JobPairs {
 	 * @param jp1 The first job pair
 	 * @param jp2 The second job pair
 	 * @param sortIndex the value to sort on
-	 * 0 = solver name
-	 * 1 = config name
-	 * 2 = benchmark name
+	 * 0 = bench name
+	 * 1 = solver name
+	 * 2 = config name
 	 * 3 = status name
 	 * 5 = starexec-result attr
 	 * @param ASC Whether sorting is to be done ASC or DESC
@@ -295,10 +295,10 @@ public class JobPairs {
 			else if (sortIndex==5) {
 				str1=jp1.getAttributes().getProperty(R.STAREXEC_RESULT);
 				str2=jp2.getAttributes().getProperty(R.STAREXEC_RESULT);
-			} else if (sortIndex==2) {
+			} else if (sortIndex==0) {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
-			} else if (sortIndex==1) {
+			} else if (sortIndex==2) {
 				str1=jp1.getConfiguration().getName();
 				str2=jp2.getConfiguration().getName();
 			} else {
@@ -831,9 +831,9 @@ public class JobPairs {
 	 * @param list1 The first list to merge
 	 * @param list2 The second list to merge
 	 * @param sortColumn The column to sort on.
-	 * 0 = solver name
-	 * 1 = config name
-	 * 2 = benchmark name
+	 * 0 = bench name
+	 * 1 = solver name
+	 * 2 = config name
 	 * 3 = status name
 	 * 4 = wallclock time
 	 * 5 = starexec-result attr

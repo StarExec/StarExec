@@ -307,11 +307,13 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				bench_id,
 				bench_name,
 				status_code,
-				GetJobPairResult(job_pairs.id) AS result,
-				GetJobPairExpectedResult(job_pairs.id) AS expected,
+				job_attributes.attr_value AS result,
+				bench_attributes.attr_value AS expected,
 				wallclock,
 				cpu
 		FROM job_pairs JOIN job_space_closure ON descendant=job_space_id
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and attr_key="starexec-result")
+		LEFT JOIN job_pairs ON (job_pairs.bench_id=bench_attributes.bench_id AND attr_key = "starexec-expected-result")
 		WHERE ancestor=_jobSpaceId AND config_id=_configId;
 	END //
 

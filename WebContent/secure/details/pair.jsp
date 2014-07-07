@@ -219,7 +219,7 @@
 	<legend>actions</legend>
 		<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
 		<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>
-		<c:if test="${curUser==usr.id}">
+		<c:if test="${curuser==usr.id}">
 			<button id="rerunPair">rerun pair</button>
 		</c:if>
 	</fieldset>
