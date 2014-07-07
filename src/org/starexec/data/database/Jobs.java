@@ -1256,7 +1256,7 @@ public class Jobs {
 		long a=System.currentTimeMillis();
 		//get all of the pairs first, then carry out sorting and filtering
 		//PERFMORMANCE NOTE: this call takes over 99.5% of the total time this function takes
-		List<JobPair> pairs=Jobs.getJobPairsForTableByConfigInJobSpace(jobId,jobSpaceId,configId,true);
+		List<JobPair> pairs=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId);
 		log.debug("getting all the pairs by config in job space took "+(System.currentTimeMillis()-a));
 		pairs=JobPairs.filterPairsByType(pairs, type);
 		totals[0]=pairs.size();
@@ -1472,58 +1472,19 @@ public class Jobs {
 
 		return null;
 	}
-	/**
-	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
-	 * and used the configuration with the given ID
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The ID of the job_space in question
-	 * @param configId The ID of the configuration in question
-	 * @return A List of JobPair objects
-	 * @author Eric Burns
-	 */
-	public static List<JobPair> getJobPairsForTableByConfigInJobSpace(int jobId,int jobSpaceId, int configId, boolean hierarchy) {
-		return getJobPairsForTableInJobSpace(jobId,jobSpaceId,configId,hierarchy,"{CALL GetJobPairsForTableByConfigInJobSpace(?, ?)}");
-	}
 	
-	/**
-	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
-	 * and used the solver with the given ID
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The ID of the job_space in question
-	 * @param solverId The ID of the solver in question
-	 * @return A List of JobPair objects
-	 * @author Eric Burns
-	 */
+
 	
-	public static List<JobPair> getJobPairsForTableBySolverInJobSpace(int jobId,int jobSpaceId, int solverId, boolean hierarchy) {
-		return getJobPairsForTableInJobSpace(jobId,jobSpaceId,solverId,hierarchy,"{CALL GetJobPairsForTableBySolverInJobSpace(?, ?)}");
-	}
-	
-	/**
-	 * Gets detailed job pair information for the given job, where all the pairs had benchmarks in the given job_space
-	 * and had the given status_code
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The ID of the job_space in question
-	 * @param status The status_code in question
-	 * @return A List of JobPair objects
-	 * @author Eric Burns
-	 */
-	
-	public static List<JobPair> getJobPairsForTableByStatusInJobSpace(int jobId,int jobSpaceId, int status, boolean hierarchy) {
-		return getJobPairsForTableInJobSpace(jobId,jobSpaceId,status,hierarchy,"{CALL GetJobPairsForTableByStatusInJobSpace(?, ?)}");
-	}
 	
 	/**
 	 * Gets all the job pairs necessary to view in a datatable for a job space 
 	 * @param jobId The id of the job in question
 	 * @param jobSpaceId The id of the job_space id in question
 	 * @param id
-	 * @param hierarchy Get pairs for the full hierarchy if true
-	 * @param query The SQL query that will be called
 	 * @return
 	 */
 	
-	private static List<JobPair> getJobPairsForTableInJobSpace(int jobId,int jobSpaceId, int id, boolean hierarchy, String query) {
+	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobId,int jobSpaceId, int id) {
 		long a=System.currentTimeMillis();
 		log.debug("beginning function getJobPairsForTableByConfigInJobSpace");
 		Connection con = null;	
@@ -1535,13 +1496,13 @@ public class Jobs {
 
 			log.info("getting detailed pairs for job " + jobId +" with configId = "+id+" in space "+jobSpaceId);
 			//otherwise, just get the completed ones that were completed later than lastSeen
-			procedure = con.prepareCall(query);
+			procedure = con.prepareCall("{CALL GetJobPairsForTableByConfigInJobSpaceHierarchy(?, ?)}");
 			procedure.setInt(1,jobSpaceId);
 			procedure.setInt(2,id);
 
 			results = procedure.executeQuery();
 			List<JobPair> pairs = getJobPairsForDataTable(jobId,results);
-			
+			/*
 			if (hierarchy) {
 				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 				log.debug("getting subspaces took "+(System.currentTimeMillis()-a));
@@ -1549,7 +1510,7 @@ public class Jobs {
 				for (Space s : subspaces) {
 					pairs.addAll(getJobPairsForTableInJobSpace(jobId,s.getId(),id,false,query));
 				}
-			}
+			}*/
 			return pairs;
 		}catch (Exception e) {
 			log.error("getJobPairsForTableByConfigInJobSpace says "+e.getMessage(),e);

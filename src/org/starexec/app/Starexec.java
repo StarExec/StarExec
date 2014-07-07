@@ -236,7 +236,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		}
 		//THIS IS A ONE TIME TASK! It initializes the job space closure table
-		//Jobs.addAllJobSpaceClosureEntries();
+		Jobs.addAllJobSpaceClosureEntries();
 		
 
 	}

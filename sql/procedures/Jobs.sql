@@ -282,49 +282,16 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _jobSpaceId INT, IN _co
 		FROM job_pairs 
 		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //	
-	
--- Retrieves info about job pairs for a given job in a given space with a given status code,
--- getting back only the data required to populate a client side datatable
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsForTableByStatusInJobSpace;
-CREATE PROCEDURE GetJobPairsForTableByStatusInJobSpace(IN _jobSpaceId INT, IN _status INT)
+
+
+DROP PROCEDURE IF EXISTS CountClosureEntriesByAncestor
+CREATE PROCEDURE CountClosureEntriesByAncestor(IN _id INT)
 	BEGIN
-		SELECT id, 
-				solver_id,
-				solver_name,
-				config_id,
-				config_name,
-				bench_id,
-				status_code,
-				bench_name,
-				GetJobPairResult(job_pairs.id) AS result,
-				wallclock,
-				cpu
-		FROM job_pairs 
-		WHERE job_space_id=_jobSpaceId AND status_code=_status;
+		SELECT COUNT(*) AS count 
+		FROM job_space_closure 
+		WHERE ancestor=_id;
 	END //
 
--- Retrieves info about job pairs for a given job in a given space with a given solver,
--- getting back only the data required to populate a client side datatable
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsForTableBySolverInJobSpace;
-CREATE PROCEDURE GetJobPairsForTableBySolverInJobSpace(IN _jobSpaceId INT, IN _solverId INT)
-	BEGIN
-		SELECT id, 
-				solver_id,
-				solver_name,
-				config_id,
-				config_name,
-				status_code,
-				bench_id,
-				bench_name,
-				GetJobPairResult(job_pairs.id) AS result,
-				wallclock,
-				cpu
-		FROM job_pairs 
-		WHERE job_space_id=_jobSpaceId AND solver_id=_solverId;
-	END //
-	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
@@ -344,8 +311,8 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpace(IN _jobSpaceId INT, IN _c
 				GetJobPairExpectedResult(job_pairs.id) AS expected,
 				wallclock,
 				cpu
-		FROM job_pairs 
-		WHERE job_space_id=_jobSpaceId AND config_id=_configId;
+		FROM job_pairs JOIN job_space_closure
+		WHERE ancestor=_jobSpaceId AND config_id=_configId;
 	END //
 
 -- Gets all the attribute values for benchmarks in the given job

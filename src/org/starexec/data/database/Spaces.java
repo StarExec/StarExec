@@ -206,12 +206,40 @@ public class Spaces {
 	}
 	
 	
+	private static boolean jobSpaceAncestorExists(int jobSpaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL CountClosureEntriesByAncestor(?)}");
+			procedure.setInt(1, jobSpaceId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				//it exists if there is an entry
+				return results.getInt("count")>0;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+		}
+		return false;
+	}
+	
 	/**
 	 * Adds every entry necessary in the closure table where the given space is the root
 	 * @param jobSpaceId
 	 * @return
 	 */
 	public static boolean updateJobSpaceClosureTable(int jobSpaceId) {
+		if (jobSpaceAncestorExists(jobSpaceId)) {
+			//don't update-- it is already present
+			return true;
+		}
 		Connection con=null;
 		try {
 			con=Common.getConnection();
@@ -478,6 +506,7 @@ public class Spaces {
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
+			return ids;
 		} catch (Exception e ) {
 			log.error(e.getMessage(),e);
 		}finally {
