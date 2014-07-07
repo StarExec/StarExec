@@ -502,9 +502,10 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String rerunJobPair(@PathParam("pairid") int pairId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
-		int jobId=JobPairs.getPair(pairId).getJobId();
-		JobSecurity.canUserRerunPairs(jobId, userId);
-		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		JobPair pair=JobPairs.getPair(pairId);
+		int jobId=pair.getJobId();
+		int status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
+		
 		if (status!=0) {
 			return gson.toJson(status);
 		}

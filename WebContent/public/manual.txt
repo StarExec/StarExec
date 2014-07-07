@@ -172,6 +172,10 @@ OPTIONAL: None
 REQUIRED: "id"
 OPTIONAL: None
 
+--rerunpair -Reruns a single job pair. "id" refers to a pair id.
+REQUIRED: "id"
+OPTIONAL: None
+
 --resumejob -Resumes a job that was paused previously. "id" refers to a job ID.
 REQUIRED: "id"
 OPTIONAL: None

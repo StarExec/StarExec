@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -17,12 +17,13 @@
 			User u = Users.get(j.getUserId());
 			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,100));
 			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
+			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal())==0);
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
 			request.setAttribute("output",output);
 			request.setAttribute("log",log);
-			request.setAttribute("curuser",userId);
+			request.setAttribute("rerun",canRerun);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to view this job pair");
 		}
@@ -219,7 +220,7 @@
 	<legend>actions</legend>
 		<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
 		<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>
-		<c:if test="${curuser==usr.id}">
+		<c:if test="${rerun}">
 			<button id="rerunPair">rerun pair</button>
 		</c:if>
 	</fieldset>

@@ -2312,6 +2312,7 @@ public class Jobs {
 	}
 	
 	public static boolean rerunPair(int jobId, int pairId) {
+		log.debug("got a request to rerun pair id = "+pairId);
 		boolean success=true;
 		JobPairs.removePairFromCompletedTable(pairId);
 		JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());

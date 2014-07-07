@@ -25,20 +25,18 @@ $(document).ready(function(){
 	}});
 	
 	$("#rerunPair").click(function() {
-
-					
 					$.post(
 							starexecRoot+"services/jobs/pairs/rerun/" + $("#pairId").attr("value"),
 							function(returnCode) {
 								switch (returnCode) {
 									case 0:
-										window.location = starexecRoot+'secure/explore/spaces.jsp';
+										showMessage("success", "pair successfully submitted to be rerun",5000)
 										break;
 									case 1:
-										showMessage('error', "The job was not deleted; please try again.", 5000);
+										showMessage('error', "There was an internal error rerunning the pair.", 5000);
 										break;
 									case 2:
-										showMessage('error', "Only the owner of this job can delete it.", 5000);
+										showMessage('error', "Only the owner of this job can rerun pairs", 5000);
 										break;
 									default:
 										showMessage('error', "Invalid parameters.", 5000);
