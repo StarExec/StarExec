@@ -311,7 +311,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				GetJobPairExpectedResult(job_pairs.id) AS expected,
 				wallclock,
 				cpu
-		FROM job_pairs JOIN job_space_closure
+		FROM job_pairs JOIN job_space_closure ON descendant=job_space_id
 		WHERE ancestor=_jobSpaceId AND config_id=_configId;
 	END //
 
