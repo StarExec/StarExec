@@ -114,7 +114,10 @@ public class UploadSpaceXML extends HttpServlet {
 			for (File file:uniqueDir.listFiles())
 			{
 				List<Integer> current=new ArrayList<Integer>();
-				
+				if (!file.isFile()) {
+				    batchUtil.setErrorMessage("The file "+file.getName()+" is not a regular file.  Only regular files containing space XML are allowed in the uploaded archive.");
+				    return null;
+				}
 				current = batchUtil.createSpacesFromFile(file, userId, spaceId);
 				if (current!=null) {
 					spaceIds.addAll(current);
