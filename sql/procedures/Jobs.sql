@@ -284,7 +284,7 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _jobSpaceId INT, IN _co
 	END //	
 
 
-DROP PROCEDURE IF EXISTS CountClosureEntriesByAncestor
+DROP PROCEDURE IF EXISTS CountClosureEntriesByAncestor;
 CREATE PROCEDURE CountClosureEntriesByAncestor(IN _id INT)
 	BEGIN
 		SELECT COUNT(*) AS count 
