@@ -39,54 +39,6 @@ CREATE FUNCTION GetErrorPairs(_jobId INT)
 		
 		RETURN errorPairs;
 	END //
-
--- Returns the result of a job pair
--- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetJobPairResult;
-CREATE FUNCTION GetJobPairResult(_jobPairId INT)
-	RETURNS VARCHAR(128)
-	BEGIN
-		DECLARE result VARCHAR(128);
-		
-		SELECT attr_value INTO result 
-		FROM job_attributes 
-		WHERE pair_id = _jobPairId 
-		AND attr_key = "starexec-result";
-		
-		RETURN IFNULL(result, '--');
-	END //
-	
--- Returns the result of a job pair
--- Author: Eric Burns
-DROP FUNCTION IF EXISTS GetJobPairExpectedResult;
-CREATE FUNCTION GetJobPairExpectedResult(_jobPairId INT)
-	RETURNS VARCHAR(128)
-	BEGIN
-		DECLARE expected VARCHAR(128);
-		
-		SELECT attr_value INTO expected 
-		FROM bench_attributes
-		JOIN job_pairs ON job_pairs.bench_id=bench_attributes.bench_id
-		WHERE job_pairs.id = _jobPairId 
-		AND attr_key = "starexec-expected-result";
-		
-		RETURN IFNULL(expected, '--');
-	END //
-	
--- Gets the job ID of the job that contains the job pair with the given id
--- Author: Eric Burns
-DROP FUNCTION IF EXISTS GetJobId;
-CREATE FUNCTION GetJobId(_pairId INT)
-	RETURNS INT
-	BEGIN
-		DECLARE jobId INT;
-		
-		SELECT job_id INTO jobId
-		FROM job_pairs
-		WHERE id=_pairid;
-		
-		RETURN jobId;
-	END //
 	
 -- Returns "complete" if the job represented by the given id had no pending job pairs,
 -- and returns "incomplete" otherwise
@@ -138,19 +90,6 @@ CREATE FUNCTION GetTotalPairs(_jobId INT)
 		
 		RETURN totalPairs;
 	END //
-	
-	
--- Determines the wallclock time difference between two timestamps
--- and returns that in milliseconds
--- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetWallclock;
-CREATE FUNCTION GetWallClock(start_time TIMESTAMP, end_time TIMESTAMP)
-	RETURNS BIGINT
-	BEGIN
-		DECLARE wallclock BIGINT;
-		SET wallclock = TIMESTAMPDIFF(MICROSECOND, start_time, end_time)/1000;
-		RETURN wallclock;
-	END//
 
 --  Tells you whether a space is public or not
 --  returns the number of times public_user is in the space (should be 0 or 1)	

@@ -6,6 +6,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -186,13 +188,43 @@ public class Spaces {
 		}
 		return -1;
 	}
-	private static boolean addToJobSpaceClosure(int ancestor, int descendant, Connection con) {
+	
+	/**
+	 * Clears entries from the job space closure table that haven't been used in more than
+	 * the given number of days
+	 * @param daysOlderThan
+	 * @return True on success and false otherwise
+	 */
+	
+	public static boolean clearJobClosureEntries(int daysOlderThan) {
+		Timestamp cutoffTime=new Timestamp(System.currentTimeMillis()-(TimeUnit.MILLISECONDS.convert(daysOlderThan, TimeUnit.DAYS)));
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL ClearOldJobClosureEntries(?)}");
+			procedure.setTimestamp(1, cutoffTime);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
+	
+	private static boolean addToJobSpaceClosure(int ancestor, int descendant, Timestamp time, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL InsertIntoJobSpaceClosure(?,?)}");
+			procedure=con.prepareCall("{CALL InsertIntoJobSpaceClosure(?,?,?)}");
 			procedure.setInt(1, ancestor);
 			procedure.setInt(2,descendant);
+			procedure.setTimestamp(3, time);
 			procedure.executeUpdate();
 			
 			return true;
@@ -231,7 +263,8 @@ public class Spaces {
 	}
 	
 	/**
-	 * Adds every entry necessary in the closure table where the given space is the root
+	 * Adds every entry necessary in the closure table where the given space is the root.
+	 * If the entries are already present, this function just returns true
 	 * @param jobSpaceId
 	 * @return
 	 */
@@ -269,12 +302,13 @@ public class Spaces {
 	 */
 	public static boolean updateJobSpaceClosureTable(int jobSpaceId, Connection con) {
 		try {
+			Timestamp time=new Timestamp(System.currentTimeMillis());
 			Space root=new Space();
 			root.setId(jobSpaceId);
 			List<Space> spaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 			spaces.add(root);
 			for (Space s : spaces) {
-				boolean success=addToJobSpaceClosure(root.getId(),s.getId(),con);
+				boolean success=addToJobSpaceClosure(root.getId(),s.getId(),time,con);
 				if (!success) {
 					return false;
 				}
@@ -283,9 +317,6 @@ public class Spaces {
 
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-
 		}
 		return false;
 	}

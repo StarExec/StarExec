@@ -1016,7 +1016,7 @@ public class RESTHelpers {
 	
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
-		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false,false);
+		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false);
 
 		if (totalJobPairs>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them

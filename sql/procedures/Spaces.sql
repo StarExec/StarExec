@@ -36,11 +36,22 @@ CREATE PROCEDURE GetAllJobSpaceIds()
 	BEGIN
 		SELECT id FROM job_spaces;
 	END //
+
 	
-DROP PROCEDURE IF EXISTS InsertIntoJobSpaceClosure;
-CREATE PROCEDURE InsertIntoJobSpaceClosure(IN _ancestor INT, IN _descendant INT)
+-- Clears entries from the job_space_closure table that are older than the given time
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS ClearOldJobClosureEntries;
+CREATE PROCEDURE ClearOldJobClosureEntries(IN _cutoff TIMESTAMP)
 	BEGIN
-		INSERT IGNORE INTO job_space_closure (ancestor, descendant) VALUES (_ancestor,_descendant);
+		DELETE FROM job_space_closure WHERE last_used<_cutoff;
+	END //
+	
+-- Insets a new ancestor/descendant pair into the job space closure table
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS InsertIntoJobSpaceClosure;
+CREATE PROCEDURE InsertIntoJobSpaceClosure(IN _ancestor INT, IN _descendant INT, IN _time TIMESTAMP)
+	BEGIN
+		INSERT IGNORE INTO job_space_closure (ancestor, descendant, last_used) VALUES (_ancestor,_descendant, _time);
 	END //
 	
 -- Adds an association between two spaces

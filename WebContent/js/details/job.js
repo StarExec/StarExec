@@ -344,17 +344,15 @@ function initUI(){
 				buttons: {
 					'clear cache': function() {
 						$(this).dialog("close");
-						$(".cacheType").each(function() {
 							
-							type=$(this).attr("value");
 							$.post(
-									starexecRoot+"services/cache/clear/"+jobId+"/"+type,
+									starexecRoot+"services/cache/clear/stats"+jobId+"/",
 									function(returnCode) {
 										if (returnCode<0) {
 											showMessage('error',"There was an error clearing the cache for this item",5000);
 										}		
 							});
-						});									
+															
 					},
 					"cancel": function() {
 						$(this).dialog("close");

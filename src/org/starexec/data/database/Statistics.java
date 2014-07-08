@@ -225,13 +225,13 @@ public class Statistics {
 	
 	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large) {
 		try {
-			List<JobPair> pairs1=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configId1,true,true);
+			List<JobPair> pairs1=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configId1);
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
 				answer.add("big");
 				return answer;
 			}
-			List<JobPair> pairs2=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId,configId2,true,true);
+			List<JobPair> pairs2=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId,configId2);
 			if ((pairs2.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
 				answer.add("big");
@@ -409,12 +409,12 @@ public class Statistics {
 				return null;
 			}
 			
-			List<JobPair> pairs=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(0), true,false);
+			List<JobPair> pairs=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(0));
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 				return "big";
 			}
 			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll(Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(x), true,false));
+				pairs.addAll(Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(x)));
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 					return "big";
 				}

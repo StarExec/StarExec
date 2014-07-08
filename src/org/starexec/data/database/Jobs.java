@@ -99,12 +99,6 @@ public class Jobs {
 					}
 				}
 			}
-			//next, update the closure table. This needs to be done after the hierarchy information is in place!
-			for (int id : idMap.keySet()) {
-				Spaces.updateJobSpaceClosureTable(id,con);
-			}
-			
-			
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
@@ -532,22 +526,8 @@ public class Jobs {
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
 		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobSpaceId);
-		List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 
-		for (Space s : subspaces) {
-			pairs.addAll(getJobPairsForStatsInJobSpace(s.getId()));
-		}
 		
-		HashMap<Integer,String> expectedValues=Jobs.getAllAttrsOfNameForJob(jobId,R.EXPECTED_RESULT);
-		for (JobPair jp : pairs) {
-			if (expectedValues.containsKey(jp.getBench().getId())) {
-				log.debug("now placing an expected result into a job pair!");
-				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
-			} 
-			for (Object o : jp.getAttributes().keySet()) {
-				log.debug(o.toString()+":"+jp.getAttributes().get(o));
-			}
-		}
 		
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
 		if (isJobComplete) {
@@ -1155,50 +1135,37 @@ public class Jobs {
 	 * @param jobId the id of the job to get the number of job pairs for
 	 * @param jobSpaceId The ID of the job space containing the paris to count
 	 * @param Whether to count all job pairs in the hierarchy rooted at the job space with the given id
-	 * @param quitIfExceedsMax Whether to quit counting immediately if the pair count is higher
-	 * than the maximum displayable number of pairs defined in R.java
-	 * @return the number of job pairs for the given job
+	 * @return the number of job pairs for the given job or -1 on failure
 	 * @author Eric Burns
 	 */
-	public static int getJobPairCountInJobSpace(int jobSpaceId, boolean hierarchy, boolean quitIfExceedsMax) {
+	public static int getJobPairCountInJobSpace(int jobSpaceId, boolean hierarchy) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
-		int jobPairCount=0;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByJobInJobSpace(?)}");
+			if (hierarchy) {
+				Spaces.updateJobSpaceClosureTable(jobSpaceId, con);
+				procedure = con.prepareCall("{CALL GetJobPairCountInJobSpaceHierarchy(?)}");
+			} else {
+				 procedure = con.prepareCall("{CALL GetJobPairCountInJobSpace(?)}");
+			}
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			if (results.next()) {
-				jobPairCount = results.getInt("jobPairCount");
+				return results.getInt("jobPairCount");
 			}
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			
-			return 0;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 		
-		if (hierarchy) {
-			//return before getting subspaces at all
-			if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
-				return jobPairCount;
-			}
-			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, false);
-			for (Space s : subspaces) {
-				jobPairCount+=getJobPairCountInJobSpace(s.getId(),false,true);
-				if (quitIfExceedsMax && jobPairCount>R.MAXIMUM_JOB_PAIRS) {
-					return jobPairCount;
-				}
-			}
-		}
-		
-		return jobPairCount;		
+		return -1;		
 	}
 	
 	/**
@@ -1390,7 +1357,7 @@ public class Jobs {
 	}
 	
 	/**
-	 * Returns all of the job pairs in a given space, populated with all the fields necessary
+	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
 	 * to display in a SolverStats table
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
@@ -1403,20 +1370,15 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpace(?)}");
+			Spaces.updateJobSpaceClosureTable(jobSpaceId, con);
+			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpaceHierarchy(?)}");
+
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			
 			List<JobPair> pairs=processStatResults(results);
 			Common.safeClose(results);
-			HashMap<Integer,Properties> attrs=Jobs.getJobAttributesInJobSpaceByKey(jobSpaceId,R.STAREXEC_RESULT);
-			for (JobPair jp : pairs) {
-				if (attrs.containsKey(jp.getId())) {
-					log.debug("size of attrs is = " + attrs.get(jp.getId()).size());
-					jp.setAttributes(attrs.get(jp.getId()));
-				}
-
-			}
+			
 			return pairs;
 		} catch (Exception e) {
 			log.error("getPairsDetailedForStatsInSpace says "+e.getMessage(),e);
@@ -1534,22 +1496,16 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobSpaceId, int configId, boolean hierarchy, boolean includeBenchmarks) {
+	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobSpaceId, int configId) {
 		Connection con = null;	
 		
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {			
 			con = Common.getConnection();
+			Spaces.updateJobSpaceClosureTable(jobSpaceId,con);
+			procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpaceHierarchy(?, ?)}");
 
-			//otherwise, just get the completed ones that were completed later than lastSeen
-			if (!includeBenchmarks) {
-				procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpace(?, ?)}");
-
-			} else {
-				procedure = con.prepareCall("{CALL GetJobPairsShallowWithBenchmarksByConfigInJobSpace(?, ?)}");
-
-			}
 			procedure.setInt(1,jobSpaceId);
 			procedure.setInt(2,configId);
 
@@ -1569,19 +1525,11 @@ public class Jobs {
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
 				solver.addConfiguration(c);
-				if (includeBenchmarks) {
-					Benchmark b=jp.getBench();
-					b.setId(results.getInt("bench_id"));
-					b.setName(results.getString("bench_name"));
-				}
+				Benchmark b=jp.getBench();
+				b.setId(results.getInt("bench_id"));
+				b.setName(results.getString("bench_name"));
+				
 				pairs.add(jp);
-			}
-			if (hierarchy) {
-				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
-
-				for (Space s : subspaces) {
-					pairs.addAll(getJobPairsShallowByConfigInJobSpace(s.getId(),configId,false,includeBenchmarks));
-				}
 			}
 			return pairs;
 		}catch (Exception e) {
@@ -2356,6 +2304,23 @@ public class Jobs {
 		return false;
 	} 
 	
+	public static boolean removePairsOfStatusFromComplete(int jobId, int statusCode, Connection con) {
+		CallableStatement procedure=null;
+
+		try {
+			procedure=con.prepareCall("{CALL RemovePairsOfStatusFromComplete(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, statusCode);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * Sets all the job pairs of a given status code and job to pending. Used to rerun
@@ -2370,10 +2335,7 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemovePairsOfStatusFromComplete(?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2, statusCode);
-			procedure.executeUpdate();
+			removePairsOfStatusFromComplete(jobId,statusCode,con);
 			procedure=con.prepareCall("{CALL SetPairsOfStatusToStatus(?,?,?)}");
 			procedure.setInt(1,jobId);
 			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
@@ -3289,6 +3251,11 @@ public class Jobs {
 			
 			s.setCode(results.getInt("status_code"));
 			jp.setStatus(s);
+			
+			Properties p=new Properties();
+			p.put(R.STAREXEC_RESULT, results.getString("result"));
+			p.put(R.EXPECTED_RESULT, results.getString("expected"));
+			
 			returnList.add(jp);			
 			
 		}
@@ -3386,6 +3353,10 @@ public class Jobs {
 			Common.beginTransaction(con);
 			if (!Jobs.removeCachedJobStats(jobId,con)) {
 				throw new Exception("Couldn't clear out the cache of job stats");
+			}
+			if (!Jobs.removePairsOfStatusFromComplete(jobId, StatusCode.STATUS_COMPLETE.getVal(), con)){
+				throw new Exception("Couldn't remove pairs from the complete table");
+
 			}
 
 			procedure=con.prepareCall("{CALL PrepareJobForPostProcessing(?,?,?,?)}");

@@ -63,14 +63,25 @@ CREATE PROCEDURE GetJobPairCountByConfigInJobSpace(IN _spaceId INT, IN _configId
 		WHERE job_space_id=_spaceId AND config_id=_configId;
 	END //
 		
--- Returns the number of jobs pairs for a given job
+-- Returns the number of jobs pairs for a given job in the given job space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpace;
-CREATE PROCEDURE GetJobPairCountByJobInJobSpace(IN _jobSpaceId INT)
+DROP PROCEDURE IF EXISTS GetJobPairCountInJobSpace;
+CREATE PROCEDURE GetJobPairCountInJobSpace(IN _jobSpaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobPairCount
 		FROM job_pairs
 		WHERE job_space_id=_jobSpaceId;
+	END //
+	
+-- Returns the number of jobs pairs for a given job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairCountInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairCountInJobSpaceHierarchy(IN _jobSpaceId INT)
+	BEGIN
+		SELECT COUNT(*) AS jobPairCount
+		FROM job_pairs
+		JOIN job_space_closure ON descendant=job_pairs.job_space_id
+		WHERE ancestor=_jobSpaceId;
 	END //
 	
 -- Counts the number of pairs in a job with a completion index <= the given
@@ -264,26 +275,17 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 	
 -- Retrieves info about job pairs for a given job in a given space with a given configuration
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsShallowWithBenchmarksByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsShallowWithBenchmarksByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
 		SELECT cpu,wallclock,job_pairs.id, status_code, solver_id, solver_name, config_id, config_name,bench_id,bench_name
 		FROM job_pairs 
-		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
+		JOIN job_space_closure ON descendant=job_pairs.job_space_id
+		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
-	
-	
--- Retrieves info about job pairs for a given job in a given space with a given configuration
+
+-- Counts the entries in the job space closure table with the given ancestor
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpace(IN _jobSpaceId INT, IN _configId INT)
-	BEGIN
-		SELECT cpu,wallclock,job_pairs.id, status_code, solver_id, solver_name, config_id, config_name
-		FROM job_pairs 
-		WHERE job_pairs.job_space_id=_jobSpaceId AND job_pairs.config_id=_configId;
-	END //	
-
-
 DROP PROCEDURE IF EXISTS CountClosureEntriesByAncestor;
 CREATE PROCEDURE CountClosureEntriesByAncestor(IN _id INT)
 	BEGIN
@@ -312,8 +314,8 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				wallclock,
 				cpu
 		FROM job_pairs JOIN job_space_closure ON descendant=job_space_id
-		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and attr_key="starexec-result")
-		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND attr_key = "starexec-expected-result")
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		WHERE ancestor=_jobSpaceId AND config_id=_configId;
 	END //
 
@@ -337,6 +339,22 @@ CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
 		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,wallclock,job_pairs.id,bench_id
 		FROM job_pairs 				
 		WHERE job_space_id =_jobSpaceId;
+	END //
+	
+-- Gets all the job pairs for a given job in a particular space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairsByJobInJobSpaceHierarchy(IN _jobSpaceId INT)
+	BEGIN
+		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,
+		wallclock,job_pairs.id,job_pairs.bench_id,
+		bench_attributes.attr_value AS expected,
+		job_attributes.attr_value AS result
+		FROM job_pairs 		
+		JOIN job_space_closure ON descendant=job_space_id
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
+		WHERE ancestor=_jobSpaceId;
 	END //
 	
 	

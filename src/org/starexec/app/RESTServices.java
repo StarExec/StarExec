@@ -3876,6 +3876,24 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Clears the given job from the cache
+	 * @param request
+	 * @return
+	 */
+	@POST
+	@Path("/cache/clearStats/{jobId}")
+	@Produces("application/json")
+	public String clearStatsCache(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=CacheSecurity.canUserClearCache(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
 	 * 
 	 */
 	@POST

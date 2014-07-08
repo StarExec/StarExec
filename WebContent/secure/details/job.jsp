@@ -51,13 +51,6 @@
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
-				
-				//save the integer codes for solver-related cache items. This way, 
-				//if the admin decides to clear the cache for the item, we can query the server with the right code
-				request.setAttribute("cacheType1",CacheType.CACHE_JOB_OUTPUT.getVal());
-				request.setAttribute("cacheType2",CacheType.CACHE_JOB_CSV.getVal());
-				request.setAttribute("cacheType3",CacheType.CACHE_JOB_CSV_NO_IDS.getVal());
-				request.setAttribute("cacheType4",CacheType.CACHE_JOB_PAIR.getVal());
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
@@ -303,10 +296,6 @@
 					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 					<c:if test="${isAdmin}">
-						<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
-						<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
-						<span id="cacheType3" class="cacheType" value="${cacheType3}"></span>
-						<span id="cacheType4" class="cacheType" value="${cacheType4}"></span>
 						<button type="button" id="clearCache">clear cache</button>
 					</c:if>
 					
