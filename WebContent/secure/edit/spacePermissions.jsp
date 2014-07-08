@@ -180,7 +180,11 @@
 			<div id="dialog-confirm-update" title="confirm update">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
-		</fieldset>	
+		</fieldset>
+		
+		<fieldset id="permissionActions">
+			<a id="exploreSpaces" href="/${starexecRoot}/secure/explore/spaces.jsp">return to space explorer</a>
+		</fieldset>
 
 	</div>	
 	

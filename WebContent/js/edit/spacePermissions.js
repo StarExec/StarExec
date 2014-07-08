@@ -37,14 +37,6 @@ $(document).ready(function(){
 	currentUserId=parseInt($("#userId").attr("value"));
 	lastSelectedUserId = null;
 
-	var QueryString = getQueryString();
-	console.log("before: " + spaceId);
-	spaceId = QueryString.sid;
-	console.log("after: " + spaceId);
-
-	if(spaceId === undefined){
-	    spaceId = 1;
-	}
 	
 	 // Build left-hand side of page (space explorer)
 	 initSpaceExplorer();
@@ -115,39 +107,10 @@ function initSpaceDetails(){
  */
 function initButtonUI() {
 
-	$('.btnAdd').button({
-		icons: {
-			secondary: "ui-icon-plus"
-		}});
 
 	$('.btnUp').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-		}});
-
-	$('.btnDown').button({
-		icons: {
-			secondary: "ui-icon-arrowthick-1-s"
-		}});
-
-	$('.btnRun').button({
-		icons: {
-			secondary: "ui-icon-gear"
-		}});
-
-	$('.btnRemove').button({
-		icons: {
-			secondary: "ui-icon-minus"
-		}});	
-
-	$('.btnEdit').button({
-		icons: {
-			secondary: "ui-icon-pencil"
-		}});
-
-	$('#trashcan').button({
-		icons: {
-			secondary: "ui-icon-trash"
 		}});
 
 	$('.resetButton').button({
@@ -155,8 +118,11 @@ function initButtonUI() {
 			secondary: "ui-icon-closethick"
 		}});
 
+	$('.backButton').button({
+		icons: {
+		    primary: "ui-icon-arrowthick-1-w"
+		}});
 
-	log('jQuery UI buttons initialized');
 }
 
 
@@ -470,6 +436,7 @@ function populateSpaceDetails(jsonData, id) {
 	} else {
 		// Or else the user can see the space, make sure the info table fieldsets are visible
 		$('#userField').show();
+		$('#permissionActions').show();
 
 	}
 
@@ -675,6 +642,11 @@ function setUpButtons() {
 	    
 
 	});
+
+    $("#exploreSpaces").unbind("click");
+    $("#exploreSpaces").click(function(e) {
+
+
     /**
 <td><input class="resetButton" type="button" id="hiddenButton" value="i'm hiding" hidden ></input></td>
     $("#hiddenButton").unbind("click");
@@ -690,21 +662,9 @@ function setUpButtons() {
 	});
     **/
 	
+	});
 }
+	
 
-//TODO : not functioning
-function expandNode(nodeID) {
-    // Expand all nodes up to the root (the id of the root returns as '#')
-    var thisNode;
-    while (nodeID != '#') {
-        // Open this node
-	console.log("expand: " + nodeID);
-        $("#exploreList").jstree("open_node", nodeID,false);
-        // Get the jstree object for this node
-	    thisNode = $("#exploreList").jstree("get_node", nodeID,false);
-        // Get the id of the parent of this node
-        nodeID = $("#exploreList").jstree("get_parent", thisNode);
-    }
-}
 
 
