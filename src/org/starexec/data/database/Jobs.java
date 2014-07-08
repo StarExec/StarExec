@@ -1247,6 +1247,14 @@ public class Jobs {
 		log.debug("the size of the return list is "+returnList.size());
 		return returnList;
 	}
+	
+	public static String getPropertyOrPlaceholder(String value) {
+		if (value==null) {
+			return "--";
+		}
+		return value;
+	}
+	
 	/**
 	 * Gets the minimal number of Job Pairs necessary in order to service the client's
 	 * request for the next page of Job Pairs in their DataTables object
@@ -1304,7 +1312,7 @@ public class Jobs {
 				
 
 				Properties attributes = jp.getAttributes();
-				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
+				attributes.setProperty(R.STAREXEC_RESULT, getPropertyOrPlaceholder(results.getString("result")));
 
 				solver.addConfiguration(config);
 				jobPairs.add(jp);		
@@ -1423,8 +1431,15 @@ public class Jobs {
 				status.setCode(results.getInt("status_code"));
 				
 				Properties attributes = jp.getAttributes();
-				attributes.setProperty(R.STAREXEC_RESULT, results.getString("result"));
-				attributes.setProperty(R.EXPECTED_RESULT, results.getString("expected"));
+				String result=results.getString("result");
+				if (result!=null) {
+					attributes.put(R.STAREXEC_RESULT, result);
+				}
+				String expected=results.getString("expected");
+				if (expected!=null) {
+					attributes.put(R.EXPECTED_RESULT, expected);
+
+				}
 				pairs.add(jp);	
 			}
 			return pairs;
@@ -3253,8 +3268,15 @@ public class Jobs {
 			jp.setStatus(s);
 			
 			Properties p=new Properties();
-			p.put(R.STAREXEC_RESULT, results.getString("result"));
-			p.put(R.EXPECTED_RESULT, results.getString("expected"));
+			String result=results.getString("result");
+			if (result!=null) {
+				p.put(R.STAREXEC_RESULT, result);
+			}
+			String expected=results.getString("expected");
+			if (expected!=null) {
+				p.put(R.EXPECTED_RESULT, expected);
+
+			}
 			
 			returnList.add(jp);			
 			
