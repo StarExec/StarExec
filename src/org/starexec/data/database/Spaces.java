@@ -220,7 +220,6 @@ public class Spaces {
 	private static boolean addToJobSpaceClosure(int ancestor, int descendant, Timestamp time, Connection con) {
 		CallableStatement procedure = null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL InsertIntoJobSpaceClosure(?,?,?)}");
 			procedure.setInt(1, ancestor);
 			procedure.setInt(2,descendant);

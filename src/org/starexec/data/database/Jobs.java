@@ -1410,7 +1410,6 @@ public class Jobs {
 	
 	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results) {
 		List<JobPair> pairs = new ArrayList<JobPair>();
-
 		try{
 			while (results.next()) {
 				JobPair jp = new JobPair();
@@ -1446,7 +1445,6 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error("getJobPairsForDataTable says "+e.getMessage(),e);
 		}
-
 		return null;
 	}
 	
@@ -1480,15 +1478,7 @@ public class Jobs {
 
 			results = procedure.executeQuery();
 			List<JobPair> pairs = getJobPairsForDataTable(jobId,results);
-			/*
-			if (hierarchy) {
-				List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
-				log.debug("getting subspaces took "+(System.currentTimeMillis()-a));
-
-				for (Space s : subspaces) {
-					pairs.addAll(getJobPairsForTableInJobSpace(jobId,s.getId(),id,false,query));
-				}
-			}*/
+			
 			return pairs;
 		}catch (Exception e) {
 			log.error("getJobPairsForTableByConfigInJobSpace says "+e.getMessage(),e);
