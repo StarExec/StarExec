@@ -250,8 +250,9 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT job_pairs.id, solver_name,solver_id,config_name,config_id,bench_name,bench_id,name,status_code,job_spaces.id
 		FROM job_pairs
+		JOIN job_spaces ON job_spaces.id=job_space_id
 		WHERE job_pairs.job_id=_id;
 	END //
 
@@ -284,11 +285,15 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpaceHierarchy(IN _jobSpaceId IN
 		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId;
 	END //
 
--- Counts the entries in the job space closure table with the given ancestor
+-- Counts the entries in the job space closure table with the given ancestor and updates their last_used time
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS CountClosureEntriesByAncestor;
-CREATE PROCEDURE CountClosureEntriesByAncestor(IN _id INT)
+DROP PROCEDURE IF EXISTS RefreshEntriesByAncestor;
+CREATE PROCEDURE RefreshEntriesByAncestor(IN _id INT, IN _time TIMESTAMP)
 	BEGIN
+		UPDATE job_space_closure
+		SET last_used=_time
+		WHERE ancestor=_id;
+		
 		SELECT COUNT(*) AS count 
 		FROM job_space_closure 
 		WHERE ancestor=_id;

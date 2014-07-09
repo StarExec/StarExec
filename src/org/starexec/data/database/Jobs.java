@@ -1969,7 +1969,13 @@ public class Jobs {
 			    
 			    jp.getStatus().setCode(results.getInt("status_code"));
 			    jp.getBench().setId(results.getInt("bench_id"));
+			    jp.getBench().setName(results.getString("bench_name"));
 			    jp.getConfiguration().setId(results.getInt("config_id"));
+			    jp.getConfiguration().setName(results.getString("config_name"));
+			    jp.getSolver().setId(results.getInt("solver_id"));
+			    jp.getSolver().setName(results.getString("solver_name"));
+			    jp.getSpace().setName(results.getString("name"));
+			    jp.getSpace().setId(results.getInt("job_spaces.id"));
 			    returnList.add(jp);
 			}			
 			Common.safeClose(results);

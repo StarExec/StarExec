@@ -172,15 +172,25 @@ public class JobToXMLer {
 			Element jp = doc.createElement("JobPair");
 
 			Attr benchID = doc.createAttribute("bench-id");
+			Attr benchName = doc.createAttribute("bench-name");
 			benchID.setValue(Integer.toString(jobpair.getBench().getId()));
-		        jp.setAttributeNode(benchID);
-			
+			benchName.setValue(jobpair.getBench().getName());
+		    jp.setAttributeNode(benchID);
+			jp.setAttributeNode(benchName);
 			Attr configID = doc.createAttribute("config-id");
+			Attr configName = doc.createAttribute("config-name");
 			configID.setValue(Integer.toString(jobpair.getConfiguration().getId()));
-			jp.setAttributeNode(configID);
-
-			jobElement.appendChild(jp);
+			configName.setValue(jobpair.getConfiguration().getName());
 			
+			jp.setAttributeNode(configID);
+			jp.setAttributeNode(configName);
+			
+			Attr solverId=doc.createAttribute("solver-id");
+			Attr solverName=doc.createAttribute("solver-name");
+			solverId.setValue(Integer.toString(jobpair.getSolver().getId()));
+			solverName.setValue(jobpair.getSolver().getName());
+			
+			jobElement.appendChild(jp);
 			
 		}
 		

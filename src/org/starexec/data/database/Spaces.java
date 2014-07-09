@@ -214,7 +214,14 @@ public class Spaces {
 		}
 		return false;
 	}
-	
+	/**
+	 * Adds a given ancestor / descendant pair to the job space closure table
+	 * @param ancestor
+	 * @param descendant
+	 * @param time
+	 * @param con
+	 * @return
+	 */
 	
 	
 	private static boolean addToJobSpaceClosure(int ancestor, int descendant, Timestamp time, Connection con) {
@@ -236,15 +243,23 @@ public class Spaces {
 		return false;
 	}
 	
+	/**
+	 * Checks to see whether a specific ancestor is in the job space closure table.
+	 * If it does exist, the last_used column is updated
+	 * @param jobSpaceId
+	 * @return
+	 */
 	
 	private static boolean jobSpaceAncestorExists(int jobSpaceId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
+			Timestamp time=new Timestamp(System.currentTimeMillis());
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL CountClosureEntriesByAncestor(?)}");
+			procedure=con.prepareCall("{CALL RefreshEntriesByAncestor(?,?)}");
 			procedure.setInt(1, jobSpaceId);
+			procedure.setTimestamp(2, time);
 			results=procedure.executeQuery();
 			if (results.next()) {
 				//it exists if there is an entry

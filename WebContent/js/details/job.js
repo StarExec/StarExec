@@ -215,7 +215,11 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-
+	$("#compareSelected").button({
+		icons: {
+			primary: "ui-icon-clipboard"
+		}
+    });
 	
 	$("#rerunPairs").button({
 		icons: {
@@ -854,6 +858,10 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData" : fnStatsPaginationHandler
     });
+	
+	$("#solveTbl").delegate("tr","mousedown", function(){
+		$(this).toggleClass("row_selected");
+	});
 	
 	// Job pairs table
 	pairTable=$('#pairTbl').dataTable( {
