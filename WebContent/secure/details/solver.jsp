@@ -28,7 +28,6 @@
 				formattedSite[2]=GeneralSecurity.getHTMLSafeString(site.getUrl());
 				formattedSites.add(formattedSite);
 			}
-			
 			request.setAttribute("sites", formattedSites);
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));

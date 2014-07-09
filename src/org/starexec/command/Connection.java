@@ -739,6 +739,28 @@ public class Connection {
 		
 	}
 	
+		/**
+		 * 
+		 * @param relURL The URL following starexecRoot
+		 * @return
+		 */
+	public boolean canGetPage(String relURL) {
+		try {
+			HttpGet get=new HttpGet(baseURL+relURL);
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			response.getEntity().getContent().close();
+			
+			//we should get 200, which is the code for ok
+			return response.getStatusLine().getStatusCode()==200;
+			
+		} catch (Exception e) {
+			
+		}
+		return false;
+	}
+	
 	/**
 	 * Gets the ID of the user currently logged in to StarExec
 	 * @return The integer user ID
