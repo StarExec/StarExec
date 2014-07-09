@@ -47,8 +47,17 @@
     
     <complexType name="JobPair">
     	<attribute name="bench-id" type="int" use="required"></attribute>
+    	<attribute name="bench-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
     	<!-- A configuration id uniquely identifies a solver, so no more is required -->
     	<attribute name="config-id" type="int" use="required"></attribute>
+    	<attribute name="config-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
+    	<attribute name="solver-id" type="int" use="optional"></attribute>
+    	<attribute name="solver-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
+    	<attribute name="job-space-id" type="int" use="optional"></attribute>
+    	<attribute name="job-space-name" type="tns:PrimitiveName" use="optional"></attribute>
     </complexType>
     
     <simpleType name="Description">
@@ -59,7 +68,7 @@
     
     <simpleType name="PrimitiveName">
   		<restriction base="string">
-    		<pattern value="[_\w\-\. ]{1,64}"/>
+    		<pattern value="[_\w\-\. ]{1,255}"/>
   		</restriction>
 	</simpleType>
     

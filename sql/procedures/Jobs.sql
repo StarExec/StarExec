@@ -232,15 +232,14 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 		WHERE id = _id;
 	END //	
 
-
-
 -- Retrieves basic info about job pairs for the given job id (simple version)
 -- Author: Julio Cervantes
 DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT job_pairs.id, solver_name,solver_id,config_name,config_id,bench_name,bench_id,name,status_code,job_spaces.id
 		FROM job_pairs
+		JOIN job_spaces ON job_spaces.id=job_space_id
 		WHERE job_pairs.job_id=_id;
 	END //
 

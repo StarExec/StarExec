@@ -55,6 +55,7 @@ public class JobPair extends Identifiable {
 		this.status = new Status();		
 		this.configuration=new Configuration();
 		this.attributes=new Properties();
+		this.space=new Space();
 	}
 	
 	/**
@@ -168,7 +169,7 @@ public class JobPair extends Identifiable {
 	 */
 	public String getStarexecResult() {
 		Properties prop = this.getAttributes();
-		return (prop != null && prop.containsKey(R.STAREXEC_RESULT)) 
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
 			? prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
 	
