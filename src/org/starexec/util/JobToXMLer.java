@@ -190,6 +190,9 @@ public class JobToXMLer {
 			solverId.setValue(Integer.toString(jobpair.getSolver().getId()));
 			solverName.setValue(jobpair.getSolver().getName());
 			
+			jp.setAttributeNode(solverId);
+			jp.setAttributeNode(solverName);
+			
 			jobElement.appendChild(jp);
 			
 		}

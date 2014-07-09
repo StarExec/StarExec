@@ -115,6 +115,8 @@ public class UploadJobXML extends HttpServlet {
 				if (current!=null) {
 					jobIds.addAll(current);		
 
+				} else {
+					log.warn("the uploaded job xml was not formatted corectly");
 				}
 			}
 			if (jobUtil.getJobCreationSuccess()) {
