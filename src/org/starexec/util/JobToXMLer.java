@@ -1,6 +1,7 @@
 package org.starexec.util;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -167,7 +168,6 @@ public class JobToXMLer {
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
 		log.info("Length of jobpairs list Simple: " + pairs.size());
 		
-		
 		for (JobPair jobpair:pairs){
 			Element jp = doc.createElement("JobPair");
 
@@ -187,12 +187,20 @@ public class JobToXMLer {
 			
 			Attr solverId=doc.createAttribute("solver-id");
 			Attr solverName=doc.createAttribute("solver-name");
+			
+			Attr spaceId=doc.createAttribute("job-space-id");
+			Attr spaceName=doc.createAttribute("job-space-name");
+			spaceId.setValue(Integer.toString(jobpair.getSpace().getId()));
+			spaceName.setValue(jobpair.getSpace().getName());
+			
+			jp.setAttributeNode(spaceId);
+			jp.setAttributeNode(spaceName);
+			
 			solverId.setValue(Integer.toString(jobpair.getSolver().getId()));
 			solverName.setValue(jobpair.getSolver().getName());
 			
 			jp.setAttributeNode(solverId);
 			jp.setAttributeNode(solverName);
-			
 			jobElement.appendChild(jp);
 			
 		}

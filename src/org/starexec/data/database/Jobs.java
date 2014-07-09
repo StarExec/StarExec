@@ -2389,38 +2389,47 @@ public class Jobs {
 			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
 			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
 			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
 				
-				//we need to check to see if the benchId and configId are null, since they might
-				//have been deleted while the the job is still pending
-				Integer benchId=results.getInt("bench_id");
-				if (benchId!=null) {
-					if (!benchmarks.containsKey(benchId)) {
-						benchmarks.put(benchId,Benchmarks.get(benchId));
+				try {
+
+					JobPair jp = JobPairs.resultToPair(results);
+					
+					//we need to check to see if the benchId and configId are null, since they might
+					//have been deleted while the the job is still pending
+					Integer benchId=results.getInt("bench_id");
+					if (benchId!=null) {
+						if (!benchmarks.containsKey(benchId)) {
+							benchmarks.put(benchId,Benchmarks.get(benchId));
+						}
+						
+						jp.setBench(benchmarks.get(benchId));
+					}
+					Integer configId=results.getInt("config_id");
+					String configName=results.getString("config_name");
+					Configuration c=new Configuration();
+					c.setId(configId);
+					c.setName(configName);
+					jp.setConfiguration(c);
+
+					if (configId!=null) {
+						if (!configs.containsKey(configId)) {
+							solvers.put(configId, Solvers.getSolverByConfig(configId, false));
+							configs.put(configId, c);
+						}
+						jp.setSolver(solvers.get(configId));
+						jp.getSolver().addConfiguration(c);
 					}
 					
-					jp.setBench(benchmarks.get(benchId));
-				}
-				Integer configId=results.getInt("config_id");
-				String configName=results.getString("config_name");
-				Configuration c=new Configuration();
-				c.setId(configId);
-				c.setName(configName);
-				jp.setConfiguration(c);
+					Status s = new Status();
 
-				if (configId!=null) {
-					if (!configs.containsKey(configId)) {
-						solvers.put(configId, Solvers.getSolverByConfig(configId, false));
-					}
-					jp.setSolver(solvers.get(configId));
-					jp.getSolver().addConfiguration(c);
+					s.setCode(results.getInt("status_code"));
+					jp.setStatus(s);
+					returnList.add(jp);
+				} catch (Exception e) {
+					log.error("there was an error making a single job pair object");
+					log.error(e.getMessage(),e);
 				}
 				
-				Status s = new Status();
-
-				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
-				returnList.add(jp);
 			}			
 
 			Common.safeClose(results);
