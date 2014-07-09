@@ -130,12 +130,8 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getHelpTest(){
-		Assert.assertTrue(con.canGetPage("secure/help.jsp");
+		Assert.assertTrue(con.canGetPage("secure/help.jsp"));
 	}
-	
-	
-	
-	
 	
 	@Test
 	private void failBadURLTest(){
