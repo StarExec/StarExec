@@ -79,6 +79,21 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
+	private void getSolverAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/solver.jsp?sid="+space1.getId()));
+	}
+	
+	@Test
+	private void getBatchJobAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/batchJob.jsp?sid="+space1.getId()));
+	}
+	
+	@Test
+	private void getBatchSpaceAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/batchSpace.jsp?sid="+space1.getId()));
+	}
+	
+	@Test
 	private void getBenchmarkDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/benchmark.jsp?id="+benchmarkIds.get(0)));
 	}
@@ -89,13 +104,13 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
-	private void getConfigDetailsTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/configuration.jsp?id="+config.getId()));
+	private void getenchAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/benchmarks.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
-	private void getSpaceEditTest() {
-		Assert.assertTrue(con.canGetPage("secure/edit/space.jsp?id="+space1.getId()));
+	private void getConfigDetailsTest(){
+		Assert.assertTrue(con.canGetPage("secure/details/configuration.jsp?id="+config.getId()));
 	}
 	
 	@Test
@@ -104,13 +119,28 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
+	private void getConfigAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/configuration.jsp?sid="+solver.getId()));
+	}
+	
+	@Test
+	private void getPictureAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/picture.jsp?type=solver&Id="+solver.getId()));
+	}
+	
+	@Test
+	private void getSpaceEditTest() {
+		Assert.assertTrue(con.canGetPage("secure/edit/space.jsp?id="+space1.getId()));
+	}
+	
+	@Test
 	private void getJobDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/job.jsp?id="+job.getId()));
 	}
 	
 	@Test
-	private void getJobEditTest(){
-		Assert.assertTrue(con.canGetPage("secure/edit/job.jsp?id="+job.getId()));
+	private void getJobAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?id="+space1.getId()));
 	}
 	
 	@Test
@@ -125,7 +155,7 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getUserEditTest(){
-		Assert.assertTrue(con.canGetPage("secure/edit/user.jsp?id="+user.getId()));
+		Assert.assertTrue(con.canGetPage("secure/edit/account.jsp?id="+user.getId()));
 	}
 	
 	@Test

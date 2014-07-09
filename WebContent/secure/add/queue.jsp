@@ -5,9 +5,14 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	List<Space> spaces = Spaces.GetAllSpaces();
-	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-	request.setAttribute("spaces", spaces);
+	if (Users.isAdmin(userId)) {
+		List<Space> spaces = Spaces.GetAllSpaces();
+		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+		request.setAttribute("spaces", spaces);
+	} else {
+		response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"You do not have permission to view this page");
+	}
+
 			
 } catch (NumberFormatException nfe) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");

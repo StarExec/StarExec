@@ -28,7 +28,7 @@
 		<div id="explorerAction">
 			<ul id="exploreActions">
 				<li><a type="btnRun" id="newQueue" href="/${starexecRoot}/secure/add/queue.jsp">Add New Queue</a></li>
-				<li><a type="btnRun" id="newPermanent" href="/${starexecRoot}/secure/add/permanentQueue.jsp">Add Permanent Queue</a></li>
+				<li><a type="btnRun" id="newPermanent" href="/${starexecRoot}/secure/admin/permanentQueue.jsp">Add Permanent Queue</a></li>
 			</ul>
 		</div>
 	</div>
