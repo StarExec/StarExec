@@ -55,6 +55,7 @@ public class JobPair extends Identifiable {
 		this.status = new Status();		
 		this.configuration=new Configuration();
 		this.attributes=new Properties();
+		this.space=new Space();
 	}
 	
 	/**
