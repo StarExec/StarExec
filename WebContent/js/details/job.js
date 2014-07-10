@@ -220,10 +220,11 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-	
+	$("#compareSolvers").hide();
+
 	$("#compareSolvers").click(function(){
 		c1=$(".first_selected").find(".configLink").attr("id");
-		c1=$(".second_selected").find(".configLink").attr("id");
+		c2=$(".second_selected").find(".configLink").attr("id");
 		window.open(starexecRoot+"services/jobs/"+jobId+"/comparisons/pagination/"+curSpaceId+"/"+c1+"/"+c2+"/"+useWallclock);
 	});
 	
@@ -882,7 +883,24 @@ function initDataTables(){
 			$(this).addClass("first_selected");
 			$(this).addClass("row_selected");
 		} else {
-			$(this).toggleClass("row_selected");
+			$(this).removeClass("row_selected");
+			$(this).removeClass("first_selected");
+			$(this).removeClass("second_selected");
+
+			$("#solveTbl").find(".second_selected").each(function(){
+				$(this).removeClass("second_selected");
+				$(this).removeClass("first_selected");
+
+				$(this).addClass("first_selected");
+
+			});
+		}
+		if ($("#solveTbl").find(".second_selected").size()>0) {
+			$("#compareSolvers").show();
+			
+		} else {
+			$("#compareSolvers").hide();
+
 		}
 	});
 	
