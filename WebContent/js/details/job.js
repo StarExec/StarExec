@@ -215,11 +215,18 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-	$("#compareSelected").button({
+	$("#compareSolvers").button({
 		icons: {
 			primary: "ui-icon-clipboard"
 		}
     });
+	
+	$("#compareSolver").click(function(){
+		c1=$(".first_selected").find(".configLink").attr("id");
+		c1=$(".second_selected").find(".configLink").attr("id");
+		window.open(starexecRoot+"services/jobs/"+jobId+"/comparisons/pagination/"+curSpaceId+"/"+c1+"/"+c2+"/"+useWallclock);
+	});
+	
 	
 	$("#rerunPairs").button({
 		icons: {
@@ -860,7 +867,23 @@ function initDataTables(){
     });
 	
 	$("#solveTbl").delegate("tr","mousedown", function(){
-		$(this).toggleClass("row_selected");
+		if (!$(this).hasClass("row_selected")) {
+			$("#solveTbl").find(".second_selected").each(function(){
+				$(this).removeClass("second_selected");
+				$(this).removeClass("row_selected");
+
+			});
+			$("#solveTbl").find(".first_selected").each(function(){
+				$(this).removeClass("first_selected");
+				$(this).addClass("second_selected");
+
+			});
+			
+			$(this).addClass("first_selected");
+			$(this).addClass("row_selected");
+		} else {
+			$(this).toggleClass("row_selected");
+		}
 	});
 	
 	// Job pairs table

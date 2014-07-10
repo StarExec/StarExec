@@ -1769,8 +1769,6 @@ public class RESTHelpers {
 		 * Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
-		String solverLink=null;
-		String configLink=null;
 		for(SolverComparison c : comparisons){
     		
     		
@@ -1783,11 +1781,6 @@ public class RESTHelpers {
     		sb.append(c.getBenchmark().getName());
     		RESTHelpers.addImg(sb);
 			String benchLink = sb.toString();
-
-		
-
-
-			
 
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
@@ -2540,7 +2533,7 @@ public class RESTHelpers {
 			
 			// create the configuraiton link
 			sb = new StringBuilder();
-			sb.append("<a title=\"");
+			sb.append("<a class=\"configLink\" title=\"");
 			sb.append(js.getConfiguration().getName());
 			sb.append("\" href=\""
 					+ Util.docRoot("secure/details/configuration.jsp?id="));
