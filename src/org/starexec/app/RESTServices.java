@@ -2724,6 +2724,26 @@ public class RESTServices {
 	}
 	
     /**
+     * helper function for editing permissions
+     * @param request
+     **/
+
+    public Permission createPermissionFromRequest(HttpServletRequest request){
+	Permission newPerm = new Permission(false);
+	newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
+	newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+	newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
+	newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+	newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
+	newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+	newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
+	newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+	newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
+	newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+	newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));	
+	return newPerm;
+    }
+    /**
      * Changes the permissions of a given user for a space hierarchy
      *@author Julio Cervantes
      *
@@ -2735,24 +2755,15 @@ public class RESTServices {
 
 	    // Ensure the user attempting to edit permissions is a leader
 	    int currentUserId = SessionUtil.getUserId(request);
-	    log.info("currentUserId: " + currentUserId + ", requestChangeId: " + userId + ", spaceId: " + spaceId);
-	    List<Integer> permittedSpaces = SpaceSecurity.getUpdatePermissionSpaces(spaceId, userId, currentUserId);
+	    boolean leaderStatusChange = Boolean.parseBoolean(request.getParameter("leaderStatusChange"));
+
+	    List<Integer> permittedSpaces = SpaceSecurity.getUpdatePermissionSpaces(spaceId, userId, currentUserId,leaderStatusChange);
 	    log.info("permittedSpaces: " + permittedSpaces);
 
 	    // Configure a new permission object
-	    Permission newPerm = new Permission(false);
-	    newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
-	    newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
-	    newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
-	    newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
-	    newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
-	    newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
-	    newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
-	    newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
-	    newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
-	    newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
-	    newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));			
+	    Permission newPerm = createPermissionFromRequest(request);			
 	    
+
 	    // Update database with new permissions
 	    for(Integer permittedSpaceId : permittedSpaces){
 		if(permittedSpaceId != null){
@@ -2779,23 +2790,14 @@ public class RESTServices {
 	public String editUserPermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
 		// Ensure the user attempting to edit permissions is a leader
 		int currentUserId = SessionUtil.getUserId(request);
-		int status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId);
+		boolean leaderStatusChange = Boolean.parseBoolean(request.getParameter("leaderStatusChange"));
+		int status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId,leaderStatusChange);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
 		// Configure a new permission object
-		Permission newPerm = new Permission(false);
-		newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
-		newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
-		newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));		
-		newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
-		newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));		
-		newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
-		newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
-		newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
-		newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));		
-		newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
-		newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));				
+		Permission newPerm = createPermissionFromRequest(request);
+				
 		
 		// Update database with new permissions
 		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
@@ -3873,24 +3875,6 @@ public class RESTServices {
 		}
 		
 		return Jobs.removeAllCachedJobStats() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}
-	
-	/**
-	 * Clears the given job from the cache
-	 * @param request
-	 * @return
-	 */
-	@POST
-	@Path("/cache/clearStats/{jobId}")
-	@Produces("application/json")
-	public String clearStatsCache(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		int status=CacheSecurity.canUserClearCache(userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		
-		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**

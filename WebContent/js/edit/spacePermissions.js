@@ -31,7 +31,7 @@ var logger = function()
 
 $(document).ready(function(){
 
-	//logger.disableLogger();
+	logger.disableLogger();
 	console.log("spacePermissions log start");
 
 	currentUserId=parseInt($("#userId").attr("value"));
@@ -130,7 +130,7 @@ function initButtonUI() {
 /**
  * Creates the space explorer tree for the left-hand side of the page, also
  * creates tooltips for the space explorer, .expd class, and userTable (if applicable)
- * TODO : utility function? (used in space.js) 
+ * TODO : utility function? (used in spaces.js) 
  * @author Tyler Jensen & Todd Elvers & Skylar Stark changes Julio Cervantes
  */
 function initSpaceExplorer(){
@@ -353,11 +353,6 @@ function initDataTables(){
 	});
 	
 
-
-
-	// Set all fieldsets as expandable (except for action fieldset)
-	//$('fieldset').expandable(false);
-
 	// Set the DataTable filters to only query the server when the user finishes typing
 	userTable.fnFilterOnDoneTyping();
 
@@ -484,7 +479,7 @@ function getPermissionDetails(user_id, space_id) {
 	$.get(  
 		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
 		function(data){  			
-			populateDetails(data);			
+		    populateDetails(data, user_id);			
 		},  
 		"json"
 	).error(function(){
@@ -492,11 +487,15 @@ function getPermissionDetails(user_id, space_id) {
 	});
 }
 
-function populateDetails(data) {
+function populateDetails(data, user_id) {
 	if (data.perm == null) {
 	    showMessage("error","permissions seem to be null",5000);
 	} else {
-	    if(curIsLeader && (spaceId != "1")){
+	    $('#permCheckboxes').hide();
+	    $('#currentPerms').hide();
+
+	    console.log("current user selected: " + (user_id == currentUserId));
+	    if(curIsLeader && (spaceId != "1") && (user_id != currentUserId)){
 		$('#permCheckboxes').show();
 	    }
 	    else{
@@ -528,12 +527,24 @@ function populateDetails(data) {
 	    checkBoxes("removeUser", removeUser);
 	    checkBoxes("removeJob", removeJob);
 	    checkBoxes("removeSpace", removeSpace);
-	    checkBoxes("leaderStatus", leaderStatus);
+
+
+	    if(leaderStatus == true){
+		$("#uleaderStatus").attr("class","ui-icon ui-icon-check")
+		$("#leaderStatus").attr("value","demote");
+	    }
+	    else{
+		$("#uleaderStatus").attr("class","ui-icon ui-icon-close")
+		$("#leaderStatus").attr("value","promote");
+	    }
 	}
 	
 }
 
 function checkBoxes(name, value) {
+
+
+
 	if (value == true) {
 	    $("#u" + name).attr('class','ui-icon ui-icon-check');
 	    $("#" + name).attr('checked', 'checked');
@@ -542,13 +553,55 @@ function checkBoxes(name, value) {
 	    $("#" + name).removeAttr('checked');
 
 	}
+    
+}
+
+
+/**
+ *helper function for changePermissions
+ *
+ **/
+function makeDemoteData(){
+    var data =
+	{		addBench	: true,
+			addJob		: true,
+			addSolver	: true,
+			addSpace	: true,
+			addUser		: true,
+			removeBench	: true,
+			removeJob	: true,
+			removeSolver    : true,
+			removeSpace	: true,
+			removeUser	: true,
+			isLeader        : false,
+			leaderStatusChange : true
+	};
+    return data;
+}
+
+function makePromoteData(){
+    var data =
+	{		addBench	: true,
+			addJob		: true,
+			addSolver	: true,
+			addSpace	: true,
+			addUser		: true,
+			removeBench	: true,
+			removeJob	: true,
+			removeSolver    : true,
+			removeSpace	: true,
+			removeUser	: true,
+			isLeader        : true,
+			leaderStatusChange : true
+	};
+    return data;
 }
 
 /**
  * 
- * @param hier boolean should behave hierarchically?
+ * @param hier : boolean - whether or not to behave hierarchically
  **/
-function changePermissions(hier){
+function changePermissions(hier,changingLeadership){
 
     var url = starexecRoot+"services/space/" + spaceId + "/edit/perm/";
     if(hier){
@@ -557,8 +610,12 @@ function changePermissions(hier){
     url = url + lastSelectedUserId;
 
     $('#dialog-confirm-update').dialog('close');
-    var data = 
-	{		addBench	: $("#addBench").is(':checked'),
+
+    var data = null;
+
+    if(!changingLeadership){
+	data = 
+	    {		addBench	: $("#addBench").is(':checked'),
 			addJob		: $("#addJob").is(':checked'),
 			addSolver	: $("#addSolver").is(':checked'),
 			addSpace	: $("#addSpace").is(':checked'),
@@ -568,8 +625,19 @@ function changePermissions(hier){
 			removeSolver: $("#removeSolver").is(':checked'),
 			removeSpace	: $("#removeSpace").is(':checked'),
 			removeUser	: $("#removeUser").is(':checked'),
-			isLeader 	: $("#leaderStatus").is(':checked'),
-	};
+			//isLeader 	: $("#leaderStatus").is(':checked'),
+			isLeader        : ($("#leaderStatus").attr("value") == "demote"),
+			leaderStatusChange : false
+	    };
+    }
+    else{
+	if($("#leaderStatus").attr("value") == "demote"){
+	    data = makeDemoteData();
+	}
+	else{
+	    data = makePromoteData();
+	}
+    }
     // Pass data to server via AJAX
     $.post(
 	   url,
@@ -589,6 +657,8 @@ function changePermissions(hier){
 	       case 2:
 		   showMessage('error', "only a leader of this space can modify its details", 5000);
 		   break;
+	       case 3:
+		   showMessage('error',"you must first demote a leader before you can change their permissions",5000);
 	       case 7:
 		   showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
 		   break;
@@ -618,8 +688,8 @@ function setUpButtons() {
 			width: 380,
 			height: 165,
 			buttons: {
-			    "change only this space": function(){ changePermissions(false)},
-			    "change this space's hierarchy" : function(){changePermissions(true)},
+			"change only this space": function(){ changePermissions(false,false)},
+			    "change this space's hierarchy" : function(){changePermissions(true,false)},
 			    "cancel": function() {
 				
 				$(this).dialog("close");
@@ -642,26 +712,30 @@ function setUpButtons() {
 	    
 
 	});
-
+    /**
     $("#exploreSpaces").unbind("click");
     $("#exploreSpaces").click(function(e) {
-
-
-    /**
-<td><input class="resetButton" type="button" id="hiddenButton" value="i'm hiding" hidden ></input></td>
-    $("#hiddenButton").unbind("click");
-    $("#hiddenButton").click(function(e){
-	    
-	    console.log("hidden button clicked");
-	    var selectedId = $('#exploreList').jstree('get_selected').attr('id');
-	    console.log("node about to be deselected: " + selectedId);
-	    $("#exploreList").jstree("deselect_node",'#' + selectedId,false);
-	    $("#exploreList").jstree("open_node", '#4',false);
-	    //expandNode('4');
-	    $("#exploreList").jstree("select_node", '#4',false);
+	
 	});
     **/
-	
+
+    $("#leaderStatus").unbind('click');
+    $("#leaderStatus").click(function(e) {
+	    $("#dialog-confirm-update-txt").text("how should the leadership change take effect?");
+		
+	    $("#dialog-confirm-update").dialog({
+		    modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+			"change only this space": function(){ changePermissions(false,true)},
+				"change this space's hierarchy" : function(){changePermissions(true,true)},
+			    "cancel": function() {
+				
+				$(this).dialog("close");
+			    }
+		    }
+		});
 	});
 }
 	

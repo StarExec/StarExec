@@ -3,27 +3,11 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-/**
+
 		int userId = SessionUtil.getUserId(request);
-		int spaceId = Integer.parseInt(request.getParameter("id"));
-		request.setAttribute("nameLength", R.SPACE_NAME_LEN);
-		request.setAttribute("descLength", R.SPACE_DESC_LEN);
-		Space s = null;
-		if (Permissions.canUserSeeSpace(spaceId,userId)) {
-			s = Spaces.get(spaceId);
-		}
-		
-		if (s != null) {
-			if (!Permissions.get(userId, spaceId).isLeader()) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the leaders of this space can edit details about it.");
-			}
-		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Space does not exist or is restricted");
-		}
-**/
-	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given space id was in an invalid format");
-	}  catch (Exception e) {
+		request.setAttribute("userId",userId);
+
+	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
@@ -163,7 +147,8 @@
 			<table>
 				<tr>
 					<td><h2>leader</h2></td>
-					<td><input type="checkbox" id= "leaderStatus"></input></td>
+					<!-- <td><input type="checkbox" id= "leaderStatus"></input></td> -->
+					<td><input type="button" id="leaderStatus" value="promote"></input></td>
 				</tr>
 			</table>
 						

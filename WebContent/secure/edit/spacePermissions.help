@@ -1,8 +1,9 @@
 <h1>Editing permissions</h1>
 
 <p>Only space leaders are allowed to change permissions. Space
-leaders are allowed to change anyone's permissions, even other space leaders.  The
-only exception to this rule is the admin.  No one can change the admin's permissions.
+leaders are allowed to change any nonleader's permissions.  Space leader's
+can also demote other space leaders.  No one can change an admin's
+permissions and no one can change their own permissions.
 </p>
 
 <h2>How to make changes</h2>
@@ -10,11 +11,12 @@ only exception to this rule is the admin.  No one can change the admin's permiss
 <p>
 <ol>
 <li>Navigate to the <a href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit permissions page</a></li>
-<li>Select the desired space where the change should take place</li>
-<li>Select a user from the list of users that appears.</li>
-<li>You should see a table called "change permissions" appear.  If instead you see a table called "selected user permissions", then you are not a space leader and you can't change permissions in this space.</li>
-<li>Check or uncheck any permissions you want to change.  Click reset to reset the checkmarks to the user's original permissions.</li>
-<li>Click save to save permission changes.</li>
+<li>Select the desired space</li>
+<li>Select a user</li>
+<li>You should see a table called "change permissions" appear.  If instead you see a table called "selected user permissions", you can't change permissions for this space/user pair.</li>
+<li>Check or uncheck any permissions you want to change.  Click "reset" to reset the checkmarks to the user's original permissions.</li>
+<li>Click "save" to save permission changes.</li>
+<li>You can also demote or promote users</li>
 <li>Decide if you want the changes to take place only in the selected space or hierarchically (relative to selected space).</li>
 </ol>
 </p>
@@ -24,6 +26,7 @@ only exception to this rule is the admin.  No one can change the admin's permiss
 <p>
 <ul>
 <li>You must select a user before you can view or change their permissions</li>
+<li>You must first demote a leader before you can change their other permissions</li>
 <li>If you are a leader of a space, you should see "leader of current space" under the space name and above the space description in the detail panel to the right of the space tree.</li>
 </ul>
 </p>
