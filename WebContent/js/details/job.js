@@ -217,11 +217,11 @@ function initUI(){
     });
 	$("#compareSolvers").button({
 		icons: {
-			primary: "ui-icon-clipboard"
+			primary: "ui-icon-arrowthick-1-s"
 		}
     });
 	
-	$("#compareSolver").click(function(){
+	$("#compareSolvers").click(function(){
 		c1=$(".first_selected").find(".configLink").attr("id");
 		c1=$(".second_selected").find(".configLink").attr("id");
 		window.open(starexecRoot+"services/jobs/"+jobId+"/comparisons/pagination/"+curSpaceId+"/"+c1+"/"+c2+"/"+useWallclock);
