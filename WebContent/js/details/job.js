@@ -220,12 +220,12 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-	$("#compareSolvers").hide();
+	//$("#compareSolvers").hide();
 
 	$("#compareSolvers").click(function(){
 		c1=$(".first_selected").find(".configLink").attr("id");
 		c2=$(".second_selected").find(".configLink").attr("id");
-		window.open(starexecRoot+"services/jobs/"+jobId+"/comparisons/pagination/"+curSpaceId+"/"+c1+"/"+c2+"/"+useWallclock);
+		window.open(starexecRoot+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
 	});
 	
 	
