@@ -20,6 +20,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.util.Util;
@@ -400,6 +401,32 @@ public class JobPairs {
 		} else {
 			return -1;
 		}
+	}
+	
+	/**
+	 * Filters a list of solver comparisons against a given query
+	 * @param comparisons
+	 * @param searchQuery
+	 * @return
+	 */
+	protected static List<SolverComparison> filterComparisons(List<SolverComparison> comparisons, String searchQuery) {
+		//no filtering is necessary if there's no query
+		if (searchQuery==null || searchQuery=="") {
+			return comparisons;
+		}
+		
+		searchQuery=searchQuery.toLowerCase();
+		List<SolverComparison> filteredComparisons=new ArrayList<SolverComparison>();
+		for (SolverComparison c : comparisons) {
+			try {
+				if (c.getBenchmark().getName().toLowerCase().contains(searchQuery)) {
+					filteredComparisons.add(c);
+				}
+			} catch (Exception e) {
+			}	
+		}
+		
+		return filteredComparisons;
 	}
 	
 	/**
@@ -884,6 +911,154 @@ public class JobPairs {
 		List<JobPair> list1= mergeSortJobPairs(pairs.subList(0, middle),sortColumn,ASC,wallclock);
 		List<JobPair> list2=mergeSortJobPairs(pairs.subList(middle, pairs.size()),sortColumn,ASC,wallclock);
 		return mergeJobPairs(list1,list2,sortColumn,ASC,wallclock);
+	}
+	
+	private static List<SolverComparison> mergeSolverComparisons(List<SolverComparison> list1, List<SolverComparison> list2, int sortColumn, boolean ASC, boolean wallclock) {
+		
+		int list1Index=0;
+		int list2Index=0;
+		int first;
+		List<SolverComparison> mergedList=new ArrayList<SolverComparison>();
+		while (list1Index<list1.size() && list2Index<list2.size()) {
+			if (sortColumn==0 || sortColumn==4 || sortColumn==5) {
+				first=compareSolverComparisonStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
+			} else {
+				first=compareSolverComparisonNums(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC,wallclock);
+			}
+			if (first==0) {
+				mergedList.add(list1.get(list1Index));
+				list1Index++;
+			} else {
+				mergedList.add(list2.get(list2Index));
+				list2Index++;
+			}
+		}
+		if (list1Index==list1.size()) {
+			mergedList.addAll(list2.subList(list2Index, list2.size()));
+		} else {
+			mergedList.addAll(list1.subList(list1Index, list1.size()));
+		}
+		return mergedList;
+	}
+	
+
+	
+	/**
+	 * 
+	 * @param jp1
+	 * @param jp2
+	 * @param sortIndex
+	 * 1 pair 1 time
+	 * 2 pair 2 time
+	 * 3 time diff
+	 * 6 same-result column
+	 * @param ASC
+	 * @param isWallclock
+	 * @return
+	 */
+	private static int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2, int sortIndex, boolean ASC, boolean isWallclock) {
+		int answer=0;
+		try {
+			double db1=0;
+			double db2=0;
+			if (sortIndex==1) {
+				if (isWallclock) {
+					db1=c1.getFirstPair().getWallclockTime();
+					db2=c2.getFirstPair().getWallclockTime();
+				} else {
+					db1=c1.getFirstPair().getCpuTime();
+					db2=c2.getFirstPair().getCpuTime();
+				}
+			} else if (sortIndex==2) {
+				if (isWallclock) {
+					db1=c1.getSecondPair().getWallclockTime();
+					db2=c2.getSecondPair().getWallclockTime();
+				} else {
+					db1=c1.getSecondPair().getCpuTime();
+					db2=c2.getSecondPair().getCpuTime();
+				}
+			} else if (sortIndex==3) {
+				if (isWallclock) {
+					db1=c1.getWallclockDifference();
+					db2=c2.getWallclockDifference();
+				} else {
+					db1=c1.getCpuDifference();
+					db2=c2.getCpuDifference();
+				}
+			} else {
+				if (c1.doResultsMatch()) {
+					db1=1;
+				}
+				if (c2.doResultsMatch()) {
+					db2=1;
+				}
+			}
+			
+			
+			
+			//if db1> db2, then db2 should go first
+			if (db1>db2) {
+				answer=1;
+			}
+		} catch (Exception e) {
+			//either solver name was null, so we can just return jp1 as being first
+		}
+		//if we are descending, flip the answer
+		if (!ASC) {
+			answer=1-answer;
+		}
+		return answer;
+	}
+	
+	/**
+	 * Compares the solver names of jp1 and jp2 
+	 * @param jp1 The first job pair
+	 * @param jp2 The second job pair
+	 * @param sortIndex the value to sort on
+	 * 0 = bench name
+	 * 4 = result 1
+	 * 5 = result 2
+	 * @param ASC Whether sorting is to be done ASC or DESC
+	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
+	 * @author Eric Burns
+	 */ 
+	private static int compareSolverComparisonStrings(SolverComparison c1, SolverComparison c2, int sortIndex, boolean ASC) {
+		int answer=0;
+		try {
+			String str1=null;
+			String str2=null;
+			 if (sortIndex==5) {
+				str1=c1.getSecondPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=c2.getSecondPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+			} else if (sortIndex==0) {
+				str1=c1.getBenchmark().getName();
+				str2=c2.getBenchmark().getName();
+			} else {
+				str1=c1.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=c2.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+			}
+			//if str1 lexicographically follows str2, put str2 first
+			if (str1.compareTo(str2)>0) {
+				answer=1;
+			}
+		} catch (Exception e) {
+			//either solver name was null, so we can just return jp1 as being first
+		}
+		//if we are descending, flip the answer
+		if (!ASC) {
+			answer=1-answer;
+		}
+		return answer;
+	}
+	
+	protected static List<SolverComparison> mergeSortSolverComparisons(List<SolverComparison> comparisons,int sortColumn,boolean ASC, boolean wallclock) {
+		if (comparisons.size()<=1) {
+			return comparisons;
+		}
+		int middle=comparisons.size()/2;
+		List<SolverComparison> list1= mergeSortSolverComparisons(comparisons.subList(0, middle),sortColumn,ASC,wallclock);
+		List<SolverComparison> list2=mergeSortSolverComparisons(comparisons.subList(middle, comparisons.size()),sortColumn,ASC,wallclock);
+		return mergeSolverComparisons(list1,list2,sortColumn,ASC,wallclock);
 	}
 
 	/**

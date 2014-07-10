@@ -546,6 +546,27 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
+	
+	
+	@POST
+	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
+	@Produces("application/json")	
+	public String getSolverComparisonsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock);
+
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	
+	
 	/**
 	 * Returns the next page of entries for a job pairs table
 	 *

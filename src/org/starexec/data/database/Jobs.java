@@ -25,6 +25,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
@@ -1202,6 +1203,63 @@ public class Jobs {
 		
 		return jobPairCount;		
 	}
+	
+	/**
+	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
+	 * all the job pairs are in the given space and were operated on by the configuration with the given config ID
+	 * @param startingRecord The first record to return
+	 * @param recordsPerPage The number of records to return
+	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
+	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
+	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
+	 * @param jobId The ID of the job in question
+	 * @param spaceID The space that contains the job pairs
+	 * @param configID The ID of the configuration responsible for the job pairs
+	 * @param totals A size 2 int array that, upon return, will contain in the first slot the total number
+	 * of pairs and in the second slot the total number of pairs after filtering
+	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
+	 * @author Eric Burns
+	 */
+	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
+			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock) {
+		List<JobPair> pairs1=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId1);
+		List<JobPair> pairs2=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId2);
+		List<SolverComparison> comparisons=new ArrayList<SolverComparison>();
+		HashMap<Integer,JobPair> benchesToPairs=new HashMap<Integer,JobPair>();
+		for (JobPair jp : pairs1) {
+			benchesToPairs.put(jp.getBench().getId(), jp);
+		}
+		for (JobPair jp : pairs2) {
+			if (benchesToPairs.containsKey(jp.getBench().getId())) {
+				try {
+					comparisons.add(new SolverComparison(benchesToPairs.get(jp.getBench().getId()), jp));
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}
+			}
+		}
+		//TODO: Do we need to filter by type here		
+		totals[0]=comparisons.size();
+		List<SolverComparison> returnList=new ArrayList<SolverComparison>();
+		comparisons=JobPairs.filterComparisons(comparisons, searchQuery);
+
+		totals[1]=comparisons.size();
+		comparisons=JobPairs.mergeSortSolverComparisons(comparisons, indexOfColumnSortedBy, isSortedASC,wallclock);
+
+		if (startingRecord>=comparisons.size()) {
+			//we'll just return nothing
+		} else if (startingRecord+recordsPerPage>comparisons.size()) {
+			returnList = comparisons.subList(startingRecord, comparisons.size());
+		} else {
+			 returnList = comparisons.subList(startingRecord,startingRecord+recordsPerPage);
+		}
+
+		log.debug("the size of the return list is "+returnList.size());
+		return returnList;
+	}
+	
+	
+	
 	/**
 	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
 	 * all the job pairs are in the given space and were operated on by the configuration with the given config ID

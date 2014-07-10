@@ -140,7 +140,7 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getJobAddTest(){
-		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?id="+space1.getId()));
+		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
