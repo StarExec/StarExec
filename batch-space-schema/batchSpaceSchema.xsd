@@ -33,6 +33,7 @@
     	 <attribute name="sticky-leaders" type="boolean" use="optional"></attribute>
     	 <attribute name="inherit-users" type="boolean" use="optional"></attribute>
     	 <attribute name="locked" type="boolean" use="optional"></attribute>
+	 <attribute name="description" type="tns:Description" use="optional"></attribute>
     	 <attribute name="add-benchmark-perm" type="boolean" use="optional"></attribute>
     	 <attribute name="add-job-perm" type="boolean" use="optional"></attribute>
     	 <attribute name="add-solver-perm" type="boolean" use="optional"></attribute>
@@ -67,6 +68,13 @@
     	<attribute name="name" type="string" use="optional"></attribute>
     </complexType>
     
+
+    <simpleType name="Description">
+      <restriction base="string">
+	<pattern value="[^&lt;&gt;&quot;&apos;)(&amp;&#37;&#43;&#45;]{0,1024}" />
+      </restriction>
+    </simpleType>
+
     <simpleType name="PrimitiveName">
   		<restriction base="string">
     		<pattern value="[_\w\-\. ]{1,64}"/>
