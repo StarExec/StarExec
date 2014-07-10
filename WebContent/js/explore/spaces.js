@@ -2065,7 +2065,7 @@ function checkPermissions(perms, id) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
 		$('#editSpace').fadeIn('fast');
-		$('#editSpacePermissions').fadeIn('fast');
+		//$('#editSpacePermissions').fadeIn('fast');
 		$('#reserveQueue').fadeIn('fast');
 
 		handlePublicButton(id);
@@ -2073,7 +2073,7 @@ function checkPermissions(perms, id) {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
-		$('#editSpacePermissions').fadeOut('fast');
+		//$('#editSpacePermissions').fadeOut('fast');
 		$('#makePublic').fadeOut('fast');
 		$('#makePrivate').fadeOut('fast');
 		$('#reserveQueue').fadeOut('fast');
@@ -2797,60 +2797,6 @@ function getTooltipConfig(type, message){
 }
 
 
-
-/**
- *TODO : delete this function
- * When a leader tooltip permissions icon is clicked, this cycles to the next png in order: 
- * none->add->remove->add/remove->none
- * 
- * @param image the icon span DOM element containing the png that triggered this method when it was clicked
- * @param perm the string name of the permission being toggled (user, solver, bench, job, space)
- */
-function togglePermImage(image, perm){
-	// If the user is a leader, you can't edit their permissions, return
-	if($(image).parents('table').data('perms').isLeader) {
-		showMessage('warn', 'you cannot edit a leader\'s permission', 1500);
-		return;
-	}	
-
-	// Change the title to 'save | cancel'
-	$(image).parents('.qtip').qtip('api').updateTitle('<center><a class="tooltipButton" onclick="saveChanges(this,true);">save</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a class="tooltipButton" onclick="saveChanges(this,false);">cancel</a></center>');
-
-	// Get the current permissions associated with the table
-	var permData = $(image).parents('table').data('perms');	
-
-	// Determine if this is an add or remove permission being toggle
-	var isAddPerm = $(image).parent().attr('class').indexOf('add') >= 0;
-	var newVal = false;
-
-	// Toggle the permission icon and update the new value to be set
-	if($(image).attr('class').indexOf('ui-icon-check') >= 0) {
-		$(image).removeClass('ui-icon-check');
-		$(image).addClass('ui-icon-closethick');
-		newVal = false;
-	} else {
-		$(image).removeClass('ui-icon-closethick');
-		$(image).addClass('ui-icon-check');
-		newVal = true;
-	}
-
-	// Set the new value based on the permission name and whether it's add/remove
-	if(isAddPerm) {
-		if(perm == "space") { permData.addSpace = newVal; }
-		else if(perm == "job") { permData.addJob = newVal; }
-		else if(perm == "user") { permData.addUser = newVal; }
-		else if(perm == "solver") { permData.addSolver = newVal; }
-		else if(perm == "bench") { permData.addBenchmark = newVal; }
-		log('Updated add permission to ' + newVal + ' for ' + perm);
-	} else {		
-		if(perm == "space") { permData.removeSpace = newVal; }
-		else if(perm == "job") { permData.removeJob = newVal; }
-		else if(perm == "user") { permData.removeUser = newVal; }
-		else if(perm == "solver") { permData.removeSolver = newVal; }
-		else if(perm == "bench") { permData.removeBench = newVal; }
-		log('Updated remove permission to ' + newVal + ' for ' + perm);
-	}
-}
 
 
 

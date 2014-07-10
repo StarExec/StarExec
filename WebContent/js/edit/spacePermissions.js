@@ -3,6 +3,15 @@ var userTable;
 var spaceId = 1;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
+
+// utility - space chain (spaces.js)
+var spaceChain;
+var spaceChainIndex=0;
+var spaceChainInterval;
+var openDone = true;
+var usingSpaceChain = false;
+
+
 var curIsLeader = false;
 
 //logger allows me to enable or disable console.log() lines
@@ -31,11 +40,14 @@ var logger = function()
 
 $(document).ready(function(){
 
-	logger.disableLogger();
+	//logger.disableLogger();
 	console.log("spacePermissions log start");
 
 	currentUserId=parseInt($("#userId").attr("value"));
 	lastSelectedUserId = null;
+	
+	//TODO : abstract space chain
+	usingSpaceChain=(getSpaceChain().length>1);
 
 	
 	 // Build left-hand side of page (space explorer)
@@ -48,6 +60,64 @@ $(document).ready(function(){
 
 
 });
+
+/**
+ * jstree utility
+ * space chain (in spaces.js)
+ **/
+
+function openSpace(curSp,childId) {
+	$("#exploreList").jstree("open_node", "#" + curSp, function() {
+		$.jstree._focused().select_node("#" + childId, true);	
+	});	
+}
+/**
+ *utility function (abstract space chain)
+ *in spaces.js
+ **/
+function getSpaceChain(){
+	chain=new Array();
+	spaces=$("#spaceChain").attr("value").split(",");
+	index=0;
+	for (i=0;i<spaces.length;i++) {
+		if (spaces[i].trim().length>0) {
+			chain[index]=spaces[i];
+		}
+		index=index+1;
+	}
+
+	return chain;
+}
+
+
+/**
+ *utility function
+ * in spaces.js
+ **/
+function handleSpaceChain(){
+	spaceChain=getSpaceChain();
+	if (spaceChain.length<2) {
+		return;
+	}
+	p=spaceChain[0];
+
+	spaceChainIndex=1;
+	spaceChainInterval=setInterval(function() {
+		if (spaceChainIndex>=spaceChain.length) {
+			clearInterval(spaceChainInterval);
+		}
+		if (openDone) {
+			openDone=false;
+			c=spaceChain[spaceChainIndex];
+			openSpace(p,c);
+			spaceChainIndex=spaceChainIndex+1;
+			p=c;	
+		}
+		},100);
+		
+		
+	
+}
 
 /**
  * utility function (also in spaces.js)
@@ -106,8 +176,6 @@ function initSpaceDetails(){
  * Basic initialization for jQuery UI buttons (sets style and icons)
  */
 function initButtonUI() {
-
-
 	$('.btnUp').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
@@ -181,13 +249,18 @@ function initSpaceExplorer(){
 
 			getSpaceDetails(id);
 			setUpButtons();
-			setURL(id);
+			//setURL(id);
 			$('#permCheckboxes').hide();
 			$('#currentPerms').hide();
 		
 
 
-	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
+		    }).bind("loaded.jstree", function(event,data) {
+			    handleSpaceChain();
+			}).bind("open_node.jstree",function(event,data) {
+				
+				openDone=true;
+			    }).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
 }

@@ -1,18 +1,34 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*, org.starexec.data.security.*, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-
+		int spaceId=Integer.parseInt(request.getParameter("id"));
 		int userId = SessionUtil.getUserId(request);
+
 		request.setAttribute("userId",userId);
 
+		if (SpaceSecurity.canUserSeeSpace(spaceId,userId)==0 && spaceId > 0) {
+			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
+			StringBuilder stringChain=new StringBuilder();
+			for (Integer id : idChain) {
+				stringChain.append(id);
+				stringChain.append(",");
+			}
+			stringChain.delete(stringChain.length()-1,stringChain.length());
+			request.setAttribute("spaceChain",stringChain.toString());
+		} else {
+			request.setAttribute("spaceChain","1");
+
+		}
+
 	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage() + " something gone wrong");
 	}
 %>
 <star:template title="edit permissions" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, edit/spacePermissions, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
+	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
 		<h3>spaces</h3>
 		 
