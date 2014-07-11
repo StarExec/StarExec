@@ -41,6 +41,15 @@ import org.starexec.util.Util;
 public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 	private static final String sqlDelimiter = ",";
+	
+	
+	private static String[] getSpaceNames(String path) {
+		if (path==null || path=="") {
+			return new String[] {"job space"};
+		}
+		return path.split("/");
+	}
+	
 	/**
 	 * Adds a new job to the database. NOTE: This only records the job in the 
 	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
@@ -53,56 +62,39 @@ public class Jobs {
 		Connection con = null;
 		PreparedStatement procedure=null;
 		try {
-			HashMap<Integer,String> idsToNames=new HashMap<Integer,String>();
 			
-			idsToNames.put(job.getPrimarySpace(), Spaces.getName(job.getPrimarySpace()));
+			String primaryName=Spaces.getName(job.getPrimarySpace());
 			
-			//maps a normal space ID to its corresponding job space ID
-			HashMap<Integer,Integer> idMap= new HashMap<Integer,Integer>();
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
-
+			// maps depth to name to job space id for job spaces
+			HashMap<Integer,HashMap<String,Integer>> neededSpaces=new HashMap<Integer,HashMap<String,Integer>>();
+			neededSpaces.put(0, new HashMap<String,Integer>());
+			neededSpaces.get(0).put(primaryName, Spaces.addJobSpace(primaryName,con));
 			for (JobPair pair : job) {
-				if (idsToNames.containsKey(pair.getSpace().getId())) {
-					continue;
-				}
-				idsToNames.put(pair.getSpace().getId(), pair.getSpace().getName());
-				int parentId=Spaces.getParentSpace(pair.getSpace().getId());
-				
-				//get all necessary spaces up the hierarchy
-				//We've already added the root space for the job, so this is guaranteed to stop either
-				//there or earlier
-				while (!idsToNames.containsKey(parentId)) {
-					idsToNames.put(parentId, Spaces.getName(parentId));
-					parentId=Spaces.getParentSpace(parentId);
-					log.debug("got new parent space id = "+parentId);
-				}
-			}
-			
-			
-			//add all the job spaces that we need into the database
-			for (int id : idsToNames.keySet()) {
-				int jobSpaceId=Spaces.addJobSpace(idsToNames.get(id),con);
-				idMap.put(id, jobSpaceId);
-			}
-			
-			//next, use the current hierarchy information to create a job space hierarchy
-			for (int id : idMap.keySet()) {
-				log.debug("getting subspaces for space = "+id);
-				List<Integer> subspaceIds=Spaces.getSubSpaceIds(id);
-				log.debug("found "+subspaceIds.size()+" subspaces");
-				for (int subspaceId : subspaceIds) {
-					
-					if (idMap.containsKey(subspaceId)) {
-						log.debug("found an association between two spaces needed for a job");
-						Spaces.associateJobSpaces(idMap.get(id), idMap.get(subspaceId), con);
+				String[] spaces=getSpaceNames(pair.getPath());
+				for (int i=0;i<spaces.length;i++) {
+					String name=spaces[i];
+					if (!neededSpaces.containsKey(i)) {
+						neededSpaces.put(i, new HashMap<String,Integer>());
+					}
+					HashMap<String,Integer> depthMap=neededSpaces.get(i);
+					//this job space needs to be created
+					if (!depthMap.containsKey(name)) {
+						depthMap.put(name, Spaces.addJobSpace(name,con));
+						//associate with a parent
+						if (i>0) {
+							Spaces.associateJobSpaces(neededSpaces.get(i-1).get(spaces[i-1]), depthMap.get(name), con);
+						}
 					}
 				}
+				pair.setJobSpaceId(neededSpaces.get(spaces.length-1).get(spaces[spaces.length-1]));
 			}
+		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(idMap.get(job.getPrimarySpace()));
+			job.setPrimarySpace(neededSpaces.get(0).get(primaryName));
 			Jobs.addJob(con, job);
 			
 			//put the job in the space it was created in
@@ -116,7 +108,6 @@ public class Jobs {
 			BufferedWriter writer=new BufferedWriter(new FileWriter(jobPairFile));
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
-				pair.setJobSpaceId(idMap.get(pair.getSpace().getId()));
 				//writer.write(getPairString(pair));
 				JobPairs.addJobPair(con, pair);
 			}
@@ -2034,6 +2025,7 @@ public class Jobs {
 			    jp.getSolver().setName(results.getString("solver_name"));
 			    jp.getSpace().setName(results.getString("name"));
 			    jp.getSpace().setId(results.getInt("job_spaces.id"));
+			    jp.setPath(results.getString("path"));
 			    returnList.add(jp);
 			}			
 			Common.safeClose(results);
@@ -2472,9 +2464,13 @@ public class Jobs {
 					if (configId!=null) {
 						if (!configs.containsKey(configId)) {
 							solvers.put(configId, Solvers.getSolverByConfig(configId, false));
+							if (solvers.get(configId)==null) {
+								solvers.put(configId, new Solver());
+							}
 							configs.put(configId, c);
 						}
 						jp.setSolver(solvers.get(configId));
+						
 						jp.getSolver().addConfiguration(c);
 					}
 					

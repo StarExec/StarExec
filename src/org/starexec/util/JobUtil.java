@@ -181,16 +181,14 @@ public class JobUtil {
 		job.setQueue(queue);
 		job.setPrimarySpace(spaceId);
 		
-		
+		String rootName=Spaces.getName(spaceId);
 		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
 		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
 		double memLimit = Double.parseDouble(jobElement.getAttribute("mem-limit"));
 		
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
-		
-		HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);
-		
+				
 		NodeList jobPairs = jobElement.getChildNodes();
 		for (int i = 0; i < jobPairs.getLength(); i++) {
 			Node jobPairNode = jobPairs.item(i);
@@ -200,7 +198,11 @@ public class JobUtil {
 				JobPair jobPair = new JobPair();
 				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
 				int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-				
+				String path = jobPairElement.getAttribute("job-space-path");
+				if (!path.equals("")) {
+					path=rootName;
+				}
+				jobPair.setPath(path);
 				jobPair.setCpuTimeout(cpuTimeout);
 				jobPair.setWallclockTimeout(wallclock);
 				jobPair.setMaxMemory(memoryLimit);
@@ -222,7 +224,6 @@ public class JobUtil {
 				jobPair.setConfiguration(Solvers.getConfiguration(configId));
 				jobPair.setSpace(Spaces.get(spaceId));
 				
-				jobPair.setPath(SP.get(spaceId));
 				
 				job.addJobPair(jobPair);
 			}

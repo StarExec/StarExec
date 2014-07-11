@@ -220,7 +220,7 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-	//$("#compareSolvers").hide();
+	$("#compareSolvers").hide();
 
 	$("#compareSolvers").click(function(){
 		c1=$(".first_selected").find(".configLink").attr("id");
@@ -458,85 +458,50 @@ function initUI(){
 	
 	
 	$("#pauseJob").click(function(){
-		$('#dialog-confirm-pause-txt').text('are you sure you want to pause this job?');
 		
-		$('#dialog-confirm-pause').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed job pause.');
-					$('#dialog-confirm-pause').dialog('close');
-					
-					$.post(
-							starexecRoot+"services/pause/job/" + getParameterByName("id"),
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										document.location.reload(true);
-										break;
-									case 1:
-										showMessage('error', "The job was not paused; please try again.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can pause it.", 5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
-								}
-							},
-							"json"
-					);
+		$.post(
+				starexecRoot+"services/pause/job/" + getParameterByName("id"),
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							document.location.reload(true);
+							break;
+						case 1:
+							showMessage('error', "The job was not paused; please try again.", 5000);
+							break;
+						case 2:
+							showMessage('error', "Only the owner of this job can pause it.", 5000);
+							break;
+						default:
+							showMessage('error', "Invalid parameters.", 5000);
+							break;
+					}
 				},
-				"cancel": function() {
-					log('user canceled job pause');
-					$(this).dialog("close");
-				}
-			}
-		});
+				"json"
+		);
 	});
 	
 	$("#resumeJob").click(function(){
-		$('#dialog-confirm-resume-txt').text('are you sure you want to resume this job?');
-		
-		$('#dialog-confirm-resume').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed job resume.');
-					$('#dialog-confirm-resume').dialog('close');
-					
-					$.post(
-							starexecRoot+"services/resume/job/" + getParameterByName("id"),
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										document.location.reload(true);
-										break;
-									case 1:
-										showMessage('error', "The job was not resumed; please try again.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can resume it.", 5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
-								}
-							},
-							"json"
-					);
+		$.post(
+				starexecRoot+"services/resume/job/" + getParameterByName("id"),
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							document.location.reload(true);
+							break;
+						case 1:
+							showMessage('error', "The job was not resumed; please try again.", 5000);
+							break;
+						case 2:
+							showMessage('error', "Only the owner of this job can resume it.", 5000);
+							break;
+						default:
+							showMessage('error', "Invalid parameters.", 5000);
+							break;
+					}
 				},
-				"cancel": function() {
-					log('user canceled job resume');
-					$(this).dialog("close");
-				}
-			}
-		});
+				"json"
+		);
 	});
 	
 	$("#changeQueue").click(function(){

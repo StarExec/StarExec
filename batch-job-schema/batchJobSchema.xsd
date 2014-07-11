@@ -57,7 +57,7 @@
     	<attribute name="solver-name" type="tns:PrimitiveName" use="optional"></attribute>
     	
     	<attribute name="job-space-id" type="int" use="optional"></attribute>
-    	<attribute name="job-space-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	<attribute name="job-space-path" type="tns:Path" use="optional"></attribute>
     </complexType>
     
     <simpleType name="Description">
@@ -69,6 +69,12 @@
     <simpleType name="PrimitiveName">
   		<restriction base="string">
     		<pattern value="[_\w\-\. ]{1,255}"/>
+  		</restriction>
+	</simpleType>
+	
+	<simpleType name="Path">
+  		<restriction base="string">
+    		<pattern value="[\\/_\w\-\. ]*"/>
   		</restriction>
 	</simpleType>
     
