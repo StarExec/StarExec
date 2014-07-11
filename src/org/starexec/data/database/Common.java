@@ -204,7 +204,7 @@ public class Common {
 				c.close();
 				
 				connectionsClosed++;
-				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
+				log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
 				//String methodName1=Thread.currentThread().getStackTrace()[2].getMethodName();
 				//String methodName2=Thread.currentThread().getStackTrace()[2].getMethodName();
 				//log.info("stack trace info for the closed connection is "+methodName1+ " "+methodName2);
