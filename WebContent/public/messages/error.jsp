@@ -30,9 +30,6 @@
 
 <star:template title="http ${pageContext.errorData.statusCode} - ${errorDesc}" css="error">		
 	<p><c:out value="${requestScope['javax.servlet.error.message']}"/></p>
-	<c:if test="${not empty didLog}">
-	<p>this error has been logged and will be reviewed by a developer and or administrator</p>
-	</c:if>
 	<div id="actions">
 		<a href="#" onclick="history.go(-1);return false;">try again</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:${contactEmail}?subject=[Starexec] Error Report">report error</a>
 	</div>		

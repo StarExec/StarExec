@@ -48,12 +48,15 @@ public class UploadJobXML extends HttpServlet {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
 				// Make sure the request is valid
-				if(!this.isValidRequest(form)) {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload job xml request was malformed");
-					return;
-				} 
+				String err = this.isValidRequest(form);
+				if (err != null) {
+				    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload job xml request was malformed: "+ err);
+				    return;
+				}
 				
-				List<Integer> result = this.handleXMLFile(userId, form);
+				JobUtil jobUtil = new JobUtil();
+
+				List<Integer> result = this.handleXMLFile(userId, form, jobUtil);
 				
 				// Redirect based on success/failure
 				if(result!=null) {
@@ -63,7 +66,8 @@ public class UploadJobXML extends HttpServlet {
 					
 				    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
 				} else {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Job XML - "); //+ result.getErrorMessage());	
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Job XML:\n" + 
+							   jobUtil.getErrorMessage());
 				}									
 			} else {
 				// Got a non multi-part request, invalid
@@ -81,7 +85,7 @@ public class UploadJobXML extends HttpServlet {
 	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
 	 * @author Tim Smith
 	 */
-	private List<Integer> handleXMLFile(int userId, HashMap<String, Object> form) {
+    private List<Integer> handleXMLFile(int userId, HashMap<String, Object> form, JobUtil jobUtil) {
 		try {
 			log.debug("Handling Upload of XML File from User " + userId);
 			FileItem item = (FileItem)form.get(UploadJobXML.UPLOAD_FILE);		
@@ -102,7 +106,6 @@ public class UploadJobXML extends HttpServlet {
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			archiveFile.delete();
 			
-			JobUtil jobUtil = new JobUtil();
 			//Typically there will just be 1 file, but might as well allow more
 			
 			Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
@@ -131,11 +134,11 @@ public class UploadJobXML extends HttpServlet {
 		return null;
 	}
 
-	private boolean isValidRequest(HashMap<String, Object> form) {
+	private String isValidRequest(HashMap<String, Object> form) {
 		try {
 			if (!form.containsKey(UploadJobXML.UPLOAD_FILE) ||
 					!form.containsKey(SPACE_ID) ){
-				return false;
+				return "Missing field from the form for the file to upload or the space id";
 			}
 			
 			Integer.parseInt((String)form.get(SPACE_ID));
@@ -143,15 +146,14 @@ public class UploadJobXML extends HttpServlet {
 			String fileName = ((FileItem)form.get(UploadJobXML.UPLOAD_FILE)).getName();
 			for(String ext : UploadJobXML.extensions) {
 				if(fileName.endsWith(ext)) {
-					return true;
+					return null;
 				}
 			}			
-			return false;
+			return "The uploaded file is not a recognized compressed archive." ;
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
+			return e.getMessage();
 		}
-		
-		return false;
 	}
 
 }
