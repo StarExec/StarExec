@@ -1,24 +1,40 @@
 <h1>Editing permissions</h1>
 
+<h2>Editing in regular spaces</h2>
+
 <p>Only space leaders are allowed to change permissions. Space
 leaders are allowed to change any nonleader's permissions.  Space leader's
 can also demote other space leaders.  No one can change an admin's
-permissions and no one can change their own permissions.
+permissions and no one can change their own permissions. Look below for
+information on editing community spaces.
 </p>
 
-<h2>How to make changes</h2>
+<h2>Editing in community spaces</h2>
+
+<p>Community spaces are those directly descended from the root space.
+For the most part, editing in community spaces works just like editing in regular spaces (see above).
+However, no promotion or demotion of leaders is allowed in any community space.
+In order to change leadership status, a community member must contact an admin.
+</p>
+
+<h2>How to edit permissions</h2>
 
 <p>
 <ol>
-<li>Navigate to the <a href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit permissions page</a></li>
+<li>Navigate to the <a href="/${starexecRoot}/secure/edit/spacePermissions.jsp?id=1">edit permissions page</a></li>
 <li>Select the desired space</li>
 <li>Select a user</li>
 <li>You should see a table called "change permissions" appear.  If instead you see a table called "selected user permissions", you can't change permissions for this space/user pair.</li>
-<li>Check or uncheck any permissions you want to change.  Click "reset" to reset the checkmarks to the user's original permissions.</li>
+<li>Check or uncheck any permissions you want to change.  Click "reset" to reset the checkmarks to the user's current permissions.</li>
 <li>Click "save" to save permission changes.</li>
 <li>You can also demote or promote users</li>
 <li>Decide if you want the changes to take place only in the selected space or hierarchically (relative to selected space).</li>
 </ol>
+</p>
+
+<p>You can also demote or promote users in a manner similar to above by following steps 1-4.
+If you can change leadership status, you should see a "promote" or "demote" button in the leader row
+of the change permissions table.
 </p>
 
 <h2>Notes on editing permissions</h2>
