@@ -61,18 +61,14 @@ public class Jobs {
 	public static boolean add(Job job, int spaceId) {
 		Connection con = null;
 		PreparedStatement procedure=null;
-		try {
-			
-			String primaryName=Spaces.getName(job.getPrimarySpace());
-			
+		try {			
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
 			// maps depth to name to job space id for job spaces
 			HashMap<Integer,HashMap<String,Integer>> neededSpaces=new HashMap<Integer,HashMap<String,Integer>>();
-			neededSpaces.put(0, new HashMap<String,Integer>());
-			neededSpaces.get(0).put(primaryName, Spaces.addJobSpace(primaryName,con));
 			for (JobPair pair : job) {
+				log.debug("adding a new pair with path = " +pair.getPath());
 				String[] spaces=getSpaceNames(pair.getPath());
 				for (int i=0;i<spaces.length;i++) {
 					String name=spaces[i];
@@ -94,7 +90,10 @@ public class Jobs {
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(neededSpaces.get(0).get(primaryName));
+			job.setPrimarySpace(neededSpaces.get(0).values().iterator().next());
+			if (neededSpaces.get(0).size()>1) {
+				log.warn("a job was created that has more than one top level space!");
+			}
 			Jobs.addJob(con, job);
 			
 			//put the job in the space it was created in

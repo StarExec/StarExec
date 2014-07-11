@@ -74,7 +74,7 @@
 	
 	<simpleType name="Path">
   		<restriction base="string">
-    		<pattern value="[\\/_\w\-\. ]*"/>
+    		<pattern value="[/_\w\-\. ]*"/>
   		</restriction>
 	</simpleType>
     
