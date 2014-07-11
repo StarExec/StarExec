@@ -2423,78 +2423,75 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
-	protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId,int limit) throws Exception {	
+    protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId,int limit) throws Exception {	
 
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		 try {
-			procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
-			procedure.setInt(1, jobId);				
-			procedure.setInt(2,limit);
-			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-			//we map ID's to  primitives so we don't need to query the database repeatedly for them
-			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
-			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
-			while(results.next()){
+	CallableStatement procedure = null;
+	ResultSet results = null;
+	try {
+	    procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
+	    procedure.setInt(1, jobId);				
+	    procedure.setInt(2,limit);
+	    results = procedure.executeQuery();
+	    List<JobPair> returnList = new LinkedList<JobPair>();
+	    //we map ID's to  primitives so we don't need to query the database repeatedly for them
+	    HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
+	    HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+	    HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+	    while(results.next()){
 				
-				try {
+		try {
 
-					JobPair jp = JobPairs.resultToPair(results);
+		    JobPair jp = JobPairs.resultToPair(results);
 					
-					//we need to check to see if the benchId and configId are null, since they might
-					//have been deleted while the the job is still pending
-					Integer benchId=results.getInt("bench_id");
-					if (benchId!=null) {
-						if (!benchmarks.containsKey(benchId)) {
-							benchmarks.put(benchId,Benchmarks.get(benchId));
-						}
+		    //we need to check to see if the benchId and configId are null, since they might
+		    //have been deleted while the the job is still pending
+		    Integer benchId=results.getInt("bench_id");
+		    if (benchId!=null) {
+			if (!benchmarks.containsKey(benchId)) {
+			    benchmarks.put(benchId,Benchmarks.get(benchId));
+			}
 						
-						jp.setBench(benchmarks.get(benchId));
-					}
-					Integer configId=results.getInt("config_id");
-					String configName=results.getString("config_name");
-					Configuration c=new Configuration();
-					c.setId(configId);
-					c.setName(configName);
-					jp.setConfiguration(c);
+			jp.setBench(benchmarks.get(benchId));
+		    }
+		    Integer configId=results.getInt("config_id");
+		    String configName=results.getString("config_name");
+		    Configuration c=new Configuration();
+		    c.setId(configId);
+		    c.setName(configName);
+		    jp.setConfiguration(c);
 
-					if (configId!=null) {
-						if (!configs.containsKey(configId)) {
-							solvers.put(configId, Solvers.getSolverByConfig(configId, false));
-							if (solvers.get(configId)==null) {
-								solvers.put(configId, new Solver());
-							}
-							configs.put(configId, c);
-						}
-						jp.setSolver(solvers.get(configId));
-						
-						jp.getSolver().addConfiguration(c);
-					}
-					
-					Status s = new Status();
+		    if (configId!=null) {
+			if (!configs.containsKey(configId)) {
+			    Solver s = Solvers.getSolverByConfig(configId, false);
+			    if (s != null) {
+				solvers.put(configId, s);
+				s.addConfiguration(c);
+			    }
+			}
+			jp.setSolver(solvers.get(configId) /* could be null, if Solver s above was null */);
+		    }
 
-					s.setCode(results.getInt("status_code"));
-					jp.setStatus(s);
-					returnList.add(jp);
-				} catch (Exception e) {
-					log.error("there was an error making a single job pair object");
-					log.error(e.getMessage(),e);
-				}
-				
-			}			
-
-			Common.safeClose(results);
-			return returnList;
-		} catch (Exception e) {
-			log.error("getPendingPairsDetailed says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
+		    Status s = new Status();
+		    s.setCode(results.getInt("status_code"));
+		    jp.setStatus(s);
+		    returnList.add(jp);
 		} 
-		return null;
-	}	
+		catch (Exception e) {
+		    log.error("there was an error making a single job pair object");
+		    log.error(e.getMessage(),e);
+		}
+	    }
+				
+	    Common.safeClose(results);
+	    return returnList;
+	} catch (Exception e) {
+	    log.error("getPendingPairsDetailed says "+e.getMessage(),e);
+	} finally {
+	    Common.safeClose(results);
+	    Common.safeClose(procedure);
+	} 
+	return null;
+    }	
 	
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
