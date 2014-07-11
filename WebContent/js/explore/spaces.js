@@ -2313,21 +2313,17 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	// Add the table to the wrapper
 	$(permWrap).append(table);
 
+	$(permWrap).append("<div><input type='button' value='edit' onClick='editPermissions()'></input></div>");
 	// HTML to add to the wrapper to indicate someone is a leader
 	var leaderDiv = '<div class="leaderWrap"><span class="ui-icon ui-icon-star"></span><h2 class="leaderTitle">leader</h2></div>';
 	
 	if(perms.isLeader) {
 		// If this person is a leader, add the leader div to the wrapper
 		$(permWrap).append(leaderDiv);
+		
 	} 
-	// Shrink the space tooltip size if its for a non-leader
-	else if (type == 'space'){
-		tooltip.updateStyle('spaceTooltipNormal');
-	}
-	// Shrink the user tooltip size if its for a non-leader
-	else if (!type){
-		tooltip.updateStyle('userTooltipNormal');
-	}
+
+	
 
 	// Return the resulting DOM element to be inserted
 	return permWrap;
@@ -2380,7 +2376,7 @@ function getSinglePermTable(name, add, remove) {
  *
  **/
 function editPermissions(){
-    location = starexecRoot+"secure/edit/spacePermissions.jsp?id=1";
+    location = starexecRoot+"secure/edit/spacePermissions.jsp?id=" + spaceId;
 }
 /**
  * Wraps up a permission and it's value for display in a table. Includes onclicks for the images.
@@ -2390,8 +2386,8 @@ function editPermissions(){
  * @returns HTML representing a row in a table display the type and it's permission values
  */
 function wrapPermRow(perm, add, remove){
-    var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').attr("onClick","editPermissions()").toHTMLString();
-    var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').attr("onClick","editPermissions()").toHTMLString();
+    var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').toHTMLString();
+    var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').toHTMLString();
     return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>"; 
 }
 
