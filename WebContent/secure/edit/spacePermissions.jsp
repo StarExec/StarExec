@@ -7,6 +7,24 @@
 		int userId = SessionUtil.getUserId(request);
 
 		request.setAttribute("userId",userId);
+		request.setAttribute("isAdmin",Users.isAdmin(userId));
+
+		List<Space> communities = Communities.getAll();
+		StringBuilder communityIdList = new StringBuilder();
+
+
+		if(communities.size() > 0){
+		        for(Space c : communities){
+			        communityIdList.append(c.getId());
+				communityIdList.append(",");
+			}
+			communityIdList.delete(communityIdList.length() -1,communityIdList.length());
+			request.setAttribute("communityIdList",communityIdList.toString());
+
+		}
+		else{
+			request.setAttribute("communityIdList","1");
+			}
 
 		if (SpaceSecurity.canUserSeeSpace(spaceId,userId)==0 && spaceId > 0) {
 			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
@@ -23,12 +41,14 @@
 		}
 
 	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage() + " something gone wrong");
+		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
 <star:template title="edit permissions" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, edit/spacePermissions, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
+	<span id="isAdmin" value="${isAdmin}"></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
+	<span id="communityIdList" value="${communityIdList}"></span>
 	<div id="explorer">
 		<h3>spaces</h3>
 		 
@@ -161,10 +181,14 @@
 			<hr>
 
 			<table>
-				<tr>
+				<tr id="leaderStatusRow">
 					<td><h2>leader</h2></td>
-					<!-- <td><input type="checkbox" id= "leaderStatus"></input></td> -->
 					<td><input type="button" id="leaderStatus" value="promote"></input></td>
+				</tr>
+				
+				<tr id="communityLeaderStatusRow">
+					<td><h2>leader</h2></td>
+					<td><span id= "communityLeaderStatus" class="ui-icon ui-icon-check"></span></td>
 				</tr>
 			</table>
 						

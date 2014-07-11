@@ -13,6 +13,9 @@ var usingSpaceChain = false;
 
 
 var curIsLeader = false;
+var curIsAdmin = false;
+
+var communityIdList = null;
 
 //logger allows me to enable or disable console.log() lines
 var logger = function()
@@ -44,10 +47,13 @@ $(document).ready(function(){
 	console.log("spacePermissions log start");
 
 	currentUserId=parseInt($("#userId").attr("value"));
+	curIsAdmin = isAdmin();
 	lastSelectedUserId = null;
 	
 	//TODO : abstract space chain
 	usingSpaceChain=(getSpaceChain().length>1);
+
+	communityIdList=getCommunityIdList();
 
 	
 	 // Build left-hand side of page (space explorer)
@@ -60,6 +66,37 @@ $(document).ready(function(){
 
 
 });
+
+
+
+function stringToBoolean(s){
+    switch(s){
+    case "true" : return true;
+    case "false" : return false;
+    default : return false;
+    }
+}
+
+function isAdmin(){
+    admin = $("#isAdmin").attr("value");
+
+    return stringToBoolean(admin);
+}
+/**
+ * utility function
+ * community
+ **/
+function getCommunityIdList(){
+    list = new Array();
+    spaces = $("#communityIdList").attr("value").split(",");
+    for(i=0;i < spaces.length; i++){
+	if(spaces[i].trim().length > 0){
+	    list[i] = spaces[i];
+	}
+    }
+    return list
+
+}
 
 /**
  * jstree utility
@@ -407,8 +444,6 @@ function initDataTables(){
 		var uid = $(($(this).find(":input"))[0]).attr('value');
 		var sid = spaceId;
 		lastSelectedUserId = uid;
-		console.log("user",uid);
-		console.log("space",sid);
 		getPermissionDetails(uid,sid);
 	    });
 	
@@ -531,7 +566,6 @@ function populateSpaceDetails(jsonData, id) {
 	$('#spaceID').fadeOut('fast', function() {
 		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
 	});
-	$('#chartPicture').attr('src', starexecRoot+"secure/get/pictures?type=corg&Id=" + spaceId);
 
 	/*
 	 * Issue a redraw to all DataTable objects to force them to requery for
@@ -560,6 +594,22 @@ function getPermissionDetails(user_id, space_id) {
 	});
 }
 
+function isRoot(space_id){
+    return space_id == "1";
+}
+
+function isCommunity(space_id){
+    return ($.inArray(space_id.toString(),communityIdList) != -1);
+}
+
+function canChangePermissions(user_id){
+    if(curIsLeader && !isRoot(spaceId) && (user_id != currentUserId)){
+	return true;
+    }
+    else{
+	return false;
+    }
+}
 function populateDetails(data, user_id) {
 	if (data.perm == null) {
 	    showMessage("error","permissions seem to be null",5000);
@@ -567,15 +617,40 @@ function populateDetails(data, user_id) {
 	    $('#permCheckboxes').hide();
 	    $('#currentPerms').hide();
 
+	    $('#communityLeaderStatusRow').hide();
+	    $('#leaderStatusRow').hide();
+
 	    console.log("current user selected: " + (user_id == currentUserId));
-	    if(curIsLeader && (spaceId != "1") && (user_id != currentUserId)){
-		$('#permCheckboxes').show();
+
+	    var leaderStatus = data.perm.isLeader;
+
+	    if(isCommunity(spaceId)){
+
+		if(canChangePermissions(user_id) && (leaderStatus!=true || curIsAdmin)){
+		    $('#permCheckboxes').show();
+		    if(curIsAdmin){
+			$('#leaderStatusRow').show();
+		    }
+		    else{
+			$('#communityLeaderStatusRow').show();
+		    }
+		}
+		else{
+		    $('#currentPerms').show();
+		    
+		}
 	    }
 	    else{
-		$('#currentPerms').show();
+
+		if(canChangePermissions(user_id)){
+		    $('#permCheckboxes').show();
+		    $('#leaderStatusRow').show();
+		}
+		else{
+		    $("#currentPerms").show();
+		}
 	    }
-	
-	    
+
 	    var addSolver = data.perm.addSolver;
 	    var addBench = data.perm.addBenchmark;
 	    var addUser = data.perm.addUser;
@@ -586,9 +661,8 @@ function populateDetails(data, user_id) {
 	    var removeUser = data.perm.removeUser;
 	    var removeSpace = data.perm.removeSpace;
 	    var removeJob = data.perm.removeJob;
-	    var leaderStatus = data.perm.isLeader;
-	
-	    console.log("addBench: " + addBench);
+	    
+
 
 	    checkBoxes("addSolver", addSolver);
 	    checkBoxes("addBench", addBench);
@@ -603,12 +677,14 @@ function populateDetails(data, user_id) {
 
 
 	    if(leaderStatus == true){
-		$("#uleaderStatus").attr("class","ui-icon ui-icon-check")
+		$("#uleaderStatus").attr("class","ui-icon ui-icon-check");
 		$("#leaderStatus").attr("value","demote");
+		$("#communityLeaderStatus").attr("class","ui-icon ui-icon-check");
 	    }
 	    else{
-		$("#uleaderStatus").attr("class","ui-icon ui-icon-close")
+		$("#uleaderStatus").attr("class","ui-icon ui-icon-close");
 		$("#leaderStatus").attr("value","promote");
+		$("#communityLeaderStatus").attr("class","ui-icon ui-icon-close");
 	    }
 	}
 	
