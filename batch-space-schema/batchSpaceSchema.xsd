@@ -77,7 +77,7 @@
 
     <simpleType name="PrimitiveName">
   		<restriction base="string">
-    		<pattern value="[\\w\\-\\. \\+\\^=,!?:$%#@]{1,250}"/>
+    		<pattern value="[\w\-\. \+\^=,!?:$%#@]{1,250}"/>
   		</restriction>
 	</simpleType>
 
