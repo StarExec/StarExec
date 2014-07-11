@@ -201,17 +201,17 @@ public class JobUtil {
 		    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
 			Element jobPairElement = (Element)jobPairNode;
 				
-			JobPair jobPair = new JobPair();
-			int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-			int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-			String path = jobPairElement.getAttribute("job-space-path");
-			if (!path.equals("")) {
-			    path=rootName;
-			}
-			jobPair.setPath(path);
-			jobPair.setCpuTimeout(cpuTimeout);
-			jobPair.setWallclockTimeout(wallclock);
-			jobPair.setMaxMemory(memoryLimit);
+				JobPair jobPair = new JobPair();
+				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
+				int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
+				String path = jobPairElement.getAttribute("job-space-path");
+				if (path.equals("")) {
+					path=rootName;
+				}
+				jobPair.setPath(path);
+				jobPair.setCpuTimeout(cpuTimeout);
+				jobPair.setWallclockTimeout(wallclock);
+				jobPair.setMaxMemory(memoryLimit);
 				
 			Benchmark b = Benchmarks.get(benchmarkId);
 			if (!Permissions.canUserSeeBench(benchmarkId, userId)){

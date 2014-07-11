@@ -1474,6 +1474,7 @@ public class Jobs {
 				jp.getConfiguration().setId(results.getInt("config_id"));
 				jp.getConfiguration().setName(results.getString("config_name"));
 				jp.getSolver().addConfiguration(jp.getConfiguration());
+				jp.setCompletionId(results.getInt("completion_id"));
 				Status status = jp.getStatus();
 				status.setCode(results.getInt("status_code"));
 				

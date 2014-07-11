@@ -242,18 +242,27 @@ public class JobPairs {
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
 	 */ 
-	private static int compareJobPairNums(JobPair jp1, JobPair jp2, boolean ASC, boolean isWallclock) {
+	private static int compareJobPairNums(JobPair jp1, JobPair jp2, int sortColumn, boolean ASC, boolean isWallclock) {
 		int answer=0;
 		try {
 			double db1=0;
 			double db2=0;
-			if (isWallclock) {
-				db1=jp1.getWallclockTime();
-				db2=jp2.getWallclockTime();
+			if (sortColumn==6) {
+				db1=jp1.getId();
+				db2=jp2.getId();
+			} else if (sortColumn==7) {
+				db1=jp1.getCompletionId();
+				db2=jp2.getCompletionId();
 			} else {
-				db1=jp1.getCpuTime();
-				db2=jp2.getCpuTime();
+				if (isWallclock) {
+					db1=jp1.getWallclockTime();
+					db2=jp2.getWallclockTime();
+				} else {
+					db1=jp1.getCpuTime();
+					db2=jp2.getCpuTime();
+				}
 			}
+			
 			
 			
 			//if db1> db2, then db2 should go first
@@ -864,6 +873,8 @@ public class JobPairs {
 	 * 3 = status name
 	 * 4 = wallclock time
 	 * 5 = starexec-result attr
+	 * 6 pair id
+	 * 7 completion id
 	 * any other = solver name
 	 * @param ASC Whether the given lists are sorted ASC or DESC-- the returned list will be sorted the same way
 	 * @return A single list containing all the elements of lists 1 and 2 in sorted order
@@ -875,10 +886,10 @@ public class JobPairs {
 		int first;
 		List<JobPair> mergedList=new ArrayList<JobPair>();
 		while (list1Index<list1.size() && list2Index<list2.size()) {
-			if (sortColumn!=4) {
+			if (sortColumn!=4 &&sortColumn!=6 &&sortColumn!=7) {
 				first=compareJobPairStrings(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC);
 			} else {
-				first=compareJobPairNums(list1.get(list1Index),list2.get(list2Index),ASC,wallclock);
+				first=compareJobPairNums(list1.get(list1Index),list2.get(list2Index),sortColumn,ASC,wallclock);
 			}
 			if (first==0) {
 				mergedList.add(list1.get(list1Index));

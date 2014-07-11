@@ -175,7 +175,8 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 		FROM bench_assoc
 		JOIN benchmarks AS bench ON bench.id=bench_assoc.bench_id
 		LEFT OUTER JOIN processors AS types ON bench.bench_type=types.id
-		WHERE bench_assoc.space_id=_id and bench.deleted=false and bench.recycled=false;
+		WHERE bench_assoc.space_id=_id and bench.deleted=false and bench.recycled=false
+		ORDER BY order_id;
 	END //
 
 

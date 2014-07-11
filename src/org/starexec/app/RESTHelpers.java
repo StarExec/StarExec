@@ -63,6 +63,7 @@ public class RESTHelpers {
 	private static final String SORT_DIRECTION = "sSortDir_0";
 	private static final String SYNC_VALUE = "sEcho";
 	private static final String SORT_COLUMN = "iSortCol_0";
+	private static final String SORT_COLUMN_OVERRIDE = "sort_by";
 	private static final String STARTING_RECORD = "iDisplayStart";
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
 	private static final String TOTAL_RECORDS = "iTotalRecords";
@@ -384,7 +385,7 @@ public class RESTHelpers {
 						if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
 						break;
 					case JOB_PAIR:
-						if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
+						if (sortColumnIndex < 0 || sortColumnIndex > 8) return null;
 						break;
 					case JOB_STATS:
 						if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
@@ -1030,7 +1031,11 @@ public class RESTHelpers {
 		if (null==attrMap) {
 			return null;
 		}
-
+        String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+        if (sortOverride!=null) {
+        	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+        }
+		
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
 
 		// Retrieves the relevant Job objects to use in constructing the JSON to
@@ -1111,7 +1116,10 @@ public class RESTHelpers {
 		}
 
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
-
+        String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+        if (sortOverride!=null) {
+        	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+        }
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client

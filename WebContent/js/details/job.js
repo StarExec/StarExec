@@ -5,6 +5,7 @@ var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
+var sortOverride=null;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
@@ -221,13 +222,21 @@ function initUI(){
 		}
     });
 	$("#compareSolvers").hide();
-
+	$(".sortButton").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+	});
 	$("#compareSolvers").click(function(){
 		c1=$(".first_selected").find(".configLink").attr("id");
 		c2=$(".second_selected").find(".configLink").attr("id");
 		window.open(starexecRoot+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
 	});
 	
+	
+	$(".sortButton").click(function(){
+		sortOverride=$(this).attr("value");
+	});
 	
 	$("#rerunPairs").button({
 		icons: {
@@ -1076,6 +1085,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 	outSpaceId=curSpaceId;
+	if (sortOverride!=null) {
+		aoData.push({"sort_by": sortOverride});
+		aoData["sSortDir_0"]="asc";
+	}
 	$.post(  
 			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock,
 			aoData,

@@ -184,6 +184,8 @@
 				<legend>job pairs</legend>	
 				<fieldset id="pairActions" class="tableActions">
 					<button class="changeTime">Use CPU Time</button>
+					<button class="sortButton" id="idSort" value="6">sort by id</button>
+					<button class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
 				</fieldset>
 				<table id="pairTbl" class="shaded">
 					<thead>
