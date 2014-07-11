@@ -2,6 +2,7 @@ package org.starexec.app;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -358,7 +359,12 @@ public class RESTHelpers {
 			String iSortCol = (String) request.getParameter(SORT_COLUMN); 
 			String sDir = (String) request.getParameter(SORT_DIRECTION);
 			String sSearch = (String) request.getParameter(SEARCH_QUERY);
+	        //System.out.println(request.getParameter(SORT_COLUMN_OVERRIDE));
+	        Enumeration<String> temp=request.getParameterNames();
+	        while (temp.hasMoreElements()) {
+		        //System.out.println(temp.nextElement());
 
+	        }
 			// Validates the starting record, the number of records per page,
 			// and the sync value
 			if (Util.isNullOrEmpty(iDisplayStart)

@@ -236,7 +236,8 @@ function initUI(){
 	
 	$(".sortButton").click(function(){
 		sortOverride=$(this).attr("value");
-		alert(sortOverride);
+		pairTable.fnDraw(false);
+
 	});
 	
 	$("#rerunPairs").button({
@@ -889,6 +890,9 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
+	$("#pairTbl thead").click(function(){
+		sortOverride=null; //now we sort by a column
+	});
 	
 	$('#detailTbl').dataTable( {
 		"sDom": 'rt<"bottom"f><"clear">',
@@ -1006,6 +1010,7 @@ function extendDataTableFunctions(){
 }
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
+	aoData["sort_by"]="ppppppppp";
 	$.post(  
 			sSource+useWallclock,
 			aoData,
@@ -1036,7 +1041,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 	outSpaceId=curSpaceId;
-	
+
 	$.post(  
 			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock,
 			aoData,
@@ -1087,9 +1092,9 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
-		alert("not null");
-		aoData.push({"sort_by": sortOverride});
-		aoData["sSortDir_0"]="asc";
+		aoData.push( { "name": "sort_by", "value":sortOverride } );
+		//aoData.push( { "name": "sSortDir_0", "value":"asc" } );
+
 	}
 	$.post(  
 			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock,
