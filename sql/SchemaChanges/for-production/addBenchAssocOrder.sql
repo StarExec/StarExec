@@ -1,0 +1,3 @@
+USE starexec;
+
+ALTER TABLE bench_assoc ADD COLUMN order_id INT NOT NULL AUTO_INCREMENT UNIQUE KEY;
