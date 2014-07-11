@@ -1036,6 +1036,9 @@ public class RESTHelpers {
         	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
         }
 		
+    	log.debug("the new sort column is " +attrMap.get(SORT_COLUMN));
+
+        
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
 
 		// Retrieves the relevant Job objects to use in constructing the JSON to

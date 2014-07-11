@@ -236,6 +236,7 @@ function initUI(){
 	
 	$(".sortButton").click(function(){
 		sortOverride=$(this).attr("value");
+		alert(sortOverride);
 	});
 	
 	$("#rerunPairs").button({
@@ -1086,6 +1087,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
+		alert("not null");
 		aoData.push({"sort_by": sortOverride});
 		aoData["sSortDir_0"]="asc";
 	}
