@@ -65,6 +65,8 @@ public class RESTHelpers {
 	private static final String SYNC_VALUE = "sEcho";
 	private static final String SORT_COLUMN = "iSortCol_0";
 	private static final String SORT_COLUMN_OVERRIDE = "sort_by";
+	private static final String SORT_COLUMN_OVERRIDE_DIR = "sort_dir";
+
 	private static final String STARTING_RECORD = "iDisplayStart";
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
 	private static final String TOTAL_RECORDS = "iTotalRecords";
@@ -1035,6 +1037,13 @@ public class RESTHelpers {
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
         	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+        	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
+            	attrMap.put(SORT_DIRECTION, ASC);
+
+        	} else {
+            	attrMap.put(SORT_DIRECTION, ASC+1);
+
+        	}
         }
 		
     	log.debug("the new sort column is " +attrMap.get(SORT_COLUMN));
@@ -1123,6 +1132,13 @@ public class RESTHelpers {
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
         	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+        	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
+            	attrMap.put(SORT_DIRECTION, ASC);
+
+        	} else {
+            	attrMap.put(SORT_DIRECTION, ASC+1);
+
+        	}
         }
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to

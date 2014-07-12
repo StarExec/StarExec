@@ -6,6 +6,7 @@ var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
 var sortOverride=null;
+var sortASC="true";
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
@@ -235,7 +236,30 @@ function initUI(){
 	
 	
 	$(".sortButton").click(function(){
-		sortOverride=$(this).attr("value");
+		if (sortOverride == $(this).attr("value")) {
+			if ($(this).attr("asc")=="true") {
+				$(this).attr("asc","false");
+				$(this).button("option", {
+			          icons: { primary: "ui-icon-arrowthick-1-s" }
+			    });
+				sortASC="true";
+
+			} else {
+				$(this).attr("asc","true");
+				$(this).button("option", {
+			          icons: { primary: "ui-icon-arrowthick-1-n" }
+			    });
+				sortASC="false";
+
+			}
+			
+		} else {
+			$(".sortButton").button("option", {
+		          icons: { primary: "ui-icon-arrowthick-1-n" }
+		    });
+			sortOverride=$(this).attr("value");
+			sortASC="true";
+		}
 		pairTable.fnDraw(false);
 
 	});
@@ -892,6 +916,9 @@ function initDataTables(){
     });
 	$("#pairTbl thead").click(function(){
 		sortOverride=null; //now we sort by a column
+		$(".sortButton").button("option", {
+	          icons: { primary: "ui-icon-arrowthick-1-n" }
+	    }); // make the buttons point up again
 	});
 	
 	$('#detailTbl').dataTable( {
@@ -1010,7 +1037,6 @@ function extendDataTableFunctions(){
 }
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
-	aoData["sort_by"]="ppppppppp";
 	$.post(  
 			sSource+useWallclock,
 			aoData,
@@ -1093,7 +1119,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
 		aoData.push( { "name": "sort_by", "value":sortOverride } );
-		//aoData.push( { "name": "sSortDir_0", "value":"asc" } );
+		aoData.push( { "name": "sort_dir", "value":sortASC } );
 
 	}
 	$.post(  
