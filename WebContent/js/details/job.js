@@ -5,8 +5,7 @@ var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
-var sortOverride=null;
-var sortASC="true";
+
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
@@ -223,11 +222,7 @@ function initUI(){
 		}
     });
 	$("#compareSolvers").hide();
-	$(".sortButton").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-n"
-		}
-	});
+	
 	$("#compareSolvers").click(function(){
 		c1=$(".first_selected").find(".configLink").attr("id");
 		c2=$(".second_selected").find(".configLink").attr("id");
@@ -235,41 +230,7 @@ function initUI(){
 	});
 	
 	
-	$(".sortButton").click(function(){
-		if (sortOverride == $(this).attr("value")) {
-			if ($(this).attr("asc")=="true") {
-				$(this).attr("asc","false");
-				$(this).button("option", {
-			          icons: { primary: "ui-icon-arrowthick-1-s" }
-			    });
-				sortASC="true";
-
-			} else {
-				$(this).attr("asc","true");
-				$(this).button("option", {
-			          icons: { primary: "ui-icon-arrowthick-1-n" }
-			    });
-				sortASC="false";
-
-			}
-			
-		} else {
-			$(".sortButton").button("option", {
-		          icons: { primary: "ui-icon-arrowthick-1-n" }
-		    });
-			$(".sortButton").attr("asc","true");
-			
-			$(this).attr("asc","false");
-			$(this).button("option", {
-		          icons: { primary: "ui-icon-arrowthick-1-s" }
-		    })
-			
-			sortOverride=$(this).attr("value");
-			sortASC="true";
-		}
-		pairTable.fnDraw(false);
-
-	});
+	attachSortButtonFunctions();
 	
 	$("#rerunPairs").button({
 		icons: {
@@ -922,10 +883,7 @@ function initDataTables(){
         "fnServerData"	: fnPaginationHandler 
     });
 	$("#pairTbl thead").click(function(){
-		sortOverride=null; //now we sort by a column
-		$(".sortButton").button("option", {
-	          icons: { primary: "ui-icon-arrowthick-1-n" }
-	    }); // make the buttons point up again
+		resetSortButtons();
 	});
 	
 	$('#detailTbl').dataTable( {
@@ -1125,8 +1083,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
-		aoData.push( { "name": "sort_by", "value":sortOverride } );
-		aoData.push( { "name": "sort_dir", "value":sortASC } );
+		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
+		aoData.push( { "name": "sort_dir", "value":isASC() } );
 
 	}
 	$.post(  
