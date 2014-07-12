@@ -257,6 +257,13 @@ function initUI(){
 			$(".sortButton").button("option", {
 		          icons: { primary: "ui-icon-arrowthick-1-n" }
 		    });
+			$(".sortButton").attr("asc","true");
+			
+			$(this).attr("asc","false");
+			$(this).button("option", {
+		          icons: { primary: "ui-icon-arrowthick-1-s" }
+		    })
+			
 			sortOverride=$(this).attr("value");
 			sortASC="true";
 		}
