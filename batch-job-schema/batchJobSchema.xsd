@@ -68,13 +68,13 @@
     
     <simpleType name="PrimitiveName">
   		<restriction base="string">
-    		<pattern value="[\w\-\. \+\^=,!?:$%#@]{1,255}"/>
+    		<pattern value="[_\w\-\.\+\^=,!?:$%#@ ]{1,255}"/>
   		</restriction>
 	</simpleType>
 	
 	<simpleType name="Path">
   		<restriction base="string">
-    		<pattern value="[/\w\-\. \+\^=,!?:$%#@]*"/>
+    		<pattern value="[_/\w\-\.\+\^=,!?:$%#@ ]*"/>
   		</restriction>
 	</simpleType>
     

@@ -112,7 +112,11 @@ function extendDataTableFunctions(){
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	curType = $('#pairFilter').find(":selected").attr("value");
+	if (sortOverride!=null) {
+		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
+		aoData.push( { "name": "sort_dir", "value":isASC() } );
 
+	}
 	$.post(  
 			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock,
 			aoData,

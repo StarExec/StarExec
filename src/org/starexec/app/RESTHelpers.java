@@ -1140,6 +1140,8 @@ public class RESTHelpers {
 
         	}
         }
+        log.debug("the new sorting order is "+attrMap.get(SORT_COLUMN));
+        
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client

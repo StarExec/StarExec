@@ -49,6 +49,8 @@
 	<legend>job pairs</legend>	
 	<fieldset id="pairActions" class="tableActions">
 		<button class="changeTime">Use CPU Time</button>
+		<button asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
+		<button asc="true" class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
 		<label for="pairFilter">filter pairs by:</label>
 		<select id="pairFilter">
 			<option value="all">all</option>
@@ -58,8 +60,7 @@
 			<option value="unknown">unknown</option>		
 			<option value="incomplete">incomplete</option>
 		</select>
-		<button asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
-		<button asc="true" class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
+
 	</fieldset>
 		<table id="pairTbl" class="shaded">
 			<thead>
