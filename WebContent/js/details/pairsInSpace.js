@@ -72,7 +72,10 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
-	
+	setSortTable(pairTable);
+	$("#pairTbl thead").click(function(){
+		resetSortButtons();
+	});
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
 	

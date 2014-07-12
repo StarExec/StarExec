@@ -40,7 +40,7 @@
 	}
 %>
 
-<star:template title="Job Pairs for ${solver.name} in ${space.name} hierarchy" js="lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Job Pairs for ${solver.name} in ${space.name} hierarchy" js="util/sortButtons, lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
 	<span style="display:none" id="configId" value="${configId}" > </span>
@@ -58,6 +58,8 @@
 			<option value="unknown">unknown</option>		
 			<option value="incomplete">incomplete</option>
 		</select>
+		<button asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
+		<button asc="true" class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
 	</fieldset>
 		<table id="pairTbl" class="shaded">
 			<thead>
