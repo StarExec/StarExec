@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
@@ -283,6 +284,8 @@ public class Spaces {
 	 * @return
 	 */
 	public static boolean updateJobSpaceClosureTable(int jobSpaceId) {
+		int callID=new Random().nextInt();
+		log.debug("beginning updateJobSpaceClosureTable " + callID);
 		if (jobSpaceAncestorExists(jobSpaceId)) {
 			//don't update-- it is already present
 			return true;
@@ -294,9 +297,13 @@ public class Spaces {
 			boolean success=updateJobSpaceClosureTable(jobSpaceId,con);
 			if (!success) {
 				Common.doRollback(con);
+				log.debug("ending with error updateJobSpaceClosureTable " + callID);
+
 				return false;
 			}
 			Common.endTransaction(con);
+			log.debug("ending successfully updateJobSpaceClosureTable " + callID);
+
 			return true;
 
 		} catch (Exception e) {
