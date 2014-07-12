@@ -55,6 +55,8 @@ function initUI(){
 	$("#pairFilter").change(function(){
 		pairTable.fnDraw(false);
 	});
+	attachSortButtonFunctions();
+
 }
 
 /**
