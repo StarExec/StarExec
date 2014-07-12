@@ -2,8 +2,13 @@
 
 var sortOverride=null;
 var sortASC="true";
+var theSortTable=null;
+function setSortTable(tbl) {
+	theSortTable=tbl;
+}
 
-function attachSortButtonFunctions(){
+function attachSortButtonFunctions(tbl){
+	theSortTabe=tbl;
 	$(".sortButton").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
@@ -38,7 +43,7 @@ function attachSortButtonFunctions(){
 			
 			sortOverride=$(this).attr("value");
 		}
-		pairTable.fnDraw(false);
+		theSortTable.fnDraw(false);
 
 	});
 	

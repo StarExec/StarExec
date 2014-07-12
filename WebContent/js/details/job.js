@@ -882,6 +882,9 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
+	
+	setSortTable(pairTable);
+	
 	$("#pairTbl thead").click(function(){
 		resetSortButtons();
 	});
