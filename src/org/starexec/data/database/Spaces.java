@@ -288,6 +288,7 @@ public class Spaces {
 		log.debug("beginning updateJobSpaceClosureTable " + callID);
 		if (jobSpaceAncestorExists(jobSpaceId)) {
 			//don't update-- it is already present
+			log.debug("closure entries were already present");
 			return true;
 		}
 		Connection con=null;

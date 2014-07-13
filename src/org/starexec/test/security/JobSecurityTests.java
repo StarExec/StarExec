@@ -80,6 +80,7 @@ public class JobSecurityTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
 		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,100,100,1);
 		Assert.assertNotNull(Jobs.get(job.getId()));
 		
