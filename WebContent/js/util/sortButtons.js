@@ -11,7 +11,7 @@ function attachSortButtonFunctions(tbl){
 	theSortTabe=tbl;
 	$(".sortButton").button({
 		icons: {
-			primary: "ui-icon-arrowthick-1-n"
+			primary: "ui-icon-arrowthick-2-n-s"
 		}
 	});
 	
@@ -20,14 +20,14 @@ function attachSortButtonFunctions(tbl){
 			if ($(this).attr("asc")=="true") {
 				$(this).attr("asc","false");
 				$(this).button("option", {
-			          icons: { primary: "ui-icon-arrowthick-1-s" }
+			          icons: { primary: "ui-icon-arrowthick-1-n" }
 			    });
 				sortASC="true";
 
 			} else {
 				$(this).attr("asc","true");
 				$(this).button("option", {
-			          icons: { primary: "ui-icon-arrowthick-1-n" }
+			          icons: { primary: "ui-icon-arrowthick-1-s" }
 			    });
 				sortASC="false";
 
@@ -38,7 +38,7 @@ function attachSortButtonFunctions(tbl){
 			
 			$(this).attr("asc","false");
 			$(this).button("option", {
-		          icons: { primary: "ui-icon-arrowthick-1-s" }
+		          icons: { primary: "ui-icon-arrowthick-1-n" }
 		    });
 			
 			sortOverride=$(this).attr("value");
@@ -51,7 +51,7 @@ function attachSortButtonFunctions(tbl){
 
 function resetSortButtons() {
 	$(".sortButton").button("option", {
-        icons: { primary: "ui-icon-arrowthick-1-n" }
+        icons: { primary: "ui-icon-arrowthick-2-n-s" }
   });
 	$(".sortButton").attr("asc","true");
 	sortOverride=null; //now we sort by a column
