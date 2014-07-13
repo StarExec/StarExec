@@ -523,7 +523,7 @@ CREATE TABLE unvalidated_benchmarks (
 -- Author: Eric Burns
 CREATE TABLE job_spaces (
 	id INT NOT NULL AUTO_INCREMENT,
-	name VARCHAR(128),
+	name VARCHAR(255),
 	PRIMARY KEY (id)
 );
 

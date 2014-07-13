@@ -62,6 +62,7 @@ public class Jobs {
 		Connection con = null;
 		PreparedStatement procedure=null;
 		try {			
+			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
