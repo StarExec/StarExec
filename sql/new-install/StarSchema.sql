@@ -354,6 +354,7 @@ CREATE TABLE set_assoc (
 CREATE TABLE bench_assoc (
 	space_id INT NOT NULL, 
 	bench_id INT NOT NULL,
+	order_id INT NOT NULL AUTO_INCREMENT UNIQUE KEY,
 	PRIMARY KEY (space_id, bench_id),
 	CONSTRAINT bench_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT bench_assoc_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE

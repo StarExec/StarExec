@@ -93,7 +93,7 @@
 		
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
-			<button asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button>
+			<button title="sorts benchmarks in the order they were added to this space" asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button>
 			<table id="benchmarks">
 				<thead>
 					<tr>
