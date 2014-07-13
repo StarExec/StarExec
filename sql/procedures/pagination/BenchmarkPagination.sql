@@ -90,7 +90,7 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 
 										
 				-- Order results depending on what column is being sorted on
-				ORDER BY benchmarks.id ASC
+				ORDER BY bench_assoc.order_id ASC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
 				LIMIT _startingRecord, _recordsPerPage;
@@ -108,13 +108,13 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 					-- Exclude benchmarks that aren't in the specified space
 						JOIN	bench_assoc AS assoc ON benchmarks.id = assoc.bench_id	AND assoc.space_id=_spaceId		
 						LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
-
+						
 				-- Query Filtering
 				WHERE 	(benchmarks.name 									LIKE	CONCAT('%', _query, '%')
 				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'))
 						
 				-- Order results depending on what column is being sorted on
-				ORDER BY benchmarks.id DESC
+				ORDER BY bench_assoc.order_id DESC
 					 
 				-- Shrink the results to only those required for the next page of benchmarks
 				LIMIT _startingRecord, _recordsPerPage;
