@@ -179,6 +179,7 @@ function initButtonUI() {
 		icons: {
 			secondary: "ui-icon-closethick"
 		}});
+	attachSortButtonFunctions();
 
 	$("#makePublic").click(function(){
 		// Display the confirmation dialog
@@ -1559,7 +1560,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		} 
 	}
 
-
+	if (sortOverride!=null && tableName=="benchmarks") {
+		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
+		aoData.push( { "name": "sort_dir", "value":isASC() } );
+	}
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
 			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
@@ -1716,6 +1720,13 @@ function initDataTables(){
 		"sServerMethod" : "POST",
 		"fnServerData"	: fnPaginationHandler
 	});
+	
+	setSortTable(benchTable);
+	
+	$("#benchmarks thead").click(function(){
+		resetSortButtons();
+	});
+	
 	jobTable = $('#jobs').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,

@@ -1596,7 +1596,17 @@ public class RESTHelpers {
 	    	
 	    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
 	    	int totalBenchmarks=0;
-	    	
+	    	 String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+	         if (sortOverride!=null) {
+	         	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+	         	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
+	             	attrMap.put(SORT_DIRECTION, ASC);
+
+	         	} else {
+	             	attrMap.put(SORT_DIRECTION, ASC+1);
+
+	         	}
+	         }
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 	    	if (forPage==PAGE_SPACE_EXPLORER) {
 	    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(

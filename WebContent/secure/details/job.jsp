@@ -124,7 +124,7 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
-				<button id="compareSolvers">compare selected solvers</button>
+				<!-- <button id="compareSolvers">compare selected solvers</button>-->
 			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>
@@ -185,7 +185,7 @@
 				<fieldset id="pairActions" class="tableActions">
 					<button class="changeTime">Use CPU Time</button>
 					<button asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
-					<button asc="true" class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
+					<button asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
 				</fieldset>
 				<table id="pairTbl" class="shaded">
 					<thead>
