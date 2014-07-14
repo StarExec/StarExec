@@ -322,7 +322,7 @@ public class Spaces {
 	 * @param jobSpaceId
 	 * @return
 	 */
-	public static boolean updateJobSpaceClosureTable(int jobSpaceId, Connection con) {
+	private static boolean updateJobSpaceClosureTable(int jobSpaceId, Connection con) {
 		try {
 			Timestamp time=new Timestamp(System.currentTimeMillis());
 			Space root=new Space();

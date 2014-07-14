@@ -1137,7 +1137,7 @@ public class Jobs {
 		try {
 			con = Common.getConnection();
 			if (hierarchy) {
-				Spaces.updateJobSpaceClosureTable(jobSpaceId, con);
+				Spaces.updateJobSpaceClosureTable(jobSpaceId);
 				procedure = con.prepareCall("{CALL GetJobPairCountInJobSpaceHierarchy(?)}");
 			} else {
 				 procedure = con.prepareCall("{CALL GetJobPairCountInJobSpace(?)}");
@@ -1426,8 +1426,9 @@ public class Jobs {
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		try {
+			Spaces.updateJobSpaceClosureTable(jobSpaceId);
+
 			con=Common.getConnection();
-			Spaces.updateJobSpaceClosureTable(jobSpaceId, con);
 			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpaceHierarchy(?)}");
 
 			procedure.setInt(1,jobSpaceId);
@@ -1557,8 +1558,9 @@ public class Jobs {
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {			
+			Spaces.updateJobSpaceClosureTable(jobSpaceId);
+
 			con = Common.getConnection();
-			Spaces.updateJobSpaceClosureTable(jobSpaceId,con);
 			procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpaceHierarchy(?, ?)}");
 
 			procedure.setInt(1,jobSpaceId);
