@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
+import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -100,10 +101,10 @@ public class Registration extends HttpServlet {
 		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		
 		
-		
+		int userIdOfRequest=SessionUtil.getUserId(request);
 
 		
-		boolean adminCreated = Boolean.parseBoolean(request.getParameter(Registration.ADMIN_CREATED));
+		boolean adminCreated = Boolean.parseBoolean(request.getParameter(Registration.ADMIN_CREATED)) && Users.isAdmin(userIdOfRequest);
 		
 		if (!adminCreated) {
 			

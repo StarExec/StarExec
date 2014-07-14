@@ -6,6 +6,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,8 +14,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -185,6 +188,159 @@ public class Spaces {
 			Common.safeClose(con);
 		}
 		return -1;
+	}
+	
+	/**
+	 * Clears entries from the job space closure table that haven't been used in more than
+	 * the given number of days
+	 * @param daysOlderThan
+	 * @return True on success and false otherwise
+	 */
+	
+	public static boolean clearJobClosureEntries(int daysOlderThan) {
+		Timestamp cutoffTime=new Timestamp(System.currentTimeMillis()-(TimeUnit.MILLISECONDS.convert(daysOlderThan, TimeUnit.DAYS)));
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL ClearOldJobClosureEntries(?)}");
+			procedure.setTimestamp(1, cutoffTime);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	/**
+	 * Adds a given ancestor / descendant pair to the job space closure table
+	 * @param ancestor
+	 * @param descendant
+	 * @param time
+	 * @param con
+	 * @return
+	 */
+	
+	
+	private static boolean addToJobSpaceClosure(int ancestor, int descendant, Timestamp time, Connection con) {
+		CallableStatement procedure = null;
+		try {
+			procedure=con.prepareCall("{CALL InsertIntoJobSpaceClosure(?,?,?)}");
+			procedure.setInt(1, ancestor);
+			procedure.setInt(2,descendant);
+			procedure.setTimestamp(3, time);
+			procedure.executeUpdate();
+			
+			return true;
+			
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks to see whether a specific ancestor is in the job space closure table.
+	 * If it does exist, the last_used column is updated
+	 * @param jobSpaceId
+	 * @return
+	 */
+	
+	private static boolean jobSpaceAncestorExists(int jobSpaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			Timestamp time=new Timestamp(System.currentTimeMillis());
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RefreshEntriesByAncestor(?,?)}");
+			procedure.setInt(1, jobSpaceId);
+			procedure.setTimestamp(2, time);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				//it exists if there is an entry
+				return results.getInt("count")>0;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+		}
+		return false;
+	}
+	
+	/**
+	 * Adds every entry necessary in the closure table where the given space is the root.
+	 * If the entries are already present, this function just returns true
+	 * @param jobSpaceId
+	 * @return
+	 */
+	public static boolean updateJobSpaceClosureTable(int jobSpaceId) {
+		int callID=new Random().nextInt();
+		log.debug("beginning updateJobSpaceClosureTable " + callID);
+		if (jobSpaceAncestorExists(jobSpaceId)) {
+			//don't update-- it is already present
+			log.debug("closure entries were already present");
+			return true;
+		}
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			Common.beginTransaction(con);
+			boolean success=updateJobSpaceClosureTable(jobSpaceId,con);
+			if (!success) {
+				Common.doRollback(con);
+				log.debug("ending with error updateJobSpaceClosureTable " + callID);
+
+				return false;
+			}
+			Common.endTransaction(con);
+			log.debug("ending successfully updateJobSpaceClosureTable " + callID);
+
+			return true;
+
+		} catch (Exception e) {
+			Common.doRollback(con);
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+
+		}
+		return false;
+	}
+	
+	/**
+	 * Adds every entry necessary in the closure table where the given space is the root
+	 * @param jobSpaceId
+	 * @return
+	 */
+	private static boolean updateJobSpaceClosureTable(int jobSpaceId, Connection con) {
+		try {
+			Timestamp time=new Timestamp(System.currentTimeMillis());
+			Space root=new Space();
+			root.setId(jobSpaceId);
+			List<Space> spaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+			spaces.add(root);
+			for (Space s : spaces) {
+				boolean success=addToJobSpaceClosure(root.getId(),s.getId(),time,con);
+				if (!success) {
+					return false;
+				}
+			}
+			return true;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
 	}
 	
 	/**
@@ -388,6 +544,29 @@ public class Spaces {
 			Common.safeClose(results);
 		}
 		
+		return null;
+	}
+	
+	public static List<Integer> getAllJobSpaces() {
+		Connection con=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			List<Integer> ids=new ArrayList<Integer>();
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetAllJobSpaceIds()}");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			return ids;
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
 		return null;
 	}
 	

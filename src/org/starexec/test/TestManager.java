@@ -65,6 +65,7 @@ public class TestManager {
 		tests.add(new BenchmarkTests());
 		tests.add(new ProcessorTests());
 		tests.add(new JobTests());
+		tests.add(new GetPageTests());
 	}
 	
 	/**

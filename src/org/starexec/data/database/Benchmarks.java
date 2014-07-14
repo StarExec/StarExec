@@ -546,7 +546,6 @@ public class Benchmarks {
 			}			
 
 			Common.endTransaction(con);
-			//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	

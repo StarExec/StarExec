@@ -51,13 +51,6 @@
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
-				
-				//save the integer codes for solver-related cache items. This way, 
-				//if the admin decides to clear the cache for the item, we can query the server with the right code
-				request.setAttribute("cacheType1",CacheType.CACHE_JOB_OUTPUT.getVal());
-				request.setAttribute("cacheType2",CacheType.CACHE_JOB_CSV.getVal());
-				request.setAttribute("cacheType3",CacheType.CACHE_JOB_CSV_NO_IDS.getVal());
-				request.setAttribute("cacheType4",CacheType.CACHE_JOB_PAIR.getVal());
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
@@ -100,7 +93,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
+<star:template title="${job.name}" js="util/sortButtons, common/delaySpinner, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
 	<p id="displayJobID" class="accent">id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
@@ -131,6 +124,7 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
+				<!-- <button id="compareSolvers">compare selected solvers</button>-->
 			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>
@@ -190,6 +184,8 @@
 				<legend>job pairs</legend>	
 				<fieldset id="pairActions" class="tableActions">
 					<button class="changeTime">Use CPU Time</button>
+					<button title="sorts pairs by their ids, which is the order they are submitted to be run" asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
+					<button title="sorts pairs in the order they finished running" asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
 				</fieldset>
 				<table id="pairTbl" class="shaded">
 					<thead>
@@ -303,10 +299,6 @@
 					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 					<c:if test="${isAdmin}">
-						<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
-						<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
-						<span id="cacheType3" class="cacheType" value="${cacheType3}"></span>
-						<span id="cacheType4" class="cacheType" value="${cacheType4}"></span>
 						<button type="button" id="clearCache">clear cache</button>
 					</c:if>
 					

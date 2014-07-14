@@ -34,7 +34,7 @@
 	
 	
 %>
-<star:template title="Space Explorer" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
+<star:template title="Space Explorer" js="util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
@@ -93,6 +93,7 @@
 		
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
+			<button title="sorts benchmarks in the order they were added to this space" asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button>
 			<table id="benchmarks">
 				<thead>
 					<tr>
@@ -153,7 +154,7 @@
 				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
-				<!-- <li><a class="btnEdit" id="editSpacePermissions" href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li> -->
+				<li><a class="btnEdit" id="editSpacePermissions" href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
 				<li><a class="btnRun" id="makePublic">make public</a></li>
 				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>

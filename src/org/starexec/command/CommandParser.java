@@ -522,6 +522,8 @@ class CommandParser {
 			status=parser.resumeJob(commandParams);
 		} else if (c.equals(R.COMMAND_PAUSEJOB)) {
 			status=parser.pauseJob(commandParams);
+		} else if (c.equals(R.COMMAND_RERUNPAIR)) {
+			status=parser.rerunPair(commandParams);
 		}
 		else if (c.startsWith("get")) {
 			status=handleGetCommand(c,commandParams);

@@ -168,6 +168,7 @@ public class JobTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
 		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Assert.assertNotNull(Jobs.get(job.getId()));

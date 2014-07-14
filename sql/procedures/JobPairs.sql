@@ -135,4 +135,11 @@ CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 		FROM job_pairs JOIN jobs ON job_pairs.job_id=jobs.id
 		WHERE status_code=_processingStatus;
 	END //
+	
+DROP PROCEDURE IF EXISTS RemovePairFromCompletedTable;
+CREATE PROCEDURE RemovePairFromCompletedTable(IN _id INT)
+	BEGIN
+		DELETE FROM job_pair_completion
+		WHERE pair_id=_id;
+	END //
 DELIMITER ; -- this should always be at the end of the file

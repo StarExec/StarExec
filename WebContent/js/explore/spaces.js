@@ -179,6 +179,7 @@ function initButtonUI() {
 		icons: {
 			secondary: "ui-icon-closethick"
 		}});
+	attachSortButtonFunctions();
 
 	$("#makePublic").click(function(){
 		// Display the confirmation dialog
@@ -1559,7 +1560,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		} 
 	}
 
-
+	if (sortOverride!=null && tableName=="benchmarks") {
+		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
+		aoData.push( { "name": "sort_dir", "value":isASC() } );
+	}
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
 			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
@@ -1716,6 +1720,13 @@ function initDataTables(){
 		"sServerMethod" : "POST",
 		"fnServerData"	: fnPaginationHandler
 	});
+	
+	setSortTable(benchTable);
+	
+	$("#benchmarks thead").click(function(){
+		resetSortButtons();
+	});
+	
 	jobTable = $('#jobs').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
@@ -2065,7 +2076,7 @@ function checkPermissions(perms, id) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
 		$('#editSpace').fadeIn('fast');
-		$('#editSpacePermissions').fadeIn('fast');
+		//$('#editSpacePermissions').fadeIn('fast');
 		$('#reserveQueue').fadeIn('fast');
 
 		handlePublicButton(id);
@@ -2073,7 +2084,7 @@ function checkPermissions(perms, id) {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
-		$('#editSpacePermissions').fadeOut('fast');
+		//$('#editSpacePermissions').fadeOut('fast');
 		$('#makePublic').fadeOut('fast');
 		$('#makePrivate').fadeOut('fast');
 		$('#reserveQueue').fadeOut('fast');
@@ -2313,47 +2324,17 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	// Add the table to the wrapper
 	$(permWrap).append(table);
 
+	$(permWrap).append("<div><input type='button' value='edit' onClick='editPermissions()'></input></div>");
 	// HTML to add to the wrapper to indicate someone is a leader
 	var leaderDiv = '<div class="leaderWrap"><span class="ui-icon ui-icon-star"></span><h2 class="leaderTitle">leader</h2></div>';
 	
 	if(perms.isLeader) {
 		// If this person is a leader, add the leader div to the wrapper
 		$(permWrap).append(leaderDiv);
+		
 	} 
-	// If they're not a leader but the caller has specified to display the 'leader' button...
-	else if (type == 'admin' || (type == 'leader' && isCommunity == false)) {		
-		// Create a button to make the user a leader
-		
-		var leadBtn = $('<span class="leaderBtn">make leader</span>').button({
-			icons: {
-				secondary: "ui-icon-star"
-			}
-		}).click(function(){
-			// Update the title to save/cancel
-			$(this).parents('.qtip').qtip('api').updateTitle('<center><a class="tooltipButton" onclick="saveChanges(this,true);">save</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a class="tooltipButton" onclick="saveChanges(this,false);">cancel</a></center>');
 
-			// Add the leader div to indicate they are now a leader
-			$(this).parents('div:first').append(leaderDiv);			
-
-			// Update their permissions and permission icons
-			makeLeader(this);
-
-			// Get rid of the button
-			$(this).remove();
-		});
-
-		// Add the leader button to the wrapper
-		$(permWrap).append(leadBtn);
-		
-	}
-	// Shrink the space tooltip size if its for a non-leader
-	else if (type == 'space'){
-		tooltip.updateStyle('spaceTooltipNormal');
-	}
-	// Shrink the user tooltip size if its for a non-leader
-	else if (!type){
-		tooltip.updateStyle('userTooltipNormal');
-	}
+	
 
 	// Return the resulting DOM element to be inserted
 	return permWrap;
@@ -2402,6 +2383,13 @@ function getSinglePermTable(name, add, remove) {
 }
 
 /**
+ * used in tooltip, links to edit permissions page
+ *
+ **/
+function editPermissions(){
+    location = starexecRoot+"secure/edit/spacePermissions.jsp?id=" + spaceId;
+}
+/**
  * Wraps up a permission and it's value for display in a table. Includes onclicks for the images.
  * @param perm The permission type to display (job, user, solver, bench, space)
  * @param add The value for the add permission for the type
@@ -2409,9 +2397,9 @@ function getSinglePermTable(name, add, remove) {
  * @returns HTML representing a row in a table display the type and it's permission values
  */
 function wrapPermRow(perm, add, remove){
-	var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();
-	var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').attr('onclick', 'togglePermImage(this,"' + perm + '");').toHTMLString();
-	return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>"; 
+    var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').toHTMLString();
+    var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').toHTMLString();
+    return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>"; 
 }
 
 /**
@@ -2815,121 +2803,7 @@ function getTooltipConfig(type, message){
 	}	
 }
 
-/**
- * When a leader tooltip permissions icon is clicked, this cycles to the next png in order: 
- * none->add->remove->add/remove->none
- * 
- * @param image the icon span DOM element containing the png that triggered this method when it was clicked
- * @param perm the string name of the permission being toggled (user, solver, bench, job, space)
- */
-function togglePermImage(image, perm){
-	// If the user is a leader, you can't edit their permissions, return
-	if($(image).parents('table').data('perms').isLeader) {
-		showMessage('warn', 'you cannot edit a leader\'s permission', 1500);
-		return;
-	}	
 
-	// Change the title to 'save | cancel'
-	$(image).parents('.qtip').qtip('api').updateTitle('<center><a class="tooltipButton" onclick="saveChanges(this,true);">save</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a class="tooltipButton" onclick="saveChanges(this,false);">cancel</a></center>');
 
-	// Get the current permissions associated with the table
-	var permData = $(image).parents('table').data('perms');	
-
-	// Determine if this is an add or remove permission being toggled
-	var isAddPerm = $(image).parent().attr('class').indexOf('add') >= 0;
-	var newVal = false;
-
-	// Toggle the permission icon and update the new value to be set
-	if($(image).attr('class').indexOf('ui-icon-check') >= 0) {
-		$(image).removeClass('ui-icon-check');
-		$(image).addClass('ui-icon-closethick');
-		newVal = false;
-	} else {
-		$(image).removeClass('ui-icon-closethick');
-		$(image).addClass('ui-icon-check');
-		newVal = true;
-	}
-
-	// Set the new value based on the permission name and whether it's add/remove
-	if(isAddPerm) {
-		if(perm == "space") { permData.addSpace = newVal; }
-		else if(perm == "job") { permData.addJob = newVal; }
-		else if(perm == "user") { permData.addUser = newVal; }
-		else if(perm == "solver") { permData.addSolver = newVal; }
-		else if(perm == "bench") { permData.addBenchmark = newVal; }
-		log('Updated add permission to ' + newVal + ' for ' + perm);
-	} else {		
-		if(perm == "space") { permData.removeSpace = newVal; }
-		else if(perm == "job") { permData.removeJob = newVal; }
-		else if(perm == "user") { permData.removeUser = newVal; }
-		else if(perm == "solver") { permData.removeSolver = newVal; }
-		else if(perm == "bench") { permData.removeBench = newVal; }
-		log('Updated remove permission to ' + newVal + ' for ' + perm);
-	}
-}
-
-/**
- * Handles actions for the 'save' and 'cancel' buttons that appear on leader tooltips whenever
- * a permission is changed
- * 
- * @param obj the title div of the qtip from which this method was called
- * @param save true = save button, false = cancel button
- * @param userId the id of the user to save the new permissions for
- * @author Todd Elvers
- */
-function saveChanges(obj, save){
-	// Get the currently hovered user
-	var userId = $($(obj).parents('.qtip').qtip('api').elements.target).children('td:first').children('input').val();
-	log('saving permissions for user ' + userId);
-
-	// 'SAVE' option
-	if(true == save){  
-		// Collect the permission images from the tooltip
-		var tooltip = $(obj).parents('.qtip').qtip('api');
-
-		// Get the stored permissions from the DOM for this table
-		var perms = $(obj).parents('.qtip').find('table').data('perms');
-
-		// Update database to reflect new permissions
-		$.post(
-				starexecRoot+'services/space/' + spaceId + '/edit/perm/' + userId,
-				{ addUser		: perms.addUser,
-					removeUser	: perms.removeUser,
-					addSolver		: perms.addSolver,
-					removeSolver	: perms.removeSolver,
-					addBench		: perms.addBenchmark,
-					removeBench	: perms.removeBench,
-					addJob		: perms.addJob,
-					removeJob		: perms.removeJob,
-					addSpace		: perms.addSpace,
-					removeSpace	: perms.removeSpace,
-					isLeader		: perms.isLeader},
-					function(theResponse){
-						log('AJAX response received for permission edit request with code ' + theResponse);
-						switch(theResponse){					
-						case 0:
-							// Change the title to 'permissions'
-							tooltip.updateTitle('<center><a>permissions</a></center>');  
-							break;
-						case 1:
-							showMessage('error', "an error occured while editing permissions; please try again", 5000);
-							break;
-						case 2:
-							showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
-							break;
-						case 3:
-							showMessage('error', "you cannot modify the permissions for yourself or other leaders of " + spaceName, 5000);
-							break;
-						}
-						return true;
-					}
-		).error(function(){
-			//showMessage('error',"Internal error getting space details",5000);
-		});	
-	} else {  
-		log('user canceled edit permission action');
-		$(obj).parents('.qtip').qtip('api').hide();
-	}
-}
 
 

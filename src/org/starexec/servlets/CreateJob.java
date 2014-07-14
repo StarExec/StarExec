@@ -166,7 +166,7 @@ public class CreateJob extends HttpServlet {
 						SC.put(so, configurations);
 					}
 					SpaceToBSC.put(s, new BSC(benchmarks, solvers, SC));
-					}
+				}
 				log.debug("Max size is: " + max);
 				for(int i=0; i < max; i++) {
 					for (Space s : spaces) {

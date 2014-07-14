@@ -739,6 +739,28 @@ public class Connection {
 		
 	}
 	
+		/**
+		 * 
+		 * @param relURL The URL following starexecRoot
+		 * @return
+		 */
+	public boolean canGetPage(String relURL) {
+		try {
+			HttpGet get=new HttpGet(baseURL+relURL);
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			response.getEntity().getContent().close();
+			
+			//we should get 200, which is the code for ok
+			return response.getStatusLine().getStatusCode()==200;
+			
+		} catch (Exception e) {
+			
+		}
+		return false;
+	}
+	
 	/**
 	 * Gets the ID of the user currently logged in to StarExec
 	 * @return The integer user ID
@@ -822,6 +844,37 @@ public class Connection {
 	
 	public int pauseJob(Integer jobID) {
 		return pauseOrResumeJob(jobID,true);
+	}
+	
+	/**
+	 * Reruns the job pair with the given ID
+	 * @param pairID
+	 * @return
+	 */
+	
+	public int rerunPair(Integer pairID) {
+		try {
+			String URL=baseURL+R.URL_RERUNPAIR;
+			URL=URL.replace("{id}", pairID.toString());
+			HttpPost post=new HttpPost(URL);
+			post=(HttpPost) setHeaders(post);
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
+			HttpResponse response=client.execute(post);
+			setSessionIDIfExists(response.getAllHeaders());
+			int code=JsonHandler.getIntegerJsonCode(response);
+
+			response.getEntity().getContent().close();
+			if (code==0) {
+				return 0;
+			} else if (code>1) {
+				return Status.ERROR_PERMISSION_DENIED;
+			} else {
+				return Status.ERROR_SERVER;
+			}
+			
+		} catch (Exception e) {
+			return Status.ERROR_SERVER; 
+		}
 	}
 	
 	/**
@@ -1102,10 +1155,9 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
-			JsonElement jsonE=JsonHandler.getJsonString(response);
+			int code=JsonHandler.getIntegerJsonCode(response);
 			response.getEntity().getContent().close();
-			JsonPrimitive p=jsonE.getAsJsonPrimitive();
-			if (p.getAsInt()==0) {
+			if (code==0) {
 				List<Integer> newPrimIds=new ArrayList<Integer>();
 				String[] newIds=HTMLParser.extractMultipartCookie(response.getAllHeaders(),"New_ID");
 				if (newIds!=null) {
@@ -1119,13 +1171,13 @@ public class Connection {
 				
 				return newPrimIds;
 				
-			} else if (p.getAsInt()>=3 && p.getAsInt()<=6) {
+			} else if (code>=3 && code<=6) {
 				fail.add(Status.ERROR_PERMISSION_DENIED);
 				return fail;
-			} else if (p.getAsInt()==7) {
+			} else if (code==7) {
 				fail.add(Status.ERROR_NAME_NOT_UNIQUE);
 				return fail;
-			} else if (p.getAsInt()==8) {
+			} else if (code==8) {
 				fail.add(Status.ERROR_INSUFFICIENT_QUOTA);
 				return fail;
 			} 

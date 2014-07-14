@@ -22,12 +22,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						solver_name,
 						bench_id,
 						bench_name,
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 						
 				FROM	job_pairs	
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -53,12 +54,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						solver_name,
 						bench_id,
 						bench_name,
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 				WHERE 	job_space_id=_spaceId
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
@@ -81,13 +82,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						solver_name,
 						bench_id,
 						bench_name,
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 						
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 				WHERE 	job_space_id=_spaceId
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
@@ -116,12 +117,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -147,13 +148,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
-						
+						job_attributes.attr_value AS result,
 						wallclock,
 						cpu
 						
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -183,12 +183,11 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
-						
+						job_attributes.attr_value AS result,
 						wallclock,
 						cpu
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -214,13 +213,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
-						
+						job_attributes.attr_value AS result,
 						wallclock,
 						cpu
 						
 				FROM	job_pairs
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -250,12 +248,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -281,13 +279,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 						
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 				WHERE 	job_space_id=_spaceId
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
@@ -316,12 +314,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -347,13 +345,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 						
 				FROM	job_pairs	
-
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 
 				WHERE 	job_space_id=_spaceId
 				
@@ -382,11 +380,12 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						
-						GetJobPairResult(id) AS result,
+						job_attributes.attr_value AS result,
 						
 						wallclock,
 						cpu
 				FROM	job_pairs
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 				WHERE 	job_space_id=_spaceId
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
@@ -397,6 +396,138 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 
 				ORDER BY result DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			ELSEIF (_sortColumn=6) THEN
+			IF (_sortASC = TRUE) THEN
+				SELECT 	id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						bench_id,
+						bench_name,
+						job_attributes.attr_value AS result,
+						
+						wallclock,
+						cpu
+						
+				FROM	job_pairs	
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+				WHERE 	job_space_id=_spaceId
+				
+				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
+				-- don't include the query
+				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%'))
+				
+				-- Order results depending on what column is being sorted on
+				ORDER BY job_pairs.id ASC
+			 
+				-- Shrink the results to only those required for the next page of JobPairs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						job_attributes.attr_value AS result,
+						
+						wallclock,
+						cpu
+				FROM	job_pairs	
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+
+				WHERE 	job_space_id=_spaceId
+				
+				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%'))
+				ORDER BY job_pairs.id DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			ELSEIF (_sortColumn=7) THEN
+			IF (_sortASC = TRUE) THEN
+				SELECT 	id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						bench_id,
+						bench_name,
+						job_attributes.attr_value AS result,
+						wallclock,
+						cpu
+						
+				FROM	job_pairs	
+				LEFT JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+				WHERE 	job_space_id=_spaceId
+				
+				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
+				-- don't include the query
+				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%'))
+				
+				-- Doing a negative DESC is the same as ASC but with null values last
+				ORDER BY -completion_id DESC
+			 
+				-- Shrink the results to only those required for the next page of JobPairs
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	id, 
+						config_id,
+						config_name,
+						
+						status_code,
+						solver_id,
+						solver_name,
+						
+						bench_id,
+						bench_name,
+						
+						job_attributes.attr_value AS result,
+						
+						wallclock,
+						cpu
+				FROM	job_pairs	
+				
+				LEFT JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
+
+				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+
+				WHERE 	job_space_id=_spaceId
+				
+				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		config_name		LIKE	CONCAT('%', _query, '%')
+				OR		solver_name		LIKE	CONCAT('%', _query, '%')
+				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%'))
+				
+				-- Doing a negative ASC is the same as DESC but with null values last
+
+				ORDER BY -completion_id ASC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;

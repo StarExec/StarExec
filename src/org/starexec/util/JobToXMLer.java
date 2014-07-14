@@ -175,32 +175,36 @@ public class JobToXMLer {
 			Attr benchName = doc.createAttribute("bench-name");
 			benchID.setValue(Integer.toString(jobpair.getBench().getId()));
 			benchName.setValue(jobpair.getBench().getName());
-		    jp.setAttributeNode(benchID);
-			jp.setAttributeNode(benchName);
+
 			Attr configID = doc.createAttribute("config-id");
 			Attr configName = doc.createAttribute("config-name");
 			configID.setValue(Integer.toString(jobpair.getConfiguration().getId()));
 			configName.setValue(jobpair.getConfiguration().getName());
 			
-			jp.setAttributeNode(configID);
-			jp.setAttributeNode(configName);
+
 			
 			Attr solverId=doc.createAttribute("solver-id");
 			Attr solverName=doc.createAttribute("solver-name");
 			
 			Attr spaceId=doc.createAttribute("job-space-id");
-			Attr spaceName=doc.createAttribute("job-space-name");
+			Attr spacePath=doc.createAttribute("job-space-path");
 			spaceId.setValue(Integer.toString(jobpair.getSpace().getId()));
-			spaceName.setValue(jobpair.getSpace().getName());
-			
-			jp.setAttributeNode(spaceId);
-			jp.setAttributeNode(spaceName);
+			spacePath.setValue(jobpair.getPath());
 			
 			solverId.setValue(Integer.toString(jobpair.getSolver().getId()));
 			solverName.setValue(jobpair.getSolver().getName());
 			
+			
+			
+		    jp.setAttributeNode(benchID);
+			jp.setAttributeNode(benchName);
 			jp.setAttributeNode(solverId);
 			jp.setAttributeNode(solverName);
+			jp.setAttributeNode(configID);
+			jp.setAttributeNode(configName);
+			
+			jp.setAttributeNode(spaceId);
+			jp.setAttributeNode(spacePath);
 			jobElement.appendChild(jp);
 			
 		}

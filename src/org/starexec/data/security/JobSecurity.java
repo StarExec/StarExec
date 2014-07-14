@@ -70,13 +70,21 @@ public class JobSecurity {
 		
 		return 0;
 	}
-	
-	public static int canUserRerunPairs(int jobId, int userId, int statusode) {
+	/**
+	 * Ensures a given user has permission to rerun pairs of a given status code
+	 * @param jobId
+	 * @param userId
+	 * @param statusCode
+	 * @return
+	 */
+	public static int canUserRerunPairs(int jobId, int userId, int statusCode) {
 		int result= canUserRerunPairs(jobId, userId);
 		if(result!=0) {
 			return result;
 		}
-		if (statusode<StatusCode.STATUS_COMPLETE.getVal() || statusode>StatusCode.ERROR_GENERAL.getVal()) {
+		
+		//can't rerun pairs that are not complete
+		if (statusCode<StatusCode.STATUS_COMPLETE.getVal() || statusCode>StatusCode.ERROR_GENERAL.getVal()) {
 			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 		}
 		return 0;

@@ -22,9 +22,6 @@
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));		
-			//save the integer codes for benchmark-related cache items. This way, 
-			//if the admin decides to clear the cache for the item, we can query the server with the right code
-			request.setAttribute("cacheType",CacheType.CACHE_BENCHMARK.getVal());
 			request.setAttribute("isAdmin",Users.isAdmin(userId));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			if (s==null) {
@@ -181,11 +178,6 @@
 	 	
 		<c:if test="${downloadable}">
 			<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
-		</c:if>
-		
-		<c:if test="${isAdmin}">
-			<span id="cacheType" value="${cacheType}"></span>
-			<button type="button" id="clearCache">clear cache</button>
 		</c:if>
 		
 	</fieldset>

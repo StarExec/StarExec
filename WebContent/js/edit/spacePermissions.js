@@ -3,7 +3,19 @@ var userTable;
 var spaceId = 1;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
+
+// utility - space chain (spaces.js)
+var spaceChain;
+var spaceChainIndex=0;
+var spaceChainInterval;
+var openDone = true;
+var usingSpaceChain = false;
+
+
 var curIsLeader = false;
+var curIsAdmin = false;
+
+var communityIdList = null;
 
 //logger allows me to enable or disable console.log() lines
 var logger = function()
@@ -35,16 +47,14 @@ $(document).ready(function(){
 	console.log("spacePermissions log start");
 
 	currentUserId=parseInt($("#userId").attr("value"));
+	curIsAdmin = isAdmin();
 	lastSelectedUserId = null;
+	
+	//TODO : abstract space chain
+	usingSpaceChain=(getSpaceChain().length>1);
 
-	var QueryString = getQueryString();
-	console.log("before: " + spaceId);
-	spaceId = QueryString.sid;
-	console.log("after: " + spaceId);
+	communityIdList=getCommunityIdList();
 
-	if(spaceId === undefined){
-	    spaceId = 1;
-	}
 	
 	 // Build left-hand side of page (space explorer)
 	 initSpaceExplorer();
@@ -56,6 +66,95 @@ $(document).ready(function(){
 
 
 });
+
+
+
+function stringToBoolean(s){
+    switch(s){
+    case "true" : return true;
+    case "false" : return false;
+    default : return false;
+    }
+}
+
+function isAdmin(){
+    admin = $("#isAdmin").attr("value");
+
+    return stringToBoolean(admin);
+}
+/**
+ * utility function
+ * community
+ **/
+function getCommunityIdList(){
+    list = new Array();
+    spaces = $("#communityIdList").attr("value").split(",");
+    for(i=0;i < spaces.length; i++){
+	if(spaces[i].trim().length > 0){
+	    list[i] = spaces[i];
+	}
+    }
+    return list
+
+}
+
+/**
+ * jstree utility
+ * space chain (in spaces.js)
+ **/
+
+function openSpace(curSp,childId) {
+	$("#exploreList").jstree("open_node", "#" + curSp, function() {
+		$.jstree._focused().select_node("#" + childId, true);	
+	});	
+}
+/**
+ *utility function (abstract space chain)
+ *in spaces.js
+ **/
+function getSpaceChain(){
+	chain=new Array();
+	spaces=$("#spaceChain").attr("value").split(",");
+	index=0;
+	for (i=0;i<spaces.length;i++) {
+		if (spaces[i].trim().length>0) {
+			chain[index]=spaces[i];
+		}
+		index=index+1;
+	}
+
+	return chain;
+}
+
+
+/**
+ *utility function
+ * in spaces.js
+ **/
+function handleSpaceChain(){
+	spaceChain=getSpaceChain();
+	if (spaceChain.length<2) {
+		return;
+	}
+	p=spaceChain[0];
+
+	spaceChainIndex=1;
+	spaceChainInterval=setInterval(function() {
+		if (spaceChainIndex>=spaceChain.length) {
+			clearInterval(spaceChainInterval);
+		}
+		if (openDone) {
+			openDone=false;
+			c=spaceChain[spaceChainIndex];
+			openSpace(p,c);
+			spaceChainIndex=spaceChainIndex+1;
+			p=c;	
+		}
+		},100);
+		
+		
+	
+}
 
 /**
  * utility function (also in spaces.js)
@@ -114,40 +213,9 @@ function initSpaceDetails(){
  * Basic initialization for jQuery UI buttons (sets style and icons)
  */
 function initButtonUI() {
-
-	$('.btnAdd').button({
-		icons: {
-			secondary: "ui-icon-plus"
-		}});
-
 	$('.btnUp').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-		}});
-
-	$('.btnDown').button({
-		icons: {
-			secondary: "ui-icon-arrowthick-1-s"
-		}});
-
-	$('.btnRun').button({
-		icons: {
-			secondary: "ui-icon-gear"
-		}});
-
-	$('.btnRemove').button({
-		icons: {
-			secondary: "ui-icon-minus"
-		}});	
-
-	$('.btnEdit').button({
-		icons: {
-			secondary: "ui-icon-pencil"
-		}});
-
-	$('#trashcan').button({
-		icons: {
-			secondary: "ui-icon-trash"
 		}});
 
 	$('.resetButton').button({
@@ -155,8 +223,11 @@ function initButtonUI() {
 			secondary: "ui-icon-closethick"
 		}});
 
+	$('.backButton').button({
+		icons: {
+		    primary: "ui-icon-arrowthick-1-w"
+		}});
 
-	log('jQuery UI buttons initialized');
 }
 
 
@@ -164,7 +235,7 @@ function initButtonUI() {
 /**
  * Creates the space explorer tree for the left-hand side of the page, also
  * creates tooltips for the space explorer, .expd class, and userTable (if applicable)
- * TODO : utility function? (used in space.js) 
+ * TODO : utility function? (used in spaces.js) 
  * @author Tyler Jensen & Todd Elvers & Skylar Stark changes Julio Cervantes
  */
 function initSpaceExplorer(){
@@ -215,13 +286,18 @@ function initSpaceExplorer(){
 
 			getSpaceDetails(id);
 			setUpButtons();
-			setURL(id);
+			//setURL(id);
 			$('#permCheckboxes').hide();
 			$('#currentPerms').hide();
 		
 
 
-	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
+		    }).bind("loaded.jstree", function(event,data) {
+			    handleSpaceChain();
+			}).bind("open_node.jstree",function(event,data) {
+				
+				openDone=true;
+			    }).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
 }
@@ -368,8 +444,6 @@ function initDataTables(){
 		var uid = $(($(this).find(":input"))[0]).attr('value');
 		var sid = spaceId;
 		lastSelectedUserId = uid;
-		console.log("user",uid);
-		console.log("space",sid);
 		getPermissionDetails(uid,sid);
 	    });
 	
@@ -386,11 +460,6 @@ function initDataTables(){
 		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
 	});
 	
-
-
-
-	// Set all fieldsets as expandable (except for action fieldset)
-	//$('fieldset').expandable(false);
 
 	// Set the DataTable filters to only query the server when the user finishes typing
 	userTable.fnFilterOnDoneTyping();
@@ -470,6 +539,7 @@ function populateSpaceDetails(jsonData, id) {
 	} else {
 		// Or else the user can see the space, make sure the info table fieldsets are visible
 		$('#userField').show();
+		$('#permissionActions').show();
 
 	}
 
@@ -496,7 +566,6 @@ function populateSpaceDetails(jsonData, id) {
 	$('#spaceID').fadeOut('fast', function() {
 		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
 	});
-	$('#chartPicture').attr('src', starexecRoot+"secure/get/pictures?type=corg&Id=" + spaceId);
 
 	/*
 	 * Issue a redraw to all DataTable objects to force them to requery for
@@ -517,7 +586,7 @@ function getPermissionDetails(user_id, space_id) {
 	$.get(  
 		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
 		function(data){  			
-			populateDetails(data);			
+		    populateDetails(data, user_id);			
 		},  
 		"json"
 	).error(function(){
@@ -525,18 +594,63 @@ function getPermissionDetails(user_id, space_id) {
 	});
 }
 
-function populateDetails(data) {
+function isRoot(space_id){
+    return space_id == "1";
+}
+
+function isCommunity(space_id){
+    return ($.inArray(space_id.toString(),communityIdList) != -1);
+}
+
+function canChangePermissions(user_id){
+    if(curIsLeader && !isRoot(spaceId) && (user_id != currentUserId)){
+	return true;
+    }
+    else{
+	return false;
+    }
+}
+function populateDetails(data, user_id) {
 	if (data.perm == null) {
 	    showMessage("error","permissions seem to be null",5000);
 	} else {
-	    if(curIsLeader && (spaceId != "1")){
-		$('#permCheckboxes').show();
+	    $('#permCheckboxes').hide();
+	    $('#currentPerms').hide();
+
+	    $('#communityLeaderStatusRow').hide();
+	    $('#leaderStatusRow').hide();
+
+	    console.log("current user selected: " + (user_id == currentUserId));
+
+	    var leaderStatus = data.perm.isLeader;
+
+	    if(isCommunity(spaceId)){
+
+		if(canChangePermissions(user_id) && (leaderStatus!=true || curIsAdmin)){
+		    $('#permCheckboxes').show();
+		    if(curIsAdmin){
+			$('#leaderStatusRow').show();
+		    }
+		    else{
+			$('#communityLeaderStatusRow').show();
+		    }
+		}
+		else{
+		    $('#currentPerms').show();
+		    
+		}
 	    }
 	    else{
-		$('#currentPerms').show();
+
+		if(canChangePermissions(user_id)){
+		    $('#permCheckboxes').show();
+		    $('#leaderStatusRow').show();
+		}
+		else{
+		    $("#currentPerms").show();
+		}
 	    }
-	
-	    
+
 	    var addSolver = data.perm.addSolver;
 	    var addBench = data.perm.addBenchmark;
 	    var addUser = data.perm.addUser;
@@ -547,9 +661,8 @@ function populateDetails(data) {
 	    var removeUser = data.perm.removeUser;
 	    var removeSpace = data.perm.removeSpace;
 	    var removeJob = data.perm.removeJob;
-	    var leaderStatus = data.perm.isLeader;
-	
-	    console.log("addBench: " + addBench);
+	    
+
 
 	    checkBoxes("addSolver", addSolver);
 	    checkBoxes("addBench", addBench);
@@ -561,12 +674,26 @@ function populateDetails(data) {
 	    checkBoxes("removeUser", removeUser);
 	    checkBoxes("removeJob", removeJob);
 	    checkBoxes("removeSpace", removeSpace);
-	    checkBoxes("leaderStatus", leaderStatus);
+
+
+	    if(leaderStatus == true){
+		$("#uleaderStatus").attr("class","ui-icon ui-icon-check");
+		$("#leaderStatus").attr("value","demote");
+		$("#communityLeaderStatus").attr("class","ui-icon ui-icon-check");
+	    }
+	    else{
+		$("#uleaderStatus").attr("class","ui-icon ui-icon-close");
+		$("#leaderStatus").attr("value","promote");
+		$("#communityLeaderStatus").attr("class","ui-icon ui-icon-close");
+	    }
 	}
 	
 }
 
 function checkBoxes(name, value) {
+
+
+
 	if (value == true) {
 	    $("#u" + name).attr('class','ui-icon ui-icon-check');
 	    $("#" + name).attr('checked', 'checked');
@@ -575,13 +702,55 @@ function checkBoxes(name, value) {
 	    $("#" + name).removeAttr('checked');
 
 	}
+    
+}
+
+
+/**
+ *helper function for changePermissions
+ *
+ **/
+function makeDemoteData(){
+    var data =
+	{		addBench	: true,
+			addJob		: true,
+			addSolver	: true,
+			addSpace	: true,
+			addUser		: true,
+			removeBench	: true,
+			removeJob	: true,
+			removeSolver    : true,
+			removeSpace	: true,
+			removeUser	: true,
+			isLeader        : false,
+			leaderStatusChange : true
+	};
+    return data;
+}
+
+function makePromoteData(){
+    var data =
+	{		addBench	: true,
+			addJob		: true,
+			addSolver	: true,
+			addSpace	: true,
+			addUser		: true,
+			removeBench	: true,
+			removeJob	: true,
+			removeSolver    : true,
+			removeSpace	: true,
+			removeUser	: true,
+			isLeader        : true,
+			leaderStatusChange : true
+	};
+    return data;
 }
 
 /**
  * 
- * @param hier boolean should behave hierarchically?
+ * @param hier : boolean - whether or not to behave hierarchically
  **/
-function changePermissions(hier){
+function changePermissions(hier,changingLeadership){
 
     var url = starexecRoot+"services/space/" + spaceId + "/edit/perm/";
     if(hier){
@@ -590,8 +759,12 @@ function changePermissions(hier){
     url = url + lastSelectedUserId;
 
     $('#dialog-confirm-update').dialog('close');
-    var data = 
-	{		addBench	: $("#addBench").is(':checked'),
+
+    var data = null;
+
+    if(!changingLeadership){
+	data = 
+	    {		addBench	: $("#addBench").is(':checked'),
 			addJob		: $("#addJob").is(':checked'),
 			addSolver	: $("#addSolver").is(':checked'),
 			addSpace	: $("#addSpace").is(':checked'),
@@ -601,8 +774,19 @@ function changePermissions(hier){
 			removeSolver: $("#removeSolver").is(':checked'),
 			removeSpace	: $("#removeSpace").is(':checked'),
 			removeUser	: $("#removeUser").is(':checked'),
-			isLeader 	: $("#leaderStatus").is(':checked'),
-	};
+			//isLeader 	: $("#leaderStatus").is(':checked'),
+			isLeader        : ($("#leaderStatus").attr("value") == "demote"),
+			leaderStatusChange : false
+	    };
+    }
+    else{
+	if($("#leaderStatus").attr("value") == "demote"){
+	    data = makeDemoteData();
+	}
+	else{
+	    data = makePromoteData();
+	}
+    }
     // Pass data to server via AJAX
     $.post(
 	   url,
@@ -622,6 +806,8 @@ function changePermissions(hier){
 	       case 2:
 		   showMessage('error', "only a leader of this space can modify its details", 5000);
 		   break;
+	       case 3:
+		   showMessage('error',"you must first demote a leader before you can change their permissions",5000);
 	       case 7:
 		   showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
 		   break;
@@ -651,8 +837,8 @@ function setUpButtons() {
 			width: 380,
 			height: 165,
 			buttons: {
-			    "change only this space": function(){ changePermissions(false)},
-			    "change this space's hierarchy" : function(){changePermissions(true)},
+			"change only this space": function(){ changePermissions(false,false)},
+			    "change this space's hierarchy" : function(){changePermissions(true,false)},
 			    "cancel": function() {
 				
 				$(this).dialog("close");
@@ -676,35 +862,32 @@ function setUpButtons() {
 
 	});
     /**
-<td><input class="resetButton" type="button" id="hiddenButton" value="i'm hiding" hidden ></input></td>
-    $("#hiddenButton").unbind("click");
-    $("#hiddenButton").click(function(e){
-	    
-	    console.log("hidden button clicked");
-	    var selectedId = $('#exploreList').jstree('get_selected').attr('id');
-	    console.log("node about to be deselected: " + selectedId);
-	    $("#exploreList").jstree("deselect_node",'#' + selectedId,false);
-	    $("#exploreList").jstree("open_node", '#4',false);
-	    //expandNode('4');
-	    $("#exploreList").jstree("select_node", '#4',false);
+    $("#exploreSpaces").unbind("click");
+    $("#exploreSpaces").click(function(e) {
+	
 	});
     **/
-	
-}
 
-//TODO : not functioning
-function expandNode(nodeID) {
-    // Expand all nodes up to the root (the id of the root returns as '#')
-    var thisNode;
-    while (nodeID != '#') {
-        // Open this node
-	console.log("expand: " + nodeID);
-        $("#exploreList").jstree("open_node", nodeID,false);
-        // Get the jstree object for this node
-	    thisNode = $("#exploreList").jstree("get_node", nodeID,false);
-        // Get the id of the parent of this node
-        nodeID = $("#exploreList").jstree("get_parent", thisNode);
-    }
+    $("#leaderStatus").unbind('click');
+    $("#leaderStatus").click(function(e) {
+	    $("#dialog-confirm-update-txt").text("how should the leadership change take effect?");
+		
+	    $("#dialog-confirm-update").dialog({
+		    modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+			"change only this space": function(){ changePermissions(false,true)},
+				"change this space's hierarchy" : function(){changePermissions(true,true)},
+			    "cancel": function() {
+				
+				$(this).dialog("close");
+			    }
+		    }
+		});
+	});
 }
+	
+
 
 

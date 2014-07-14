@@ -490,6 +490,34 @@ public class RESTServices {
 	}	
 	
 	/**
+	 * Handles a request to rerun a single job pair
+	 * 
+	 * @param pairId The ID of the pair to rerun
+	 * @param request
+	 * @return
+	 */
+	
+	@POST
+	@Path("/jobs/pairs/rerun/{pairid}")
+	@Produces("application/json")	
+	public String rerunJobPair(@PathParam("pairid") int pairId, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JobPair pair=JobPairs.getPair(pairId);
+		if (pair==null) {
+			return gson.toJson(SecurityStatusCodes.ERROR_INVALID_PARAMS);
+		}
+		int jobId=pair.getJobId();
+		int status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
+		
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		boolean success=Jobs.rerunPair(jobId, pairId);
+		
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
 	 * Returns the next page of entries for a job pairs table
 	 *
 	 * @param jobId the id of the job to get the next page of job pairs for
@@ -520,6 +548,27 @@ public class RESTServices {
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
+	
+	
+	
+	@POST
+	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
+	@Produces("application/json")	
+	public String getSolverComparisonsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		int status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock);
+
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	
+	
 	
 	/**
 	 * Returns the next page of entries for a job pairs table
@@ -2699,6 +2748,26 @@ public class RESTServices {
 	}
 	
     /**
+     * helper function for editing permissions
+     * @param request
+     **/
+
+    public Permission createPermissionFromRequest(HttpServletRequest request){
+	Permission newPerm = new Permission(false);
+	newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
+	newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+	newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
+	newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+	newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
+	newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+	newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
+	newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+	newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
+	newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+	newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));	
+	return newPerm;
+    }
+    /**
      * Changes the permissions of a given user for a space hierarchy
      *@author Julio Cervantes
      *
@@ -2710,24 +2779,15 @@ public class RESTServices {
 
 	    // Ensure the user attempting to edit permissions is a leader
 	    int currentUserId = SessionUtil.getUserId(request);
-	    log.info("currentUserId: " + currentUserId + ", requestChangeId: " + userId + ", spaceId: " + spaceId);
-	    List<Integer> permittedSpaces = SpaceSecurity.getUpdatePermissionSpaces(spaceId, userId, currentUserId);
+	    boolean leaderStatusChange = Boolean.parseBoolean(request.getParameter("leaderStatusChange"));
+
+	    List<Integer> permittedSpaces = SpaceSecurity.getUpdatePermissionSpaces(spaceId, userId, currentUserId,leaderStatusChange);
 	    log.info("permittedSpaces: " + permittedSpaces);
 
 	    // Configure a new permission object
-	    Permission newPerm = new Permission(false);
-	    newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
-	    newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
-	    newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
-	    newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
-	    newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
-	    newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
-	    newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
-	    newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
-	    newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
-	    newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
-	    newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));			
+	    Permission newPerm = createPermissionFromRequest(request);			
 	    
+
 	    // Update database with new permissions
 	    for(Integer permittedSpaceId : permittedSpaces){
 		if(permittedSpaceId != null){
@@ -2754,23 +2814,14 @@ public class RESTServices {
 	public String editUserPermissions(@PathParam("spaceId") int spaceId, @PathParam("userId") int userId, @Context HttpServletRequest request) {
 		// Ensure the user attempting to edit permissions is a leader
 		int currentUserId = SessionUtil.getUserId(request);
-		int status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId);
+		boolean leaderStatusChange = Boolean.parseBoolean(request.getParameter("leaderStatusChange"));
+		int status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId,leaderStatusChange);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
 		// Configure a new permission object
-		Permission newPerm = new Permission(false);
-		newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
-		newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
-		newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));		
-		newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
-		newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));		
-		newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
-		newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
-		newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
-		newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));		
-		newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
-		newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));				
+		Permission newPerm = createPermissionFromRequest(request);
+				
 		
 		// Update database with new permissions
 		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);

@@ -14,7 +14,7 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _download
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
 		
 		SELECT LAST_INSERT_ID() INTO _benchId;		
-		INSERT INTO bench_assoc VALUES (_spaceId, _benchId);
+		INSERT INTO bench_assoc (space_id, bench_id) VALUES (_spaceId, _benchId);
 	END //	
 		
 -- Adds a new attribute to a benchmark 
@@ -38,7 +38,7 @@ CREATE PROCEDURE AddBenchDependency(IN _primary_bench_id INT, IN _secondary_benc
 DROP PROCEDURE IF EXISTS AssociateBench;
 CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 	BEGIN		
-		INSERT IGNORE INTO bench_assoc VALUES (_spaceId, _benchId);
+		INSERT IGNORE INTO bench_assoc (space_id, bench_id) VALUES (_spaceId, _benchId);
 	END //
 	
 -- Finds the spaces associated with a given benchmark
@@ -175,7 +175,8 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 		FROM bench_assoc
 		JOIN benchmarks AS bench ON bench.id=bench_assoc.bench_id
 		LEFT OUTER JOIN processors AS types ON bench.bench_type=types.id
-		WHERE bench_assoc.space_id=_id and bench.deleted=false and bench.recycled=false;
+		WHERE bench_assoc.space_id=_id and bench.deleted=false and bench.recycled=false
+		ORDER BY order_id ASC;
 	END //
 
 

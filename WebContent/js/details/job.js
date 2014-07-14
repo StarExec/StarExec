@@ -5,6 +5,7 @@ var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
+
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
@@ -215,7 +216,21 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-
+	$("#compareSolvers").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+    });
+	$("#compareSolvers").hide();
+	
+	$("#compareSolvers").click(function(){
+		c1=$(".first_selected").find(".configLink").attr("id");
+		c2=$(".second_selected").find(".configLink").attr("id");
+		window.open(starexecRoot+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
+	});
+	
+	
+	attachSortButtonFunctions();
 	
 	$("#rerunPairs").button({
 		icons: {
@@ -344,17 +359,15 @@ function initUI(){
 				buttons: {
 					'clear cache': function() {
 						$(this).dialog("close");
-						$(".cacheType").each(function() {
 							
-							type=$(this).attr("value");
 							$.post(
-									starexecRoot+"services/cache/clear/"+jobId+"/"+type,
+									starexecRoot+"services/cache/clear/stats"+jobId+"/",
 									function(returnCode) {
 										if (returnCode<0) {
 											showMessage('error',"There was an error clearing the cache for this item",5000);
 										}		
 							});
-						});									
+															
 					},
 					"cancel": function() {
 						$(this).dialog("close");
@@ -448,85 +461,50 @@ function initUI(){
 	
 	
 	$("#pauseJob").click(function(){
-		$('#dialog-confirm-pause-txt').text('are you sure you want to pause this job?');
 		
-		$('#dialog-confirm-pause').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed job pause.');
-					$('#dialog-confirm-pause').dialog('close');
-					
-					$.post(
-							starexecRoot+"services/pause/job/" + getParameterByName("id"),
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										document.location.reload(true);
-										break;
-									case 1:
-										showMessage('error', "The job was not paused; please try again.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can pause it.", 5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
-								}
-							},
-							"json"
-					);
+		$.post(
+				starexecRoot+"services/pause/job/" + getParameterByName("id"),
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							document.location.reload(true);
+							break;
+						case 1:
+							showMessage('error', "The job was not paused; please try again.", 5000);
+							break;
+						case 2:
+							showMessage('error', "Only the owner of this job can pause it.", 5000);
+							break;
+						default:
+							showMessage('error', "Invalid parameters.", 5000);
+							break;
+					}
 				},
-				"cancel": function() {
-					log('user canceled job pause');
-					$(this).dialog("close");
-				}
-			}
-		});
+				"json"
+		);
 	});
 	
 	$("#resumeJob").click(function(){
-		$('#dialog-confirm-resume-txt').text('are you sure you want to resume this job?');
-		
-		$('#dialog-confirm-resume').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed job resume.');
-					$('#dialog-confirm-resume').dialog('close');
-					
-					$.post(
-							starexecRoot+"services/resume/job/" + getParameterByName("id"),
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										document.location.reload(true);
-										break;
-									case 1:
-										showMessage('error', "The job was not resumed; please try again.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can resume it.", 5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
-								}
-							},
-							"json"
-					);
+		$.post(
+				starexecRoot+"services/resume/job/" + getParameterByName("id"),
+				function(returnCode) {
+					switch (returnCode) {
+						case 0:
+							document.location.reload(true);
+							break;
+						case 1:
+							showMessage('error', "The job was not resumed; please try again.", 5000);
+							break;
+						case 2:
+							showMessage('error', "Only the owner of this job can resume it.", 5000);
+							break;
+						default:
+							showMessage('error', "Invalid parameters.", 5000);
+							break;
+					}
 				},
-				"cancel": function() {
-					log('user canceled job resume');
-					$(this).dialog("close");
-				}
-			}
-		});
+				"json"
+		);
 	});
 	
 	$("#changeQueue").click(function(){
@@ -857,6 +835,43 @@ function initDataTables(){
         "fnServerData" : fnStatsPaginationHandler
     });
 	
+	$("#solveTbl").delegate("tr","mousedown", function(){
+		if (!$(this).hasClass("row_selected")) {
+			$("#solveTbl").find(".second_selected").each(function(){
+				$(this).removeClass("second_selected");
+				$(this).removeClass("row_selected");
+
+			});
+			$("#solveTbl").find(".first_selected").each(function(){
+				$(this).removeClass("first_selected");
+				$(this).addClass("second_selected");
+
+			});
+			
+			$(this).addClass("first_selected");
+			$(this).addClass("row_selected");
+		} else {
+			$(this).removeClass("row_selected");
+			$(this).removeClass("first_selected");
+			$(this).removeClass("second_selected");
+
+			$("#solveTbl").find(".second_selected").each(function(){
+				$(this).removeClass("second_selected");
+				$(this).removeClass("first_selected");
+
+				$(this).addClass("first_selected");
+
+			});
+		}
+		if ($("#solveTbl").find(".second_selected").size()>0) {
+			$("#compareSolvers").show();
+			
+		} else {
+			$("#compareSolvers").hide();
+
+		}
+	});
+	
 	// Job pairs table
 	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -867,6 +882,12 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
+	
+	setSortTable(pairTable);
+	
+	$("#pairTbl thead").click(function(){
+		resetSortButtons();
+	});
 	
 	$('#detailTbl').dataTable( {
 		"sDom": 'rt<"bottom"f><"clear">',
@@ -1014,7 +1035,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 	outSpaceId=curSpaceId;
-	
+
 	$.post(  
 			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock,
 			aoData,
@@ -1064,6 +1085,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 	outSpaceId=curSpaceId;
+	if (sortOverride!=null) {
+		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
+		aoData.push( { "name": "sort_dir", "value":isASC() } );
+
+	}
 	$.post(  
 			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock,
 			aoData,

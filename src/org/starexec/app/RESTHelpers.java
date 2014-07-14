@@ -2,6 +2,7 @@ package org.starexec.app;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -62,6 +64,9 @@ public class RESTHelpers {
 	private static final String SORT_DIRECTION = "sSortDir_0";
 	private static final String SYNC_VALUE = "sEcho";
 	private static final String SORT_COLUMN = "iSortCol_0";
+	private static final String SORT_COLUMN_OVERRIDE = "sort_by";
+	private static final String SORT_COLUMN_OVERRIDE_DIR = "sort_dir";
+
 	private static final String STARTING_RECORD = "iDisplayStart";
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
 	private static final String TOTAL_RECORDS = "iTotalRecords";
@@ -356,7 +361,7 @@ public class RESTHelpers {
 			String iSortCol = (String) request.getParameter(SORT_COLUMN); 
 			String sDir = (String) request.getParameter(SORT_DIRECTION);
 			String sSearch = (String) request.getParameter(SEARCH_QUERY);
-
+	       
 			// Validates the starting record, the number of records per page,
 			// and the sync value
 			if (Util.isNullOrEmpty(iDisplayStart)
@@ -383,7 +388,7 @@ public class RESTHelpers {
 						if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
 						break;
 					case JOB_PAIR:
-						if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
+						if (sortColumnIndex < 0 || sortColumnIndex > 8) return null;
 						break;
 					case JOB_STATS:
 						if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
@@ -1016,7 +1021,7 @@ public class RESTHelpers {
 	
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
-		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false,false);
+		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false);
 
 		if (totalJobPairs>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them
@@ -1029,7 +1034,21 @@ public class RESTHelpers {
 		if (null==attrMap) {
 			return null;
 		}
+        String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+        if (sortOverride!=null) {
+        	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+        	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
+            	attrMap.put(SORT_DIRECTION, ASC);
 
+        	} else {
+            	attrMap.put(SORT_DIRECTION, ASC+1);
+
+        	}
+        }
+		
+    	log.debug("the new sort column is " +attrMap.get(SORT_COLUMN));
+
+        
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
 
 		// Retrieves the relevant Job objects to use in constructing the JSON to
@@ -1059,6 +1078,47 @@ public class RESTHelpers {
 
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
 	}
+	
+	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
+			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock) {
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
+				Primitive.JOB_PAIR, request);
+		if (null == attrMap) {
+			return null;
+		}
+
+		List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
+
+		int totalComparisons;
+		// Retrieves the relevant Job objects to use in constructing the JSON to
+		// send to the client
+		int[] totals = new int[2];
+		solverComparisonsToDisplay = Jobs
+				.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(
+						attrMap.get(STARTING_RECORD), // Record to start at
+						attrMap.get(RECORDS_PER_PAGE), // Number of records to
+														// return
+						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																			// direction
+																			// (true
+																			// for
+																			// ASC)
+						attrMap.get(SORT_COLUMN), // Column sorted on
+						request.getParameter(SEARCH_QUERY), // Search query
+						jobId, // Parent space id
+						jobSpaceId, configId1,configId2, totals,wallclock);
+		
+		totalComparisons = totals[0];
+
+		/**
+    	* Used to display the 'total entries' information at the bottom of the DataTable;
+    	* also indirectly controls whether or not the pagination buttons are toggle-able
+    	*/
+    
+       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+    	
+	   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock);
+	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
 			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock) {
@@ -1069,7 +1129,19 @@ public class RESTHelpers {
 		}
 
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+        String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+        if (sortOverride!=null) {
+        	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+        	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
+            	attrMap.put(SORT_DIRECTION, ASC);
 
+        	} else {
+            	attrMap.put(SORT_DIRECTION, ASC+1);
+
+        	}
+        }
+        log.debug("the new sorting order is "+attrMap.get(SORT_COLUMN));
+        
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
@@ -1524,7 +1596,17 @@ public class RESTHelpers {
 	    	
 	    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
 	    	int totalBenchmarks=0;
-	    	
+	    	 String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+	         if (sortOverride!=null) {
+	         	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
+	         	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
+	             	attrMap.put(SORT_DIRECTION, ASC);
+
+	         	} else {
+	             	attrMap.put(SORT_DIRECTION, ASC+1);
+
+	         	}
+	         }
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 	    	if (forPage==PAGE_SPACE_EXPLORER) {
 	    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
@@ -1720,6 +1802,74 @@ public class RESTHelpers {
 		    // Return the next DataTable page
 	    	return nextPage;
 		}
+	
+	
+	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean useWallclock) {
+		/**
+		 * Generate the HTML for the next DataTable page of entries
+		 */
+		JsonArray dataTablePageEntries = new JsonArray();
+		for(SolverComparison c : comparisons){
+    		
+    		
+    		// Create the benchmark link and append the hidden input element
+    		StringBuilder sb = new StringBuilder();
+    		sb.append("<a title=\"");
+    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+    		sb.append(c.getBenchmark().getId());
+    		sb.append("\" target=\"_blank\">");
+    		sb.append(c.getBenchmark().getName());
+    		RESTHelpers.addImg(sb);
+			String benchLink = sb.toString();
+
+			// Create an object, and inject the above HTML, to represent an
+			// entry in the DataTable
+			JsonArray entry = new JsonArray();
+    		entry.add(new JsonPrimitive(benchLink));
+    		
+    		
+    		if (useWallclock) {
+    			double displayWC1 = Math.round(c.getFirstPair().getWallclockTime()*100)/100.0;		
+    			double displayWC2 =  Math.round(c.getSecondPair().getWallclockTime()*100)/100.0;
+    			double displayDiff =  Math.round(c.getWallclockDifference()*100)/100.0;		
+
+        		entry.add(new JsonPrimitive(displayWC1 + " s"));
+        		entry.add(new JsonPrimitive(displayWC2 + " s"));
+        		entry.add(new JsonPrimitive(displayDiff + " s"));
+
+    		} else {
+    			double display1 = Math.round(c.getFirstPair().getCpuTime()*100)/100.0;		
+    			double display2 =  Math.round(c.getSecondPair().getCpuTime()*100)/100.0;
+    			double displayDiff =  Math.round(c.getCpuDifference()*100)/100.0;		
+
+        		entry.add(new JsonPrimitive(display1 + " s"));
+        		entry.add(new JsonPrimitive(display2 + " s"));
+        		entry.add(new JsonPrimitive(displayDiff + " s"));
+    		}
+    		
+    		entry.add(new JsonPrimitive(c.getFirstPair().getStarexecResult()));    	
+    		entry.add(new JsonPrimitive(c.getSecondPair().getStarexecResult()));    		
+    		if (c.doResultsMatch()) {
+        		entry.add(new JsonPrimitive(1));    		
+    		} else {
+        		entry.add(new JsonPrimitive(0));    		
+
+    		}
+    		dataTablePageEntries.add(entry);
+    	}
+	    	JsonObject nextPage=new JsonObject();
+	    	 // Build the actual JSON response object and populated it with the created data
+		    nextPage.addProperty(SYNC_VALUE, syncValue);
+		    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
+		    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
+		    nextPage.add("aaData", dataTablePageEntries);
+		    
+		    // Return the next DataTable page
+	    	return nextPage;
+		}
+	
+	
+	
 	/**
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table
@@ -2423,7 +2573,7 @@ public class RESTHelpers {
 			
 			// create the configuraiton link
 			sb = new StringBuilder();
-			sb.append("<a title=\"");
+			sb.append("<a class=\"configLink\" title=\"");
 			sb.append(js.getConfiguration().getName());
 			sb.append("\" href=\""
 					+ Util.docRoot("secure/details/configuration.jsp?id="));

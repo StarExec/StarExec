@@ -851,7 +851,7 @@ public class SpaceSecurity {
      * @param requestUserId The Id of the user making the request
      * @return list of spaces where permissions can be changed
      */
-    public static List<Integer> getUpdatePermissionSpaces(int spaceId, int userIdBeingUpdated, int requestUserId){
+    public static List<Integer> getUpdatePermissionSpaces(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange){
 	//TODO :  make more efficient? (right now querying database for every space in hierarchy to check permissions)
 	
 	
@@ -870,7 +870,7 @@ public class SpaceSecurity {
     
 	List<Integer> permittedSpaceIds = new ArrayList<Integer>();
 	for (Integer sid : spaceIds) {
-	    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
+	    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId,leaderStatusChange);
 	    if (status==0) {
 		permittedSpaceIds.add(sid);
 	    }
@@ -885,24 +885,27 @@ public class SpaceSecurity {
      * @param requestUserId The Id of the user making the request
      * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
      */
-    public static int canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId) {
+    public static int canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange) {
 
 
 	Permission perm = Permissions.get(requestUserId, spaceId);
 	if(perm == null || !perm.isLeader()) {
 	    return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 	}
-	/**
+
+	
 	// Ensure the user to edit the permissions of isn't themselves a leader
 	perm = Permissions.get(userIdBeingUpdated, spaceId);
 
-	if(perm.isLeader() && !Users.isAdmin(requestUserId)){
-	    //TODO : this status code is obsolete since leaders can change other leader's permissions
+	if(perm.isLeader() && !Users.isAdmin(requestUserId) && !leaderStatusChange){
 	    return SecurityStatusCodes.ERROR_CANT_EDIT_LEADER_PERMS;
 	}	
-	**/	
+	
+	
 		
 	return 0;
     }
+
+    
 
 }

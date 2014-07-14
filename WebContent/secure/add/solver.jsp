@@ -7,6 +7,7 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
+		
 		request.setAttribute("solverNameLen", R.SOLVER_NAME_LEN);
 		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
 		// Verify this user can add spaces to this space

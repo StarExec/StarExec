@@ -128,11 +128,16 @@ public class BatchUtil {
 	
 		Attr id = doc.createAttribute("id");
 		id.setValue(Integer.toString(space.getId()));
-		spaceElement.setAttributeNode(id);		
+		spaceElement.setAttributeNode(id);
+		
 		Attr name = doc.createAttribute("name");
 		name.setValue(space.getName());
 		spaceElement.setAttributeNode(name);
 		
+		Attr description = doc.createAttribute("description");
+		description.setValue(space.getDescription());
+		spaceElement.setAttributeNode(description);
+
 		// New attributes to space XML elements
 		// @author Tim Smith
 		
@@ -417,6 +422,12 @@ public class BatchUtil {
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
 		
+		// Check for description attribute
+		String desc = spaceElement.getAttribute("description");
+		if(!desc.equals("") && !desc.equals(null)){
+		    space.setDescription(desc);
+		}
+
 		// Check for permission attributes in XML and set permissions accordingly
 		String perm = spaceElement.getAttribute("add-benchmark-perm");
 		if (!perm.equals("") && !perm.equals(null))

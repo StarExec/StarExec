@@ -1,34 +1,54 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*, org.starexec.data.security.*, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-/**
+		int spaceId=Integer.parseInt(request.getParameter("id"));
 		int userId = SessionUtil.getUserId(request);
-		int spaceId = Integer.parseInt(request.getParameter("id"));
-		request.setAttribute("nameLength", R.SPACE_NAME_LEN);
-		request.setAttribute("descLength", R.SPACE_DESC_LEN);
-		Space s = null;
-		if (Permissions.canUserSeeSpace(spaceId,userId)) {
-			s = Spaces.get(spaceId);
-		}
-		
-		if (s != null) {
-			if (!Permissions.get(userId, spaceId).isLeader()) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the leaders of this space can edit details about it.");
+
+		request.setAttribute("userId",userId);
+		request.setAttribute("isAdmin",Users.isAdmin(userId));
+
+		List<Space> communities = Communities.getAll();
+		StringBuilder communityIdList = new StringBuilder();
+
+
+		if(communities.size() > 0){
+		        for(Space c : communities){
+			        communityIdList.append(c.getId());
+				communityIdList.append(",");
 			}
-		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Space does not exist or is restricted");
+			communityIdList.delete(communityIdList.length() -1,communityIdList.length());
+			request.setAttribute("communityIdList",communityIdList.toString());
+
 		}
-**/
-	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given space id was in an invalid format");
-	}  catch (Exception e) {
+		else{
+			request.setAttribute("communityIdList","1");
+			}
+
+		if (SpaceSecurity.canUserSeeSpace(spaceId,userId)==0 && spaceId > 0) {
+			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
+			StringBuilder stringChain=new StringBuilder();
+			for (Integer id : idChain) {
+				stringChain.append(id);
+				stringChain.append(",");
+			}
+			stringChain.delete(stringChain.length()-1,stringChain.length());
+			request.setAttribute("spaceChain",stringChain.toString());
+		} else {
+			request.setAttribute("spaceChain","1");
+
+		}
+
+	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
 <star:template title="edit permissions" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, edit/spacePermissions, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
+	<span id="isAdmin" value="${isAdmin}"></span>
+	<span id="spaceChain" value="${spaceChain}"></span>
+	<span id="communityIdList" value="${communityIdList}"></span>
 	<div id="explorer">
 		<h3>spaces</h3>
 		 
@@ -161,9 +181,14 @@
 			<hr>
 
 			<table>
-				<tr>
+				<tr id="leaderStatusRow">
 					<td><h2>leader</h2></td>
-					<td><input type="checkbox" id= "leaderStatus"></input></td>
+					<td><input type="button" id="leaderStatus" value="promote"></input></td>
+				</tr>
+				
+				<tr id="communityLeaderStatusRow">
+					<td><h2>leader</h2></td>
+					<td><span id= "communityLeaderStatus" class="ui-icon ui-icon-check"></span></td>
 				</tr>
 			</table>
 						
@@ -180,7 +205,11 @@
 			<div id="dialog-confirm-update" title="confirm update">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
-		</fieldset>	
+		</fieldset>
+		
+		<fieldset id="permissionActions">
+			<a id="exploreSpaces" href="/${starexecRoot}/secure/explore/spaces.jsp">return to space explorer</a>
+		</fieldset>
 
 	</div>	
 	

@@ -216,6 +216,14 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 		
+		final Runnable clearJobSpaceClosure = new RobustRunnable("clearJobSpaceClosure") {
+			@Override
+			protected void dorun() {
+				log.info("clearJobSpaceClosure (periodic)");
+				
+			}
+		};
+		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
 		
@@ -234,9 +242,9 @@ public class Starexec implements ServletContextListener {
 		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
 
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
+		    
+		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
-		
-
 	}
 	
 }

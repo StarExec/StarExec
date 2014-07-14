@@ -354,6 +354,7 @@ CREATE TABLE set_assoc (
 CREATE TABLE bench_assoc (
 	space_id INT NOT NULL, 
 	bench_id INT NOT NULL,
+	order_id INT NOT NULL AUTO_INCREMENT UNIQUE KEY,
 	PRIMARY KEY (space_id, bench_id),
 	CONSTRAINT bench_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT bench_assoc_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
@@ -522,8 +523,18 @@ CREATE TABLE unvalidated_benchmarks (
 -- Author: Eric Burns
 CREATE TABLE job_spaces (
 	id INT NOT NULL AUTO_INCREMENT,
-	name VARCHAR(128),
+	name VARCHAR(255),
 	PRIMARY KEY (id)
+);
+
+-- The set of all associations between each job space and it's descendants
+CREATE TABLE job_space_closure (
+	ancestor INT NOT NULL,
+	descendant INT NOT NULL,
+	last_used TIMESTAMP NOT NULL,
+	UNIQUE KEY (ancestor, descendant),
+	CONSTRAINT job_space_ancestor FOREIGN KEY (ancestor) REFERENCES job_spaces(id) ON DELETE CASCADE,
+	CONSTRAINT job_space_descendant FOREIGN KEY (descendant) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
 
 

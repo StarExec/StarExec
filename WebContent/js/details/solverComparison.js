@@ -1,17 +1,14 @@
-var pairTable;
-var pairType;
+var comparisonTable;
 var jobId;
 var spaceId;
-var configId;
+var c1;
+var c2;
 var useWallclock=true;
 $(document).ready(function(){
 	jobId = getParameterByName('id');
 	spaceId=getParameterByName('sid');
-	configId=getParameterByName("configid");
-	pairType=getParameterByName("type");
-	$('.id_100 ').attr('selected','selected');
-	$('#pairFilter option[value='+pairType+']').attr('selected','selected');
-
+	c1=getParameterByName("c1");
+	c2=getParameterByName("c2");
 	initUI();
 	initDataTables();
 	setTimeButtonText();	
@@ -40,23 +37,8 @@ function initUI(){
 	$(".changeTime").click(function() {
 		useWallclock=!useWallclock;
 		setTimeButtonText();
-		pairTable.fnDraw(false);
+		comparisonTable.fnDraw(false);
 	});
-	$('#pairTbl tbody').delegate("a", "click", function(event) {
-		event.stopPropogation();
-	});
-
-	
-	//Set up row click to send to pair details page
-	$("#pairTbl tbody").delegate("tr", "click", function(){
-		var pairId = $(this).find('input').val();
-		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
-	});
-	$("#pairFilter").change(function(){
-		pairTable.fnDraw(false);
-	});
-	attachSortButtonFunctions();
-
 }
 
 /**
@@ -64,8 +46,8 @@ function initUI(){
  */
 function initDataTables(){
 	extendDataTableFunctions();
-	// Job pairs table
-	pairTable=$('#pairTbl').dataTable( {
+
+	comparisonTable=$('#comparisonTable').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
@@ -74,12 +56,9 @@ function initDataTables(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
-	setSortTable(pairTable);
-	$("#pairTbl thead").click(function(){
-		resetSortButtons();
-	});
+	
 	// Change the filter so that it only queries the server when the user stops typing
-	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
+	$('#comparisonTbl').dataTable().fnFilterOnDoneTyping();
 	
 }
 
@@ -111,14 +90,8 @@ function extendDataTableFunctions(){
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	curType = $('#pairFilter').find(":selected").attr("value");
-	if (sortOverride!=null) {
-		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
-		aoData.push( { "name": "sort_dir", "value":isASC() } );
-
-	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock,
+			sSource + jobId + "/comparisons/pagination/"+spaceId+"/"+c1+"/"+c2+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){
@@ -126,7 +99,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						showMessage('error', "failed to get the next page of results; please try again", 5000);
 						break;
 					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
+						showMessage('error', "you do not have sufficient permissions to view data for this job", 5000);
 						break;
 					default:
 						// Replace the current page with the newly received page

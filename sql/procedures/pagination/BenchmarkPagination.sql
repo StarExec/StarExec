@@ -63,6 +63,64 @@ CREATE PROCEDURE GetNextPageOfBenchmarks(IN _startingRecord INT, IN _recordsPerP
 				-- Shrink the results to only those required for the next page of benchmarks
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
+			
+		ELSEIF (_colSortedOn = 2) THEN
+			IF _sortASC = TRUE THEN
+				SELECT 	benchmarks.id AS id,
+						benchmarks.name AS name,
+						benchmarks.description AS description,
+						deleted,
+						recycled,
+						
+						user_id,
+						benchType.name							AS benchTypeName,
+						benchType.description					AS benchTypeDescription
+				
+						-- Exclude benchmarks that aren't in the specified space
+
+				FROM 	benchmarks
+					JOIN	bench_assoc AS assoc ON benchmarks.id = assoc.bench_id	AND assoc.space_id=_spaceId	
+					LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+
+
+				
+				-- Query Filtering
+				WHERE 	(benchmarks.name 									LIKE	CONCAT('%', _query, '%')
+				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'))
+								
+										
+
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY assoc.order_id ASC
+					 
+				-- Shrink the results to only those required for the next page of benchmarks
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	benchmarks.id AS id,
+						benchmarks.name AS name,
+						benchmarks.description AS description,
+						deleted,
+						recycled,
+						user_id,
+						benchType.name							AS benchTypeName,
+						benchType.description					AS benchTypeDescription
+				
+				FROM 	benchmarks
+					-- Exclude benchmarks that aren't in the specified space
+						JOIN	bench_assoc AS assoc ON benchmarks.id = assoc.bench_id	AND assoc.space_id=_spaceId		
+						LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+						
+				-- Query Filtering
+				WHERE 	(benchmarks.name 									LIKE	CONCAT('%', _query, '%')
+				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'))
+						
+				-- Order results depending on what column is being sorted on
+				ORDER BY assoc.order_id DESC
+					 
+				-- Shrink the results to only those required for the next page of benchmarks
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
 		ELSE
 			IF _sortASC = TRUE THEN
 				SELECT 	benchmarks.id AS id,

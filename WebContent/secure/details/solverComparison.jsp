@@ -6,9 +6,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
-		int configId=Integer.parseInt(request.getParameter("configid"));
-		
-		String type=request.getParameter("type");
+		int configId=Integer.parseInt(request.getParameter("c1"));
+		int configId2=Integer.parseInt(request.getParameter("c2"));
 		Job j=null;
 		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
 		
@@ -17,14 +16,19 @@
 		}
 		
 		
-		if(j != null && JobSecurity.isValidGetPairType(type)) {	
+		if(j != null) {	
 			Space s=Spaces.getJobSpace(jobSpaceId);
 			request.setAttribute("space",s);
-			request.setAttribute("configId",configId);
+			request.setAttribute("configId1",configId);
+			request.setAttribute("configId2",configId2);
+
 			Solver solver =Solvers.getSolverByConfig(configId,true);
+			Solver solver2 =Solvers.getSolverByConfig(configId2,true);
+
 			request.setAttribute("solver",solver);
+			request.setAttribute("solver2",solver2);
+
 			request.setAttribute("jobId", jobId);
-			request.setAttribute("pairType",type);
 			
 		} else {
 				if (Jobs.isJobDeleted(jobId)) {
@@ -40,41 +44,32 @@
 	}
 %>
 
-<star:template title="Job Pairs for ${solver.name} in ${space.name} hierarchy" js="util/sortButtons, lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Comparison of ${solver.name} and ${solver2.name} in ${space.name} hierarchy" js="lib/jquery.dataTables.min, details/shared, details/solverComparison, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
-	<span style="display:none" id="configId" value="${configId}" > </span>
-	<span style="display:none" id="pairType" value="${pairType}" > </span>
-	<fieldset id="#pairTblField">	
-	<legend>job pairs</legend>	
-	<fieldset id="pairActions" class="tableActions">
+	<span style="display:none" id="configId1" value="${configId}" > </span>
+	<span style="display:none" id="configId2" value="${configId2}" > </span>
+	
+	<fieldset id="#comparisonTblField">	
+	<legend>comparison</legend>	
+	<fieldset id="actions" class="tableActions">
 		<button class="changeTime">Use CPU Time</button>
-		<button asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
-		<button asc="true" class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
-		<label for="pairFilter">filter pairs by:</label>
-		<select id="pairFilter">
-			<option value="all">all</option>
-			<option value="solved">solved</option>
-			<option value="wrong">wrong</option>
-			<option value="resource">resource out</option>		
-			<option value="unknown">unknown</option>		
-			<option value="incomplete">incomplete</option>
-		</select>
-
+	
 	</fieldset>
-		<table id="pairTbl" class="shaded">
+		<table id="comparisonTable" class="shaded">
 			<thead>
 				<tr>
 					<th id="benchHead">benchmark</th>
-					<th id="solverHead">solver</th>
-					<th id="configHead">config</th>
-					<th>status</th>
-					<th>time</th>
-					<th>result</th>	
+					<th>solver 1 time</th>
+					<th>solver 2 time</th>	
+					<th>time difference (1-2)</th>
+					<th>solver 1 result</th>
+					<th>solver 2 result</th>
+					<th>same result</th>
 				</tr>		
 			</thead>	
 			<tbody>
-				<!-- This will be populated by the job pair pagination feature -->
+				<!-- This will be populated by the pagination feature -->
 			</tbody>
 		</table>
 	</fieldset>	

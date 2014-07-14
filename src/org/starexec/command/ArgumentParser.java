@@ -348,9 +348,21 @@ class ArgumentParser {
 			}
 			return con.pauseOrResumeJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), pause);
 		} catch (Exception e) {
-			return Status.ERROR_SERVER; 
+			return Status.ERROR_INTERNAL; 
 		}
 
+	}
+	
+	protected int rerunPair(HashMap<String,String> commandParams) {
+		try {
+			int valid=Validator.isValidRerunRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			return con.rerunPair(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+		} catch (Exception e) {
+			return Status.ERROR_INTERNAL; 
+		}
 	}
 	
 	/**
