@@ -124,7 +124,7 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
-				<!-- <button id="compareSolvers">compare selected solvers</button>-->
+				<button id="compareSolvers">compare selected solvers</button>
 			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>
