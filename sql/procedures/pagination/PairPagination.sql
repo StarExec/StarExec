@@ -489,8 +489,8 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
 				
-				-- Order results depending on what column is being sorted on
-				ORDER BY completion_id ASC
+				-- Doing a negative DESC is the same as ASC but with null values last
+				ORDER BY -completion_id DESC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -524,7 +524,10 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%'))
-				ORDER BY completion_id DESC
+				
+				-- Doing a negative ASC is the same as DESC but with null values last
+
+				ORDER BY -completion_id ASC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;
