@@ -1222,7 +1222,9 @@ public class Jobs {
 	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
 			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock) {
 		List<JobPair> pairs1=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId1);
+		pairs1=JobPairs.filterPairsByType(pairs1, "complete");
 		List<JobPair> pairs2=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId2);
+		pairs2=JobPairs.filterPairsByType(pairs2, "complete");
 		List<SolverComparison> comparisons=new ArrayList<SolverComparison>();
 		HashMap<Integer,JobPair> benchesToPairs=new HashMap<Integer,JobPair>();
 		for (JobPair jp : pairs1) {
@@ -1237,7 +1239,7 @@ public class Jobs {
 				}
 			}
 		}
-		//TODO: Do we need to filter by type here		
+		
 		totals[0]=comparisons.size();
 		List<SolverComparison> returnList=new ArrayList<SolverComparison>();
 		comparisons=JobPairs.filterComparisons(comparisons, searchQuery);

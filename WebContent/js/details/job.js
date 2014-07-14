@@ -108,6 +108,7 @@ function initSpaceExplorer() {
 		id = data.rslt.obj.attr("id");
 		name = data.rslt.obj.attr("name");
 		$("#spaceName").text($('.jstree-clicked').text());
+		$("#displayJobSpaceID").text("id  = "+id);
 		reloadTables(id);
 	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
 }
