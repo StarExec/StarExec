@@ -73,7 +73,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			-- this checks to see if the job is done and sets its completion id if so.
 			-- It checks by trying to find exactly 1 pair (for efficiency) that is not yet complete
 			IF (SELECT COUNT(*) FROM 
-				(select id from job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (statusCode<7 || statusCode>18) LIMIT 1) as theCount)=0 THEN
+				(select id from job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (status_code<7 || status_code>18) LIMIT 1) as theCount)=0 THEN
 				UPDATE jobs SET completed=CURRENT_TIMESTAMP WHERE id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId);
 			END IF;
 		END IF;
