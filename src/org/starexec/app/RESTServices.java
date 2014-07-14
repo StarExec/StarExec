@@ -503,6 +503,9 @@ public class RESTServices {
 	public String rerunJobPair(@PathParam("pairid") int pairId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JobPair pair=JobPairs.getPair(pairId);
+		if (pair==null) {
+			return gson.toJson(SecurityStatusCodes.ERROR_INVALID_PARAMS);
+		}
 		int jobId=pair.getJobId();
 		int status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
 		

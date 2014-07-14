@@ -7,6 +7,7 @@ import org.apache.http.HttpResponse;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 class JsonHandler {
 	/**
 	 * Given an HttpRespone with a JsonElement in its content, returns
@@ -25,5 +26,20 @@ class JsonHandler {
 		JsonParser parser=new JsonParser();
 		return parser.parse(builder.toString());
 		
+	}
+	/**
+	 * Gets an integer code as encoded in json
+	 * @param response
+	 * @return
+	 */
+	protected static Integer getIntegerJsonCode(HttpResponse response) {
+		try {
+
+			JsonElement jsonE=JsonHandler.getJsonString(response);
+			JsonPrimitive p=jsonE.getAsJsonPrimitive();
+			return p.getAsInt();
+		} catch (Exception e) {
+			return -1;
+		}
 	}
 }
