@@ -15,10 +15,12 @@ import org.apache.log4j.Logger;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
+import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.GridEngineUtil;
+import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
 
@@ -47,7 +49,12 @@ public class CreatePermanentQueue extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
-
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserMakeQueue(userId);
+		if (status!=0) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid permissions");
+			return;
+		}
 		String queue_name = (String)request.getParameter(name);
 		//String node_name = (String)request.getParameter(Nodes);
 		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));

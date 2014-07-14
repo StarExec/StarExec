@@ -139,6 +139,11 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
+	private void getPairDetailsTest(){
+		Assert.assertTrue(con.canGetPage("secure/details/job.jsp?id="+job.getJobPairs().get(0).getId()));
+	}
+	
+	@Test
 	private void getJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}

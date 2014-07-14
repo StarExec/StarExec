@@ -12,7 +12,7 @@ public class QueueSecurity {
 	 * @return 0 if the operation is allowed and a status from SecurityStatusCodes if not
 	 */
 	
-	public static int canUserMakeQueuePermanent(int userId) {
+	public static int canUserMakeQueue(int userId) {
 		if (!Users.isAdmin(userId)){
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}

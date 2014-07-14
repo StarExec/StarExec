@@ -3827,7 +3827,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserMakeQueuePermanent(userId);
+		int status=QueueSecurity.canUserMakeQueue(userId);
 		if (status!=0) {
 			return gson.toJson(status);
 		}

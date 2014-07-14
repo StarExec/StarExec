@@ -15,9 +15,11 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
+import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
 
@@ -50,7 +52,14 @@ public class CreateQueue extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+		int userId=SessionUtil.getUserId(request);
+
+		int status=QueueSecurity.canUserMakeQueue(userId);
+		if (status!=0) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid permissions");
+			return;
+		}
 		String queueCode = request.getParameter(code);
 		QueueRequest req = Requests.getQueueRequest(queueCode);
 		
