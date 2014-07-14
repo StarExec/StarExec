@@ -66,7 +66,16 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 		SET status_code=_statusCode
 		WHERE id=_jobPairId ;
 		IF (_statusCode>6 AND _statusCode<19) THEN
+			
+
+			
 			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
+			-- this checks to see if the job is done and sets its completion id if so.
+			-- It checks by trying to find exactly 1 pair (for efficiency) that is not yet complete
+			IF (SELECT COUNT(*) FROM 
+				(select id from job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (statusCode<7 || statusCode>18) LIMIT 1) as theCount)=0 THEN
+				UPDATE jobs SET completed=CURRENT_TIMESTAMP WHERE id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId);
+			END IF;
 		END IF;
 	END //
 	

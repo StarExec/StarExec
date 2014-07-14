@@ -198,6 +198,7 @@ CREATE TABLE jobs (
 	name VARCHAR(64),
 	queue_id INT,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	completed TIMESTAMP,
 	pre_processor INT,
 	post_processor INT,		
 	description TEXT,

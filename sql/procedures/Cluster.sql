@@ -420,6 +420,7 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 			jobs.user_id,
 			jobs.queue_id,
 			jobs.created, 
+			jobs.completed,
 			jobs.description, 
 			jobs.deleted,
 			jobs.primary_space,
