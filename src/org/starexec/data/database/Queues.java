@@ -694,8 +694,7 @@ public class Queues {
 	
 	
 	public static List<Queue> getQueuesForUser(int userId) {
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			return getQueues(0);
 		} else {
 			

@@ -90,8 +90,7 @@ public class SessionUtil {
 	public static Permission getPermission(HttpSession session, int spaceId) {
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
 		int userId = SessionUtil.getUserId(session);
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
+		if (Users.isAdmin(userId)) {
 			log.debug("Returning admin user permissions");
 			Permission p = Permissions.getFullPermission();
 			p.setId(userId);

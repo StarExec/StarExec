@@ -12,7 +12,7 @@ try {
 
 
 	User u = Users.get(userId);
-	if (! u.getRole().equals("admin")) {
+	if (!Users.isAdmin(userId)) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 	} else {
 		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);

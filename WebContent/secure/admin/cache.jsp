@@ -4,19 +4,25 @@
 <%
 
 	try {
-		request.setAttribute("solverType1",CacheType.CACHE_SOLVER.getVal());
-		request.setAttribute("solverType2",CacheType.CACHE_SOLVER_REUPLOAD.getVal());
-		
-		request.setAttribute("benchmarkType1",CacheType.CACHE_BENCHMARK.getVal());
-		
-		request.setAttribute("jobType1",CacheType.CACHE_JOB_OUTPUT.getVal());
-		request.setAttribute("jobType2",CacheType.CACHE_JOB_CSV.getVal());
-		request.setAttribute("jobType3",CacheType.CACHE_JOB_CSV_NO_IDS.getVal());
-		request.setAttribute("jobType4",CacheType.CACHE_JOB_PAIR.getVal());
-		
-		request.setAttribute("spaceType1",CacheType.CACHE_SPACE.getVal());
-		request.setAttribute("spaceType2",CacheType.CACHE_SPACE_XML.getVal());
-		request.setAttribute("spaceType3",CacheType.CACHE_SPACE_HIERARCHY.getVal());
+		int userId = SessionUtil.getUserId(request);
+		if (Users.isAdmin(userId)) {
+			request.setAttribute("solverType1",CacheType.CACHE_SOLVER.getVal());
+			request.setAttribute("solverType2",CacheType.CACHE_SOLVER_REUPLOAD.getVal());
+			
+			request.setAttribute("benchmarkType1",CacheType.CACHE_BENCHMARK.getVal());
+			
+			request.setAttribute("jobType1",CacheType.CACHE_JOB_OUTPUT.getVal());
+			request.setAttribute("jobType2",CacheType.CACHE_JOB_CSV.getVal());
+			request.setAttribute("jobType3",CacheType.CACHE_JOB_CSV_NO_IDS.getVal());
+			request.setAttribute("jobType4",CacheType.CACHE_JOB_PAIR.getVal());
+			
+			request.setAttribute("spaceType1",CacheType.CACHE_SPACE.getVal());
+			request.setAttribute("spaceType2",CacheType.CACHE_SPACE_XML.getVal());
+			request.setAttribute("spaceType3",CacheType.CACHE_SPACE_HIERARCHY.getVal());
+		} else {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
+		}
+
 
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "There was an error displaying the page");

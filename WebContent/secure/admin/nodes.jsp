@@ -7,17 +7,16 @@
 <%		
 	try {
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		//List<Queue> queues = Queues.getAllAdmin();
-		List<Queue> queues = Queues.getAllNonPermanent();
 		
-		Date latest = Cluster.getLatestNodeDate();
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-		String date1 = sdf.format(latest);
 		
-		if (!u.getRole().equals("admin")) {
+		if (!Users.isAdmin(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} else {
+			List<Queue> queues = Queues.getAllNonPermanent();
+			
+			Date latest = Cluster.getLatestNodeDate();
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+			String date1 = sdf.format(latest);
 			request.setAttribute("queues", queues);
 			request.setAttribute("defaultQueueName", R.DEFAULT_QUEUE_NAME);
 			request.setAttribute("latest", date1);

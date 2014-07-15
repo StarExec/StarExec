@@ -6,11 +6,9 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
+		if (!Users.isAdmin(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} else {
-			
-		}		
+		}	
 		
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");

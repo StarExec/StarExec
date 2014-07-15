@@ -5,11 +5,16 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	List<Space> spaces = Spaces.GetAllSpaces();
-	List<WorkerNode> nodes = Cluster.getAllNodes();
-	//List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();
-	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-	request.setAttribute("nodes", nodes);
+	if (Users.isAdmin(userId)) {
+		List<Space> spaces = Spaces.GetAllSpaces();
+		List<WorkerNode> nodes = Cluster.getAllNodes();
+		//List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();
+		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+		request.setAttribute("nodes", nodes);
+	} else {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
+	}
+	
 			
 } catch (NumberFormatException nfe) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
