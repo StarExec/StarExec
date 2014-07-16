@@ -242,7 +242,11 @@
 						<tr title="the date/time the job was created on StarExec">
 							<td>created</td>			
 							<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
-						</tr>					
+						</tr>			
+						<tr title="the date/time the job was completed">
+							<td>completed</td>			
+							<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.completeTime}" /></td>
+						</tr>			
 						<tr title="the preprocessor that was used to process benchmarks for this job">
 							<td>preprocessor</td>
 							<c:if test="${not empty job.preProcessor}">			

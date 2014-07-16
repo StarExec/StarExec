@@ -145,6 +145,27 @@ public class Jobs {
 		
 		return success;
 	}
+	
+		public static boolean setAllPairsToPending(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemovePairsFromComplete(?)}");
+			procedure.setInt(1, jobId);
+			procedure.executeUpdate();
+			
+			Jobs.setPairStatusByJob(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal(),con);
+			
+			return Jobs.removeCachedJobStats(jobId);
+		} catch (Exception e) {
+			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
  	
 	
 	/**
@@ -480,6 +501,8 @@ public class Jobs {
 				j.setQueue(Queues.get(con,results.getInt("queue_id")));
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setCreateTime(results.getTimestamp("created"));
+				j.setCompleteTime(results.getTimestamp("completed"));
+
 				j.setPreProcessor(Processors.get(con,results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con,results.getInt("post_processor")));
 				j.setDescription(results.getString("description"));
@@ -554,6 +577,8 @@ public class Jobs {
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));	
+				j.setCompleteTime(results.getTimestamp("completed"));
+
 				j.setSeed(results.getLong("seed"));
 				jobs.add(j);				
 			}			
@@ -592,7 +617,9 @@ public class Jobs {
 				j.setName(results.getString("name"));		
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));		
+				j.setCreateTime(results.getTimestamp("created"));
+				j.setCompleteTime(results.getTimestamp("completed"));
+
 				j.setSeed(results.getLong("seed"));
 
 				jobs.add(j);				
@@ -713,7 +740,9 @@ public class Jobs {
 				j.setDescription(results.getString("description"));	
 				j.setSeed(results.getLong("seed"));
 
-				j.setCreateTime(results.getTimestamp("created"));				
+				j.setCreateTime(results.getTimestamp("created"));	
+				j.setCompleteTime(results.getTimestamp("completed"));
+
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
@@ -1715,7 +1744,7 @@ public class Jobs {
 				j.setDeleted(results.getBoolean("deleted"));
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
-
+				j.setCompleteTime(results.getTimestamp("completed"));
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
@@ -1788,6 +1817,8 @@ public class Jobs {
 					j.setDescription(results.getString("description"));	
 
 					j.setCreateTime(results.getTimestamp("created"));
+					j.setCompleteTime(results.getTimestamp("completed"));
+
 					j.setLiteJobPairStats(liteJobPairStats);
 					jobs.add(j);	
 				}
@@ -3537,12 +3568,10 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static boolean setPairStatusByJob(int jobId, int statusCode) {
+	private static boolean setPairStatusByJob(int jobId, int statusCode, Connection con) {
 		log.debug("setting pairs to status "+statusCode);
-		Connection con=null;
 		CallableStatement procedure=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL SetPairsToStatus(?,?)}");
 			procedure.setInt(1,jobId);
 			procedure.setInt(2,statusCode);
@@ -3551,12 +3580,10 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error("setPairStatusByJob says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		return false;
 	}
-	
 	
 	/**
 	 * This function makes older jobs, which have path info but no job space information
@@ -3838,7 +3865,9 @@ public class Jobs {
 					j.setName(results.getString("name"));	
 					j.setPrimarySpace(results.getInt("primary_space"));
 					j.setDescription(results.getString("description"));				
-					j.setCreateTime(results.getTimestamp("created"));		
+					j.setCreateTime(results.getTimestamp("created"));	
+					j.setCompleteTime(results.getTimestamp("completed"));
+
 					j.setSeed(results.getLong("seed"));
 
 					jobs.add(j);

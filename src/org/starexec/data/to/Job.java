@@ -27,7 +27,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	private Queue queue = null;
 	private long seed = 0;
 	@Expose private Timestamp createTime;
-	
+	@Expose private Timestamp completeTime;
 	// this is the root JOB SPACE for this job. It is NOT a space from the spaces table.
 	//Exception: Before a job is created, this field is used to store the space the job was created in
 	@Expose private int primarySpace; 
@@ -245,6 +245,20 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 
 	public long getSeed() {
 		return seed;
+	}
+
+	/**
+	 * @param completeTime the completeTime to set
+	 */
+	public void setCompleteTime(Timestamp completeTime) {
+		this.completeTime = completeTime;
+	}
+
+	/**
+	 * @return the completeTime
+	 */
+	public Timestamp getCompleteTime() {
+		return completeTime;
 	}
 
 	
