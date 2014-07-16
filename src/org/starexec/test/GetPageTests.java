@@ -144,7 +144,7 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getPairsInSpaceTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?configid="+job.getJobPairs().get(0).getConfiguration().getId()
+		Assert.assertTrue(con.canGetPage("secure/details/pairsInSpace.jsp?configid="+job.getJobPairs().get(0).getConfiguration().getId()
 				+"&sid="+job.getPrimarySpace()+"&id="+job.getId()));
 	}
 	

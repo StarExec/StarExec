@@ -622,8 +622,6 @@ public class Queues {
 				j.setId(results.getInt("jobs.id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));				
-				//j.setDescription(results.getString("description"));				
-				//j.setCreateTime(results.getTimestamp("created"));	
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setSeed(results.getLong("seed"));
 				j.getQueue().setId(queueId);
@@ -846,6 +844,38 @@ public class Queues {
 		}
 
 		return null;		
+	}
+	
+	/**
+	 * Returns the number of job pairs enqueued in the given queue
+	 * @param queueId The queue in question
+	 * @return The integer number of jobs, or null on failure
+	 */
+
+	public static Integer getSizeOfQueue(int queueId, int userId) {
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();		
+			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobsByUser(?)}");					
+			procedure.setInt(1, queueId);					
+			 results = procedure.executeQuery();
+
+			Integer qSize = -1;
+			while(results.next()){
+				qSize = results.getInt("count");	
+			}							
+			return qSize;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return null;
 	}
 	
 	/**

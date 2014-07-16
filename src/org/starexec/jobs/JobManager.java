@@ -3,6 +3,7 @@ package org.starexec.jobs;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -155,7 +156,8 @@ public abstract class JobManager {
 			initMainTemplateIf();
 
 			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-
+			HashMap<Integer,Integer> usersToPairCounts=new HashMap<Integer,Integer>();
+			
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (Job job : joblist) {
 				// jobTemplate is a version of mainTemplate customized for this job
@@ -163,7 +165,10 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-
+				int userId=job.getUserId();
+				if (!usersToPairCounts.containsKey(userId)) {
+					usersToPairCounts.put(userId,0);
+				}
 				//Post processor
 				Processor processor = job.getPostProcessor();
 				if (processor == null) {
@@ -216,7 +221,20 @@ public abstract class JobManager {
 					break; // out of while (!schedule.isEmpty())
 
 				Iterator<SchedulingState> it = schedule.iterator();
+				
+				
+				
+				for (Integer uid : usersToPairCounts.keySet()) {
+					usersToPairCounts.put(uid,Queues.getSizeOfQueue(q.getId(),uid));
+					
+				}
+				
+				int min=Collections.min(usersToPairCounts.keySet());
+				int max=Collections.max(usersToPairCounts.keySet());
+				
+				boolean excludeUsers=((max-R.NUM_JOB_PAIRS_AT_A_TIME)>min); // will we exclude users who have too many pairs this time
 
+				
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
 
@@ -234,6 +252,13 @@ public abstract class JobManager {
 
 					int i = 0;
 					
+					if (excludeUsers) {
+						int curCount=usersToPairCounts.get(s.job.getUserId());
+						//skip if this user has many more pairs than some other user
+						if (curCount>(max-R.NUM_JOB_PAIRS_AT_A_TIME)) {
+							continue;
+						}
+					}
 					
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 
