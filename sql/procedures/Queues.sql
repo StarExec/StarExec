@@ -54,7 +54,7 @@ CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	
 -- Gets the number of enqueued job pairs for a given queue and user
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobsByUser;
-CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT, IN _user INT)
+CREATE PROCEDURE GetNumEnqueuedJobsByUser(IN _queueId INT, IN _user INT)
 	BEGIN
 		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
                 WHERE job_pairs.status_code=2 AND jobs.queue_id = _queueId AND jobs.user_id=_user;

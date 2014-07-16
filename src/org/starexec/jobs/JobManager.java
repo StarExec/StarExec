@@ -234,7 +234,8 @@ public abstract class JobManager {
 				
 				boolean excludeUsers=((max-R.NUM_JOB_PAIRS_AT_A_TIME)>min); // will we exclude users who have too many pairs this time
 
-				
+				log.debug("the max pairs by user = "+max);
+				log.debug("the min pairs by user = "+min);
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
 
@@ -253,9 +254,11 @@ public abstract class JobManager {
 					int i = 0;
 					
 					if (excludeUsers) {
+						
 						int curCount=usersToPairCounts.get(s.job.getUserId());
 						//skip if this user has many more pairs than some other user
 						if (curCount>(max-R.NUM_JOB_PAIRS_AT_A_TIME)) {
+							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
 							continue;
 						}
 					}
