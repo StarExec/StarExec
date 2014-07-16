@@ -103,6 +103,13 @@ public class JobSecurity {
 		return 0;
 	}
 	
+	public static int canUserRerunAllPairs(int jobId, int userId) {
+		if (!Jobs.isJobComplete(jobId)) {
+			return SecurityStatusCodes.ERROR_JOB_INCOMPLETE;
+		}
+		return canUserRerunPairs(jobId, userId);
+	}
+	
 	/**
 	 * Checks to see if the given user has permission to pause the given job
 	 * @param jobId The ID of the job being checked

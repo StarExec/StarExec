@@ -1018,6 +1018,27 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 	
+	
+	/**
+	 * Reruns all the pairs in the given job 
+	 * @param id The ID of the job to rerun pairs for
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunallpairs/{id}")
+	@Produces("application/json")	
+	public String rerunAllJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunAllPairs(id, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		return Jobs.setAllPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	
 	@POST
 	@Path("/test/runTests")
 	@Produces("appliation/json")
