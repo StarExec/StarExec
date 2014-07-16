@@ -2335,6 +2335,27 @@ public class Jobs {
 		return success;
 	}
 	
+	public static boolean setAllPairsToPending(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemovePairsFromComplete(?)}");
+			procedure.setInt(1, jobId);
+			procedure.executeUpdate();
+			
+			Jobs.setPairStatusByJob(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal(),con);
+			
+			return Jobs.removeCachedJobStats(jobId);
+		} catch (Exception e) {
+			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 	public static boolean rerunPair(int jobId, int pairId) {
 		log.debug("got a request to rerun pair id = "+pairId);
 		boolean success=true;
@@ -3549,9 +3570,8 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static boolean setPairStatusByJob(int jobId, int statusCode) {
+	private static boolean setPairStatusByJob(int jobId, int statusCode, Connection con) {
 		log.debug("setting pairs to status "+statusCode);
-		Connection con=null;
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
@@ -3563,7 +3583,6 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error("setPairStatusByJob says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		return false;

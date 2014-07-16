@@ -10,13 +10,14 @@
 		
 		Job j=null;
 		if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
-			
+			boolean isComplete=Jobs.isJobComplete(jobId);
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			for (Status.StatusCode code : filteredCodes) {
 				code.setCount(Jobs.countPairsByStatus(jobId,code.getVal()));
 			}
 			request.setAttribute("codes",filteredCodes);
 			request.setAttribute("jobId",jobId);
+			request.setAttribute("isComplete", isComplete);
 			request.setAttribute("timelessCount",Jobs.countTimelessPairs(jobId));
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
@@ -52,9 +53,11 @@
 			<fieldset id="actionField">
 				<legend>actions</legend>
 				<ul id="actionList">
-					<li><a id="rerunPairs" >rerun pairs with selected status</a></li>
-					<li><a id="rerunTimelessPairs" title="reruns all completed pairs and resource-out pairs in this job that have a wallclock or cpu time of 0">rerun pairs with time 0 (${timelessCount} pairs)</a></li>
-					
+					<li><a class="rerun" id="rerunPairs" >rerun pairs with selected status</a></li>
+					<li><a class="rerun" id="rerunTimelessPairs" title="reruns all completed pairs and resource-out pairs in this job that have a wallclock or cpu time of 0">rerun pairs with time 0 (${timelessCount} pairs)</a></li>
+					<c:if test="${isComplete}">
+						<li><a class="rerun" id="rerunAllPairs" title="reruns every pair in this job">rerun all pairs</a></li>
+					</c:if>
 				</ul>
 			</fieldset>	
 		</div>	

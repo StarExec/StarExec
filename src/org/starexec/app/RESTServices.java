@@ -353,7 +353,29 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Reruns all the pairs in the given job that have the given status code and have 0 as their runtime
+	 * Reruns all the pairs in the given job 
+	 * @param id The ID of the job to rerun pairs for
+	 * @param statusCode The status code that all the pairs to be rerun have curently
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunallpairs/{id}")
+	@Produces("application/json")	
+	public String rerunAllJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunAllPairs(id, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		return Jobs.setTimelessPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	
+	
+	/**
+	 * Reruns all the pairs in the given job that have 0 as their runtime
 	 * @param id The ID of the job to rerun pairs for
 	 * @param statusCode The status code that all the pairs to be rerun have curently
 	 * @param request
