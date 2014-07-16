@@ -355,7 +355,6 @@ public class RESTServices {
 	/**
 	 * Reruns all the pairs in the given job 
 	 * @param id The ID of the job to rerun pairs for
-	 * @param statusCode The status code that all the pairs to be rerun have curently
 	 * @param request
 	 * @return 0 on success or an error code on failure
 	 */

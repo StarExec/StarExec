@@ -13,6 +13,8 @@
 	<link rel="stylesheet" href="/${starexecRoot}/css/html5.css" />	
 	<link rel="stylesheet" href="/${starexecRoot}/css/jqueryui/jquery-ui-1.8.16.starexec.css" />
 	<link rel="stylesheet" href="/${starexecRoot}/css/master.css" />
+	<link rel="stylesheet" href="/${starexecRoot}/css/common/dataTable.css" />
+	
 	<c:if test="${not empty css}">	
 		<c:forEach var="cssFile" items="${fn:split(css, ',')}">
 			<link rel="stylesheet" href="/${starexecRoot}/css/${fn:trim(cssFile)}.css"/>
@@ -23,7 +25,7 @@
 		
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script> 
 	<![endif]-->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
 	
 	<script src="/${starexecRoot}/js/lib/jquery-ui-1.8.16.custom.min.js"></script>
 	

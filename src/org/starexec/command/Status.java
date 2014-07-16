@@ -41,9 +41,10 @@ public class Status {
 	public static int ERROR_BAD_TRAVERSAL_TYPE=-30;
 	public static int ERROR_ID_AND_USER=-31;
 	public static int ERROR_NO_USER_PRIMS=-32;
-	public static int ERROR_INTERNAL=33;
-	public static int ERROR_INVALID_MEMORY=34;
-	public static int ERROR_SEED=35;
+	public static int ERROR_INTERNAL=-33;
+	public static int ERROR_INVALID_MEMORY=-34;
+	public static int ERROR_SEED=-35;
+	public static int ERROR_JOB_INCOMPLETE=-36;
 	//error messages
 	private static HashMap<Integer,String> messages=new HashMap<Integer,String>();
 	static {
@@ -83,6 +84,7 @@ public class Status {
 		messages.put(ERROR_INTERNAL, "Internal error while handling command");
 		messages.put(ERROR_INVALID_MEMORY, "Memory is measured in gigabytes, and it can not be negative");
 		messages.put(ERROR_SEED, "Seed values must be integers");
+		messages.put(ERROR_JOB_INCOMPLETE, "The job is not yet complete");
 	}
 	
 	public static String getStatusMessage(int code) {

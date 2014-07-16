@@ -831,6 +831,8 @@ function initDataTables(){
         "iDisplayLength": 10,
         "bSort": true,
         "bPaginate": true,
+		"pagingType"    : "full_numbers",
+
         "sAjaxSource"	: starexecRoot+"services/jobs/",
         "sServerMethod" : "POST",
         "fnServerData" : fnStatsPaginationHandler
@@ -879,6 +881,8 @@ function initDataTables(){
         "iDisplayStart"	: 0,
         "iDisplayLength": 10,
         "bServerSide"	: true,
+		"pagingType"    : "full_numbers",
+
         "sAjaxSource"	: starexecRoot+"services/jobs/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 

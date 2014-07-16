@@ -3574,7 +3574,6 @@ public class Jobs {
 		log.debug("setting pairs to status "+statusCode);
 		CallableStatement procedure=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL SetPairsToStatus(?,?)}");
 			procedure.setInt(1,jobId);
 			procedure.setInt(2,statusCode);

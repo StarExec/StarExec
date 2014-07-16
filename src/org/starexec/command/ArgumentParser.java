@@ -365,6 +365,18 @@ class ArgumentParser {
 		}
 	}
 	
+	protected int rerunJob(HashMap<String,String> commandParams) {
+		try {
+			int valid=Validator.isValidRerunRequest(commandParams);
+			if (valid<0) {
+				return valid;
+			}
+			return con.rerunJob(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+		} catch (Exception e) {
+			return Status.ERROR_INTERNAL; 
+		}
+	}
+	
 	/**
 	 * Deletes a primitive on StarExec
 	 * @param commandParams A HashMap of key/value pairs given by the user at the command line

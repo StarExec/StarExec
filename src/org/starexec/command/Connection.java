@@ -847,6 +847,39 @@ public class Connection {
 	}
 	
 	/**
+	 * Reruns the job with the given ID
+	 * @param JOBID
+	 * @return
+	 */
+	
+	public int rerunJob(Integer jobID) {
+		try {
+			String URL=baseURL+R.URL_RERUNJOB;
+			URL=URL.replace("{id}", jobID.toString());
+			HttpPost post=new HttpPost(URL);
+			post=(HttpPost) setHeaders(post);
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
+			HttpResponse response=client.execute(post);
+			setSessionIDIfExists(response.getAllHeaders());
+			int code=JsonHandler.getIntegerJsonCode(response);
+			response.getEntity().getContent().close();
+			if (code==0) {
+				return 0;
+			} else if (code==3) {
+				return Status.ERROR_JOB_INCOMPLETE;
+			} else if (code>1) {
+
+				return Status.ERROR_PERMISSION_DENIED;
+			} else {
+				return Status.ERROR_SERVER;
+			}
+			
+		} catch (Exception e) {
+			return Status.ERROR_SERVER; 
+		}
+	}
+	
+	/**
 	 * Reruns the job pair with the given ID
 	 * @param pairID
 	 * @return
