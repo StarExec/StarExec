@@ -36,7 +36,7 @@ function setTimeButtonText(){
 
 function refreshPanels(){
 	for (i=0;i<panelArray.length;i++) {
-		panelArray[i].api().ajax.reload(null,false);
+		panelArray[i].api().ajax.reload(null,true);
 	}
 }
 
@@ -44,7 +44,7 @@ function refreshStats(id){
 	//summaryTable.fnProcessingIndicator(true);
 	summaryTable.api().ajax.reload(function() {
         updateGraphs();
-	},false);
+	},true);
 	
 }
 
