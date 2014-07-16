@@ -229,8 +229,8 @@ public abstract class JobManager {
 					
 				}
 				
-				int min=Collections.min(usersToPairCounts.keySet());
-				int max=Collections.max(usersToPairCounts.keySet());
+				int min=Collections.min(usersToPairCounts.values());
+				int max=Collections.max(usersToPairCounts.values());
 				
 				boolean excludeUsers=((max-R.NUM_JOB_PAIRS_AT_A_TIME)>min); // will we exclude users who have too many pairs this time
 
