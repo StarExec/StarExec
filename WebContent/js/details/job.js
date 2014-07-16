@@ -9,7 +9,6 @@ var useWallclock=true;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
-	
 	//sets up buttons and so on
 	initUI();
 	
@@ -37,13 +36,16 @@ function setTimeButtonText(){
 
 function refreshPanels(){
 	for (i=0;i<panelArray.length;i++) {
-		panelArray[i].fnReloadAjax(null,null,true,curSpaceId,false);
+		panelArray[i].api().ajax.reload(null,false);
 	}
 }
 
 function refreshStats(id){
-	summaryTable.fnProcessingIndicator(true);
-	summaryTable.fnReloadAjax(null,null,true,id,true);
+	//summaryTable.fnProcessingIndicator(true);
+	summaryTable.api().ajax.reload(function() {
+        updateGraphs();
+	},false);
+	
 }
 
 function createDownloadRequest(item,type,returnIds,getCompleted) {
@@ -145,7 +147,7 @@ function reloadTables(id) {
 		summaryTable.fnProcessingIndicator(true);
 		
 		pairTable.fnProcessingIndicator(true);
-		summaryTable.fnReloadAjax(null,null,true,id,true);
+		refreshStats(id);
 		
 		initializePanels();
 
@@ -944,69 +946,7 @@ function extendDataTableFunctions(){
 	    return this;
 	};
 	
-	//allows refreshing a table that is using client-side processing (for the summary table)
-	//modified to work for the summary table-- this version of fnReloadAjax should not be used
-	//anywhere else
-	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallback, bStandingRedraw, id,doUpdate )
-	{
-	    if ( sNewSource !== undefined && sNewSource !== null ) {
-	        oSettings.sAjaxSource = sNewSource;
-	    }
-	 
-	    // Server-side processing should just call fnDraw
-	    if ( oSettings.oFeatures.bServerSide ) {
-	        this.fnDraw();
-	        return;
-	    }
-	 
-	    this.oApi._fnProcessingDisplay( oSettings, true );
-	    var that = this;
-	    var iStart = oSettings._iDisplayStart;
-	    var aData = [];
-	 
-	    this.oApi._fnServerParams( oSettings, aData );
-	 
-	    oSettings.fnServerData.call( oSettings.oInstance, oSettings.sAjaxSource, aData, function(json) {
-	    	//if we aren't on the same space anymore, don't update the table with this data.
-	    	if (id!=curSpaceId) {
-	    		return;
-	    	}
-	        /* Clear the old information from the table */
-	        that.oApi._fnClearTable( oSettings );
-	 
-	        /* Got the data - add it to the table */
-	        var aData =  (oSettings.sAjaxDataProp !== "") ?
-	            that.oApi._fnGetObjectDataFn( oSettings.sAjaxDataProp )( json ) : json;
-	 
-	        for ( var i=0 ; i<aData.length ; i++ )
-	        {
-	            that.oApi._fnAddData( oSettings, aData[i] );
-	        }
-	         
-	        oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-	 
-	        that.fnDraw();
-	 
-	        if ( bStandingRedraw === true )
-	        {
-	            oSettings._iDisplayStart = iStart;
-	            that.oApi._fnCalculateEnd( oSettings );
-	            that.fnDraw( false );
-	        }
-	 
-	        that.oApi._fnProcessingDisplay( oSettings, false );
-	        
-	        /* Callback user function - for event handlers etc */
-	        if ( typeof fnCallback == 'function' && fnCallback !== null )
-	        {
-	            fnCallback( oSettings );
-	        }
-	        if (doUpdate) {
-		        updateGraphs();
-	        } 
-	    }, oSettings );
-	    
-	};
+	
 }
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
@@ -1040,7 +980,6 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 	outSpaceId=curSpaceId;
-
 	$.post(  
 			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock,
 			aoData,
@@ -1085,7 +1024,6 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	var jobId = getParameterByName('id');
 	if (curSpaceId==undefined) {
 		return;
 	}
