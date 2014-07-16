@@ -358,12 +358,17 @@ public class BatchUtil {
 			Node solverNode = listOfSolvers.item(i);
 			if (solverNode.getNodeType() == Node.ELEMENT_NODE){
 				Element solverElement = (Element)solverNode;
-				String id = solverElement.getAttribute("id");
-				Boolean canSee = Permissions.canUserSeeSolver(Integer.parseInt(id), userId);
-				log.info("Solver Id = " + id + ", User can see = " + canSee);
+				String idstr = solverElement.getAttribute("id");
+				Integer id = Integer.parseInt(idstr);
+				Boolean canSee = Permissions.canUserSeeSolver(id, userId);
+				log.info("Solver Id = " + idstr + ", User can see = " + canSee);
 				if (!canSee){
-					errorMessage = "You do not have access to a solver with id = " + id;
+					errorMessage = "You do not have access to a solver with id = " + idstr;
 					return null;
+				}
+				if (Solvers.get(id) == null) {
+				    errorMessage = "The solver with id " + idstr + " is either deleted or recycled.";
+				    return null;
 				}
 			}
 			else{

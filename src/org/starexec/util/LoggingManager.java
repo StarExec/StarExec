@@ -27,12 +27,12 @@ public class LoggingManager {
 	}
 	
 	public static boolean loggerExists(String className) {
-		 Enumeration<Logger> logs=Logger.getRootLogger().getLoggerRepository().getCurrentLoggers();
+		 Enumeration logs=Logger.getRootLogger().getLoggerRepository().getCurrentLoggers();
 		 
 		 while (logs.hasMoreElements()) {
 			
 			 
-			 Logger log=logs.nextElement();
+		     Logger log=(Logger)logs.nextElement();
 			 log.debug("found this logger = "+log.getName());
 			 if (log.getName().equals(className)) {
 				 return true;
