@@ -858,8 +858,9 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobsByUser(?)}");					
+			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobsByUser(?,?)}");					
 			procedure.setInt(1, queueId);					
+			procedure.setInt(2, userId);
 			 results = procedure.executeQuery();
 
 			Integer qSize = -1;
