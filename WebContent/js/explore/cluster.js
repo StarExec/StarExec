@@ -92,7 +92,7 @@ function initDataTables() {
 	jobPairTable = $('#details').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "bFilter"		: false,
         "sAjaxSource"	: starexecRoot+"services/cluster/",

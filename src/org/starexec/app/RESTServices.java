@@ -1104,7 +1104,7 @@ public class RESTServices {
 	@POST
 	@Path("/edit/user/{attr}/{userId}/{val}")
 	@Produces("application/json")
-	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request) {	
+	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request,@Context HttpServletResponse response) {	
 		boolean success = false;
 		int requestUserId=SessionUtil.getUserId(request);
 		log.debug("requestUserId" + requestUserId);
@@ -1142,6 +1142,13 @@ public class RESTServices {
 			if (success) {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 			}
+		} else if (attribute.equals("pagesize")) {
+			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
+			//if (success) {
+			//	Cookie c=new Cookie("datatables-page-size",newValue);
+			//	c.setPath("/");
+			//	response.addCookie(c);
+			//}
 		}
 
 		// Passed validation AND Database update successful

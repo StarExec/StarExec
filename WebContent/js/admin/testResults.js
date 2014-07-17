@@ -15,7 +15,7 @@ function initUI(){
 	testTable=$('#tableTests').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bSort": true,
         "bPaginate": true,
         "sAjaxSource"	: starexecRoot+"services/testResults/pagination/"+$("#sequenceName").attr("value"),

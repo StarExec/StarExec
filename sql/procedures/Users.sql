@@ -364,6 +364,22 @@ CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
 		WHERE users.id = _id;
 	END //
 
+DROP PROCEDURE IF EXISTS GetDefaultPageSize;
+CREATE PROCEDURE GetDefaultPageSize(IN _id INT)
+	BEGIN
+		SELECT default_page_size AS pageSize
+		FROM users
+		WHERE id=_id;
+	END //
+	
+DROP PROCEDURE IF EXISTS SetDefaultPageSize;
+CREATE PROCEDURE SetDefaultPageSize(IN _id INT, IN _size INT)
+	BEGIN
+		UPDATE users
+		SET default_page_size=_size
+		WHERE id=_id;
+	END //
+	
 -- Sets the user disk quota limit to the value of _newBytes
 -- for the given user
 -- Author: Todd Elvers

@@ -11,6 +11,7 @@ CREATE TABLE users (
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
 	disk_quota BIGINT NOT NULL,
+	default_page_size INT NOT NULL DEFAULT 10,
 	PRIMARY KEY (id),
 	UNIQUE KEY (email)
 );

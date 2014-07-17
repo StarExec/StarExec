@@ -94,7 +94,7 @@ $(document).ready(function(){
 	solverTable = $('#rsolvers').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
@@ -105,7 +105,7 @@ $(document).ready(function(){
 	benchTable = $('#rbenchmarks').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",

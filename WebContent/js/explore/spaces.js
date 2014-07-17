@@ -1696,7 +1696,7 @@ function initDataTables(){
 	userTable = $('#users').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"pagingType"    : "full_numbers",
 
@@ -1707,7 +1707,7 @@ function initDataTables(){
 	solverTable = $('#solvers').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"pagingType"    : "full_numbers",
 
@@ -1718,7 +1718,7 @@ function initDataTables(){
 	benchTable = $('#benchmarks').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"pagingType"    : "full_numbers",
 
@@ -1736,7 +1736,7 @@ function initDataTables(){
 	jobTable = $('#jobs').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"pagingType"    : "full_numbers",
 
@@ -1753,7 +1753,7 @@ function initDataTables(){
 	spaceTable = $('#spaces').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"pagingType"    : "full_numbers",
 		"sAjaxSource"	: starexecRoot+"services/space/",

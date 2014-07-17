@@ -830,7 +830,7 @@ function initDataTables(){
 	summaryTable=$('#solveTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bSort": true,
         "bPaginate": true,
 		"pagingType"    : "full_numbers",
@@ -881,7 +881,7 @@ function initDataTables(){
 	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
 		"pagingType"    : "full_numbers",
 

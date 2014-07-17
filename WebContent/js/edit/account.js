@@ -86,7 +86,7 @@ function initUI(){
 	editable("lastname");
 	editable("institution");
 	editable("diskquota");
-	
+	editable("pagesize");
 	// If the client's picture is clicked on, pop it up in a JQuery modal window
 	$('#showPicture').click(function(event){
 		popUp($(this).attr('enlarge'));
@@ -253,11 +253,7 @@ function initButtonIcons(){
  */
 function refreshUserWebsites(){
 	location.reload();
-	//we should NOT do this, because it leaves us vulnerable to XSS attacks
-	/*
-	$.getJSON(starexecRoot+'services/websites/user/-1', processWebsiteData).error(function(){
-		showMessage('error',"Internal error displaying user websites",5000);
-	});*/
+
 }
 
 /**
@@ -272,18 +268,6 @@ function togglePlusMinus(addSiteButton){
 }
 
 
-/**
- * Extracts, formats, and injects the websites returned from the server into the client's DOM 
- 
-function processWebsiteData(jsonData) {
-	// Ensures the websites table is empty
-	$('#websites tbody tr').remove();
-	
-	// Build the HTML to display the website and a delete button, then inject that into the client's DOM
-	$.each(jsonData, function(i, site) {
-		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');
-	});
-}*/
 
 /**
  * Allows for a given field to be editable

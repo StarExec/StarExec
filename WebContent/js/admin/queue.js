@@ -159,7 +159,7 @@ function initDataTables() {
 		"bPaginate"		: false,
 		//"bAutoWidth"	: false,
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',

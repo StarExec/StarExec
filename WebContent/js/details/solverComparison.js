@@ -50,7 +50,7 @@ function initDataTables(){
 	comparisonTable=$('#comparisonTable').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/jobs/",
         "sServerMethod" : "POST",

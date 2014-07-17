@@ -377,7 +377,7 @@ function initDataTables(){
 	requests = $('#qreserves').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',
@@ -386,7 +386,7 @@ function initDataTables(){
 	reserved = $('#qreserved').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',
@@ -395,7 +395,7 @@ function initDataTables(){
 	historic = $('#qhistoric').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',

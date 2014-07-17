@@ -101,6 +101,27 @@
 		</fieldset>
 	</c:if>
 	<fieldset>
+		<legend>site settings</legend>
+		<table id="siteSettingTable">
+			<thead>
+				<tr>
+					<th>setting</th>
+					<th>current value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>table entries per page</td>
+					<td type="int" id="editpagesize">${pagesize}</td>
+				</tr>
+			
+			
+			</tbody>
+		
+		</table>
+		
+	</fieldset>
+	<fieldset>
 		<legend>associated websites</legend>
 		<table id="websites" class="shaded">
 			<thead>
