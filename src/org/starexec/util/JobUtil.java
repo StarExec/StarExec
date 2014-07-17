@@ -85,6 +85,7 @@ public class JobUtil {
 		log.info("# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
 		log.info("# of JobPairs = " + listOfJobPairs.getLength());
+		log.warn("this is a test, delete if you find this");
 		
 		String name = "";//name variable to check
 		
@@ -94,14 +95,15 @@ public class JobUtil {
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				name = jobElement.getAttribute("name");
+				log.info("delete me if you find me");
 				if (name == null) {
-					log.debug("Name not found");
+					log.info("Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
 					return null;
 				}
 				log.debug("Job Name = " + name);
 				if (name.length()<1){
-					log.debug("Name was not long enough");
+					log.info("Name was not long enough");
 					errorMessage = name + "is not a valid name.  It must have one characters.";
 					return null;
 				}
@@ -118,6 +120,7 @@ public class JobUtil {
 			Node jobNode = listOfJobElements.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
+				log.info("about to create job from element");
 				Integer id = createJobFromElement(userId, spaceId, jobElement);
 				if (id < 0) {
 				    this.jobCreationSuccess = false;
@@ -130,6 +133,22 @@ public class JobUtil {
 		return jobIds;
 	}
 	
+
+    /**
+     * Helper function, gets element by name assuming that there is only one such descendent element
+     * WARNING : don't use this method in general, intended for a very specific case
+     *@param e the parent element
+     *@param name the element name
+     *@return The child element with the given name
+     *@author Julio Cervantes
+     **/
+    private static Element getElementByName(Element e, String name){
+	return (Element) e.getElementsByTagName(name).item(0);
+    }
+
+    private static boolean hasElement(Element e, String name){
+	return (e.getElementsByTagName(name).getLength() > 0);
+    }
 	/**
 	 * Creates a single job from an XML job element.
 	 * @param userId the ID of the user creating the job
@@ -147,20 +166,47 @@ public class JobUtil {
 		    errorMessage = "Error: The job should have a unique name in the space.";
 		    return -1;
 		}
+
+		Element jobAttributes = JobUtil.getElementByName(jobElement,"JobAttributes");
 		
+		log.info("jobAttributes name: " + jobAttributes.getTagName());
+	        
+		log.info("has fortune element: " + JobUtil.hasElement(jobAttributes,"fortune"));
+		log.info("has description element: " + JobUtil.hasElement(jobAttributes,"description"));
+		
+
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
-		job.setDescription(jobElement.getAttribute("description"));
+		log.info("name set");
+		if(JobUtil.hasElement(jobAttributes,"description")){
+		    Element description = JobUtil.getElementByName(jobAttributes,"description");
+		    job.setDescription(description.getAttribute("value"));
+		}
+		else{
+		    job.setDescription("no description");
+		}
+	    
+	    
+		//job.setDescription(jobElement.getAttribute("description"));
+		log.info("description set");
 		job.setUserId(userId);
 		
+		log.info("job id about to be set");
 		String jobId = jobElement.getAttribute("id");
 		if(jobId != "" && jobId != null){
+		    log.info("job id set: " + jobId);
 		    job.setId(Integer.parseInt(jobId));
+		    
 		}
+
+		log.info("preProcId about to be set");
 		
 		Integer preProcId = null;
-		String preProc = jobElement.getAttribute("preproc-id");
-		if (preProc != null && !preProc.equals("")){
+
+		if(JobUtil.hasElement(jobAttributes,"preproc-id")){
+		    
+		    Element preProcEle = JobUtil.getElementByName(jobAttributes,"preproc-id");
+		    String preProc = preProcEle.getAttribute("value");
 		    preProcId = Integer.parseInt(preProc);
 		    if (preProcId != null && preProcId > 0) {
 			Processor p = Processors.get(preProcId);
@@ -170,9 +216,13 @@ public class JobUtil {
 		    }
 		}
 		
+		log.info("postProcId about to be set");
+
 		Integer postProcId = null;
-		String postProc = jobElement.getAttribute("postproc-id");
-		if (postProc != null && !postProc.equals("")){
+		
+		if (JobUtil.hasElement(jobAttributes,"postproc-id")){
+		    Element postProcEle = JobUtil.getElementByName(jobAttributes,"postproc-id");
+		    String postProc = postProcEle.getAttribute("value");
 		    postProcId = Integer.parseInt(postProc);
 		    if (postProcId != null && postProcId > 0) {
 			Processor p = Processors.get(postProcId);
@@ -182,20 +232,37 @@ public class JobUtil {
 		    }
 		}
 		
-		int queueId = Integer.parseInt(jobElement.getAttribute("queue-id"));
+
+		log.info("queueId about to be set");
+
+		Element queueIdEle = JobUtil.getElementByName(jobAttributes,"queue-id");
+		int queueId = Integer.parseInt(queueIdEle.getAttribute("value"));
 		Queue queue = Queues.get(queueId);
 		job.setQueue(queue);
 		job.setPrimarySpace(spaceId);
 		
 		String rootName=Spaces.getName(spaceId);
-		int wallclock = Integer.parseInt(jobElement.getAttribute("wallclock-timeout"));
-		int cpuTimeout = Integer.parseInt(jobElement.getAttribute("cpu-timeout"));
-		double memLimit = Double.parseDouble(jobElement.getAttribute("mem-limit"));
+
+		log.info("clock and mem limits about to be set");
+
+		Element wallclockEle = JobUtil.getElementByName(jobAttributes,"wallclock-timeout");
+		log.info("wallclock-timeout: " + wallclockEle.getAttribute("value"));
+		int wallclock = Integer.parseInt(wallclockEle.getAttribute("value"));
+
+		Element cpuTimeoutEle = JobUtil.getElementByName(jobAttributes, "cpu-timeout");
+		log.info("cpu-timeout: " + cpuTimeoutEle.getAttribute("value"));
+		int cpuTimeout = Integer.parseInt(cpuTimeoutEle.getAttribute("value"));
+
+		Element memLimitEle = JobUtil.getElementByName(jobAttributes, "mem-limit");
+		log.info("mem-limit: " + memLimitEle.getAttribute("value"));
+		double memLimit = Double.parseDouble(memLimitEle.getAttribute("value"));
 		
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
+
+		log.info("nodelist about to be set");
 				
-		NodeList jobPairs = jobElement.getChildNodes();
+		NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 		for (int i = 0; i < jobPairs.getLength(); i++) {
 		    Node jobPairNode = jobPairs.item(i);
 		    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
@@ -235,17 +302,31 @@ public class JobUtil {
 		    }
 		}
 		
+		log.info("job pairs set");
+
 		if (job.getJobPairs().size() == 0) {
 		    // No pairs in the job means something is wrong; error out
 		    errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 		    return -1;
 		}
 		
+		log.info("job pair size nonzero");
+
+		boolean startPaused = false;
+
+		if(JobUtil.hasElement(jobAttributes,"start-paused")){
+		    Element startPausedEle = JobUtil.getElementByName(jobAttributes,"start-paused");
+		    log.info("startPausedEle: " + startPausedEle.getAttribute("value"));
+		    startPaused = Boolean.valueOf(startPausedEle.getAttribute("value"));
+		}
+
+		log.info("start-paused: " + (new Boolean(startPaused).toString()));
+
 		boolean submitSuccess = Jobs.add(job, spaceId);
 		if (!submitSuccess){
 		    errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
 		    return -1;
-		} else if (Boolean.valueOf(jobElement.getAttribute("start-paused"))) {
+		} else if (startPaused) {
 		    Jobs.pause(job.getId());
 		}
 		return job.getId();

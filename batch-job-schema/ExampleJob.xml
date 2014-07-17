@@ -1,11 +1,16 @@
+
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<tns:Jobs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.starexec.org/starexec/public/batchJobSchema.xsd batchJobSchema.xsd" xmlns:tns="https://www.starexec.org/starexec/public/batchJobSchema.xsd">
-<Job name="Example Job Name" cpu-timeout="10" wallclock-timeout="20" queue-id="1" mem-limit="1.0" start-paused="true" description="This example job runs solver config 1 with 6 benchmarks on all.q.">
-<JobPair bench-id="1" config-id="1"></JobPair>
-<JobPair bench-id="3" config-id="1"></JobPair>
-<JobPair bench-id="4" config-id="1"></JobPair>
-<JobPair bench-id="5" config-id="1"></JobPair>
-<JobPair bench-id="8" config-id="1"></JobPair>
-<JobPair bench-id="9" config-id="1"></JobPair>
+<tns:Jobs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchJobSchema.xsd batchJobSchema.xsd" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchJobSchema.xsd">
+<Job name="another test">
+<JobAttributes>
+<description value="just a test"/>
+<queue-id value="1"/>
+<start-paused value="true"/>
+<cpu-timeout value="2"/>
+<wallclock-timeout value="2"/>
+<mem-limit value="2.0"/>
+</JobAttributes>
+<JobPair bench-id="11" bench-name="add4.smt2" config-id="3" config-name="default" job-space-id="1" job-space-path="cvc" solver-id="3" solver-name="CVC4-SMT-COMP-2010"/>
+<JobPair bench-id="12" bench-name="add5.smt2" config-id="3" config-name="default" job-space-id="1" job-space-path="cvc" solver-id="3" solver-name="CVC4-SMT-COMP-2010"/>
 </Job>
 </tns:Jobs>
