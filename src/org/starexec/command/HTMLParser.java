@@ -7,7 +7,6 @@ package org.starexec.command;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.servlet.http.Cookie;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicNameValuePair;
@@ -172,20 +171,7 @@ public class HTMLParser {
 
 		return value.replace("\"", "").split(",");
 	}
-	/**
-	 * Given a list of cookies and the name of a cookie, returns the value of that cookie
-	 * @param cookies
-	 * @param cookieName
-	 * @return The value of the requested cookie or null if it doesn't exist
-	 */
-	public static String extractCookie(Cookie[] cookies, String cookieName) {
-		for (Cookie c : cookies ) {
-			if (c.getName().equals(cookieName)) {
-				return c.getValue();
-			}
-		}
-		return null;
-	}
+	
 	
 	/**
 	 * Given the headers of an HttpResponse and the name of a cookie,
