@@ -37,6 +37,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.jobs.JobManager;
+import org.starexec.util.DOMHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -134,21 +135,7 @@ public class JobUtil {
 	}
 	
 
-    /**
-     * Helper function, gets element by name assuming that there is only one such descendent element
-     * WARNING : don't use this method in general, intended for a very specific case
-     *@param e the parent element
-     *@param name the element name
-     *@return The child element with the given name
-     *@author Julio Cervantes
-     **/
-    private static Element getElementByName(Element e, String name){
-	return (Element) e.getElementsByTagName(name).item(0);
-    }
 
-    private static boolean hasElement(Element e, String name){
-	return (e.getElementsByTagName(name).getLength() > 0);
-    }
 	/**
 	 * Creates a single job from an XML job element.
 	 * @param userId the ID of the user creating the job
@@ -167,19 +154,14 @@ public class JobUtil {
 		    return -1;
 		}
 
-		Element jobAttributes = JobUtil.getElementByName(jobElement,"JobAttributes");
-		
-		log.info("jobAttributes name: " + jobAttributes.getTagName());
-	        
-		log.info("has fortune element: " + JobUtil.hasElement(jobAttributes,"fortune"));
-		log.info("has description element: " + JobUtil.hasElement(jobAttributes,"description"));
+		Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
 		
 
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
 		log.info("name set");
-		if(JobUtil.hasElement(jobAttributes,"description")){
-		    Element description = JobUtil.getElementByName(jobAttributes,"description");
+		if(DOMHelper.hasElement(jobAttributes,"description")){
+		    Element description = DOMHelper.getElementByName(jobAttributes,"description");
 		    job.setDescription(description.getAttribute("value"));
 		}
 		else{
@@ -203,9 +185,9 @@ public class JobUtil {
 		
 		Integer preProcId = null;
 
-		if(JobUtil.hasElement(jobAttributes,"preproc-id")){
+		if(DOMHelper.hasElement(jobAttributes,"preproc-id")){
 		    
-		    Element preProcEle = JobUtil.getElementByName(jobAttributes,"preproc-id");
+		    Element preProcEle = DOMHelper.getElementByName(jobAttributes,"preproc-id");
 		    String preProc = preProcEle.getAttribute("value");
 		    preProcId = Integer.parseInt(preProc);
 		    if (preProcId != null && preProcId > 0) {
@@ -220,8 +202,8 @@ public class JobUtil {
 
 		Integer postProcId = null;
 		
-		if (JobUtil.hasElement(jobAttributes,"postproc-id")){
-		    Element postProcEle = JobUtil.getElementByName(jobAttributes,"postproc-id");
+		if (DOMHelper.hasElement(jobAttributes,"postproc-id")){
+		    Element postProcEle = DOMHelper.getElementByName(jobAttributes,"postproc-id");
 		    String postProc = postProcEle.getAttribute("value");
 		    postProcId = Integer.parseInt(postProc);
 		    if (postProcId != null && postProcId > 0) {
@@ -235,7 +217,7 @@ public class JobUtil {
 
 		log.info("queueId about to be set");
 
-		Element queueIdEle = JobUtil.getElementByName(jobAttributes,"queue-id");
+		Element queueIdEle = DOMHelper.getElementByName(jobAttributes,"queue-id");
 		int queueId = Integer.parseInt(queueIdEle.getAttribute("value"));
 		Queue queue = Queues.get(queueId);
 		job.setQueue(queue);
@@ -245,15 +227,15 @@ public class JobUtil {
 
 		log.info("clock and mem limits about to be set");
 
-		Element wallclockEle = JobUtil.getElementByName(jobAttributes,"wallclock-timeout");
+		Element wallclockEle = DOMHelper.getElementByName(jobAttributes,"wallclock-timeout");
 		log.info("wallclock-timeout: " + wallclockEle.getAttribute("value"));
 		int wallclock = Integer.parseInt(wallclockEle.getAttribute("value"));
 
-		Element cpuTimeoutEle = JobUtil.getElementByName(jobAttributes, "cpu-timeout");
+		Element cpuTimeoutEle = DOMHelper.getElementByName(jobAttributes, "cpu-timeout");
 		log.info("cpu-timeout: " + cpuTimeoutEle.getAttribute("value"));
 		int cpuTimeout = Integer.parseInt(cpuTimeoutEle.getAttribute("value"));
 
-		Element memLimitEle = JobUtil.getElementByName(jobAttributes, "mem-limit");
+		Element memLimitEle = DOMHelper.getElementByName(jobAttributes, "mem-limit");
 		log.info("mem-limit: " + memLimitEle.getAttribute("value"));
 		double memLimit = Double.parseDouble(memLimitEle.getAttribute("value"));
 		
@@ -314,8 +296,8 @@ public class JobUtil {
 
 		boolean startPaused = false;
 
-		if(JobUtil.hasElement(jobAttributes,"start-paused")){
-		    Element startPausedEle = JobUtil.getElementByName(jobAttributes,"start-paused");
+		if(DOMHelper.hasElement(jobAttributes,"start-paused")){
+		    Element startPausedEle = DOMHelper.getElementByName(jobAttributes,"start-paused");
 		    log.info("startPausedEle: " + startPausedEle.getAttribute("value"));
 		    startPaused = Boolean.valueOf(startPausedEle.getAttribute("value"));
 		}

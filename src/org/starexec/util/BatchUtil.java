@@ -34,6 +34,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.util.DOMHelper;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -45,7 +46,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Handles the generation and validation of XML representations of space hierarchies
- * @author Benton McCune
+ * @author Benton McCune. changes: Julio Cervantes
  * 
  */
 public class BatchUtil {
@@ -125,6 +126,7 @@ public class BatchUtil {
 		log.debug("Generating Space XML for space " + space.getId());
 		
 		Element spaceElement = doc.createElement("Space");
+		Element attrsElement = doc.createElement("SpaceAttributes");
 	
 		Attr id = doc.createAttribute("id");
 		id.setValue(Integer.toString(space.getId()));
@@ -134,94 +136,152 @@ public class BatchUtil {
 		name.setValue(space.getName());
 		spaceElement.setAttributeNode(name);
 		
-		Attr description = doc.createAttribute("description");
-		description.setValue(space.getDescription());
-		spaceElement.setAttributeNode(description);
+		Element descriptionElement = doc.createElement("description");
 
-		// New attributes to space XML elements
-		// @author Tim Smith
+		Attr description = doc.createAttribute("value");
+		description.setValue(space.getDescription());
+		descriptionElement.setAttributeNode(description);
+
+		attrsElement.appendChild(descriptionElement);
+
+		Element stickyLeadersElement = doc.createElement("sticky-leaders");
 		
 		// Sticky leaders attribute : sticky-leaders
-		Attr stickyLeaders = doc.createAttribute("sticky-leaders");
+		Attr stickyLeaders = doc.createAttribute("value");
 		stickyLeaders.setValue(Boolean.toString(space.isStickyLeaders()));
-		spaceElement.setAttributeNode(stickyLeaders);
+		stickyLeadersElement.setAttributeNode(stickyLeaders);
+
+		attrsElement.appendChild(stickyLeadersElement);
 		
+
+		Element inheritUsersElement = doc.createElement("inherit-users");
+
 		// TODO: Find out if the users from the parent space are inherited (inherit-users)
-		Attr inheritUsers = doc.createAttribute("inherit-users");
+		Attr inheritUsers = doc.createAttribute("value");
 		Boolean iu = false;
 		// Cheap implementation, just assume false
 		inheritUsers.setValue(iu.toString());
-		spaceElement.setAttributeNode(inheritUsers);
+		inheritUsersElement.setAttributeNode(inheritUsers);
+
+		attrsElement.appendChild(inheritUsersElement);
+
+		Element lockedElement = doc.createElement("locked");
 		
 		// Locked attribute
-		Attr locked = doc.createAttribute("locked");
+		Attr locked = doc.createAttribute("value");
 		locked.setValue(Boolean.toString(space.isLocked()));
-		spaceElement.setAttributeNode(locked);
+		lockedElement.setAttributeNode(locked);
 		
+		attrsElement.appendChild(lockedElement);
 		
 		Permission perm = space.getPermission();
 		
 		//Permissions attributes - only set when false since default is all true
 		if (!perm.canAddBenchmark()) {
-			Attr addBenchPerm = doc.createAttribute("add-benchmark-perm");
-			addBenchPerm.setValue("false");
-			spaceElement.setAttributeNode(addBenchPerm);
+
+		    Element addBenchPermElement = doc.createElement("add-benchmark-perm");
+
+		    Attr addBenchPerm = doc.createAttribute("value");
+		    addBenchPerm.setValue("false");
+		    addBenchPermElement.setAttributeNode(addBenchPerm);
+
+		    attrsElement.appendChild(addBenchPermElement);
 		}
 		
 		if (!perm.canAddJob()) {
-			Attr addJobPerm = doc.createAttribute("add-job-perm");
-			addJobPerm.setValue("false");
-			spaceElement.setAttributeNode(addJobPerm);
+
+		    Element addJobPermElement = doc.createElement("add-job-perm");
+
+		    Attr addJobPerm = doc.createAttribute("value");
+		    addJobPerm.setValue("false");
+		    addJobPermElement.setAttributeNode(addJobPerm);
+
+		    attrsElement.appendChild(addJobPermElement);
 		}
 		
 		if (!perm.canAddSolver()){
-			Attr addSolverPerm = doc.createAttribute("add-solver-perm");
-			addSolverPerm.setValue("false");
-			spaceElement.setAttributeNode(addSolverPerm);
+
+		    Element addSolverPermElement = doc.createElement("add-solver-perm");
+
+		    Attr addSolverPerm = doc.createAttribute("value");
+		    addSolverPerm.setValue("false");
+		    addSolverPermElement.setAttributeNode(addSolverPerm);
+
+		    attrsElement.appendChild(addSolverPermElement);
 		}
 		
 		if (!perm.canAddSpace()){
-			Attr addSpacePerm = doc.createAttribute("add-space-perm");
-			addSpacePerm.setValue("false");
-			spaceElement.setAttributeNode(addSpacePerm);
+		    Element addSpacePermElement = doc.createElement("add-space-perm");
+
+		    Attr addSpacePerm = doc.createAttribute("value");
+		    addSpacePerm.setValue("false");
+		    addSpacePermElement.setAttributeNode(addSpacePerm);
+
+		    attrsElement.appendChild(addSpacePermElement);
 		}
 		
 		if (!perm.canAddUser()){
-			Attr addUserPerm = doc.createAttribute("add-user-perm");
-			addUserPerm.setValue("false");
-			spaceElement.setAttributeNode(addUserPerm);
+		    Element addUserPermElement = doc.createElement("add-user-perm");
+
+		    Attr addUserPerm = doc.createAttribute("value");
+		    addUserPerm.setValue("false");
+		    addUserPermElement.setAttributeNode(addUserPerm);
+
+		    attrsElement.appendChild(addUserPermElement);
 		}
 		
 		if (!perm.canRemoveBench()) {
-			Attr remBenchmarkPerm = doc.createAttribute("rem-benchmark-perm");
-			remBenchmarkPerm.setValue("false");
-			spaceElement.setAttributeNode(remBenchmarkPerm);
+		    Element remBenchPermElement = doc.createElement("rem-benchmark-perm");
+
+		    Attr remBenchmarkPerm = doc.createAttribute("value");
+		    remBenchmarkPerm.setValue("false");
+		    remBenchPermElement.setAttributeNode(remBenchmarkPerm);
+
+		    attrsElement.appendChild(remBenchPermElement);
 		}
 		
 		if (!perm.canRemoveJob()) {
-			Attr remJobPerm = doc.createAttribute("rem-job-perm");
-			remJobPerm.setValue("false");
-			spaceElement.setAttributeNode(remJobPerm);
+		    Element remJobPermElement = doc.createElement("rem-job-perm");
+
+		    Attr remJobPerm = doc.createAttribute("value");
+		    remJobPerm.setValue("false");
+		    remJobPermElement.setAttributeNode(remJobPerm);
+
+		    attrsElement.appendChild(remJobPermElement);
 		}
 		
 		if (!perm.canRemoveSolver()) {
-			Attr remSolverPerm = doc.createAttribute("rem-solver-perm");
-			remSolverPerm.setValue("false");
-			spaceElement.setAttributeNode(remSolverPerm);
+		    Element remSolverPermElement = doc.createElement("rem-solver-perm");
+
+		    Attr remSolverPerm = doc.createAttribute("value");
+		    remSolverPerm.setValue("false");
+		    remSolverPermElement.setAttributeNode(remSolverPerm);
+
+		    attrsElement.appendChild(remSolverPermElement);
 		}
 		
 		if (!perm.canRemoveSpace()) {
-			Attr remSpacePerm = doc.createAttribute("rem-space-perm");
-			remSpacePerm.setValue("false");
-			spaceElement.setAttributeNode(remSpacePerm);
+
+		    Element remSpacePermElement = doc.createElement("rem-space-perm");
+
+		    Attr remSpacePerm = doc.createAttribute("value");
+		    remSpacePerm.setValue("false");
+		    remSpacePermElement.setAttributeNode(remSpacePerm);
+
+		    attrsElement.appendChild(remSpacePermElement);
 		}
 		
 		if (!perm.canRemoveUser()) {
-			Attr remUserPerm = doc.createAttribute("rem-user-perm");
-			remUserPerm.setValue("false");
-			spaceElement.setAttributeNode(remUserPerm);
+		    Element remUserPermElement = doc.createElement("rem-user-perm");
+
+		    Attr remUserPerm = doc.createAttribute("value");
+		    remUserPerm.setValue("false");
+		    remUserPermElement.setAttributeNode(remUserPerm);
+
+		    attrsElement.appendChild(remUserPermElement);
 		}
 		
+		spaceElement.appendChild(attrsElement);
 		// -------------------------------------------------
 		
 		for (Benchmark benchmark:space.getBenchmarks()){
@@ -295,7 +355,6 @@ public class BatchUtil {
         }
 		
 	}
-	
 	
 	/**
 	 * Creates space hierarchies from the xml file.
@@ -427,52 +486,105 @@ public class BatchUtil {
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
 		
+		Element spaceAttributes = DOMHelper.getElementByName(spaceElement, "SpaceAttributes");
+		
+		log.info("SpaceAttributes element created");
 		// Check for description attribute
-		String desc = spaceElement.getAttribute("description");
-		if(!desc.equals("") && !desc.equals(null)){
-		    space.setDescription(desc);
+
+		if(DOMHelper.hasElement(spaceAttributes,"description")){
+		    Element description = DOMHelper.getElementByName(spaceAttributes,"description");
+		    space.setDescription(description.getAttribute("value"));
+		}
+		else{
+		    space.setDescription("no description");
 		}
 
+		log.info("description set");
+
 		// Check for permission attributes in XML and set permissions accordingly
-		String perm = spaceElement.getAttribute("add-benchmark-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setAddBenchmark(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("add-job-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setAddJob(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("add-solver-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setAddSolver(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("add-space-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setAddSpace(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("add-user-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setAddUser(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("rem-benchmark-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setRemoveBench(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("rem-job-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setRemoveJob(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("rem-solver-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setRemoveSolver(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("rem-space-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setRemoveSpace(Boolean.valueOf(perm));
-		
-		perm = spaceElement.getAttribute("rem-user-perm");
-		if (!perm.equals("") && !perm.equals(null))
-			permission.setRemoveUser(Boolean.valueOf(perm));
+
+
+		String perm;
+		Element ele;
+
+		if(DOMHelper.hasElement(spaceAttributes,"add-benchmark-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"add-benchmark-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setAddBenchmark(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"add-job-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"add-job-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setAddJob(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"add-solver-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"add-solver-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setAddSolver(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"add-space-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"add-space-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setAddSpace(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"add-user-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"add-user-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setAddUser(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"rem-benchmark-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-benchmark-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setRemoveBench(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"rem-job-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-job-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setRemoveJob(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"rem-solver-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-solver-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setRemoveSolver(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"rem-space-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-space-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setRemoveSpace(Boolean.valueOf(perm));
+		}
+   
+   
+   
+		if(DOMHelper.hasElement(spaceAttributes,"rem-user-perm")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-user-perm");
+		    perm = ele.getAttribute("value");
+		    permission.setRemoveUser(Boolean.valueOf(perm));
+		}
+   
 		
 		space.setPermission(permission);
 		
@@ -480,19 +592,21 @@ public class BatchUtil {
 		String baseSpaceName=space.getName();
 		
 		// Look for a sticky leaders attribute. If it's there, set sticky leaders
-		String sl = spaceElement.getAttribute("sticky-leaders");		
-		if (!sl.equals("") && !sl.equals(null)) {
-			Boolean stickyLeaders = Boolean.valueOf(sl);
-			space.setStickyLeaders(stickyLeaders);
+
+		if(DOMHelper.hasElement(spaceAttributes, "sticky-leaders")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"sticky-leaders");
+		    Boolean stickyLeaders = Boolean.valueOf(ele.getAttribute("value"));
+		    space.setStickyLeaders(stickyLeaders);
 		}
-		
 	
 		
 		// Check for the locked attribute
-		String locked = spaceElement.getAttribute("locked");
-		if (!locked.equals("") && !locked.equals(null)) {
-			Boolean isLocked = Boolean.valueOf(locked);
-			space.setLocked(isLocked);
+
+		if(DOMHelper.hasElement(spaceAttributes, "locked")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"locked");
+		    Boolean isLocked = Boolean.valueOf(ele.getAttribute("value"));
+		    log.info("locked: " + isLocked);
+		    space.setLocked(isLocked);
 		}
 		
 		//------------------------------------------------------------------------
@@ -513,21 +627,20 @@ public class BatchUtil {
 		Integer spaceId = Spaces.add(space, parentId, userId);
 		
 		// Check for inherit users attribute. If it is true, make the users the same as the parent
-		String iu = spaceElement.getAttribute("inherit-users");
-		if (!iu.equals("") && !iu.equals(null)){
-			Boolean inheritUsers = Boolean.valueOf(iu);
-			log.debug("inherit = " + inheritUsers);
-			if (inheritUsers) {
-				log.debug("Adding inherited users");
-				List<User> users = Spaces.getUsers(parentId);
-				log.debug("parent users = " + users);
-				for (User u : users) {
-					log.debug("users = " + u.getFirstName());
-					int tempId = u.getId();
-					Users.associate(tempId, spaceId);
-				}
+		if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
+		    ele = DOMHelper.getElementByName(spaceAttributes,"inherit-users");
+		    Boolean inheritUsers = Boolean.valueOf(ele.getAttribute("value"));
+		    log.info("inherit = " + inheritUsers);
+		    if(inheritUsers){
+			List<User> users = Spaces.getUsers(parentId);
+			for (User u : users) {
+			    log.debug("users = " + u.getFirstName());
+			    int tempId = u.getId();
+			    Users.associate(tempId, spaceId);
 			}
+		    }
 		}
+
 		
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();
@@ -555,10 +668,7 @@ public class BatchUtil {
 				else if (elementType.equals("Space")){
 					createSpaceFromElement(childElement, spaceId, userId);
 				}
-				else{
-					
-					log.warn("\"" + elementType + "\" is not a valid element type");
-				}
+
 			}
 			else{
 				//do nothing, as it's probably just whitespace

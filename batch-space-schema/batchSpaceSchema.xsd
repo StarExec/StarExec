@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://www.starexec.org/starexec/public/batchSpaceSchema.xsd" targetNamespace="https://www.starexec.org/starexec/public/batchSpaceSchema.xsd">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchSpaceSchema.xsd" targetNamespace="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchSpaceSchema.xsd">
     
     <annotation>
     	<documentation>
@@ -19,6 +19,7 @@
     
     <complexType name="Space">
     	<sequence>
+	        <element name="SpaceAttributes" type="tns:SpaceAttributes" minOccurs="0" maxOccurs="1"></element>
     		<element name="Benchmark" type="tns:Benchmark" minOccurs="0"
     			maxOccurs="unbounded">
     		</element>
@@ -30,24 +31,41 @@
     		</element>
     	</sequence>
     	 <attribute name="id" type="int" use="optional"></attribute>
-    	 <attribute name="sticky-leaders" type="boolean" use="optional"></attribute>
-    	 <attribute name="inherit-users" type="boolean" use="optional"></attribute>
-    	 <attribute name="locked" type="boolean" use="optional"></attribute>
-	 <attribute name="description" type="tns:Description" use="optional"></attribute>
-    	 <attribute name="add-benchmark-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="add-job-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="add-solver-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="add-space-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="add-user-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="rem-benchmark-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="rem-job-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="rem-solver-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="rem-space-perm" type="boolean" use="optional"></attribute>
-    	 <attribute name="rem-user-perm" type="boolean" use="optional"></attribute>
     	 
     	 <!-- This should not be null and must have at least 1 character -->
     	 <attribute name="name" type="tns:PrimitiveName"></attribute>	
     </complexType>
+
+    <complexType name="SpaceAttributes">
+      <all>
+	<element name="sticky-leaders" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="inherit-users" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="locked" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="description" type="tns:descriptionInfo" minOccurs="0" maxOccurs="1"></element>
+
+	<element name="add-benchmark-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="add-job-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="add-solver-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="add-space-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="add-user-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+
+	<element name="rem-benchmark-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="rem-job-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="rem-solver-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="rem-space-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+	<element name="rem-user-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+      </all>
+    </complexType>
+
+<!-- space attributes type definitions -->
+    <complexType name="descriptionInfo">
+      <attribute name="value" type="tns:Description" use="required"></attribute>
+    </complexType>
+
+    <complexType name="booleanInfo">
+      <attribute name="value" type="boolean" use="required"></attribute>
+    </complexType>
+<!-- end space attributes type definitions -->
 
     <complexType name="Benchmark">
         <sequence>

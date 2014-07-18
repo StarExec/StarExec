@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<tns:Spaces xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchSpaceSchema.xsd batchSpaceSchema.xsd" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchSpaceSchema.xsd">
+<Space id="11" name="cvc">
+<SpaceAttributes>
+<description value="the true test"/>
+<sticky-leaders value="true"/>
+<inherit-users value="true"/>
+<locked value="true"/>
+
+<add-benchmark-perm value="false"/>
+<add-job-perm value="false"/>
+<add-solver-perm value="false"/>
+<add-space-perm value="false"/>
+<add-user-perm value="false"/>
+<rem-benchmark-perm value="false"/>
+<rem-job-perm value="false"/>
+<rem-solver-perm value="false"/>
+<rem-space-perm value="false"/>
+<rem-user-perm value="false"/>
+</SpaceAttributes>
+<Benchmark id="11" name="add4.smt2">
+<Attribute name="status" value="unsat"/>
+<Attribute name="set-logic" value="QF_AUFLIA"/>
+<Attribute name="smt-lib-version" value="2.0"/>
+<Attribute name="category" value="industrial"/>
+</Benchmark>
+<Benchmark id="12" name="add5.smt2">
+<Attribute name="status" value="unsat"/>
+<Attribute name="set-logic" value="QF_AUFLIA"/>
+<Attribute name="smt-lib-version" value="2.0"/>
+<Attribute name="category" value="industrial"/>
+</Benchmark>
+</Space>
+</tns:Spaces>
