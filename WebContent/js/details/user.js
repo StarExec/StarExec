@@ -77,7 +77,7 @@ $(document).ready(function(){
         "fnServerData"	: fnPaginationHandler
     });
 	
-	$(".selectableTable").delegate("tr","mousedown", function(){
+	$(".selectableTable").on("mousedown", "tr", function(){
 		$(this).toggleClass("row_selected");
 		handleSelectChange();
 	});

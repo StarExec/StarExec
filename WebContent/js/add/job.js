@@ -239,7 +239,7 @@ function initUI() {
     });
 	
     // Enable row selection
-	$("#tblSolverConfig").delegate("tr", "click", function(){
+	$("#tblSolverConfig").on( "click", "tr", function(){
 		if ( $(this).find('div>input').is(':checked')) {
 			$(this).addClass("row_selected");
 		}; 
@@ -248,14 +248,14 @@ function initUI() {
 		};
 	});
 	
-	$("#tblBenchConfig").delegate("tr", "click", function() {
+	$("#tblBenchConfig").on( "click","tr", function() {
 		$(this).toggleClass("row_selected");
 	});
 
 
 	// Step 2 related actions
 	// Selection toggling
-	$("#tblSpaceSelection, #tblBenchMethodSelection").delegate("tr", "click", function(){
+	$("#tblSpaceSelection, #tblBenchMethodSelection").on( "click","tr", function(){
 		$(this).addClass("row_selected");
 		$(this).siblings().removeClass("row_selected");
 	});

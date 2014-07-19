@@ -297,7 +297,7 @@ function initSpaceExplorer(){
 			}).bind("open_node.jstree",function(event,data) {
 				
 				openDone=true;
-			    }).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
+			    }).on("click", "a",  function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
 }
@@ -433,14 +433,14 @@ function initDataTables(){
 	
 	
 	for (x=0;x<tables.length;x++) {
-		$(tables[x]).delegate("tr","mousedown", function(){
+		$(tables[x]).on("mousedown", "tr", function(){
 			unselectAll();
 			$(this).toggleClass("row_selected");
 		});
 	}
 	
 	//setup user click event
-	$('#users tbody').delegate("tr","mousedown", function(){
+	$('#users tbody').on("mousedown", "tr", function(){
 		var uid = $(($(this).find(":input"))[0]).attr('value');
 		var sid = spaceId;
 		lastSelectedUserId = uid;

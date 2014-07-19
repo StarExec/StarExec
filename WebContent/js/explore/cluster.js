@@ -5,10 +5,10 @@ var type;
 $(document).ready(function(){
 	 
 	//Set up row click to send to pair details page
-	$('#details tbody').delegate("a", "click", function(event) {
+	$('#details tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
-	$("#details tbody").delegate("tr", "click", function(){
+	$("#details tbody").on( "click", "tr", function(){
 		if (jobPairTable.fnTotalRecords()>0) {
 			var pairId = $(this).find('input').val();
 			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
@@ -85,7 +85,7 @@ function initClusterExplorer() {
 			id = data.rslt.obj.attr("id");
 	        window['type'] = data.rslt.obj.attr("rel"); 
 	        getDetails(id, type);
-	    }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+	    }).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 }
 
 function initDataTables() {

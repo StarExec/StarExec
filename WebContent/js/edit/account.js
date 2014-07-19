@@ -106,7 +106,7 @@ function initUI(){
  */
 function attachWebsiteMonitor(){
 	// Handles deleting an existing website
-	$("#websites").delegate(".delWebsite", "click", function(){
+	$("#websites").on( "click", ".delWebsite", function(){
 		var id = $(this).attr('id');
 		var parent = $(this).parent().parent();
 		$('#dialog-confirm-delete-txt').text('Are you sure you want to delete this website?');

@@ -34,7 +34,7 @@
 	
 	
 %>
-<star:template title="Space Explorer" js="util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
+<star:template title="Space Explorer" js="util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces,  lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">

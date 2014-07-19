@@ -31,23 +31,7 @@
 	cursor: pointer;
 }
 
-.qtip-content table {
-	width: 100%;
-}
 
-.qtip-content table th {
-	padding-bottom: 10px;
-	border-bottom: 1px solid gray;
-}
-
-.qtip-content table td {
-	padding: 0 10 0 10;
-}
-
-.qtip-content table td span,
-.tooltipButton {
-	cursor: pointer;
-}
 
 .leaderWrap {		
 	position: absolute;
@@ -139,3 +123,55 @@ div.selectWrap span {
 	top: 3px;
 }
 
+
+/* these are tooltip styles
+*/
+
+/**
+	 * Custom tooltip style for tooltips that will never be deleted
+	 * (i.e. tooltips on the spaces in #exploreList)
+	 */
+.spaceTooltipLeader {
+	background-color: #E1E1E1;
+	padding: 10px;
+	height: 144px;
+	width: 220px;
+}
+
+.spaceTooltipNormal {
+	background-color: #E1E1E1;
+	padding: 10px;
+	height: 120px;
+	width: 220px;
+			
+	}
+
+.userTooltipLeader  {
+			background-color: #E1E1E1;
+			height: 144px;
+			width: 220px;
+			padding: 10px;
+}
+
+.userTooltipNormal {
+			background-color: #E1E1E1;
+			height: 120px;
+			width: 220px;
+			padding: 10px;
+
+	}
+
+.expdTooltip  {
+			background-color: #E1E1E1;
+			width: 220px;
+			padding: 10px;
+
+}
+
+.userTooltip {
+			background-color: #E1E1E1;
+			height: 144px;
+			width: 220px;
+			padding: 10px;
+			
+	};

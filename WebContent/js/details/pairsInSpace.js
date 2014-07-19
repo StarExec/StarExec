@@ -42,13 +42,13 @@ function initUI(){
 		setTimeButtonText();
 		pairTable.fnDraw(false);
 	});
-	$('#pairTbl tbody').delegate("a", "click", function(event) {
+	$('#pairTbl tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
 
 	
 	//Set up row click to send to pair details page
-	$("#pairTbl tbody").delegate("tr", "click", function(){
+	$("#pairTbl tbody").on( "click", "tr", function(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});

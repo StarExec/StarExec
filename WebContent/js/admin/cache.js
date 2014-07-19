@@ -84,7 +84,7 @@ function initUI(){
     });
 
 	
-	$("#tableTypes").delegate("tr", "click", function() {
+	$("#tableTypes").on( "click", "tr", function() {
 		$(this).toggleClass("row_selected");
 	});
 

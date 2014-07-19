@@ -112,7 +112,7 @@ $(document).ready(function(){
         "fnServerData"	: fnRecycledPaginationHandler
     });
 	
-	$("#rbenchmarks, #rsolvers").delegate("tr","mousedown", function(){
+	$("#rbenchmarks, #rsolvers").on("mousedown", "tr", function(){
 		$(this).toggleClass("row_selected");
 		handleClassChange();
 	});

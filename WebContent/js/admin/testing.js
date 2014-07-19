@@ -92,7 +92,7 @@ function initUI(){
     });
 
 	
-	$("#tableTests").delegate("tr", "click", function() {
+	$("#tableTests").on( "click", "tr", function() {
 		$(this).toggleClass("row_selected");
 	});
 

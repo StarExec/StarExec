@@ -27,7 +27,7 @@ function initUI(){
         "bSort": true        
     });
 	
-	$("#tblNodes").delegate("tr", "click", function() {
+	$("#tblNodes").on("click", "tr",  function() {
 		$(this).toggleClass("row_selected");
 	});
 

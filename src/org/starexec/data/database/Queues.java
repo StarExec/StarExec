@@ -847,7 +847,7 @@ public class Queues {
 	}
 	
 	/**
-	 * Returns the number of job pairs enqueued in the given queue
+	 * Returns the number of job pairs enqueued and running in the given queue
 	 * @param queueId The queue in question
 	 * @return The integer number of jobs, or null on failure
 	 */
@@ -858,7 +858,7 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobsByUser(?,?)}");					
+			 procedure = con.prepareCall("{CALL GetQueueSizeByUser(?,?)}");					
 			procedure.setInt(1, queueId);					
 			procedure.setInt(2, userId);
 			 results = procedure.executeQuery();

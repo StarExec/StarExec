@@ -67,7 +67,7 @@ $(document).ready(function(){
 	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
 	   updateActionId(id, type, permanent, global);
 	   //getCommunityDetails(id);
-	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
 	initUI(id);
 	

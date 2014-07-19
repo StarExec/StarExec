@@ -112,7 +112,7 @@ function initSpaceExplorer() {
 		$("#spaceName").text($('.jstree-clicked').text());
 		$("#displayJobSpaceID").text("id  = "+id);
 		reloadTables(id);
-	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
+	}).on( "click", "a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
 }
 
 function clearPanels() {
@@ -840,7 +840,7 @@ function initDataTables(){
         "fnServerData" : fnStatsPaginationHandler
     });
 	
-	$("#solveTbl").delegate("tr","mousedown", function(){
+	$("#solveTbl").on("mousedown", "tr", function(){
 		if (!$(this).hasClass("row_selected")) {
 			$("#solveTbl").find(".second_selected").each(function(){
 				$(this).removeClass("second_selected");
@@ -903,12 +903,12 @@ function initDataTables(){
 		"bSort": true        
 	});
 	
-	$('#pairTbl tbody').delegate("a", "click", function(event) {
+	$('#pairTbl tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
 	
 	//Set up row click to send to pair details page
-	$("#pairTbl tbody").delegate("tr", "click", function(){
+	$("#pairTbl tbody").on("click", "tr",  function(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});

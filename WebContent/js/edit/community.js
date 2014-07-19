@@ -157,7 +157,7 @@ function demoteUser(userId, id) {
  */
 function attachWebsiteMonitor(){
 	// Handles deleting an existing website
-	$("#websiteTable").delegate(".delWebsite", "click", function(){
+	$("#websiteTable").on( "click", ".delWebsite", function(){
 		var id = $(this).attr('id');
 		var parent = $(this).parent().parent();
 		$('#dialog-confirm-delete-txt').text('Are you sure you want to delete this website?');

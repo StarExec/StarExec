@@ -19,7 +19,7 @@ function initUI(){
 		"fnServerData"	: fnPaginationHandler
 	});
 	
-	$("#benchmarks").delegate("tr","mousedown",function() {
+	$("#benchmarks").on("mousedown", "tr",function() {
 		if ($(this).hasClass("row_selected")) {
 			$(this).removeClass("row_selected");
 		} else {

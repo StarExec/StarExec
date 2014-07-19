@@ -63,7 +63,7 @@ function initUI(){
     });
 
 	
-	$("#tableLevels").delegate("tr", "click", function() {
+	$("#tableLevels").on( "click", "tr", function() {
 		if (!$(this).hasClass("row_selected")) {
 			unselectAllRows(levelTable);
 		}

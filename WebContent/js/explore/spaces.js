@@ -17,14 +17,14 @@ $(document).ready(function(){
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain().length>1); //check whether to turn off cookies
 	// Build the tooltip styles (i.e. dimensions, color, etc)
-	initTooltipStyles();
+	//initTooltipStyles();
 
 	// Build left-hand side of page (space explorer)
 	initSpaceExplorer();
 
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
-	
+	$("#additionSort").qtip();
 	//redraw the job table every 10 seconds so we can see continuous results
 	setInterval(function() {
 		if (spaceId!=1 && spaceId!=undefined) {
@@ -970,9 +970,8 @@ function initSpaceExplorer(){
 	}).bind("loaded.jstree", function(event,data) {
 		handleSpaceChain();
 	}).bind("open_node.jstree",function(event,data) {
-		//alert("here");
 		openDone=true;
-	}).delegate("a", "click", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
+	}).on( "click","a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
 
 	log('Space explorer node list initialized');
 }
@@ -1781,13 +1780,13 @@ function initDataTables(){
 	
 	
 	for (x=0;x<6;x++) {
-		$(tables[x]).delegate("tr","mousedown", function(){
+		$(tables[x]).on("mousedown","tr", function(){
 			unselectAll("#"+$(this).parent().parent().attr("id"));
 			$(this).toggleClass("row_selected");
 		});
 	}
 		// Setup user permission tooltip
-	$('#users tbody').delegate('tr', 'hover', function(){
+	$('#users tbody').on( 'hover', 'tr', function(){
 		$(this).toggleClass('hovered');
 	});
 	
@@ -1873,7 +1872,6 @@ function extendDataTableFunctions(){
 	jQuery.fn.dataTableExt.oPagination.input = {
 		    "fnInit": function ( oSettings, nPaging, fnCallbackDraw )
 		    {
-				alert("there");
 		        var nFirst = document.createElement( 'span' );
 		        var nPrevious = document.createElement( 'span' );
 		        var nNext = document.createElement( 'span' );
@@ -1998,9 +1996,7 @@ function extendDataTableFunctions(){
  * on the jobs table when deleting/paginating
  */
 function getProcessingMessage(){
-	//this is not popular with PI's
-	//return '<center><img alt="loading" src=starexecRoot+"images/loader.gif" class="processing">processing...</img></center>';
-	return;
+	return "processing request";
 }
 
 /**
@@ -2146,11 +2142,13 @@ function createTooltip(element, selector, type, message){
 	 * these persist until a new space is selected in the space explorer
 	 */
 	if(type[0] == 'l'){
-		$(element).delegate(selector, 'hover', function(){
+		
+		$(element).on('mouseenter mouseleave',selector, function(){
 			// Check and see if a qtip object already exists
 			if(!$(this).data("qtip")){
 				// If not, create one with the relevant configuration
-				$(this).qtip(getTooltipConfig(type, message));
+				configuration=getTooltipConfig(type,message);
+				$(this).qtip(configuration);
 			}
 		});
 	}
@@ -2159,7 +2157,7 @@ function createTooltip(element, selector, type, message){
 	 * these persist forever and are never removed from the page
 	 */
 	else if(type[0] == 's' || type[0] == 'p'){
-		$(element).delegate(selector, 'hover', function(){
+		$(element).on('mouseenter mouseleave',selector,  function(){
 			if(!$(this).data("qtip")){
 				$(this).qtip(getTooltipConfig(type, message));
 			}
@@ -2197,7 +2195,7 @@ function checkPermissions(perms, id) {
 	if(perms.isLeader){
 		// attach leader tooltips to every entry 
 		createTooltip($('#users tbody'), 'tr', 'leader');
-
+		
 		$('#editSpace').fadeIn('fast');
 		//$('#editSpacePermissions').fadeIn('fast');
 		$('#reserveQueue').fadeIn('fast');
@@ -2596,7 +2594,6 @@ function initTooltipStyles(){
 				color : '#ae0000'
 			}
 	};
-
 	log('tooltip styles initialized');
 }
 
@@ -2613,66 +2610,36 @@ function getTooltipConfig(type, message){
 		return {
 			content: {
 				text: getProcessingMessage(),
-				title: {
-					text: '<center><a>permissions</a></center>'
-				}
+				title: '<center><a>permissions</a></center>'	
 			},
 			position: {			// Place right middle portion of the tooltip to the left middle portion of the row element
-				corner: {
-					target: 'leftMiddle',
-					tooltip: 'rightMiddle'
+				target: "mouse",
+				my: "right center",
+				at: "left center",
+				adjust: {
+					mouse: false
 				}
+				
 			},
 			hide :{
-				fixed: true,
-				effect: {
-					type: 'fade',
-					length: 100
-				}
+				fixed: true		
 			},
 			show: { 
 				ready: true,	// Ensures the tooltip is shown the first time it's moused over
 				solo: false,	// When this is false, all tooltip commands are applied only to the corresponding tooltip (what we want) instead of to all tooltips on the page (which causes weird artifacts to occur)
 				delay: 1000,	// Every mouseover that occurs, after the first mouseover, will have to wait a second before the tooltip is triggered
-				event: "mouseover",
-				effect: {		// CSS custom-effect trick to workaround the necessary ready:true flag, which breaks the 'delay' during the first mouseover event
-					type: function() {
-						var tooltip = this;
-						tooltip.css('visibility','visible');
-						tooltip.css('opacity',1);
-
-						if (tooltip.data('ready')) {
-							tooltip.show('slide', 100);
-							return;
-						}
-
-						tooltip.css('visibility','hidden').data('ready',1);						    						    
-						var userId = $(this.qtip('api').elements.target).children('td:first').children('input').val();		
-
-						// Uses a timer to simulate the first delay=1000 that would occur here if ready=false
-						setTimeout(function(){
-							// If element is not being hovered over anymore when the timer ends, don't display it
-							if($("#users tbody tr.hovered td:first").children('input').val() == userId){
-								tooltip.css('visibility','visible');
-								tooltip.show('slide', 100);
-							} else {
-								// Fixes bug where elements that were initially hovered, but didn't stay long enough
-								// to ensure a hover intent, wouldn't display a tooltip during the next hover event
-								tooltip.hide();
-							}
-						}, 1000);
-
-					}
-				}
+				event: "mouseover"
+				
 			},
 			style: {
-				name: "userTooltip",		// Load custom color scheme
+				classes: "userTooltip",		// Load custom color scheme
 				tip: 'rightMiddle'			// Add a tip to the right middle portion of the tooltip
 			},			   
-			api:{
-				onRender: function(){	// Before rendering the tooltip, get the user's permissions for the given space
+			events:{
+				render: function(){	// Before rendering the tooltip, get the user's permissions for the given space
 					var tooltip = this;
-					var userId = $(this.elements.target).children('td:first').children('input').val();
+					api=$(this).qtip("api");
+					var userId = $(api.elements.target).children('td:first').children('input').val();
 					$.get(
 							starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
 							function(theResponse){
@@ -2681,11 +2648,11 @@ function getTooltipConfig(type, message){
 									showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
 								} else {
 									// Replace current content (current = loader.gif)		
-									tooltip.updateContent(" ", true);
+									$(tooltip).qtip('option', 'content.text', ' ');
 									if (theResponse.requester.role == "admin") {
-										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'admin', theResponse.isCommunity), true);
+										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'admin', theResponse.isCommunity));
 									} else {
-										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'leader', theResponse.isCommunity), true);
+										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'leader', theResponse.isCommunity));
 									}
 								}
 								return true;
@@ -2695,23 +2662,27 @@ function getTooltipConfig(type, message){
 					});	
 
 				},
-				onHide: function(){			// If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
+				hide: function(){			// If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
 					var tooltip = this;
-					log("permissions = " + $(tooltip.elements.title).text());
-					if('p' != $(tooltip.elements.title).text()[0]){
-						tooltip.updateTitle('<center><a>permissions</a></center>');
-						var userId = $(this.elements.target).children('td:first').children('input').val();
+					api=$(this).qtip("api");
+					if('p' != $(api.elements.title).text()[0]){
+						$(tooltip).qtip('option', 'content.title', '<center><a>permissions</a></center>');
+
+						var userId = $(api.elements.target).children('td:first').children('input').val();
 						$.post(
 								starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
 								function(theResponse){
 									log('AJAX response for permission tooltip received');
-									tooltip.updateContent(" ", true); // Have to clear it first to prevent it from appending (qtip bug?)
+									$(tooltip).qtip('option', 'content.text', ' ');
 									if (theResponse.requester.role == "admin") {
-										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'admin'), true);
+										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'admin'));
+
 									} else {
-										tooltip.updateContent(getPermTable(tooltip, theResponse.perm, 'leader'), true);
+										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'leader'));
+
 									}
-									tooltip.updateTitle('<center><a>permissions</a></center>');	
+									$(tooltip).qtip('option', 'content.title', '<center><a>permissions</a></center>');
+
 									tooltip.hide();
 									return true;
 								}	
@@ -2721,122 +2692,34 @@ function getTooltipConfig(type, message){
 					}
 
 					// Fixes bug where 'hovered' class doesn't get removed from the no-longer-hovered tr element
-					var userId = $(tooltip.elements.target).children('td:first').children('input').val();
+					var userId = $(api.elements.target).children('td:first').children('input').val();
 					$('#uid'+userId).parent().parent().removeClass('hovered');
 				}
 
 			}
 		};
 	}
-	// Space tooltips
-	else if (type[0] == 's'){
-		return {
-			content: {
-				prerender: true,
-				text: getProcessingMessage(),
-				title: {
-					text: '<center>permissions</center>'
-				}
-			},
-			position: {
-				corner: {
-					target: 'topRight',
-					tooltip: 'bottomLeft'
-				},
-				adjust: {
-					screen: true
-				}
-			},
-			show: { 
-				ready: true,
-				solo: false,		
-				delay: 1000,
-				event: "mouseover",
-				effect: {
-					type: function() {
-						var tooltip = this;
-						tooltip.css('visibility','visible').css('opacity',1);
-						var spaceBeingHovered = $('#exploreList').find('.jstree-hovered').parent().attr("id");
-						if (tooltip.data('ready')) {
-							tooltip.show('slide', 150);
-							return;
-						} else {
-							tooltip.css('visibility','hidden').data('ready',1);
-							setTimeout(function(){
-								if($('#exploreList').find('.jstree-hovered').parent().attr("id") == spaceBeingHovered){
-									tooltip.css('visibility','visible');
-									tooltip.show('slide', 150);
-								} else {
-									tooltip.hide();
-								}
-							}, 1000);
-						}
-					}
-				}
-			},
-			hide:{
-				effect: {
-					type: 'slide',
-					length: 200
-				}
-			},
-			style: {
-				name: "spaceTooltipLeader",
-				tip: 'bottomLeft'
-			},
-			api:{
-				onRender: function(){
-					var tooltip = this;
-					var hoveredSpaceId = $('#exploreList').find('.jstree-hovered').parent().attr("id");
-
-					// Destroy the tooltip if the space being hovered is the root space
-					if(hoveredSpaceId == 1 || hoveredSpaceId === undefined){
-						tooltip.destroy();
-						return;
-					}
-
-					// Get the user's permissions in the given space
-					$.post(
-							starexecRoot+'services/space/' + hoveredSpaceId,
-							function(theResponse){
-								log('AJAX response for permission tooltip received');
-								tooltip.updateContent(" ");
-								tooltip.updateContent(getPermTable(tooltip, theResponse.perm), true);
-								return true;
-							}
-					).error(function(){
-						//showMessage('error',"Internal error getting space details",5000);
-					});	
-				}
-			}
-		};
-	}
+	
 	// Expd tooltips
 	else if (type[0] == 'e'){
 		return {
 			content: {
 				text: message,
-				title: {
-					text: '<center>permissions</center>'
-				}
+				title:  '<center>permissions</center>'
+				
 			},
 			position: {
-				corner:{
-					target: 'topLeft',
-					tooltip: 'bottomLeft'
-				},
-				adjust:{
-					screen: true
+				target: "mouse",
+				my: "right center",
+				at: "left center",
+				adjust: {
+					mouse: false
 				}
 			},
 			show: { 
 				solo: true,
 				delay: 1000,
-				event: "mouseover",
-				effect : function() {
-
-					$(this).show('slide', 150);
-				}
+				event: "mouseover"
 			},
 			hide:{
 				effect: {
@@ -2845,7 +2728,7 @@ function getTooltipConfig(type, message){
 				}
 			},
 			style: {
-				name: 'expdTooltip'
+				classes: 'expdTooltip'
 			}
 		};
 	}
@@ -2854,14 +2737,15 @@ function getTooltipConfig(type, message){
 		return {
 			content: {
 				text: getProcessingMessage(),
-				title: {
-					text: '<center><a>permissions</a></center>'
-				}
+				title: '<center><a>permissions</a></center>'
+				
 			},
 			position: {
-				corner: {
-					target: 'leftMiddle',
-					tooltip: 'rightMiddle'
+				target: "mouse",
+				my: "right center",
+				at: "left center",
+				adjust: {
+					mouse: false
 				}
 			},
 			show: { 
@@ -2869,8 +2753,7 @@ function getTooltipConfig(type, message){
 				solo: false,
 				delay: 1000,
 				event: "mouseover",
-				effect: {
-					type: function() {
+				effect: function() {
 						var tooltip = this;
 						tooltip.css('visibility','visible').css('opacity',1);
 						if (tooltip.data('ready')) {
@@ -2889,7 +2772,7 @@ function getTooltipConfig(type, message){
 							}
 						}, 1000);
 					}
-				}
+				
 			},
 			hide:{
 				effect: {
@@ -2898,11 +2781,11 @@ function getTooltipConfig(type, message){
 				}
 			},
 			style: {
-				name: "userTooltip",
+				classes: "userTooltip",
 				tip: 'rightMiddle'
 			},
-			api:{
-				onRender: function(){
+			events:{
+				render: function(){
 					var tooltip = this;
 					var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
 					if(userId != undefined && $(this.elements.target).children('td:first').children('input').val() == userId){
@@ -2911,14 +2794,12 @@ function getTooltipConfig(type, message){
 								url,
 								function(theResponse){
 									log('AJAX response for permission tooltip received');
-									// Replace current content (current = loader.gif)
-									tooltip.updateContent(" ", true);
-									tooltip.updateContent(getPermTable(tooltip, theResponse), true);
+									$(tooltip).qtip('option', 'content.text', ' ');
+									$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse));
+
 									return true;
 								}
-						).error(function(){
-							//showMessage('error',"Internal error getting space details",5000);
-						});	
+						)
 					}
 				}
 			}
