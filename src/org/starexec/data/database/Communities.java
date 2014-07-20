@@ -106,6 +106,7 @@ public class Communities {
 			int community;
 			if (results.next()) {
 			    community = results.getInt("community");
+			    
 			    Common.safeClose(results);
 			    Common.safeClose(procedure);
 			    procedure = con.prepareCall("{CALL GetSpaceDefaultSettingsById(?)}");

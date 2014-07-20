@@ -75,7 +75,7 @@ CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 DROP PROCEDURE IF EXISTS GetAllQueues;
 CREATE PROCEDURE GetAllQueues()
 	BEGIN		
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout,clockTimeout
 		FROM queues
 		WHERE status="ACTIVE"
 		ORDER BY name;	
@@ -86,7 +86,7 @@ CREATE PROCEDURE GetAllQueues()
 DROP PROCEDURE IF EXISTS GetAllQueuesAdmin;
 CREATE PROCEDURE GetAllQueuesAdmin()
 	BEGIN		
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
 		ORDER BY id;	
 	END //
@@ -96,7 +96,7 @@ CREATE PROCEDURE GetAllQueuesAdmin()
 DROP PROCEDURE IF EXISTS GetAllQueuesNonPermanent;
 CREATE PROCEDURE GetAllQueuesNonPermanent()
 	BEGIN
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
 		WHERE permanent = false
 		ORDER BY id;
@@ -108,7 +108,7 @@ CREATE PROCEDURE GetAllQueuesNonPermanent()
 DROP PROCEDURE IF EXISTS GetUserQueues;
 CREATE PROCEDURE GetUserQueues(IN _userID INT)
 	BEGIN		
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
 		WHERE status="ACTIVE"
 		AND 
@@ -183,7 +183,7 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 DROP PROCEDURE IF EXISTS GetQueue;
 CREATE PROCEDURE GetQueue(IN _id INT)
 	BEGIN		
-		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total
+		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,wallTimeout
 		FROM queues
 		WHERE id=_id;
 	END // 

@@ -340,6 +340,15 @@ public class CreateJob extends HttpServlet {
 					break;
 				}
 			}
+			
+			//make sure both timeouts are <= the queue settings
+			int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
+			int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+			
+			Queue q=Queues.get(queueId);
+			if (cpuLimit>q.getCpuTimeout()  || runLimit > q.getWallTimeout()) {
+				return false;
+			}
 			if (queueFound==false){
 				return false;
 			}

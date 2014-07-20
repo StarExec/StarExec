@@ -23,7 +23,8 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
 	@Expose private HashMap<Integer, String[]> jobPairs;
-	
+	@Expose private int cpuTimeout;
+	@Expose private int wallTimeout;
 	
 	public Queue() {
 		this.nodes = new LinkedList<WorkerNode>();
@@ -187,6 +188,34 @@ public class Queue extends Identifiable implements Iterable<WorkerNode> {
 	@Override
 	public Iterator<WorkerNode> iterator() {
 		return this.nodes.iterator();
+	}
+
+	/**
+	 * @param cpuTimeout the cpuTimeout to set
+	 */
+	public void setCpuTimeout(int cpuTimeout) {
+		this.cpuTimeout = cpuTimeout;
+	}
+
+	/**
+	 * @return the cpuTimeout
+	 */
+	public int getCpuTimeout() {
+		return cpuTimeout;
+	}
+
+	/**
+	 * @param wallTimeout the wallTimeout to set
+	 */
+	public void setWallTimeout(int wallTimeout) {
+		this.wallTimeout = wallTimeout;
+	}
+
+	/**
+	 * @return the wallTimeout
+	 */
+	public int getWallTimeout() {
+		return wallTimeout;
 	}
 
 }

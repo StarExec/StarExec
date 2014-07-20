@@ -16,15 +16,12 @@ var usingSpaceChain=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain().length>1); //check whether to turn off cookies
-	// Build the tooltip styles (i.e. dimensions, color, etc)
-	//initTooltipStyles();
 
 	// Build left-hand side of page (space explorer)
 	initSpaceExplorer();
 
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
-	$("#additionSort").qtip();
 	//redraw the job table every 10 seconds so we can see continuous results
 	setInterval(function() {
 		if (spaceId!=1 && spaceId!=undefined) {
@@ -2156,11 +2153,15 @@ function createTooltip(element, selector, type, message){
 	 * Tooltips for displaying to a user what their permission are for a given space in the space explorer; 
 	 * these persist forever and are never removed from the page
 	 */
-	else if(type[0] == 's' || type[0] == 'p'){
+	else if(type[0] == 'p'){
 		$(element).on('mouseenter mouseleave',selector,  function(){
-			if(!$(this).data("qtip")){
-				$(this).qtip(getTooltipConfig(type, message));
+			//only add this to the row for the current user
+			if ($(this).find("td input[name=\"currentUser\"]").size()>0) {
+				if(!$(this).data("qtip")){
+					$(this).qtip(getTooltipConfig(type, message));
+				}
 			}
+			
 		});
 	} 
 	/**
@@ -2445,7 +2446,8 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	// Add the table to the wrapper
 	$(permWrap).append(table);
 
-	$(permWrap).append("<div><input type='button' value='edit' onClick='editPermissions()'></input></div>");
+	$(permWrap).append("<div><input class=\"permButton\" type='button' value='edit' onClick='editPermissions()'></input></div>");
+	$(".permButton").button();
 	// HTML to add to the wrapper to indicate someone is a leader
 	var leaderDiv = '<div class="leaderWrap"><span class="ui-icon ui-icon-star"></span><h2 class="leaderTitle">leader</h2></div>';
 	
@@ -2523,79 +2525,6 @@ function wrapPermRow(perm, add, remove){
     return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>"; 
 }
 
-/**
- * Initializes custom tooltip styles; used to differentiate and customize
- * permanent and non-permanent tooltips (non-permanent tooltips elements 
- * are removed from the page whenever a new space in the space explorer is selected)
- * @author Todd Elvers
- */
-function initTooltipStyles(){
-	/**
-	 * Custom tooltip style for tooltips that will never be deleted
-	 * (i.e. tooltips on the spaces in #exploreList)
-	 */
-	$.fn.qtip.styles.spaceTooltipLeader = {
-			background: '#E1E1E1',
-			padding: 10,
-			height: 144,
-			width: 220,
-			title : {
-				color : '#ae0000'
-			}
-	};
-	$.fn.qtip.styles.spaceTooltipNormal = {
-			background: '#E1E1E1',
-			padding: 10,
-			height: 120,
-			width: 220,
-			title : {
-				color : '#ae0000'
-			}
-	};
-
-	/**
-	 * Custom tooltip styles for tooltips that will be deleted everytime
-	 * a new space is selected
-	 */
-	$.fn.qtip.styles.userTooltipLeader = {
-			background: '#E1E1E1',
-			height: 144,
-			width: 220,
-			padding: 10,
-			title : {
-				color : '#ae0000'
-			}
-	};
-	$.fn.qtip.styles.userTooltipNormal = {
-			background: '#E1E1E1',
-			height: 120,
-			width: 220,
-			padding: 10,
-			title : {
-				color : '#ae0000'
-			}
-	};
-
-	$.fn.qtip.styles.expdTooltip = {
-			background: '#E1E1E1',
-			width: 220,
-			padding: 10,
-			title : {
-				color : '#ae0000'
-			}
-	};
-
-	$.fn.qtip.styles.userTooltip = {
-			background: '#E1E1E1',
-			height: 144,
-			width: 220,
-			padding: 10,
-			title : {
-				color : '#ae0000'
-			}
-	};
-	log('tooltip styles initialized');
-}
 
 
 /**
@@ -2651,9 +2580,12 @@ function getTooltipConfig(type, message){
 									$(tooltip).qtip('option', 'content.text', ' ');
 									if (theResponse.requester.role == "admin") {
 										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'admin', theResponse.isCommunity));
+
 									} else {
 										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'leader', theResponse.isCommunity));
 									}
+									$(".permButton").button();
+
 								}
 								return true;
 							}
@@ -2752,26 +2684,7 @@ function getTooltipConfig(type, message){
 				ready: true,
 				solo: false,
 				delay: 1000,
-				event: "mouseover",
-				effect: function() {
-						var tooltip = this;
-						tooltip.css('visibility','visible').css('opacity',1);
-						if (tooltip.data('ready')) {
-							tooltip.show('slide', 150);
-							return;
-						}
-						tooltip.css('visibility','hidden').data('ready',1);
-						var userId = $('#users tbody tr').find('td:first input[name="currentUser"]').val();
-						setTimeout(function(){
-							// Only show the 'personal' tooltip when the user hovers over themselves in the userTable
-							if(userId != undefined && $("#users tbody tr.hovered td:first input").val() == userId){
-								tooltip.css('visibility','visible');
-								tooltip.show('slide', 150);
-							} else {
-								tooltip.qtip("destroy");
-							}
-						}, 1000);
-					}
+				event: "mouseover"
 				
 			},
 			hide:{
@@ -2787,8 +2700,9 @@ function getTooltipConfig(type, message){
 			events:{
 				render: function(){
 					var tooltip = this;
+					api=$(this).qtip("api");
 					var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
-					if(userId != undefined && $(this.elements.target).children('td:first').children('input').val() == userId){
+					if(userId != undefined && $(api.elements.target).children('td:first').children('input').val() == userId){
 						var url = starexecRoot+'services/space/' + spaceId + '/perm/' + userId;
 						$.post(
 								url,
@@ -2796,6 +2710,7 @@ function getTooltipConfig(type, message){
 									log('AJAX response for permission tooltip received');
 									$(tooltip).qtip('option', 'content.text', ' ');
 									$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse));
+									$(".permButton").button();
 
 									return true;
 								}

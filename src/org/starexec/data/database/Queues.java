@@ -203,7 +203,8 @@ public class Queues {
 				queue.setSlotsAvailable(results.getInt("slots_free"));
 				queue.setSlotsReserved(results.getInt("slots_reserved"));
 				queue.setSlotsUsed(results.getInt("slots_used"));
-				
+				queue.setWallTimeout(results.getInt("clockTimeout"));
+				queue.setCpuTimeout(results.getInt("cpuTimeout"));
 				return queue;				
 			}										
 			
@@ -675,6 +676,8 @@ public class Queues {
 				q.setName(results.getString("name"));
 				q.setId(results.getInt("id"));	
 				q.setStatus(results.getString("status"));
+				q.setWallTimeout(results.getInt("clockTimeout"));
+				q.setCpuTimeout(results.getInt("cpuTimeout"));
 				queues.add(q);
 			}			
 						
@@ -733,6 +736,8 @@ public class Queues {
 				q.setStatus(results.getString("status"));
 				q.setPermanent(results.getBoolean("permanent"));
 				q.setGlobalAccess(results.getBoolean("global_access"));
+				q.setCpuTimeout(results.getInt("cpuTimeout"));
+				q.setWallTimeout(results.getInt("wallTimeout"));
 				queues.add(q);
 			}
 			return queues;

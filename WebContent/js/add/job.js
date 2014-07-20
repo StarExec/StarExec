@@ -35,12 +35,20 @@ $(document).ready(function(){
 	
 });
 
+function getMaxCpuTimeout(){
+	maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
+	return maxtime;
+}
+
+function getMaxWallTimeout() {
+	maxtime=$( "#workerQueue option:selected" ).attr("wallmax");
+	return maxtime;
+}
 
 /**
  * Attach validation to the job creation form
  */
 function attachFormValidation(){
-	
 	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
 			"regex", 
@@ -48,6 +56,8 @@ function attachFormValidation(){
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
+	
+	
 	
 	// Set up form validation
 	$("#addForm").validate({
@@ -65,11 +75,13 @@ function attachFormValidation(){
 			},
 			cpuTimeout: {
 				required: true,			    
-			    max: 259200
+			    max: getMaxCpuTimeout(),
+			    min: 1
 			},
 			wallclockTimeout: {
 				required: true,			    
-			    max: 259200
+			    max: getMaxWallTimeout(),
+			    min: 1
 			},
 			maxMem: {
 				required: true,
@@ -93,11 +105,13 @@ function attachFormValidation(){
 			},
 			cpuTimeout: {
 				required: "enter a timeout",			    
-			    max: "3 day max timeout"
+			    max: getMaxCpuTimeout()+" second max timeout",
+			    min: "1 second minimum timeout"
 			},
 			wallclockTimeout: {
 				required: "enter a timeout",			    
-			    max: "3 day max timeout"
+			    max: getMaxWallTimeout()+" second max timeout",
+			    min: "1 second minimum timeout"
 			},
 			maxMem: {
 				required: "enter a maximum memory",
@@ -107,6 +121,35 @@ function attachFormValidation(){
 				required: "error - no worker queues"
 			}
 		}
+	});
+	
+	//when we change queues, we need to refresh the validation to use the new timeouts
+	$("#workerQueue").change(function() {
+		settings = $('#addForm').validate().settings;
+		settings.rules.cpuTimeout = {
+				required: true,			    
+			    max: getMaxCpuTimeout(),
+			    min: 1
+			};
+		
+		settings.rules.wallTimeout = {
+				required: true,			    
+			    max: getMaxWallTimeout(),
+			    min: 1
+			};
+		
+		settings.messages.cpuTimeout = {
+				required: "enter a timeout",			    
+			    max: getMaxCpuTimeout()+" second max timeout",
+			    min: "1 second minimum timeout"
+			};
+		
+		settings.messages.wallTimeout = {
+				required: "enter a timeout",			    
+			    max: getMaxWallTimeout()+" second max timeout",
+			    min: "1 second minimum timeout"
+		}
+		
 	});
 };
 
