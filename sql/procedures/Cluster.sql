@@ -49,10 +49,12 @@ CREATE PROCEDURE ClearQueueAssociations()
 -- Adds a SGE queue to the database and ignores duplicates
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddQueue;
-CREATE PROCEDURE AddQueue(IN _name VARCHAR(64), IN _wall INT, IN _cpu INT)
+CREATE PROCEDURE AddQueue(IN _name VARCHAR(64), IN _wall INT, IN _cpu INT, OUT _queueId INT)
 	BEGIN
 		INSERT IGNORE INTO queues (name, clockTimeout,cpuTimeout)
 		VALUES (_name, _wall, _cpu);
+		SELECT LAST_INSERT_ID() INTO _queueId;		
+
 	END //
 	
 

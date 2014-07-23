@@ -104,7 +104,6 @@ function initDataTables() {
 		},
 		"fnServerData"	: fnPaginationHandler
 	});
-	alert("here");
 	nodeTable.makeEditable({
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
@@ -115,7 +114,6 @@ function initDataTables() {
 
 		}
 	  });
-	alert("there");
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {

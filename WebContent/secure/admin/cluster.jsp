@@ -38,7 +38,7 @@
 		<legend>actions</legend>
 			<ul id="actionList">
 				<li><button type="button" id="removeQueue">remove queue</button></li>
-				<li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>
+				<!--  <li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>-->
 				<li><button type="button" id="makePermanent">make queue permanent</button></li>
 				<li><a type="button" id="moveNodes" href="/${starexecRoot}/secure/admin/moveNodes.jsp">move nodes to this queue</a></li>
 				<li><a type="button" id="CommunityAssoc" href="/${starexecRoot}/secure/admin/assocCommunity.jsp">give communities access</a></li>

@@ -42,7 +42,7 @@ public class Queues {
 	 * @author Tyler Jensen
 	 */
 	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) throws Exception {			
-		log.debug("preparing to call sql procedures to add queue");
+		log.debug("preparing to call sql procedures to add queue with name = "+queueName);
 		CallableStatement procedure = null;
 		try {
 			
@@ -60,7 +60,7 @@ public class Queues {
 			log.info(String.format("New queue with name [%s] was successfully created", queueName));
 			return newQueueId;
 		} catch (Exception e) {
-			
+			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1027,7 +1027,6 @@ public class Queues {
 		CallableStatement procAddCol = null;
 		CallableStatement procUpdateAttr = null;
 		try {
-			con = Common.getConnection();
 			int id=Queues.getIdByName(name);
 			//if the queue exists, get its existing timeouts
 			int cpuTimeout=R.DEFAULT_MAX_TIMEOUT;
@@ -1036,7 +1035,11 @@ public class Queues {
 				Queue q=Queues.get(id);
 				cpuTimeout=q.getCpuTimeout();
 				wallTimeout=q.getWallTimeout();
+			}else {
+				log.debug("the current queue does not exist in the database");
 			}
+			con = Common.getConnection();
+		
 			// All or nothing!
 			Common.beginTransaction(con);
 			
