@@ -2976,5 +2976,141 @@ public class RESTHelpers {
 		}
 		return convertCommunityRequestsToJsonObject(requests, totalRequests, attrMap.get(SYNC_VALUE), currentUserId);
 	}
+	
+	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.sql.Date> dates, HttpServletRequest request) {		
+		JsonArray dataTablePageEntries = new JsonArray();
+		int total_node_count = Cluster.getNonPermanentNodeCount();
+		
+		//This hashmap tells us at what date did a queue experience its first non-zero count
+		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
+		//This hashmap tells us at what date did we experience the last non-zero count
+		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
+		//This hashmap tells us if the request had a non-zero count on TODAY's date
+		List<Integer> starts_nonEmpty = new LinkedList<Integer>();
+		
+		List<Queue> queues = Queues.getAllNonPermanent();
+
+		for (java.sql.Date date : dates) {
+			if (queues!= null) {
+				for (Queue q : queues) {
+					if (q.getId() == Cluster.getDefaultQueueId()) {
+						continue;
+					}
+					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					
+					if (node_count > 0) {
+						if (!(nonzero_date.containsKey(q.getId()) )  ) {
+							nonzero_date.put(q.getId(), date);
+						}
+						if (last_date.containsKey(q.getId())) {
+							if (date.after(last_date.get(q.getId()))) {
+								last_date.remove(q.getId());
+							}
+						}
+					} else {
+						if (nonzero_date.containsKey(q.getId())) {
+							if (!(last_date.containsKey(q.getId()))) {
+								last_date.put(q.getId(), date);
+							}
+						}
+					}
+				}
+			}
+		}		
+		
+		int dateCount = 0;
+		for (java.util.Date date : dates ) {
+			dateCount += 1;
+			boolean conflict = false;
+			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+			String date1 = sdf.format(date);
+			
+	    	JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(date1));
+			int total = 0;
+			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
+			total = total + node_count;
+			
+			//Get the total number of nodes that have been reserved
+			if (queues != null) {
+				for (Queue q : queues) {
+					node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					total = total + node_count;
+				}
+			}
+			
+			//set the number for the default queue to be all leftovers
+			int leftover_nodes = total_node_count - total;
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive(0));
+			} else {
+				entry.add(new JsonPrimitive(total_node_count - total));
+			}
+			
+			//Get the numbers for each respective queue
+			if (queues!= null) {
+				for (Queue q : queues) {
+					if (q.getId() == Cluster.getDefaultQueueId()) {
+						continue;
+					}
+					node_count = Queues.getNodeCountOnDate(q.getId(), date);
+					if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
+					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
+					if (temp_nodeCount != -1) {
+						node_count = temp_nodeCount;
+					}
+					
+					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
+					
+					if (last_date.containsKey(q.getId())) {
+						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId()); // this is the date that the queue first had a non-zero node count
+						java.util.Date latest_date = last_date.get(q.getId()); // this is the date that the queue returned to 0
+						
+						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
+							if (node_count == 0) { conflict = true; }
+						}
+					} else if (nonzero_date.containsKey(q.getId())) {
+						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
+						
+						if (date.after(earliest_nonZero_date)) {
+							if (node_count == 0) { conflict = true; }
+						}
+					}		
+					
+					
+					entry.add(new JsonPrimitive(node_count));
+				}
+			}
+			
+			//Put the "total" at the end
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive (total)); // conflict #
+			} else {
+				entry.add(new JsonPrimitive(total_node_count)); //default total #
+			}
+			//Mark if conflicted
+			if (leftover_nodes < 0) {
+				entry.add(new JsonPrimitive("CONFLICT"));
+			} else if (leftover_nodes == 0 || conflict == true) {
+				entry.add(new JsonPrimitive("ZERO"));
+			} else {
+				entry.add(new JsonPrimitive("clear"));
+			}
+			dataTablePageEntries.add(entry);
+		}
+    	JsonObject nextPage=new JsonObject();
+
+	    nextPage.add("aaData", dataTablePageEntries);
+
+	   	return nextPage;
+	}
 
 }
