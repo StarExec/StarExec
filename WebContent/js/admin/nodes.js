@@ -5,11 +5,7 @@ $(document).ready(function(){
 
 	
 	$( "#dialog-confirm-move" ).hide();
-
-	
 	initDataTables();
-
-	
 	updateButtonActions();
 
 	window.onbeforeunload = confirmExit;
@@ -29,7 +25,8 @@ function updateButtonActions() {
 		icons: {
 			secondary: "ui-icon-refresh"
 		}
-	}).click(function(){
+	})
+	$("#btnUpdate").click(function(){
 		needToConfirm = false;
 		$.post(  
 				starexecRoot+"services/nodes/update",
@@ -52,7 +49,8 @@ function updateButtonActions() {
 	$('#btnBack').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
-	}}).click(function(){
+	}})
+	$("#btnBack").click(function(){
 		
 		history.back(-1);
 	});
@@ -61,7 +59,8 @@ function updateButtonActions() {
 		icons: {
 			secondary: "ui-icon-refresh"
 		}
-	}).click(function(){
+	})
+	$("#btnDateChange").click(function(){
 		nodeTable.fnDraw();
 	});
 }
@@ -105,7 +104,7 @@ function initDataTables() {
 		},
 		"fnServerData"	: fnPaginationHandler
 	});
-	
+	alert("here");
 	nodeTable.makeEditable({
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
@@ -116,7 +115,7 @@ function initDataTables() {
 
 		}
 	  });
-	
+	alert("there");
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {

@@ -619,7 +619,7 @@ public class Requests {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetQueueRequestByCode(?)}");
+			 procedure = con.prepareCall("{CALL GetQueueRequestById(?)}");
 			procedure.setInt(1, id);					
 			 results = procedure.executeQuery();
 			
@@ -938,7 +938,7 @@ public class Requests {
 	 * @return the node_count
 	 * @author Wyatt Kaiser
 	 */
-	public static int GetNodeCountOnDate(String name, java.util.Date date) {
+	public static int GetNodeCountOnDate(int requestId, java.util.Date date) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -946,7 +946,7 @@ public class Requests {
 			con = Common.getConnection();	
 			
 			procedure = con.prepareCall("{CALL GetRequestNodeCountOnDate(?, ?)}");
-			procedure.setString(1, name);
+			procedure.setInt(1, requestId);
 			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 			procedure.setDate(2, sqlDate);
 			

@@ -3741,7 +3741,6 @@ public class RESTServices {
 	
 	
 	
-	//TODO: Who should be able to do this?
 	/**
 	 * Will update the database to reflect saved temp node_count changes
 	 * 
@@ -3751,7 +3750,11 @@ public class RESTServices {
 	@POST
 	@Path("/nodes/update")
 	@Produces("application/json")
-	public String updateNodeCount() {
+	public String updateNodeCount(@Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		if (!Users.isAdmin(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
 		boolean success = Cluster.updateTempChanges();
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}

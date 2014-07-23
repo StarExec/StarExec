@@ -311,6 +311,8 @@ CREATE PROCEDURE GetLatestNodeDate()
 		WHERE approved=TRUE;
 	END //
 	
+-- Updates the number of nodes a particular reservation will get on a specific day
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
 CREATE PROCEDURE UpdateReservedNodeCount(IN _requestId INT, IN _nodeCount INT, IN _date DATE)
 	BEGIN

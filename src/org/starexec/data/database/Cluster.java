@@ -452,18 +452,14 @@ public class Cluster {
 	}
 
 
-	public static Boolean reserveNodes(int queue_id, Date start, Date end) {
+	public static Boolean reserveNodes(int request_id, Date start, Date end) {
 			
 		List<java.sql.Date> dates =  Requests.getDateRange(start, end);
-		
+
 		for (java.sql.Date utilDate : dates) {
-			Queue q = Queues.get(queue_id);
-			String queueName = q.getName();
-			String[] split = queueName.split("\\.");
-			String shortQueueName = split[0];
-			int node_count = Requests.GetNodeCountOnDate(shortQueueName, utilDate);
+			int node_count = Requests.GetNodeCountOnDate(request_id, utilDate);
 			
-		    Boolean result = updateNodeCount(queue_id, node_count, utilDate);
+		    Boolean result = updateNodeCount(request_id, node_count, utilDate);
 		    if (!result) {
 		    	return false;
 		    }
@@ -507,48 +503,14 @@ public class Cluster {
 		return -1;
 	}
 
-
-	public static List<QueueRequest> getTempChanges() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetTempChanges()}");			
-			
-			results = procedure.executeQuery();
-			List<QueueRequest> requests = new LinkedList<QueueRequest>();
-			
-			while(results.next()){
-				QueueRequest req = new QueueRequest();
-				int spaceId = results.getInt("space_id");
-				String queueName = results.getString("queue_name");
-				int nodeCount = results.getInt("node_count");
-				Date reserveDate = results.getDate("reserve_date");
-				req.setSpaceId(spaceId);
-				req.setQueueName(queueName);
-				req.setNodeCount(nodeCount);
-				req.setStartDate(reserveDate);
-				
-				requests.add(req);
-			}			
-
-			return requests;			
-			
-		} catch (Exception e){			
-			log.error("GetTempChanges says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-		
+	/**
+	 * 
+	 * @return
+	 */
 	
-	
+	//TODO: Fix up this functionality somehow
 	public static boolean updateTempChanges() {
+		/*
 		List<QueueRequest> temp_changes = Cluster.getTempChanges();
 		boolean success = true;
 		if (temp_changes != null) {
@@ -565,7 +527,8 @@ public class Cluster {
 		
 		if (success) { success = Cluster.removeEmptyNodeCounts(); }
 		
-		return success ? true : false;
+		return success ? true : false;*/
+		return false;
 	}
 
 	/**
