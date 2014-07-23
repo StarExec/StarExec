@@ -13,6 +13,9 @@ USE starexec;
 
  ALTER TABLE queue_request ADD COLUMN approved BOOLEAN NOT NULL DEFAULT FALSE;
 
+ ALTER TABLE queue_request ADD COLUMN queue_id INT DEFAULT NULL;
+
+ 
  ALTER TABLE queue_request DROP COLUMN node_count;
 
  ALTER TABLE queue_request DROP COLUMN reserve_date;
@@ -34,5 +37,6 @@ alter table queue_request drop primary key, add primary key(id);
 
 ALTER TABLE queue_request ADD CONSTRAINT queue_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE queue_request ADD CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE;
+ALTER TABLE queue_request ADD CONSTRAINT queue_request_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE;
 
 

@@ -3477,9 +3477,8 @@ public class RESTServices {
 		if(status!=0) {
 			return gson.toJson(status);
 		}
-		QueueRequest req = Requests.getRequestForReservation(queueId);
 
-		GridEngineUtil.cancelReservation(req);
+		GridEngineUtil.removeQueue(queueId);
 		return gson.toJson(0);
 	}
 	
@@ -3523,15 +3522,13 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-	
+		GridEngineUtil.removeQueue(queueId);
+
 		if (!Queues.isQueuePermanent(queueId)) {
-			QueueRequest req = Requests.getRequestForReservation(queueId);
-			GridEngineUtil.cancelReservation(req);
+			GridEngineUtil.removeQueue(queueId,false);
 			return gson.toJson(0);
 		} else {
-			GridEngineUtil.removePermanentQueue(queueId);
 			return gson.toJson(0);
-			
 		}
 	}
 	

@@ -339,7 +339,7 @@ public class Requests {
 	 * @param req
 	 * @return
 	 */
-	public static Boolean DeleteReservation(QueueRequest req) {
+	public static Boolean DeleteReservation(int queueId) {
 		log.debug("deleteReservation");
 		Connection con = null;
 		CallableStatement procedureAddHistory = null;
@@ -349,9 +349,7 @@ public class Requests {
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
-			
-			String queueName = req.getQueueName();
-			int queueId = Queues.getIdByName(queueName);
+
 			
 			procedureRemoveReservation = con.prepareCall("{CALL CancelQueueReservation(?)}");
 			procedureRemoveReservation.setInt(1, queueId);
