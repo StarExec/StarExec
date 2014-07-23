@@ -8,7 +8,8 @@ import java.sql.Timestamp;
  * 
  * @author Todd Elvers & Tyler Jensen
  */
-public class QueueRequest {
+public class QueueRequest extends Identifiable {
+
 	private int userId;
 	private int spaceId;
 	private String queueName;
@@ -16,9 +17,9 @@ public class QueueRequest {
 	private Date start_date;
 	private Date end_date;
 	private String message;
-	private String code;
 	private Timestamp createDate;
-
+	private int wallTimeout;
+	private int cpuTimeout;
 	
 	/**
 	 * @return the user_id of the user who created the request
@@ -104,19 +105,7 @@ public class QueueRequest {
 		this.end_date = end_date;
 	}
 	
-	/**
-	 * @return the unique code for this request (used for hyperlinking)
-	 */
-	public String getCode(){
-		return this.code;
-	}
 	
-	/**
-	 * @param code the unique code to set to this request (used for hyperlinking)
-	 */
-	public void setCode(String code){
-		this.code = code;
-	}
 	
 	
 	/**
@@ -145,6 +134,34 @@ public class QueueRequest {
 	 */
 	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
+	}
+
+	/**
+	 * @param wallTimeout the wallTimeout to set
+	 */
+	public void setWallTimeout(int wallTimeout) {
+		this.wallTimeout = wallTimeout;
+	}
+
+	/**
+	 * @return the wallTimeout
+	 */
+	public int getWallTimeout() {
+		return wallTimeout;
+	}
+
+	/**
+	 * @param cpuTimeout the cpuTimeout to set
+	 */
+	public void setCpuTimeout(int cpuTimeout) {
+		this.cpuTimeout = cpuTimeout;
+	}
+
+	/**
+	 * @return the cpuTimeout
+	 */
+	public int getCpuTimeout() {
+		return cpuTimeout;
 	}
 
 }

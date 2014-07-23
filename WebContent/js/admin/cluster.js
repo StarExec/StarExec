@@ -135,6 +135,11 @@ function initUI(id){
 		}
 	});
 	
+	$("#editQueue").button({
+		icons: {
+			primary: "ui-icon-pencil"
+		}
+	});
 	
 	//Make tables expandable/collapsable
 	$('#reservationField').expandable(false);
@@ -146,14 +151,7 @@ function initUI(id){
 
 }
 
-function updateActionId(id, type, permanent, global) {
-	$("#removeQueue").hide();
-	$("#makePermanent").hide();
-	$("#moveNodes").hide();
-	$("#CommunityAssoc").hide();
-	$("#makeGlobal").hide();
-	$("#removeGlobal").hide();
-	
+function updateActionId(id, type, permanent, global) {	
 	if (id == -1) {
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
@@ -161,6 +159,9 @@ function updateActionId(id, type, permanent, global) {
 		$("#CommunityAssoc").hide();
 		$("#makeGlobal").hide();
 		$("#removeGlobal").hide();
+		$("#editQueue").hide();
+	} else {
+		$("#editQueue").show();
 	}
 	
 	if (type == "active_queue" || type=="inactive_queue") {
@@ -245,6 +246,9 @@ function updateActionId(id, type, permanent, global) {
 		});
 	});
 	
+	$("#editQueue").click(function() {
+		window.open(starexecRoot+"secure/edit/queue.jsp?id="+id);
+	});
 	
 	$("#removeQueue").click(function(){
 		$('#dialog-confirm-remove-txt').text('are you sure you want to remove this queue?');
@@ -383,24 +387,9 @@ function initDataTables(){
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler
 	});
-	reserved = $('#qreserved').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler2
-	});
-	historic = $('#qhistoric').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler3
-	});
+
+
+	
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback){
@@ -434,69 +423,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback){
 		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
 	});
 }
-
-function fnPaginationHandler2(sSource, aoData, fnCallback){
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + "queues/reserved/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-					//showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
-					// Update the number displayed in this DataTable's fieldset
-					$('#reservedExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				
-
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
-
-function fnPaginationHandler3(sSource, aoData, fnCallback){
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + "queues/historic/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
-					// Update the number displayed in this DataTable's fieldset
-					$('#historicExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				
-
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
-
 
 function cancelReservation(spaceId, queueId) {
 	$.post(

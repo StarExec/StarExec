@@ -41,28 +41,28 @@ public class Queues {
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, String queueName) throws Exception {			
+	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) throws Exception {			
 		log.debug("preparing to call sql procedures to add queue");
-		CallableStatement addQueue = null;
-		CallableStatement associateQueue = null;
+		CallableStatement procedure = null;
 		try {
 			
 			//Add the queue first
 			log.debug("Calling AddQueue");
 			log.debug("queueName = " + queueName);
-			addQueue = con.prepareCall("{CALL AddQueue(?, ?)}");	
-			addQueue.setString(1, queueName);
-			addQueue.registerOutParameter(2, java.sql.Types.INTEGER);
-			addQueue.executeUpdate();
-			int newQueueId = addQueue.getInt(2);
+			procedure = con.prepareCall("{CALL AddQueue(?, ?, ? , ?)}");	
+			procedure.setString(1, queueName);
+			procedure.setInt(2, wallTimeout);
+			procedure.setInt(3,cpuTimeout);
+			procedure.registerOutParameter(4, java.sql.Types.INTEGER);
+			procedure.executeUpdate();
+			int newQueueId = procedure.getInt(4);
 			
 			log.info(String.format("New queue with name [%s] was successfully created", queueName));
 			return newQueueId;
 		} catch (Exception e) {
 			
 		} finally {
-			Common.safeClose(addQueue);
-			Common.safeClose(associateQueue);
+			Common.safeClose(procedure);
 		}
 		return -1;
 	}
@@ -73,7 +73,7 @@ public class Queues {
 	 * @return The ID of the newly inserted queue, -1 if the operation failed
 	 * @author Wyatt Kaiser
 	 */
-	public static int add(String queueName) {
+	public static int add(String queueName, int cpuTimeout, int wallTimeout) {
 		Connection con = null;			
 		
 		try {
@@ -82,7 +82,7 @@ public class Queues {
 			Common.beginTransaction(con);	
 
 			// Add queue is a multi-step process, so we need to use a transaction
-			int newQueueId = Queues.add(con, queueName);
+			int newQueueId = Queues.add(con, queueName,cpuTimeout,wallTimeout);
 
 			Common.endTransaction(con);			
 			
@@ -401,7 +401,7 @@ public class Queues {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-			return -2;				
+			return -1;				
 	}
 	
 	/**
@@ -559,7 +559,14 @@ public class Queues {
 			return null;		
 	}
 	
-	 public static int getNodeCountOnDate(int queueId, java.util.Date date) {
+	/**
+	 * For a particular queue reservation, gets the number of nodes in that reservation on a particular day
+	 * @param requestId The id of the request entry for the queue of interest
+	 * @param date
+	 * @return
+	 */
+	
+	 public static int getNodeCountOnDate(int requestId, java.util.Date date) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -567,7 +574,7 @@ public class Queues {
 			con = Common.getConnection();	
 			
 			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
-			procedure.setInt(1, queueId);
+			procedure.setInt(1, requestId);
 			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 			procedure.setDate(2, sqlDate);
 			
@@ -680,6 +687,7 @@ public class Queues {
 				q.setCpuTimeout(results.getInt("cpuTimeout"));
 				queues.add(q);
 			}			
+			System.out.println(queues.size());
 						
 			return queues;
 		} catch (Exception e){			
@@ -1020,11 +1028,19 @@ public class Queues {
 		CallableStatement procUpdateAttr = null;
 		try {
 			con = Common.getConnection();
-			
+			int id=Queues.getIdByName(name);
+			//if the queue exists, get its existing timeouts
+			int cpuTimeout=R.DEFAULT_MAX_TIMEOUT;
+			int wallTimeout=R.DEFAULT_MAX_TIMEOUT;
+			if (id>0) {
+				Queue q=Queues.get(id);
+				cpuTimeout=q.getCpuTimeout();
+				wallTimeout=q.getWallTimeout();
+			}
 			// All or nothing!
 			Common.beginTransaction(con);
 			
-			add(con,name);
+			add(con,name,cpuTimeout,wallTimeout);
 			 procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
 			 procUpdateAttr = con.prepareCall("{CALL UpdateQueueAttr(?, ?, ?)}");	
 			
@@ -1184,7 +1200,64 @@ public class Queues {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * Updates the cpu timeout for an existing queue
+	 * @param queueId
+	 * @param timeout
+	 * @return
+	 */
+	public static boolean updateQueueCpuTimeout(int queueId, int timeout) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL UpdateQueueCpuTimeout(?,?)}");
+			procedure.setInt(1,queueId);
+			procedure.setInt(2,timeout);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			
+		}
+		return false;
+	}
+	/**
+	 * Updates the wallclock timeout for an existing queue
+	 * @param queueId
+	 * @param timeout
+	 * @return
+	 */
+	public static boolean updateQueueWallclockTimeout(int queueId, int timeout) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL UpdateQueueClockTimeout(?,?)}");
+			procedure.setInt(1,queueId);
+			procedure.setInt(2,timeout);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			
+		}
+		return false;
+	}
+	
+	/**
+	 * Makes a queue permanent by both setting the "permanent" flag to be true and 
+	 * also removing the queue's association from spaces.
+	 * @param queue_id
+	 * @return
+	 */
 	public static boolean makeQueuePermanent(int queue_id) {
 		Connection con = null;
 		CallableStatement MakePermanent = null;
@@ -1198,11 +1271,7 @@ public class Queues {
 			MakePermanent = con.prepareCall("{CALL MakeQueuePermanent(?)}");
 			MakePermanent.setInt(1, queue_id);
 			MakePermanent.executeUpdate();
-			
-			//remove all entries in queue_reserved
-			DeleteEntries = con.prepareCall("{CALL RemoveReservedEntries(?)}");
-			DeleteEntries.setInt(1, queue_id);
-			DeleteEntries.executeUpdate();
+
 			
 			//Delete from comm_queue
 			DeleteAssociation = con.prepareCall("{CALL RemoveQueueAssociation(?)}");

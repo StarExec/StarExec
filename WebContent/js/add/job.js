@@ -37,12 +37,12 @@ $(document).ready(function(){
 
 function getMaxCpuTimeout(){
 	maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
-	return maxtime;
+	return parseInt(maxtime);
 }
 
 function getMaxWallTimeout() {
 	maxtime=$( "#workerQueue option:selected" ).attr("wallmax");
-	return maxtime;
+	return parseInt(maxtime);
 }
 
 /**
@@ -132,7 +132,7 @@ function attachFormValidation(){
 			    min: 1
 			};
 		
-		settings.rules.wallTimeout = {
+		settings.rules.wallclockTimeout = {
 				required: true,			    
 			    max: getMaxWallTimeout(),
 			    min: 1
@@ -144,11 +144,13 @@ function attachFormValidation(){
 			    min: "1 second minimum timeout"
 			};
 		
-		settings.messages.wallTimeout = {
+		settings.messages.wallclockTimeout = {
 				required: "enter a timeout",			    
 			    max: getMaxWallTimeout()+" second max timeout",
 			    min: "1 second minimum timeout"
-		}
+		};
+		$("#addForm").valid(); //revalidate now that we have new rules
+
 		
 	});
 };

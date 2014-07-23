@@ -329,7 +329,7 @@ public class GridEngineUtil {
 				}
 				
 				int queueId = Queues.getIdByName(req.getQueueName());
-				int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+				int nodeCount = Queues.getNodeCountOnDate(req.getId(), today);
 				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
 				int actualNodeCount = actualNodes.size();
 				String queueName = Queues.getNameById(queueId);
@@ -358,7 +358,7 @@ public class GridEngineUtil {
 			}
 				
 			int queueId = Queues.getIdByName(req.getQueueName());
-			int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+			int nodeCount = Queues.getNodeCountOnDate(req.getId(), today);
 			List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
 			int actualNodeCount = actualNodes.size();
 			String queueName = Queues.getNameById(queueId);

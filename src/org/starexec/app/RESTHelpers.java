@@ -173,13 +173,18 @@ public class RESTHelpers {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		JSTreeItem t;
 		for (Queue q : queues) {
+			//status might be null, so we don't want a null pointer in that case
+			String status=q.getStatus();
+			if (status==null) {
+				status="";
+			}
 			if (Queues.getNodes(q.getId()).size() > 0) {
 				t = new JSTreeItem(q.getName(), q.getId(), "closed", 
-						q.getStatus().equals("ACTIVE") ? "active_queue"
+						status.equals("ACTIVE") ? "active_queue"
 						: "inactive_queue");
 			} else {
 				t = new JSTreeItem(q.getName(), q.getId(), "leaf",
-						q.getStatus().equals("ACTIVE") ? "active_queue"
+						status.equals("ACTIVE") ? "active_queue"
 						: "inactive_queue");
 			}
 
@@ -661,319 +666,7 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
-	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.util.Date> dates, HttpServletRequest request) {		
-		JsonArray dataTablePageEntries = new JsonArray();
-		int total_node_count = Cluster.getNonPermanentNodeCount();
-		
-		//This hashmap tells us at what date did a queue experience its first non-zero count
-		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
-		//This hashmap tells us at what date did we experience the last non-zero count
-		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
-		//This hashmap tells us if the request had a non-zero count on TODAY's date
-		List<Integer> starts_nonEmpty = new LinkedList<Integer>();
-		
-		List<Queue> queues = Queues.getAllNonPermanent();
-
-		for (java.util.Date date : dates) {
-			if (queues!= null) {
-				for (Queue q : queues) {
-					if (q.getId() == Cluster.getDefaultQueueId()) {
-						continue;
-					}
-					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					
-					if (node_count > 0) {
-						if (!(nonzero_date.containsKey(q.getId()) )  ) {
-							nonzero_date.put(q.getId(), date);
-						}
-						if (last_date.containsKey(q.getId())) {
-							if (date.after(last_date.get(q.getId()))) {
-								last_date.remove(q.getId());
-							}
-						}
-					} else {
-						if (nonzero_date.containsKey(q.getId())) {
-							if (!(last_date.containsKey(q.getId()))) {
-								last_date.put(q.getId(), date);
-							}
-						}
-					}
-				}
-			}
-		}		
-		
-		int dateCount = 0;
-		for (java.util.Date date : dates ) {
-			dateCount += 1;
-			boolean conflict = false;
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-			String date1 = sdf.format(date);
-			
-	    	JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(date1));
-			int total = 0;
-			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
-			total = total + node_count;
-			
-			//Get the total number of nodes that have been reserved
-			if (queues != null) {
-				for (Queue q : queues) {
-					node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					total = total + node_count;
-				}
-			}
-			
-			//set the number for the default queue to be all leftovers
-			int leftover_nodes = total_node_count - total;
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive(0));
-			} else {
-				entry.add(new JsonPrimitive(total_node_count - total));
-			}
-			
-			//Get the numbers for each respective queue
-			if (queues!= null) {
-				for (Queue q : queues) {
-					if (q.getId() == Cluster.getDefaultQueueId()) {
-						continue;
-					}
-					node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					
-					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
-					
-					if (last_date.containsKey(q.getId())) {
-						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId()); // this is the date that the queue first had a non-zero node count
-						java.util.Date latest_date = last_date.get(q.getId()); // this is the date that the queue returned to 0
-						
-						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
-							if (node_count == 0) { conflict = true; }
-						}
-					} else if (nonzero_date.containsKey(q.getId())) {
-						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-						
-						if (date.after(earliest_nonZero_date)) {
-							if (node_count == 0) { conflict = true; }
-						}
-					}		
-					
-					
-					entry.add(new JsonPrimitive(node_count));
-				}
-			}
-			
-			//Put the "total" at the end
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive (total)); // conflict #
-			} else {
-				entry.add(new JsonPrimitive(total_node_count)); //default total #
-			}
-			//Mark if conflicted
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive("CONFLICT"));
-			} else if (leftover_nodes == 0 || conflict == true) {
-				entry.add(new JsonPrimitive("ZERO"));
-			} else {
-				entry.add(new JsonPrimitive("clear"));
-			}
-			dataTablePageEntries.add(entry);
-		}
-    	JsonObject nextPage=new JsonObject();
-
-	    nextPage.add("aaData", dataTablePageEntries);
-
-	   	return nextPage;
-	}
 	
-	
-	protected static JsonObject getNextdataTablesPageForApproveQueueRequest(List<java.util.Date> dates, QueueRequest req, HttpServletRequest request) {
-		JsonArray dataTablePageEntries = new JsonArray();
-		int total_node_count = Cluster.getNonPermanentNodeCount();
-		Date reqStartDate = req.getStartDate();
-		Date reqEndDate = req.getEndDate();
-
-		//This hashmap tells us at what date did a queue experience its first non-zero count
-		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
-		//This hashmap tells us at what date did we experience the last non-zero count
-		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
-		//This hashmap tells us if the request had a non-zero count on TODAY's date
-		List<Integer> starts_nonEmpty = new LinkedList<Integer>();
-		
-		List<Queue> queues = Queues.getAllNonPermanent();
-
-		for (java.util.Date date : dates) {
-			if (queues!= null) {
-				for (Queue q : queues) {
-					if (q.getId() == Cluster.getDefaultQueueId()) {
-						continue;
-					}
-					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					
-					if (node_count > 0) {
-						if (!(nonzero_date.containsKey(q.getId()) )  ) {
-							nonzero_date.put(q.getId(), date);
-						}
-						if (last_date.containsKey(q.getId())) {
-							if (date.after(last_date.get(q.getId()))) {
-								last_date.remove(q.getId());
-							}
-						}
-					} else {
-						if (nonzero_date.containsKey(q.getId())) {
-							if (!(last_date.containsKey(q.getId()))) {
-								last_date.put(q.getId(), date);
-							}
-						}
-					}
-				}
-			}
-			//Do the same for the newly request queue
-			int req_queue_id = Queues.getIdByName(req.getQueueName());
-			int reqNodeCount = Requests.GetNodeCountOnDate(req.getQueueName(), date);
-			int temp_reqNodeCount = Cluster.getTempNodeCountOnDate(req.getQueueName(), date);
-			if (temp_reqNodeCount != -1) {
-				reqNodeCount = temp_reqNodeCount;
-			}
-			
-			if (reqNodeCount > 0) {
-				if (!(nonzero_date.containsKey(req_queue_id))) {
-					nonzero_date.put(req_queue_id, date);
-				}
-				if (last_date.containsKey(req_queue_id)) {
-					if (date.after(last_date.get(req_queue_id))) {
-						last_date.remove(req_queue_id);
-					}
-				}
-			} else {
-				if (nonzero_date.containsKey(req_queue_id)) {
-					if (!(last_date.containsKey(req_queue_id))) {
-						last_date.put(req_queue_id, date);
-					}
-				}
-			}			
-		}
-		
-		
-		int dateCount = 0;
-		for (java.util.Date d : dates ) {
-			dateCount += 1;
-			boolean conflict = false;
-
-			Date date = new Date(d.getTime());
-			
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-			String date1 = sdf.format(date);
-			
-	    	JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(date1));
-			int total = 0;
-			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
-			total = total + node_count;
-			
-			//Get the total number of nodes that have been reserved
-			if (queues != null) {
-				for (Queue q : queues) {
-					node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					total = total + node_count;
-				}
-			}
-			
-			int reqNodeCount = Requests.GetNodeCountOnDate(req.getQueueName(), d);
-			int temp_reqNodeCount = Cluster.getTempNodeCountOnDate(req.getQueueName(), d);
-			if (temp_reqNodeCount != -1) {
-				reqNodeCount = temp_reqNodeCount;
-			}
-			if (reqNodeCount == -1) {
-				reqNodeCount = 0;
-			}
-			total = total + reqNodeCount;
-			
-			//set the number for the default queue to be all leftovers
-			int leftover_nodes = total_node_count - total;
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive(0));
-			} else {
-				entry.add(new JsonPrimitive(total_node_count - total));
-			}
-			
-			//Get the numbers for each respective queue
-			if (queues != null) {
-				for (Queue q : queues) {
-					if (q.getId() == Cluster.getDefaultQueueId()) {
-						continue;
-					}
-					node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
-	
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					
-					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
-					
-					if (last_date.containsKey(q.getId())) {
-						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-						java.util.Date latest_date = last_date.get(q.getId());
-						
-						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
-							if (node_count == 0) { conflict = true; }
-						}
-					} else if (nonzero_date.containsKey(q.getId())) {
-						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-						
-						if (date.after(earliest_nonZero_date)) {
-							if (node_count == 0) { conflict = true; }
-						}
-					}		
-					
-					entry.add(new JsonPrimitive(node_count));
-				}
-				entry.add(new JsonPrimitive (reqNodeCount));
-			}
-	
-			
-			//Put the "total" at the end
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive (total)); // conflict #
-			} else {
-				entry.add(new JsonPrimitive(total_node_count)); //default total #
-			}
-			//Mark if conflicted
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive("CONFLICT"));
-			} else if (leftover_nodes == 0 || conflict == true) {
-				entry.add(new JsonPrimitive("ZERO"));
-			} else {
-				entry.add(new JsonPrimitive("clear"));
-			}
-			dataTablePageEntries.add(entry);
-		}
-    	JsonObject nextPage=new JsonObject();
-	    nextPage.add("aaData", dataTablePageEntries);
-
-	   	return nextPage;
-	}
 	
 	/**
 	 * 
@@ -2923,7 +2616,7 @@ public class RESTHelpers {
 				String userLink = sb.toString();
 				
 				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"location.href='" + Util.docRoot("") + "secure/admin/queue.jsp?code=" + req.getCode() + "'\" value=\"Y/N\"/>");
+				sb.append("<input type=\"button\" onclick=\"location.href='" + Util.docRoot("") + "secure/admin/queue.jsp?id=" + req.getId() + "'\" value=\"Y/N\"/>");
 				String approveButton = sb.toString();
 				log.debug(approveButton);
 
@@ -2946,9 +2639,8 @@ public class RESTHelpers {
 				String cancelButton = sb.toString();
 				log.debug(cancelButton);
 
-				int queueId = Queues.getIdByName(req.getQueueName());
-				int minNode = Cluster.getMinNodeCount(queueId);
-				int maxNode = Cluster.getMaxNodeCount(queueId);
+				int minNode = Cluster.getMinNodeCount(req.getId());
+				int maxNode = Cluster.getMaxNodeCount(req.getId());
 				
 				// Create an object, and inject the above HTML, to represent an
 				// entry in the DataTable
@@ -3220,36 +2912,6 @@ public class RESTHelpers {
 				attrMap.get(SYNC_VALUE), currentUserId, true);
 	}
 
-	public static JsonObject getNextDataTablesPageForQueueReservations(HttpServletRequest request) {
-		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		int currentUserId = SessionUtil.getUserId(request);
-		int totalReservations = Requests.getReservationCount();
-		List<QueueRequest> requests = Requests.getQueueReservations(
-				attrMap.get(STARTING_RECORD), // Record to start at
-				attrMap.get(RECORDS_PER_PAGE) // Number of records to return
-				);
-
-		/**
-		 * Used to display the 'total entries' information at the bottom of the
-		 * DataTable; also indirectly controls whether or not the pagination
-		 * buttons are toggle-able
-		 */
-		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalReservations);
-		}
-		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-		else {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
-		}
-		return convertQueueRequestsToJsonObject(requests, totalReservations,
-				attrMap.get(SYNC_VALUE), currentUserId, false);
-	}
 	
 	public static JsonObject getNextDataTablesPageForHistoricReservations(HttpServletRequest request) {
 		// Parameter Validation

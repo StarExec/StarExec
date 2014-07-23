@@ -122,6 +122,26 @@ CREATE PROCEDURE MakeQueuePermanent (IN _queueId INT)
 		WHERE id = _queueId;
 	END //
 
+-- Updates the max wallclock timeout for a queue
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS UpdateQueueClockTimeout;
+CREATE PROCEDURE UpdateQueueClockTimeout(IN _queueId INT, IN _timeout INT)
+	BEGIN
+		UPDATE queues
+		SET clockTimeout=_timeout
+		WHERE id=_queueId;
+	END //
+
+-- Updates the max cpu timeout for a queue
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS UpdateQueueCpuTimeout;
+CREATE PROCEDURE UpdateQueueCpuTimeout(IN _queueId INT, IN _timeout INT)
+	BEGIN
+		UPDATE queues
+		SET cpuTimeout=_timeout
+		WHERE id=_queueId;
+	END //	
+
 -- Determines if the queue has global access
 -- Author: Wyatt kaiser
 DROP PROCEDURE IF EXISTS IsQueueGlobal;
@@ -180,7 +200,7 @@ CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
 DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
 CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
 	BEGIN
-		SELECT DISTINCT id, name, status, permanent, global_access, cpuTimeout,wallTimeout
+		SELECT DISTINCT id, name, status, permanent, global_access, cpuTimeout,clockTimeout
 		FROM queues 
 			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
 			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id

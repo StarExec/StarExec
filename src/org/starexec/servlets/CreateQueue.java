@@ -32,16 +32,10 @@ import org.starexec.util.Util;
 public class CreateQueue extends HttpServlet {		
 	private static final Logger log = Logger.getLogger(AddSpace.class);	
 
-	// Request attributes
-	private static final String queueName = "queueName";
-	private static final String nodeCount = "nodecount";
 
-	private static final String code = "code";
-	private static final String userId = "userId";
-	private static final String spaceId = "spaceId";
-	private static final String start = "start";
-	private static final String end = "end";
-	
+
+	private static final String id = "id";
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -60,8 +54,8 @@ public class CreateQueue extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid permissions");
 			return;
 		}
-		String queueCode = request.getParameter(code);
-		QueueRequest req = Requests.getQueueRequest(queueCode);
+		Integer requestId=  Integer.parseInt(request.getParameter(id));
+		QueueRequest req = Requests.getQueueRequest(requestId);
 		
 		String queue_name = req.getQueueName();
 		int queueUserId = req.getUserId();
@@ -79,19 +73,18 @@ public class CreateQueue extends HttpServlet {
 		
 		
 		//Add the queue, reserve the nodes, and approve the reservation
-		int newQueueId = Queues.add(queue_name + ".q");
-		Cluster.reserveNodes(queueSpaceId, newQueueId, start, end, message);
-		boolean approved = Requests.approveQueueReservation(req, newQueueId);
+		int newQueueId = Queues.add(queue_name + ".q",req.getCpuTimeout(),req.getWallTimeout());
+		Cluster.reserveNodes(req.getId(), start, end);
+		//boolean approved = Requests.removeQueueReservation(req.getId());
 		Cluster.updateTempChanges();
 
 		
-		User u = Users.get(queueUserId);
-		if(approved && !Users.isAdmin(u.getId())) {
+		if(!Users.isAdmin(queueUserId)) {
 			// Notify user they've been approved	
 			Mail.sendReservationResults(req, true);
 			log.info(String.format("User [%s] has finished the approval process.", Users.get(req.getUserId()).getFullName()));
 			
-		} else if (approved && Users.isAdmin(u.getId())) {
+		} else if (Users.isAdmin(queueUserId)) {
 			log.info(String.format("Admin has finished the add queue process."));
 			
 		} else {

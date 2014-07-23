@@ -3,7 +3,6 @@ var needToConfirm = false;
 
 $(document).ready(function(){
 
-	refreshUpdates();
 	
 	$( "#dialog-confirm-move" ).hide();
 
@@ -12,11 +11,7 @@ $(document).ready(function(){
 
 	
 	updateButtonActions();
-	
 
-	
-	
-	  
 	window.onbeforeunload = confirmExit;
 	function confirmExit() {
 		if (needToConfirm) {
@@ -27,25 +22,6 @@ $(document).ready(function(){
 	
 });
 
-
-function refreshUpdates() {
-	$.post(  
-			starexecRoot+"services/nodes/refresh",
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					break;
-				case 2:		
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
 
 
 function updateButtonActions() {
@@ -138,7 +114,7 @@ function initDataTables() {
 
 			setTimeout(function(){nodeTable.fnDraw();}, 1000);
 
-		},
+		}
 	  });
 	
 }

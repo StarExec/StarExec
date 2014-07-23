@@ -20,6 +20,27 @@ public class QueueSecurity {
 	}
 	
 	/**
+	 * Ensures a user has the appropriate permissions to edit an existing queue with the given
+	 * new values
+	 * @param userId The user making the request
+	 * @param clockTimeout The new clock timeout to be given to the queue
+	 * @param cpuTimeout The new cpu timeout to be given to the queue
+	 * @return 0 if the operation is allowed and a different number otherwise
+	 */
+	
+	public static int canUserEditQueue(int userId, int clockTimeout, int cpuTimeout) {
+		if (!Users.isAdmin(userId)) {
+			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		}
+		
+		if (clockTimeout<=0 || cpuTimeout<=0) {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
+		
+		return 0;
+	}
+	
+	/**
 	 * Checks to see whether the given user is allowed to update a queue reservation request
 	 * @param userId The ID of the user making the request
 	 * @param queueName The name the new queue would be given

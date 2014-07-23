@@ -36,7 +36,8 @@ public class CreatePermanentQueue extends HttpServlet {
 	private static final String name = "name";
 	//private static final String Nodes = "Nodes";
 	private static final String nodes = "node";
-
+	private static final String maxCpuTimeout="cpuTimeout";
+	private static final String maxWallTimeout="wallTimeout";
 	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -56,6 +57,9 @@ public class CreatePermanentQueue extends HttpServlet {
 			return;
 		}
 		String queue_name = (String)request.getParameter(name);
+		Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
+		Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
+		
 		//String node_name = (String)request.getParameter(Nodes);
 		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 
@@ -63,6 +67,10 @@ public class CreatePermanentQueue extends HttpServlet {
 		// Make sure that the queue has a unique name
 		if(Queues.notUniquePrimitiveName(queue_name)) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The requested queue name is already in use. Please select another.");
+			return;
+		}
+		if (cpuTimeout<=0 || wallTimeout<=0) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Timeouts need to be greater than 0.");
 			return;
 		}
 		
@@ -97,8 +105,10 @@ public class CreatePermanentQueue extends HttpServlet {
 		}
 		
 		//DatabaseChanges
-		boolean success = Queues.makeQueuePermanent(Queues.getIdByName(queue_name + ".q"));
-		
+		int queueId=Queues.getIdByName(queue_name + ".q");
+		boolean success = Queues.makeQueuePermanent(queueId);
+		success = success && Queues.updateQueueCpuTimeout(queueId, req.getCpuTimeout());
+		success = success && Queues.updateQueueWallclockTimeout(queueId, req.getWallTimeout());
 		if (!success) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
 		} else {

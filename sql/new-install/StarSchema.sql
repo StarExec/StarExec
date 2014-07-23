@@ -396,56 +396,36 @@ CREATE TABLE community_requests (
 	CONSTRAINT community_requests_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
+
+
 -- Pending requests to reserve a queue
 -- Author: Wyatt Kaiser
 CREATE TABLE queue_request (
+	id INT NOT NULL AUTO_INCREMENT,
 	user_id INT NOT NULL,
 	space_id INT NOT NULL,
 	queue_name VARCHAR(64) NOT NULL,
-	node_count INT NOT NULL,
-	reserve_date DATE NOT NULL,
 	message TEXT NOT NULL,
-	code VARCHAR(36) NOT NULL,
 	created TIMESTAMP NOT NULL,	
-	PRIMARY KEY (user_id, space_id, queue_name, reserve_date),
+	cpuTimeout INT DEFAULT 259200,
+	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
+	approved BOOLEAN NOT NULL DEFAULT FALSE,
+	queue_id INT DEFAULT NULL,
+	PRIMARY KEY (id),
 	CONSTRAINT queue_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT queue_request_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
 );
 
--- Reserved queues. includes future reservations and current reservations
--- Author: Wyatt Kaiser
-CREATE TABLE queue_reserved (
-	space_id INT NOT NULL,
-	queue_id INT NOT NULL,
+
+-- Associates a queue request to a particular day, on which the queue will have some number of nodes
+-- Author: Eric Burns
+CREATE TABLE queue_request_assoc (
 	node_count INT NOT NULL,
 	reserve_date DATE NOT NULL,
-	message TEXT NOT NULL,
-	PRIMARY KEY (space_id, queue_id, reserve_date),
-	CONSTRAINT queue_reserved_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	CONSTRAINT queue_reserved_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
-);
-
--- The history of queue_reservations (i.e. reservations that happened in the past)
--- Author: Wyatt Kaiser
-CREATE TABLE reservation_history (
-	space_id INT NOT NULL,
-	queue_name VARCHAR(64) NOT NULL,
-	node_count INT NOT NULL,
-	start_date DATE NOT NULL,
-	end_date DATE NOT NULL,
-	message TEXT NOT NULL,
-	PRIMARY KEY (queue_name, start_date)
-);
-
--- Includes temporary data when editing node_count information
--- Author: Wyatt Kaiser
-CREATE TABLE temp_node_changes (
-	space_id INT NOT NULL,
-	queue_name VARCHAR(64) NOT NULL,
-	node_count INT NOT NULL,
-	reserve_date DATE NOT NULL,
-	PRIMARY KEY (space_id, queue_name, reserve_date),
-	CONSTRAINT temp_node_changes_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE
+	request_id INT NOT NULL,
+	PRIMARY KEY (reserve_date, request_id),
+	CONSTRAINT queue_request_assoc FOREIGN KEY (request_id) REFERENCES queue_request(id) ON DELETE CASCADE
 );
 
 -- Pending requests to reset a user's password

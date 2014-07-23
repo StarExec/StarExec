@@ -144,6 +144,32 @@ public class Requests {
 	}
 	
 	/**
+	 * Associates a single date with an existing queue request by placing it in the queue_request_assoc table
+	 * @param con The open connection to perform the update on
+	 * @param req The request object, which needs an id and a node count
+	 * @param utilDate
+	 * @return
+	 */
+	public static boolean associateWithQueueRequest(Connection con, QueueRequest req, Date utilDate) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL AssociateDateWithQueueRequest(?,?,?)}");
+			procedure.setInt(1,req.getId());
+			procedure.setDate(2, utilDate);
+			procedure.setInt(3,req.getNodeCount());
+			
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Adds a request to reserve a queue for a given user and space
 	 * 
 	 * @param userId the user who wants to join a community
@@ -155,25 +181,24 @@ public class Requests {
 	 */
 	public static boolean addQueueRequest(QueueRequest req) {
 		//Get all the dates between these two dates
-	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(req.getStartDate());
-	    while (calendar.getTime().before(req.getEndDate()))
-	    {
-	        java.util.Date result = calendar.getTime();
-	        dates.add(result);
-	        calendar.add(Calendar.DATE, 1);
-	    }
-	    java.util.Date latestResult = calendar.getTime();
-	    dates.add(latestResult);
+	    List<java.sql.Date> dates = Requests.getDateRange(req.getStartDate(), req.getEndDate());
+	  
 		
 	    Connection con = null;
 	    try {
 			con = Common.getConnection();
+			int id = addQueueRequest(con, req);
+			//if we got back a valid id
 			Boolean result = false;
-			for (java.util.Date utilDate : dates) {
-			    result = addQueueRequest(con, req, utilDate);
+
+			if (id > 0) {
+				result=true;
+				for (java.sql.Date d : dates) {
+
+				    result=result && associateWithQueueRequest(con,req,d);
+				}
 			}
+			
 			return result;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -192,27 +217,24 @@ public class Requests {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
 	 */
-	protected static boolean addQueueRequest(Connection con, QueueRequest req, java.util.Date date ) {
+	protected static Integer addQueueRequest(Connection con, QueueRequest req) {
 		CallableStatement procedure = null;
 		try {		
-			
-			
-		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-			
-			
 			// Add a new entry to the community_request table
-			procedure = con.prepareCall("{CALL AddQueueRequest(?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddQueueRequest(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, req.getUserId());
 			procedure.setInt(2, req.getSpaceId());
 			procedure.setString(3, req.getQueueName());
-			procedure.setDate(4, sqlDate);
-			procedure.setString(5, req.getCode());
-			procedure.setString(6, req.getMessage());
-			procedure.setInt(7, req.getNodeCount());
+			procedure.setString(4, req.getMessage());
+			procedure.setInt(5,req.getWallTimeout());
+			procedure.setInt(6,req.getCpuTimeout());
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
+			
+			req.setId(procedure.getInt(7));
 
 			procedure.executeUpdate();		
 			log.debug(String.format("Added reservation record for user [%s] on space %s", req.getUserId(), req.getSpaceId()));			
-			return true;
+			return req.getId();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -220,7 +242,7 @@ public class Requests {
 			Common.safeClose(procedure);
 		}
 		
-		return false;
+		return -1;
 	}
 	 /**
 	 * Adds a user to their community and deletes their entry in the community request table
@@ -253,25 +275,21 @@ public class Requests {
 	}
 	
 	/**
-	 * Adds a queue to the comm_queue table (reserving it for a specific space)
-	 * and deletes the entry from the queue request table
+	 * Deletes a reservation from the queue reservation table and also the queue_request_assoc table
 	 *  
-	 * @param userId the user id of the newly registered user
-	 * @param communityId the community the newly registered user is joining
+	 * @param request_id 
 	 * @return True if the operation was a success, false otherwise
 	 * @author Wyatt Kaiser
 	 */
-	public static boolean approveQueueReservation(QueueRequest req, int newQueueId){
+	public static boolean removeQueueReservation(int request_id){
 		log.debug("beginning approval of queue reservation.");
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {		
 			con = Common.getConnection();
 
-			procedure = con.prepareCall("{CALL ApproveQueueReservation(?, ?, ?)}");
-			procedure.setString(1, req.getCode());
-			procedure.setInt(2, req.getSpaceId());
-			procedure.setInt(3, newQueueId);
+			procedure = con.prepareCall("{CALL RemoveQueueReservation(?)}");
+			procedure.setInt(1, request_id);
 			
 			procedure.executeUpdate();			
 			return true;					
@@ -315,36 +333,12 @@ public class Requests {
 		
 		return false;
 	}
-	
-	/**
-	 * Deletes a queue request given a space id and queue id,
-	 * @param userId the user id associated with the invite
-	 * @param communityId the communityId associated with the invite
-	 * @return True if the operation was a success, false otherwise
-	 * @author Wyatt Kaiser
-	 */
-	public static boolean declineQueueReservation(QueueRequest req){
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {			
-			con = Common.getConnection();
 
-			procedure = con.prepareCall("{CALL DeclineQueueReservation(?)}");
-			procedure.setString(1, req.getCode());
-			
-			procedure.executeUpdate();		
-			
-			return true;			
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);			
-		}
-		
-		return false;
-	}
-	
+	/**
+	 * 
+	 * @param req
+	 * @return
+	 */
 	public static Boolean DeleteReservation(QueueRequest req) {
 		log.debug("deleteReservation");
 		Connection con = null;
@@ -358,16 +352,6 @@ public class Requests {
 			
 			String queueName = req.getQueueName();
 			int queueId = Queues.getIdByName(queueName);
-
-			procedureAddHistory = con.prepareCall("{CALL AddReservationToHistory(?,?,?,?,?,?)}");
-			procedureAddHistory.setInt(1, req.getSpaceId());
-			procedureAddHistory.setString(2, queueName);
-			//req.getNodeCount() refers to the max node count
-			procedureAddHistory.setInt(3, req.getNodeCount());
-			procedureAddHistory.setDate(4, req.getStartDate());
-			procedureAddHistory.setDate(5, req.getEndDate());
-			procedureAddHistory.setString(6, req.getMessage());
-			procedureAddHistory.executeUpdate();
 			
 			procedureRemoveReservation = con.prepareCall("{CALL CancelQueueReservation(?)}");
 			procedureRemoveReservation.setInt(1, queueId);
@@ -603,8 +587,9 @@ public class Requests {
 				req.setNodeCount(results.getInt("MAX(node_count)"));
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
 				req.setEndDate(results.getDate("MAX(reserve_date)"));
-				req.setCode(results.getString("code"));
 				req.setCreateDate(results.getTimestamp("created"));
+				req.setCpuTimeout(results.getInt("cpuTimeout"));
+				req.setWallTimeout(results.getInt("clockTimeout"));
 				requests.add(req);	
 				
 							
@@ -628,27 +613,29 @@ public class Requests {
 	 * @return The request object associated with the request code
 	 * @author Wyatt Kaiser
 	 */
-	public static QueueRequest getQueueRequest(String code){
+	public static QueueRequest getQueueRequest(int id){
 		Connection con = null;			
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL GetQueueRequestByCode(?)}");
-			procedure.setString(1, code);					
+			procedure.setInt(1, id);					
 			 results = procedure.executeQuery();
 			
 			if(results.next()){
 				QueueRequest req = new QueueRequest();
+				req.setId(id);
 				req.setUserId(results.getInt("user_id"));
 				req.setSpaceId(results.getInt("space_id"));
 				req.setQueueName(results.getString("queue_name"));
 				req.setNodeCount(results.getInt("MAX(node_count)"));
 				req.setStartDate(results.getDate("MIN(reserve_date)"));
 				req.setEndDate(results.getDate("MAX(reserve_date)"));
-				req.setCode(results.getString("code"));
 				req.setMessage(results.getString("message"));
 				req.setCreateDate(results.getTimestamp("created"));
+				req.setWallTimeout(results.getInt("clockTimeout"));
+				req.setCpuTimeout(results.getInt("cpuTimeout"));
 				return req;
 			}			
 			
@@ -662,44 +649,7 @@ public class Requests {
 		
 		return null;
 	}
-	
-	public static List<QueueRequest> getQueueReservations(int startingRecord, int recordsPerPage) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfQueueReservations(?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			results = procedure.executeQuery();
-			
-			List<QueueRequest> requests = new LinkedList<QueueRequest>();
-			
-			while(results.next()){
-				QueueRequest req = new QueueRequest();
-				req.setSpaceId(results.getInt("space_id"));
-				int queue_id = results.getInt("queue_id");
-				Queue q = Queues.get(queue_id);
-				req.setQueueName(q.getName());
-				req.setNodeCount(results.getInt("node_count"));
-				req.setStartDate(results.getDate("MIN(reserve_date)"));
-				req.setEndDate(results.getDate("MAX(reserve_date)"));
-				requests.add(req);					
-			}	
-			
-			return requests;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
+
 	
 	public static List<QueueRequest> getHistoricQueueReservations(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
 		Connection con = null;			
@@ -880,71 +830,95 @@ public class Requests {
 	}
 	
 	/**
-	 * Updates the queueName, nodeCount, startDate, and endDate for a queueRequest. Does so by deleting all
-	 * entries and re-creating them.
-	 * 
-	 * @param req the new QueueRequest to add
-	 * 
-	 * @return true if successfull, false otherwise
-	 * @author Wyatt kaiser
+	 * Given a start date and an end date, gets an array that has all the dates between them, inclusive.
+	 * The dates will be ordered by time
+	 * @param startDate
+	 * @param endDate
+	 * @return
 	 */
-	public static boolean updateQueueRequest(QueueRequest req) {
-	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
+	
+	public static List<java.sql.Date> getDateRange(java.util.Date startDate, java.util.Date endDate) {
+	    List<java.sql.Date> dates = new ArrayList<java.sql.Date>();
 	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(req.getStartDate());
-	    while (calendar.getTime().before(req.getEndDate()))
+	    calendar.setTime(startDate);
+	    while (calendar.getTime().before(endDate))
 	    {
 	        java.util.Date result = calendar.getTime();
-	        dates.add(result);
+			java.sql.Date sqlDate = new java.sql.Date(result.getTime());
+
+	        dates.add(sqlDate);
 	        calendar.add(Calendar.DATE, 1);
 	    }
 	    java.util.Date latestResult = calendar.getTime();
-	    dates.add(latestResult);
-	    
+		java.sql.Date sqlDate = new java.sql.Date(latestResult.getTime());
+
+	    dates.add(sqlDate);
+	    return dates;
+	}
+	
+	/**
+	 * Updates all the fields of a queue request, including the requests associations with different dates
+	 * The request object given should have all its fields set with the new values.
+	 * 
+	 * @param req a QueueRequest object for which the id identifies the database entry to update
+	 * 
+	 * @return true if successful, false otherwise
+	 * @author Wyatt kaiser
+	 */
+	public static boolean updateQueueRequest(QueueRequest req) {
+		
 		Connection con = null;
-		CallableStatement procedure_delete = null;
 		
 		try {
 			con = Common.getConnection();
-			
-			procedure_delete = con.prepareCall("{CALL DeclineQueueReservation(?)}");
-			procedure_delete.setString(1, req.getCode());
-			procedure_delete.executeUpdate();
-			
-			Boolean result = false;
-			for (java.util.Date utilDate : dates) {
-				result = updateQueueRequest(con, req, utilDate);
-			}
-			return result;
+			return updateQueueRequest(con,req);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure_delete);
 		}
 		
 		
 		return false;
 	}
-
-	protected static boolean updateQueueRequest(Connection con, QueueRequest req, java.util.Date date ) {
+	/**
+	 * Updates an entry of the queue_request table with new values
+	 * @param con The open connection to make the request on
+	 * @param req
+	 * @param date
+	 * @return
+	 */
+	protected static boolean updateQueueRequest(Connection con, QueueRequest req) {
 		CallableStatement procedure = null;
 		try {					
-		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-		    log.debug("req.getNodeCount() = " + req.getNodeCount());
 			
 			// Add a new entry to the queue_request table
 			procedure = con.prepareCall("{CALL UpdateQueueRequest(?, ?, ?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, req.getUserId());
-			procedure.setInt(2, req.getSpaceId());
-			procedure.setString(3, req.getQueueName());
-			procedure.setDate(4, sqlDate);
-			procedure.setString(5, req.getCode());
-			procedure.setString(6, req.getMessage());
-			procedure.setInt(7, req.getNodeCount());
-			procedure.setTimestamp(8, req.getCreateDate());
-
+			procedure.setInt(1, req.getId());
+			procedure.setInt(2, req.getUserId());
+			procedure.setInt(3, req.getSpaceId());
+			procedure.setString(4, req.getQueueName());
+			procedure.setString(5, req.getMessage());
+			procedure.setTimestamp(6, req.getCreateDate());
+			procedure.setInt(7,req.getCpuTimeout());
+			procedure.setInt(8,req.getWallTimeout());
 			procedure.executeUpdate();		
+			
+			Common.safeClose(procedure);
+			
+			//first, clear out all the old assoc entries
+			procedure=con.prepareCall("{DeleteQueueRequestAssocEntries(?)}");
+			procedure.setInt(1,req.getId());
+			procedure.executeUpdate();
+			Common.safeClose(procedure);
+			
+			//then, add the new assoc entries to correspond with the newly updated dates and node counts
+		    List<java.sql.Date> dates = getDateRange(req.getStartDate(), req.getEndDate());
+		    for (java.sql.Date d : dates) {
+		    	
+		    	Requests.associateWithQueueRequest(con, req, d);
+		    }
+			
 			log.debug(String.format("updated request record for user [%s] on space %s", req.getUserId(), req.getSpaceId()));			
 			return true;
 		} catch (Exception e) {
@@ -995,40 +969,6 @@ public class Requests {
 		return -1;
 	}
 
-	/**
-	 * Returns the space Id that is associated with a queue reservation 
-	 * @param queueId the queueId to get the spaceId fro
-	 * @return spaceId
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	public static int getQueueReservationSpaceId (int queueId) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetQueueReservationSpaceId(?)}");
-			procedure.setInt(1, queueId);			
-			
-			results = procedure.executeQuery();
-
-			while(results.next()){
-				return results.getInt("space_id");
-			}			
-
-			return -1;			
-			
-		} catch (Exception e){			
-			log.error("GetQueueReservationSpaceId says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
 
 	public static int getQueueRequestSpaceId(String queueName) {
 		Connection con = null;	

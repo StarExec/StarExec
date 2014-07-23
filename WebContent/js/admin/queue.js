@@ -5,7 +5,6 @@ var progress = 0;
 
 $(document).ready(function() {
 	
-	refreshUpdates();
 	$('#dialog-warning').hide();
 
 
@@ -49,24 +48,7 @@ $(document).ready(function() {
 
 });
 
-function refreshUpdates() {
-	$.post(  
-			starexecRoot+"services/nodes/refresh",
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					break;
-				case 2:		
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
+
 
 function InitUI() {
 
@@ -77,7 +59,7 @@ function InitUI() {
 		}
 	}).click(function(){
 		$.post(
-				starexecRoot+"services/cancel/request/" + getParameterByName("code"),
+				starexecRoot+"services/cancel/request/" + getParameterByName("id"),
 				function(returnCode) {
 					switch (returnCode) {
 						case 0:
@@ -202,10 +184,10 @@ function initDataTables() {
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	var code = window.location.search.split('code=')[1]; //Check to see if flag was set
+	var id = window.location.search.split('id=')[1]; //Check to see if flag was set
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
-			sSource + "nodes/dates/reservation/" + code + "/pagination",
+			sSource + "nodes/dates/reservation/" + id + "/pagination",
 			aoData,
 			function(nextDataTablePage){
 				switch(nextDataTablePage){

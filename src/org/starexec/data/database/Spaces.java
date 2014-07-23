@@ -1441,8 +1441,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	}
 	
 	/**
-	 * Gets all the subspaces of the given space that are used by the given job
-	 * 
+	 * Gets all the subspaces of the given job space.
+	 * Job spaces will be in alphabetically ascending order
 	 * @param spaceId The id of the space to get the subspaces of
 	 * @param jobId The job for which we want to get used spaces
 	 * @param con the open database connection to use
