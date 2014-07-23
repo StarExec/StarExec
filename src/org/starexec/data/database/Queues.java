@@ -49,7 +49,7 @@ public class Queues {
 			//Add the queue first
 			log.debug("Calling AddQueue");
 			log.debug("queueName = " + queueName);
-			procedure = con.prepareCall("{CALL AddQueue(?, ?, ? , ?)}");	
+			procedure = con.prepareCall("{CALL AddQueue(?,?,?,?)}");	
 			procedure.setString(1, queueName);
 			procedure.setInt(2, wallTimeout);
 			procedure.setInt(3,cpuTimeout);

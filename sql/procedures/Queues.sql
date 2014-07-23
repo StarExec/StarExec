@@ -3,10 +3,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new queue given a name
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddQueue;
-CREATE PROCEDURE AddQueue(IN _name VARCHAR(128), OUT id INT)
+CREATE PROCEDURE AddQueue(IN _name VARCHAR(128),IN _wall INT, IN _cpu INT, OUT id INT)
 	BEGIN		
-		INSERT INTO queues (name, status)
-		VALUES (_name, "INACTIVE");
+		INSERT IGNORE INTO queues (name,clockTimeout,cpuTimeout, status)
+		VALUES (_name,_wall,_cpu, "INACTIVE");
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 	
