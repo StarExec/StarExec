@@ -3524,12 +3524,9 @@ public class RESTServices {
 		}
 		GridEngineUtil.removeQueue(queueId);
 
-		if (!Queues.isQueuePermanent(queueId)) {
-			GridEngineUtil.removeQueue(queueId,false);
-			return gson.toJson(0);
-		} else {
-			return gson.toJson(0);
-		}
+		
+		return gson.toJson(0);
+
 	}
 	
 	//Allows the administrator to set the current logging level for a specific class.
