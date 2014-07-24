@@ -366,8 +366,6 @@ public class Download extends HttpServlet {
 			
 			File schema = new File(R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC);
 			files.add(schema);
-			
-			
 
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
 			

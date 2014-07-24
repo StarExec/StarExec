@@ -49,7 +49,11 @@ $(document).ready(function(){
 	currentUserId=parseInt($("#userId").attr("value"));
 	curIsAdmin = isAdmin();
 	lastSelectedUserId = null;
-	
+	$("#exploreSpaces").button( {
+		icons: {
+			primary: "ui-icon-arrowthick-1-w"
+	}
+	});
 	//TODO : abstract space chain
 	usingSpaceChain=(getSpaceChain().length>1);
 

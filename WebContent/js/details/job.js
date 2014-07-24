@@ -5,7 +5,7 @@ var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
-
+var syncResults=false;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
 	
@@ -31,6 +31,15 @@ function setTimeButtonText(){
 		$(".changeTime .ui-button-text").html("use CPU time");
 	} else {
 		$(".changeTime .ui-button-text").html("use wall time");
+	}
+}
+
+function setSyncResultsText() {
+	if (syncResults) {
+		$("#syncResults").html("un-synchronize results");
+	} else {
+		$("#syncResults").html("synchronize results");
+
 	}
 }
 
@@ -280,6 +289,19 @@ function initUI(){
 		}
 	
 	});
+	
+	$("#syncResults").button({
+		icons: {
+			primary: "ui-icon-gear"
+	}
+	});
+	
+	$("#syncResults").click(function() {
+		//just change the sync results boolean and update the button text.
+		syncResults=!syncResults;
+		setSyncResultsText();
+	});
+	
 	$("#spaceOverviewUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
@@ -1034,7 +1056,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock,
+			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults,
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request

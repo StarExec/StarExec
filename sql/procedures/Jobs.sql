@@ -340,18 +340,32 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
-CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
+DROP PROCEDURE IF EXISTS GetCompletedJobPairsInJobSpace;
+CREATE PROCEDURE GetCompletedJobPairsInJobSpace(IN _jobSpaceId INT)
 	BEGIN
-		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,wallclock,job_pairs.id,bench_id
+		SELECT id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						bench_id,
+						bench_name,
+						job_attributes.attr_value AS result,
+						completion_id,
+						wallclock,
+						cpu
 		FROM job_pairs 				
-		WHERE job_space_id =_jobSpaceId;
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+		JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
+
+		WHERE job_space_id =_jobSpaceId AND status_code=7;
 	END //
 	
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairsByJobInJobSpaceHierarchy(IN _jobSpaceId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
 		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,
 		wallclock,job_pairs.id,job_pairs.bench_id,

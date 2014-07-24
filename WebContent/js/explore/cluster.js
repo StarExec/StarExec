@@ -149,6 +149,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 function getDetails(id, type) {
 	var url = '';
 	qid=id;
+	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
+
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
 		window['type'] = 'queues';

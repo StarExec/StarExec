@@ -13,6 +13,18 @@ function initUI(){
 			secondary: "ui-icon-arrowthick-1-n"
     }});
 	
+	$("#viewSchema").button({
+		icons: {
+			secondary: "ui-icon-document"
+	}
+	});
+	
+	$("#viewExample").button({
+		icons: {
+			secondary: "ui-icon-document"
+	}
+	});
+	
 }
 
 

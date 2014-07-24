@@ -916,6 +916,14 @@ public class JobPairs {
 	 * Sorts the given list of job pairs on the column given by the integer sortColumn
 	 * @param pairs The list  of pairs to sort
 	 * @param sortColumn Determines what attribute pairs are sorted on.
+	 * 0 = bench name
+	 * 1 = solver name
+	 * 2 = config name
+	 * 3 = status name
+	 * 4 = wallclock or cpu time (depending on wallclock variable)
+	 * 5 = starexec-result attr
+	 * 6 pair id
+	 * 7 completion id
 	 * @param Whether to sort ASC or DESC
 	 * @return
 	 */

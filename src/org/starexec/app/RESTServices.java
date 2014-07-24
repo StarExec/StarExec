@@ -658,9 +658,9 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		int status = JobSecurity.canUserSeeJob(jobId, userId);
@@ -669,7 +669,7 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock,syncResults);
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
