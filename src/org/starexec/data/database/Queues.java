@@ -745,7 +745,7 @@ public class Queues {
 				q.setPermanent(results.getBoolean("permanent"));
 				q.setGlobalAccess(results.getBoolean("global_access"));
 				q.setCpuTimeout(results.getInt("cpuTimeout"));
-				q.setWallTimeout(results.getInt("wallTimeout"));
+				q.setWallTimeout(results.getInt("clockTimeout"));
 				queues.add(q);
 			}
 			return queues;
