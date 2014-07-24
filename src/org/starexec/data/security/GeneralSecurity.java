@@ -2,6 +2,7 @@ package org.starexec.data.security;
 
 import org.owasp.esapi.ESAPI;
 import org.starexec.data.database.Users;
+import org.starexec.util.Util;
 
 public class GeneralSecurity {
 	/**
@@ -48,9 +49,11 @@ public class GeneralSecurity {
 	 */
 
 	public static int canUserRunTests(int userId) {
-		if (!Users.isAdmin(userId)) {
+		//only the admin can run tests, and they cannot be run on production
+		if (!Users.isAdmin(userId) || Util.isProduction()) {
 			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
 		}
+
 		return 0;
 	}
 	/**

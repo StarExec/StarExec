@@ -36,9 +36,9 @@ function setTimeButtonText(){
 
 function setSyncResultsText() {
 	if (syncResults) {
-		$("#syncResults").html("un-synchronize results");
+		$("#syncResults .ui-button-text").html("un-synchronize results");
 	} else {
-		$("#syncResults").html("synchronize results");
+		$("#syncResults .ui-button-text").html("synchronize results");
 
 	}
 }
