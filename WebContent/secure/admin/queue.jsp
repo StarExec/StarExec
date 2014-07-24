@@ -4,15 +4,15 @@
 <%
 
 try {
-	String code = request.getParameter("code");
+	int id = Integer.parseInt(request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
-	QueueRequest req = Requests.getQueueRequest(code);
+	QueueRequest req = Requests.getQueueRequest(id);
 	List<Queue> queues = Queues.getAllNonPermanent();
 
 
 
 	User u = Users.get(userId);
-	if (! u.getRole().equals("admin")) {
+	if (!Users.isAdmin(userId)) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 	} else {
 		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
@@ -27,12 +27,13 @@ try {
 		request.setAttribute("queueName", req.getQueueName());
 		request.setAttribute("defaultQueueName", R.DEFAULT_QUEUE_NAME);
 		request.setAttribute("message", req.getMessage());
-		request.setAttribute("code", req.getCode());
+		request.setAttribute("id", req.getId());
 		request.setAttribute("userId", req.getUserId());
 		request.setAttribute("spaceId", req.getSpaceId());
 		request.setAttribute("nodeCount" , req.getNodeCount());
 		request.setAttribute("start", start1);
 		request.setAttribute("end", end1);
+		request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
 	}		
 			
 } catch (NumberFormatException nfe) {
@@ -53,7 +54,7 @@ try {
 	<form id="addForm" method="POST" action="/${starexecRoot}/secure/add/queue" class="queue">	
 		<input type="hidden" name="spaceId" value="${spaceId}"/>
 		<input type="hidden" name="userId" value="${userId}"/>
-		<input type="hidden" name="code" value="${code}"/>
+		<input type="hidden" name="id" value="${id}"/>
 		<input type="hidden" name="nodecount" value="${nodeCount}"/>
 		<input type="hidden" name="start" value="${start}"/>
 		<input type="hidden" name="end" value="${end}"/>
@@ -88,6 +89,17 @@ try {
 						<td class="label"><p>end date</p></td>
 						<td><input id="end" name="end" type="text" value="${end}"/> </td>					
 					</tr>		
+					
+					<tr class="noHover" title="the maximum cpu timeout that can be set for any job using this queue">
+						<td class="label"><p>cpu timeout</p></td>
+						<td><input value="${defaultTimeout}" name="cpuTimeout" type="text" id="cpuTimeoutText"/></td>
+					</tr>	
+					<tr class="noHover" title="the maximum wallclock timeout that can be set for any job using this queue">
+						<td class="label"><p>wall timeout</p></td>
+						<td><input value="${defaultTimeout}" name="wallTimeout" type="text" id="wallTimeoutText"/></td>
+					</tr>	
+					
+					
 				</tbody>
 			</table>
 			<div>
@@ -106,7 +118,7 @@ try {
 					<c:forEach items="${queues}" var="queue"> 
 						<th style="width: 100px;">${queue.name}</th>
 					</c:forEach>
-					<th style="width: 100px;" id="qName">${code}</th>
+					<th style="width: 100px;" id="qName">${id}</th>
 					<th>total</th>
 					<th class="statusConflict">conflict</th>
 				</tr>

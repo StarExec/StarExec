@@ -47,7 +47,7 @@ $(document).ready(function(){
 	jobTable=$('#jobs').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
@@ -58,7 +58,7 @@ $(document).ready(function(){
 	solverTable=$('#solvers').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
@@ -70,14 +70,14 @@ $(document).ready(function(){
 	benchTable=$('#benchmarks').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });
 	
-	$(".selectableTable").delegate("tr","mousedown", function(){
+	$(".selectableTable").on("mousedown", "tr", function(){
 		$(this).toggleClass("row_selected");
 		handleSelectChange();
 	});

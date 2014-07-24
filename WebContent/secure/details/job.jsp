@@ -105,6 +105,8 @@
 	</div>
 	<div id="detailPanel" class="jobDetails">
 			<h3 id="spaceName">${jobspace.name}</h3>
+			<p id="displayJobSpaceID" class="accent">id  = ${job.primarySpace}</p>
+			
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
@@ -124,7 +126,7 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
-				<!-- <button id="compareSolvers">compare selected solvers</button>-->
+				<button id="compareSolvers">compare selected solvers</button>
 			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>

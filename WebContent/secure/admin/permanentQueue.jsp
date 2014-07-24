@@ -5,11 +5,17 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	List<Space> spaces = Spaces.GetAllSpaces();
-	List<WorkerNode> nodes = Cluster.getAllNodes();
-	//List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();
-	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-	request.setAttribute("nodes", nodes);
+	if (Users.isAdmin(userId)) {
+		List<Space> spaces = Spaces.GetAllSpaces();
+		List<WorkerNode> nodes = Cluster.getAllNodes();
+		//List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();
+		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+		request.setAttribute("nodes", nodes);
+		request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
+	} else {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
+	}
+	
 			
 } catch (NumberFormatException nfe) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
@@ -34,7 +40,17 @@ try {
 					<tr id="queueName" class="noHover" title="what would you like to name your permanent queue?">
 						<td class="label"><p>queue name</p></td>
 						<td><input length="${queueNameLen}" id="txtQueueName" name="name" type="text"/></td>
+						
+					</tr>
+					<tr class="noHover" title="the maximum cpu timeout that can be set for any job using this queue">
+						<td class="label"><p>cpu timeout</p></td>
+						<td><input value="${defaultTimeout}" name="cpuTimeout" type="text" id="cpuTimeoutText"/></td>
+					</tr>	
+					<tr class="noHover" title="the maximum wallclock timeout that can be set for any job using this queue">
+						<td class="label"><p>wall timeout</p></td>
+						<td><input value="${defaultTimeout}" name="wallTimeout" type="text" id="wallTimeoutText"/></td>
 					</tr>						
+					
 				</tbody>
 			</table>
 	</fieldset>

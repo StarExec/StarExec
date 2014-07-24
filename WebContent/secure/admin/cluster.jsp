@@ -7,8 +7,8 @@
 <%		
 	try {
 		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		if (!u.getRole().equals("admin")) {
+		
+		if (!Users.isAdmin(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} else {
 			
@@ -27,7 +27,7 @@
 		<ul id="exploreList"></ul>
 		<div id="explorerAction">
 			<ul id="exploreActions">
-				<li><a type="btnRun" id="newQueue" href="/${starexecRoot}/secure/add/queue.jsp">Add New Queue</a></li>
+				<!--<li><a type="btnRun" id="newQueue" href="/${starexecRoot}/secure/add/queue.jsp">Add New Queue</a></li>-->
 				<li><a type="btnRun" id="newPermanent" href="/${starexecRoot}/secure/admin/permanentQueue.jsp">Add Permanent Queue</a></li>
 			</ul>
 		</div>
@@ -38,61 +38,16 @@
 		<legend>actions</legend>
 			<ul id="actionList">
 				<li><button type="button" id="removeQueue">remove queue</button></li>
-				<li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>
+				<!--  <li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>-->
 				<li><button type="button" id="makePermanent">make queue permanent</button></li>
 				<li><a type="button" id="moveNodes" href="/${starexecRoot}/secure/admin/moveNodes.jsp">move nodes to this queue</a></li>
 				<li><a type="button" id="CommunityAssoc" href="/${starexecRoot}/secure/admin/assocCommunity.jsp">give communities access</a></li>
 				<li><button type="button" id="makeGlobal">give queue global access</button></li>
 				<li><button type="button" id="removeGlobal">remove global access</button></li>
-				
-				
-							
+				<li><button type="button" id="editQueue">edit queue</button></li>
 			</ul>
 		</fieldset>	
-		<fieldset  id="reservationField">
-			<legend class="expd" id="reservationExpd"><span>0</span> pending queue reservations</legend>
-			<table id="qreserves">
-				<thead>
-					<tr>
-						<th>user</th>
-						<th>space</th>
-						<th>nodes</th>
-						<th>start</th>
-						<th>end</th>
-						<th>approve\decline</th>
-					</tr>
-				</thead>			
-			</table>
-		</fieldset>
-		<fieldset id="reservedField">
-			<legend class="expd" id="reservedExpd"><span>0</span> currently reserved queues</legend>
-			<table id="qreserved">
-				<thead>
-					<tr>
-						<th>space</th>
-						<th>queue</th>
-						<th>nodes</th>
-						<th>start</th>
-						<th>end</th>
-						<th>cancel</th>
-					</tr>
-				</thead>
-			</table>
-		</fieldset>
-		<fieldset id="historicField">
-			<legend class="expd" id="historicExpd"><span>0</span> historic queue reservations</legend>
-			<table id="qhistoric">
-				<thead>
-					<tr>
-						<th>queue</th>
-						<th>nodes</th>
-						<th>start</th>
-						<th>end</th>
-						<th>message</th>
-					</tr>
-				</thead>
-			</table>
-		</fieldset>
+
 	</div>	
 	<div id="dialog-confirm-remove" title="confirm removal">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-remove-txt"></span></p>

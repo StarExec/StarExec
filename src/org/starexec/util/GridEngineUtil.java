@@ -323,13 +323,14 @@ public class GridEngineUtil {
 				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
 				 */
 				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
+				int queueId = Queues.getIdByName(req.getQueueName());
+
 				if (end_was_yesterday) {
 				    log.info("Reservation has ended for queue "+req.getQueueName()+".");
-				    cancelReservation(req);
+				    removeQueue(queueId);
 				}
 				
-				int queueId = Queues.getIdByName(req.getQueueName());
-				int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+				int nodeCount = Queues.getNodeCountOnDate(req.getId(), today);
 				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
 				int actualNodeCount = actualNodes.size();
 				String queueName = Queues.getNameById(queueId);
@@ -358,7 +359,7 @@ public class GridEngineUtil {
 			}
 				
 			int queueId = Queues.getIdByName(req.getQueueName());
-			int nodeCount = Cluster.getReservedNodeCountOnDate(queueId, today);
+			int nodeCount = Queues.getNodeCountOnDate(req.getId(), today);
 			List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
 			int actualNodeCount = actualNodes.size();
 			String queueName = Queues.getNameById(queueId);
@@ -425,59 +426,7 @@ public class GridEngineUtil {
 		}		
 	}
 
-    public static void cancelReservation(QueueRequest req) {
-	String queueName = req.getQueueName();
-	log.debug("Begin cancelReservation for queue " + queueName);
-
-	String[] split = queueName.split("\\.");
-	String shortQueueName = split[0];
-	int queueId = Queues.getIdByName(queueName);
-	    
-	//Pause jobs that are running on the queue
-	List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
-
-	log.debug("Pausing jobs on queue "+queueName);
-
-	if (jobs != null) {
-	    for (Job j : jobs) {
-		log.debug("Pausing job " + new Integer(j.getId()) + " on queue " + queueName);
-		Jobs.pause(j.getId());
-	    }
-	}
-		
-
-	String[] envp = new String[1];
-	envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-	//Move associated Nodes back to default queue
-	List<WorkerNode> nodes = Queues.getNodes(queueId);
-		
-	log.debug("Moving nodes back to @allhosts for queue "+queueName);
-
-	if (nodes != null) {
-	    for (WorkerNode n : nodes) {
-		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
-	    }
-	}
-		
-	log.debug("Now deleting queue "+queueName+" from the db and grid engine");
-		
-	/***** DELETE THE QUEUE *****/		
-	//Database modification:
-	Requests.DeleteReservation(req);
-
-	//DISABLE the queue: 
-	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + req.getQueueName(), envp);
-
-	//DELETE the queue:
-	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + req.getQueueName(), envp);
-			
-	//Delete the host group:
-	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
-			
-	GridEngineUtil.loadWorkerNodes();
-	GridEngineUtil.loadQueues();
-			
-    }
+  
 	
 	public static void startReservation (QueueRequest req) {
 		log.debug("begin startReservation");
@@ -749,9 +698,16 @@ public class GridEngineUtil {
 	    GridEngineUtil.loadQueues();
 		return true;
 	}
-
-	public static void removePermanentQueue(int queueId) {
-		String queueName = Queues.getNameById(queueId);
+	
+	/**
+	 * Removes a queue from grid engine and the database
+	 * @param queueId The Id of the queue to remove.
+	 * @param permanent
+	 */
+	public static void removeQueue(int queueId) {
+		Queue q=Queues.get(queueId);
+		boolean permanent=q.getPermanent();
+		String queueName = q.getName();
 		String[] split = queueName.split("\\.");
 		String shortQueueName = split[0];
 		
@@ -778,7 +734,12 @@ public class GridEngineUtil {
 		
 		/***** DELETE THE QUEUE *****/	
 			//Database Change
+		if (permanent) {
 			Queues.delete(queueId);
+
+		} else {
+			Requests.DeleteReservation(queueId);
+		}
 			
 			//DISABLE the queue: 
 			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);

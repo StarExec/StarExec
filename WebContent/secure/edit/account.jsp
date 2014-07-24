@@ -5,17 +5,15 @@
 	try {
 		int userId = Integer.parseInt(request.getParameter("id"));	
 		User t_user = Users.get(userId);
-		int visiting_userId = SessionUtil.getUserId(request);
-		User visiting_user = Users.get(visiting_userId);
-		
+		int visiting_userId = SessionUtil.getUserId(request);		
 		
 		long disk_usage = Users.getDiskUsage(t_user.getId());		
 		
 		if(t_user != null) {
 			
 			boolean owner = true;
-			boolean isadmin = false;
-			if( (visiting_userId != userId) && (!visiting_user.getRole().equals("admin"))  ){
+			boolean isadmin = Users.isAdmin(visiting_userId);
+			if( (visiting_userId != userId) && !isadmin){
 				owner = false;
 			} else {
 				request.setAttribute("userId", userId);
@@ -23,9 +21,7 @@
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 				request.setAttribute("sites", Websites.getAllForHTML(userId, Websites.WebsiteType.USER));
 			}
-			if (visiting_user.getRole().equals("admin")) {
-				isadmin = true;
-			}
+			
 			request.setAttribute("owner", owner);
 			request.setAttribute("isadmin", isadmin);
 			request.setAttribute("user", t_user);
@@ -104,6 +100,27 @@
 				</table>
 		</fieldset>
 	</c:if>
+	<fieldset>
+		<legend>site settings</legend>
+		<table id="siteSettingTable">
+			<thead>
+				<tr>
+					<th>setting</th>
+					<th>current value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>table entries per page</td>
+					<td type="int" id="editpagesize">${pagesize}</td>
+				</tr>
+			
+			
+			</tbody>
+		
+		</table>
+		
+	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
 		<table id="websites" class="shaded">

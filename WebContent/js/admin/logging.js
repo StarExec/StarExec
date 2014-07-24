@@ -57,13 +57,13 @@ function initUI(){
 	levelTable=$('#tableLevels').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bSort": false,
         "bPaginate": true
     });
 
 	
-	$("#tableLevels").delegate("tr", "click", function() {
+	$("#tableLevels").on( "click", "tr", function() {
 		if (!$(this).hasClass("row_selected")) {
 			unselectAllRows(levelTable);
 		}

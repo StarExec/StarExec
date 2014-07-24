@@ -25,7 +25,7 @@ function initUI(){
         "bSort": true        
     });
 	
-	$("#tblCommunities").delegate("tr", "click", function() {
+	$("#tblCommunities").on( "click", "tr", function() {
 		$(this).toggleClass("row_selected");
 	});
 

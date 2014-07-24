@@ -52,6 +52,66 @@ public class Users {
 	}
 	
 	/**
+	 * Gets the user preference for a default dataTables page size
+	 * @param userId
+	 * @return
+	 */
+	
+	public static boolean setDefaultPageSize(int userId,int newSize) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetDefaultPageSize(?,?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, newSize);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e){
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+
+
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the user preference for a default dataTables page size
+	 * @param userId
+	 * @return
+	 */
+	
+	public static int getDefaultPageSize(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetDefaultPageSize(?)}");
+			procedure.setInt(1, userId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("pageSize");
+				
+			}
+		} catch (Exception e){
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+
+			Common.safeClose(results);
+
+		}
+		return 10;
+	}
+	
+	/**
 	 * Adds an association between a list of users and a space
 	 * 
 	 * @param con the database transaction to use

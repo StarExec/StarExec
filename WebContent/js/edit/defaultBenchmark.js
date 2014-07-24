@@ -12,14 +12,14 @@ function initUI(){
 	benchTable = $('#benchmarks').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
 		"fnServerData"	: fnPaginationHandler
 	});
 	
-	$("#benchmarks").delegate("tr","mousedown",function() {
+	$("#benchmarks").on("mousedown", "tr",function() {
 		if ($(this).hasClass("row_selected")) {
 			$(this).removeClass("row_selected");
 		} else {

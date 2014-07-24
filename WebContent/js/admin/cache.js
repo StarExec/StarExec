@@ -78,13 +78,13 @@ function initUI(){
 	typeTable=$('#tableTypes').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bSort": true,
         "bPaginate": true
     });
 
 	
-	$("#tableTypes").delegate("tr", "click", function() {
+	$("#tableTypes").on( "click", "tr", function() {
 		$(this).toggleClass("row_selected");
 	});
 

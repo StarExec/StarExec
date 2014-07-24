@@ -33,7 +33,7 @@ function initUI(){
 	  	return true;
 	});
 	
-	$("#processorSelectionTable tbody").delegate("tr","mousedown", function(){
+	$("#processorSelectionTable tbody").on("mousedown", "tr", function(){
 		if ($(this).hasClass("row_selected")) {
 			$("#process").hide();
 			$("#processorSelectionTable").find("tr").removeClass("row_selected");

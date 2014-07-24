@@ -1,5 +1,5 @@
 <%@tag description="Standard html header info for all starexec pages"%>
-<%@tag import="org.starexec.data.to.*, org.starexec.constants.*"%>
+<%@tag import="org.starexec.util.Validator,org.starexec.command.HTMLParser, org.starexec.util.SessionUtil,org.starexec.data.database.Users, org.starexec.data.to.*, org.starexec.constants.*"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
@@ -11,21 +11,42 @@
 	<title>${title} - StarExec</title>
 	<meta charset="utf-8" />
 	<link rel="stylesheet" href="/${starexecRoot}/css/html5.css" />	
-	<link rel="stylesheet" href="/${starexecRoot}/css/jqueryui/jquery-ui-1.8.16.starexec.css" />
+	<link rel="stylesheet" href="/${starexecRoot}/css/jqueryui/jquery-ui.css" />
 	<link rel="stylesheet" href="/${starexecRoot}/css/master.css" />
+	<link rel="stylesheet" href="/${starexecRoot}/css/common/dataTable.css" />
+	<%
+		try {
+			//try to use a cookie first so we don't always need to ask the database
+			//String defaultPageSize=HTMLParser.extractCookie(request.getCookies(),"datatables-page-size");
+			//if (!Validator.isValidInteger(defaultPageSize)) {
+				String defaultPageSize=String.valueOf(Users.getDefaultPageSize(SessionUtil.getUserId(request)));
+				//response.addCookie(new Cookie("datatables-page-size",defaultPageSize));
+			//}else {
+			//	System.out.println(defaultPageSize);
+			//}
+			request.setAttribute("pagesize", defaultPageSize);
+
+		} catch (Exception e) {
+			//no user could be found
+			request.setAttribute("pagesize", 10);
+
+		}
+	%>
 	<c:if test="${not empty css}">	
 		<c:forEach var="cssFile" items="${fn:split(css, ',')}">
 			<link rel="stylesheet" href="/${starexecRoot}/css/${fn:trim(cssFile)}.css"/>
 		</c:forEach>	
 	</c:if>		
-        <script> var starexecRoot="/${starexecRoot}/"; </script>
+        <script> var starexecRoot="/${starexecRoot}/";
+        		 var defaultPageSize=${pagesize}; </script>
+        
 	<!--[if lt IE 9]> 
 		
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script> 
 	<![endif]-->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
 	
-	<script src="/${starexecRoot}/js/lib/jquery-ui-1.8.16.custom.min.js"></script>
+	<script src="/${starexecRoot}/js/lib/jquery-ui.min.js"></script>
 	
 	<script src="/${starexecRoot}/js/master.js"></script>
 	<c:if test="${not empty js}">	

@@ -4,9 +4,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -423,24 +420,26 @@ public class Cluster {
 		return false;
 	}
 	
-
-	public static Boolean updateNodeCount(int spaceId, int queueId, int nodeCount, java.util.Date date, String message) {
+	/**
+	 * Updates the node count for a specific reserved queue on a specific day 
+	 * @param queueId The ID of the queue 
+	 * @param nodeCount
+	 * @param date
+	 * @return
+	 */
+	public static Boolean updateNodeCount(int requestId, int nodeCount, java.sql.Date date) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
 			
-		    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
-			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?,?,?)}");
-			procedure.setInt(1, spaceId);
-			procedure.setInt(2, queueId);
-			procedure.setInt(3, nodeCount);
-			procedure.setDate(4, sqlDate);
-			procedure.setString(5, message);
+			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?)}");
+			procedure.setInt(1, requestId);
+			procedure.setInt(2, nodeCount);
+			procedure.setDate(3, date);
 			procedure.executeUpdate();
 
-			log.debug("successfully updated NodeCount for queue " + queueId);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -453,29 +452,14 @@ public class Cluster {
 	}
 
 
-	public static Boolean reserveNodes(int space_id, int queue_id, Date start, Date end, String message) {
+	public static Boolean reserveNodes(int request_id, Date start, Date end) {
 			
-		//Get all the dates between these two dates
-	    List<java.util.Date> dates = new ArrayList<java.util.Date>();
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(start);
-	    while (calendar.getTime().before(end))
-	    {
-	        java.util.Date result = calendar.getTime();
-	        dates.add(result);
-	        calendar.add(Calendar.DATE, 1);
-	    }
-	    java.util.Date latestResult = calendar.getTime();
-	    dates.add(latestResult);
-		
-		for (java.util.Date utilDate : dates) {
-			Queue q = Queues.get(queue_id);
-			String queueName = q.getName();
-			String[] split = queueName.split("\\.");
-			String shortQueueName = split[0];
-			int node_count = Requests.GetNodeCountOnDate(shortQueueName, utilDate);
+		List<java.sql.Date> dates =  Requests.getDateRange(start, end);
+
+		for (java.sql.Date utilDate : dates) {
+			int node_count = Requests.GetNodeCountOnDate(request_id, utilDate);
 			
-		    Boolean result = updateNodeCount(space_id, queue_id, node_count, utilDate, message);
+		    Boolean result = updateNodeCount(request_id, node_count, utilDate);
 		    if (!result) {
 		    	return false;
 		    }
@@ -484,83 +468,8 @@ public class Cluster {
 	}
 
 
-	public static boolean RefreshTempNodeChanges() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL RefreshTempNodeChanges()}");
-			procedure.executeUpdate();
-			
-			return true;
-		} catch (Exception e) {
-			log.error("RefreshTempNodeChanges says "+e.getMessage(),e);
-		}finally	{
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
 
 
-	public static boolean addTempNodeChange(int spaceId, String queueName, int value, Date reserve_date) {
-		log.debug("spaceId = " + spaceId);
-		log.debug("queueName = " + queueName);
-		log.debug("value = " + value);
-		log.debug("reserve_date = " + reserve_date);
-		Date earliestEndDate = Requests.getEarliestEndDate(reserve_date);
-		log.debug("earliest end date = " + earliestEndDate);
-		if (earliestEndDate == null) {
-			earliestEndDate = reserve_date;
-		}
-		log.debug("earliest end date = " + earliestEndDate);
-
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-	        java.util.Date utilEarliestEndDate = new java.util.Date(earliestEndDate.getTime());
-			
-			 	List<java.util.Date> dates = new ArrayList<java.util.Date>();
-			    Calendar calendar = new GregorianCalendar();
-			    calendar.setTime(reserve_date);
-			    while (calendar.getTime().before(utilEarliestEndDate))
-			    {
-			        java.util.Date result = calendar.getTime();
-			        dates.add(result);
-			        calendar.add(Calendar.DATE, 1);
-			    }
-			    java.util.Date latestResult = calendar.getTime();
-			    dates.add(latestResult);
-				
-			    if (dates != null) {
-					for (java.util.Date d : dates) {
-						log.debug("date = " + d);
-					    java.sql.Date sqlDate = new java.sql.Date(d.getTime());
-						procedure = con.prepareCall("{CALL AddTempNodeChange(?,?,?,?)}");
-						procedure.setInt(1, spaceId);
-						procedure.setString(2, queueName);
-						procedure.setInt(3, value);
-						procedure.setDate(4, sqlDate);
-						procedure.executeUpdate();
-					}
-			    }
-			
-
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e) {
-			log.error("AddTempNodeChange says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
 
 
 	public static int getTempNodeCountOnDate(String name, java.util.Date date) {
@@ -594,48 +503,14 @@ public class Cluster {
 		return -1;
 	}
 
-
-	public static List<QueueRequest> getTempChanges() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetTempChanges()}");			
-			
-			results = procedure.executeQuery();
-			List<QueueRequest> requests = new LinkedList<QueueRequest>();
-			
-			while(results.next()){
-				QueueRequest req = new QueueRequest();
-				int spaceId = results.getInt("space_id");
-				String queueName = results.getString("queue_name");
-				int nodeCount = results.getInt("node_count");
-				Date reserveDate = results.getDate("reserve_date");
-				req.setSpaceId(spaceId);
-				req.setQueueName(queueName);
-				req.setNodeCount(nodeCount);
-				req.setStartDate(reserveDate);
-				
-				requests.add(req);
-			}			
-
-			return requests;			
-			
-		} catch (Exception e){			
-			log.error("GetTempChanges says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-		
+	/**
+	 * 
+	 * @return
+	 */
 	
-	
+	//TODO: Fix up this functionality somehow
 	public static boolean updateTempChanges() {
+		/*
 		List<QueueRequest> temp_changes = Cluster.getTempChanges();
 		boolean success = true;
 		if (temp_changes != null) {
@@ -643,7 +518,7 @@ public class Cluster {
 				int queueId = Queues.getIdByName(req.getQueueName());
 				if (queueId == -2) { queueId = Queues.getIdByName(req.getQueueName() + ".q"); } //if its a new queue
 
-				success = Cluster.updateNodeCount(req.getSpaceId(), queueId, req.getNodeCount(), req.getStartDate(), "");
+				success = Cluster.updateNodeCount(req.getId(), req.getNodeCount(), req.getStartDate());
 				if (! success) {
 					break;
 				}
@@ -652,9 +527,15 @@ public class Cluster {
 		
 		if (success) { success = Cluster.removeEmptyNodeCounts(); }
 		
-		return success ? true : false;
+		return success ? true : false;*/
+		return false;
 	}
 
+	/**
+	 * Removes all entries from the queue_request_assoc table where the node count is 0.
+	 * This can happen if nodes are removed from a reservation after it was made
+	 * @return True on success, false otherwise
+	 */
 
 	private static boolean removeEmptyNodeCounts() {
 		Connection con = null;
@@ -675,43 +556,24 @@ public class Cluster {
 		}			
 		return false;
 	}
-
-
-	public static int getMinNodeCount(int queueId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetMinNodeCount(?)}");	
-			procedure.setInt(1, queueId);
-			
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-				return results.getInt("count");
-			}			
-			
-		} catch (Exception e){			
-			log.error("GetMinNodeCount says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
+	
+	public static int getMinNodeCount(int requestId) {
+		return getMinOrMaxNodeCount(requestId,"min");
+	}
+	
+	public static int getMaxNodeCount(int requestId) {
+		return getMinOrMaxNodeCount(requestId,"max");
 	}
 
-	public static int getMaxNodeCount(int queueId) {
+	private static int getMinOrMaxNodeCount(int requestId, String minOrMax) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL GetMaxNodeCount(?)}");	
-			procedure.setInt(1, queueId);
+			procedure = con.prepareCall("{CALL Get"+minOrMax+"NodeCount(?)}");	
+			procedure.setInt(1, requestId);
 			
 			results = procedure.executeQuery();
 			
@@ -764,38 +626,6 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return null;
-	}
-
-
-	public static int getReservedNodeCountOnDate(int queueId, java.util.Date today) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
-			procedure.setInt(1, queueId);
-			java.sql.Date sqlDate = new java.sql.Date(today.getTime());
-			procedure.setDate(2, sqlDate);
-			
-			
-			results = procedure.executeQuery();
-
-			while(results.next()){
-				return results.getInt("count");
-			}			
-
-			return 0;			
-			
-		} catch (Exception e){			
-			log.error("GetNodeCountOnDate says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;		
 	}
 	
 	public static List<WorkerNode> getAllNodes() {

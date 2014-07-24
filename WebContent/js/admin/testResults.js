@@ -3,9 +3,7 @@ var testTable;
 $(document).ready(function(){
 	initUI();
 	setInterval(function() {
-		//this makes it difficult to view the table, as upon refreshing any sorting / page turning the 
-		//user did is undone
-		//testTable.fnReloadAjax();
+		testTable.api().ajax.reload(null,false);
 		
 	},5000);
 });
@@ -14,11 +12,10 @@ $(document).ready(function(){
 
 function initUI(){
 	
-	extendDataTableFunctions();
 	testTable=$('#tableTests').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bSort": true,
         "bPaginate": true,
         "sAjaxSource"	: starexecRoot+"services/testResults/pagination/"+$("#sequenceName").attr("value"),
@@ -27,29 +24,6 @@ function initUI(){
     });
 
 }
-
-function extendDataTableFunctions() {	
-	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource ) {
-	    if ( typeof sNewSource != 'undefined' )
-	    oSettings.sAjaxSource = sNewSource;
-	    theTable=this;
-	    $.getJSON( oSettings.sAjaxSource, null, function(json) {
-	    /* Got the data - add it to the table */
-	    	theTable.fnClearTable( theTable );
-		    theTable.oApi._fnProcessingDisplay( oSettings, true );
-		    var that = theTable;
-	    for ( var i=0 ; i<json.aaData.length ; i++ ) {
-	    	
-	    that.oApi._fnAddData( oSettings, json.aaData[i] );
-	    }
-	     
-	    oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-	    that.fnDraw( that );
-	    that.oApi._fnProcessingDisplay( oSettings, false );
-	    });
-	}
-}
-
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	$.get(  

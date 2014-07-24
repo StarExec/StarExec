@@ -69,7 +69,7 @@ $(document).ready(function(){
 	   getPermissionDetails(user_id, space_id);
        initUI(user_id, space_id);
 
-	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
 	
 });

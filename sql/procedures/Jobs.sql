@@ -73,16 +73,6 @@ CREATE PROCEDURE GetJobPairCountInJobSpace(IN _jobSpaceId INT)
 		WHERE job_space_id=_jobSpaceId;
 	END //
 	
-DROP PROCEDURE IF EXISTS RemovePairsFromComplete;
-CREATE PROCEDURE RemovePairsFromComplete(IN _jobId INT)
-	BEGIN 
-		DELETE job_pair_completion FROM job_pair_completion
-		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
-		WHERE job_id=_jobId;
-	END //
-		
-	
-	
 -- Returns the number of jobs pairs for a given job
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountInJobSpaceHierarchy;
@@ -697,6 +687,16 @@ CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID 
 	END //
 
 	
+	
+DROP PROCEDURE IF EXISTS RemovePairsFromComplete;
+CREATE PROCEDURE RemovePairsFromComplete(IN _jobId INT)
+	BEGIN 
+		DELETE job_pair_completion FROM job_pair_completion
+		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
+		WHERE job_id=_jobId;
+	END //
+		
+
 DROP PROCEDURE IF EXISTS RemovePairsOfStatusFromComplete;
 CREATE PROCEDURE RemovePairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
 	BEGIN 

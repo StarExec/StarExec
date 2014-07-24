@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -150,6 +148,64 @@ public class RESTServices {
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
 		return gson.toJson(subspaces);
 	}
+	
+	/**
+	 * Returns the paginated results of node assignments
+	 * For the manage_nodes page. this is an admin only function
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/nodes/dates/pagination/{string_date}")
+	@Produces("application/json")
+	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserSeeRequests(userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		//Get todays date
+		Date today = new Date();
+
+		//Get the passed in date
+		String start_month = date.substring(0,2);
+		String start_day = date.substring(2, 4);
+		String start_year = date.substring(4, 8);
+		String new_date = start_month + "/" + start_day + "/" + start_year;
+		
+		//Get the latest date that a node is reserved for
+		Date latest = Cluster.getLatestNodeDate();
+		java.util.Date newDateJava = null;
+		
+		if (Validator.isValidDate(new_date)) {
+			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+			java.sql.Date newDateSql = null;
+			java.sql.Date latestSql = null;
+			try {
+				newDateJava = format.parse(new_date);
+				newDateSql = new java.sql.Date(newDateJava.getTime());
+				
+				latestSql = new java.sql.Date(latest.getTime());
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			}
+			
+			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
+				return gson.toJson(4);
+			}
+			
+		} else {
+			return gson.toJson(2);
+		}
+	
+		latest = newDateJava;
+		//Get all the dates between these two dates
+	    List<java.sql.Date> dates = Requests.getDateRange(today, latest);
+	    
+	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForManageNodes(dates, request);
+	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	    
+		}
 	
 	
 	/**
@@ -353,7 +409,28 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Reruns all the pairs in the given job that have the given status code and have 0 as their runtime
+	 * Reruns all the pairs in the given job 
+	 * @param id The ID of the job to rerun pairs for
+	 * @param request
+	 * @return 0 on success or an error code on failure
+	 */
+	@POST
+	@Path("/jobs/rerunallpairs/{id}")
+	@Produces("application/json")	
+	public String rerunAllJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		int status=JobSecurity.canUserRerunAllPairs(id, userId);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		return Jobs.setAllPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+
+	}
+	
+	
+	
+	/**
+	 * Reruns all the pairs in the given job that have 0 as their runtime
 	 * @param id The ID of the job to rerun pairs for
 	 * @param statusCode The status code that all the pairs to be rerun have curently
 	 * @param request
@@ -1018,27 +1095,6 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 	
-	
-	/**
-	 * Reruns all the pairs in the given job 
-	 * @param id The ID of the job to rerun pairs for
-	 * @param request
-	 * @return 0 on success or an error code on failure
-	 */
-	@POST
-	@Path("/jobs/rerunallpairs/{id}")
-	@Produces("application/json")	
-	public String rerunAllJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserRerunAllPairs(id, userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		return Jobs.setAllPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-
-	}
-	
-	
 	@POST
 	@Path("/test/runTests")
 	@Produces("appliation/json")
@@ -1091,6 +1147,27 @@ public class RESTServices {
 		return success ?  gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 		
 	}
+	
+	@POST
+	@Path("/edit/queue/{id}")
+	@Produces("application/json")
+	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
+		if (!Util.paramExists("cpuTimeout", request) || !Util.paramExists("wallTimeout", request)) {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		int cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
+		int wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
+		
+		
+		int userId=SessionUtil.getUserId(request);
+		int status=QueueSecurity.canUserEditQueue(userId, wallTimeout, cpuTimeout);
+		if (status!=0) {
+			return gson.toJson(status);
+		}
+		
+		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout);
+		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+	}
 
 	/** 
 	 * Updates information in the database using a POST. Attribute and
@@ -1104,7 +1181,7 @@ public class RESTServices {
 	@POST
 	@Path("/edit/user/{attr}/{userId}/{val}")
 	@Produces("application/json")
-	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request) {	
+	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request,@Context HttpServletResponse response) {	
 		boolean success = false;
 		int requestUserId=SessionUtil.getUserId(request);
 		log.debug("requestUserId" + requestUserId);
@@ -1142,6 +1219,13 @@ public class RESTServices {
 			if (success) {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 			}
+		} else if (attribute.equals("pagesize")) {
+			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
+			//if (success) {
+			//	Cookie c=new Cookie("datatables-page-size",newValue);
+			//	c.setPath("/");
+			//	response.addCookie(c);
+			//}
 		}
 
 		// Passed validation AND Database update successful
@@ -3357,20 +3441,7 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 
-	@POST
-	@Path("/queues/reserved/pagination/")
-	@Produces("application/json")
-	public String getAllQueueReservations(@Context HttpServletRequest request) throws Exception {
-		int userId = SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserSeeRequests(userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}	
-			
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForQueueReservations(request);
-		
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
-	}
+
 
 	@POST
 	@Path("/queues/historic/pagination/")
@@ -3406,9 +3477,8 @@ public class RESTServices {
 		if(status!=0) {
 			return gson.toJson(status);
 		}
-		QueueRequest req = Requests.getRequestForReservation(queueId);
 
-		GridEngineUtil.cancelReservation(req);
+		GridEngineUtil.removeQueue(queueId);
 		return gson.toJson(0);
 	}
 	
@@ -3452,16 +3522,11 @@ public class RESTServices {
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-	
-		if (!Queues.isQueuePermanent(queueId)) {
-			QueueRequest req = Requests.getRequestForReservation(queueId);
-			GridEngineUtil.cancelReservation(req);
-			return gson.toJson(0);
-		} else {
-			GridEngineUtil.removePermanentQueue(queueId);
-			return gson.toJson(0);
-			
-		}
+		GridEngineUtil.removeQueue(queueId);
+
+		
+		return gson.toJson(0);
+
 	}
 	
 	//Allows the administrator to set the current logging level for a specific class.
@@ -3547,20 +3612,19 @@ public class RESTServices {
 	}
 	
 	@POST
-	@Path("/cancel/request/{code}")
+	@Path("/cancel/request/{id}")
 	@Produces("application/json")
-	public String cancelQueueRequest(@PathParam("code") String code, @Context HttpServletRequest request) throws IOException {
+	public String cancelQueueRequest(@PathParam("id") int id, @Context HttpServletRequest request) throws IOException {
 		int userId = SessionUtil.getUserId(request);
 		int status=QueueSecurity.canUserCancelRequest(userId);
 		if (status!=0) {
 			return gson.toJson(status);
 		}
-		QueueRequest queueRequest = Requests.getQueueRequest(code);
-
-		
-		boolean success = Requests.declineQueueReservation(queueRequest);
+		// simply remove the reservation from our 
+		boolean success= Requests.removeQueueReservation(id);
 		
 		if (success) {
+			QueueRequest queueRequest = Requests.getQueueRequest(id);
 			// Notify user they've been declined
 			Mail.sendReservationResults(queueRequest, false);
 			log.info(String.format("User [%s] has been declined queue reservation.", Users.get(queueRequest.getUserId()).getFullName()));
@@ -3570,128 +3634,11 @@ public class RESTServices {
 		}
 		
 	}
-	
-	//TODO: Who can do this?
-	/**
-	 * Returns the paginated results of node assignments
-	 * For the manage_nodes page
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/nodes/dates/pagination/{string_date}")
-	@Produces("application/json")
-	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserSeeRequests(userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		//Get todays date
-		Date today = new Date();
 
-		//Get the passed in date
-		String start_month = date.substring(0,2);
-		String start_day = date.substring(2, 4);
-		String start_year = date.substring(4, 8);
-		String new_date = start_month + "/" + start_day + "/" + start_year;
-		
-		//Get the latest date that a node is reserved for
-		Date latest = Cluster.getLatestNodeDate();
-		java.util.Date newDateJava = null;
-		
-		if (Validator.isValidDate(new_date)) {
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-			java.sql.Date newDateSql = null;
-			java.sql.Date latestSql = null;
-			try {
-				newDateJava = format.parse(new_date);
-				newDateSql = new java.sql.Date(newDateJava.getTime());
-				
-				latestSql = new java.sql.Date(latest.getTime());
-			} catch (ParseException e1) {
-				e1.printStackTrace();
-			}
-			
-			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
-				return gson.toJson(4);
-			}
-			
-		} else {
-			return gson.toJson(2);
-		}
-	
-		latest = newDateJava;
-		//Get all the dates between these two dates
-	    List<Date> dates = new ArrayList<Date>();
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(today);
-	    while (calendar.getTime().before(latest))
-	    {
-	        Date result = calendar.getTime();
-	        dates.add(result);
-	        calendar.add(Calendar.DATE, 1);
-	    }
-	    Date latestResult = calendar.getTime();
-	    dates.add(latestResult);
-	    
-	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForManageNodes(dates, request);
-	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	    
-		}
-	
-	/**
-	 * Returns the paginated results of node assignments
-	 * For the approve/deny queue requests page
-	 * @param code the code of the queue_request
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/nodes/dates/reservation/{code}/pagination")
-	@Produces("application/json")
-	public String nodeScheduleReservation(@PathParam("code") String code, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserSeeRequests(userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		//Get todays date
-		QueueRequest req = Requests.getQueueRequest(code);
-		Date today = new Date();
-
-		//Get the latest date that a node is reserved/requested for
-		Date latest1 = Cluster.getLatestNodeDate();
-		Date latest2 = req.getEndDate();
-		Date latest = null;
-		if (latest1.after(latest2)) {
-			latest = latest1;
-		} else {
-			latest = latest2;
-		}
-		
-		//Get all the dates between these two dates
-	    List<Date> dates = new ArrayList<Date>();
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(today);
-	    while (calendar.getTime().before(latest))
-	    {
-	        Date result = calendar.getTime();
-	        dates.add(result);
-	        calendar.add(Calendar.DATE, 1);
-	    }
-	    Date latestResult = calendar.getTime();
-	    dates.add(latestResult);
-	    
-	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForApproveQueueRequest(dates, req, request);
-	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	    
-		}
-	
 	/**
 	 * Updates information in the database using a POST. the new values for 
 	 * queueName, nodeCount, startDate, and endDate are included in the path.
-	 * First validates that the new values are lega, and then updates the database
+	 * First validates that the new values are legal, and then updates the database
 	 * and session information accordingly.
 	 * 
 	 * @return a json string containing '0' if the update was successful, else
@@ -3699,9 +3646,9 @@ public class RESTServices {
 	 * @author Wyatt Kaiser
 	 */
 	@POST
-	@Path("/edit/request/{code}/{queueName}/{nodeCount}/{startDate}/{endDate}")
+	@Path("/edit/request/{id}/{queueName}/{nodeCount}/{startDate}/{endDate}")
 	@Produces("application/json")
-	public String editQueueRequest(@PathParam("code") String code, @PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {
+	public String editQueueRequest(@PathParam("id") int id, @PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		int status=QueueSecurity.canUserUpdateRequest(userId,queueName);
 		if (status!=0) {
@@ -3757,7 +3704,7 @@ public class RESTServices {
 				log.debug("end date is equivalent to start date");
 				return gson.toJson(5);
 			} else {
-				QueueRequest req = Requests.getQueueRequest(code);
+				QueueRequest req = Requests.getQueueRequest(id);
 				QueueRequest new_req = new QueueRequest();
 				new_req.setUserId(req.getUserId());
 				new_req.setSpaceId(req.getSpaceId());
@@ -3772,7 +3719,7 @@ public class RESTServices {
 				new_req.setStartDate(startDateSql);
 				new_req.setEndDate(endDateSql);
 				new_req.setMessage(req.getMessage());
-				new_req.setCode(req.getCode());
+				new_req.setId(id);
 				new_req.setCreateDate(req.getCreateDate());
 				
 				success = Requests.updateQueueRequest(new_req);		
@@ -3785,45 +3732,9 @@ public class RESTServices {
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
 
-	//TODO: This seems to not do anything
-	/** 
-	 * Adds a queue_request to the database
-	 * 
-	 * @return a json string containing '0' if the update was successful, else 
-	 * a json string containing '1'
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/add/queueRequest/{queueName}/{nodeCount}/{startDate}/{endDate}")
-	@Produces("application/json")
-	public String addQueueRequest(@PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {	
-		int userId = SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		
-		return gson.toJson(0);
-	}
-	
-	
-	//TODO: Who should be able to do this?
-	/**
-	 * Will delete all temporary changes that were made to node_counts
-	 * 
-	 * @return a json string containing '0' if the delet was successful, else a json string containing '1'
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/nodes/refresh")
-	@Produces("application/json")
-	public String refreshNodeUpdates() {
-		boolean success = Cluster.RefreshTempNodeChanges();
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}
 	
 	
 	
-	//TODO: Who should be able to do this?
 	/**
 	 * Will update the database to reflect saved temp node_count changes
 	 * 
@@ -3833,7 +3744,11 @@ public class RESTServices {
 	@POST
 	@Path("/nodes/update")
 	@Produces("application/json")
-	public String updateNodeCount() {
+	public String updateNodeCount(@Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		if (!Users.isAdmin(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
 		boolean success = Cluster.updateTempChanges();
 		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
 	}
@@ -3848,7 +3763,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserMakeQueuePermanent(userId);
+		int status=QueueSecurity.canUserMakeQueue(userId);
 		if (status!=0) {
 			return gson.toJson(status);
 		}

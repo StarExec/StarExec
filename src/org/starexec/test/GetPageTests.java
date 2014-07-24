@@ -22,6 +22,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -30,16 +31,13 @@ import org.starexec.util.Util;
 
 /*
  * TODO:
- * jobPanelView
- * pair
- * pairsInSpace
- * solverconfigs
  * uploadStatus
  */
 
 public class GetPageTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
-	private Connection con;
+	private Connection con; // connection of a normal user
+	private Connection adminCon;
 	private Space space1=null; //will contain both solvers and benchmarks
 	private Job job=null;
 	File solverFile=null;
@@ -51,8 +49,9 @@ public class GetPageTests extends TestSequence {
 	Processor proc=null;
 	
 	User user=null;
+	User admin=null;
 	Space testCommunity=null;	
-	
+	Queue q=null;
 	@Test
 	private void getSpaceExplorerTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/spaces.jsp"));
@@ -139,6 +138,22 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
+	private void getJobPanelViewTest(){
+		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()));
+	}
+	
+	@Test
+	private void getPairsInSpaceTest(){
+		Assert.assertTrue(con.canGetPage("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getConfiguration().getId()
+				+"&sid="+job.getPrimarySpace()+"&id="+job.getId()));
+	}
+	
+	@Test
+	private void getPairDetailsTest(){
+		Assert.assertTrue(con.canGetPage("secure/details/pair.jsp?id="+job.getJobPairs().get(0).getId()));
+	}
+	
+	@Test
 	private void getJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}
@@ -164,6 +179,97 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
+	private void getAdminAssocCommunityTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
+		Assert.assertFalse(con.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
+
+	}
+	
+	@Test
+	private void getAdminCacheTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/cache.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/cache.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminClusterTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/cluster.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/cluster.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminCommunityTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/community.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/community.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminJobTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/job.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/job.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminLoggingTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/logging.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/logging.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminMoveNodesTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/moveNodes.jsp?id="+q.getId()));
+		Assert.assertFalse(con.canGetPage("secure/admin/moveNodes.jsp?id="+q.getId()));
+
+	}
+	
+	@Test
+	private void getAdminNodesTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/nodes.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/nodes.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminPermanentQueueTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/permanentQueue.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/permanentQueue.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminPermissionsTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
+		Assert.assertFalse(con.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
+
+	}
+	
+	@Test
+	private void getAdminStarexecTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/starexec.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/starexec.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminTestingTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/test.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/test.jsp"));
+
+	}
+	
+	@Test
+	private void getAdminUserTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/user.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/user.jsp"));
+
+	}
+	
+	@Test
 	private void failBadURLTest(){
 		Assert.assertFalse(con.canGetPage("secure/details/fakewebpage.jsp"));
 	}
@@ -171,7 +277,7 @@ public class GetPageTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		user=Users.getTestUser();
-		
+		admin=Users.getAdmins().get(0);
 		testCommunity=Communities.getTestCommunity();
 		
 		//this prevents the apache http libraries from logging things. Their logs are very prolific
@@ -179,6 +285,8 @@ public class GetPageTests extends TestSequence {
 		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+
 		int status = con.login();
 		Assert.assertEquals(0,status);
 		
@@ -186,7 +294,7 @@ public class GetPageTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		Assert.assertNotNull(space1);
 		
-		
+		q=Queues.getAll().get(0);
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());

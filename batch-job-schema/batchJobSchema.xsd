@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://www.starexec.org/starexec/public/batchJobSchema.xsd" targetNamespace="https://www.starexec.org/starexec/public/batchJobSchema.xsd">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchJobSchema.xsd" targetNamespace="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchJobSchema.xsd">
     
     <annotation>
     	<documentation>
@@ -19,6 +19,9 @@
     
     <complexType name="Job">
     	<sequence>
+
+	  <element name="JobAttributes" type="tns:JobAttributes"></element>
+
     		<element name="JobPair" type="tns:JobPair" minOccurs="1"
     			maxOccurs="unbounded">
     		</element>
@@ -27,23 +30,49 @@
     	<!-- The job name must be unique to the space -->
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
     	
-    	<attribute name="description" type="tns:Description" use="optional"></attribute>
-    	
+    </complexType>
+    
+    <complexType name="JobAttributes">
+      <all>
+	<element name="description" type="tns:descriptionInfo" maxOccurs="1" minOccurs="0"></element>
     	<!-- You can find the id of a queue on the Cluster=>Status page -->
-    	<attribute name="queue-id" type="int" use="required"></attribute>
+    	<element name="queue-id" type="tns:intInfo"></element>
     	
     	<!-- The default for start-paused is false -->
-    	<attribute name="start-paused" type="boolean" use="optional"></attribute>
-    	<attribute name="preproc-id" type="int" use="optional"></attribute>
-    	<attribute name="postproc-id" type="int" use="optional"></attribute>
+    	<element name="start-paused" type="tns:booleanInfo" maxOccurs="1" minOccurs="0"></element>
+    	<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+    	<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
     	
     	<!-- Note: Timeouts are in seconds -->
-    	<attribute name="cpu-timeout" type="int" use="required"></attribute>
-    	<attribute name="wallclock-timeout" type="int" use="required"></attribute>
+    	<element name="cpu-timeout" type="tns:intInfo"></element>
+    	<element name="wallclock-timeout" type="tns:intInfo"></element>
     	
     	<!-- Note: This is in Gigabytes -->
-    	<attribute name="mem-limit" type="double" use="required"></attribute>
+    	<element name="mem-limit" type="tns:doubleInfo"></element>
+	
+      </all>
+      
     </complexType>
+
+    <!-- job attributes type definitions -->
+    <complexType name="intInfo">
+      <attribute name="value" type="int" use="required"></attribute>
+    </complexType>
+
+    <complexType name="descriptionInfo">
+      <attribute name="value" type="tns:Description" use="required"></attribute>
+    </complexType>
+
+    <complexType name="booleanInfo">
+      <attribute name="value" type="boolean" use="required"></attribute>
+    </complexType>
+
+    <complexType name="doubleInfo">
+      <attribute name="value" type="double" use="required"></attribute>
+    </complexType>
+    
+    <!-- end job attributes type definitions -->
+
     
     <complexType name="JobPair">
     	<attribute name="bench-id" type="int" use="required"></attribute>

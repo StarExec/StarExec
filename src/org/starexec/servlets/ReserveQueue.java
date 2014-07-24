@@ -12,14 +12,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
 /**
- * Servlet which handles requests for registration 
- * @author Todd Elvers & Tyler Jensen
+ * Servlet which handles requests for new queues
+ * @author Wyatt Kaiser + Eric Burns
  */
 @SuppressWarnings("serial")
 public class ReserveQueue extends HttpServlet {
@@ -33,7 +34,8 @@ public class ReserveQueue extends HttpServlet {
 	private static final String node = "node";
 	private static final String start = "start";
 	private static final String end = "end";
-	
+	private static final String cpuTimeout="cpuTimeout";
+	private static final String wallTimeout="wallTimeout";
 
 	
 	@Override
@@ -43,20 +45,18 @@ public class ReserveQueue extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
+		int userId=SessionUtil.getUserId(request);
 		QueueRequest queueRequest = constructQueueRequest(request);
-		String message = request.getParameter(msg);
-		
 
 		// if this is an addQueue request initiated by the administrator,
 		// addQueue is set to true, false otherwise [this is determined by if
 		// the message is null or not (addQueue doesn't have message associated with it)
-		boolean addQueue = false;
-		if (message == null && queueRequest != null) {
-			addQueue = true;
+		boolean adminAdded = Users.isAdmin(userId);
+		if (adminAdded) {
 			queueRequest.setMessage("[Admin created queue]");
 		}
 		
-		if(queueRequest == null && addQueue == true){
+		if(queueRequest == null && adminAdded == true){
 		    response.sendRedirect(Util.docRoot("secure/add/queue.jsp?result=requestNotSent"));
 			return;
 		}
@@ -67,13 +67,13 @@ public class ReserveQueue extends HttpServlet {
 		
 		boolean added = Requests.addQueueRequest(queueRequest);
 		
-		if(added && addQueue == false){
+		if(added && adminAdded == false){
 			// Send the invite to the admins of the community 
 			Mail.sendQueueRequest(queueRequest);
 			response.sendRedirect(Util.docRoot("secure/reserve/queue.jsp?sid=" + queueRequest.getSpaceId() + "&result=requestSent"));
-		} else if (added & addQueue == true) { 
-			response.sendRedirect(Util.docRoot("secure/admin/queue.jsp?code=" + queueRequest.getCode()));
-		} else if (!added && addQueue == false) {
+		} else if (added & adminAdded == true) { 
+			response.sendRedirect(Util.docRoot("secure/admin/queue.jsp?id=" + queueRequest.getId()));
+		} else if (!added && adminAdded == false) {
 			// There was a problem
 		    response.sendRedirect(Util.docRoot("secure/reserve/queue.jsp?sid=" + queueRequest.getSpaceId() + "&result=requestNotSent"));
 		} else {
@@ -103,7 +103,8 @@ public class ReserveQueue extends HttpServlet {
 			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 			String start_date = request.getParameter(start);
 			String end_date = request.getParameter(end);
-			
+			int wallTime=Integer.parseInt(request.getParameter(wallTimeout));
+			int cpuTime=Integer.parseInt(request.getParameter(cpuTimeout));
 			Date start = new Date(sdf.parse(start_date).getTime());
 			Date end = new Date(sdf.parse(end_date).getTime());
 			
@@ -115,7 +116,8 @@ public class ReserveQueue extends HttpServlet {
 			req.setStartDate(start);
 			req.setEndDate(end);
 			req.setMessage(message);
-			req.setCode(UUID.randomUUID().toString());
+			req.setCpuTimeout(cpuTime);
+			req.setWallTimeout(wallTime);
 			return req;	
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

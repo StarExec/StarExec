@@ -27,7 +27,7 @@ function initUI(){
         "bSort": true        
     });
 	
-	$("#tblNodes").delegate("tr", "click", function() {
+	$("#tblNodes").on("click", "tr",  function() {
 		$(this).toggleClass("row_selected");
 	});
 
@@ -53,6 +53,14 @@ function attachFormValidation() {
 				minlength: 2,
 				maxlength: $("#txtQueueName").attr("length"),
 			        regex : getQueueNameRegex()
+			},
+			wallTimeout: {
+				required: true,
+				min: 1
+			},
+			cpuTimeout: {
+				required: true,
+				min: 1
 			}
 		},
 		messages: {

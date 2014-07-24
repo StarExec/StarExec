@@ -34,7 +34,7 @@
 	
 	
 %>
-<star:template title="Space Explorer" js="util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/spaces, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
+<star:template title="Space Explorer" js="util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces,  lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
@@ -54,12 +54,12 @@
 			<table id="jobs">
 				<thead>
 					<tr>
-						<th>name</th>
-						<th>status</th>
-						<th><span title="Job pairs that ran successfully">completed</span></th>
-						<th><span title="The total number of job pairs in this job">total</span></th>
-						<th><span title="Job pairs for which there was a timeout, mem-out, or internal error">failed</span></th>
-						<th>time</th>
+						<th id="jobNameHead">name</th>
+						<th id="jobStatusHead">status</th>
+						<th id="jobCompletedHead"><span title="Job pairs that ran successfully">completed</span></th>
+						<th id="jobTotalHead"><span title="The total number of job pairs in this job">total</span></th>
+						<th id="jobFailedHead"><span title="Job pairs for which there was a timeout, mem-out, or internal error">failed</span></th>
+						<th id="jobTimeHead">time</th>
 					</tr>
 				</thead>			
 			</table>
@@ -77,8 +77,8 @@
 			<table id="solvers">
 				<thead>
 					<tr>
-						<th style="width:150px;">name</th>
-						<th>description</th>						
+						<th id="solverNameHead">name</th>
+						<th id="solverDescHead">description</th>						
 					</tr>
 				</thead>			
 			</table>
@@ -97,8 +97,8 @@
 			<table id="benchmarks">
 				<thead>
 					<tr>
-						<th style="width:75%;">name</th>
-						<th>type</th>											
+						<th id="benchNameHead">name</th>
+						<th id="benchTypeHead">type</th>											
 					</tr>
 				</thead>		
 			</table>
@@ -116,9 +116,9 @@
 			<table id="users">
 				<thead>
 					<tr>
-						<th>name</th>
-						<th>institution</th>
-						<th style="width:270px;">email</th>
+						<th id="userNameHead">name</th>
+						<th id="userInstitutionHead">institution</th>
+						<th id="userEmailHead">email</th>
 					</tr>
 				</thead>			
 			</table>
@@ -136,8 +136,8 @@
 			<table id="spaces">
 				<thead>
 					<tr>
-						<th style="width:150px;">name</th>
-						<th>description</th>
+						<th id="spaceNameHead">name</th>
+						<th id="spaceDescriptionHead">description</th>
 					</tr>
 				</thead>			
 			</table>

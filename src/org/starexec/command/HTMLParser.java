@@ -7,10 +7,11 @@ package org.starexec.command;
 import java.util.HashMap;
 import java.util.List;
 
+
 import org.apache.http.Header;
 import org.apache.http.message.BasicNameValuePair;
 
-class HTMLParser {
+public class HTMLParser {
 	
 
 	/**
@@ -161,7 +162,7 @@ class HTMLParser {
 		return null;
 	}
 	
-	protected static String[] extractMultipartCookie(Header[] headers, String cookieName) {
+	public static String[] extractMultipartCookie(Header[] headers, String cookieName) {
 		String value=extractCookie(headers,cookieName);
 		if (value==null){
 			return null;
@@ -170,6 +171,7 @@ class HTMLParser {
 
 		return value.replace("\"", "").split(",");
 	}
+	
 	
 	/**
 	 * Given the headers of an HttpResponse and the name of a cookie,
@@ -180,7 +182,7 @@ class HTMLParser {
 	 * @author Eric Burns
 	 */
 	
-	protected static String extractCookie(Header[] headers, String cookieName) {
+	public static String extractCookie(Header[] headers, String cookieName) {
 		
 		for (Header x : headers) {
 			if (x.getName().equals("Set-Cookie")) {

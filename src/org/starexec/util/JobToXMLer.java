@@ -27,7 +27,7 @@ import org.starexec.servlets.Download;
 
 
 /**
- *  JobToXMLer only creates an xml given a job
+ *  JobToXMLer deals with job xml creation
  *  @author Julio Cervantes
  */
 
@@ -65,10 +65,6 @@ public class JobToXMLer {
 		
 		File file = new File(R.STAREXEC_ROOT, job.getName() +".xml");
 		
-		/**
-		File file = new File(R.STAREXEC_DATA_DIR + File.separator +"jobxml",  "testname" +".xml");
-		**/
-		
 		
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
@@ -90,7 +86,6 @@ public class JobToXMLer {
 
 	jobsElement = doc.createElementNS(Util.url("public/batchJobSchema.xsd"), "tns:Jobs");
 	jobsElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-	//TODO : should be usuing batchJobSchema not batchSpaceSchema
 	jobsElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchJobSchema.xsd batchJobSchema.xsd"));
 	
@@ -114,59 +109,104 @@ public class JobToXMLer {
 		
 		Element jobElement = doc.createElement("Job");
 		
+		Element attrsElement = doc.createElement("JobAttributes");
 
 
+		
 		Attr name = doc.createAttribute("name");
 		name.setValue(job.getName());
 		jobElement.setAttributeNode(name);
+
+
 		
+		Element descriptionElement = doc.createElement("description");
+
 		// Description attribute : description
-		Attr description = doc.createAttribute("description");
+		Attr description = doc.createAttribute("value");
 		description.setValue(job.getDescription());
-		jobElement.setAttributeNode(description);
+		descriptionElement.setAttributeNode(description);
+
+		attrsElement.appendChild(descriptionElement);
 		
+
+		Element queueIdElement = doc.createElement("queue-id");
+
 		//Id of queue : queue-id
-		Attr queueID = doc.createAttribute("queue-id");
+		Attr queueID = doc.createAttribute("value");
 		queueID.setValue(Integer.toString(job.getQueue().getId()));
-		jobElement.setAttributeNode(queueID);
+		queueIdElement.setAttributeNode(queueID);
+
+		attrsElement.appendChild(queueIdElement);
 		
+
+		Element startPausedElement = doc.createElement("start-paused");
+
 		// Should start paused attribute (default is false) : start-paused
-		Attr startPaused = doc.createAttribute("start-paused");
+		Attr startPaused = doc.createAttribute("value");
 		startPaused.setValue(Boolean.toString(false));
-		jobElement.setAttributeNode(startPaused);
+		startPausedElement.setAttributeNode(startPaused);
+
+		attrsElement.appendChild(startPausedElement);
 		
 		//Preprocessor ID : preproc-id
 		Processor pre = job.getPreProcessor();
 		if(pre != null){
-		    Attr preProcID = doc.createAttribute("preproc-id");
+
+		    Element preprocIdElement = doc.createElement("preproc-id");
+
+		    Attr preProcID = doc.createAttribute("value");
 		    preProcID.setValue(Integer.toString(pre.getId()));
-		    jobElement.setAttributeNode(preProcID);
+		    preprocIdElement.setAttributeNode(preProcID);
+
+		    attrsElement.appendChild(preprocIdElement);
 		}
 		//Postprocessor ID : postproc-id
 		Processor post = job.getPostProcessor();
 		if(post != null){
-		    Attr postProcID = doc.createAttribute("postproc-id");
+
+		    Element postprocIdElement = doc.createElement("postproc-id");
+
+		    Attr postProcID = doc.createAttribute("value");
 		    postProcID.setValue(Integer.toString(post.getId()));
-		    jobElement.setAttributeNode(postProcID);
+		    postprocIdElement.setAttributeNode(postProcID);
+
+		    attrsElement.appendChild(postprocIdElement);
 		}
 		
 		//CPU timeout (seconds) : cpu-timeout
-		Attr cpuTimeout = doc.createAttribute("cpu-timeout");
+
+		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
+
+		Attr cpuTimeout = doc.createAttribute("value");
 		cpuTimeout.setValue(Integer.toString(Jobs.getCpuTimeout(job.getId())));
-		jobElement.setAttributeNode(cpuTimeout);
+		cpuTimeoutElement.setAttributeNode(cpuTimeout);
+
+		attrsElement.appendChild(cpuTimeoutElement);
 		
 		//Wall Clock timeout (seconds) : wallclock-timeout
-		Attr wallClockTimeout = doc.createAttribute("wallclock-timeout");
+
+		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
+
+		Attr wallClockTimeout = doc.createAttribute("value");
                 wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
-		jobElement.setAttributeNode(wallClockTimeout);
+		wallClockTimeoutElement.setAttributeNode(wallClockTimeout);
+
+		attrsElement.appendChild(wallClockTimeoutElement);
 		
 		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
-		Attr memLimit = doc.createAttribute("mem-limit");
+
+		Element memLimitElement = doc.createElement("mem-limit");
+
+		Attr memLimit = doc.createAttribute("value");
 		memLimit.setValue(Double.toString(Util.bytesToGigabytes(Jobs.getMaximumMemory(job.getId()))));
-		jobElement.setAttributeNode(memLimit);
+		memLimitElement.setAttributeNode(memLimit);
+
+		attrsElement.appendChild(memLimitElement);
 		
+		//add job attributes element
+		jobElement.appendChild(attrsElement);
+
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
-		log.info("Length of jobpairs list Simple: " + pairs.size());
 		
 		for (JobPair jobpair:pairs){
 			Element jp = doc.createElement("JobPair");

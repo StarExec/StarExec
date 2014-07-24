@@ -145,27 +145,6 @@ public class Jobs {
 		
 		return success;
 	}
-	
-		public static boolean setAllPairsToPending(int jobId) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemovePairsFromComplete(?)}");
-			procedure.setInt(1, jobId);
-			procedure.executeUpdate();
-			
-			Jobs.setPairStatusByJob(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal(),con);
-			
-			return Jobs.removeCachedJobStats(jobId);
-		} catch (Exception e) {
-			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
  	
 	
 	/**
@@ -1243,7 +1222,9 @@ public class Jobs {
 	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
 			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock) {
 		List<JobPair> pairs1=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId1);
+		pairs1=JobPairs.filterPairsByType(pairs1, "complete");
 		List<JobPair> pairs2=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId2);
+		pairs2=JobPairs.filterPairsByType(pairs2, "complete");
 		List<SolverComparison> comparisons=new ArrayList<SolverComparison>();
 		HashMap<Integer,JobPair> benchesToPairs=new HashMap<Integer,JobPair>();
 		for (JobPair jp : pairs1) {
@@ -1258,7 +1239,7 @@ public class Jobs {
 				}
 			}
 		}
-		//TODO: Do we need to filter by type here		
+		
 		totals[0]=comparisons.size();
 		List<SolverComparison> returnList=new ArrayList<SolverComparison>();
 		comparisons=JobPairs.filterComparisons(comparisons, searchQuery);
@@ -2352,6 +2333,27 @@ public class Jobs {
 		// the cache must be cleared AFTER changing the pair status codes!
 		success=success && Jobs.removeCachedJobStats(jobId);
 		return success;
+	}
+	
+	public static boolean setAllPairsToPending(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL RemovePairsFromComplete(?)}");
+			procedure.setInt(1, jobId);
+			procedure.executeUpdate();
+			
+			Jobs.setPairStatusByJob(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal(),con);
+			
+			return Jobs.removeCachedJobStats(jobId);
+		} catch (Exception e) {
+			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 	
 	public static boolean rerunPair(int jobId, int pairId) {
@@ -3584,6 +3586,7 @@ public class Jobs {
 		}
 		return false;
 	}
+	
 	
 	/**
 	 * This function makes older jobs, which have path info but no job space information

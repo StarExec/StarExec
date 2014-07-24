@@ -524,8 +524,9 @@ class CommandParser {
 			status=parser.pauseJob(commandParams);
 		} else if (c.equals(R.COMMAND_RERUNPAIR)) {
 			status=parser.rerunPair(commandParams);
-		}
-		else if (c.startsWith("get")) {
+		} else if (c.equals(R.COMMAND_RERUNJOB)) {
+			status=parser.rerunJob(commandParams);
+		} else if (c.startsWith("get")) {
 			status=handleGetCommand(c,commandParams);
 		} else if (c.startsWith("set")) {
 			status=handleSetCommand(c, commandParams);

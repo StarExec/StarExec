@@ -42,13 +42,13 @@ function initUI(){
 		setTimeButtonText();
 		pairTable.fnDraw(false);
 	});
-	$('#pairTbl tbody').delegate("a", "click", function(event) {
+	$('#pairTbl tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
 
 	
 	//Set up row click to send to pair details page
-	$("#pairTbl tbody").delegate("tr", "click", function(){
+	$("#pairTbl tbody").on( "click", "tr", function(){
 		var pairId = $(this).find('input').val();
 		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 	});
@@ -68,8 +68,10 @@ function initDataTables(){
 	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
+		"pagingType"    : "full_numbers",
+
         "sAjaxSource"	: starexecRoot+"services/jobs/",
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 

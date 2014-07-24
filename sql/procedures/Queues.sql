@@ -3,10 +3,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new queue given a name
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddQueue;
-CREATE PROCEDURE AddQueue(IN _name VARCHAR(128), OUT id INT)
+CREATE PROCEDURE AddQueue(IN _name VARCHAR(128),IN _wall INT, IN _cpu INT, OUT id INT)
 	BEGIN		
-		INSERT INTO queues (name, status)
-		VALUES (_name, "INACTIVE");
+		INSERT IGNORE INTO queues (name,clockTimeout,cpuTimeout, status)
+		VALUES (_name,_wall,_cpu, "INACTIVE");
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 	
@@ -49,6 +49,15 @@ CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	BEGIN
 		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
                 WHERE job_pairs.status_code=2 AND jobs.queue_id = _queueId;
+	END //	
+
+	
+-- Gets the number of enqueued job pairs for a given queue and user
+DROP PROCEDURE IF EXISTS GetQueueSizeByUser;
+CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
+	BEGIN
+		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
+                WHERE (job_pairs.status_code=2 or job_pairs.status_code=4) AND jobs.queue_id = _queueId AND jobs.user_id=_user;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given queue id
@@ -113,6 +122,26 @@ CREATE PROCEDURE MakeQueuePermanent (IN _queueId INT)
 		WHERE id = _queueId;
 	END //
 
+-- Updates the max wallclock timeout for a queue
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS UpdateQueueClockTimeout;
+CREATE PROCEDURE UpdateQueueClockTimeout(IN _queueId INT, IN _timeout INT)
+	BEGIN
+		UPDATE queues
+		SET clockTimeout=_timeout
+		WHERE id=_queueId;
+	END //
+
+-- Updates the max cpu timeout for a queue
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS UpdateQueueCpuTimeout;
+CREATE PROCEDURE UpdateQueueCpuTimeout(IN _queueId INT, IN _timeout INT)
+	BEGIN
+		UPDATE queues
+		SET cpuTimeout=_timeout
+		WHERE id=_queueId;
+	END //	
+
 -- Determines if the queue has global access
 -- Author: Wyatt kaiser
 DROP PROCEDURE IF EXISTS IsQueueGlobal;
@@ -171,7 +200,7 @@ CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
 DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
 CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
 	BEGIN
-		SELECT DISTINCT id, name, status, permanent, global_access
+		SELECT DISTINCT id, name, status, permanent, global_access, cpuTimeout,clockTimeout
 		FROM queues 
 			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
 			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id

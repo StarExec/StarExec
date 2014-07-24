@@ -12,26 +12,14 @@ CREATE PROCEDURE GetNextPageOfPendingQueueRequests(IN _startingRecord INT, IN _r
 				MIN(reserve_date),
 				MAX(reserve_date),
 				message,
-				code,
-				created
+				created,
+				cpuTimeout,
+				clockTimeout
 		FROM	queue_request
 		GROUP BY user_id, space_id, queue_name
 		ORDER BY 
 			created
 		 ASC
-	 
-		-- Shrink the results to only those required for the next page
-		LIMIT _startingRecord, _recordsPerPage;
-	END //
-	
--- Gets the next page of data table for queue reservations
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfQueueReservations;
-CREATE PROCEDURE GetNextPageOfQueueReservations(IN _startingRecord INT, IN _recordsPerPage INT)
-	BEGIN
-		SELECT 	space_id, queue_id, node_count, MIN(reserve_date), MAX(reserve_date)
-		FROM	queue_reserved
-		GROUP BY space_id, queue_id
 	 
 		-- Shrink the results to only those required for the next page
 		LIMIT _startingRecord, _recordsPerPage;
@@ -45,37 +33,45 @@ CREATE PROCEDURE GetNextPageOfHistoricQueueReservations(IN _startingRecord INT, 
 		IF (_colSortedOn = 0) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
-				
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				ORDER BY queue_name ASC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE 
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
-				
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				ORDER BY queue_name DESC
 				
 				LIMIT _startingRecord, _recordsPerPage;
@@ -83,36 +79,45 @@ CREATE PROCEDURE GetNextPageOfHistoricQueueReservations(IN _startingRecord INT, 
 		ELSEIF (_colSortedOn = 1) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
-				
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				ORDER BY node_count ASC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE 
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY node_count DESC
 				
@@ -121,36 +126,46 @@ CREATE PROCEDURE GetNextPageOfHistoricQueueReservations(IN _startingRecord INT, 
 		ELSEIF (_colSortedOn = 2) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY start_date ASC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE 
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY start_date DESC
 				
@@ -159,36 +174,46 @@ CREATE PROCEDURE GetNextPageOfHistoricQueueReservations(IN _startingRecord INT, 
 		ELSEIF (_colSortedOn = 3) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY end_date ASC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE 
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY end_date DESC
 				
@@ -197,36 +222,46 @@ CREATE PROCEDURE GetNextPageOfHistoricQueueReservations(IN _startingRecord INT, 
 		ELSEIF (_colSortedOn = 4) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY message ASC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE 
 				SELECT 	queue_name,
-						node_count,
-						start_date,
-						end_date,
+						MAX(node_count) AS node_count,
+						MIN(reserve_date) AS start_date,
+						MAX(reserve_date) AS end_date,
 						message
 				
-				FROM	reservation_history
+				FROM queue_request
+				JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id )
+				WHERE 
 				
 				-- Exclude reservations whose name and message don't contain the query string
-				WHERE 	(		
+				(		
 								queue_name 	LIKE 	CONCAT('%', _query, '%')
 						OR 		message		LIKE	CONCAT('%', _query, '%')
 						)
+					
+				GROUP BY id
+				HAVING end_date<CURDATE()
 				
 				ORDER BY message DESC
 				

@@ -4,11 +4,8 @@
 <%
 	try {
 		int userId = SessionUtil.getUserId(request);
-		boolean admin = false;
-		User u = Users.get(userId);
-		if (u.getRole().equals("admin")) {
-			admin = true;
-		}
+		boolean admin = Users.isAdmin(userId);
+		
 		request.setAttribute("isAdmin", admin);
 		request.setAttribute("communityNameLen", R.COMMUNITY_NAME_LEN);
 		request.setAttribute("communityDescLen", R.COMMUNITY_DESC_LEN);

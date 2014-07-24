@@ -97,7 +97,17 @@ public class UserSecurity {
 				return SecurityStatusCodes.ERROR_INVALID_PARAMS;
 			}
 
-		}	
+		} else if (attribute.equals("pagesize")) {
+			if(!Validator.isValidInteger(newVal) ) {
+				return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			}
+			int n=Integer.parseInt(newVal);
+			if (n<1 || n> 100) {
+				return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			}
+		} else {
+			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		}
 		return 0;
 	}
 	

@@ -3,20 +3,11 @@ var needToConfirm = false;
 
 $(document).ready(function(){
 
-	refreshUpdates();
 	
 	$( "#dialog-confirm-move" ).hide();
-
-	
 	initDataTables();
-
-	
 	updateButtonActions();
-	
 
-	
-	
-	  
 	window.onbeforeunload = confirmExit;
 	function confirmExit() {
 		if (needToConfirm) {
@@ -28,32 +19,14 @@ $(document).ready(function(){
 });
 
 
-function refreshUpdates() {
-	$.post(  
-			starexecRoot+"services/nodes/refresh",
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					break;
-				case 2:		
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
-
 
 function updateButtonActions() {
 	$('#btnUpdate').button({
 		icons: {
 			secondary: "ui-icon-refresh"
 		}
-	}).click(function(){
+	})
+	$("#btnUpdate").click(function(){
 		needToConfirm = false;
 		$.post(  
 				starexecRoot+"services/nodes/update",
@@ -76,7 +49,8 @@ function updateButtonActions() {
 	$('#btnBack').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
-	}}).click(function(){
+	}})
+	$("#btnBack").click(function(){
 		
 		history.back(-1);
 	});
@@ -85,7 +59,8 @@ function updateButtonActions() {
 		icons: {
 			secondary: "ui-icon-refresh"
 		}
-	}).click(function(){
+	})
+	$("#btnDateChange").click(function(){
 		nodeTable.fnDraw();
 	});
 }
@@ -99,7 +74,7 @@ function initDataTables() {
 		"bInfo"			: false,
 		"bPaginate"		: false,
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',
@@ -129,7 +104,6 @@ function initDataTables() {
 		},
 		"fnServerData"	: fnPaginationHandler
 	});
-	
 	nodeTable.makeEditable({
 		"sUpdateURL": starexecRoot + "secure/update/nodeCount",
 		"fnStartProcessingMode": function() {
@@ -138,9 +112,8 @@ function initDataTables() {
 
 			setTimeout(function(){nodeTable.fnDraw();}, 1000);
 
-		},
+		}
 	  });
-	
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {

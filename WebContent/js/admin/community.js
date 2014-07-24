@@ -37,7 +37,7 @@ $(document).ready(function(){
 	   id = data.rslt.obj.attr("id");
 	   updateActionId(id);
 	   //getCommunityDetails(id);
-	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+	}).on("click", "a",  function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
 	initUI(id);
 	initDataTables();
@@ -90,7 +90,7 @@ function initDataTables(){
 	$('#commRequests').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',

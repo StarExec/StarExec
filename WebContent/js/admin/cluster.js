@@ -2,14 +2,14 @@ var reserved;
 var requests;
 var type;
 var defaultQueueId;
-
+var curQueueId;
 $(document).ready(function(){
 	
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = starexecRoot+"css/jstree/";
 	 
 	 var id = -1;
-	 
+	 curQueueId=-1;
 	// Initialize the jstree plugin for the community list
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
@@ -56,7 +56,7 @@ $(document).ready(function(){
 				}
 			}
 		},
-		"plugins" : ["types", "themes", "json_data", "ui", "cookies"] ,
+		"plugins" : ["types", "themes", "json_data", "ui"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane		
@@ -66,8 +66,7 @@ $(document).ready(function(){
 	   var global = data.rslt.obj.attr("global");
 	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
 	   updateActionId(id, type, permanent, global);
-	   //getCommunityDetails(id);
-	}).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 
 	initUI(id);
 	
@@ -135,6 +134,11 @@ function initUI(id){
 		}
 	});
 	
+	$("#editQueue").button({
+		icons: {
+			primary: "ui-icon-pencil"
+		}
+	});
 	
 	//Make tables expandable/collapsable
 	$('#reservationField').expandable(false);
@@ -142,18 +146,174 @@ function initUI(id){
 	$('#historicField').expandable(true);
 
 	
+	
+	$("#makePermanent").click(function() {
+		$('#dialog-confirm-permanent-txt').text('are you sure you want to make this queue permanent?');
+	
+		$('#dialog-confirm-permanent').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed to make queue permanent');
+					$('#dialog-confirm-permanent').dialog('close');
+					$.post(
+							starexecRoot+"services/permanent/queue/" + curQueueId,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "the queue is now permament", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "queue was not made permanent; please try again", 5000);
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled make queue permanent');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
+	$("#editQueue").click(function() {
+		window.open(starexecRoot+"secure/edit/queue.jsp?id="+curQueueId);
+	});
+	
+	$("#removeQueue").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to remove this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed queue removal.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+					       starexecRoot+"services/remove/queue/" + curQueueId,
+					       function(returnCode) {
+						   switch (returnCode) {
+						   case 0:
+						       showMessage('success', "the queue was successfully removed", 5000);
+						       setTimeout(function(){document.location.reload(true);}, 1000);
+						       break;
+						   case 1:
+						       showMessage('error', "queue was not deleted; please try again", 5000);
+						       break;
+						   case 2:
+						       showMessage('error', "only the admin can delete this queue", 5000);
+						       break;
+						   default:
+						       showMessage('error', "invalid parameters", 5000);
+						       break;
+						   }
+					       },
+					       "json"
+					       );
+				},
+			       "cancel": function() {
+				   log('user canceled queue removal');
+				   $(this).dialog("close");
+			       }
+			}
+		});
+	});	
+	
+	$("#makeGlobal").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to give global access to this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed giving global access.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+							starexecRoot+"services/queue/global/" + curQueueId,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "the queue was successfully given global acccess", 5000);
+										//window.location = starexecRoot+'secure/admin/cluster.jsp';
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "queue was not given global access; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the admin can give global access to this queue", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled giving global access');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});	
+	
+	$("#removeGlobal").click(function(){
+		$('#dialog-confirm-remove-txt').text('are you sure you want to remove global access from this queue?');
+		
+		$('#dialog-confirm-remove').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed removing global access.');
+					$('#dialog-confirm-remove').dialog('close');
+					$.post(
+							starexecRoot+"services/queue/global/remove/" + curQueueId,
+							function(returnCode) {
+								switch (returnCode) {
+									case 0:
+										showMessage('success', "successfully removed global access", 5000);
+										setTimeout(function(){document.location.reload(true);}, 1000);
+										break;
+									case 1:
+										showMessage('error', "global access was not removed; please try again", 5000);
+										break;
+									case 2:
+										showMessage('error', "only the admin can remove global access from this queue", 5000);
+										break;
+									default:
+										showMessage('error', "invalid parameters", 5000);
+										break;
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled removing global access');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});	
 
 
 }
 
-function updateActionId(id, type, permanent, global) {
-	$("#removeQueue").hide();
-	$("#makePermanent").hide();
-	$("#moveNodes").hide();
-	$("#CommunityAssoc").hide();
-	$("#makeGlobal").hide();
-	$("#removeGlobal").hide();
-	
+function updateActionId(id, type, permanent, global) {	
+	curQueueId=id;
 	if (id == -1) {
 		$("#removeQueue").hide();
 		$("#makePermanent").hide();
@@ -161,6 +321,9 @@ function updateActionId(id, type, permanent, global) {
 		$("#CommunityAssoc").hide();
 		$("#makeGlobal").hide();
 		$("#removeGlobal").hide();
+		$("#editQueue").hide();
+	} else {
+		$("#editQueue").show();
 	}
 	
 	if (type == "active_queue" || type=="inactive_queue") {
@@ -209,167 +372,7 @@ function updateActionId(id, type, permanent, global) {
 	
 	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
 	$('#CommunityAssoc').attr('href', starexecRoot + "secure/admin/assocCommunity.jsp?id=" + id);
-	
-	
-	$("#makePermanent").click(function() {
-		$('#dialog-confirm-permanent-txt').text('are you sure you want to make this queue permanent?');
-	
-		$('#dialog-confirm-permanent').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed to make queue permanent');
-					$('#dialog-confirm-permanent').dialog('close');
-					$.post(
-							starexecRoot+"services/permanent/queue/" + id,
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "the queue is now permament", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "queue was not made permanent; please try again", 5000);
-								}
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled make queue permanent');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});
-	
-	
-	$("#removeQueue").click(function(){
-		$('#dialog-confirm-remove-txt').text('are you sure you want to remove this queue?');
-		
-		$('#dialog-confirm-remove').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed queue removal.');
-					$('#dialog-confirm-remove').dialog('close');
-					$.post(
-					       starexecRoot+"services/remove/queue/" + id,
-					       function(returnCode) {
-						   switch (returnCode) {
-						   case 0:
-						       showMessage('success', "the queue was successfully removed", 5000);
-						       //window.location = starexecRoot+'secure/admin/cluster.jsp';
-						       setTimeout(function(){document.location.reload(true);}, 1000);
-						       break;
-						   case 1:
-						       showMessage('error', "queue was not deleted; please try again", 5000);
-						       break;
-						   case 2:
-						       showMessage('error', "only the admin can delete this queue", 5000);
-						       break;
-						   default:
-						       showMessage('error', "invalid parameters", 5000);
-						       break;
-						   }
-					       },
-					       "json"
-					       );
-				},
-			       "cancel": function() {
-				   log('user canceled queue removal');
-				   $(this).dialog("close");
-			       }
-			}
-		});
-	});	
-	
-	$("#makeGlobal").click(function(){
-		$('#dialog-confirm-remove-txt').text('are you sure you want to give global access to this queue?');
-		
-		$('#dialog-confirm-remove').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed giving global access.');
-					$('#dialog-confirm-remove').dialog('close');
-					$.post(
-							starexecRoot+"services/queue/global/" + id,
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "the queue was successfully given global acccess", 5000);
-										//window.location = starexecRoot+'secure/admin/cluster.jsp';
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "queue was not given global access; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the admin can give global access to this queue", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
-								}
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled giving global access');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});	
-	
-	$("#removeGlobal").click(function(){
-		$('#dialog-confirm-remove-txt').text('are you sure you want to remove global access from this queue?');
-		
-		$('#dialog-confirm-remove').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed removing global access.');
-					$('#dialog-confirm-remove').dialog('close');
-					$.post(
-							starexecRoot+"services/queue/global/remove/" + id,
-							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "successfully removed global access", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "global access was not removed; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the admin can remove global access from this queue", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
-								}
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled removing global access');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});	
+
 }
 
 function initDataTables(){
@@ -377,30 +380,15 @@ function initDataTables(){
 	requests = $('#qreserves').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
+		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
 		"sAjaxSource"	: starexecRoot+"services/",
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler
 	});
-	reserved = $('#qreserved').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler2
-	});
-	historic = $('#qhistoric').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-		"iDisplayStart"	: 0,
-		"iDisplayLength": 10,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler3
-	});
+
+
+	
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback){
@@ -434,69 +422,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback){
 		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
 	});
 }
-
-function fnPaginationHandler2(sSource, aoData, fnCallback){
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + "queues/reserved/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-					//showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
-					// Update the number displayed in this DataTable's fieldset
-					$('#reservedExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				
-
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
-
-function fnPaginationHandler3(sSource, aoData, fnCallback){
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + "queues/historic/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
-					// Update the number displayed in this DataTable's fieldset
-					$('#historicExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				
-
-				break;
-				}
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
-}
-
 
 function cancelReservation(spaceId, queueId) {
 	$.post(

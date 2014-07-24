@@ -364,7 +364,13 @@ public class JobPairs {
 					filteredPairs.add(jp);
 				}
 			}
-		}else {
+		} else if (type.equals("complete")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().complete()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} else {
 			filteredPairs=pairs;
 		}
 		return filteredPairs;
@@ -373,7 +379,7 @@ public class JobPairs {
 	 * Checks whether a given pair is correct
 	 * @param jp
 	 * @return
-	 * -1 == pair is not complete
+	 * -1 == pair is not complete (as in, does not have STATUS_COMPLETE)
 	 * 0 == pair is correct
 	 * 1 == pair is incorrect
 	 * 2 == pair is unknown

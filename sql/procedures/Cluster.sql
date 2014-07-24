@@ -46,17 +46,6 @@ CREATE PROCEDURE ClearQueueAssociations()
 		TRUNCATE queue_assoc;
 	END //
 	
--- Adds a SGE queue to the database and ignores duplicates
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddQueue;
-CREATE PROCEDURE AddQueue(IN _name VARCHAR(64))
-	BEGIN
-		INSERT IGNORE INTO queues (name)
-		VALUES (_name);
-	END //
-	
-
-	
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen
 -- TODO: What is the order by used for here?
@@ -75,7 +64,7 @@ CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 DROP PROCEDURE IF EXISTS GetAllQueues;
 CREATE PROCEDURE GetAllQueues()
 	BEGIN		
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout,clockTimeout
 		FROM queues
 		WHERE status="ACTIVE"
 		ORDER BY name;	
@@ -86,7 +75,7 @@ CREATE PROCEDURE GetAllQueues()
 DROP PROCEDURE IF EXISTS GetAllQueuesAdmin;
 CREATE PROCEDURE GetAllQueuesAdmin()
 	BEGIN		
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
 		ORDER BY id;	
 	END //
@@ -96,7 +85,7 @@ CREATE PROCEDURE GetAllQueuesAdmin()
 DROP PROCEDURE IF EXISTS GetAllQueuesNonPermanent;
 CREATE PROCEDURE GetAllQueuesNonPermanent()
 	BEGIN
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
 		WHERE permanent = false
 		ORDER BY id;
@@ -108,7 +97,7 @@ CREATE PROCEDURE GetAllQueuesNonPermanent()
 DROP PROCEDURE IF EXISTS GetUserQueues;
 CREATE PROCEDURE GetUserQueues(IN _userID INT)
 	BEGIN		
-		SELECT id, name, status
+		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
 		WHERE status="ACTIVE"
 		AND 
@@ -183,7 +172,7 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 DROP PROCEDURE IF EXISTS GetQueue;
 CREATE PROCEDURE GetQueue(IN _id INT)
 	BEGIN		
-		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total
+		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,clockTimeout
 		FROM queues
 		WHERE id=_id;
 	END // 
@@ -293,87 +282,54 @@ CREATE PROCEDURE GetNonPermanentNodeCount(IN _defaultQueueId INT)
 -- Returns the node count for a particular date for a particular queue
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetNodeCountOnDate;
-CREATE PROCEDURE GetNodeCountOnDate(_queueId INT, IN _reserveDate DATE)
+CREATE PROCEDURE GetNodeCountOnDate(_requestId INT, IN _reserveDate DATE)
 	BEGIN
 		SELECT node_count AS count
-		FROM queue_reserved
-		WHERE queue_id = _queueId AND reserve_date = _reserveDate;
+		FROM queue_request_assoc
+		WHERE request_id = _requestId AND reserve_date = _reserveDate;
 	END //
 	
--- Returns the latest date in the queue_reserved table 
+-- Returns the latest date in the queue_request_assoc table
 -- Author: Wyatt Kaiser	
 DROP PROCEDURE IF EXISTS GetLatestNodeDate;
 CREATE PROCEDURE GetLatestNodeDate()
 	BEGIN
 		SELECT MAX(reserve_date)
-		FROM queue_reserved;
+		FROM queue_request_assoc
+		JOIN queue_request ON queue_request.id=queue_request_assoc.request_id
+		WHERE approved=TRUE;
 	END //
 	
+-- Updates the number of nodes a particular reservation will get on a specific day
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
-CREATE PROCEDURE UpdateReservedNodeCount(IN _spaceId INT, IN _queueId INT, IN _nodeCount INT, IN _date DATE, IN _message TEXT)
+CREATE PROCEDURE UpdateReservedNodeCount(IN _requestId INT, IN _nodeCount INT, IN _date DATE)
 	BEGIN
-		INSERT INTO queue_reserved
-		VALUES (_spaceId, _queueId, _nodeCount, _date, _message)
-		ON DUPLICATE KEY UPDATE
-		node_count=_nodeCount;
+		UPDATE queue_request_assoc
+		SET node_count=_nodeCount
+		WHERE reserve_date=_date AND request_id=_requestId;
 	END //
 	
--- Deletes all entries from the temporary temp_node_changes table
--- Author: Wyatt Kaiser	
-DROP PROCEDURE IF EXISTS RefreshTempNodeChanges;
-CREATE PROCEDURE RefreshTempNodeChanges()
-	BEGIN
-		DELETE FROM temp_node_changes;
-	END //
-	
--- Adds an entry to temporary temp_node_changes table
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS AddTempNodeChange;
-CREATE PROCEDURE AddTempNodeChange(IN _spaceId INT, IN _queueName VARCHAR(64), IN _nodeCount INT, IN _reserveDate DATE)
-	BEGIN
-		INSERT INTO temp_node_changes
-		VALUES (_spaceId, _queueName, _nodeCount, _reserveDate)
-		ON DUPLICATE KEY UPDATE
-		node_count=_nodeCount;
-	END //
-	
--- Returns the temp nodeCount for a particular queue on a particular date
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetTempNodeCountOnDate;
-CREATE PROCEDURE GetTempNodeCountOnDate(IN _queuename VARCHAR(64), IN _reserveDate DATE)
-	BEGIN
-		SELECT node_count AS count
-		FROM temp_node_changes
-		WHERE queue_name = _queuename AND reserve_date = _reserveDate;
-	END //
-	
--- Returns the queueName, nodeCount, and reserveDate from the temp_node_changes table
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetTempChanges;
-CREATE PROCEDURE GetTempChanges()
-	BEGIN
-		SELECT * 
-		FROM temp_node_changes;
-	END //
+
 	
 -- Returns the minimum node count for a queue reservation
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetMinNodeCount;
-CREATE PROCEDURE GetMinNodeCount( IN _queueId INT )
+CREATE PROCEDURE GetMinNodeCount( IN _requestId INT )
 	BEGIN
 		SELECT MIN(node_count) AS count
-		FROM queue_reserved
-		WHERE queue_id = _queueId;
+		FROM queue_request_assoc
+		WHERE request_id = _requestId;
 	END //
 	
 -- Returns the maximum node count for a queue reservation
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetMaxNodeCount;
-CREATE PROCEDURE GetMaxNodeCount (IN _queueId INT)
+CREATE PROCEDURE GetMaxNodeCount (IN _requestId INT)
 	BEGIN
 		SELECT MAX(node_count) AS count
-		FROM queue_reserved
-		WHERE queue_id = _queueId;
+		FROM queue_request_assoc
+		WHERE request_id = _requestId;
 	END //
 	
 -- Returns all the nodes in the system that are active
@@ -487,9 +443,8 @@ CREATE PROCEDURE SetPermQueueCommunityAccess(IN _communityId INT, IN _queueId IN
 DROP PROCEDURE IF EXISTS RemoveEmptyNodeCounts;
 CREATE PROCEDURE RemoveEmptyNodeCounts()
 	BEGIN
-		DELETE FROM queue_reserved
-		WHERE node_count = 0
-		AND queue_id IN (SELECT DISTINCT queue_id FROM (SELECT DISTINCT queue_id FROM queue_reserved where node_count != 0) AS QueuesToDeleteFrom);
+		DELETE FROM queue_request_assoc
+		WHERE node_count = 0;
 	END //
 	
 DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;

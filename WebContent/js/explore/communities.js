@@ -41,7 +41,7 @@ $(document).ready(function(){
         id = data.rslt.obj.attr("id");
         updateActionId(id);
         getCommunityDetails(id);
-    }).delegate("a", "click", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+    }).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 	
 	memberTable = $('#members').dataTable( {
         "sDom": 'rt<"bottom"flpi><"clear">'
@@ -51,7 +51,7 @@ $(document).ready(function(){
         "sDom": 'rt<"bottom"flpi><"clear">'
     });	
 	
-	$("#members").delegate("tr", "click", function(){
+	$("#members").on( "click", "tr", function(){
 		$(this).toggleClass("row_selected");
 	});
 	

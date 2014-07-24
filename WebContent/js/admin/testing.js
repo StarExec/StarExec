@@ -5,7 +5,7 @@ $(document).ready(function(){
 	setInterval(function() {
 		rows = $(testTable).children('tbody').children('tr.row_selected');
 		if (rows.length==0) {
-			testTable.fnReloadAjax();
+			testTable.api().ajax.reload(null,false);
 		}
 	},5000);
 });
@@ -37,7 +37,7 @@ function initUI(){
 				function(returnCode) {
 					if (returnCode=="0") {
 						showMessage("success","testing started succesfully",5000);
-						testTable.fnReloadAjax();
+						testTable.api().ajax.reload(null,false);
 					} else {
 						showMessage("error","There was an error while starting the testing",5000);
 					}
@@ -56,7 +56,7 @@ function initUI(){
 			function(returnCode) {
 				if (returnCode=="0") {
 					showMessage("success","testing started succesfully",5000);
-					testTable.fnReloadAjax();
+					testTable.api().ajax.reload(null,false);
 				} else {
 					showMessage("error","There was an error while starting the testing",5000);
 				}
@@ -80,11 +80,10 @@ function initUI(){
 		"json"
 	});
 	
-	extendDataTableFunctions();
 	testTable=$('#tableTests').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
-        "iDisplayLength": 10,
+        "iDisplayLength": defaultPageSize,
         "bSort": true,
         "bPaginate": true,
         "sAjaxSource"	: starexecRoot+"services/tests/pagination",
@@ -93,32 +92,12 @@ function initUI(){
     });
 
 	
-	$("#tableTests").delegate("tr", "click", function() {
+	$("#tableTests").on( "click", "tr", function() {
 		$(this).toggleClass("row_selected");
 	});
 
 }
 
-function extendDataTableFunctions() {	
-	$.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource ) {
-	    if ( typeof sNewSource != 'undefined' )
-	    oSettings.sAjaxSource = sNewSource;
-	    theTable=this;
-	    $.getJSON( oSettings.sAjaxSource, null, function(json) {
-	    	theTable.fnClearTable( theTable );
-		    theTable.oApi._fnProcessingDisplay( oSettings, true );
-		    var that = theTable;
-	    /* Got the data - add it to the table */
-	    for ( var i=0 ; i<json.aaData.length ; i++ ) {
-	    that.oApi._fnAddData( oSettings, json.aaData[i] );
-	    }
-	     
-	    oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-	    that.fnDraw( that );
-	    that.oApi._fnProcessingDisplay( oSettings, false );
-	    });
-	}
-}
 
 /**
  * For a given dataTable, this extracts the id's of the rows that have been

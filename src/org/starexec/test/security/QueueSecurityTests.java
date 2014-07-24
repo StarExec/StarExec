@@ -25,9 +25,9 @@ public class QueueSecurityTests extends TestSequence {
 	
 	@Test
 	private void PermanentQueueTest() {
-		Assert.assertEquals(0,QueueSecurity.canUserMakeQueuePermanent(admin.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserMakeQueuePermanent(user1.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserMakeQueuePermanent(user2.getId()));
+		Assert.assertEquals(0,QueueSecurity.canUserMakeQueue(admin.getId()));
+		Assert.assertNotEquals(0,QueueSecurity.canUserMakeQueue(user1.getId()));
+		Assert.assertNotEquals(0,QueueSecurity.canUserMakeQueue(user2.getId()));
 	}
 	
 	@Test
