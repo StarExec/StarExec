@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <tns:Jobs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchJobSchema.xsd batchJobSchema.xsd" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchJobSchema.xsd">
 <Job name="another test">
