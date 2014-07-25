@@ -57,7 +57,7 @@ DROP PROCEDURE IF EXISTS GetQueueSizeByUser;
 CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
 	BEGIN
 		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
-                WHERE (job_pairs.status_code=2 or job_pairs.status_code=4) AND jobs.queue_id = _queueId AND jobs.user_id=_user;
+                WHERE (job_pairs.status_code=4) AND jobs.queue_id = _queueId AND jobs.user_id=_user;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given queue id

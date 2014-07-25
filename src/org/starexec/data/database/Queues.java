@@ -860,7 +860,7 @@ public class Queues {
 	}
 	
 	/**
-	 * Returns the number of job pairs enqueued and running in the given queue
+	 * Returns the number of job pairs running in the given queue
 	 * @param queueId The queue in question
 	 * @return The integer number of jobs, or null on failure
 	 */

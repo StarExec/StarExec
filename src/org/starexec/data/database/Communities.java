@@ -53,16 +53,7 @@ public class Communities {
 		return null;
 	}
 	
-	public static List<Space> getCommsWithPublicSolvers(){
-		List<Space> commSpaces = Communities.getAll();
-		List<Space> returnSpaces = new LinkedList<Space>();	
-		for (Space comm:commSpaces){
-			if (Solvers.getPublicSolversByCommunity(comm.getId()).size() > 0){
-				returnSpaces.add(comm);
-			}	
-		}	
-		return returnSpaces;
-	}
+	
 	
 	public static int getDefaultCpuTimeout(int id) {
 		List<String> settings= getDefaultSettings(id);
@@ -229,7 +220,7 @@ public class Communities {
 	 * @author Todd Elvers
 	 */
 	public static boolean leave(int userId, int commId) {
-		if (userId==R.PUBLIC_USER_ID){
+		if (Users.isPublicUser(userId)){
 			return false;
 		}
 		

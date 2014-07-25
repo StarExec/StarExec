@@ -402,7 +402,6 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
 		//the admin has full permissions everywhere
 		if (Users.isAdmin(userId)) {
 			log.debug("permissions for an admin were obtained userId = "+userId);

@@ -115,7 +115,7 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 -- ordering results by a column, and sorting results in ASC or DESC order.  
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetNextPageOfUsersAdmin;
-CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT, IN _publicUserId INT)
+CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
 	BEGIN
 		-- If _query is empty, get next page of Users without filtering for _query
 		IF (_query = '' OR _query = NULL) THEN
@@ -128,7 +128,7 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						CONCAT(first_name, ' ', last_name) AS full_name,
 						role
 						
-				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles
 
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -148,7 +148,7 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name,
 						role
-				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles
 				ORDER BY 
 				(CASE _colSortedOn
 					WHEN 0 THEN full_name
@@ -168,10 +168,10 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						CONCAT(first_name, ' ', last_name) AS full_name,
 						role
 				
-				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
+				FROM	users NATURAL JOIN user_roles WHERE 
 							
 				-- Exclude Users whose name and description don't contain the query string
-				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
 				OR		email								LIKE 	CONCAT('%', _query, '%'))
 								
@@ -193,8 +193,8 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name,
 						role
-				FROM	users NATURAL JOIN user_roles WHERE (id != _publicUserId)
-				AND 	(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
+				FROM	users NATURAL JOIN user_roles WHERE
+				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
 				OR		email								LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY 

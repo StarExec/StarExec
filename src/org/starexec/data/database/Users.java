@@ -638,14 +638,13 @@ public class Users {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?,?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setInt(5, spaceId);
 			procedure.setString(6, searchQuery);
-			procedure.setInt(7, R.PUBLIC_USER_ID);
 			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			
@@ -694,13 +693,12 @@ public class Users {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setInt(3, indexOfColumnSortedBy);
 			procedure.setBoolean(4, isSortedASC);
 			procedure.setString(5, searchQuery);
-			procedure.setInt(6, R.PUBLIC_USER_ID);
 			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			
@@ -1119,6 +1117,16 @@ public class Users {
 	public static boolean isAdmin(int userId) {
 		User u=Users.get(userId);
 		return u.getRole().equals("admin");
+	}
+	
+	/**
+	 * Checks to see whether the given user is the public user
+	 * @param userId
+	 * @return
+	 */
+	
+	public static boolean isPublicUser(int userId) {
+		return userId==R.PUBLIC_USER_ID;
 	}
 	
 	

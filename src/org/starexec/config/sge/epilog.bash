@@ -36,19 +36,14 @@ VARFILE="$STAREXEC_OUT_DIR"/var.out
 # Functions
 # /////////////////////////////////////////////
 
+
+# TODO: We should just be passing in the output directory from javaS
 function copyOutput {
 	log "creating storage directory on master host"
-	
-	RZ_OUT_DIR="$JOB_OUT_DIR/$JOB_STAR_ID/$SPACE_PATH/$SOLVER_NAME"
-        #log "solver name = $SOLVER_NAME"
-	APPEND="___$CONFIG_NAME"
-        #log "config part = $APPEND"
-        RZ_OUT_DIR="$RZ_OUT_DIR$APPEND"
-	#log "target directory = $RZ_OUT_DIR"
-	createDir "$RZ_OUT_DIR"
 
-	log "copying output to $RZ_OUT_DIR"
-	cp "$STAREXEC_OUT_DIR"/stdout.txt "$RZ_OUT_DIR/$BENCH_NAME"
+	createDir "$PAIR_OUTPUT_DIRECTORY"
+
+	cp "$STAREXEC_OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
 	if [ "$POST_PROCESSOR_PATH" != "null" ]; then

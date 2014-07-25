@@ -1212,9 +1212,7 @@ public class RESTHelpers {
 		case USER:
     		List<User> usersToDisplay = new LinkedList<User>();
     		int totalUsersInSpace = Users.getCountInSpace(id);
-    		if (Spaces.isPublicSpace(id)){
-    			totalUsersInSpace--;
-    		}
+    		
     		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
     		usersToDisplay = Users.getUsersForNextPage(
     				attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -1871,7 +1869,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(permissionButton));
 			
 			String suspendButton = "";
-			if (user.getId() == R.PUBLIC_USER_ID || Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
+			if (Users.isPublicUser(user.getId()) || Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
 				suspendButton = "N/A";
 			} else if (Users.isSuspended(user.getId())) {
 				sb = new StringBuilder();

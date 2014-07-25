@@ -1018,43 +1018,7 @@ public class Solvers {
 		return null;
 	}
 	
-	/**
-	 * @return a list of all solvers that reside in a public space
-	 * @author Benton McCune
-	 */
-	public static List<Solver> getPublicSolversByCommunity(Integer commId){
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetPublicSolversByCommunity(?,?)}");	
-			procedure.setInt(1, commId);
-			procedure.setInt(2, R.PUBLIC_USER_ID);
-			 results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
-			
-			while(results.next()){
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));				
-				s.setUploadDate(results.getTimestamp("uploaded"));
-				s.setDescription(results.getString("description"));
-				s.setDownloadable(results.getBoolean("downloadable"));
-				s.setDiskSize(results.getLong("disk_size"));
-				s.setPath(results.getString("path"));
-				solvers.add(s);
-			}									
-			return solvers;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
+	
 	
 	public static int getRecycledSolverCountByUser(int userId) {
 		return getRecycledSolverCountByUser(userId,"");

@@ -258,31 +258,7 @@ public class RESTServices {
 		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId),userId));
 	}
 	
-	/**
-	 * @return a json string representing all public solvers of a community
-	 * @author Benton McCune and Ruoyu Zhang
-	 */
-	@GET
-	@Path("/communities/solvers/{id}")
-	@Produces("application/json")	
-	public String getPublicSolvers(@PathParam("id") int commId, @Context HttpServletRequest request) {					
-		log.debug("commId = " + commId);
-		List<Solver> publicSolvers = Solvers.getPublicSolversByCommunity(commId);
-		log.debug("# of public solvers = " + publicSolvers.size());
-		
-		JsonObject displayObject = new JsonObject();
-		JsonArray jSSolvers = new JsonArray();
-		for (Solver solver:publicSolvers){
-			JsonArray jSSolver = new JsonArray();
-			jSSolver.add(new JsonPrimitive(solver.getId()));
-			jSSolver.add(new JsonPrimitive(solver.getName()));
-			jSSolvers.add(jSSolver);
-		}
-		displayObject.add("solverData", jSSolvers);
-		log.debug("JsonArray = " + jSSolvers.toString());
-		log.debug("displayObject = " + displayObject.toString());
-		return gson.toJson(jSSolvers);
-	}	
+	
 	
 	/**
 	 * @return a json string representing all communities within starexec

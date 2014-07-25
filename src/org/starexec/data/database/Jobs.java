@@ -3042,7 +3042,7 @@ public class Jobs {
 		if (j==null) {
 			return false;
 		}
-		if (j.getUserId()==R.PUBLIC_USER_ID){
+		if (Users.isPublicUser(j.getUserId())){
 			log.debug("Public User for Job Id" + jobId);
 			return true;
 		}

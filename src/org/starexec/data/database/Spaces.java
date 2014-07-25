@@ -749,13 +749,12 @@ public class Spaces {
 		try {
 			con = Common.getConnection();
 			if (!hierarchy) {
-				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
+				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?)}");
 			} else {
-				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdInHierarchy(?, ?, ?)}");
+				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdInHierarchy(?, ?)}");
 			}
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			procedure.setInt(3, R.PUBLIC_USER_ID);
 			 results = procedure.executeQuery();
 
 			if (results.next()) {
@@ -788,12 +787,11 @@ public class Spaces {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdWithQuery(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdWithQuery(?, ?, ?)}");
 			
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			procedure.setInt(3, R.PUBLIC_USER_ID);
-			procedure.setString(4,query);
+			procedure.setString(3,query);
 			 results = procedure.executeQuery();
 
 			if (results.next()) {
@@ -824,7 +822,6 @@ public class Spaces {
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId));
-			//s.setPublic(Spaces.isPublicSpace(spaceId)); this should be there already
 			s.setPermission(Permissions.getSpaceDefault(spaceId));
 			return s;			
 		} catch (Exception e){			
@@ -2244,7 +2241,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return true if successful
 	 * @author Ruoyu Zhang
 	 */
-	//TODO: This is pretty slow at handling a full hierarchy. It would be nice to get rid of associating the "public user" to spaces
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
 		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
 		if (status!=0){
@@ -2255,23 +2251,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			//either add remove the public user, depending on the current operation
-			if (pbc){
-				Users.associate(con,R.PUBLIC_USER_ID, spaceId);//adds public user to space;
-				Permission publicPermission = new Permission(false);
-				Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
-			} else {
-				List<Integer> userIds = new LinkedList<Integer>();
-				userIds.add(R.PUBLIC_USER_ID);
-				Spaces.removeUsers(con,userIds, spaceId);
-			}
+			
 			procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
-			//if (!pbc) {
-				//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
-			//}
+
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

@@ -715,6 +715,11 @@ public class JobPairs {
 
 			file=new File(file,pair.getBench().getName());
 			
+			//this is the old path--return it if it is the log file
+			if (file.exists() && file.isFile()) {
+				return file.getAbsolutePath();
+			}
+			file=new File(file,pair.getId()+".txt");
 			
 			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
 			return file.getAbsolutePath();
@@ -755,8 +760,11 @@ public class JobPairs {
 						testFile.delete();
 					}
 				}
+			} else if (file.isFile()) {
+				return file.getAbsolutePath();
 			}
-			
+			file=new File(file,pair.getId()+".txt");
+
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);
