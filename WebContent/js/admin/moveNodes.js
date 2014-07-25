@@ -1,4 +1,4 @@
-
+var nodeTable;
 
 $(document).ready(function(){
 	attachFormValidation();
@@ -20,8 +20,18 @@ function initUI(){
 		}
 	});
 	
+	$("#selectBetween").button( {
+		icons: {
+			primary: "ui-icon-carat-2-n-s"
+		}
+	});
+	
+	$("#selectBetween").click(function() {
+		selectAllBetween(nodeTable);
+	});
+	
 	// Set up datatables
-	$('#tblNodes').dataTable( {
+	nodeTable=$('#tblNodes').dataTable( {
         "sDom": 'rt<"bottom"f><"clear">',        
         "bPaginate": false,        
         "bSort": true        

@@ -986,7 +986,7 @@ public class Queues {
 		try {
 			con = Common.getConnection();
 			
-			 procedure = null;
+			procedure = null;
 			
 			if(name == null) {
 				// If no name was supplied, apply to all queues

@@ -657,6 +657,11 @@ public class Cluster {
 		return null;
 	}
 	
+	/**
+	 * Gets all of the nodes that are NOT associated with the given queue
+	 * @param queueId
+	 * @return
+	 */
 	public static List<WorkerNode> getNonAttachedNodes(int queueId) {
 		log.debug("Starting getNonAttachedNodes...");
 		Connection con = null;
@@ -671,9 +676,18 @@ public class Cluster {
 			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 			while (results.next()){
 				WorkerNode n = new WorkerNode();
-				n.setId(results.getInt("id"));
-				n.setName(results.getString("name"));
-				n.setStatus(results.getString("status"));
+				n.setId(results.getInt("nodes.id"));
+				n.setName(results.getString("nodes.name"));
+				n.setStatus(results.getString("nodes.status"));
+				Queue q=new Queue();
+				q.setName(results.getString("queues.name"));
+				q.setId(results.getInt("queues.id"));
+				
+				//we are displaying this data in a table, so we don't want a null name
+				if (q.getName()==null) {
+					q.setName("None");
+				}
+				n.setQueue(q);
 				nodes.add(n);
 			}
 			return nodes;
