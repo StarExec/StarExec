@@ -1382,14 +1382,16 @@ public class Jobs {
 	 * @return
 	 */
 	public static List<JobPair> getSynchronizedJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, boolean wallclock, int[] totals) {
-		
+		long a=System.currentTimeMillis();
 		List<JobPair> pairs=Jobs.getSynchronizedPairsInJobSpace(jobSpaceId, jobId);
-		
+		log.debug("getting synced pairs took "+(System.currentTimeMillis()-a));
 		totals[0]=pairs.size();
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
 		totals[1]=pairs.size();
 		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC, wallclock);
-		
+		log.debug("sorting pairs took "+(System.currentTimeMillis()-a));
+
 		List<JobPair> returnList=new ArrayList<JobPair>();
 		if (startingRecord>=pairs.size()) {
 			//we'll just return nothing
@@ -1398,6 +1400,8 @@ public class Jobs {
 		} else {
 			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
 		}
+		log.debug("returning pairs took "+(System.currentTimeMillis()-a));
+
 		return returnList;
 	}
 	
