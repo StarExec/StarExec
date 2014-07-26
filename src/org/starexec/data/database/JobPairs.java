@@ -580,6 +580,10 @@ public class JobPairs {
 	 */
 	
 	public static String getLogPath(int pairId) {
+		return getLogFilePath(getFilePathInfo(pairId));
+	}
+	
+	private static JobPair getFilePathInfo(int pairId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -598,8 +602,8 @@ public class JobPairs {
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
-				return JobPairs.getLogFilePath(pair);
-				
+				pair.setId(pairId);
+				return pair;
 			}
 		} catch (Exception e) {
 			log.debug("getFilePath says "+e.getMessage(),e);
@@ -619,34 +623,9 @@ public class JobPairs {
 	 */
 	
 	public static String getFilePath(int pairId) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL getJobPairFilePathInfo(?)}");
-			procedure.setInt(1,pairId);
-			results=procedure.executeQuery();
-			if (results.next()) {
-				JobPair pair=new JobPair();
-				Solver s= pair.getSolver();
-				s.setName(results.getString("solver_name"));
-				Benchmark b=pair.getBench();
-				b.setName(results.getString("bench_name"));
-				Configuration c=pair.getConfiguration();
-				c.setName(results.getString("config_name"));
-				pair.setJobId(results.getInt("job_id"));
-				pair.setPath(results.getString("path"));
-				return getFilePath(pair);
-			}
-		} catch (Exception e) {
-			log.debug("getFilePath says "+e.getMessage(),e);
-		}finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
+		return getFilePath(getFilePathInfo(pairId));
+
+		
 	}
 	
 	/**
