@@ -697,6 +697,8 @@ public class JobPairs {
 
     	return null;
     }
+    
+    
 	/**
 	 * Returns the absolute path to where the log for a pair is stored given the pair.
 	 * @param pair
@@ -717,6 +719,7 @@ public class JobPairs {
 			
 			//this is the old path--return it if it is the log file
 			if (file.exists() && file.isFile()) {
+				
 				return file.getAbsolutePath();
 			}
 			file=new File(file,pair.getId()+".txt");
