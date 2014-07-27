@@ -104,22 +104,9 @@ function attachButtonActions(){
 					starexecRoot+"services/edit/space/" + getParameterByName("id"),
 					data,
 					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = starexecRoot+'secure/explore/spaces.jsp';
-								break;
-							case 1:
-								showMessage('error', "space details were not updated; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "only a leader of this space can modify its details", 5000);
-								break;
-							case 7:
-								showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
-								break;
-							default:
-								showMessage('error', "invalid parameters", 5000);
-								break;
+						s=parseReturnCode(returnCode);
+						if (s) {
+							window.location = starexecRoot+'secure/explore/spaces.jsp';
 						}
 					},
 					"json"

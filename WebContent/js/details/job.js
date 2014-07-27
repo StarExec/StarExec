@@ -300,6 +300,7 @@ function initUI(){
 		//just change the sync results boolean and update the button text.
 		syncResults=!syncResults;
 		setSyncResultsText();
+		pairTable.fnDraw(false);
 	});
 	
 	$("#spaceOverviewUpdate").button({
@@ -388,9 +389,7 @@ function initUI(){
 							$.post(
 									starexecRoot+"services/cache/clear/stats"+jobId+"/",
 									function(returnCode) {
-										if (returnCode<0) {
-											showMessage('error',"There was an error clearing the cache for this item",5000);
-										}		
+										s=parseReturnCode(returnCode);	
 							});
 															
 					},
@@ -417,20 +416,12 @@ function initUI(){
 					$.post(
 							starexecRoot+"services/delete/job/" + getParameterByName("id"),
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										window.location = starexecRoot+'secure/explore/spaces.jsp';
-										break;
-									case 1:
-										showMessage('error', "The job was not deleted; please try again.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can delete it.", 5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location = starexecRoot+'secure/explore/spaces.jsp';
+
 								}
+								
 							},
 							"json"
 					);
@@ -457,22 +448,8 @@ function initUI(){
 					$.post(
 							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val(),
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										break;
-									case 1:
-										showMessage('error', "Internal error running new post processor.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can post-process its results.", 5000);
-										break;
-									case 3:
-										showMessage('error',"Only complete jobs can be processed with a new post-processor",5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
-								}
+								parseReturnCode(returnCode);
+								
 							},
 							"json"
 					);
@@ -490,20 +467,12 @@ function initUI(){
 		$.post(
 				starexecRoot+"services/pause/job/" + getParameterByName("id"),
 				function(returnCode) {
-					switch (returnCode) {
-						case 0:
-							document.location.reload(true);
-							break;
-						case 1:
-							showMessage('error', "The job was not paused; please try again.", 5000);
-							break;
-						case 2:
-							showMessage('error', "Only the owner of this job can pause it.", 5000);
-							break;
-						default:
-							showMessage('error', "Invalid parameters.", 5000);
-							break;
+					s=parseReturnCode(returnCode);
+					if (s) {
+						document.location.reload(true);
+
 					}
+					
 				},
 				"json"
 		);
@@ -513,20 +482,12 @@ function initUI(){
 		$.post(
 				starexecRoot+"services/resume/job/" + getParameterByName("id"),
 				function(returnCode) {
-					switch (returnCode) {
-						case 0:
-							document.location.reload(true);
-							break;
-						case 1:
-							showMessage('error', "The job was not resumed; please try again.", 5000);
-							break;
-						case 2:
-							showMessage('error', "Only the owner of this job can resume it.", 5000);
-							break;
-						default:
-							showMessage('error', "Invalid parameters.", 5000);
-							break;
+					s=parseReturnCode(returnCode);
+					if (s) {
+						document.location.reload(true);
+
 					}
+					
 				},
 				"json"
 		);
@@ -545,23 +506,10 @@ function initUI(){
 					$.post(
 							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "Queue successfully changed. You may now resume the job", 3000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "Internal error running new post processor.", 5000);
-										break;
-									case 2:
-										showMessage('error', "Only the owner of this job can post-process its results.", 5000);
-										break;
-									case 3:
-										showMessage('error',"Only complete jobs can be processed with a new post-processor",5000);
-										break;
-									default:
-										showMessage('error', "Invalid parameters.", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
+
 								}
 							},
 							"json"
@@ -678,27 +626,8 @@ function updateSpaceOverviewGraph() {
 			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/spaceOverview",
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
-				
-				switch (returnCode) {
-				
-				case "1":
-					showMessage('error',"an internal error occured while processing your request: please try again",5000);
-					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-					break;
-				case "2":
-					showMessage('error',"You do not have sufficient permission to view job pair details for this job in this space",5000);
-					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-					break;	
-				case "12":
-					showMessage('error',"you have selected too many solver / configuration pairs",5000);
-					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-					break;
-				case "13":
-					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
-					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-					break;
-				default:
-					
+				s=parseReturnCode(returnCode);
+				if (s) {
 					currentConfigs=new Array();
 					$("#spaceOverviewSelections option:selected").each(function() {
 						currentConfigs.push($(this).attr("value"));
@@ -710,8 +639,15 @@ function updateSpaceOverviewGraph() {
 						$("#spaceOverview").attr("src",returnCode);
 						$("#bigSpaceOverview").attr("src",returnCode+"600");
 					}
-					
+				} else {
+					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 				}
+				
+					
+					
+					
+				
 			},
 			"text"
 	);
@@ -727,30 +663,8 @@ function updateSolverComparison(big) {
 			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big,
 			{},
 			function(returnCode) {
-				
-				switch (returnCode) {
-				
-				case "1":
-					showMessage('error',"an internal error occured while processing your request: please try again",5000);
-					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
-					break;
-				case "2":
-					showMessage('error',"You do not have sufficient permission to view job pair details for this job",5000);
-					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
-					break;
-				case "12":
-					showMessage('error',"you have selected too many solver / configuration pairs",5000);
-					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
-					break;
-				case "13":
-					showMessage('error',"there are too many job pairs among your selections in this space hierarchy to display", 5000);
-					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
-					break;
-				default:
+				s=parseReturnCode(returnCode);
+				if (s) {
 					jsonObject=$.parseJSON(returnCode);
 					src=jsonObject.src;
 					map=jsonObject.map;
@@ -765,7 +679,11 @@ function updateSolverComparison(big) {
 						updateSolverComparison(true);
 					}
 					
+				} else {
+					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 				}
+				
 			},
 			"text"
 	);
@@ -977,19 +895,12 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
-				
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					default:
-					
-						fnCallback(nextDataTablePage);						
-						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);						
+
 				}
+				
 			},  
 			"json"
 	).error(function(){
@@ -1010,27 +921,14 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 				if (outSpaceId!=curSpaceId) {
 					return;
 				}
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					case 13:
-						//not used currently
-						$("#solverSummaryField").hide();
-						$("#graphField").hide();
-						$("#statsErrorField").show();
-						break;
-					default:
-						
-						$("#solverSummaryField").show();
-						$("#graphField").show();
-						$("#statsErrorField").hide();
-						fnCallback(nextDataTablePage);						
-						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					$("#solverSummaryField").show();
+					$("#graphField").show();
+					$("#statsErrorField").hide();
+					fnCallback(nextDataTablePage);		
 				}
+
 			},  
 			"json"
 	).error(function(){
@@ -1063,30 +961,26 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				if (outSpaceId!=curSpaceId) {
 					return;
 				}
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					case 13:
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					
+					pairTable.fnProcessingIndicator(false);
+					fnCallback(nextDataTablePage);
+					$("#errorField").hide();
+					if (pairTable.fnSettings().fnRecordsTotal()==0) {
+						$("#pairTblField").hide();
+					} else {
+						$("#pairTblField").show();
+					}
+				} else {
+					//if we weren't successful, we need to check to see if it was because there are too many pairs
+					code=getStatusCode(nextDataTablePage);
+					if (code==1) {
 						$("#pairTblField").hide();
 						$("#errorField").show();
-						break;
-					default:
-						// Replace the current page with the newly received page
-						
-						pairTable.fnProcessingIndicator(false);
-						fnCallback(nextDataTablePage);
-						$("#errorField").hide();
-						if (pairTable.fnSettings().fnRecordsTotal()==0) {
-							$("#pairTblField").hide();
-						} else {
-							$("#pairTblField").show();
-						}
-						break;
+					}
 				}
+					
 			},  
 			"json"
 	).error(function(){

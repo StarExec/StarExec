@@ -15,8 +15,8 @@ public class CacheSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanUserClearCacheTest() {
-		Assert.assertEquals(0,CacheSecurity.canUserClearCache(admin.getId()));
-		Assert.assertNotEquals(0,CacheSecurity.canUserClearCache(user1.getId()));
+		Assert.assertEquals(true,CacheSecurity.canUserClearCache(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,CacheSecurity.canUserClearCache(user1.getId()).isSuccess());
 	}
 	
 	@Override

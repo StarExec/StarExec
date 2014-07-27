@@ -122,11 +122,11 @@ function attachWebsiteMonitor(){
 					$.post(
 							starexecRoot+"services/websites/delete/" + "user" + "/" + -1 + "/" + id,
 							function(returnData){
-								if (returnData == 0) {
+								s=parseReturnCode(returnData);
+								if (s) {
 									parent.remove();
-								} else {
-									showMessage('error', "the website was not deleted due to an error; please try again", 5000);
 								}
+	
 							},
 							"json"
 					).error(function(){
@@ -162,14 +162,13 @@ function attachWebsiteMonitor(){
 				starexecRoot+"services/website/add/user/-1",
 				data,
 				function(returnCode) {
-			    	if(returnCode == '0') {
-			    		$("#website_name").val("");
+					s=parseReturnCode(returnCode);
+					if (s) {
+						$("#website_name").val("");
 			    		$("#website_url").val("");
 			    		$('#websites li').remove();
 			    		refreshUserWebsites();
-			    	} else {
-			    		showMessage('error', "error: website not added. please try again", 5000);
-			    	}
+					}
 				},
 				"json"
 		);
@@ -195,28 +194,12 @@ function attachPasswordMonitor(){
 					starexecRoot+"services/edit/user/password/",
 					data,
 					function(returnCode) {
-						switch (returnCode) {
-							case 0:		// Successfully changed password
-								showMessage('success', "password successfully changed", 5000);
-								$('#current_pass').val("");
-								$('#password').val("");
-								$('#confirm_pass').val("");
-								$('#pwd-meter').hide();
-								break;
-							case 2:		// Parameter validation failed
-								showMessage('error', "password must be between 6-20 characters, contains at least one character, one number, and one punctuation mark", 10000);
-								break;
-							case 3:		// 'new password' & 'confirm password' fields did not match
-								showMessage('error', "make sure to confirm the new password; please try again", 5000);
-								break;
-							case 4:		// Incorrect 'current password'
-								showMessage('error', "incorrect current password; please try again", 5000);
-								$('#current_pass').val("");
-								$("#changePassForm").valid();
-								break;
-							default:	// Database error
-								showMessage('error', "password update not successful; please try again", 5000);
-								break;
+						s=parseReturnCode(returnCode);
+						if (s) {
+							$('#current_pass').val("");
+							$('#password').val("");
+							$('#confirm_pass').val("");
+							$('#pwd-meter').hide();
 						}
 					},
 					"json"
@@ -313,19 +296,18 @@ function saveChanges(obj, save, attr, old) {
 		
 		$.post(  
 				starexecRoot+"services/edit/user/" + attr + "/" + userId + "/" + newVal,
-			    function(returnCode){  			        
-			    	if(returnCode == '0') {
-			    		// Hide the input box and replace it with the table cell
+			    function(returnCode){  		
+					s=parseReturnCode(returnCode);
+					if (s) {
+						// Hide the input box and replace it with the table cell
 			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
 			    		// Make the value editable again
 			    		editable(attr);
-			    	} else {
-			    		showMessage('error', "invalid characters; please try again", 5000);
-			    		// Hide the input box and replace it with the table cell
-			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+					} else {
+						$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
 			    		// Make the value editable again
 			    		editable(attr);
-			    	}
+					}
 			     },  
 			     "json"  
 		).error(function(){

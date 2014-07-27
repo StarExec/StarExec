@@ -8,53 +8,53 @@ public class GeneralSecurity {
 	/**
 	 * Checks to see if the given user has permission to restart Starexec
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserRestartStarexec(int userId){
+	public static SecurityStatusCode canUserRestartStarexec(int userId){
 		if (!Users.isAdmin(userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to change logging settings
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserChangeLogging(int userId){
+	public static SecurityStatusCode canUserChangeLogging(int userId){
 		if (!Users.isAdmin(userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see if the given user has permission to view information related to
 	 * testing
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 
-	public static int canUserSeeTestInformation(int userId) {
+	public static SecurityStatusCode canUserSeeTestInformation(int userId) {
 		if (!Users.isAdmin(userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to execute tests
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 
-	public static int canUserRunTests(int userId) {
+	public static SecurityStatusCode canUserRunTests(int userId) {
 		//only the admin can run tests, and they cannot be run on production
 		if (!Users.isAdmin(userId) || Util.isProduction()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
 
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Given a string, returns the same string in an HTML safe format

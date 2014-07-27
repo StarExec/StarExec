@@ -40,18 +40,12 @@ function initButtons(){
 					$.post(  
 						starexecRoot+"services/delete/configuration/" + getParameterByName("id"),
 						function(returnCode) {
-							switch (returnCode) {
-								case 0:
-									// Deletion was successful; return user to parent solver's 'details' page
-									window.location = starexecRoot+"secure/details/solver.jsp?id=" + $('#solverId').val();
-									break;
-								case 2:
-									showMessage('error', "You do not have sufficient privileges to remove configurations from this solver.", 5000);
-									break;
-								default:
-									showMessage('error', "An error occurred while processing your request; please try again.", 5000);
-									break;
+							s=parseReturnCode(returnCode);
+							if (s) {
+								window.location = starexecRoot+"secure/details/solver.jsp?id=" + $('#solverId').val();
+
 							}
+							
 						},
 						"json"
 					).error(function(){

@@ -162,24 +162,8 @@ function initUI(userId, spaceId){
 							starexecRoot+"services/space/" + spaceId + "/edit/perm/" + userId,
 							data,
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "user's permission were successfuly updated", 5000);
-										//window.location = starexecRoot+'secure/admin/permissions.jsp?id=' + userId;
-										break;
-									case 1:
-										showMessage('error', "space details were not updated; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only a leader of this space can modify its details", 5000);
-										break;
-									case 7:
-										showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
-								}
+								parseReturnCode(returnCode);
+
 							},
 							"json"
 					);
@@ -207,17 +191,10 @@ function initUI(userId, spaceId){
 					$.post(
 							starexecRoot+"services/space/" + spaceId + "/add/user/" + userId,
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "user's successfully added to space", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "user failed to be added to space; please try again", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
+
 								}
 							},
 							"json"

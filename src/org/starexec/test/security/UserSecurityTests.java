@@ -16,62 +16,62 @@ public class UserSecurityTests extends TestSequence {
 	
 	@Test
 	private void canUpdateFirstNameTest() {
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "firstname","test"));
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "firstname","test"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "firstname","test"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "firstname","test"));
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "firstname","test").isSuccess());
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "firstname","test").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "firstname","test").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "firstname","test").isSuccess());
 	}
 	
 	@Test
 	private void CanDeleteUserTest() {
-		Assert.assertEquals(0,UserSecurity.canDeleteUser(user1.getId(), admin.getId()));
-		Assert.assertEquals(0,UserSecurity.canDeleteUser(user2.getId(), admin.getId()));
+		Assert.assertEquals(true,UserSecurity.canDeleteUser(user1.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,UserSecurity.canDeleteUser(user2.getId(), admin.getId()).isSuccess());
 
-		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(user1.getId(), user1.getId()));
-		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(admin.getId(), user1.getId()));
-		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(admin.getId(), admin.getId()));
-		Assert.assertNotEquals(0,UserSecurity.canDeleteUser(user1.getId(), user2.getId()));
+		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(admin.getId(), user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(admin.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user2.getId()).isSuccess());
 	}
 
 	@Test
 	private void canUpdateLastNameTest() {
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "lastname","test"));
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "lastname","test"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "lastname","test"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "lastname","test"));
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "lastname","test").isSuccess());
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "lastname","test").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "lastname","test").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "lastname","test").isSuccess());
 	}
 	
 	@Test
 	private void canUpdateInstitutionTest() {
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "institution","Iowa"));
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "institution","Iowa"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "institution","Iowa"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "institution","Iowa"));
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "institution","Iowa").isSuccess());
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "institution","Iowa").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "institution","Iowa").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "institution","Iowa").isSuccess());
 	}
 
 	
 	@Test
 	private void canUpdateDiskQuotaTest() {
 		//only admins can update anyone's disk quota
-		Assert.assertEquals(0, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "diskquota","10"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "diskquota","10"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "diskquota","10"));
-		Assert.assertNotEquals(0, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "diskquota","10"));
+		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "diskquota","10").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "diskquota","10").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "diskquota","10").isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "diskquota","10").isSuccess());
 	}
 	
 	@Test
 	private void canSuspendOrReinstateUser() {
-		Assert.assertEquals(0, UserSecurity.canUserSuspendOrReinstateUser(admin.getId()));
-		Assert.assertNotEquals(0, UserSecurity.canUserSuspendOrReinstateUser(user1.getId()));
-		Assert.assertNotEquals(0, UserSecurity.canUserSuspendOrReinstateUser(user2.getId()));
+		Assert.assertEquals(true, UserSecurity.canUserSuspendOrReinstateUser(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user1.getId()).isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canViewUserPrimitives() {
-		Assert.assertEquals(0, UserSecurity.canViewUserPrimitives(user1.getId(),user1.getId()));
-		Assert.assertEquals(0, UserSecurity.canViewUserPrimitives(user1.getId(),admin.getId()));
-		Assert.assertNotEquals(0, UserSecurity.canViewUserPrimitives(admin.getId(),user2.getId()));
-		Assert.assertNotEquals(0, UserSecurity.canViewUserPrimitives(user1.getId(),user2.getId()));
+		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),user1.getId()).isSuccess());
+		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),admin.getId()).isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canViewUserPrimitives(admin.getId(),user2.getId()).isSuccess());
+		Assert.assertNotEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),user2.getId()).isSuccess());
 
 	}
 

@@ -30,66 +30,66 @@ public class BenchmarkSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanDeleteBenchTest() {
-		Assert.assertEquals(0,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanRecyleBenchTest() {
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanRestoreBenchTest() {
 		Benchmark b=Benchmarks.get(benchmarkIds.get(0));
 		//benchmarks can be restored only if they were actually recycled to begin with
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user2.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user2.getId()).isSuccess());
 		
 		Assert.assertTrue(Benchmarks.recycle(b.getId()));
 		
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmark(b.getId(), user2.getId()).isSuccess());
 		
 		Assert.assertTrue(Benchmarks.restore(b.getId()));
 	}
 	
 	@Test
 	private void CanDeleteBenchesTest() {
-		Assert.assertEquals(0,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user2.getId()).isSuccess());
 		List<Integer> temp=new ArrayList<Integer>();
 		temp.addAll(benchmarkIds);
 		temp.addAll(benchmarkIds2);
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserDeleteBenchmarks(temp, user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserDeleteBenchmarks(temp, user2.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserDeleteBenchmarks(temp, admin.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(temp, user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(temp, user2.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(temp, admin.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canRecycleBenchesTest() {
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user2.getId()).isSuccess());
 		List<Integer> temp=new ArrayList<Integer>();
 		temp.addAll(benchmarkIds);
 		temp.addAll(benchmarkIds2);
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRecycleBenchmarks(temp, user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRecycleBenchmarks(temp, user2.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRecycleBenchmarks(temp, admin.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(temp, user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(temp, user2.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(temp, admin.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canRestoreBenchesTest() {
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()).isSuccess());
 		
 		for (Integer i : benchmarkIds) {
 			Assert.assertTrue(Benchmarks.recycle(i));
@@ -99,9 +99,9 @@ public class BenchmarkSecurityTests extends TestSequence {
 			Assert.assertTrue(Benchmarks.recycle(i));
 		}
 		
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()).isSuccess());
 		
 		
 		List<Integer> temp=new ArrayList<Integer>();
@@ -109,9 +109,9 @@ public class BenchmarkSecurityTests extends TestSequence {
 		temp.addAll(benchmarkIds2);
 		//because there are benchmarks by both owners in temp, neither owner should be able to restore them.
 		//only the admin should be able to
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(temp, user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(temp, user2.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserRestoreBenchmarks(temp, admin.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(temp, user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(temp, user2.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(temp, admin.getId()).isSuccess());
 		
 		
 		for (Integer i : temp) {
@@ -124,13 +124,13 @@ public class BenchmarkSecurityTests extends TestSequence {
 	private void canEditBenchmarkTest() {
 		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), admin.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), admin.getId()).isSuccess());
 		
 		//we can't change the name to the same name as b2 because the names cannot be the same
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), user1.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), admin.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(), user2.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(), user2.getId()).isSuccess());
 	}
 	
 	@Test
@@ -138,22 +138,22 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Benchmark b=Benchmarks.get(benchmarkIds.get(0));
 		//first, do the test with "downloadable" set to false
 		Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), false, b.getType().getId());
-		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), admin.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), admin.getId()).isSuccess());
 		
 		//user2 is in the same space, but they still are not allowed to see the contents
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user2.getId()));
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user2.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()).isSuccess());
 
 		//then, again with downloadable set to true
 		Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), true, b.getType().getId());
-		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user1.getId()));
-		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), admin.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), admin.getId()).isSuccess());
 		//now user2 can see the contents because they are in the same space
-		Assert.assertEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user2.getId()));
+		Assert.assertEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user2.getId()).isSuccess());
 		
 		
-		Assert.assertNotEquals(0,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()));
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()).isSuccess());
 
 	}
 	

@@ -191,7 +191,10 @@ function initButtonUI() {
 							starexecRoot+"services/space/makePublic/" + spaceId + "/" + false,
 							{},
 							function(returnCode) {
-								window.location.reload(true);
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location.reload(true);
+								}
 							},
 							"json"
 					);
@@ -201,49 +204,16 @@ function initButtonUI() {
 							starexecRoot+"services/space/makePublic/" + spaceId + "/" + true,
 							{},
 							function(returnCode) {
-								window.location.reload(true);
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location.reload(true);
+								}
 							},
 							"json"
 					);
 				},
 				"cancel": function() {
 					log('user canceled making public action');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});
-	
-	$('#clearCache').button( {
-		icons: {
-			secondary: "ui-icon-arrowrefresh-1-e"
-		}
-	});
-	
-	$("#clearCache").click(function(){
-		
-		$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
-		$("#dialog-warning").dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'clear cache': function() {
-					$(this).dialog("close");
-					$(".cacheType").each(function() {
-						type=$(this).attr("value");
-						$.post(
-								starexecRoot+"services/cache/clear/"+spaceId+"/"+type,
-								function(returnCode) {
-									if (returnCode<0) {
-										showMessage('error',"There was an error clearing the cache for this item",5000);
-									}
-
-						});	
-					});
-						
-				},
-				"cancel": function() {
 					$(this).dialog("close");
 				}
 			}
@@ -399,117 +369,6 @@ function onTrashDrop(event, ui){
 
 	}
 }
-
-/**
- * Shows an error message given an error code returned by any of the recycle requests
- * @param errorCode An integer error code
- * @param prim The type of the primitive that was being deleted when the error was triggered 
- * (solver, user, benchmark, etc.)
- * @author Eric Burns
- */
-
-function processRecycleErrorCode(errorCode,prim) {
-	
-	if (prim!="job"){
-		switch (errorCode) {
-		case 1: 
-			showMessage('error', "an error occurred while processing your request; please try again", 5000);
-			break;
-		case 2:
-			showMessage('error', "only the owner of a " +prim+ " can recycle it", 5000);
-			break;
-		}
-	} else {
-		switch (errorCode) {
-		case 1: 
-			showMessage('error', "an error occurred while processing your request; please try again", 5000);
-			break;
-		case 2:
-			showMessage('error', "only the owner of a " +prim+ " can delete it", 5000);
-			break;
-	}
-	}
-	
-}
-
-/**
- * Shows an error message given an error code returned by any of the remove requests
- * @param errorCode An integer error code
- * @param prim The type of the primitive that was being removed from a space when the error was triggered 
- * (solver, user, benchmark, etc.)
- * @author Eric Burns
- */
-
-function processRemoveErrorCode(errorCode,prim) {
-	switch (errorCode) {
-	case 1:
-		showMessage('error', "an error occurred while processing your request; please try again", 5000);
-		break;
-	case 2:
-		showMessage('error', "you do not have sufficient privileges to remove " +prim+ "s from this space", 5000);
-		break;
-	case 3:
-		showMessage('error', "you do not have permission to remove "+prim+"s from one of the subspaces", 5000);
-		break;
-	case 4:
-		showMessage('error', "you can not remove other leaders of this space", 5000);
-		break;
-	case 5:
-		showMessage('error', "you can not remove yourself from this space in that way, " +
-				"instead use the 'leave' button to leave this community", 5000);
-		break;
-	case 6:
-		showMessge('error', "one of the users you are trying to remove is a leader of one of the subspaces", 5000);
-		break;
-	}
-}
-
-/**
- * Shows an error message given an error code returned by any of the copying or linking requests
- * @param errorCode An integer error code
- * @param prim The type of the primitive that was being copied or linked when the error was triggered 
- * (solver, user, benchmark, etc.)
- * @param destName The name of the space that was being copied too
- * @author Eric Burns
- */
-
-function processCopyErrorCode(errorCode, prim, destName) {
-	switch (errorCode) {
-	case 1: // Database error
-		showMessage('error', "a database error occurred while processing your request", 5000);
-		break;
-	case 3: // Invalid parameters
-		showMessage('error', "invalid parameters supplied to server, operation failed", 5000);
-		break;
-	case 2: // No add permission in dest space
-		showMessage('error', "you do not have permission to add " +prim+ " to" + destName, 5000);
-		break;
-	case 4: // User doesn't belong to from space
-		showMessage('error', "you do not belong to the space that is being copied or linked from", 5000);
-		break;
-	case 5: // From space is locked
-		showMessage('error', "the space leader has indicated the current space is locked. you cannot copy or link from locked spaces.", 5000);
-		break;
-	case 6: // User doesn't have addSolver permission in one or more of the subspaces of the 'from space'
-		showMessage('error', "you do not have permissions to copy or link " +prim+ " to one of the subspaces of" + destName, 5000);
-		break;
-	case 7: // There exists a solver with the same name
-		showMessage('error', "there exists a " +prim.substring(0,prim.length-1)+ " with the same name in " + destName, 5000);
-		break;
-	case 8: //user tried to copy without having enough disk quota
-		showMessage('error',"you do not have sufficient disk quota to copy the selected "+prim,5000);
-		break;
-	case 9:
-		showMessage('error',"one or more of the selected "+prim+"(s) could not be copied correctly", 5000);
-		break;
-	case 11:
-		showMessage('error',"one or more of the selected "+prim+"(s) have already been deleted",5000);
-		break;
-	default:
-		showMessage('error', "the operation failed with an unknown return code", 5000);	
-	}
-}
-
 
 /**
  * Called when a draggable item (primitive) is dropped on a space
@@ -690,16 +549,7 @@ function onSpaceDrop(event, ui) {
 							starexecRoot+'services/spaces/' + destSpace + '/add/job',
 							{selectedIds : ids, fromSpace : spaceId},	
 							function(returnCode) {
-								log('AJAX response recieved with code ' + returnCode);
-								if (returnCode==0) {
-									if(ids.length > 1) {								
-										showMessage('success', ids.length + ' ' + 'jobs successfully linked in' + destName, 2000);
-									} else {					    		
-										showMessage('success', 'job successfully copied to' + destName, 2000);	
-									}
-								}else {
-									processCopyErrorCode(returnCode, "jobs",destName);
-								}
+								parseReturnCode(returnCode);
 							},
 							"json"
 					).error(function(){
@@ -721,13 +571,10 @@ function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
 			{selectedIds : ids, fromSpace : spaceId, copyHierarchy: copyHierarchy},
 			function(returnCode) {
-				log('AJAX response recieved with code ' + returnCode);
-				if (returnCode==0) {							
-					showMessage('success', ids.length + ' subSpaces successfully copied to' + destName, 2000);
+				s=parseReturnCode(returnCode);
+				if (s) {							
 					$('#exploreList').jstree("refresh");
-				} else {
-					processCopyErrorCode(returnCode, "subspaces", destName);
-				}
+				} 
 			},
 			"json"
 	).error(function(){
@@ -740,26 +587,7 @@ function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
 			starexecRoot+'services/spaces/' + destSpace + '/add/user',
 			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: copyToSubspaces},	
 			function(returnCode) {
-				log('AJAX response recieved with code ' + returnCode);
-				if (returnCode==0) {
-					
-					if(ids.length > 1) {		
-						if (copyToSubspaces) {
-							showMessage('success', ids.length + ' users successfully copied to' + destName + ' and its subspaces', 2000);
-						} else {
-							showMessage('success', ids.length + ' users successfully copied to' + destName, 2000);
-						}
-					} else {		
-						if (copyToSubspaces) {
-							showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName + ' and its subspaces', 2000);	
-						} else {
-							showMessage('success', ui.draggable.data('name') + ' successfully copied to' + destName, 2000);	
-
-						}
-					}
-				}else {
-						processCopyErrorCode(returnCode, "users",destName);
-					}
+				parseReturnCode(returnCode);
 			},
 			"json"
 	).error(function(){
@@ -795,16 +623,7 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 			starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
 			{selectedIds : ids, fromSpace : spaceId, copy:copy},	
 			function(returnCode) {
-				log('AJAX response recieved with code ' + returnCode);
-				if (returnCode==0) {
-					if(ids.length > 1) {								
-						showMessage('success', ids.length + ' ' + 'benchmarks successfully ' +copyOrLink+ ' to ' + destName, 2000);
-					} else {					    		
-						showMessage('success', 'benchmark successfully '+copyOrLink+' to ' + destName, 2000);	
-					}
-				}else {
-					processCopyErrorCode(returnCode,"benchmarks",destName);
-				}
+				parseReturnCode(returnCode);
 			},
 			"json"
 	).error(function(){
@@ -832,28 +651,7 @@ function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
 			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: hierarchy, copy : copy},
 			function(returnCode) {
-				
-				if (returnCode==0) {
-					
-					if(ids.length > 1) {	
-						if (hierarchy) {
-							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+ ' to ' + destName + ' and its subspaces', 2000);
-						} else {
-							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+ ' to ' + destName, 2000);
-						}
-						
-					} else {	
-						
-						if (hierarchy) {
-							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+  ' to ' + destName + ' and its subspaces', 2000);
-						} else {
-							
-							showMessage('success', ids.length + ' solvers successfully ' +copyOrLink+ ' to ' + destName, 2000);
-						}
-					}
-				}else {
-						processCopyErrorCode(returnCode,"solvers", destName);
-				}
+				parseReturnCode(returnCode);
 			},
 			"json"
 	).error(function(){
@@ -995,15 +793,11 @@ function removeBenchmarks(selectedBenches,ownsAll){
 							starexecRoot+"services/remove/benchmark/" + spaceId,
 							{selectedIds : selectedBenches},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(benchTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"benchmark");
-								} 
+								}
+								
 							},
 							"json"
 					).error(function(){
@@ -1018,15 +812,10 @@ function removeBenchmarks(selectedBenches,ownsAll){
 							starexecRoot+"services/recycleandremove/benchmark/"+spaceId,
 							{selectedIds : selectedBenches},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(benchTable);
-									break;
-								default:
-									processRecycleErrorCode(returnCode,"benchmark");
-								} 
+								}
 							},
 							"json"
 					).error(function(){
@@ -1056,15 +845,10 @@ function removeBenchmarks(selectedBenches,ownsAll){
 							starexecRoot+"services/remove/benchmark/" + spaceId,
 							{selectedIds : selectedBenches},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(benchTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"benchmark");
-								} 
+								}
 							},
 							"json"
 					).error(function(){
@@ -1103,15 +887,10 @@ function removeUsers(selectedUsers){
 						starexecRoot+"services/remove/user/" + spaceId,
 						{selectedIds : selectedUsers, hierarchy : true},
 						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
+							s=parseReturnCode(returnCode);
+							if (s) {
 								updateTable(userTable);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"user");
-						}
+							}
 							},
 						"json"
 				).error(function(){
@@ -1127,14 +906,9 @@ function removeUsers(selectedUsers){
 						starexecRoot+"services/remove/user/" + spaceId,
 						{selectedIds : selectedUsers, hierarchy : false},
 						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
+							s=parseReturnCode(returnCode);
+							if (s) {
 								updateTable(userTable);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"user");
 							}
 						},
 						"json"
@@ -1173,14 +947,9 @@ function removeSolvers(selectedSolvers,ownsAll){
 							starexecRoot+"services/remove/solver/" + spaceId,
 							{selectedIds : selectedSolvers, hierarchy : true},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(solverTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"solver");
 								}
 							},
 							"json"
@@ -1197,14 +966,9 @@ function removeSolvers(selectedSolvers,ownsAll){
 							starexecRoot+"services/remove/solver/" + spaceId,
 							{selectedIds : selectedSolvers, hierarchy : false},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(solverTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"solver");
 								}
 							},
 							"json"
@@ -1220,14 +984,9 @@ function removeSolvers(selectedSolvers,ownsAll){
 							starexecRoot+"services/recycleandremove/solver/"+spaceId,
 							{selectedIds : selectedSolvers, hierarchy : true},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(solverTable);
-									break;
-								default:
-									processRecycleErrorCode(returnCode,"solver");
 								}
 							},
 							"json"
@@ -1258,14 +1017,9 @@ function removeSolvers(selectedSolvers,ownsAll){
 							starexecRoot+"services/remove/solver/" + spaceId,
 							{selectedIds : selectedSolvers, hierarchy : true},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(solverTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"solver");
 								}
 							},
 							"json"
@@ -1282,14 +1036,9 @@ function removeSolvers(selectedSolvers,ownsAll){
 							starexecRoot+"services/remove/solver/" + spaceId,
 							{selectedIds : selectedSolvers, hierarchy : false},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(solverTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"solver");
 								}
 							},
 							"json"
@@ -1329,14 +1078,9 @@ function removeJobs(selectedJobs,ownsAll){
 							starexecRoot+"services/remove/job/" + spaceId,
 							{selectedIds : selectedJobs},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(jobTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"job");
 								}
 								jobTable.fnProcessingIndicator(false);
 							},
@@ -1355,14 +1099,9 @@ function removeJobs(selectedJobs,ownsAll){
 							starexecRoot+"services/deleteandremove/job/"+spaceId,
 							{selectedIds : selectedJobs},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(jobTable);
-									break;
-								default:
-									processRecycleErrorCode(returnCode,"job");
 								}
 								jobTable.fnProcessingIndicator(false);
 							},
@@ -1395,14 +1134,9 @@ function removeJobs(selectedJobs,ownsAll){
 							starexecRoot+"services/remove/job/" + spaceId,
 							{selectedIds : selectedJobs},
 							function(returnCode) {
-								log('AJAX response received with code ' + returnCode);
-								switch (returnCode) {
-								case 0:
-									// Remove the rows from the page and update the table size in the legend
+								s=parseReturnCode(returnCode);
+								if (s) {
 									updateTable(jobTable);
-									break;
-								default:
-									processRemoveErrorCode(returnCode,"job");
 								}
 								jobTable.fnProcessingIndicator(false);
 							},
@@ -1434,16 +1168,8 @@ function removeSubspaces(selectedSubspaces,deletePrims){
 			starexecRoot+"services/remove/subspace/" + spaceId,
 			{selectedIds : selectedSubspaces, deletePrims : deletePrims},					
 			function(returnCode) {
-				log('AJAX response received with code ' + returnCode);
-				switch (returnCode) {
-				case 0:
-					// Remove the rows from the page and update the table size in the legend
-					log('actual delete done');
-					break;
-				default:
-					processRemoveErrorCode(returnCode,"subspace");
-				}
-				//jobTable.fnProcessingIndicator(false);
+				parseReturnCode(returnCode);
+				
 			},
 			"json"
 	).error(function(){
@@ -1476,17 +1202,13 @@ function quickRemove(selectedSubspaces){
 						starexecRoot+"services/quickRemove/subspace/" + spaceId,
 						{selectedIds : selectedSubspaces},
 						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
+							s=parseReturnCode(returnCode);
+							if (s) {
 								updateTable(spaceTable);
 								initSpaceExplorer();
 								removeSubspaces(selectedSubspaces,false);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"subspace");
 							}
+							
 						},
 						"json"
 				).error(function(){
@@ -1503,16 +1225,11 @@ function quickRemove(selectedSubspaces){
 						starexecRoot+"services/quickRemove/subspace/" + spaceId,
 						{selectedIds : selectedSubspaces},
 						function(returnCode) {
-							log('AJAX response received with code ' + returnCode);
-							switch (returnCode) {
-							case 0:
-								// Remove the rows from the page and update the table size in the legend
+							s=parseReturnCode(returnCode);
+							if (s) {
 								updateTable(spaceTable);
 								initSpaceExplorer();
 								removeSubspaces(selectedSubspaces,true);
-								break;
-							default:
-								processRemoveErrorCode(returnCode,"subspace");
 							}
 						},
 						"json"
@@ -1565,32 +1282,23 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-//					showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
 					// Update the number displayed in this DataTable's fieldset
 					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
+					// Replace the current page with the newly received page
+						fnCallback(nextDataTablePage);
 				
-				// If the primitive type is 'job', then color code the results appropriately
-				if('j' == tableName[0]){
-					colorizeJobStatistics();
-				} 
+						// If the primitive type is 'job', then color code the results appropriately
+						if('j' == tableName[0]){
+							colorizeJobStatistics();
+						} 
 				
 				// Make the table that was just populated draggable too
 				initDraggable('#' + tableName);
+			}
 
-				break;
-				}
 			},  
 			"json"
 	).error(function(){

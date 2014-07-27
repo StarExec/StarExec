@@ -70,26 +70,7 @@ function removeUser(userid, id) {
 			starexecRoot+"services/remove/user/" + id,
 			{selectedIds : idArray},
 			function(returnCode) {
-				switch (returnCode) {
-					case 0:
-						// Remove the rows from the page and update the table size in the legend
-						//updateTable(memberTable);
-						//$("#removeUser").fadeOut("fast");
-						showMessage('success', "user(s) removed succesfully", 5000);
-						break;
-					case 1:
-						showMessage('error', "an error occurred while processing your request; please try again", 5000);
-					case 2:
-						showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
-						break;
-					case 3:
-						showMessage('error', "you can not remove yourself from this space in that way, " +
-								"instead use the 'leave' button to leave this community", 5000);
-						break;
-					case 4:
-						showMessage('error', "you can not remove other leaders of this space", 5000);
-						break;
-				}
+				parseReturnCode(returnCode);
 			},
 			"json"
 		).error(function(){
@@ -105,20 +86,11 @@ function promoteUser(userid, id) {
 			starexecRoot+"services/makeLeader/" + id ,
 			{selectedIds : idArray},
 			function(returnCode) {
-				switch (returnCode) {
-					case 0:
-						showMessage('success',"user(s) promoted successfully",5000);
-						setTimeout(function(){document.location.reload(true);}, 1000);
-						break;
-					case 1:
-						showMessage('error', "an error occurred while processing your request; please try again", 5000);
-					case 2:
-						showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
-						break;
-					case 3:
-						showMessage('error', "member is already a leader", 5000);
-						break;
+				s=parseReturnCode(returnCode);
+				if (s) {
+					setTimeout(function(){document.location.reload(true);}, 1000);
 				}
+				
 			},
 			"json"
 		).error(function(){
@@ -131,19 +103,9 @@ function demoteUser(userId, id) {
 	$.post(  
 			starexecRoot+"services/demoteLeader/" + id + "/" + userId ,
 			function(returnCode) {
-				switch (returnCode) {
-					case 0:
-						showMessage('success',"user(s) demoted successfully",5000);
-						setTimeout(function(){document.location.reload(true);}, 1000);
-						break;
-					case 1:
-						showMessage('error', "an error occurred while processing your request; please try again", 5000);
-					case 2:
-						showMessage('error', "insufficient privileges; you must be a community leader to do that", 5000);
-						break;
-					case 3:
-						showMessage('error', "member is already not a leader", 5000);
-						break;
+				s=parseReturnCode(returnCode);
+				if (s) {
+					setTimeout(function(){document.location.reload(true);}, 1000);
 				}
 			},
 			"json"
@@ -173,10 +135,9 @@ function attachWebsiteMonitor(){
 					$.post(
 							starexecRoot+"services/websites/delete/space/" +$('#comId').val() + "/" + id,
 							function(returnData){
-								if (returnData == 0) {
+								s=parseReturnCode(returnData);
+								if (s) {
 									parent.remove();
-								} else {
-									showMessage('error', "the website was not deleted due to an error; please try again", 5000);
 								}
 							},
 							"json"
@@ -212,14 +173,13 @@ function attachWebsiteMonitor(){
 				starexecRoot+"services/website/add/space/" + $('#comId').val(),
 				data,
 				function(returnCode) {
-			    	if(returnCode == '0') {
-			    		$("#website_name").val("");
+					s=parseReturnCode(returnCode);
+					if (s) {
+						$("#website_name").val("");
 			    		$("#website_url").val("");
 			    		$('#websites li').remove();
 			    		refreshSpaceWebsites();
-			    	} else {
-			    		showMessage('error', "error: website not added. please try again", 5000);
-			    	}
+					}
 				},
 				"json"
 		);
@@ -457,19 +417,18 @@ function saveChanges(obj, save, attr, old) {
 		$.post(  
 				starexecRoot+"services/edit/space/" + attr + "/" + getParameterByName("cid"),
 				{val: newVal},
-			    function(returnCode){  			        
-			    	if(returnCode == '0') {
-			    		// Hide the input box and replace it with the table cell
+			    function(returnCode){  	
+					s=parseReturnCode(returnCode);
+					if (s) {
+						// Hide the input box and replace it with the table cell
 			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
 			    		// Make the value editable again
 			    		editable(attr);
-			    	} else {
-			    		showMessage('error', "invalid characters; please try again", 5000);
-			    		// Hide the input box and replace it with the table cell
-			    		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+					} else {
+						$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
 			    		// Make the value editable again
 			    		editable(attr);
-			    	}
+					}
 			     },  
 			     "json"  
 		).error(function(){

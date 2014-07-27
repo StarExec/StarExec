@@ -38,14 +38,11 @@ function initButton() {
 					$.post(
 							starexecRoot+"services/admin/pauseAll/",
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "all running jobs have been paused", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "jobs were not paused; please try again", 5000);
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
 								}
+								
 							},
 							"json"
 					);
@@ -72,13 +69,10 @@ function initButton() {
 					$.post(
 							starexecRoot+"services/admin/resumeAll/",
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "all admin paused jobs have been resumed", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "jobs were not resumed; please try again", 5000);
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
+
 								}
 							},
 							"json"
@@ -113,15 +107,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + "jobs/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-//					showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
 
 					// Update the number displayed in this DataTable's fieldset
 					$('#userExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
@@ -130,14 +117,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				fnCallback(nextDataTablePage);
 								
 				colorizeJobStatistics();
-
-				break;
 				}
+
 			},  
 			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
+	)
 }
 
 

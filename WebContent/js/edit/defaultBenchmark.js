@@ -77,23 +77,11 @@ function attachFormValidation(){
 					starexecRoot+"services/edit/space/" + "defaultBenchmark" + "/" + $("#cid").attr("value"),
 					{val : selectedBench},
 					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
-								break;
-							case 1:
-								showMessage('error', "there was an error entering the updated information into the database", 5000);
-								destroyDialog();
-								break;
-							case 2:
-								showMessage('error', "only the leader of the community can select a default benchmark", 5000);
-								destroyDialog();
-								break;
-							case 3:
-								showMessage('error', "invalid parameters; please ensure you have selected a benchmark", 5000);
-								destroyDialog();
-								break;
+						s=parseReturnCode(returnCode);
+						if (s) {
+							window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
 						}
+
 					},
 					"json"
 			);
@@ -125,22 +113,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + idOfSelectedSpace + "/" + "benchmarks" + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-//					showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
-					// Update the number displayed in this DataTable's fieldset
-					//updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
 				}
 			},  
 			"json"

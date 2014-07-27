@@ -1087,7 +1087,7 @@ public class Users {
 		try {
 			
 			//Only allow the deletion of test users, and only if the admin is asking
-			if (UserSecurity.canDeleteUser(userIdToDelete, userIdMakingRequest)!=0) {
+			if (!UserSecurity.canDeleteUser(userIdToDelete, userIdMakingRequest).isSuccess()) {
 				return false;
 			}
 			if (!Users.isTestUser(userIdToDelete)) {

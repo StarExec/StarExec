@@ -16,6 +16,7 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.security.QueueSecurity;
+import org.starexec.data.security.SecurityStatusCode;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
@@ -51,9 +52,9 @@ public class CreatePermanentQueue extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserMakeQueue(userId);
-		if (status!=0) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid permissions");
+		SecurityStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+		if (!status.isSuccess()) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, status.getMessage());
 			return;
 		}
 		String queue_name = (String)request.getParameter(name);

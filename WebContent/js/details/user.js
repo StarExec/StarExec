@@ -111,20 +111,13 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + usrId + "/" + tableName + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view primitives for this user", 5000);
-						break;
-					default:
-						updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
- 						fnCallback(nextDataTablePage);
- 						if('j' == tableName[0]){
- 							colorizeJobStatistics();
- 						} 
- 						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+						fnCallback(nextDataTablePage);
+						if('j' == tableName[0]){
+							colorizeJobStatistics();
+						} 
 				}
 			},  
 			"json"
@@ -264,20 +257,15 @@ function recycleSelected(prim) {
 				$.post(  
 						starexecRoot +"services/recycle/"+prim, 
 						{selectedIds : getSelectedRows(table)},
-						function(code){
+						function(returnCode){
 							destroyDialog();
-							switch(code){
-								case 1:
-									showMessage('error', "Internal error recycling "+prim+"s", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have permission to recycle the given prims",5000);
-								default:
-									solverTable.fnDraw(false);
-									benchTable.fnDraw(false);
-									handleSelectChange();
-			 						break;
+							s=parseReturnCode(returnCode);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleSelectChange();
 							}
+							
 						},  
 						"json"
 				).error(function(){
@@ -307,14 +295,10 @@ function deleteSelectedJobs() {
 						{selectedIds : getSelectedRows(table)},
 						function(nextDataTablePage){
 							destroyDialog();
-							switch(nextDataTablePage){
-								case 1:
-									showMessage('error', "Internal error deleting job(s)", 5000);
-									break;
-								default:
-									jobTable.fnDraw(false);
-									handleSelectChange();
-			 						break;
+							s=parseReturnCode(nextDataTablePage);
+							if (s) {
+								jobTable.fnDraw(false);
+								handleSelectChange();
 							}
 						},  
 						"json"

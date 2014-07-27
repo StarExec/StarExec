@@ -33,24 +33,24 @@ public class JobSecurityTests extends TestSequence {
 	private User admin=null;
 	@Test
 	private void CanDeleteJob() {
-		Assert.assertEquals(0,JobSecurity.canUserDeleteJob(job.getId(), admin.getId()));
-		Assert.assertEquals(0,JobSecurity.canUserDeleteJob(job.getId(), user.getId()));
-		Assert.assertNotEquals(0,JobSecurity.canUserDeleteJob(job.getId(), nonOwner.getId()));
+		Assert.assertEquals(true,JobSecurity.canUserDeleteJob(job.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,JobSecurity.canUserDeleteJob(job.getId(), user.getId()).isSuccess());
+		Assert.assertNotEquals(true,JobSecurity.canUserDeleteJob(job.getId(), nonOwner.getId()).isSuccess());
 
 	}
 	
 	@Test
 	private void CanPauseJob() {
-		Assert.assertEquals(0,JobSecurity.canUserPauseJob(job.getId(), admin.getId()));
-		Assert.assertEquals(0,JobSecurity.canUserPauseJob(job.getId(), user.getId()));
-		Assert.assertNotEquals(0,JobSecurity.canUserPauseJob(job.getId(), nonOwner.getId()));
+		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), user.getId()).isSuccess());
+		Assert.assertNotEquals(true,JobSecurity.canUserPauseJob(job.getId(), nonOwner.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanResumeJob() {
-		Assert.assertEquals(0,JobSecurity.canUserResumeJob(job.getId(), admin.getId()));
-		Assert.assertEquals(0,JobSecurity.canUserResumeJob(job.getId(), user.getId()));
-		Assert.assertNotEquals(0,JobSecurity.canUserResumeJob(job.getId(), nonOwner.getId()));
+		Assert.assertEquals(true,JobSecurity.canUserResumeJob(job.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,JobSecurity.canUserResumeJob(job.getId(), user.getId()).isSuccess());
+		Assert.assertNotEquals(true,JobSecurity.canUserResumeJob(job.getId(), nonOwner.getId()).isSuccess());
 	}
 	
 	@Test
@@ -59,9 +59,9 @@ public class JobSecurityTests extends TestSequence {
 	}
 	@Test
 	private void CanPauseAllJobs() {
-		Assert.assertEquals(0,JobSecurity.canUserPauseAllJobs(admin.getId()));
-		Assert.assertNotEquals(0,JobSecurity.canUserPauseAllJobs(user.getId()));
-		Assert.assertNotEquals(0,JobSecurity.canUserPauseAllJobs(nonOwner.getId()));
+		Assert.assertEquals(true,JobSecurity.canUserPauseAllJobs(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,JobSecurity.canUserPauseAllJobs(user.getId()).isSuccess());
+		Assert.assertNotEquals(true,JobSecurity.canUserPauseAllJobs(nonOwner.getId()).isSuccess());
 	}
 	
 	@Override

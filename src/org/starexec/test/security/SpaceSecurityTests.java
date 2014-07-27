@@ -28,118 +28,118 @@ public class SpaceSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanAssociateWebsiteTest() {
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","http://www.fake.com"));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","http://www.fake.com"));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","http://www.fake.com"));
-		Assert.assertEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","http://www.fake.com"));
+		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","http://www.fake.com").isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","http://www.fake.com").isSuccess());
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId(),"new","http://www.fake.com"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId(),"new","http://www.fake.com"));
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId(),"new","http://www.fake.com").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId(),"new","http://www.fake.com").isSuccess());
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"<script>","http://www.fake.com"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"<script>","http://www.fake.com"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"<script>","http://www.fake.com"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"<script>","http://www.fake.com"));
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"<script>","http://www.fake.com").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"<script>","http://www.fake.com").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"<script>","http://www.fake.com").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"<script>","http://www.fake.com").isSuccess());
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","<script>"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","<script>"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","<script>"));
-		Assert.assertNotEquals(0,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","<script>"));
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","<script>").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","<script>").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","<script>").isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","<script>").isSuccess());
 	}
 	
 	@Test
 	private void CanDeleteWebsiteTest() {
 		Websites.add(space1.getId(), "https://www.fake.edu", "new", WebsiteType.SPACE);
 		int websiteId=Websites.getAll(space1.getId(), WebsiteType.SPACE).get(0).getId();
-		Assert.assertEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, admin.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, admin.getId()).isSuccess());
 
-		Assert.assertNotEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, nonOwner.getId()));
+		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, nonOwner.getId()).isSuccess());
 		
-		Assert.assertNotEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, owner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, admin.getId()));
+		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, admin.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanAddUserToSpace() {
-		Assert.assertEquals(0,SpaceSecurity.canAddUserToSpace(space2.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canAddUserToSpace(space2.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canAddUserToSpace(space2.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canAddUserToSpace(space2.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), noPerms.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanRemoveSolverFromSpace() {
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveSolver(space2.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveSolver(space2.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveSolver(space2.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserRemoveSolver(space2.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), noPerms.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanRemoveBenchmarkFromSpace() {
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), noPerms.getId()).isSuccess());
 	}
 	
 	@Test 
 	private void CanUpdateProperties() {
-		Assert.assertEquals(0,SpaceSecurity.canUpdateProperties(space2.getId(), admin.getId(), "fake", false));
-		Assert.assertEquals(0,SpaceSecurity.canUpdateProperties(space2.getId(), owner.getId(), "fake", false));
-		Assert.assertNotEquals(0,SpaceSecurity.canUpdateProperties(space2.getId(), nonOwner.getId(), "fake", false));
-		Assert.assertNotEquals(0,SpaceSecurity.canUpdateProperties(space2.getId(), noPerms.getId(), "fake", false));
+		Assert.assertEquals(true,SpaceSecurity.canUpdateProperties(space2.getId(), admin.getId(), "fake", false).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUpdateProperties(space2.getId(), owner.getId(), "fake", false).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUpdateProperties(space2.getId(), nonOwner.getId(), "fake", false).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUpdateProperties(space2.getId(), noPerms.getId(), "fake", false).isSuccess());
 
 	}
 	
 	@Test
 	private void CanUserViewCommunityTests() {
-		Assert.assertEquals(0,SpaceSecurity.canUserViewCommunityRequests(admin.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserViewCommunityRequests(owner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserViewCommunityRequests(nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserViewCommunityRequests(noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserViewCommunityRequests(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserViewCommunityRequests(owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserViewCommunityRequests(nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserViewCommunityRequests(noPerms.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanUserSeeSpace() {
-		Assert.assertEquals(0,SpaceSecurity.canUserSeeSpace(space1.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserSeeSpace(space1.getId(), owner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserSeeSpace(space1.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserSeeSpace(space1.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(space1.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(space1.getId(), owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserSeeSpace(space1.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserSeeSpace(space1.getId(), noPerms.getId()).isSuccess());
 
-		Assert.assertEquals(0,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), nonOwner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), noPerms.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanSetPublicOrPrivate() {
-		Assert.assertEquals(0,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), owner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), noPerms.getId()).isSuccess());
 
 	}
 
 	@Test
 	private void CanRemoveJobFromSpace() {
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveJob(space2.getId(), admin.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveJob(space2.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserRemoveJob(space2.getId(), nonOwner.getId()));
-		Assert.assertNotEquals(0,SpaceSecurity.canUserRemoveJob(space2.getId(), noPerms.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveJob(space2.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveJob(space2.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserRemoveJob(space2.getId(), nonOwner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canUserRemoveJob(space2.getId(), noPerms.getId()).isSuccess());
 	}
 	
 	
 	@Test
 	private void CanLeaveSpace() {
-		Assert.assertEquals(0,SpaceSecurity.canUserLeaveSpace(space2.getId(), owner.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserLeaveSpace(space2.getId(), noPerms.getId()));
-		Assert.assertEquals(0,SpaceSecurity.canUserLeaveSpace(space2.getId(), nonOwner.getId()));
+		Assert.assertEquals(true,SpaceSecurity.canUserLeaveSpace(space2.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserLeaveSpace(space2.getId(), noPerms.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canUserLeaveSpace(space2.getId(), nonOwner.getId()).isSuccess());
 		
 		//the admin is not in the space, so they cannot leave
-		Assert.assertNotEquals(0,SpaceSecurity.canUserLeaveSpace(space2.getId(), admin.getId()));
+		Assert.assertNotEquals(true,SpaceSecurity.canUserLeaveSpace(space2.getId(), admin.getId()).isSuccess());
 
 	}
 	

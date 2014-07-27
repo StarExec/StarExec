@@ -123,17 +123,9 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					default:
-						// Replace the current page with the newly received page
-						fnCallback(nextDataTablePage);
-						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);
 				}
 			},  
 			"json"

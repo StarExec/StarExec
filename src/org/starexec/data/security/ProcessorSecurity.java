@@ -15,72 +15,74 @@ public class ProcessorSecurity {
 	 * Checks to see whether the given user is allowed to delete the given processor
 	 * @param procId The ID of the processor being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserDeleteProcessor(int procId, int userId) {
+	public static SecurityStatusCode canUserDeleteProcessor(int procId, int userId) {
 		Processor p = Processors.get(procId);
 		
 		// Permissions check; ensures user is the leader of the community that owns the processor
 		Permission perm = Permissions.get(userId, p.getCommunityId());	
 		if(perm == null || !perm.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission delete the selected processor");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 		
 	}
 	/** 
 	 * Checks to see whether the given user is allowed to delete all of the given processors
 	 * @param procId The IDs of the processors being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 * If the user lacks the necessary permissions for even one solver, a status code will be returned
 	 */
-	public static int canUserDeleteProcessors(List<Integer> procIds, int userId) {
+	public static SecurityStatusCode canUserDeleteProcessors(List<Integer> procIds, int userId) {
 		for (Integer id : procIds) {
-			int status=canUserDeleteProcessor(id,userId);
-			if (status!=0) {
+			SecurityStatusCode status=canUserDeleteProcessor(id,userId);
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/** 
 	 * Checks to see whether the given user is allowed to edit the given processor
 	 * @param procId The ID of the processor being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canUserEditProcessor(int procId, int userId) {
+	public static SecurityStatusCode canUserEditProcessor(int procId, int userId) {
 		Processor p=Processors.get(procId);
 		Permission perm= Permissions.get(userId,p.getCommunityId());
 		if (perm==null || !perm.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission edit the selected processor");
 		}		
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/** 
 	 * Checks to see whether the given user is allowed to edit the given processor
 	 * @param procId The ID of the processor being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canUserEditProcessor(int procId, int userId, String name, String desc) {
+	public static SecurityStatusCode canUserEditProcessor(int procId, int userId, String name, String desc) {
 		Processor p=Processors.get(procId);
 		Permission perm= Permissions.get(userId,p.getCommunityId());
 		if (perm==null || !perm.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission edit the selected processor");
 		}
-		if(!Validator.isValidPrimName(name)
-				|| !Validator.isValidPrimDescription(desc)){
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		if(!Validator.isValidPrimName(name)){
+			return new SecurityStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the proper format");
 		}
 		
+		if( !Validator.isValidPrimDescription(desc)){
+			return new SecurityStatusCode(false, "The given description is not formatted correctly. Please refer to the help pages to see the proper format");
+		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 }

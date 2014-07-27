@@ -29,11 +29,8 @@ function initUI(){
 				starexecRoot+"services/cache/clearAll",
 				{},
 				function(returnCode) {
-					if (returnCode=="0") {
-						showMessage("success","cache cleared successfully",5000);
-					} else {
-						showMessage("error","There was an error while clearing the cache",5000);
-					}
+					parseReturnCode(returnCode);
+					
 				},
 				"json"
 		);
@@ -47,11 +44,8 @@ function initUI(){
 			starexecRoot+"services/cache/clearTypes",
 			{selectedTypes : typeArray},
 			function(returnCode) {
-				if (returnCode=="0") {
-					showMessage("success"," cache cleared successfully",5000);
-				} else {
-					showMessage("error","There was an error while trying to clear the cache",5000);
-				}
+				parseReturnCode(returnCode);
+
 			},
 			"json"
 		);
@@ -63,11 +57,8 @@ function initUI(){
 			starexecRoot+"services/cache/clearStats",
 			{},
 			function(returnCode) {
-				if (returnCode=="0") {
-					showMessage("success"," cache cleared successfully",5000);
-				} else {
-					showMessage("error","There was an error while trying to clear the cache",5000);
-				}
+				parseReturnCode(returnCode);
+
 			},
 			"json"
 		);

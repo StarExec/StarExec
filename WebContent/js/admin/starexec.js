@@ -40,16 +40,9 @@ function initUI(){
 					$.post(
 							starexecRoot+"services/restart/starexec/",
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										window.location = starexecRoot+'secure/explore/spaces.jsp';
-										break;
-									case 2:
-										showMessage('error', "only the administrator can restart StarExec", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location = starexecRoot+'secure/explore/spaces.jsp';
 								}
 							},
 							"json"

@@ -15,14 +15,14 @@ public class GeneralSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanRestartStarexecTest() {
-		Assert.assertEquals(0, GeneralSecurity.canUserRestartStarexec(admin.getId()));
-		Assert.assertNotEquals(0, GeneralSecurity.canUserRestartStarexec(user1.getId()));
+		Assert.assertEquals(true, GeneralSecurity.canUserRestartStarexec(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true, GeneralSecurity.canUserRestartStarexec(user1.getId()).isSuccess());
 	}
 	
 	@Test
 	private void CanViewTestInfo() {
-		Assert.assertEquals(0, GeneralSecurity.canUserSeeTestInformation(admin.getId()));
-		Assert.assertNotEquals(0, GeneralSecurity.canUserSeeTestInformation(user1.getId()));
+		Assert.assertEquals(true, GeneralSecurity.canUserSeeTestInformation(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true, GeneralSecurity.canUserSeeTestInformation(user1.getId()).isSuccess());
 	}
 	
 	@Override

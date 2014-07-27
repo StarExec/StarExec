@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.SecurityStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.CacheType;
@@ -1994,7 +1995,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		subspaces.add(Spaces.get(rootSpaceId));
 		List<Space> allowedSpaces=new ArrayList<Space>();
 		for (Space s : subspaces) {
-			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId)==0) {
+			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId).isSuccess()) {
 				allowedSpaces.add(s);
 			}
 		}
@@ -2242,8 +2243,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
-		if (status!=0){
+		SecurityStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
+		if (!status.isSuccess()){
 			return false;
 		}
 

@@ -35,12 +35,9 @@ function initUI(){
 				starexecRoot+"services/test/runAllTests",
 				{},
 				function(returnCode) {
-					if (returnCode=="0") {
-						showMessage("success","testing started succesfully",5000);
-						testTable.api().ajax.reload(null,false);
-					} else {
-						showMessage("error","There was an error while starting the testing",5000);
-					}
+					s=parseReturnCode(returnCode);
+
+					
 				},
 				"json"
 		);
@@ -54,12 +51,9 @@ function initUI(){
 			starexecRoot+"services/test/runTests",
 			{testNames : nameArray},
 			function(returnCode) {
-				if (returnCode=="0") {
-					showMessage("success","testing started succesfully",5000);
-					testTable.api().ajax.reload(null,false);
-				} else {
-					showMessage("error","There was an error while starting the testing",5000);
-				}
+				s=parseReturnCode(returnCode);
+
+				
 			},
 			"json"
 		);
@@ -70,11 +64,8 @@ function initUI(){
 				starexecRoot+"services/test/runStressTest",
 				{},
 				function(returnCode) {
-					if (returnCode=="0") {
-						showMessage("success","stress testing started succesfully",5000);
-					} else {
-						showMessage("error","There was an error while starting the stress testing",5000);
-					}
+					s=parseReturnCode(returnCode);
+
 				}
 		),
 		"json"
