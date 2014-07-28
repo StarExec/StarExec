@@ -212,5 +212,19 @@ public class BenchmarkSecurity {
 		return (bench.getUserId()==userId || Users.isAdmin(userId));
 	}
 	
+	/**
+	 * Checks to see whether a user can recycle all the orphaned benchmarks owned by another user.
+	 * @param userIdToDelete The user who owns the orphaned benchmarks that will be recycled
+	 * @param userIdMakingRequest The user who is trying to do the recycling
+	 * @return A SecurityStatusCode
+	 */
+	public static SecurityStatusCode canUserRecycleOrphanedBenchmarks(int userIdToDelete, int userIdMakingRequest) {
+		if (userIdToDelete!=userIdMakingRequest && !Users.isAdmin(userIdMakingRequest)) {
+			return new SecurityStatusCode(false, "You do not have permission to recycle benchmarks belonging to another user");
+		}
+		
+		return new SecurityStatusCode(true);
+	}
+	
 	
 }

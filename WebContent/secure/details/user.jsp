@@ -12,6 +12,7 @@
 
 		if(t_user != null) {
 			request.setAttribute("t_user", t_user);
+			request.setAttribute("userId", id);
 			boolean owner = true;
 			String userFullName = t_user.getFullName();
 			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
@@ -48,6 +49,7 @@
 %>
 
 <star:template title="${t_user.fullName}" js="common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/user, common/delaySpinner, common/table, explore/spaces, details/shared">
+	<span id="userId" value="${userId}"></span>
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>				
@@ -127,7 +129,10 @@
 			</table>
 			<fieldset id="solverActions" class="actionField">
 				<legend>actions</legend>
-				<button prim="solver" id="recycleSolver" class="recycleButton">recycle selected</button>
+				<button prim="solver" id="recycleSolver" class="recycleButton recycleSelected">recycle selected</button>
+				<button title="This will move all of the solvers you own that are not in any spaces to the recycle bin."
+				 prim="solver" id="recycleOrphanedSolvers" class="recycleButton recycleOrphaned">recycle orphaned</button>
+				
 			</fieldset>
 		</fieldset>
 		<fieldset id="benchField">
@@ -142,7 +147,9 @@
 			</table>
 			<fieldset id="benchActions" class="actionField">
 				<legend>actions</legend>
-				<button prim="benchmark" id="recycleBench" class="recycleButton">recycle selected</button>
+				<button prim="benchmark" id="recycleBench" class="recycleButton recycleSelected">recycle selected</button>
+				<button title="This will move all of the benchmarkss you own that are not in any spaces to the recycle bin" prim="benchmark" id="recycleOrphanedBench" class="recycleButton recycleOrphaned">recycle orphaned</button>
+				
 			</fieldset>
 		</fieldset>			
 		<fieldset id="jobField">
@@ -161,7 +168,10 @@
 			</table>
 			<fieldset id="jobActions" class="actionField">
 				<legend>actions</legend>
-				<button id="deleteJob" class="deleteButton">delete selected</button>
+				<button id="deleteJob" class="deleteButton deleteSelected">delete selected</button>
+				<button title="This will permanently delete all of the jobs you created that are no longer in any spaces"
+				 id="deleteOrphanedJob" class="deleteButton deleteOrphaned">delete orphaned</button>
+				
 			</fieldset>
 		</fieldset>
 		

@@ -2280,10 +2280,8 @@ function getTooltipConfig(type, message){
 					$.get(
 							starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
 							function(theResponse){
-								log('AJAX response for permission tooltip received');
-								if(1 == theResponse){
-									showMessage('error', "only leaders of a space can edit the permissions of others", 5000);
-								} else {
+								s=parseReturnCode(theResponse);
+								if (s) {
 									// Replace current content (current = loader.gif)		
 									$(tooltip).qtip('option', 'content.text', ' ');
 									if (theResponse.requester.role == "admin") {
@@ -2293,7 +2291,6 @@ function getTooltipConfig(type, message){
 										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'leader', theResponse.isCommunity));
 									}
 									$(".permButton").button();
-
 								}
 								return true;
 							}

@@ -277,6 +277,30 @@ public class Solvers {
 	}
 	
 	/**
+	 * Permanently removes a solver from the database
+	 * @param solverId The ID of the solver to remove
+	 * @param con The open connection to make the SQL call on
+	 * @return True on success and false otherwise
+	 */
+	
+	private static boolean removeSolverFromDatabase(int solverId, Connection con) {
+		log.debug("got request permanently remove this solver from the database "+solverId);
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("CALL RemoveSolverFromDatabase(?)");
+			procedure.setInt(1,solverId);
+			procedure.executeUpdate();
+			return true;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Removes all solver database entries where the solver has been deleted
 	 * AND has been orphaned
 	 * @return True on success, false on error
@@ -284,16 +308,46 @@ public class Solvers {
 	public static boolean cleanOrphanedDeletedSolvers() {
 		Connection con=null;
 		CallableStatement procedure=null;
+		ResultSet results=null;
+		
+		//will contain the id of every solver that is associated with either a space or a pair
+		HashSet<Integer> parentedSolvers=new HashSet<Integer>();
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedSolvers()}");
-			procedure.executeUpdate();
+			procedure=con.prepareCall("{CALL GetSolversAssociatedWithSpaces()}");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				parentedSolvers.add(results.getInt("id"));
+			}
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+			
+			procedure=con.prepareCall("{CALL GetSolversAssociatedWithPairs()}");
+			procedure.executeQuery();
+			while (results.next())  {
+				parentedSolvers.add(results.getInt("id"));
+			}
+			
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+			procedure=con.prepareCall("CALL GetDeletedSolvers()");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				int id=results.getInt("id");
+				// the solver has been deleted AND it is not associated with any spaces or job pairs
+				if (!parentedSolvers.contains(id)) {
+					removeSolverFromDatabase(id,con);
+				}
+			}	
 			return true;
 		} catch (Exception e) {
 			log.error("cleanOrphanedDeletedSolvers says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}
@@ -1662,8 +1716,7 @@ public class Solvers {
 		CallableStatement procedure=null;
 		
 		try {
-			//Cache.invalidateSpacesAssociatedWithSolver(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
+
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetSolverRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -1912,4 +1965,44 @@ public class Solvers {
 		
 	}
 	
+	/**
+	 * Recycles all of the solvers a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their solvers recycled
+	 * @return
+	 */
+	public static boolean recycleOrphanedSolvers(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		List<Integer> ids=new ArrayList<Integer>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetOrphanedSolverIds(?)}");
+			procedure.setInt(1, userId);
+			results= procedure.executeQuery();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return false;
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		//now that we have all the orphaned ids, we can recycle them
+		try {
+			boolean success=true;
+			for (Integer id : ids) {
+				success=success && Solvers.recycle(id);
+			}
+			return success;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e );
+		}
+		
+		return false;
+	}
 }

@@ -48,7 +48,6 @@ CREATE PROCEDURE ClearQueueAssociations()
 	
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen
--- TODO: What is the order by used for here?
 DROP PROCEDURE IF EXISTS GetNodesForQueue;
 CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 	BEGIN		

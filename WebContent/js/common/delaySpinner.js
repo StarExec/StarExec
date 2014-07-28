@@ -6,7 +6,7 @@
  */
 var delayToken;
 var delayInterval=null;
-
+var creatingDelaySpinner=false;
 
 //Requests img resource needed for the dialog
 $(document).ready(function() {
@@ -17,6 +17,8 @@ $(document).ready(function() {
 //Creates a new delay dialog. If one already exists, does nothing.
 
 function createDialog(message) {
+	//indicate that we're in the middle of creating the delay
+	creatingDelaySpinner=true;
 	setTimeout(function() {
 		if ($("#delaySpinner").length==0) {
 			$("body").append("<div id=delaySpinner><p id=\"delayMessage\">" +message+ "</p><p id=\"imageContainer\"></p></p>");
@@ -31,11 +33,21 @@ function createDialog(message) {
 				show: "fade"
 			});
 		}
+		//indicate we're done with the delay
+		creatingDelaySpinner=false;
 	},0);
 }
 
-//Completely removes dialog
+//Completely removes dialog if it exists. If we're in the middle of creating a dialog, waits for the creation to finish before deleting
 function destroyDialog() {
+	
+	//if we're in the middle of creating a spinner, just wait a small amount of time and then call this again
+	if (creatingDelaySpinner) {
+		setTimeout(function() {
+			destroyDialog();
+		},30);
+		return;
+	}
 	if ($("#delaySpinner").length>=1) {
 		$("#delaySpinner").dialog("destroy");
 		$("#spinnerImage").css("display","none");

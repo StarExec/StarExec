@@ -39,6 +39,6 @@ public class SolverComparison {
 	}
 	
 	public boolean doResultsMatch() {
-		return pair1.getAttributes().get(R.STAREXEC_RESULT)==pair2.getAttributes().get(R.STAREXEC_RESULT);
+		return pair1.getAttributes().get(R.STAREXEC_RESULT).equals(pair2.getAttributes().get(R.STAREXEC_RESULT));
 	}
 }

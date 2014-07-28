@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -617,6 +618,30 @@ public class Benchmarks {
 
 
 	/**
+	 * Permanently removes a benchmark from the database
+	 * @param benchId The ID of the benchmark to remove
+	 * @param con The open connection to make the SQL call on
+	 * @return True on success and false otherwise
+	 */
+	
+	private static boolean removeBenchmarkFromDatabase(int benchId, Connection con) {
+		log.debug("got request permanently remove this benchmark from the database "+benchId);
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("CALL RemoveBenchmarkFromDatabase(?)");
+			procedure.setInt(1,benchId);
+			procedure.executeUpdate();
+			return true;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Removes all benchmark database entries where the benchmark has been deleted
 	 * AND has been orphaned
 	 * @return True on success, false on error
@@ -624,17 +649,46 @@ public class Benchmarks {
 	public static boolean cleanOrphanedDeletedBenchmarks() {
 		Connection con=null;
 		CallableStatement procedure=null;
+		ResultSet results=null;
+		
+		//will contain the id of every benchmark that is associated with either a space or a pair
+		HashSet<Integer> parentedBenchmarks=new HashSet<Integer>();
 		try {
-			log.debug("Attempting to remove all orphaned, deleted benchmarks");
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedBenchmarks()}");
-			procedure.executeUpdate();
+			procedure=con.prepareCall("{CALL GetBenchmarksAssociatedWithSpaces()}");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				parentedBenchmarks.add(results.getInt("id"));
+			}
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+			
+			procedure=con.prepareCall("{CALL GetBenchmarksAssociatedWithPairs()}");
+			procedure.executeQuery();
+			while (results.next())  {
+				parentedBenchmarks.add(results.getInt("id"));
+			}
+			
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+			procedure=con.prepareCall("CALL GetDeletedBenchmarks()");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				int id=results.getInt("id");
+				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
+				if (!parentedBenchmarks.contains(id)) {
+					removeBenchmarkFromDatabase(id,con);
+				}
+			}	
 			return true;
 		} catch (Exception e) {
 			log.error("cleanOrphanedDeletedBenchmarks says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}
@@ -1914,7 +1968,6 @@ public class Benchmarks {
 	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
-	//TODO: Change this to getting all the IDs and calling restore on them one by one
 	public static boolean restoreRecycledBenchmarks(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -2299,6 +2352,45 @@ public class Benchmarks {
 		Common.safeClose(con);
 	    }
 		
+	}
+	/**
+	 * Recycles all of the benchmarks a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their benchmarks recycled
+	 * @return
+	 */
+	public static boolean recycleOrphanedBenchmarks(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		List<Integer> ids=new ArrayList<Integer>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetOrphanedBenchmarkIds(?)}");
+			procedure.setInt(1, userId);
+			results= procedure.executeQuery();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return false;
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		try {
+			boolean success=true;
+			for (Integer id : ids) {
+				success=success && Benchmarks.recycle(id);
+			}
+			return success;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e );
+		}
+		
+		return false;
 	}
 
 }

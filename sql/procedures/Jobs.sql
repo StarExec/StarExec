@@ -302,7 +302,6 @@ CREATE PROCEDURE RefreshEntriesByAncestor(IN _id INT, IN _time TIMESTAMP)
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
--- TODO: use a join instead of calling these functions (time trial after job_space_closure)
 DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
@@ -496,6 +495,14 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 		WHERE id = _jobId;
 		DELETE FROM job_pairs
 		WHERE job_id=_jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetOrphanedJobIds;
+CREATE PROCEDURE GetOrphanedJobIds(IN _userId INT)
+	BEGIN
+		SELECT jobs.id FROM jobs
+		LEFT JOIN job_assoc ON job_assoc.job_id=jobs.id
+		WHERE jobs.user_id=_userId AND job_assoc.space_id IS NULL;
 	END //
 	
 -- Sets the "paused" property of a job to true

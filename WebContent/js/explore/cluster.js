@@ -125,17 +125,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + type + "/" + id + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view primitives for this user", 5000);
-						break;
-					default:
- 						fnCallback(nextDataTablePage);
- 						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);
 				}
+
 			},  
 			"json"
 	).error(function(){

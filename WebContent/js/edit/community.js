@@ -330,9 +330,6 @@ function attachFormValidation(){
  */
 function refreshSpaceWebsites(){
 	location.reload();
-	/*$.getJSON(starexecRoot+'services/websites/space/' + $("#comId").val(), processWebsiteData).error(function(){
-		showMessage('error',"Internal error getting websites",5000);
-	});*/
 }
 
 /**

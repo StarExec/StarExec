@@ -208,6 +208,20 @@ public class SolverSecurity {
 		return new SecurityStatusCode(true);
 	}
 	/**
+	 * Checks to see whether a user can recycle all the orphaned solvers owned by another user.
+	 * @param userIdToDelete The user who owns the orphaned solvers that will be recycled
+	 * @param userIdMakingRequest The user who is trying to do the recycling
+	 * @return A SecurityStatusCode
+	 */
+	public static SecurityStatusCode canUserRecycleOrphanedSolvers(int userIdToDelete, int userIdMakingRequest) {
+		if (userIdToDelete!=userIdMakingRequest && !Users.isAdmin(userIdMakingRequest)) {
+			return new SecurityStatusCode(false, "You do not have permission to recycle solvers belonging to another user");
+		}
+		
+		return new SecurityStatusCode(true);
+	}
+	
+	/**
 	 * Checks to see whether the given user can recycle all of the given solvers
 	 * @param solverId The ID of the solver to check
 	 * @param userId The ID of the user making the request

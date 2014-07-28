@@ -237,7 +237,7 @@ CREATE PROCEDURE GetHistoricReservationCount()
 		SELECT count(distinct id) AS reservationCount
 		FROM queue_request
 		LEFT JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id AND CURDATE()>=reserve_date)
-		WHERE queue_request_assoc.request_id=NULL;
+		WHERE queue_request_assoc.request_id IS NULL;
 	END //
 	
 -- Deletes a queue reservation by removing it from comm_queue table

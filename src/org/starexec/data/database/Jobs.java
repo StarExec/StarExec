@@ -4014,4 +4014,43 @@ public class Jobs {
 		}
 		return null;
 	}
+	
+	
+	/**
+	 * Deletes all of the jobs a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their solvers recycled
+	 * @return
+	 */
+	public static boolean deleteOrphanedJobs(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		List<Integer> ids=new ArrayList<Integer>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetOrphanedJobIds(?)}");
+			procedure.setInt(1, userId);
+			results= procedure.executeQuery();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		try {
+			for (Integer id : ids) {
+				Jobs.delete(id);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return false;
+	}
 }

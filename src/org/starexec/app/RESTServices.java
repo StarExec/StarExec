@@ -2216,6 +2216,49 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Recycles all benchmarks that have been orphaned belonging to a specific user
+	 *
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/recycleOrphaned/benchmark/{userId}")
+	@Produces("application/json")
+	public String recycleOrphanedBenchmarks(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
+
+		
+		SecurityStatusCode status=BenchmarkSecurity.canUserRecycleOrphanedBenchmarks(userId, userIdOfCaller);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+	
+		return Benchmarks.recycleOrphanedBenchmarks(userId) ?  gson.toJson(new SecurityStatusCode(true,"Benchmark(s) recycled successfully")) :
+			gson.toJson(new SecurityStatusCode(false, "Internal database error recycling benchmark(s)"));
+	}
+	
+	/**
+	 * Recycles all solvers that have been orphaned belonging to a specific user
+	 *
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/recycleOrphaned/solver/{userId}")
+	@Produces("application/json")
+	public String recycleOrphanedSolvers(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
+
+		
+		SecurityStatusCode status=SolverSecurity.canUserRecycleOrphanedSolvers(userId, userIdOfCaller);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+	
+		return Solvers.recycleOrphanedSolvers(userId) ?  gson.toJson(new SecurityStatusCode(true,"Solver(s) recycled successfully")) :
+			gson.toJson(new SecurityStatusCode(false, "Internal database error recycling solver(s)"));
+	}
+	
+	
+	/**
 	 * Recycles a list of solvers
 	 * 
 	 * @return 	0: success,<br>

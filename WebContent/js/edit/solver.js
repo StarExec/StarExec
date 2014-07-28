@@ -171,13 +171,6 @@ function togglePlusMinus(addSiteButton){
  */
 function refreshSolverWebsites(){
 	location.reload();
-	
-	//we should NOT do this, because it leaves us vulnerable to XSS attacks
-	/*
-	//get website information for the given solver
-	$.getJSON(starexecRoot+'services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
-		showMessage('error',"Internal error getting websites",5000);
-	});*/
 }
 
 
