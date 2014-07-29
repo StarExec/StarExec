@@ -195,7 +195,7 @@ class ArgumentParser {
 			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),wallclock, cpu,useDepthFirst,maxMemory,startPaused,seed);
 
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -219,7 +219,7 @@ class ArgumentParser {
 					commandParams.containsKey(R.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 
@@ -246,7 +246,7 @@ class ArgumentParser {
 					commandParams.containsKey(R.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
-			fail.add(Status.ERROR_SERVER);
+			fail.add(Status.ERROR_INTERNAL);
 			return fail;		}
 	}
 	
@@ -289,7 +289,7 @@ class ArgumentParser {
 			return con.createSubspace(name, desc, Integer.parseInt(commandParams.get(R.PARAM_ID)), p, locked);
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -309,7 +309,7 @@ class ArgumentParser {
 			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 			return con.removePrimitives(ids, Integer.parseInt(commandParams.get(R.PARAM_FROM)), type, commandParams.containsKey(R.PARAM_DELETE_PRIMS));
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -394,7 +394,7 @@ class ArgumentParser {
 			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 			return con.deletePrimitives(ids, type);
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -422,7 +422,7 @@ class ArgumentParser {
 					hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED));
 
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 		
 	}
@@ -477,7 +477,7 @@ class ArgumentParser {
 			}
 		
 		} catch (Exception e) {
-			errorMap.put(Status.ERROR_SERVER, null);
+			errorMap.put(Status.ERROR_INTERNAL, null);
 			
 			return errorMap;
 		}
@@ -505,7 +505,7 @@ class ArgumentParser {
 			return con.setSpaceVisibility(Integer.parseInt(commandParams.get(R.PARAM_ID)), hierarchy, setPublic);
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -628,7 +628,7 @@ class ArgumentParser {
 			
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -718,7 +718,7 @@ class ArgumentParser {
 
 		    //System.out.println("ArgumentParser.java : " +e);
 		  
-		    fail.add(Status.ERROR_SERVER);
+		    fail.add(Status.ERROR_INTERNAL);
 			return fail;
 		}
 	}

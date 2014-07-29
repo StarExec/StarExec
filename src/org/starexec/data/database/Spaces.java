@@ -2144,7 +2144,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId) throws SQLException {
 		CallableStatement procedure = null;
 		try {
-			 procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			 procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
 			for(int userId : userIds){
 				procedure.setInt(1, userId);
 				procedure.setInt(2, spaceId);
@@ -2170,19 +2170,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 */
 	public static boolean removeUsers(List<Integer> userIds, int commId) {
 		Connection con = null;			
-		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			// Instantiate a transaction so users in 'userIds' get removed in an all-or-none fashion
 			Common.beginTransaction(con);
 			
-			 procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
-			for(int userId : userIds){
-				procedure.setInt(1, userId);
-				procedure.setInt(2, commId);
-				
-				procedure.executeUpdate();			
-			}
+			removeUsers(con,userIds,commId);
 			
 			// Commit changes to database
 			Common.endTransaction(con);
@@ -2194,7 +2187,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}
 		
 		log.error(userIds.size() + " user(s) were unsuccessfully removed from community " + commId);

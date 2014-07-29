@@ -1869,7 +1869,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(permissionButton));
 			
 			String suspendButton = "";
-			if (Users.isPublicUser(user.getId()) || Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
+			if (Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
 				suspendButton = "N/A";
 			} else if (Users.isSuspended(user.getId())) {
 				sb = new StringBuilder();

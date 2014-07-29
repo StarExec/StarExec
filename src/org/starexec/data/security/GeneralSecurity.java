@@ -2,7 +2,9 @@ package org.starexec.data.security;
 
 import org.owasp.esapi.ESAPI;
 import org.starexec.data.database.Users;
+import org.starexec.util.Hash;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 public class GeneralSecurity {
 	/**
@@ -89,6 +91,22 @@ public class GeneralSecurity {
 	}
 	
 	
-	
+	public static SecurityStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, String newPass, String confirmNewPass) {
+		String hashedPass = Hash.hashPassword(oldPass);
+		String databasePass = Users.getPassword(userId);
+		if (!hashedPass.equals(databasePass)) {
+			return new SecurityStatusCode(false, "The supplied password is incorrect");
+		}
+		if (!newPass.equals(confirmNewPass)) {
+			return new SecurityStatusCode(false, "The passwords are not the same");
+		}
+		
+		if (!Validator.isValidPassword(newPass)) {
+			return new SecurityStatusCode(false, "The supplied password is invalid");
+		}
+		
+		
+		return new SecurityStatusCode(true);
+	}
 	
 }

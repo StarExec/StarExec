@@ -3046,6 +3046,7 @@ public class Jobs {
 		if (j==null) {
 			return false;
 		}
+		//if the public user made a job, then that job must be public
 		if (Users.isPublicUser(j.getUserId())){
 			log.debug("Public User for Job Id" + jobId);
 			return true;

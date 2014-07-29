@@ -49,7 +49,8 @@ public class StarexecCommandTests extends TestSequence {
 	Configuration config=null;
 	Processor proc=null;
 	
-	User user=null;
+	User user=null; //this user owns space1 and space2
+	User user2=null; //this user is only in space1
 	Space testCommunity=null;
 	
 	
@@ -299,6 +300,23 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0, result); //ensure StarexecCommand thinks it was successful
 		Assert.assertEquals(inst+"a", Users.get(user.getId()).getInstitution()); //ensure the database reflects the change
 		Users.updateInstitution(user.getId(), inst); //change the institution back just to keep things consistent
+	}
+	
+	@Test
+	private void linkUserTest() {
+		Integer[] users=new Integer[1];
+		users[0]=user2.getId();
+		
+		int status=con.linkUsers(users, space1.getId(), space2.getId());
+		Assert.assertEquals(0,status);
+		HashMap<Integer,String> u=con.getUsersInSpace(space2.getId());
+		
+		Assert.assertTrue(u.containsKey(user2.getId()));
+		
+		List<Integer> ids = new ArrayList<Integer>();
+		ids.add(user2.getId());
+		Assert.assertTrue(Spaces.removeUsers(ids, space2.getId()));
+		
 	}
 	
 	@Test
@@ -582,7 +600,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		user=Users.getTestUser();
-		
+		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
 		
 		//this prevents the apache http libraries from logging things. Their logs are very prolific
@@ -596,6 +614,9 @@ public class StarexecCommandTests extends TestSequence {
 		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());	
+		
+		Users.associate(user2.getId(), space1.getId());
+		
 		solverFile=ResourceLoader.getResource("CVC4.zip");
 		benchmarkFile=ResourceLoader.getResource("benchmarks.zip");
 		configFile=ResourceLoader.getResource("CVC4Config.txt");
@@ -633,6 +654,10 @@ public class StarexecCommandTests extends TestSequence {
 		for (Integer i : benchmarkIds) {
 			Benchmarks.delete(i);
 		}
+		
+		Jobs.delete(job.getId());
+		
+		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
 		
 	}
 	

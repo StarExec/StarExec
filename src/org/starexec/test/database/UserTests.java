@@ -179,7 +179,6 @@ public class UserTests extends TestSequence {
 	}
 	
 	
-	//TODO: Expand on this test?
 	@Test
 	private void GetCountInSpaceTest() {
 		int count=Spaces.getUsers(space.getId()).size();

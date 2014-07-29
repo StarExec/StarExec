@@ -2845,7 +2845,6 @@ public class RESTServices {
 	 * @author Skylar Stark
 	 */
 	
-	//TODO: Change this method of validation
 	@POST
 	@Path("/edit/user/password/")
 	@Produces("application/json")
@@ -2854,28 +2853,19 @@ public class RESTServices {
 		String currentPass = request.getParameter("current");
 		String newPass = request.getParameter("newpass");
 		String confirmPass = request.getParameter("confirm");
-				
-		String hashedPass = Hash.hashPassword(currentPass);
-		String databasePass = Users.getPassword(userId);
 		
-		if (hashedPass.equals(databasePass)) {
-			if (newPass.equals(confirmPass)) {
-				if (true == Validator.isValidPassword(newPass)) {
-					//updatePassword requires the plaintext password
-					if (true == Users.updatePassword(userId, newPass)) {
-						return gson.toJson(new SecurityStatusCode(true,"Password edited successfully"));
-					} else {
-						return gson.toJson(ERROR_DATABASE); //Database operation returned false
-					}
-				} else {
-					return gson.toJson(ERROR_INVALID_PASSWORD); //Validate operation returned false
-				}
-			} else {
-				return gson.toJson(ERROR_PASSWORDS_NOT_EQUAL); //newPass != confirmPass
-			}
-		} else {
-			return gson.toJson(ERROR_WRONG_PASSWORD); //hashedPass != databasePass
+		SecurityStatusCode status=GeneralSecurity.canUserUpdatePassword(userId,userId,currentPass,newPass,confirmPass);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
+
+		//updatePassword requires the plaintext password
+		if (Users.updatePassword(userId, newPass)) {
+			return gson.toJson(new SecurityStatusCode(true,"Password edited successfully"));
+		} else {
+			return gson.toJson(ERROR_DATABASE); //Database operation returned false
+		}
+
 	}
 	
     /**
@@ -3767,12 +3757,12 @@ public class RESTServices {
 	@Path("/nodes/update")
 	@Produces("application/json")
 	public String updateNodeCount(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId)) {
+		//int userId=SessionUtil.getUserId(request);
+		//if (!Users.isAdmin(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		boolean success = Cluster.updateTempChanges();
-		return success ? gson.toJson(new SecurityStatusCode(true,"Nodes updated successfully")) : gson.toJson(ERROR_DATABASE);
+		//}
+		//boolean success = Cluster.updateTempChanges();
+		//return success ? gson.toJson(new SecurityStatusCode(true,"Nodes updated successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**

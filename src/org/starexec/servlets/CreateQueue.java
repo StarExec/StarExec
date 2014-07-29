@@ -77,7 +77,7 @@ public class CreateQueue extends HttpServlet {
 		int newQueueId = Queues.add(queue_name + ".q",req.getCpuTimeout(),req.getWallTimeout());
 		Cluster.reserveNodes(req.getId(), start, end);
 		//boolean approved = Requests.removeQueueReservation(req.getId());
-		Cluster.updateTempChanges();
+		//Cluster.updateTempChanges();
 
 		
 		if(!Users.isAdmin(queueUserId)) {

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="7/16/2014-1";
+	public static String VERSION="7/29/2014-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -37,7 +37,9 @@ public class R {
         public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
+	
 	public static String URL_GETID="services/users/getid";
+	
 	public static String URL_COPYBENCH="services/spaces/{spaceID}/add/benchmark";
 	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
 	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
@@ -45,7 +47,9 @@ public class R {
 	public static String URL_COPYUSER="services/spaces/{spaceID}/add/user";
 	public static String URL_REMOVEPRIMITIVE="services/remove";
 	public static String URL_PAUSEORRESUME="services/{method}/job/{id}";
+	
 	public static String URL_RERUNPAIR="services/jobs/pairs/rerun/{id}";
+	
 	public static String URL_RERUNJOB="services/jobs/rerunallpairs/{id}";
 	//Success codes for command parsing
 	public static int SUCCESS_EXIT=1;

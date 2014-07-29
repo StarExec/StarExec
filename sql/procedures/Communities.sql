@@ -28,17 +28,17 @@ CREATE PROCEDURE GetCommunityById(IN _id INT)
 
 -- Removes the association a user has with a given space
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS LeaveCommunity;
-CREATE PROCEDURE LeaveCommunity(IN _userId INT, IN _commId INT)
+DROP PROCEDURE IF EXISTS LeaveSpace;
+CREATE PROCEDURE LeaveSpace(IN _userId INT, IN _spaceId INT)
 	BEGIN
-		-- Remove the permission associated with this user/community
+		-- Remove the permission associated with this user/space
 		DELETE FROM permissions
-			WHERE id=(SELECT permission FROM user_assoc WHERE user_id = _userId	AND space_id = _commId);
+			WHERE id=(SELECT permission FROM user_assoc WHERE user_id = _userId	AND space_id = _spaceId);
 		
 		-- Delete the association	
 		DELETE FROM user_assoc
 		WHERE user_id = _userId
-		AND space_id = _commId;
+		AND space_id = _spaceId;
 	END //
 	
 -- Get the default settings of the community given by id.

@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;

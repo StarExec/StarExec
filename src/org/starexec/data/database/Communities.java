@@ -219,16 +219,14 @@ public class Communities {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
+	
+	//TODO: What is this supposed to be doing? It only causes the user to leave a single space
 	public static boolean leave(int userId, int commId) {
-		if (Users.isPublicUser(userId)){
-			return false;
-		}
-		
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, commId);
 			

@@ -37,7 +37,6 @@ public class Cluster {
 				associateQueue.setInt(1, queueId);
 				associateQueue.setInt(2, nodeId);
 				associateQueue.executeUpdate();
-				//TODO: Ensure this line is correct
 				Common.safeClose(associateQueue);
 			}
 		} catch (Exception e) {
@@ -501,34 +500,6 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return -1;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	
-	//TODO: Fix up this functionality somehow
-	public static boolean updateTempChanges() {
-		/*
-		List<QueueRequest> temp_changes = Cluster.getTempChanges();
-		boolean success = true;
-		if (temp_changes != null) {
-			for (QueueRequest req : temp_changes) {
-				int queueId = Queues.getIdByName(req.getQueueName());
-				if (queueId == -2) { queueId = Queues.getIdByName(req.getQueueName() + ".q"); } //if its a new queue
-
-				success = Cluster.updateNodeCount(req.getId(), req.getNodeCount(), req.getStartDate());
-				if (! success) {
-					break;
-				}
-			}
-		}
-		
-		if (success) { success = Cluster.removeEmptyNodeCounts(); }
-		
-		return success ? true : false;*/
-		return false;
 	}
 
 	/**

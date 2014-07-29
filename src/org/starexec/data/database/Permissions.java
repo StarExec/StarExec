@@ -407,6 +407,14 @@ public class Permissions {
 			log.debug("permissions for an admin were obtained userId = "+userId);
 			return Permissions.getFullPermission();
 		}
+		
+		//TODO: What exactly are the permissions for the public user?
+		if (Users.isPublicUser(userId)) {
+			if (Spaces.isPublicSpace(spaceId)) {
+				return Permissions.getEmptyPermission();
+			}
+			return null;
+		}
 		try {
 			
 			con = Common.getConnection();		

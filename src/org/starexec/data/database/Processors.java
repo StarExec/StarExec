@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 
@@ -191,6 +192,10 @@ public class Processors {
 		
 		return null;
 	}	
+	
+	public static Processor getNoTypeProcessor() {
+		return Processors.get(R.NO_TYPE_PROC_ID);
+	}
 	
 	
 	/**	 

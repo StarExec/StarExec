@@ -47,11 +47,11 @@ public class QueueSecurityTests extends TestSequence {
 	@Test
 	private void canUserUpdateRequest() {
 		String randomName=TestUtil.getRandomQueueName();
-		Assert.assertEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),randomName));
+		Assert.assertEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),randomName).isSuccess());
 		//queues need unique names, so make sure we can't choose a name we already have
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()));
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName));
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName));
+		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName).isSuccess());
 	}
 	
 	
