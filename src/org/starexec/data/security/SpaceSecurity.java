@@ -115,7 +115,8 @@ public class SpaceSecurity {
 		
 		Space os=Spaces.get(spaceId);
 		if (!os.getName().equals(name)) {
-			if (Spaces.notUniquePrimitiveName(name,spaceId,4)) {
+			int parentId=Spaces.getParentSpace(os.getId());
+			if (Spaces.notUniquePrimitiveName(name,parentId,4)) {
 				return new SecurityStatusCode(false, "The new name needs to be unique in the space");
 			}
 		}
@@ -303,7 +304,15 @@ public class SpaceSecurity {
 			if (!Validator.isValidPrimDescription(newValue)) {
 				return new SecurityStatusCode(false, "The description is not in a valid format. Please refer to the help pages to see the correct format");
 			}
-		}	
+		} else if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout") || attribute.equals("MaxMem")) {
+			if (! Validator.isValidInteger(newValue)) {
+				return new SecurityStatusCode(false, "The new limit needs to be a valid integer");
+			}
+			int timeout=Integer.parseInt(newValue);
+			if (timeout<=0) {
+				return new SecurityStatusCode(false, "The new limit needs to be greater than 0");
+			}
+		}
 		
 		return new SecurityStatusCode(true);
 	}

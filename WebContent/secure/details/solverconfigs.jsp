@@ -37,10 +37,8 @@ currently only used in StarexecCommand --%>
 				
 		
 	} catch (NumberFormatException nfe) {
-		nfe.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given space id was in an invalid format");
 	} catch (Exception e) {
-		e.printStackTrace();
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Life, Jim, but not as we know it");
 	}
 %>

@@ -120,21 +120,23 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	if (type == undefined) {
 		window['type'] = 'queues';
 	}
+	//we have no pagination for inactive queues
+	if (type!="inactive_queue") {
+		$.get(  
+				sSource + type + "/" + id + "/pagination",
+				aoData,
+				function(nextDataTablePage){
+					s=parseReturnCode(nextDataTablePage);
+					if (s) {
+						fnCallback(nextDataTablePage);
+					}
 
-	$.get(  
-			sSource + type + "/" + id + "/pagination",
-			aoData,
-			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage);
-				if (s) {
-					fnCallback(nextDataTablePage);
-				}
-
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating table",5000);
-	});
+				},  
+				"json"
+		).error(function(){
+			showMessage('error',"Internal error populating table",5000);
+		});
+	}
 }
  
 /**

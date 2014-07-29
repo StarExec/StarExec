@@ -1219,7 +1219,6 @@ public class Connection {
 				return fail;
 			}
 		} catch (Exception e) {
-			//e.printStackTrace();
 			fail.add(Status.ERROR_SERVER);
 			return fail;
 		}

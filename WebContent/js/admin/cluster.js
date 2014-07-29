@@ -4,7 +4,6 @@ var type;
 var defaultQueueId;
 var curQueueId;
 $(document).ready(function(){
-	
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = starexecRoot+"css/jstree/";
 	 
@@ -67,9 +66,7 @@ $(document).ready(function(){
 	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
 	   updateActionId(id, type, permanent, global);
 	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
-
 	initUI(id);
-	
 	initDataTables();
 	
 });
@@ -260,6 +257,8 @@ function initUI(id){
 									setTimeout(function(){document.location.reload(true);}, 1000);
 
 								}
+							},
+					
 							"json"
 					);
 				},
@@ -371,7 +370,9 @@ function fnPaginationHandler(sSource, aoData, fnCallback){
 			"json"
 	)
 }
-
+/*
+ * 
+ */
 function cancelReservation(spaceId, queueId) {
 	$.post(
 		starexecRoot+"services/cancel/queueReservation/" + spaceId + "/" + queueId,

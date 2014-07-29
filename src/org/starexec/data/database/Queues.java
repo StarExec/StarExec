@@ -687,7 +687,6 @@ public class Queues {
 				q.setCpuTimeout(results.getInt("cpuTimeout"));
 				queues.add(q);
 			}			
-			System.out.println(queues.size());
 						
 			return queues;
 		} catch (Exception e){			
@@ -701,7 +700,11 @@ public class Queues {
 		return null;
 	}
 	
-	
+	/**
+	 * Retrieves all of the queues that the given user has access to when running a job
+	 * @param userId
+	 * @return
+	 */
 	public static List<Queue> getQueuesForUser(int userId) {
 		if (Users.isAdmin(userId)) {
 			return getQueues(0);
@@ -725,6 +728,12 @@ public class Queues {
 
 		}
 	}
+	
+	/**
+	 * Gets all of the permanent queues that the given user has access to for running a job
+	 * @param userId
+	 * @return
+	 */
 	
 	private static List<Queue> getPermanentQueuesForUser(int userId) {
 		Connection con = null;

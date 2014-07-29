@@ -247,7 +247,6 @@ class ArgumentParser {
 		
 		} catch (Exception e) {
 			fail.add(Status.ERROR_SERVER);
-			e.printStackTrace();
 			return fail;		}
 	}
 	

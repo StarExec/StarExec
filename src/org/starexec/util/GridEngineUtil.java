@@ -463,7 +463,7 @@ public class GridEngineUtil {
 				f.setWritable(true, false);
 
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e.getMessage(),e);
 			}
 			
 
@@ -535,7 +535,7 @@ public class GridEngineUtil {
 				f.setWritable(true, false);
 				
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e.getMessage(),e);
 			}
 			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 					
@@ -550,63 +550,64 @@ public class GridEngineUtil {
 	
 	
 	public static boolean createPermanentQueue(QueueRequest req, boolean isNewQueue, HashMap<WorkerNode, Queue> nodesAndQueues) {
-		log.debug("begin createPermanentQueue");
-		String queueName = req.getQueueName();
-		String[] split = queueName.split("\\.");
-		String shortQueueName = split[0];
-		//int queueId = Queues.getIdByName(queueName);
-		//Queue q = Queues.get(queueId);
-		List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
-		StringBuilder sb = new StringBuilder();
-		
-		String[] envp = new String[1];
-		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-
-		
-		if (isNewQueue) {
-			//This is being called from "Create new permanent queue"
-			Set<WorkerNode> nodes = nodesAndQueues.keySet();
-			if (nodes != null) {
-				for (WorkerNode n : nodes) {
-					transferNodes.add(n);
-					String fullName = n.getName();
+		try {
+			log.debug("begin createPermanentQueue");
+			String queueName = req.getQueueName();
+			String[] split = queueName.split("\\.");
+			String shortQueueName = split[0];
+			//int queueId = Queues.getIdByName(queueName);
+			//Queue q = Queues.get(queueId);
+			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
+			StringBuilder sb = new StringBuilder();
+			
+			String[] envp = new String[1];
+			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+	
+			
+			if (isNewQueue) {
+				//This is being called from "Create new permanent queue"
+				Set<WorkerNode> nodes = nodesAndQueues.keySet();
+				if (nodes != null) {
+					for (WorkerNode n : nodes) {
+						transferNodes.add(n);
+						String fullName = n.getName();
+						String[] split2 = fullName.split("\\.");
+						String shortName = split2[0];
+						sb.append(shortName);
+						sb.append(" ");
+						
+						Queue queue = nodesAndQueues.get(n);
+						String name = queue.getName();
+						String[] split3 = name.split("\\.");
+						String shortQName = split3[0];
+						Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+					}
+				}
+				
+			} else {
+				//This is being called from "Make existing queue permanent"
+				
+				//Get the nodes we are going to transfer
+				List<WorkerNode> nodes = Queues.getNodes(1);
+				for (int i = 0; i < req.getNodeCount(); i++) {
+					transferNodes.add(nodes.get(i));
+					String fullName = nodes.get(i).getName();
 					String[] split2 = fullName.split("\\.");
 					String shortName = split2[0];
 					sb.append(shortName);
 					sb.append(" ");
 					
-					Queue queue = nodesAndQueues.get(n);
-					String name = queue.getName();
-					String[] split3 = name.split("\\.");
-					String shortQName = split3[0];
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+					// Transfer nodes out of @allhosts
+					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodes.get(i).getName() + " @allhosts", envp);
 				}
 			}
 			
-		} else {
-			//This is being called from "Make existing queue permanent"
-			
-			//Get the nodes we are going to transfer
-			List<WorkerNode> nodes = Queues.getNodes(1);
-			for (int i = 0; i < req.getNodeCount(); i++) {
-				transferNodes.add(nodes.get(i));
-				String fullName = nodes.get(i).getName();
-				String[] split2 = fullName.split("\\.");
-				String shortName = split2[0];
-				sb.append(shortName);
-				sb.append(" ");
-				
-				// Transfer nodes out of @allhosts
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodes.get(i).getName() + " @allhosts", envp);
-			}
-		}
+			String hostList = sb.toString();
+	
+			/***** CREATE A QUEUE *****/
+			// Create newHost.hgrp
+			String newHost;
 		
-		String hostList = sb.toString();
-
-		/***** CREATE A QUEUE *****/
-		// Create newHost.hgrp
-		String newHost;
-		try {
 			newHost = "group_name @" + shortQueueName + "hosts" +
 					  "\nhostlist " + hostList;
 			File f = new File("/tmp/newHost30.hgrp");
@@ -614,10 +615,6 @@ public class GridEngineUtil {
 			f.setReadable(true, false);
 			f.setWritable(true, false);
 
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
 			
 
 		//Add the host
@@ -628,7 +625,7 @@ public class GridEngineUtil {
 			
 		// Create newQueue.q [COMPLETE]
 		String newQueue;
-		try {
+		
 			newQueue = "qname                   " + queueName + 
 						"\nhostlist             @" + shortQueueName + "hosts" + 
 						"\nseq_no                0" +
@@ -680,23 +677,24 @@ public class GridEngineUtil {
 						"\ns_vmem                INFINITY"+
 						"\nh_vmem                INFINITY";
 			
-			File f = new File("/tmp/newQueue30.q");
-			FileUtils.writeStringToFile(f, newQueue);
-			f.setReadable(true, false);
-			f.setWritable(true, false);
+			File f2 = new File("/tmp/newQueue30.q");
+			FileUtils.writeStringToFile(f2, newQueue);
+			f2.setReadable(true, false);
+			f2.setWritable(true, false);
 				
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
-	
 		
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
+		
+			
+	
+		    GridEngineUtil.loadWorkerNodes();
+		    GridEngineUtil.loadQueues();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
 
-	    GridEngineUtil.loadWorkerNodes();
-	    GridEngineUtil.loadQueues();
-		return true;
 	}
 	
 	/**

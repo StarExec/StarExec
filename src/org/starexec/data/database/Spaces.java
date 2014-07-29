@@ -133,7 +133,6 @@ public class Spaces {
 			idChain.add(spaceId);
 		}
 		Collections.reverse(idChain);
-		System.out.println("done");
 		return idChain;
 	}
 	
@@ -2666,5 +2665,14 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		}
 		
 		return null;
+	}
+	/**
+	 * Determines whether the given space ID is the ID of the root space
+	 * @param spaceId
+	 * @return
+	 */
+	//TODO: What is the best way to find the root?
+	public static boolean isRoot(int spaceId) {
+		return 1==spaceId;
 	}
 }

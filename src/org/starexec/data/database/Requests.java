@@ -364,7 +364,6 @@ public class Requests {
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-			e.printStackTrace();
 			return false;
 		} finally {
 			Common.safeClose(con);

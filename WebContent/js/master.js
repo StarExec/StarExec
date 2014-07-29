@@ -246,6 +246,11 @@ function parseBoolean(string) {
 	return false;
 }
 
+/**
+ * Returns true if the given string is not undefined, null, or empty
+ * @param string
+ * @returns {Boolean}
+ */
 function stringExists(string) {
 	return (typeof string != 'undefined' && string!=null && string.length>0);
 }

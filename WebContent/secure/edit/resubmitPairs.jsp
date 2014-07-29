@@ -9,7 +9,7 @@
 				
 		
 		Job j=null;
-		if(JobSecurity.canUserRerunPairs(jobId,userId)==0) {
+		if(JobSecurity.canUserRerunPairs(jobId,userId).isSuccess()) {
 			boolean isComplete=Jobs.isJobComplete(jobId);
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			for (Status.StatusCode code : filteredCodes) {
@@ -27,10 +27,8 @@
 			}
 		}
 	} catch (NumberFormatException nfe) {
-		nfe.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
 	} catch (Exception e) {
-		e.printStackTrace();
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>

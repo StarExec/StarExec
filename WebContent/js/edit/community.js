@@ -215,20 +215,23 @@ function initUI(){
 		togglePlusMinus(this);
 	});	
 	
-	$('#editPostProcess').click(function() {
+	$('#editPostProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
 	
-	$('#editDependenciesEnabled').click(function() {
+	$('#editDependenciesEnabled').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
 	});
-		
 	// Set the selected post processor to be the default one
 	defaultPPId = $('#editPostProcess').attr('default');
-	$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	if (stringExists(defaultPPId)) {
+		$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	}
 	
 	defaultDepEnb=$('#editDependenciesEnabled').attr('default');
-	$('#editDependenciesEnabled option[value=' + defaultDepEnb+']').attr('selected','selected');
+	if (stringExists(defaultDepEnb)) {
+		$('#editDependenciesEnabled option[value=' + defaultDepEnb+']').attr('selected','selected');
+	}
 	
 	$('#newWebsite').hide();
 	$('#newTypeTbl').hide();

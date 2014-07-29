@@ -156,6 +156,7 @@ public class RESTServices {
 	@POST
 	@Path("/nodes/dates/pagination/{string_date}")
 	@Produces("application/json")
+	//TODO: This needs to be refactored
 	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		SecurityStatusCode status=QueueSecurity.canUserSeeRequests(userId);
@@ -185,7 +186,7 @@ public class RESTServices {
 				
 				latestSql = new java.sql.Date(latest.getTime());
 			} catch (ParseException e1) {
-				e1.printStackTrace();
+				log.error(e1.getMessage(),e1);
 			}
 			
 			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
@@ -1122,6 +1123,13 @@ public class RESTServices {
 		
 	}
 	
+	/**
+	 * Handles a request to edit the non-SGE attributes (like timeouts) of an existing queue
+	 * @param id
+	 * @param request
+	 * @return
+	 */
+	
 	@POST
 	@Path("/edit/queue/{id}")
 	@Produces("application/json")
@@ -1129,8 +1137,15 @@ public class RESTServices {
 		if (!Util.paramExists("cpuTimeout", request) || !Util.paramExists("wallTimeout", request)) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		int cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
-		int wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
+		int cpuTimeout=0;
+		int wallTimeout=0;
+		try {
+			cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
+			wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
+		} catch (Exception e) {
+			return gson.toJson(new SecurityStatusCode(false, "Timeouts need to be integers between 1 and 2^31"));
+		}
+
 		
 		
 		int userId=SessionUtil.getUserId(request);
@@ -1222,8 +1237,9 @@ public class RESTServices {
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
 		SecurityStatusCode status=SpaceSecurity.canUpdateSettings(id,attribute,newValue, userId);
+		
 		if (!status.isSuccess()) {
-			return gson.toJson(id);
+			return gson.toJson(status);
 		}
 		try {			
 			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
@@ -3694,7 +3710,7 @@ public class RESTServices {
 				java.util.Date today = new Date();
 				todaySql = new java.sql.Date(today.getTime());
 			} catch (ParseException e1) {
-				e1.printStackTrace();
+				log.error(e1.getMessage(),e1);
 			}
 			log.debug("today = " + todaySql);
 			log.debug("startDate = " + startDateSql);
