@@ -665,7 +665,7 @@ public class Benchmarks {
 			
 			
 			procedure=con.prepareCall("{CALL GetBenchmarksAssociatedWithPairs()}");
-			procedure.executeQuery();
+			results=procedure.executeQuery();
 			while (results.next())  {
 				parentedBenchmarks.add(results.getInt("id"));
 			}

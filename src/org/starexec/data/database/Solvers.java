@@ -324,7 +324,7 @@ public class Solvers {
 			
 			
 			procedure=con.prepareCall("{CALL GetSolversAssociatedWithPairs()}");
-			procedure.executeQuery();
+			results=procedure.executeQuery();
 			while (results.next())  {
 				parentedSolvers.add(results.getInt("id"));
 			}
