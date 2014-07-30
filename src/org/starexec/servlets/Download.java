@@ -63,7 +63,7 @@ public class Download extends HttpServlet {
 		boolean success;
 		String shortName=null;
 		try {
-			if (false == validateRequest(request)) {
+			if (!validateRequest(request)) {
 				log.debug("Bad download Request");
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
 				return;

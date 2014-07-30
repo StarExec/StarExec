@@ -20,10 +20,13 @@ function getBaseURL() {
 	return current.substring(0,current.indexOf("?"));
 }
 
+
+//given a reference, creates a link to the help.jsp page that includes the reference as a URL parameter
 function makeFullURL(ref) {
 	return getBaseURL()+"?ref="+ref;
 }
 
+//gets the reference link from the current URL 
 function getRef(url) {
 	return url.substring(url.indexOf("?ref=")+5);
 }

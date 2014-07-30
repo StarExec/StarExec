@@ -2010,7 +2010,6 @@ function updateButtonIds(id) {
 			height: 250,
 			buttons: {
 				'space': function(){
-					
 					createDownloadSpacePost(false,id);
 					$(this).dialog("close");
 
@@ -2042,8 +2041,8 @@ function createDownloadSpaceXMLRequest(includeAttrs,id) {
 
 function createDownloadSpacePost(hierarchy,id) {
 	downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
+	
 	downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
-	$(this).dialog("close");
 	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 	token=Math.floor(Math.random()*100000000);
 	window.location.href=starexecRoot+"secure/download?includesolvers="+downloadSolvers+"&includebenchmarks="+downloadBenchmarks+"&token="+token+"&type=space&hierarchy="+hierarchy+"&id="+id;
