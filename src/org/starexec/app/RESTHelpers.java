@@ -788,43 +788,52 @@ public class RESTHelpers {
 	
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
 			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock) {
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-				Primitive.JOB_PAIR, request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
-
-		int totalComparisons;
-		// Retrieves the relevant Job objects to use in constructing the JSON to
-		// send to the client
-		int[] totals = new int[2];
-		solverComparisonsToDisplay = Jobs
-				.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
-						jobId, // Parent space id
-						jobSpaceId, configId1,configId2, totals,wallclock);
 		
-		totalComparisons = totals[0];
+		
+		try {
+			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
+					Primitive.JOB_PAIR, request);
+			if (null == attrMap) {
+				return null;
+			}
 
-		/**
-    	* Used to display the 'total entries' information at the bottom of the DataTable;
-    	* also indirectly controls whether or not the pagination buttons are toggle-able
-    	*/
-    
-       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
-    	
-	   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock);
+			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
+
+			int totalComparisons;
+			// Retrieves the relevant Job objects to use in constructing the JSON to
+			// send to the client
+			int[] totals = new int[2];
+			solverComparisonsToDisplay = Jobs
+					.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(
+							attrMap.get(STARTING_RECORD), // Record to start at
+							attrMap.get(RECORDS_PER_PAGE), // Number of records to
+															// return
+							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																				// direction
+																				// (true
+																				// for
+																				// ASC)
+							attrMap.get(SORT_COLUMN), // Column sorted on
+							request.getParameter(SEARCH_QUERY), // Search query
+							jobId, // Parent space id
+							jobSpaceId, configId1,configId2, totals,wallclock);
+			
+			totalComparisons = totals[0];
+
+			/**
+	    	* Used to display the 'total entries' information at the bottom of the DataTable;
+	    	* also indirectly controls whether or not the pagination buttons are toggle-able
+	    	*/
+	    
+	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+	    	
+		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return null;
+		
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
