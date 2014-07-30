@@ -669,7 +669,7 @@ public class Spaces {
 	 * @param spaceId
 	 * @return
 	 */
-	public static int getCountInSpaceHierarchy(int spaceId) {
+	private static int getCountInSpaceHierarchy(int spaceId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -2250,25 +2250,27 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			procedure.executeUpdate();
 
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		 if(hierarchy) {//is hierarchy, call recursively
-			
+			boolean success=true;
 			List<Space> subSpaces = Spaces.getSubSpaceHierarchy(spaceId, usrId);
 			for (Space space : subSpaces) {
 				try {				
-					setPublicSpace(space.getId(), usrId, pbc, false);
+					success=success && setPublicSpace(space.getId(), usrId, pbc, false);
 				} catch (Exception e){			
 					log.error(e.getMessage(), e);		
 				}
 			}
+			return success;
+		} else {
 			return true;
 		}
 		
-		return false;		
 	}
 	/**
 	 * Given a list of spaces, generates a HashMap maping spaceIds to the path for each space,
@@ -2663,7 +2665,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param spaceId
 	 * @return
 	 */
-	//TODO: What is the best way to find the root?
 	public static boolean isRoot(int spaceId) {
 		return 1==spaceId;
 	}

@@ -194,6 +194,8 @@ function initButtonUI() {
 								s=parseReturnCode(returnCode);
 								if (s) {
 									window.location.reload(true);
+								} else {
+									$(this).dialog("close");
 								}
 							},
 							"json"
@@ -233,7 +235,13 @@ function initButtonUI() {
 							starexecRoot+"services/space/makePrivate/" + spaceId + "/" + false,
 							{},
 							function(returnCode) {
-								window.location.reload(true);
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location.reload(true);
+
+								} else {
+									$(this).dialog("close");
+								}
 							},
 							"json"
 					);

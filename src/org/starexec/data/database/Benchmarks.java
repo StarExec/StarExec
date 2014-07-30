@@ -2320,36 +2320,37 @@ public class Benchmarks {
 
 	    try {
 			
-		con=Common.getConnection();
-		List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
-		Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
-			
-		for (Benchmark b : benchmarks) {
-		    //only work on the benchmarks the given user owns
-		    if (!isCommunityLeader && b.getUserId()!=userId) {
-			log.debug("Skipping benchmark "+b.getName());
-			continue;
-		    }
-		    if (clearOldAttrs) {
-			Benchmarks.clearAttributes(b.getId(),con);
-		    }
+			con=Common.getConnection();
+			List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
+			Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
 				
-		    Properties attrs=b.getAttributes();
-		    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId))
-			return;	
-		    Uploads.incrementCompletedBenchmarks(statusId);
-		}
-		if (hierarchy) {
-		    List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
-		    for (Space s : spaces) {
-			Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
-		    }
-		}
+			for (Benchmark b : benchmarks) {
+			    //only work on the benchmarks the given user owns
+			    if (!isCommunityLeader && b.getUserId()!=userId) {
+					log.debug("Skipping benchmark "+b.getName());
+					continue;
+			    }
+			    if (clearOldAttrs) {
+			    	Benchmarks.clearAttributes(b.getId(),con);
+			    }
+					
+			    Properties attrs=b.getAttributes();
+			    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId)) {
+					return;	
+			    }
+			    Uploads.incrementCompletedBenchmarks(statusId);
+			}
+			if (hierarchy) {
+			    List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
+			    for (Space s : spaces) {
+			    	Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
+			    }
+			}
 			
 	    } catch (Exception e) {
-		log.error("process says "+e.getMessage(),e);
+	    	log.error("process says "+e.getMessage(),e);
 	    } finally {
-		Common.safeClose(con);
+	    	Common.safeClose(con);
 	    }
 		
 	}

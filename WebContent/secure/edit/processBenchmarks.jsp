@@ -48,11 +48,12 @@ try {
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="noHover">
+				<tr title="Decide whether to process all the benchmarks in the hierarchy rooted at this space or process only this space" class="noHover">
 					<td class="label">process hierarchy</td>
 					<td><input type="radio" name="hier" id="hierTrue" value="true"/>full hierarchy <input type="radio" name="hier" id="hierFalse" checked="checked" value="false"/>this space</td>
 				</tr>
-				<tr class="noHover">
+				<tr title="If yes, all attributes for all benchmarks being processed will be deleted before processing begins. If no, benchmarks will retain old attributes, and attribute values will be overwritten wherever the new
+		 a new attribute has the same name as an old one" class="noHover">
 					<td class="label">clear old attributes</td>
 					<td><input type="radio" name="clear" id="clearOldTrue" value="true"/>yes <input type="radio" name="clear" id="clearOldFalse" checked="checked" value="false"/>no</td>
 				</tr>

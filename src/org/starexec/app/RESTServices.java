@@ -99,15 +99,12 @@ public class RESTServices {
 	private static final SecurityStatusCode ERROR_SPACE_ALREADY_PRIVATE=new SecurityStatusCode(false, "The space is already private");
 	
 	private static final SecurityStatusCode ERROR_INVALID_PERMISSIONS=new SecurityStatusCode(false, "You do not have permission to perform the requested operation");
-	private static final SecurityStatusCode ERROR_INVALID_PASSWORD=new SecurityStatusCode(false, "The supplied password is invalid");
 	
 	private static final SecurityStatusCode ERROR_INVALID_PARAMS=new SecurityStatusCode(false, "The supplied parameters are invalid");
-	private static final SecurityStatusCode ERROR_PASSWORDS_NOT_EQUAL=new SecurityStatusCode(false, "The passwords are not the sames");
 	private static final SecurityStatusCode ERROR_CANT_PROMOTE_SELF=new SecurityStatusCode(false, "You cannot promote yourself");
 	private static final SecurityStatusCode ERROR_CANT_PROMOTE_LEADER=new SecurityStatusCode(false, "The user is already a leader");
 	
 	private static final SecurityStatusCode ERROR_NOT_ALL_DELETED=new SecurityStatusCode(false, "Not all primitives could be deleted");
-	private static final SecurityStatusCode ERROR_WRONG_PASSWORD=new SecurityStatusCode(false, "The supplied password is incorrect");
 	
 	private static final SecurityStatusCode ERROR_TOO_MANY_JOB_PAIRS=new SecurityStatusCode(false, "There are too many job pairs to display",1);
 	private static final SecurityStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new SecurityStatusCode(false, "There are too many solver / configuraiton pairs to display");
@@ -3396,9 +3393,9 @@ public class RESTServices {
 	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(Spaces.setPublicSpace(spaceId, userId, true, hierarchy))
-			return gson.toJson(ERROR_SPACE_ALREADY_PUBLIC);
-		else
 			return gson.toJson(new SecurityStatusCode(true,"Space(s) successfully made public"));
+		else
+			return gson.toJson(new SecurityStatusCode(false, "Internal database error when making spaces public"));
 	}
 	
 	/**
@@ -3415,9 +3412,9 @@ public class RESTServices {
 	public String makePrivate(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(Spaces.setPublicSpace(spaceId, userId, false, hierarchy))
-			return gson.toJson(ERROR_SPACE_ALREADY_PRIVATE);
-		else
 			return gson.toJson(new SecurityStatusCode(true,"Space(s) successfully made private"));
+		else
+			return gson.toJson(new SecurityStatusCode(false, "Internal database error when making spaces private"));
 	}
 	
 	/**
