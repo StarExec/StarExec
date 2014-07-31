@@ -25,6 +25,7 @@ CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val
 		REPLACE INTO bench_attributes VALUES (_benchmarkId, _key, _val);
 	END //
 	
+
 -- Adds a new dependency for a benchmark 
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS AddBenchDependency;
@@ -455,18 +456,6 @@ CREATE PROCEDURE GetRecycledBenchmarkIds(IN _userId INT)
 		WHERE user_id=_userId AND recycled=true;
 	END //
 
--- Removes all benchmarks in the database that are deleted and also orphaned. Runs periodically.
--- Author: Eric Burns
-
--- TODO: This runs too slowly. It needs to be sped up somehow
-DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedBenchmarks;
-CREATE PROCEDURE RemoveDeletedOrphanedBenchmarks()
-	BEGIN
-		DELETE benchmarks FROM benchmarks
-			LEFT JOIN job_pairs ON job_pairs.bench_id = benchmarks.id
-			LEFT JOIN bench_assoc ON bench_assoc.bench_id=benchmarks.id
-		WHERE deleted=true AND bench_assoc.space_id IS NULL AND job_pairs.id IS NULL;
-	END //
 
 -- Sets the recycled flag for a single benchmark back to false
 -- Author: Eric Burns
@@ -496,4 +485,46 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 		WHERE user_id = _userId and deleted=false AND recycled=false;
 	END //	
 	
+-- Gets the ids of every orphaned benchmark a user owns
+DROP PROCEDURE IF EXISTS GetOrphanedBenchmarkIds;
+CREATE PROCEDURE GetOrphanedBenchmarkIds(IN _userId INT)
+	BEGIN
+		SELECT benchmarks.id FROM benchmarks
+		LEFT JOIN bench_assoc ON bench_assoc.bench_id=benchmarks.id
+		WHERE benchmarks.user_id=_userId AND bench_assoc.space_id IS NULL;
+	END //
+	
+-- Permanently removes a benchmark from the database
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveBenchmarkFromDatabase;
+CREATE PROCEDURE RemoveBenchmarkFromDatabase(IN _id INT)
+	BEGIN
+		DELETE FROM benchmarks
+		WHERE id=_id;
+	END //
+	
+	
+-- Gets all the benchmarks ids of benchmarks that are in at least one space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchmarksAssociatedWithSpaces;
+CREATE PROCEDURE GetBenchmarksAssociatedWithSpaces()
+	BEGIN
+		SELECT DISTINCT bench_id AS id FROM bench_assoc;
+	END //
+
+-- Gets the benchmarks ids of all benchmarks associated with at least one pair
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchmarksAssociatedWithPairs;
+CREATE PROCEDURE GetBenchmarksAssociatedWithPairs()
+	BEGIN
+		SELECT DISTINCT bench_id AS id from job_pairs;
+	END //
+	
+-- Gets the benchmark ids of all deleted benchmarks
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetDeletedBenchmarks;
+CREATE PROCEDURE GetDeletedBenchmarks()
+	BEGIN	
+		SELECT id FROM benchmarks WHERE deleted=true;
+	END //
 DELIMITER ; -- This should always be at the end of this file

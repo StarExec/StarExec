@@ -315,8 +315,6 @@ class CommandParser {
 	
 	protected int handleLSCommand(String c, HashMap<String,String> commandParams) {
 		try {
-			
-			
 			HashMap<Integer,String> answer=new HashMap<Integer,String>();
 			String type="";
 			if (c.equals(R.COMMAND_LISTSOLVERS)) {
@@ -344,6 +342,8 @@ class CommandParser {
 				for (String x : types) {
 					System.out.println(x.toUpperCase()+"\n");
 					answer=parser.getPrimsInSpace(type,commandParams);
+					
+					//this block tests to see whether the answer actually indicates an error
 					if (answer.keySet().size()==1) {
 						for (int test : answer.keySet()) {
 							if (test<0) {
@@ -685,7 +685,7 @@ class CommandParser {
 			}
 
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -766,7 +766,7 @@ class CommandParser {
 				
 			}
 			else {
-				return Status.ERROR_SERVER;
+				return Status.ERROR_BAD_COMMAND;
 			}
 			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {

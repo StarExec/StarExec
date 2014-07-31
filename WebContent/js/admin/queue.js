@@ -61,21 +61,11 @@ function InitUI() {
 		$.post(
 				starexecRoot+"services/cancel/request/" + getParameterByName("id"),
 				function(returnCode) {
-					switch (returnCode) {
-						case 0:
-							history.back(-1);
-							//showMessage('success', "queue request was successfully declined", 3000);
-							break;
-						case 1:
-							showMessage('error', "queue request was not declined; please try again", 5000);
-							break;
-						case 2:
-							showMessage('error', "only the admin can decline a queue request", 5000);
-							break;
-						default:
-							showMessage('error', "invalid parameters", 5000);
-							break;
+					s=parseReturnCode(returnCode);
+					if (s) {
+						history.back(-1);
 					}
+					
 				},
 				"json"
 		);
@@ -98,22 +88,13 @@ function InitUI() {
 	
 		$.post(  
 				starexecRoot+"services/edit/request/" + code + "/" + queueName + "/" + nodeCount + "/" + string_start_date + "/" + string_end_date ,
-			    function(returnCode){  			        
-			    	if(returnCode == '0') {
+			    function(returnCode){  		
+					s=parseReturnCode(returnCode);
+					if (s) {
 			    		nodeTable.fnDraw();
-			    		showMessage('success', "successfully updated values", 3000);
 			    		document.getElementById('qName').innerHTML = queueName;
-			    	} else if (returnCode == '2') {
-			    		showMessage('error', "invalid permissions", 5000);
-			    	} else if (returnCode == '4') {
-			    		showMessage('error', "date must be after today's date", 5000);
-			    	} else if (returnCode == '5') {
-			    		showMessage('error', "end date must be after start date", 5000);
-			    	} else if (returnCode == '6') {
-			    		showMessage('error', "The requested queue name is already in use. Please select another", 5000);
-			    	} else {
-			    		showMessage('error', "There was an error processing your updates; please try again", 5000);
-			    	}
+					}
+			    	
 			     },  
 			     "json"  
 		).error(function(){
@@ -190,29 +171,18 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + "nodes/dates/reservation/" + id + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-//					showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
 
 					// Update the number displayed in this DataTable's fieldset
 					$('#nodeExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
 				
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
-				
-				break;
 				}
 			},  
 			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
+	);
 }
 
 

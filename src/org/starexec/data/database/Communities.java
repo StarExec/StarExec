@@ -53,16 +53,7 @@ public class Communities {
 		return null;
 	}
 	
-	public static List<Space> getCommsWithPublicSolvers(){
-		List<Space> commSpaces = Communities.getAll();
-		List<Space> returnSpaces = new LinkedList<Space>();	
-		for (Space comm:commSpaces){
-			if (Solvers.getPublicSolversByCommunity(comm.getId()).size() > 0){
-				returnSpaces.add(comm);
-			}	
-		}	
-		return returnSpaces;
-	}
+	
 	
 	public static int getDefaultCpuTimeout(int id) {
 		List<String> settings= getDefaultSettings(id);
@@ -228,16 +219,14 @@ public class Communities {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
+	
+	//TODO: What is this supposed to be doing? It only causes the user to leave a single space
 	public static boolean leave(int userId, int commId) {
-		if (userId==R.PUBLIC_USER_ID){
-			return false;
-		}
-		
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, commId);
 			

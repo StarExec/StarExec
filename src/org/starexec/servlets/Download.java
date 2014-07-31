@@ -63,7 +63,7 @@ public class Download extends HttpServlet {
 		boolean success;
 		String shortName=null;
 		try {
-			if (false == validateRequest(request)) {
+			if (!validateRequest(request)) {
 				log.debug("Bad download Request");
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
 				return;
@@ -366,8 +366,6 @@ public class Download extends HttpServlet {
 			
 			File schema = new File(R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC);
 			files.add(schema);
-			
-			
 
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
 			

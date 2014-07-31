@@ -48,7 +48,6 @@ CREATE PROCEDURE ClearQueueAssociations()
 	
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen
--- TODO: What is the order by used for here?
 DROP PROCEDURE IF EXISTS GetNodesForQueue;
 CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 	BEGIN		
@@ -347,9 +346,10 @@ CREATE PROCEDURE GetAllNodes ()
 DROP PROCEDURE IF EXISTS GetNonAttachedNodes;
 CREATE PROCEDURE GetNonAttachedNodes(IN _queueId INT)
 	BEGIN
-		SELECT DISTINCT *
+		SELECT DISTINCT nodes.id, queues.id, nodes.name, queues.name, nodes.status
 		FROM nodes LEFT JOIN queue_assoc on nodes.id = queue_assoc.node_id 
-		WHERE status = "ACTIVE" AND (queue_assoc.queue_id IS NULL OR queue_assoc.queue_id != _queueId);
+		LEFT JOIN queues ON queues.id=queue_assoc.queue_id
+		WHERE nodes.status = "ACTIVE" AND (queue_assoc.queue_id IS NULL OR queue_assoc.queue_id != _queueId);
 	END //
 	
 -- Returns all the nodes in the system that are active and not associated w/ permanent queue

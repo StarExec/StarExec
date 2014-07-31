@@ -52,19 +52,9 @@ function initUI(){
 					starexecRoot+"services/edit/processor/" + getParameterByName("id"),
 					{ name: name, desc: description},
 					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
-								break;
-							case 1:
-								showMessage('error', "there was an error entering the updated information into the database", 5000);
-								break;
-							case 2:
-								showMessage('error', "only the leader of the community containing this processor can update it", 5000);
-								break;
-							case 3:
-								showMessage('error', "invalid parameters; please ensure you fill out all of the processor file's fields", 5000);
-								break;
+						s=parseReturnCode(returnCode);
+						if (s) {
+							window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
 						}
 					},
 					"json"

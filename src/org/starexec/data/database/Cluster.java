@@ -37,7 +37,6 @@ public class Cluster {
 				associateQueue.setInt(1, queueId);
 				associateQueue.setInt(2, nodeId);
 				associateQueue.executeUpdate();
-				//TODO: Ensure this line is correct
 				Common.safeClose(associateQueue);
 			}
 		} catch (Exception e) {
@@ -504,34 +503,6 @@ public class Cluster {
 	}
 
 	/**
-	 * 
-	 * @return
-	 */
-	
-	//TODO: Fix up this functionality somehow
-	public static boolean updateTempChanges() {
-		/*
-		List<QueueRequest> temp_changes = Cluster.getTempChanges();
-		boolean success = true;
-		if (temp_changes != null) {
-			for (QueueRequest req : temp_changes) {
-				int queueId = Queues.getIdByName(req.getQueueName());
-				if (queueId == -2) { queueId = Queues.getIdByName(req.getQueueName() + ".q"); } //if its a new queue
-
-				success = Cluster.updateNodeCount(req.getId(), req.getNodeCount(), req.getStartDate());
-				if (! success) {
-					break;
-				}
-			}
-		}
-		
-		if (success) { success = Cluster.removeEmptyNodeCounts(); }
-		
-		return success ? true : false;*/
-		return false;
-	}
-
-	/**
 	 * Removes all entries from the queue_request_assoc table where the node count is 0.
 	 * This can happen if nodes are removed from a reservation after it was made
 	 * @return True on success, false otherwise
@@ -657,6 +628,11 @@ public class Cluster {
 		return null;
 	}
 	
+	/**
+	 * Gets all of the nodes that are NOT associated with the given queue
+	 * @param queueId
+	 * @return
+	 */
 	public static List<WorkerNode> getNonAttachedNodes(int queueId) {
 		log.debug("Starting getNonAttachedNodes...");
 		Connection con = null;
@@ -671,9 +647,18 @@ public class Cluster {
 			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 			while (results.next()){
 				WorkerNode n = new WorkerNode();
-				n.setId(results.getInt("id"));
-				n.setName(results.getString("name"));
-				n.setStatus(results.getString("status"));
+				n.setId(results.getInt("nodes.id"));
+				n.setName(results.getString("nodes.name"));
+				n.setStatus(results.getString("nodes.status"));
+				Queue q=new Queue();
+				q.setName(results.getString("queues.name"));
+				q.setId(results.getInt("queues.id"));
+				
+				//we are displaying this data in a table, so we don't want a null name
+				if (q.getName()==null) {
+					q.setName("None");
+				}
+				n.setQueue(q);
 				nodes.add(n);
 			}
 			return nodes;

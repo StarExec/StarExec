@@ -120,27 +120,23 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	if (type == undefined) {
 		window['type'] = 'queues';
 	}
+	//we have no pagination for inactive queues
+	if (type!="inactive_queue") {
+		$.get(  
+				sSource + type + "/" + id + "/pagination",
+				aoData,
+				function(nextDataTablePage){
+					s=parseReturnCode(nextDataTablePage);
+					if (s) {
+						fnCallback(nextDataTablePage);
+					}
 
-	$.get(  
-			sSource + type + "/" + id + "/pagination",
-			aoData,
-			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view primitives for this user", 5000);
-						break;
-					default:
- 						fnCallback(nextDataTablePage);
- 						break;
-				}
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating table",5000);
-	});
+				},  
+				"json"
+		).error(function(){
+			showMessage('error',"Internal error populating table",5000);
+		});
+	}
 }
  
 /**
@@ -149,6 +145,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 function getDetails(id, type) {
 	var url = '';
 	qid=id;
+	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
+
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
 		window['type'] = 'queues';

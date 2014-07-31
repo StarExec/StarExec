@@ -107,19 +107,9 @@ function attachButtonActions(){
 					$.post(
 							starexecRoot+"services/recycle/solver/" + getParameterByName("id"),
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										window.location = starexecRoot+'secure/explore/spaces.jsp';
-										break;
-									case 1:
-										showMessage('error', "solver was not deleted; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the owner of this solver can modify its details", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location = starexecRoot+'secure/explore/spaces.jsp';
 								}
 							},
 							"json"
@@ -151,20 +141,12 @@ function attachButtonActions(){
 						starexecRoot+"services/edit/solver/" + getParameterByName("id"),
 						data,
 						function(returnCode) {
-							switch (returnCode) {
-								case 0:
-									window.location = starexecRoot+'secure/details/solver.jsp?id=' + getParameterByName("id");
-									break;
-								case 1:
-									showMessage('error', "solver details were not updated; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "only the owner of this solver can modify its details", 5000);
-									break;
-								default:
-									showMessage('error', "Invalid Parameters", 5000);
-									break;
+							s=parseReturnCode(returnCode);
+							if (s) {
+								window.location = starexecRoot+'secure/details/solver.jsp?id=' + getParameterByName("id");
+
 							}
+
 						},
 						"json"
 				);	
@@ -189,13 +171,6 @@ function togglePlusMinus(addSiteButton){
  */
 function refreshSolverWebsites(){
 	location.reload();
-	
-	//we should NOT do this, because it leaves us vulnerable to XSS attacks
-	/*
-	//get website information for the given solver
-	$.getJSON(starexecRoot+'services/websites/solver/' + getParameterByName("id"), processWebsiteData).error(function(){
-		showMessage('error',"Internal error getting websites",5000);
-	});*/
 }
 
 
@@ -234,11 +209,11 @@ function attachWebsiteMonitor(){
 					$.post(
 							starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
 							function(returnData){
-								if (returnData == 0) {
+								s=parseReturnCode(returnData);
+								if (s) {
 									parent.remove();
-								} else {
-									showMessage('error', "the website was not deleted due to an error; please try again", 5000);
 								}
+
 							},
 							"json"
 					).error(function(){
@@ -275,14 +250,13 @@ function attachWebsiteMonitor(){
 				starexecRoot+"services/website/add/solver/" + getParameterByName("id"),
 				data,
 				function(returnCode) {
-			    	if(returnCode == '0') {
-			    		$("#website_name").val("");
+					s=parseReturnCode(returnCode);
+					if (s) {
+						$("#website_name").val("");
 			    		$("#website_url").val("");
 			    		$('#websites li').remove();
 			    		refreshSolverWebsites();
-			    	} else {
-			    		showMessage('error', "error: website not added. please try again", 5000);
-			    	}
+					}
 				},
 				"json"
 		);

@@ -55,6 +55,8 @@
   <li class="subject"><a href="/${starexecRoot}/secure/edit/spacePermissions.help">Editing permissions</a></li>
   <li class="topicHeader">General</li>
   <li class="subject"><a href="/${starexecRoot}/secure/help/input-restrictions.help">Input restrictions</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/help/linking-copying.help">Linking and copying</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/help/removing-recycling-deleting.help">Removing, recycling, and deleting primitives</a></li>
 </ul>
 </div>
 	

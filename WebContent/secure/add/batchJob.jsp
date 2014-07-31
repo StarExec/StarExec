@@ -34,10 +34,10 @@
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 				</tr>
 				<tr>
-					<td><a href="../../public/batchJobSchema.xsd">view the schema here</a></td>
+					<td><a id="viewSchema" href="../../public/batchJobSchema.xsd">view the schema here</a></td>
 				</tr>
 				<tr>
-					<td><a href="../../public/ExampleJob.xml">view an example file here</a></td>
+					<td><a id="viewExample" href="../../public/ExampleJob.xml">view an example file here</a></td>
 				</tr>
 			</table>																	
 		</fieldset>

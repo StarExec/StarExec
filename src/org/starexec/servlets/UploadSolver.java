@@ -263,7 +263,7 @@ public class UploadSolver extends HttpServlet {
 			//ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
 			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
-				if (SolverSecurity.canUserRunStarexecBuild(userId, spaceId)!=0) {
+				if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) {
 					FileUtils.deleteDirectory(tempDir);
 					FileUtils.deleteDirectory(uniqueDir);
 					returnArray[0]=-5;

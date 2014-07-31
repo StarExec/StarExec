@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
@@ -33,6 +33,7 @@ public class CommunityRequester extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
+		
 		User user = SessionUtil.getUser(request);			
 		
 		// Validate parameters of request & construct Invite object
@@ -41,7 +42,7 @@ public class CommunityRequester extends HttpServlet {
 		    response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=-1"));
 			return;
 		}
-		if (user.getId()==R.PUBLIC_USER_ID){
+		if (Users.isPublicUser(user.getId())){
 			return;
 		}
 		boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());

@@ -402,11 +402,18 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
 		//the admin has full permissions everywhere
 		if (Users.isAdmin(userId)) {
 			log.debug("permissions for an admin were obtained userId = "+userId);
 			return Permissions.getFullPermission();
+		}
+		
+		//TODO: What exactly are the permissions for the public user?
+		if (Users.isPublicUser(userId)) {
+			if (Spaces.isPublicSpace(spaceId)) {
+				return Permissions.getEmptyPermission();
+			}
+			return null;
 		}
 		try {
 			

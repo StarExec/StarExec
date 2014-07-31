@@ -93,19 +93,9 @@ function attachButtonActions(){
 					$.post(
 							starexecRoot+"services/recycle/benchmark/" + getParameterByName("id"),
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										window.location = starexecRoot+'secure/explore/spaces.jsp';
-										break;
-									case 1:
-										showMessage('error', "benchmark was not deleted; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the owner of this benchmark can modify its details", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location = starexecRoot+'secure/explore/spaces.jsp';
 								}
 							},
 							"json"
@@ -134,20 +124,11 @@ function attachButtonActions(){
 					starexecRoot+"services/edit/benchmark/" + getParameterByName("id"),
 					data,
 					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = starexecRoot+'secure/details/benchmark.jsp?id=' + getParameterByName("id");
-								break;
-							case 1:
-								showMessage('error', "benchmark details were not updated; please try again", 5000);
-								break;
-							case 2:
-								showMessage('error', "only the owner of this benchmark can modify its details", 5000);
-								break;
-							default:
-								showMessage('error', "invalid parameters", 5000);
-								break;
+						s=parseReturnCode(returnCode);
+						if (s) {
+							window.location = starexecRoot+'secure/details/benchmark.jsp?id=' + getParameterByName("id");
 						}
+
 					},
 					"json"
 			);

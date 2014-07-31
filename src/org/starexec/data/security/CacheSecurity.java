@@ -10,10 +10,10 @@ public class CacheSecurity {
 	 * @return 0 if the operation is allowed, and an error code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canUserClearCache(int userId) {
+	public static SecurityStatusCode canUserClearCache(int userId) {
 		if (!Users.isAdmin(userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to clear the cache");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 }

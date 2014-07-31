@@ -7,7 +7,7 @@
 
 	try {
 		int spaceId=Integer.parseInt(request.getParameter("id"));
-		if (SpaceSecurity.canUserSeeSpace(spaceId,uid)==0 && spaceId > 0) {
+		if (SpaceSecurity.canUserSeeSpace(spaceId,uid).isSuccess() && spaceId > 0) {
 			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
 			StringBuilder stringChain=new StringBuilder();
 			for (Integer id : idChain) {
@@ -26,10 +26,6 @@
 	}
 
 	request.setAttribute("userId",uid);
-	
-	request.setAttribute("cacheType1",CacheType.CACHE_SPACE.getVal());
-	request.setAttribute("cacheType2",CacheType.CACHE_SPACE_XML.getVal());
-	request.setAttribute("cacheType3",CacheType.CACHE_SPACE_HIERARCHY.getVal());
 	request.setAttribute("isAdmin",Users.isAdmin(uid));
 	
 	
@@ -162,12 +158,6 @@
 				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
 			
-			<c:if test="${isAdmin}">
-				<span id="cacheType1" class="cacheType" value="${cacheType1}"></span>
-				<span id="cacheType2" class="cacheType" value="${cacheType2}"></span>
-				<span id="cacheType3" class="cacheType" value="${cacheType3}"></span>
-				<button type="button" id="clearCache">clear cache</button>
-			</c:if>
 			
 		</fieldset>	
 

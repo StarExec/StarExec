@@ -18,22 +18,24 @@ public class BenchmarkSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not allowed.
 	 */	
-	public static int canUserSeeBenchmarkContents(int benchmarkId, int userId) {
+	public static SecurityStatusCode canUserSeeBenchmarkContents(int benchmarkId, int userId) {
 		
 		Benchmark b = Benchmarks.get(benchmarkId);
 		
 		if (b==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			
+			return new SecurityStatusCode(false, "The benchmark could not be found");
 		}
 		//the benchmark doesn't need to be downloadable if this is the owner
 		if (b.getUserId()==userId || Users.isAdmin(userId)) {
-			return 0;
+			return new SecurityStatusCode(true);
 		}
 		
 		if(Permissions.canUserSeeBench(b.getId(), userId) && b.isDownloadable()) {				
-			return 0;				
+			return new SecurityStatusCode(true);
+			
 		} else {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to see the contents of this benchmark");
 		}
 	}
 	
@@ -45,16 +47,17 @@ public class BenchmarkSecurity {
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not allowed.
 	 */
 	
-	public static int canUserDeleteBench(int benchId, int userId) {
+	public static SecurityStatusCode canUserDeleteBench(int benchId, int userId) {
 		
 		Benchmark bench = Benchmarks.getIncludeDeletedAndRecycled(benchId,false);
 		if (bench==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			
+			return new SecurityStatusCode(false, "The benchmark could not be found");
 		}
 		if(!userOwnsBenchOrIsAdmin(bench,userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to delete this benchmark");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	
@@ -65,15 +68,15 @@ public class BenchmarkSecurity {
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not allowed.
 	 */
 	
-	public static int canUserRecycleBench(int benchId, int userId) {
+	public static SecurityStatusCode canUserRecycleBench(int benchId, int userId) {
 		Benchmark bench = Benchmarks.get(benchId);
 		if (bench==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The benchmark could not be found");
 		}
 		if(!userOwnsBenchOrIsAdmin(bench,userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to recycle this benchmark");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	
@@ -86,14 +89,16 @@ public class BenchmarkSecurity {
 	 * If the user doesn't have the required permissions for even 1 benchmark, a status
 	 * code will be returned
 	 */
-	public static int canUserRecycleBenchmarks(List<Integer> benchIds, int userId) {
+	public static SecurityStatusCode canUserRecycleBenchmarks(List<Integer> benchIds, int userId) {
 		for (Integer bid : benchIds) {
-			if (canUserRecycleBench(bid,userId)!=0) {
-				return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			SecurityStatusCode code=canUserRecycleBench(bid,userId);
+			if (!code.isSuccess()) {
+				return code;
 			}
+			
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether the given user is allowed to delete all of the given benchmarks
@@ -103,14 +108,15 @@ public class BenchmarkSecurity {
 	 * If the user doesn't have the required permissions for even 1 benchmark, a status
 	 * code will be returned
 	 */
-	public static int canUserDeleteBenchmarks(List<Integer> benchIds, int userId) {
+	public static SecurityStatusCode canUserDeleteBenchmarks(List<Integer> benchIds, int userId) {
 		for (Integer bid : benchIds) {
-			if (canUserDeleteBench(bid,userId)!=0) {
-				return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			SecurityStatusCode code=canUserDeleteBench(bid,userId);
+			if (!code.isSuccess()) {
+				return code;
 			}
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	
@@ -122,14 +128,15 @@ public class BenchmarkSecurity {
 	 * If the user doesn't have the required permissions for even 1 benchmark, a status
 	 * code will be returned
 	 */
-	public static int canUserRestoreBenchmarks(List<Integer> benchIds, int userId) {
+	public static SecurityStatusCode canUserRestoreBenchmarks(List<Integer> benchIds, int userId) {
 		for (Integer bid : benchIds) {
-			if (canUserRestoreBenchmark(bid,userId)!=0) {
-				return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			SecurityStatusCode code=canUserRestoreBenchmark(bid,userId);
+			if (!code.isSuccess()) {
+				return code;
 			}
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -138,18 +145,18 @@ public class BenchmarkSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not allowed.
 	 */
-	public static int canUserRestoreBenchmark(int benchId, int userId) {
+	public static SecurityStatusCode canUserRestoreBenchmark(int benchId, int userId) {
 		Benchmark bench = Benchmarks.getIncludeDeletedAndRecycled(benchId,false);
 		if (bench==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The benchmark could not be found");
 		}
 		if (!Benchmarks.isBenchmarkRecycled(benchId)) {
-			return SecurityStatusCodes.ERROR_PRIM_ALREADY_RECYCLED;
+			return new SecurityStatusCode(false, "The benchmark is not currently recycled, so it cannot be restored");
 		}
 		if(!userOwnsBenchOrIsAdmin(bench,userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to restore this benchmark");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -160,36 +167,39 @@ public class BenchmarkSecurity {
 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not allowed.
 	 */
 	
-	public static int canUserEditBenchmark(int benchId, String name,String desc, int userId) {
+	public static SecurityStatusCode canUserEditBenchmark(int benchId, String name,String desc, int userId) {
 		// Ensure the parameters are valid
-		if(!Validator.isValidBenchName(name)
-				|| !Validator.isValidPrimDescription(desc)) { 
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		if(!Validator.isValidBenchName(name)) { 
+			return new SecurityStatusCode(false, "The new name is not valid. Please refer to the help pages to find format for benchmark names");
+		}
+		
+		if(!Validator.isValidPrimDescription(desc)) { 
+			return new SecurityStatusCode(false, "The new description is not valid. Please refer to the help pages to find format for benchmark descriptions");
 		}
 		
 		Benchmark bench = Benchmarks.getIncludeDeletedAndRecycled(benchId,false);
 		if (bench==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The benchmark could not be found");
 		}
 		if(!userOwnsBenchOrIsAdmin(bench,userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to edit this benchmark");
 		}
 		if (Benchmarks.isBenchmarkDeleted(benchId)) {
-			return SecurityStatusCodes.ERROR_PRIM_ALREADY_DELETED;
+			return new SecurityStatusCode(false, "The benchmark has been deleted");
 		}
 		
 		if (!bench.getName().equals(name)) {
 			int id=Benchmarks.isNameEditable(benchId);
 			if (id<0) {
-				return SecurityStatusCodes.ERROR_NAME_NOT_EDITABLE;
+				return new SecurityStatusCode(false, "The benchmark is in more than one space, so its name cannot be edited.");
 			}
 			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 2)) {
-				return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+				return new SecurityStatusCode(false, "The new name must be unique of all benchmarks in the space");
 			}
 		}
 		
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -200,6 +210,20 @@ public class BenchmarkSecurity {
 	
 	private static boolean userOwnsBenchOrIsAdmin(Benchmark bench,int userId) {
 		return (bench.getUserId()==userId || Users.isAdmin(userId));
+	}
+	
+	/**
+	 * Checks to see whether a user can recycle all the orphaned benchmarks owned by another user.
+	 * @param userIdToDelete The user who owns the orphaned benchmarks that will be recycled
+	 * @param userIdMakingRequest The user who is trying to do the recycling
+	 * @return A SecurityStatusCode
+	 */
+	public static SecurityStatusCode canUserRecycleOrphanedBenchmarks(int userIdToDelete, int userIdMakingRequest) {
+		if (userIdToDelete!=userIdMakingRequest && !Users.isAdmin(userIdMakingRequest)) {
+			return new SecurityStatusCode(false, "You do not have permission to recycle benchmarks belonging to another user");
+		}
+		
+		return new SecurityStatusCode(true);
 	}
 	
 	

@@ -37,8 +37,23 @@ public class SolverComparison {
 	public JobPair getSecondPair() {
 		return pair2;
 	}
+	/**
+	 * Returns true if the result of the first pair is the same as the result of the second pair
+	 * @return
+	 */
 	
 	public boolean doResultsMatch() {
-		return pair1.getAttributes().get(R.STAREXEC_RESULT)==pair2.getAttributes().get(R.STAREXEC_RESULT);
+		
+		String result1=pair1.getAttributes().getProperty(R.STAREXEC_RESULT);
+		String result2=pair2.getAttributes().getProperty(R.STAREXEC_RESULT);
+		if (result1==null && result2==null) {
+			return true;
+		} else if (result1== null || result2==null) {
+			return false;
+		} else {
+			return result1.equals(result2);
+
+		}
+		
 	}
 }

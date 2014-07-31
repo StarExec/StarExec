@@ -47,7 +47,7 @@ import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.QueueSecurity;
-import org.starexec.data.security.SecurityStatusCodes;
+import org.starexec.data.security.SecurityStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
@@ -80,9 +80,7 @@ import org.starexec.util.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 /**
  * Class which handles all RESTful web service requests.
@@ -93,26 +91,23 @@ public class RESTServices {
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 	
-	private static final int ERROR_DATABASE=1;
-	private static final int ERROR_INVALID_WEBSITE_TYPE=1;
-	private static final int ERROR_EDIT_VAL_ABSENT=1;
-	private static final int ERROR_IDS_NOT_GIVEN=1;
-	private static final int ERROR_SPACE_ALREADY_PUBLIC=1;
-	private static final int ERROR_SPACE_ALREADY_PRIVATE=1;
+	private static final SecurityStatusCode ERROR_DATABASE=new SecurityStatusCode(false, "There was an internal database error processing your request");
+	private static final SecurityStatusCode ERROR_INVALID_WEBSITE_TYPE=new SecurityStatusCode(false, "The supplied website type was invalid");
+	private static final SecurityStatusCode ERROR_EDIT_VAL_ABSENT=new SecurityStatusCode(false, "No value specified");
+	private static final SecurityStatusCode ERROR_IDS_NOT_GIVEN=new SecurityStatusCode(false, "No ids specified");
+	private static final SecurityStatusCode ERROR_SPACE_ALREADY_PUBLIC=new SecurityStatusCode(false, "The space is already public");
+	private static final SecurityStatusCode ERROR_SPACE_ALREADY_PRIVATE=new SecurityStatusCode(false, "The space is already private");
 	
-	private static final int ERROR_INVALID_PERMISSIONS=2;
-	private static final int ERROR_INVALID_PASSWORD=2;
+	private static final SecurityStatusCode ERROR_INVALID_PERMISSIONS=new SecurityStatusCode(false, "You do not have permission to perform the requested operation");
 	
-	private static final int ERROR_INVALID_PARAMS=3;
-	private static final int ERROR_PASSWORDS_NOT_EQUAL=3;
-	private static final int ERROR_CANT_PROMOTE_SELF=3;
-	private static final int ERROR_CANT_PROMOTE_LEADER=3;
+	private static final SecurityStatusCode ERROR_INVALID_PARAMS=new SecurityStatusCode(false, "The supplied parameters are invalid");
+	private static final SecurityStatusCode ERROR_CANT_PROMOTE_SELF=new SecurityStatusCode(false, "You cannot promote yourself");
+	private static final SecurityStatusCode ERROR_CANT_PROMOTE_LEADER=new SecurityStatusCode(false, "The user is already a leader");
 	
-	private static final int ERROR_NOT_ALL_DELETED=4;
-	private static final int ERROR_WRONG_PASSWORD=4; 		
+	private static final SecurityStatusCode ERROR_NOT_ALL_DELETED=new SecurityStatusCode(false, "Not all primitives could be deleted");
 	
-	private static final int ERROR_TOO_MANY_JOB_PAIRS=13;
-	private static final int ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=12;
+	private static final SecurityStatusCode ERROR_TOO_MANY_JOB_PAIRS=new SecurityStatusCode(false, "There are too many job pairs to display",1);
+	private static final SecurityStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new SecurityStatusCode(false, "There are too many solver / configuraiton pairs to display");
 	
 	/**
 	 * @return a json string representing all the subspaces of the job space
@@ -128,8 +123,8 @@ public class RESTServices {
 		List<Space> subspaces=new ArrayList<Space>();
 		log.debug("getting job spaces for panels");
 		//don't populate the subspaces if the user can't see the job
-		int status=JobSecurity.canUserSeeJob(jobId,userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		log.debug("got a request for parent space = "+parentId);
@@ -158,10 +153,11 @@ public class RESTServices {
 	@POST
 	@Path("/nodes/dates/pagination/{string_date}")
 	@Produces("application/json")
+	//TODO: This needs to be refactored
 	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserSeeRequests(userId);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserSeeRequests(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		//Get todays date
@@ -187,7 +183,7 @@ public class RESTServices {
 				
 				latestSql = new java.sql.Date(latest.getTime());
 			} catch (ParseException e1) {
-				e1.printStackTrace();
+				log.error(e1.getMessage(),e1);
 			}
 			
 			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
@@ -222,8 +218,8 @@ public class RESTServices {
 		List<Space> subspaces=new ArrayList<Space>();
 		
 		//don't populate the subspaces if the user can't see the job
-		int status=JobSecurity.canUserSeeJob(jobId,userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		log.debug("got a request for parent space = "+parentId);
@@ -258,31 +254,7 @@ public class RESTServices {
 		return gson.toJson(RESTHelpers.toSpaceTree(Spaces.getSubSpaces(parentId, userId),userId));
 	}
 	
-	/**
-	 * @return a json string representing all public solvers of a community
-	 * @author Benton McCune and Ruoyu Zhang
-	 */
-	@GET
-	@Path("/communities/solvers/{id}")
-	@Produces("application/json")	
-	public String getPublicSolvers(@PathParam("id") int commId, @Context HttpServletRequest request) {					
-		log.debug("commId = " + commId);
-		List<Solver> publicSolvers = Solvers.getPublicSolversByCommunity(commId);
-		log.debug("# of public solvers = " + publicSolvers.size());
-		
-		JsonObject displayObject = new JsonObject();
-		JsonArray jSSolvers = new JsonArray();
-		for (Solver solver:publicSolvers){
-			JsonArray jSSolver = new JsonArray();
-			jSSolver.add(new JsonPrimitive(solver.getId()));
-			jSSolver.add(new JsonPrimitive(solver.getName()));
-			jSSolvers.add(jSSolver);
-		}
-		displayObject.add("solverData", jSSolvers);
-		log.debug("JsonArray = " + jSSolvers.toString());
-		log.debug("displayObject = " + displayObject.toString());
-		return gson.toJson(jSSolvers);
-	}	
+	
 	
 	/**
 	 * @return a json string representing all communities within starexec
@@ -323,8 +295,8 @@ public class RESTServices {
 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
 		int userId = SessionUtil.getUserId(request);
 		int jobId=JobPairs.getPair(id).getJobId();
-		int status=JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 		    return ("user "+ new Integer(userId) + " does not have access to see job " + new Integer(id));
 		}
 					
@@ -349,7 +321,7 @@ public class RESTServices {
 	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		
-		if (BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId)==0) {
+		if (BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
 			Benchmark b=Benchmarks.get(id);
 			String contents = Benchmarks.getContents(b, limit);
 			if(!Util.isNullOrEmpty(contents)) {
@@ -370,8 +342,8 @@ public class RESTServices {
 	public String getSolverBuildLog(@PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 	
-		int status=SolverSecurity.canUserSeeBuildLog(id, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserSeeBuildLog(id, userId);
+		if (!status.isSuccess()) {
 			return "not available";
 		}
 		try {
@@ -399,12 +371,12 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String rerunJobPairs(@PathParam("id") int id, @PathParam("status") int statusCode, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserRerunPairs(id, userId,statusCode);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserRerunPairs(id, userId,statusCode);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Jobs.setPairsToPending(id, statusCode) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.setPairsToPending(id, statusCode) ? gson.toJson(new SecurityStatusCode(true,"Rerunning of pairs began successfully")) : gson.toJson(ERROR_DATABASE);
 
 	}
 	
@@ -419,11 +391,11 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String rerunAllJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserRerunAllPairs(id, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserRerunAllPairs(id, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		return Jobs.setAllPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.setAllPairsToPending(id) ? gson.toJson(new SecurityStatusCode(true,"Rerunning of pairs began successfully")) : gson.toJson(ERROR_DATABASE);
 
 	}
 	
@@ -441,11 +413,11 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String rerunTimelessJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserRerunPairs(id, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserRerunPairs(id, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		return Jobs.setTimelessPairsToPending(id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.setTimelessPairsToPending(id) ? gson.toJson(new SecurityStatusCode(true,"Rerunning of pairs began successfully")) : gson.toJson(ERROR_DATABASE);
 
 	}
 	
@@ -459,8 +431,8 @@ public class RESTServices {
 	public String getJobPairStdout(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
+		if (!status.isSuccess()) {
 			return "not available";
 		}
 		if(jp != null) {			
@@ -558,7 +530,7 @@ public class RESTServices {
 		Space s = null;
 		Permission p = null;
 		
-		if(SpaceSecurity.canUserSeeSpace(spaceId, userId)==0) {
+		if(SpaceSecurity.canUserSeeSpace(spaceId, userId).isSuccess()) {
 			s = Spaces.get(spaceId); 
 			p = SessionUtil.getPermission(request, spaceId);
 		}					
@@ -581,17 +553,17 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		JobPair pair=JobPairs.getPair(pairId);
 		if (pair==null) {
-			return gson.toJson(SecurityStatusCodes.ERROR_INVALID_PARAMS);
+			return gson.toJson(new SecurityStatusCode(false, "The pair could not be found"));
 		}
 		int jobId=pair.getJobId();
-		int status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
+		SecurityStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
 		
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		boolean success=Jobs.rerunPair(jobId, pairId);
 		
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Rerunning of pair began successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -612,12 +584,12 @@ public class RESTServices {
 	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		int status=JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		if (!JobSecurity.isValidGetPairType(type)) {
-			return gson.toJson(SecurityStatusCodes.ERROR_INVALID_PARAMS);
+			return gson.toJson(new SecurityStatusCode(false, "The selection of a filter type was invalid"));
 		}
 		
 		// Query for the next page of job pairs and return them to the user
@@ -634,14 +606,14 @@ public class RESTServices {
 	public String getSolverComparisonsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		int status=JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock);
-
+		log.debug("got the next data table page for the solver comparision web page ");
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
@@ -658,18 +630,18 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		int status = JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status = JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock,syncResults);
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
@@ -693,8 +665,8 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from
-		int status=JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -739,8 +711,8 @@ public class RESTServices {
 		String chartPath = null;
 		
 		/**
-		int status= JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status= JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		**/
@@ -774,8 +746,8 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
-		int status= JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status= JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -808,8 +780,8 @@ public class RESTServices {
 	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		int status=JobSecurity.canUserSeeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -906,8 +878,8 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
-		int status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
+		if (!status.isSuccess()) {
 			log.debug("attempted unauthorized access");
 			return gson.toJson(status);
 		}
@@ -977,7 +949,7 @@ public class RESTServices {
 	public String doInvalidateSession(@Context HttpServletRequest request) {	
 		log.info(String.format("User [%s] manually logged out", SessionUtil.getUser(request).getEmail()));
 		request.getSession().invalidate();
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true));
 	}	
 	
 	/**
@@ -1021,15 +993,15 @@ public class RESTServices {
 		String name = request.getParameter("name");
 		String url = request.getParameter("url");	
 		if (type.equals("user")) {
-			int status=UserSecurity.canAssociateWebsite(name, url);
-			if (status!=0) {
+			SecurityStatusCode status=UserSecurity.canAssociateWebsite(name, url);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
-			int status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
-			if (status!=0) {
+			SecurityStatusCode status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 					
@@ -1038,8 +1010,8 @@ public class RESTServices {
 			
 		} else if (type.equals("solver")) {
 			//Make sure this user is the solver owner
-			int status=SolverSecurity.canAssociateWebsite(id, userId,name,url);
-			if (status!=0) {
+			SecurityStatusCode status=SolverSecurity.canAssociateWebsite(id, userId,name,url);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			
@@ -1048,7 +1020,7 @@ public class RESTServices {
 		}
 		
 		// Passed validation AND Database update successful	
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Website added successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	
@@ -1068,27 +1040,27 @@ public class RESTServices {
 	public String deleteWebsite(@PathParam("type") String type, @PathParam("id") int id, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if(type.equals("user")){
-			int status=UserSecurity.canDeleteWebsite(userId, websiteId);
-			if (status!=0) {
+			SecurityStatusCode status=UserSecurity.canDeleteWebsite(userId, websiteId);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
-			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(new SecurityStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("space")){
 			// Permissions check; ensures the user deleting the website is a leader
-			int status=SpaceSecurity.canDeleteWebsite(id,websiteId, userId);
-			if (status!=0) {
+			SecurityStatusCode status=SpaceSecurity.canDeleteWebsite(id,websiteId, userId);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			
-			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(new SecurityStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
 		} else if (type.equals("solver")) {
 			
-			int status=SolverSecurity.canDeleteWebsite(id,websiteId, userId);
-			if (status!=0) {
+			SecurityStatusCode status=SolverSecurity.canDeleteWebsite(id,websiteId, userId);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			
-			return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(new SecurityStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
 			
 		} 
 		
@@ -1111,7 +1083,7 @@ public class RESTServices {
 				TestManager.executeTest(testName);
 			}
 				
-			return gson.toJson(0);
+			return gson.toJson(new SecurityStatusCode(true,"Testing started successfully"));
 			
 		} else {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -1123,13 +1095,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String runStressTest(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserRunTests(u);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserRunTests(u);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		boolean success=TestManager.executeStressTest();
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Testing started successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
@@ -1137,16 +1109,23 @@ public class RESTServices {
 	@Produces("appliation/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserRunTests(u);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserRunTests(u);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 			
 		boolean success=TestManager.executeAllTestSequences();
 			
-		return success ?  gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ?  gson.toJson(new SecurityStatusCode(true,"Testing started successfully")) : gson.toJson(ERROR_DATABASE);
 		
 	}
+	
+	/**
+	 * Handles a request to edit the non-SGE attributes (like timeouts) of an existing queue
+	 * @param id
+	 * @param request
+	 * @return
+	 */
 	
 	@POST
 	@Path("/edit/queue/{id}")
@@ -1155,18 +1134,25 @@ public class RESTServices {
 		if (!Util.paramExists("cpuTimeout", request) || !Util.paramExists("wallTimeout", request)) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		int cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
-		int wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
+		int cpuTimeout=0;
+		int wallTimeout=0;
+		try {
+			cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
+			wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
+		} catch (Exception e) {
+			return gson.toJson(new SecurityStatusCode(false, "Timeouts need to be integers between 1 and 2^31"));
+		}
+
 		
 		
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserEditQueue(userId, wallTimeout, cpuTimeout);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserEditQueue(userId, wallTimeout, cpuTimeout);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout);
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Queue edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/** 
@@ -1185,13 +1171,12 @@ public class RESTServices {
 		boolean success = false;
 		int requestUserId=SessionUtil.getUserId(request);
 		log.debug("requestUserId" + requestUserId);
-		int status=UserSecurity.canUpdateData(userId, requestUserId, attribute, newValue);
+		SecurityStatusCode status=UserSecurity.canUpdateData(userId, requestUserId, attribute, newValue);
 		log.debug("status = " + status);
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		log.debug("begin");
 		
 		// Go through all the cases, depending on what attribute we are changing.
 		// First, validate that it is in legal form. Then, try to update the database.
@@ -1229,7 +1214,7 @@ public class RESTServices {
 		}
 
 		// Passed validation AND Database update successful
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Edit successful")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/** 
@@ -1248,9 +1233,10 @@ public class RESTServices {
 	public String editCommunityDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
-		int status=SpaceSecurity.canUpdateSettings(id,attribute,newValue, userId);
-		if (status!=0) {
-			return gson.toJson(id);
+		SecurityStatusCode status=SpaceSecurity.canUpdateSettings(id,attribute,newValue, userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
 		try {			
 			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
@@ -1285,7 +1271,7 @@ public class RESTServices {
 			}
 			
 			// Passed validation AND Database update successful
-			return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return success ? gson.toJson(new SecurityStatusCode(true,"Community edit successful")) : gson.toJson(ERROR_DATABASE);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			return gson.toJson(ERROR_DATABASE);
@@ -1326,8 +1312,8 @@ public class RESTServices {
 		s.setDescription(request.getParameter("description"));
 		s.setLocked(Boolean.parseBoolean(request.getParameter("locked")));
 		s.setStickyLeaders(Boolean.parseBoolean(request.getParameter("sticky")));
-		int status=SpaceSecurity.canUpdateProperties(id, userId, s.getName(), s.isStickyLeaders());
-		if(status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUpdateProperties(id, userId, s.getName(), s.isStickyLeaders());
+		if(!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Extract permission details from request and add them to a new permission object
@@ -1347,7 +1333,7 @@ public class RESTServices {
 		s.setPermission(p);
 		
 		// Perform the update and return information according to success/failure
-		return Spaces.updateDetails(userId, s) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.updateDetails(userId, s) ? gson.toJson(new SecurityStatusCode(true,"Space edit successful")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1362,14 +1348,14 @@ public class RESTServices {
 	public String postProcessJob(@PathParam("jobId") int jid, @PathParam("procId") int pid, @Context HttpServletRequest request) {
 		
 		int userId=SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserPostProcessJob(jid, userId, pid);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserPostProcessJob(jid, userId, pid);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
-		return Jobs.prepareJobForPostProcessing(jid,pid)? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.prepareJobForPostProcessing(jid,pid)? gson.toJson(new SecurityStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1386,12 +1372,12 @@ public class RESTServices {
 	public String deleteProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		// Permissions check; ensures user is the leader of the community that owns the processor
-		int status=ProcessorSecurity.canUserDeleteProcessor(pid, userId);
-		if (status!=0) {
+		SecurityStatusCode status=ProcessorSecurity.canUserDeleteProcessor(pid, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		String answer= Processors.delete(pid) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		String answer= Processors.delete(pid) ? gson.toJson(new SecurityStatusCode(true,"Processor deleted successfully")) : gson.toJson(ERROR_DATABASE);
 		
 		try {
 			if (Util.paramExists("cid",request) && Util.paramExists("defaultPP",request)) {
@@ -1440,8 +1426,8 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 		}
-		int status=ProcessorSecurity.canUserDeleteProcessors(selectedProcessors, userId);
-		if (status!=0) {
+		SecurityStatusCode status=ProcessorSecurity.canUserDeleteProcessors(selectedProcessors, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		for (int id : selectedProcessors) {
@@ -1449,7 +1435,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Processors deleted successfully"));
 	}
 	
 	/**
@@ -1469,7 +1455,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_DATABASE);
 		}
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Benchmarks restored successfully"));
 	}
 	
 	/**
@@ -1487,7 +1473,7 @@ public class RESTServices {
 		if (!Solvers.restoreRecycledSolvers(userId)) {
 			return gson.toJson(ERROR_DATABASE);
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Solvers restored successfully"));
 	}
 	
 	
@@ -1507,7 +1493,7 @@ public class RESTServices {
 		if (!Benchmarks.setRecycledBenchmarksToDeleted(userId)) {
 			return gson.toJson(ERROR_DATABASE);
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Benchmarks deleted successfully"));
 	}
 	
 	/**
@@ -1526,7 +1512,7 @@ public class RESTServices {
 		if (!Solvers.setRecycledSolversToDeleted(userId)) {
 			return gson.toJson(ERROR_DATABASE);
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Solvers restored successfully"));
 	}
 	
 	/**
@@ -1543,9 +1529,6 @@ public class RESTServices {
 	@Produces("applicatoin/json")
 	public String editProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		
-		
-		
 		Processor p=Processors.get(pid);
 		if(!Util.paramExists("name", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -1556,8 +1539,8 @@ public class RESTServices {
 		if (Util.paramExists("desc", request)) {
 			desc=request.getParameter("desc");
 		}
-		int status=ProcessorSecurity.canUserEditProcessor(pid, userId,name,desc);
-		if (status!=0) {
+		SecurityStatusCode status=ProcessorSecurity.canUserEditProcessor(pid, userId,name,desc);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -1576,7 +1559,7 @@ public class RESTServices {
 			}
 		}
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Processor edited successfully"));
 	}
 	
 	/**
@@ -1593,14 +1576,14 @@ public class RESTServices {
 	public String leaveCommunity(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Permissions check; ensures user is apart of the community
 		int userId=SessionUtil.getUserId(request);
-		int status=SpaceSecurity.canUserLeaveSpace(spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserLeaveSpace(spaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		if(Communities.leave(SessionUtil.getUserId(request), spaceId)) {
 			// Delete prior entry in user's permissions cache for this community
 			SessionUtil.removeCachePermission(request, spaceId);
-			return gson.toJson(0);
+			return gson.toJson(new SecurityStatusCode(true,"Community left successfully"));
 		}
 		
 		
@@ -1627,8 +1610,8 @@ public class RESTServices {
 		}
 		
 		
-		int status=SpaceSecurity.canUserRemoveBenchmark(spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveBenchmark(spaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -1640,7 +1623,7 @@ public class RESTServices {
 		
 		
 		// Remove the benchmark from the space
-		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(new SecurityStatusCode(true,"Benchmarks removed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -1667,8 +1650,8 @@ public class RESTServices {
 		}
 		int userId=SessionUtil.getUserId(request);
 		
-		int status=SpaceSecurity.canUserRemoveAndRecycleBenchmarks(selectedBenches, spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveAndRecycleBenchmarks(selectedBenches, spaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -1677,7 +1660,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.removeBenches(selectedBenches, spaceId) ? gson.toJson(new SecurityStatusCode(true,"Benchmarks successfully recycled and removed from spaces")) : gson.toJson(ERROR_DATABASE);
 		
 	}
 	
@@ -1705,8 +1688,8 @@ public class RESTServices {
 		}
 		int userId=SessionUtil.getUserId(request);
 		//first, ensure the user has the correct permissions for every benchmark
-		int status=BenchmarkSecurity.canUserRecycleBenchmarks(selectedBenches,userId);
-		if(status!=0) {
+		SecurityStatusCode status=BenchmarkSecurity.canUserRecycleBenchmarks(selectedBenches,userId);
+		if(!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 			
@@ -1719,7 +1702,7 @@ public class RESTServices {
 			}
 		}
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Benchmarks successfully recycled"));
 	}
 	
 	/**
@@ -1747,8 +1730,8 @@ public class RESTServices {
 				selectedBenches.add(Integer.parseInt(id));
 			}
 			int userId=SessionUtil.getUserId(request);
-			int status=BenchmarkSecurity.canUserDeleteBenchmarks(selectedBenches, userId);
-			if (status!=0) {
+			SecurityStatusCode status=BenchmarkSecurity.canUserDeleteBenchmarks(selectedBenches, userId);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			for (int id : selectedBenches) {
@@ -1761,7 +1744,7 @@ public class RESTServices {
 			log.error(e.getMessage(),e);
 		}
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Benchmarks successfully deleted"));
 	}
 	
 	
@@ -1780,8 +1763,8 @@ public class RESTServices {
 				selectedBenches.add(Integer.parseInt(id));
 			}
 			int userId=SessionUtil.getUserId(request);
-			int status=BenchmarkSecurity.canUserRestoreBenchmarks(selectedBenches, userId);
-			if(status>0) {
+			SecurityStatusCode status=BenchmarkSecurity.canUserRestoreBenchmarks(selectedBenches, userId);
+			if(!status.isSuccess()) {
 				return gson.toJson(status);	
 			}
 	
@@ -1795,7 +1778,7 @@ public class RESTServices {
 			log.error(e.getMessage(),e);
 		}
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Benchmarks successfully restored"));
 	}
 	
 	
@@ -1837,11 +1820,11 @@ public class RESTServices {
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 
-		int status=SpaceSecurity.canCopyUserBetweenSpaces(fromSpace, spaceId, requestUserId, selectedUsers, copyToSubspaces);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canCopyUserBetweenSpaces(fromSpace, spaceId, requestUserId, selectedUsers, copyToSubspaces);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		return Users.associate(selectedUsers, spaceId,copyToSubspaces,requestUserId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Users.associate(selectedUsers, spaceId,copyToSubspaces,requestUserId) ? gson.toJson(new SecurityStatusCode(true,"User(s) moved successfully")) : gson.toJson(ERROR_DATABASE);
 	
 	}
 
@@ -1896,8 +1879,8 @@ public class RESTServices {
 			List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 			
 				
-			int status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
-			if (status!=0) {
+			SecurityStatusCode status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			if (copy) {
@@ -1909,7 +1892,7 @@ public class RESTServices {
 			}
 			
 			//if we did a copy, the solvers are already associated with the root space, so we don't need to link to that one
-			return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Solvers.associate(selectedSolvers, spaceId,copyToSubspaces,requestUserId,!copy) ? gson.toJson(new SecurityStatusCode(true,"Solver(s) moved successfully")) : gson.toJson(ERROR_DATABASE);
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -1957,8 +1940,8 @@ public class RESTServices {
 		List<Integer> selectedBenchs= Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
 
-		int status=SpaceSecurity.canCopyOrLinkBenchmarksBetweenSpaces(fromSpace, spaceId, requestUserId, selectedBenchs, copy);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canCopyOrLinkBenchmarksBetweenSpaces(fromSpace, spaceId, requestUserId, selectedBenchs, copy);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		if (copy) {
@@ -1967,10 +1950,10 @@ public class RESTServices {
 			response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(benches)));
 
 			
-			return gson.toJson(0);
+			return gson.toJson(new SecurityStatusCode(true,"The selected benchmark(s) were copied successfully"));
 		} else {
 			// Return a value based on results from database operation
-			return Benchmarks.associate(selectedBenchs, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Benchmarks.associate(selectedBenchs, spaceId) ? gson.toJson(new SecurityStatusCode(true,"The selected benchmark(s) were linked successfully")) : gson.toJson(ERROR_DATABASE);
 		}
 	}
 	
@@ -2004,8 +1987,8 @@ public class RESTServices {
 		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 				
 		List<Integer> selectedJobs = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		int status=SpaceSecurity.canLinkJobsBetweenSpaces(fromSpace, spaceId, userId, selectedJobs);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canLinkJobsBetweenSpaces(fromSpace, spaceId, userId, selectedJobs);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -2013,7 +1996,7 @@ public class RESTServices {
 		boolean success = Jobs.associate(selectedJobs, spaceId);
 		
 		// Return a value based on results from database operation
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Job(s) moved successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -2046,8 +2029,8 @@ public class RESTServices {
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean hierarchy=Boolean.parseBoolean(request.getParameter("hierarchy"));
 		
-		int status=SpaceSecurity.canRemoveUsersFromSpaces(selectedUsers, userIdOfRemover, spaceId, hierarchy);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canRemoveUsersFromSpaces(selectedUsers, userIdOfRemover, spaceId, hierarchy);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// If we are "cascade removing" the user(s)...
@@ -2064,11 +2047,11 @@ public class RESTServices {
 			}
 
 			// Remove the users from the space and its subspaces
-			return Spaces.removeUsersFromHierarchy(selectedUsers, subspaceIds) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Spaces.removeUsersFromHierarchy(selectedUsers, subspaceIds) ? gson.toJson(new SecurityStatusCode(true,"User(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 		}
 		
 		// Otherwise...
-		return Spaces.removeUsers(selectedUsers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.removeUsers(selectedUsers, spaceId) ? gson.toJson(new SecurityStatusCode(true,"User(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -2100,20 +2083,20 @@ public class RESTServices {
 		// If we are "cascade removing" the solver(s)...
 		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {			
 			
-			int status=SolverSecurity.canUserRemoveSolverFromHierarchy(spaceId,userId);
-			if (status!=0) {
+			SecurityStatusCode status=SolverSecurity.canUserRemoveSolverFromHierarchy(spaceId,userId);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 		
-			return Spaces.removeSolversFromHierarchy(selectedSolvers, spaceId,userId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Spaces.removeSolversFromHierarchy(selectedSolvers, spaceId,userId) ? gson.toJson(new SecurityStatusCode(true,"Solver(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 
 		} else {
 			// Permissions check; ensures user has permisison to remove solver
-			int status=SolverSecurity.canUserRemoveSolver(spaceId, SessionUtil.getUserId(request));
-			if (status!=0) {
+			SecurityStatusCode status=SolverSecurity.canUserRemoveSolver(spaceId, SessionUtil.getUserId(request));
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
-			return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+			return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(new SecurityStatusCode(true,"Solver(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 
 		}		
 	}
@@ -2144,8 +2127,8 @@ public class RESTServices {
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
-		int status=SpaceSecurity.canUserRemoveAndRecycleSolvers(selectedSolvers,spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveAndRecycleSolvers(selectedSolvers,spaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -2155,7 +2138,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.removeSolvers(selectedSolvers, spaceId) ? gson.toJson(new SecurityStatusCode(true,"Solver(s) successfully recycled and removed from spaces")) : gson.toJson(ERROR_DATABASE);
 		
 	}
 	
@@ -2185,8 +2168,8 @@ public class RESTServices {
 				selectedSolvers.add(Integer.parseInt(id));
 			}
 
-			int status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
-			if (status!=0) {
+			SecurityStatusCode status=SolverSecurity.canUserRestoreSolvers(selectedSolvers, userId);
+			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 
@@ -2197,7 +2180,7 @@ public class RESTServices {
 					return gson.toJson(ERROR_DATABASE);
 				}
 			}
-			return gson.toJson(0);
+			return gson.toJson(new SecurityStatusCode(true,"Solver(s) restored successfully"));
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -2230,8 +2213,8 @@ public class RESTServices {
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
-		int status=SolverSecurity.canUserDeleteSolvers(selectedSolvers, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserDeleteSolvers(selectedSolvers, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -2242,8 +2225,51 @@ public class RESTServices {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Solver(s) deleted successfully"));
 	}
+	
+	/**
+	 * Recycles all benchmarks that have been orphaned belonging to a specific user
+	 *
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/recycleOrphaned/benchmark/{userId}")
+	@Produces("application/json")
+	public String recycleOrphanedBenchmarks(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
+
+		
+		SecurityStatusCode status=BenchmarkSecurity.canUserRecycleOrphanedBenchmarks(userId, userIdOfCaller);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+	
+		return Benchmarks.recycleOrphanedBenchmarks(userId) ?  gson.toJson(new SecurityStatusCode(true,"Benchmark(s) recycled successfully")) :
+			gson.toJson(new SecurityStatusCode(false, "Internal database error recycling benchmark(s)"));
+	}
+	
+	/**
+	 * Recycles all solvers that have been orphaned belonging to a specific user
+	 *
+	 * @author Eric Burns
+	 */
+	@POST
+	@Path("/recycleOrphaned/solver/{userId}")
+	@Produces("application/json")
+	public String recycleOrphanedSolvers(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
+
+		
+		SecurityStatusCode status=SolverSecurity.canUserRecycleOrphanedSolvers(userId, userIdOfCaller);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+	
+		return Solvers.recycleOrphanedSolvers(userId) ?  gson.toJson(new SecurityStatusCode(true,"Solver(s) recycled successfully")) :
+			gson.toJson(new SecurityStatusCode(false, "Internal database error recycling solver(s)"));
+	}
+	
 	
 	/**
 	 * Recycles a list of solvers
@@ -2270,8 +2296,8 @@ public class RESTServices {
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 		
-		int status=SolverSecurity.canUserRecycleSolvers(selectedSolvers, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserRecycleSolvers(selectedSolvers, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -2281,7 +2307,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Solver(s) recycled successfully"));
 	}
 	
 	/**
@@ -2306,8 +2332,8 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedConfigs.add(Integer.parseInt(id));
 		}
-		int status=SolverSecurity.canUserDeleteConfigurations(selectedConfigs, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserDeleteConfigurations(selectedConfigs, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		for (int id : selectedConfigs) {
@@ -2338,7 +2364,7 @@ public class RESTServices {
 		}
 		
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Configuration(s) deleted successfully"));
 	}
 	
 	/**
@@ -2366,13 +2392,13 @@ public class RESTServices {
 			selectedJobs.add(Integer.parseInt(id));
 		}
 
-		int status=SpaceSecurity.canUserRemoveJob(spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveJob(spaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 
 		// Remove the job from the space
-		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.removeJobs(selectedJobs, spaceId) ? gson.toJson(new SecurityStatusCode(true,"Job(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -2401,8 +2427,8 @@ public class RESTServices {
 			log.debug("adding id = "+id+" to selectedJobs");
 		}
 		
-		int status=SpaceSecurity.canUserRemoveAndDeleteJobs(selectedJobs, spaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveAndDeleteJobs(selectedJobs, spaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -2417,7 +2443,7 @@ public class RESTServices {
 			}
 		}
 		Spaces.removeJobs(selectedJobs, spaceId);
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Job(s) deleted successfully and removed from spaces"));
 	}
 
 	/**
@@ -2442,8 +2468,8 @@ public class RESTServices {
 			selectedJobs.add(Integer.parseInt(id));
 		}
 		int userId=SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserDeleteJobs(selectedJobs, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserDeleteJobs(selectedJobs, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		for (int id : selectedJobs) {
@@ -2453,7 +2479,7 @@ public class RESTServices {
 			}
 		}
 	
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Job(s) deleted successfully"));
 	}
 	/**
 	 * Removes a subspace's association with a space, thereby removing the subspace
@@ -2481,8 +2507,8 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		int status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -2511,7 +2537,7 @@ public class RESTServices {
 				success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
 			}
 			if (success) {
-				return gson.toJson(0);
+				return gson.toJson(new SecurityStatusCode(true,"Subspace(s) removed successfully"));
 			} else {
 				return gson.toJson(ERROR_NOT_ALL_DELETED);
 			}
@@ -2548,14 +2574,14 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		int status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 
 		// Remove the associations
 		
-		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(new SecurityStatusCode(true,"Subspace(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	/**
 	 * Updates the details of a solver. Solver id is required in the path. First
@@ -2593,12 +2619,12 @@ public class RESTServices {
 		}
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 		String name = request.getParameter("name");
-		int status=SolverSecurity.canUserUpdateSolver(solverId, name, description, isDownloadable, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserUpdateSolver(solverId, name, description, isDownloadable, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Apply new solver details to database
-		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Solvers.updateDetails(solverId, name, description, isDownloadable) ? gson.toJson(new SecurityStatusCode(true,"Solver edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
@@ -2618,12 +2644,12 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the solver, deny deletion request
 		int userId = SessionUtil.getUserId(request);
-		int status=SolverSecurity.canUserRecycleSolver(solverId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserRecycleSolver(solverId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Solvers.recycle(solverId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Solvers.recycle(solverId) ? gson.toJson(new SecurityStatusCode(true,"Solver recycled successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -2643,11 +2669,11 @@ public class RESTServices {
 		
 		// Permissions check; if user is NOT the owner of the job, deny deletion request
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserDeleteJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserDeleteJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		return Jobs.delete(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.delete(jobId) ? gson.toJson(new SecurityStatusCode(true,"Job deleted successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -2666,13 +2692,13 @@ public class RESTServices {
 	public String pauseJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserPauseJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserPauseJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		
-		return Jobs.pause(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.pause(jobId) ? gson.toJson(new SecurityStatusCode(true,"Job paused successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -2691,12 +2717,12 @@ public class RESTServices {
 	public String resumeJob(@PathParam("id") int jobId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny resume request
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canUserResumeJob(jobId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserResumeJob(jobId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Jobs.resume(jobId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.resume(jobId) ? gson.toJson(new SecurityStatusCode(true,"Job resumed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -2715,19 +2741,17 @@ public class RESTServices {
 	public String changeQueueJob(@PathParam("id") int jobId, @PathParam("queueid") int queueId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the job, deny resume request
 		int userId = SessionUtil.getUserId(request);
-		int status=JobSecurity.canChangeQueue(jobId, userId,queueId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canChangeQueue(jobId, userId,queueId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Jobs.changeQueue(jobId, queueId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.changeQueue(jobId, queueId) ? gson.toJson(new SecurityStatusCode(true,"Queue changed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 
 	/**
-	 * Updates the details of a benchmark. Benchmark id is required in the path.
-	 * First checks if the parameters of the update are valid, then performs the
-	 * update.
+	 * Recycles a benchmark
 	 * 
 	 * @param id the id of the benchmark to recycle
 	 * @return 	0: success,<br>
@@ -2741,17 +2765,16 @@ public class RESTServices {
 	public String recycleBenchmark(@PathParam("id") int benchId, @Context HttpServletRequest request) {
 		// Permissions check; if user is NOT the owner of the benchmark, deny deletion request
 		int userId = SessionUtil.getUserId(request);
-		int status=BenchmarkSecurity.canUserRecycleBench(benchId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=BenchmarkSecurity.canUserRecycleBench(benchId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		
 		// mark the benchmark as recycled
-		return Benchmarks.recycle(benchId) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Benchmarks.recycle(benchId) ? gson.toJson(new SecurityStatusCode(true,"Benchmark recycled successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**
-	 * Deletes a benchmark given a benchmarks's id. The id of the benchmark to
-	 * delete must be included in the path.
+	 * Edits the properties of the given benchmark
 	 * 
 	 * @param benchId the id of the benchmark to delete
 	 * @return 	0: success,<br>
@@ -2798,12 +2821,12 @@ public class RESTServices {
 		String description = request.getParameter("description");
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 
-		int status=BenchmarkSecurity.canUserEditBenchmark(benchId,name,description,userId);
-		if (status<0) {
+		SecurityStatusCode status=BenchmarkSecurity.canUserEditBenchmark(benchId,name,description,userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Apply new benchmark details to database
-		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(new SecurityStatusCode(true,"Benchmark edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -2819,7 +2842,6 @@ public class RESTServices {
 	 * @author Skylar Stark
 	 */
 	
-	//TODO: Change this method of validation
 	@POST
 	@Path("/edit/user/password/")
 	@Produces("application/json")
@@ -2828,28 +2850,19 @@ public class RESTServices {
 		String currentPass = request.getParameter("current");
 		String newPass = request.getParameter("newpass");
 		String confirmPass = request.getParameter("confirm");
-				
-		String hashedPass = Hash.hashPassword(currentPass);
-		String databasePass = Users.getPassword(userId);
 		
-		if (hashedPass.equals(databasePass)) {
-			if (newPass.equals(confirmPass)) {
-				if (true == Validator.isValidPassword(newPass)) {
-					//updatePassword requires the plaintext password
-					if (true == Users.updatePassword(userId, newPass)) {
-						return gson.toJson(0);
-					} else {
-						return gson.toJson(ERROR_DATABASE); //Database operation returned false
-					}
-				} else {
-					return gson.toJson(ERROR_INVALID_PASSWORD); //Validate operation returned false
-				}
-			} else {
-				return gson.toJson(ERROR_PASSWORDS_NOT_EQUAL); //newPass != confirmPass
-			}
-		} else {
-			return gson.toJson(ERROR_WRONG_PASSWORD); //hashedPass != databasePass
+		SecurityStatusCode status=GeneralSecurity.canUserUpdatePassword(userId,userId,currentPass,newPass,confirmPass);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
+
+		//updatePassword requires the plaintext password
+		if (Users.updatePassword(userId, newPass)) {
+			return gson.toJson(new SecurityStatusCode(true,"Password edited successfully"));
+		} else {
+			return gson.toJson(ERROR_DATABASE); //Database operation returned false
+		}
+
 	}
 	
     /**
@@ -2858,18 +2871,18 @@ public class RESTServices {
      **/
 
     public Permission createPermissionFromRequest(HttpServletRequest request){
-	Permission newPerm = new Permission(false);
-	newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
-	newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
-	newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
-	newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
-	newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
-	newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
-	newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
-	newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
-	newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
-	newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
-	newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));	
+		Permission newPerm = new Permission(false);
+		newPerm.setAddBenchmark(Boolean.parseBoolean(request.getParameter("addBench")));		
+		newPerm.setRemoveBench(Boolean.parseBoolean(request.getParameter("removeBench")));
+		newPerm.setAddSolver(Boolean.parseBoolean(request.getParameter("addSolver")));	
+		newPerm.setRemoveSolver(Boolean.parseBoolean(request.getParameter("removeSolver")));
+		newPerm.setAddJob(Boolean.parseBoolean(request.getParameter("addJob")));	
+		newPerm.setRemoveJob(Boolean.parseBoolean(request.getParameter("removeJob")));
+		newPerm.setAddUser(Boolean.parseBoolean(request.getParameter("addUser")));		
+		newPerm.setRemoveUser(Boolean.parseBoolean(request.getParameter("removeUser")));
+		newPerm.setAddSpace(Boolean.parseBoolean(request.getParameter("addSpace")));	
+		newPerm.setRemoveSpace(Boolean.parseBoolean(request.getParameter("removeSpace")));
+		newPerm.setLeader(Boolean.parseBoolean(request.getParameter("isLeader")));	
 	return newPerm;
     }
     /**
@@ -2900,7 +2913,7 @@ public class RESTServices {
 		}
 	    }
 
-	    return gson.toJson(0);
+	    return gson.toJson(new SecurityStatusCode(true,"Permissions edited successfully"));
     }
 
     
@@ -2920,8 +2933,8 @@ public class RESTServices {
 		// Ensure the user attempting to edit permissions is a leader
 		int currentUserId = SessionUtil.getUserId(request);
 		boolean leaderStatusChange = Boolean.parseBoolean(request.getParameter("leaderStatusChange"));
-		int status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId,leaderStatusChange);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUpdatePermissions(spaceId, userId, currentUserId,leaderStatusChange);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Configure a new permission object
@@ -2929,7 +2942,7 @@ public class RESTServices {
 				
 		
 		// Update database with new permissions
-		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Permissions.set(userId, spaceId, newPerm) ? gson.toJson(new SecurityStatusCode(true,"Permissions edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -2968,12 +2981,12 @@ public class RESTServices {
 			description = (String) request.getParameter("description");
 		}
 		
-		int status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Apply new solver details to database
-		return Solvers.updateConfigDetails(configId, name, description) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Solvers.updateConfigDetails(configId, name, description) ? gson.toJson(new SecurityStatusCode(true,"Configuration edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -2996,8 +3009,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteConfiguration(@PathParam("id") int configId, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		int status=SolverSecurity.canUserDeleteConfiguration(configId, userId);
-		if (status!=0) {
+		SecurityStatusCode status=SolverSecurity.canUserDeleteConfiguration(configId, userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Validate configuration id parameter
@@ -3025,7 +3038,7 @@ public class RESTServices {
 		}
 		
 		// If this point is reached, then the configuration has been completely removed
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Configuration deleted successfully"));
 	}
 	
 	
@@ -3078,7 +3091,7 @@ public class RESTServices {
 			
 			Permissions.set(userId, spaceId, p);
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"User promoted successfully"));
 	}
 	
 	
@@ -3098,13 +3111,11 @@ public class RESTServices {
 	public String demoteLeader(@PathParam("spaceId") int spaceId, @PathParam("userId") int userIdBeingDemoted, @Context HttpServletRequest request) {		
 		
 		int userIdDoingDemoting=SessionUtil.getUserId(request);
-		int status=SpaceSecurity.canDemoteLeader(spaceId, userIdBeingDemoted, userIdDoingDemoting);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canDemoteLeader(spaceId, userIdBeingDemoted, userIdDoingDemoting);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		
-		
-		
+
 		Permission p = new Permission();
 		p.setAddBenchmark(true);
 		p.setAddJob(true);
@@ -3119,7 +3130,7 @@ public class RESTServices {
 		p.setLeader(false);
 		
 		
-		return Permissions.set(userIdBeingDemoted, spaceId, p) ? gson.toJson(0) : gson.toJson(SecurityStatusCodes.ERROR_DATABASE);
+		return Permissions.set(userIdBeingDemoted, spaceId, p) ? gson.toJson(new SecurityStatusCode(true,"User demoted successfully")) : gson.toJson(ERROR_DATABASE);
 		
 	}
 	
@@ -3158,8 +3169,8 @@ public class RESTServices {
 		
 		// Convert the subSpaces to copy to an int list
 		List<Integer> selectedSubSpaces = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
-		int status=SpaceSecurity.canCopySpace(fromSpace, spaceId, requestUserId, selectedSubSpaces);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canCopySpace(fromSpace, spaceId, requestUserId, selectedSubSpaces);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		List<Integer>newSpaceIds = new ArrayList<Integer>();
@@ -3187,7 +3198,7 @@ public class RESTServices {
 		}
 		response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(newSpaceIds)));
 
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Space copied successfully"));
 	}
 	
 	
@@ -3216,8 +3227,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
-		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
@@ -3239,8 +3250,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getTestsPaginated(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserSeeTestInformation(userId);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserSeeTestInformation(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
@@ -3263,8 +3274,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getTestResultssPaginated(@PathParam("name") String name, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserSeeTestInformation(userId);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserSeeTestInformation(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -3288,8 +3299,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
-		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// Query for the next page of solver pairs and return them to the user
@@ -3311,8 +3322,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
-		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		// Query for the next page of solver pairs and return them to the user
 		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request,false);
@@ -3334,8 +3345,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrRecycledSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
-		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -3357,8 +3368,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getUsrRecycledBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
-		int status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request, true);
@@ -3382,9 +3393,9 @@ public class RESTServices {
 	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(Spaces.setPublicSpace(spaceId, userId, true, hierarchy))
-			return gson.toJson(ERROR_SPACE_ALREADY_PUBLIC);
+			return gson.toJson(new SecurityStatusCode(true,"Space(s) successfully made public"));
 		else
-			return gson.toJson(0);
+			return gson.toJson(new SecurityStatusCode(false, "Internal database error when making spaces public"));
 	}
 	
 	/**
@@ -3401,12 +3412,10 @@ public class RESTServices {
 	public String makePrivate(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(Spaces.setPublicSpace(spaceId, userId, false, hierarchy))
-			return gson.toJson(ERROR_SPACE_ALREADY_PRIVATE);
+			return gson.toJson(new SecurityStatusCode(true,"Space(s) successfully made private"));
 		else
-			return gson.toJson(0);
+			return gson.toJson(new SecurityStatusCode(false, "Internal database error when making spaces private"));
 	}
-	
-	
 	
 	/**
 	 * Is a space public
@@ -3431,8 +3440,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllPendingQueueReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserSeeRequests(userId);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserSeeRequests(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}	
 		
@@ -3448,8 +3457,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllHistoricReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserSeeRequests(userId);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserSeeRequests(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		
 		
@@ -3473,13 +3482,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserCancelRequest(userId);
-		if(status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserCancelRequest(userId);
+		if(!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 
 		GridEngineUtil.removeQueue(queueId);
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Reservation canceled successfully"));
 	}
 	
 	
@@ -3497,8 +3506,8 @@ public class RESTServices {
 	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		int status=SpaceSecurity.canUserViewCommunityRequests(userId);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canUserViewCommunityRequests(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -3518,14 +3527,14 @@ public class RESTServices {
 	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
 		log.debug("starting removeQueue");
 		int userId = SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserRemoveQueue(userId);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserRemoveQueue(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		GridEngineUtil.removeQueue(queueId);
 
 		
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Queue removed successfully"));
 
 	}
 	
@@ -3535,8 +3544,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String setLoggingLevel(@PathParam("level") String level, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserChangeLogging(userId);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserChangeLogging(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		boolean success=false;
@@ -3562,7 +3571,7 @@ public class RESTServices {
 		if (!success) {
 			log.debug("could not find logger for class "+className);
 		}
-		return success ? gson.toJson(0) : gson.toJson(ERROR_INVALID_PARAMS);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Logging updated successfully")) : gson.toJson(ERROR_INVALID_PARAMS);
 	}
 	
 	//Allows the administrator to set the current logging level across the entire system.
@@ -3571,8 +3580,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String setLoggingLevel(@PathParam("level") String level, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserChangeLogging(userId);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserChangeLogging(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -3593,7 +3602,7 @@ public class RESTServices {
 		} else {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Logging updated successfully"));
 	}
 		
 	@POST
@@ -3601,14 +3610,14 @@ public class RESTServices {
 	@Produces("application/json")
 	public String restartStarExec(@Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		int status=GeneralSecurity.canUserRestartStarexec(userId);
-		if (status!=0) {
+		SecurityStatusCode status=GeneralSecurity.canUserRestartStarexec(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("restarting...");
 		Util.executeCommand("sudo /sbin/service tomcat7 restart");
 		log.debug("restarted");
-		return gson.toJson(0);
+		return gson.toJson(new SecurityStatusCode(true,"Starexec restarted successfully"));
 	}
 	
 	@POST
@@ -3616,8 +3625,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String cancelQueueRequest(@PathParam("id") int id, @Context HttpServletRequest request) throws IOException {
 		int userId = SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserCancelRequest(userId);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserCancelRequest(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		// simply remove the reservation from our 
@@ -3628,9 +3637,9 @@ public class RESTServices {
 			// Notify user they've been declined
 			Mail.sendReservationResults(queueRequest, false);
 			log.info(String.format("User [%s] has been declined queue reservation.", Users.get(queueRequest.getUserId()).getFullName()));
-			return gson.toJson(0);	
+			return gson.toJson(new SecurityStatusCode(true,"Request canceled successfully"));	
 		} else {
-			return gson.toJson(3);
+			return gson.toJson(ERROR_DATABASE);
 		}
 		
 	}
@@ -3650,8 +3659,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editQueueRequest(@PathParam("id") int id, @PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserUpdateRequest(userId,queueName);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserUpdateRequest(userId,queueName);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -3688,7 +3697,7 @@ public class RESTServices {
 				java.util.Date today = new Date();
 				todaySql = new java.sql.Date(today.getTime());
 			} catch (ParseException e1) {
-				e1.printStackTrace();
+				log.error(e1.getMessage(),e1);
 			}
 			log.debug("today = " + todaySql);
 			log.debug("startDate = " + startDateSql);
@@ -3729,7 +3738,7 @@ public class RESTServices {
 			log.debug("invalid");
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Request edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	
@@ -3745,12 +3754,12 @@ public class RESTServices {
 	@Path("/nodes/update")
 	@Produces("application/json")
 	public String updateNodeCount(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId)) {
+		//int userId=SessionUtil.getUserId(request);
+		//if (!Users.isAdmin(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		boolean success = Cluster.updateTempChanges();
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		//}
+		//boolean success = Cluster.updateTempChanges();
+		//return success ? gson.toJson(new SecurityStatusCode(true,"Nodes updated successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -3763,8 +3772,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=QueueSecurity.canUserMakeQueue(userId);
-		if (status!=0) {
+		SecurityStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		QueueRequest req = Requests.getRequestForReservation(queue_id);
@@ -3780,7 +3789,7 @@ public class RESTServices {
 			success = Queues.makeQueuePermanent(queue_id);
 		}
 		
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Queue is now permanent")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
@@ -3794,12 +3803,12 @@ public class RESTServices {
 	@Produces("application/json")
 	public String addUserToSpace(@PathParam("spaceId") int space_id, @PathParam("userId") int user_id, @Context HttpServletRequest request) {
 		int userIdMakingRequest=SessionUtil.getUserId(request);
-		int status=SpaceSecurity.canAddUserToSpace(space_id, userIdMakingRequest);
-		if (status!=0) {
+		SecurityStatusCode status=SpaceSecurity.canAddUserToSpace(space_id, userIdMakingRequest);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		boolean success = Users.associate(user_id, space_id);
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"User added successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -3812,11 +3821,11 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearCache(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=CacheSecurity.canUserClearCache(userId);
-		if (status!=0) {
+		SecurityStatusCode status=CacheSecurity.canUserClearCache(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		return Cache.deleteAllCache() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Cache.deleteAllCache() ? gson.toJson(new SecurityStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -3829,12 +3838,12 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearStatsCache(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=CacheSecurity.canUserClearCache(userId);
-		if (status!=0) {
+		SecurityStatusCode status=CacheSecurity.canUserClearCache(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Jobs.removeAllCachedJobStats() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.removeAllCachedJobStats() ? gson.toJson(new SecurityStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -3845,8 +3854,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearCacheTypes(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		int status=CacheSecurity.canUserClearCache(userId);
-		if (status!=0) {
+		SecurityStatusCode status=CacheSecurity.canUserClearCache(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
@@ -3857,44 +3866,23 @@ public class RESTServices {
 			success= success && Cache.deleteCacheOfType(CacheType.getType(i));
 		}
 		
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
-	
-	/**
-	 * Clears the cache 
-	 * @param id The ID of the primitive
-	 * @param type The type of the primitive, as defined in CacheType
-	 * @param request
-	 * @return 
-	 */
-	
-	@POST
-	@Path("/cache/clear/{id}/{type}")
-	@Produces("application/json")
-	public String clearPrimCache(@PathParam("id") int id, @PathParam("type") int type, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		int status=CacheSecurity.canUserClearCache(userId);
-		if (status!=0) {
-			return gson.toJson(status);
-		}
-		CacheType t=CacheType.getType(type);
 
-		return Cache.invalidateAndDeleteCache(id, t) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
-	}
 	
 	@POST
 	@Path("/suspend/user/{userId}")
 	@Produces("application/json")
 	public String suspendUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		int status=UserSecurity.canUserSuspendOrReinstateUser(id);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		boolean success = Users.suspend(userId);
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"User suspended successfully")) : gson.toJson(ERROR_DATABASE);
 
 	}
 	
@@ -3903,13 +3891,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String reinstateUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		int status=UserSecurity.canUserSuspendOrReinstateUser(id);
-		if (status!=0) {
+		SecurityStatusCode status=UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		boolean success = Users.reinstate(userId);
-		return success ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new SecurityStatusCode(true,"User reinstated successfully")) : gson.toJson(ERROR_DATABASE);
 
 	}
 	
@@ -3919,12 +3907,12 @@ public class RESTServices {
 	public String pauseAll(@Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		
-		int status=JobSecurity.canUserPauseAllJobs(userId);
-		if (status!=0) {
+		SecurityStatusCode status=JobSecurity.canUserPauseAllJobs(userId);
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		log.info("Pausing all jobs in admin/pauseAll REST service");
-		return Jobs.pauseAll() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.pauseAll() ? gson.toJson(new SecurityStatusCode(true,"Jobs paused successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
@@ -3934,13 +3922,13 @@ public class RESTServices {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
 		
-		int status=JobSecurity.canUserResumeAllJobs(userId);
+		SecurityStatusCode status=JobSecurity.canUserResumeAllJobs(userId);
 
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Jobs.resumeAll() ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Jobs.resumeAll() ? gson.toJson(new SecurityStatusCode(true,"Jobs resumed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
@@ -3949,14 +3937,14 @@ public class RESTServices {
 	public String makeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
 		int userId = SessionUtil.getUserId(request);
 		
-		int status=QueueSecurity.canUserMakeQueueGlobal(userId);
+		SecurityStatusCode status=QueueSecurity.canUserMakeQueueGlobal(userId);
 		
 		
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Queues.makeGlobal(queue_id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Queues.makeGlobal(queue_id) ? gson.toJson(new SecurityStatusCode(true,"Queue is now global")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
@@ -3965,14 +3953,14 @@ public class RESTServices {
 	public String removeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
 		int userId = SessionUtil.getUserId(request);
 		
-		int status=QueueSecurity.canUserRemoveQueueGlobal(userId);
+		SecurityStatusCode status=QueueSecurity.canUserRemoveQueueGlobal(userId);
 		
 		
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		return Queues.removeGlobal(queue_id) ? gson.toJson(0) : gson.toJson(ERROR_DATABASE);
+		return Queues.removeGlobal(queue_id) ? gson.toJson(new SecurityStatusCode(true,"Queue no longer global")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 }

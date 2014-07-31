@@ -25,16 +25,7 @@ CREATE PROCEDURE GetPublicSolvers()
 		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
 		(SELECT id from spaces where public_access=1));
 	END //
-	
--- Gets all solvers that reside in public spaces of a specific community
--- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetPublicSolversByCommunity;
-CREATE PROCEDURE GetPublicSolversByCommunity(IN _commId INT, IN _pubUserId INT)
-	BEGIN
-		SELECT DISTINCT * from solvers where deleted=false AND recycled=false AND id in 
-		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
-		(SELECT id from spaces where IsPublic(id) AND id in (select descendant from closure where ancestor = _commId)));
-	END //
+
 	
 	
 -- Adds a Space/Solver association
@@ -348,18 +339,40 @@ CREATE PROCEDURE GetRecycledSolverIds(IN _userId INT)
 		SELECT id FROM solvers
 		WHERE user_id=_userId AND recycled=true;
 	END //
--- Removes all solvers in the database that are deleted and also orphaned. Runs periodically.
+	
+-- Permanently removes a solver from the database
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedSolvers;
-CREATE PROCEDURE RemoveDeletedOrphanedSolvers()
+DROP PROCEDURE IF EXISTS RemoveSolverFromDatabase;
+CREATE PROCEDURE RemoveSolverFromDatabase(IN _id INT)
 	BEGIN
-		DELETE solvers FROM solvers
-			LEFT JOIN job_pairs ON job_pairs.solver_id = solvers.id
-			LEFT JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
-		WHERE deleted=true AND solver_assoc.space_id IS NULL AND job_pairs.id IS NULL;
+		DELETE FROM solvers
+		WHERE id=_id;
 	END //
 	
--- Sets teh recycled flag for a single solver back to false
+-- Gets all the solver ids of solvers that are in at least one space
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSolversAssociatedWithSpaces;
+CREATE PROCEDURE GetSolversAssociatedWithSpaces()
+	BEGIN
+		SELECT DISTINCT solver_id AS id FROM solver_assoc;
+	END //
+
+-- Gets the solver ids of all solvers associated with at least one pair
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSolversAssociatedWithPairs;
+CREATE PROCEDURE GetSolversAssociatedWithPairs()
+	BEGIN
+		SELECT DISTINCT solver_id AS id from job_pairs;
+	END //
+	
+-- Gets the solver ids of all deleted solvers
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetDeletedSolvers;
+CREATE PROCEDURE GetDeletedSolvers()
+	BEGIN	
+		SELECT id FROM solvers WHERE deleted=true;
+	END //
+-- Sets the recycled flag for a single solver back to false
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RestoreSolver;
 CREATE PROCEDURE RestoreSolver(IN _solverId INT)
@@ -380,4 +393,12 @@ CREATE PROCEDURE GetMaxConfigTimestamp(IN _solverId INT)
 		WHERE configurations.solver_id=_solverId;
 	END //
 	
+-- Gets the ids of every orphaned solver a user owns (orphaned meaning the solver is in no spaces
+DROP PROCEDURE IF EXISTS GetOrphanedSolverIds;
+CREATE PROCEDURE GetOrphanedSolverIds(IN _userId INT)
+	BEGIN
+		SELECT solvers.id FROM solvers
+		LEFT JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
+		WHERE solvers.user_id=_userId AND solver_assoc.space_id IS NULL;
+	END //
 DELIMITER ; -- This should always be at the end of this file

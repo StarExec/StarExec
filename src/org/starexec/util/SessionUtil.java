@@ -111,7 +111,7 @@ public class SessionUtil {
 		//if the cache couldn't add it, or it doesn't exist, but the space is public
 		if (Spaces.isPublicSpace(spaceId)){
 			log.debug("Returning public users permissions");
-			return Permissions.get(R.PUBLIC_USER_ID, spaceId);
+			return Permissions.getEmptyPermission();
 		}
 		
 		

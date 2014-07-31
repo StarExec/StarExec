@@ -32,33 +32,37 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @param name The name to be given the new website
 	 * @param URL The URL of the new website
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canAssociateWebsite(int spaceId,int userId, String name, String URL){
+	public static SecurityStatusCode canAssociateWebsite(int spaceId,int userId, String name, String URL){
 		Permission p=Permissions.get(userId, spaceId);
 		if (p==null || !p.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to associate websites with this space");
 		}
 		
-		if (!Validator.isValidPrimName(name)  || !Validator.isValidWebsite(URL)) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		if (!Validator.isValidWebsite(URL)) {
+			return new SecurityStatusCode(false, "The given URL is not in the proper format. Please refer to the help pages to see the correct format");
 		}
-		return 0;
+		
+		if (!Validator.isValidPrimName(name)) {
+			return new SecurityStatusCode(false, "The given name is not in the proper format. Please refer to the help pages to see the correct format");
+		}
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see whether the given user can view websites associated with the given space
 	 * @param spaceId The ID of the space being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if the operation is allowed or a status code from SecurityStatusCodes if not
 	 */
-	public static int canViewWebsites(int spaceId, int userId) {
+	public static SecurityStatusCode canViewWebsites(int spaceId, int userId) {
 		
 		if(!Permissions.canUserSeeSpace(spaceId, userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to see this space");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -66,12 +70,12 @@ public class SpaceSecurity {
 	 * @param spaceId The ID of the space that contains the site to be deleted
 	 * @param websiteId The ID of the website to be deleted
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canDeleteWebsite(int spaceId,int websiteId,int userId){
+	public static SecurityStatusCode canDeleteWebsite(int spaceId,int websiteId,int userId){
 		Permission p=Permissions.get(userId, spaceId);
 		if (p==null || !p.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to delete websites associated with this space");
 		}
 		List<Website> websites=Websites.getAllForJavascript(spaceId,WebsiteType.SPACE);
 		boolean websiteInSpace=false;
@@ -83,10 +87,10 @@ public class SpaceSecurity {
 		}
 		
 		if (!websiteInSpace) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The given website is not associated with the given space");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -96,27 +100,28 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @param name The name the space would have upon updating 
 	 * @param stickyLeaders The value stickyLeaders would have upon updating
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUpdateProperties(int spaceId, int userId, String name, boolean stickyLeaders) {
+	public static SecurityStatusCode canUpdateProperties(int spaceId, int userId, String name, boolean stickyLeaders) {
 		Permission perm = Permissions.get(userId, spaceId);
 		if(perm == null || !perm.isLeader()){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to update this space");
 		}
 		
 		//communities are not allowed to have sticky leaders enabled
 		if (Communities.isCommunity(spaceId) && stickyLeaders) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "Communitity spaces may not enable sticky leaders");
 		}
 		
 		Space os=Spaces.get(spaceId);
 		if (!os.getName().equals(name)) {
-			if (Spaces.notUniquePrimitiveName(name,spaceId,4)) {
-				return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+			int parentId=Spaces.getParentSpace(os.getId());
+			if (Spaces.notUniquePrimitiveName(name,parentId,4)) {
+				return new SecurityStatusCode(false, "The new name needs to be unique in the space");
 			}
 		}
 	
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether a user may both remove and recycle benchmarks in a space
@@ -125,16 +130,19 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserRemoveAndRecycleBenchmarks(List<Integer> benchmarkIds, int spaceId, int userId) {
-		if (canUserRemoveBenchmark(spaceId, userId)!=0) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+	public static SecurityStatusCode canUserRemoveAndRecycleBenchmarks(List<Integer> benchmarkIds, int spaceId, int userId) {
+		SecurityStatusCode status=canUserRemoveBenchmark(spaceId, userId);
+		if (!status.isSuccess()) {
+			return status;
 		}
 		
-		if (BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, userId)!=0) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		
+		status=BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, userId);
+		if (!status.isSuccess()) {
+			return status;
 		}
 
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -142,18 +150,19 @@ public class SpaceSecurity {
 	 * @param jobIds The IDs of the jobs that would be removed and recycled
 	 * @param spaceId The ID of the space containing the jobs
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserRemoveAndDeleteJobs(List<Integer> jobIds, int spaceId, int userId) {
-		if (canUserRemoveJob(spaceId, userId)!=0) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+	public static SecurityStatusCode canUserRemoveAndDeleteJobs(List<Integer> jobIds, int spaceId, int userId) {
+		SecurityStatusCode status = canUserRemoveJob(spaceId, userId);
+		if (!status.isSuccess()) {
+			return status;
 		}
-		
-		if (JobSecurity.canUserDeleteJobs(jobIds, userId)!=0) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		status  = JobSecurity.canUserDeleteJobs(jobIds, userId);
+		if (!status.isSuccess()) {
+			return status;
 		}
 
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -161,44 +170,44 @@ public class SpaceSecurity {
 	 * @param solverIds The IDs of the solvers that would be removed and recycled
 	 * @param spaceId The ID of the space containing the solvers
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canUserRemoveAndRecycleSolvers(List<Integer> solverIds, int spaceId, int userId) {
-		if (canUserRemoveSolver(spaceId, userId)!=0) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+	public static SecurityStatusCode canUserRemoveAndRecycleSolvers(List<Integer> solverIds, int spaceId, int userId) {
+		SecurityStatusCode status=canUserRemoveSolver(spaceId, userId);
+		if (!status.isSuccess()) {
+			return status;
+		}
+		status = SolverSecurity.canUserRecycleSolvers(solverIds, userId);
+		if (!status.isSuccess()) {
+			return status;
 		}
 		
-		if (SolverSecurity.canUserRecycleSolvers(solverIds, userId)!=0) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
-		}
-		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks whether a user may remove a benchmark from a space
 	 * @param spaceId The ID of the space containing the primitive
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserRemoveBenchmark(int spaceId, int userId) {
+	public static SecurityStatusCode canUserRemoveBenchmark(int spaceId, int userId) {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canRemoveBench()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to remove benchmarks from this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 
 	}
 	
-	//TODO: Why isn't this using the perm.canRemoveSpace instead?
-	public static int canUserRemoveSpace(int spaceId, int userId) {
+	public static SecurityStatusCode canUserRemoveSpace(int spaceId, int userId) {
 		Permission perm = Permissions.get(userId, spaceId);		
-		if(null == perm || !perm.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+		if(null == perm || !perm.canRemoveSpace()) {
+			return new SecurityStatusCode(false, "You do not have permission to remove subspaces from this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -208,58 +217,58 @@ public class SpaceSecurity {
 	 * @param userIdDoingDemoting
 	 * @return
 	 */
-	public static int canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
+	//TODO: Leaders can demote other leaders except at the community level, right?
+	public static SecurityStatusCode canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
 		// Permissions check; ensures user is the leader of the community or is an admin
-		User userDemoting = Users.get(userIdDoingDemoting);
-		if(!userDemoting.getRole().equals("admin")) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+		if(!Users.isAdmin(userIdDoingDemoting)) {
+			return new SecurityStatusCode(false, "You do not have permission to demote leaders in this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks whether a user may remove a job from a space
 	 * @param spaceId The ID of the space containing the primitive
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserRemoveJob(int spaceId, int userId) {
+	public static SecurityStatusCode canUserRemoveJob(int spaceId, int userId) {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canRemoveJob()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to remove jobs from this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 
 	}
 	/**
 	 * Checks whether a user may remove a solver from a space
 	 * @param spaceId The ID of the space containing the primitive
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserRemoveSolver(int spaceId, int userId) {
+	public static SecurityStatusCode canUserRemoveSolver(int spaceId, int userId) {
 		// Permissions check; ensures user is the leader of the community
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canRemoveSolver()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to remove solvers from this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 
 	}
 	
 	/**
-	 * Checks whether a user may remove a space from another space
+	 * Checks whether a user may leave a space
 	 * @param spaceId The ID of the space containing the primitive
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserLeaveSpace(int spaceId, int userId){
+	public static SecurityStatusCode canUserLeaveSpace(int spaceId, int userId){
 		//the user can leave if they are in the space
 		if(!Users.isMemberOfSpace(userId, spaceId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You are not currently in this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -273,11 +282,11 @@ public class SpaceSecurity {
 	 */
 	
 	//TODO: Consider how to handle where to use the Validator class
-	public static int canUpdateSettings(int spaceId, String attribute, String newValue, int userId) {
+	public static SecurityStatusCode canUpdateSettings(int spaceId, String attribute, String newValue, int userId) {
 		
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.isLeader()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "Only leaders can update settings in a space");
 		}
 		
 		Space s=Spaces.get(spaceId);
@@ -287,29 +296,37 @@ public class SpaceSecurity {
 			
 			if (!s.getName().equals(newValue)) {
 				if (Spaces.notUniquePrimitiveName(newValue,spaceId,4)) {
-					return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+					return new SecurityStatusCode(false, "The new name needs to be unique in the space");
 				}
 			}
 			
 		} else if (attribute.equals("description")) {
 			if (!Validator.isValidPrimDescription(newValue)) {
-				return SecurityStatusCodes.ERROR_INVALID_PARAMS;				
+				return new SecurityStatusCode(false, "The description is not in a valid format. Please refer to the help pages to see the correct format");
 			}
-		}	
+		} else if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout") || attribute.equals("MaxMem")) {
+			if (! Validator.isValidInteger(newValue)) {
+				return new SecurityStatusCode(false, "The new limit needs to be a valid integer");
+			}
+			int timeout=Integer.parseInt(newValue);
+			if (timeout<=0) {
+				return new SecurityStatusCode(false, "The new limit needs to be greater than 0");
+			}
+		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether the given user can see the given space
 	 * @param spaceId The ID of the space in question 
 	 * @param userId The ID of the user who wants to see the space
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserSeeSpace(int spaceId, int userId){
+	public static SecurityStatusCode canUserSeeSpace(int spaceId, int userId){
 		if (!Permissions.canUserSeeSpace(spaceId, userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to see this space");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -317,23 +334,23 @@ public class SpaceSecurity {
 	 * if the space is locked or if they cannot see the space.
 	 * @param spaceId The ID of the space being copied from
 	 * @param userIdDoingCopying The ID of the user who is making the copy request.
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	private static int canCopyPrimFromSpace(int spaceId, int userIdDoingCopying) {
+	private static SecurityStatusCode canCopyPrimFromSpace(int spaceId, int userIdDoingCopying) {
 		if (Users.isAdmin(userIdDoingCopying)) {
-			return 0;
+			return new SecurityStatusCode(true);
 		}
 		// And the space the user is being copied from must not be locked
 		if(Spaces.get(spaceId).isLocked()) {
-			return SecurityStatusCodes.ERROR_SPACE_LOCKED;
+			return new SecurityStatusCode(false, "The space you are trying to copy from is locked");
 		}
 		
 		// Verify the user can at least see the space they claim to be copying from
 		if(!Permissions.canUserSeeSpace(spaceId, userIdDoingCopying)) {
-			return SecurityStatusCodes.ERROR_NOT_IN_SPACE;
+			return new SecurityStatusCode(false, "You do not have permission to see the space you are copying from");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -341,61 +358,61 @@ public class SpaceSecurity {
 	 * @param spaceId The space ID the user is being copied FROM
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param userIdBeingCopied The ID of the user that would be copied
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
-	private static int canCopyUserFromSpace(int spaceId, int userIdDoingCopying, int userIdBeingCopied) {
+	private static SecurityStatusCode canCopyUserFromSpace(int spaceId, int userIdDoingCopying, int userIdBeingCopied) {
 		
 		
-		int status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
-		if (status!=0) {
+		SecurityStatusCode status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
+		if (!status.isSuccess()) {
 			return status;
 		}
 		//the user being copied should actually be in the space they are supposedly being copied from
 		if (!Users.isMemberOfSpace(userIdBeingCopied, spaceId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "The user you are trying to move is not in the space you are copying from");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether a user can copy a given benchmark from the given space
 	 * @param spaceId The space ID the user is being copied FROM
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param benchId The ID of the benchmark that would be copied
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
-	private static int canCopyBenchmarkFromSpace(int spaceId, int userIdDoingCopying, int benchId) {
+	private static SecurityStatusCode canCopyBenchmarkFromSpace(int spaceId, int userIdDoingCopying, int benchId) {
 		
 		
-		int status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
-		if (status!=0) {
+		SecurityStatusCode status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
+		if (!status.isSuccess()) {
 			return status;
 		}
 		if(!Permissions.canUserSeeBench(benchId, userIdDoingCopying)) {
-			return SecurityStatusCodes.ERROR_NOT_IN_SPACE;
+			return new SecurityStatusCode(false, "You are not allowed to see the benchmark you are trying to move");
 		}
 		if (Benchmarks.isBenchmarkDeleted(benchId)) {
-			return SecurityStatusCodes.ERROR_PRIM_ALREADY_DELETED;
+			return new SecurityStatusCode(false, "The benchmark you are trying to copy has already been deleted");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether a user can copy a given space from the given space
 	 * @param fromSpaceId The space ID the user is being copied FROM
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param spaceIdBeingCopied The ID of the space that would be copied
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
-	private static int canCopySpaceFromSpace(int fromSpaceId, int userId, int spaceIdBeingCopied) {
-		int status=canCopyPrimFromSpace(fromSpaceId,userId);
-		if (status!=0) {
+	private static SecurityStatusCode canCopySpaceFromSpace(int fromSpaceId, int userId, int spaceIdBeingCopied) {
+		SecurityStatusCode status=canCopyPrimFromSpace(fromSpaceId,userId);
+		if (!status.isSuccess()) {
 			return status;
 		}
 		
 		if (!Permissions.canUserSeeSpace(spaceIdBeingCopied, userId)) {
-			return SecurityStatusCodes.ERROR_NOT_IN_SPACE;
+			return new SecurityStatusCode(false, "The subspace you are trying to move is not in the space you are copying from");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -403,55 +420,55 @@ public class SpaceSecurity {
 	 * @param spaceId The space ID the user is being copied FROM
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param jobId The ID of the job that would be copied
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
 	
-	private static int canCopyJobFromSpace(int spaceId, int userIdDoingCopying, int jobId) {
+	private static SecurityStatusCode canCopyJobFromSpace(int spaceId, int userIdDoingCopying, int jobId) {
 		
 		
-		int status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
-		if (status!=0) {
+		SecurityStatusCode status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
+		if (!status.isSuccess()) {
 			return status;
 		}
 		if(!Permissions.canUserSeeJob(jobId, userIdDoingCopying)) {
-			return SecurityStatusCodes.ERROR_NOT_IN_SPACE;
+			return new SecurityStatusCode(false, "You are not allowed to see the job you are trying to move");
 		}
 		
 		if (Jobs.isJobDeleted(jobId)) {
-			return SecurityStatusCodes.ERROR_PRIM_ALREADY_DELETED;
+			return new SecurityStatusCode(false, "The job you are trying to copy has already been deleted");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether a user can copy a given solver from the given space
 	 * @param spaceId The space ID the user is being copied FROM
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param solverId The ID of the solver that would be copied
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
-	private static int canCopySolverFromSpace(int spaceId, int userIdDoingCopying, int solverId) {
-		int status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
-		if (status!=0) {
+	private static SecurityStatusCode canCopySolverFromSpace(int spaceId, int userIdDoingCopying, int solverId) {
+		SecurityStatusCode status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
+		if (!status.isSuccess()) {
 			return status;
 		}
 		
 		//the solver being copied should actually be in the space they are supposedly being copied from
 		if (!Permissions.canUserSeeSolver(solverId, userIdDoingCopying)) {
-			return SecurityStatusCodes.ERROR_NOT_IN_SPACE;
+			return new SecurityStatusCode(false, "The solver you are trying to move is not in the space you are copying from");
 		}
 		
 		//we can't copy a solver if it has been deleted on disk
 		if (Solvers.isSolverDeleted(solverId)) {
-			return SecurityStatusCodes.ERROR_PRIM_ALREADY_DELETED;
+			return new SecurityStatusCode(false, "The solver you are trying to copy has already been deleted");
 		}
 
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks whether the user has enough disk quota to fit all of a list of solvers
 	 * @param solverIds The solver IDs that would be added
 	 * @param userId The ID of the user in question
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
 	//TODO: fail gracefully with bad solver ids
 	private static boolean doesUserHaveDiskQuotaForSolvers(List<Integer> solverIds,int userId) {
@@ -474,7 +491,7 @@ public class SpaceSecurity {
 	 * Checks whether the user has enough disk quota to fit all of a list of benchmarks
 	 * @param benchmarkIds The solver IDs that would be added
 	 * @param userId The ID of the user in question
-	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
 	
 	private static boolean doesUserHaveDiskQuotaForBenchmarks(List<Integer> benchIDs, int userId) {
@@ -499,19 +516,19 @@ public class SpaceSecurity {
 	 * @param toSpaceId The ID of the space that new subspaces will be copied TO
 	 * @param userId The ID of the user making the request
 	 * @param subspaceIds The IDs of the subspaces that would be copied
- 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+ 	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
 	
-	public static int canCopySpace(int fromSpaceId, int toSpaceId, int userId, List<Integer> subspaceIds) {
-		int status=0;
+	public static SecurityStatusCode canCopySpace(int fromSpaceId, int toSpaceId, int userId, List<Integer> subspaceIds) {
+		SecurityStatusCode status=null;
 		for (Integer sid : subspaceIds) {
 			status=SpaceSecurity.canCopySpaceFromSpace(fromSpaceId, userId, sid);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
 		status=canCopySpaceToSpace(toSpaceId,userId);
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return status;
 		}
 		
@@ -519,11 +536,11 @@ public class SpaceSecurity {
 		for (int id : subspaceIds) {		
 			// Make sure that the subspace has a unique name in the space.
 			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), toSpaceId, 4)) {
-				return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+				return new SecurityStatusCode(false, "The name of the space you are trying to copy is not unique in the destination space");
 			}
 		}
 	
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -532,30 +549,30 @@ public class SpaceSecurity {
 	 * @param toSpaceId The ID of the space that new jobs will be copied TO
 	 * @param userId The ID of the user making the request
 	 * @param jobIds The IDs of the jobs that would be copied
- 	 * @return 0 if allowed, or a status code from SecurityStatusCodes if not
+ 	 * @return new SecurityStatusCode(true) if allowed, or a status code from SecurityStatusCodes if not
 	 */
 	
-	public static int canLinkJobsBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> jobIdsBeingCopied) {
+	public static SecurityStatusCode canLinkJobsBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> jobIdsBeingCopied) {
 		
-		int status=0;
+		SecurityStatusCode status=null;
 		for(Integer jid : jobIdsBeingCopied) {
 			status=	canCopyJobFromSpace(fromSpaceId,userId,jid);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
 		
 		status=canCopyJobToSpace(toSpaceId,userId);
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return status;
 		}
 		for (Integer jobId : jobIdsBeingCopied) { 
 			if(Spaces.notUniquePrimitiveName(Jobs.get(jobId).getName(), toSpaceId, 3)) {
-				return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+				return new SecurityStatusCode(false, "The name of the job you are trying to copy is not unique in the destination space");
 			}
 		}
 			
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -565,38 +582,38 @@ public class SpaceSecurity {
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param benchmarkIdsBeingCopied The IDs of the benchmarks that would be copied or linked
 	 * @param copy If true, the primitives are being copied. Otherwise, they are being linked
-	 * @return 0 if the operation is allowed, and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed, and a status code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canCopyOrLinkBenchmarksBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied,boolean copy) {
+	public static SecurityStatusCode canCopyOrLinkBenchmarksBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied,boolean copy) {
 		//if we are copying, but not linking, disk quota must be checked
 		if (copy) {
 			if (!doesUserHaveDiskQuotaForBenchmarks(benchmarkIdsBeingCopied,userId)) {
-				return SecurityStatusCodes.ERROR_INSUFFICIENT_QUOTA;
+				return new SecurityStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
 			}
 		}
-		int status=0;
+		SecurityStatusCode status=null;
 		for(Integer sid : benchmarkIdsBeingCopied) {
 			//first make sure the user can copy each benchmark FROM the original space
 			status=	canCopyBenchmarkFromSpace(fromSpaceId,userId,sid);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
 		//then, check to make sure they are allowed to copy TO the new space
 		status=canCopyBenchmarkToSpace(toSpaceId,userId);
-		if (status!=0) {
+		if (!status.isSuccess()) {
 			return status;
 		}
 		
 		//benchmark names must be unique in each space
 		for (Integer benchId : benchmarkIdsBeingCopied) { 
 			if(Spaces.notUniquePrimitiveName(Benchmarks.get(benchId).getName(), toSpaceId, 2)) {
-				return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+				return new SecurityStatusCode(false, "The name of the benchmark you are trying to copy is not unique in the destination space");
 			}
 		}
 			
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -607,13 +624,13 @@ public class SpaceSecurity {
 	 * @param solverIdsBeingCopied The IDs of the solvers that would be copied or linked
 	 * @param hierarchy If true, the copy will take place in the entire hierarchy rooted at the space with ID toSpaceId
 	 * @param copy If true, the primitives are being copied. Otherwise, they are being linked
-	 * @return 0 if the operation is allowed, and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed, and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canCopyOrLinkSolverBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
+	public static SecurityStatusCode canCopyOrLinkSolverBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
 			if (!doesUserHaveDiskQuotaForSolvers(solverIdsBeingCopied,userId)) {
-				return SecurityStatusCodes.ERROR_INSUFFICIENT_QUOTA;
+				return new SecurityStatusCode(false, "You do not have enough disk quota space to copy the solver(s)");
 			}
 		}
 		
@@ -628,11 +645,11 @@ public class SpaceSecurity {
 			}
 		}
 		
-		int status=0;
+		SecurityStatusCode status=null;
 		for(Integer sid : solverIdsBeingCopied) {
 			//make sure the user is allowed to copy solvers FROM the original space
 			status=	canCopySolverFromSpace(fromSpaceId,userId,sid);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
@@ -640,17 +657,17 @@ public class SpaceSecurity {
 		//then, for every destination space, make sure they can copy TO that space
 		for (Integer spaceId : spaceIds) {
 			status=canCopySolverToSpace(spaceId,userId);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 			for (Integer solverId : solverIdsBeingCopied) { 
 				if(Spaces.notUniquePrimitiveName(Solvers.get(solverId).getName(), spaceId, 1)) {
-					return SecurityStatusCodes.ERROR_NOT_UNIQUE_NAME;
+					return new SecurityStatusCode(false, "The name of the solver you are trying to copy is not unique in the destination space");
 				}
 			}
 			
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks to see whether a list of users can be copied from one space to another
@@ -659,9 +676,9 @@ public class SpaceSecurity {
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param userIdsBeingCopied The IDs of the users that would be copied
 	 * @param hierarchy If true, the copy will take place in the entire hierarchy rooted at the space with ID toSpaceId
-	 * @return 0 if the operation is allowed, and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed, and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canCopyUserBetweenSpaces(int fromSpaceId, int toSpaceId, int userIdDoingCopying, List<Integer> userIdsBeingCopied, boolean hierarchy) {
+	public static SecurityStatusCode canCopyUserBetweenSpaces(int fromSpaceId, int toSpaceId, int userIdDoingCopying, List<Integer> userIdsBeingCopied, boolean hierarchy) {
 		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		if (hierarchy) {
@@ -670,21 +687,21 @@ public class SpaceSecurity {
 				spaceIds.add(s.getId());
 			}
 		}
-		int status=0;
+		SecurityStatusCode status=null;
 		for (Integer uid : userIdsBeingCopied) {
 			status=canCopyUserFromSpace(fromSpaceId,userIdDoingCopying, uid);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
 		for (Integer sid : spaceIds) {
 			status=canAddUserToSpace(sid,userIdDoingCopying);
-			if (status!=0) {
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -693,14 +710,14 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canAddUserToSpace(int spaceId, int userIdMakingRequest) {
+	public static SecurityStatusCode canAddUserToSpace(int spaceId, int userIdMakingRequest) {
 		// Check permissions, the user must have add user permissions in the destination space
 		Permission perm = Permissions.get(userIdMakingRequest, spaceId);		
 		if(perm == null || !perm.canAddUser()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to add a user to this space");
 		}
 
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -709,13 +726,13 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	private static int canCopySolverToSpace(int spaceId, int userId) {
+	private static SecurityStatusCode canCopySolverToSpace(int spaceId, int userId) {
 		// Check permissions - the user must have add solver permissions in the destination space
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canAddSolver()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to add a solver to this space");
 		}	
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -724,13 +741,13 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	private static int canCopyBenchmarkToSpace(int spaceId, int userId) {
+	private static SecurityStatusCode canCopyBenchmarkToSpace(int spaceId, int userId) {
 		// Check permissions - the user must have add solver permissions in the destination space
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canAddBenchmark()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to add a benchmark to this space");
 		}	
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -739,13 +756,13 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	private static int canCopyJobToSpace(int spaceId, int userId) {
+	private static SecurityStatusCode canCopyJobToSpace(int spaceId, int userId) {
 		// Check permissions - the user must have add solver permissions in the destination space
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canAddJob()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to add a job to this space");
 		}	
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
@@ -755,14 +772,14 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	private static int canCopySpaceToSpace(int spaceId, int userId) {
+	private static SecurityStatusCode canCopySpaceToSpace(int spaceId, int userId) {
 		// Check permissions - the user must have add solver permissions in the destination space
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(perm == null || !perm.canAddSpace()) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+			return new SecurityStatusCode(false, "You do not have permission to add a subspace to this space");
 		}	
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	
@@ -774,11 +791,11 @@ public class SpaceSecurity {
 	 * @param hierarchy If true, checks to see whether the users can be removed from the entire hierarchy
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canRemoveUsersFromSpaces(List<Integer> userIdsBeingRemoved, int userIdDoingRemoval, int rootSpaceId, boolean hierarchy) {
+	public static SecurityStatusCode canRemoveUsersFromSpaces(List<Integer> userIdsBeingRemoved, int userIdDoingRemoval, int rootSpaceId, boolean hierarchy) {
 		try {
 			Permission perm = Permissions.get(userIdDoingRemoval, rootSpaceId);
 			if(perm == null || !perm.canRemoveUser()) {
-				return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;	
+				return new SecurityStatusCode(false, "You do not have permission to remove a user from this space");
 			}
 			
 			if (!Users.isAdmin(userIdDoingRemoval)) {
@@ -787,11 +804,11 @@ public class SpaceSecurity {
 				// 2 - Ensuring other leaders of the space aren't in the list of users to remove
 				for(int userId : userIdsBeingRemoved){
 					if(userId == userIdDoingRemoval){
-						return SecurityStatusCodes.ERROR_CANT_REMOVE_SELF;
+						return new SecurityStatusCode(false, "You cannot remove yourself from a space in this way");
 					}
 					perm = Permissions.get(userId, rootSpaceId);
 					if(perm!=null && perm.isLeader()){
-						return SecurityStatusCodes.ERROR_CANT_REMOVE_LEADER;
+						return new SecurityStatusCode(false, "You do not have permission to remove a leader from this space");
 					}
 				}
 			}
@@ -800,48 +817,48 @@ public class SpaceSecurity {
 				// Iterate once through all subspaces of the destination space to ensure the user has removeUser permissions in each
 				for(Space subspace : subspaces) {
 					
-					int status=canRemoveUsersFromSpaces(userIdsBeingRemoved,userIdDoingRemoval,subspace.getId(),false);
-					if (status!=0) {
+					SecurityStatusCode status=canRemoveUsersFromSpaces(userIdsBeingRemoved,userIdDoingRemoval,subspace.getId(),false);
+					if (!status.isSuccess()) {
 						return status;
 					}	
 				}
 			}		
-			return 0;
+			return new SecurityStatusCode(true);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			
 			
 		}
-		return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+		return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		
 	}
 	
 	/**
 	 * Checks whether the given user is allowed to see the current new community requests
 	 * @param userId The ID of the user in question
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserViewCommunityRequests(int userId) {
+	public static SecurityStatusCode canUserViewCommunityRequests(int userId) {
 		if (!Users.isAdmin(userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks whether a user can update whether a space is public or private
 	 * @param spaceId The ID of the space being checked
 	 * @param userId The ID  of the user making the request 
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canSetSpacePublicOrPrivate(int spaceId,int userId) {
+	public static SecurityStatusCode canSetSpacePublicOrPrivate(int spaceId,int userId) {
 		Permission perm=Permissions.get(userId, spaceId);
 		//must be a leader to make a space public
 		if (perm == null || !perm.isLeader()){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to affect whether this space is public or private");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
     
     /**
@@ -866,12 +883,12 @@ public class SpaceSecurity {
 
 	}
 		
-	int status;
+	SecurityStatusCode status;
     
 	List<Integer> permittedSpaceIds = new ArrayList<Integer>();
 	for (Integer sid : spaceIds) {
 	    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId,leaderStatusChange);
-	    if (status==0) {
+	    if (status.isSuccess()) {
 		permittedSpaceIds.add(sid);
 	    }
 	}
@@ -883,14 +900,14 @@ public class SpaceSecurity {
      * @param spaceId The ID of the space in question
      * @param userIdBeingUpdated The ID of the user who would have their permissions updated
      * @param requestUserId The Id of the user making the request
-     * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+     * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
      */
-    public static int canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange) {
+    public static SecurityStatusCode canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange) {
 
 
 	Permission perm = Permissions.get(requestUserId, spaceId);
 	if(perm == null || !perm.isLeader()) {
-	    return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+		return new SecurityStatusCode(false, "You do not have permission to update permissions here");
 	}
 
 	
@@ -898,12 +915,12 @@ public class SpaceSecurity {
 	perm = Permissions.get(userIdBeingUpdated, spaceId);
 
 	if(perm.isLeader() && !Users.isAdmin(requestUserId) && !leaderStatusChange){
-	    return SecurityStatusCodes.ERROR_CANT_EDIT_LEADER_PERMS;
+		return new SecurityStatusCode(false, "You do not have permission to update permissions for a leader here");
 	}	
 	
 	
 		
-	return 0;
+	return new SecurityStatusCode(true);
     }
 
     

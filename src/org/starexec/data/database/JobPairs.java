@@ -580,6 +580,10 @@ public class JobPairs {
 	 */
 	
 	public static String getLogPath(int pairId) {
+		return getLogFilePath(getFilePathInfo(pairId));
+	}
+	
+	private static JobPair getFilePathInfo(int pairId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -598,8 +602,8 @@ public class JobPairs {
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
-				return JobPairs.getLogFilePath(pair);
-				
+				pair.setId(pairId);
+				return pair;
 			}
 		} catch (Exception e) {
 			log.debug("getFilePath says "+e.getMessage(),e);
@@ -619,34 +623,9 @@ public class JobPairs {
 	 */
 	
 	public static String getFilePath(int pairId) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL getJobPairFilePathInfo(?)}");
-			procedure.setInt(1,pairId);
-			results=procedure.executeQuery();
-			if (results.next()) {
-				JobPair pair=new JobPair();
-				Solver s= pair.getSolver();
-				s.setName(results.getString("solver_name"));
-				Benchmark b=pair.getBench();
-				b.setName(results.getString("bench_name"));
-				Configuration c=pair.getConfiguration();
-				c.setName(results.getString("config_name"));
-				pair.setJobId(results.getInt("job_id"));
-				pair.setPath(results.getString("path"));
-				return getFilePath(pair);
-			}
-		} catch (Exception e) {
-			log.debug("getFilePath says "+e.getMessage(),e);
-		}finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
+		return getFilePath(getFilePathInfo(pairId));
+
+		
 	}
 	
 	/**
@@ -697,6 +676,8 @@ public class JobPairs {
 
     	return null;
     }
+    
+    
 	/**
 	 * Returns the absolute path to where the log for a pair is stored given the pair.
 	 * @param pair
@@ -715,6 +696,12 @@ public class JobPairs {
 
 			file=new File(file,pair.getBench().getName());
 			
+			//this is the old path--return it if it is the log file
+			if (file.exists() && file.isFile()) {
+				
+				return file.getAbsolutePath();
+			}
+			file=new File(file,pair.getId()+".txt");
 			
 			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
 			return file.getAbsolutePath();
@@ -755,8 +742,11 @@ public class JobPairs {
 						testFile.delete();
 					}
 				}
+			} else if (file.isFile()) {
+				return file.getAbsolutePath();
 			}
-			
+			file=new File(file,pair.getId()+".txt");
+
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);
@@ -916,6 +906,14 @@ public class JobPairs {
 	 * Sorts the given list of job pairs on the column given by the integer sortColumn
 	 * @param pairs The list  of pairs to sort
 	 * @param sortColumn Determines what attribute pairs are sorted on.
+	 * 0 = bench name
+	 * 1 = solver name
+	 * 2 = config name
+	 * 3 = status name
+	 * 4 = wallclock or cpu time (depending on wallclock variable)
+	 * 5 = starexec-result attr
+	 * 6 pair id
+	 * 7 completion id
 	 * @param Whether to sort ASC or DESC
 	 * @return
 	 */

@@ -18,40 +18,40 @@ public class QueueSecurityTests extends TestSequence {
 	
 	@Test
 	private void CancelRequestTest() {
-		Assert.assertEquals(0,QueueSecurity.canUserCancelRequest(admin.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserCancelRequest(user1.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserCancelRequest(user2.getId()));
+		Assert.assertEquals(true,QueueSecurity.canUserCancelRequest(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserCancelRequest(user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserCancelRequest(user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void PermanentQueueTest() {
-		Assert.assertEquals(0,QueueSecurity.canUserMakeQueue(admin.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserMakeQueue(user1.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserMakeQueue(user2.getId()));
+		Assert.assertEquals(true,QueueSecurity.canUserMakeQueue(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void RemoveQueueTest() {
-		Assert.assertEquals(0,QueueSecurity.canUserRemoveQueue(admin.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserRemoveQueue(user1.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserRemoveQueue(user2.getId()));
+		Assert.assertEquals(true,QueueSecurity.canUserRemoveQueue(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserRemoveQueue(user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserRemoveQueue(user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canUserSeeQueueRequests() {
-		Assert.assertEquals(0,QueueSecurity.canUserSeeRequests(admin.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserSeeRequests(user1.getId()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserSeeRequests(user2.getId()));
+		Assert.assertEquals(true,QueueSecurity.canUserSeeRequests(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserSeeRequests(user1.getId()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserSeeRequests(user2.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canUserUpdateRequest() {
 		String randomName=TestUtil.getRandomQueueName();
-		Assert.assertEquals(0,QueueSecurity.canUserUpdateRequest(admin.getId(),randomName));
+		Assert.assertEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),randomName).isSuccess());
 		//queues need unique names, so make sure we can't choose a name we already have
-		Assert.assertNotEquals(0,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()));
-		Assert.assertNotEquals(0,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName));
-		Assert.assertNotEquals(0,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName));
+		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName).isSuccess());
 	}
 	
 	

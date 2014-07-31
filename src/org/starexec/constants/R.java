@@ -193,4 +193,6 @@ public class R {
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
     public static int DEFAULT_MAX_TIMEOUT = 259200;
     
+    
+    public static int NO_TYPE_PROC_ID=1;
 }	

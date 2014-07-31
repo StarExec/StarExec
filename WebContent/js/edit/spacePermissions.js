@@ -49,7 +49,11 @@ $(document).ready(function(){
 	currentUserId=parseInt($("#userId").attr("value"));
 	curIsAdmin = isAdmin();
 	lastSelectedUserId = null;
-	
+	$("#exploreSpaces").button( {
+		icons: {
+			primary: "ui-icon-arrowthick-1-w"
+	}
+	});
 	//TODO : abstract space chain
 	usingSpaceChain=(getSpaceChain().length>1);
 
@@ -339,26 +343,15 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-//					showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
-					// Update the number displayed in this DataTable's fieldset
-					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+				// Update the number displayed in this DataTable's fieldset
+				updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 				
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
-				
-				
-
-				break;
 				}
+
 			},  
 			"json"
 	).error(function(){
@@ -792,29 +785,10 @@ function changePermissions(hier,changingLeadership){
 	   url,
 	   data,
 	   function(returnCode) {
-	       switch (returnCode) {
-	       case 0:
-		   showMessage('success', "user's permission were successfuly updated", 5000);
-		   
-		   //TODO : inefficient since I should already have all information I need
-		   getPermissionDetails(lastSelectedUserId,spaceId);
-		   //window.location = starexecRoot+'secure/admin/permissions.jsp?id=' + userId;
-		   break;
-	       case 1:
-		   showMessage('error', "space details were not updated; please try again", 5000);
-		   break;
-	       case 2:
-		   showMessage('error', "only a leader of this space can modify its details", 5000);
-		   break;
-	       case 3:
-		   showMessage('error',"you must first demote a leader before you can change their permissions",5000);
-	       case 7:
-		   showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
-		   break;
-	       default:
-		   showMessage('error', "invalid parameters", 5000);
-		   break;
-	       }
+		   s=parseReturnCode(returnCode);
+		   if (s) {
+			   getPermissionDetails(lastSelectedUserId,spaceId);
+		   }
 	   },
 	   "json"
 	   );

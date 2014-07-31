@@ -25,10 +25,8 @@
 			}
 		}
 	} catch (NumberFormatException nfe) {
-		nfe.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
 	} catch (Exception e) {
-		e.printStackTrace();
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>

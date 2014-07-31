@@ -172,7 +172,7 @@ OPTIONAL: None
 REQUIRED: "id"
 OPTIONAL: None
 
---rerunjob -Reruns an entire. "id" refers to a job id Only completed jobs may be run.
+--rerunjob -Reruns an entire job. "id" refers to a job id. Only completed jobs may be run.
 REQUIRED: "id"
 OPTIONAL: None
 

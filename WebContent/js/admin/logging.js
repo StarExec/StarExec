@@ -27,11 +27,8 @@ function initUI(){
 				starexecRoot+"services/logging/"+value[0],
 				{},
 				function(returnCode) {
-					if (returnCode=="0") {
-						showMessage("success","log level changed successfully",5000);
-					} else {
-						showMessage("error","There was an error while changing the log level",5000);
-					}
+					parseReturnCode(returnCode);
+					
 				},
 				"json"
 		);
@@ -43,11 +40,8 @@ function initUI(){
 			starexecRoot+"services/logging/"+value[0]+"/"+$("#className").val(),
 			{},
 			function(returnCode) {
-				if (returnCode=="0") {
-					showMessage("success","log level changed successfully",5000);
-				} else {
-					showMessage("error","There was an error while changing the log level-- the class may not have existed",5000);
-				}
+				parseReturnCode(returnCode);
+
 			},
 			"json"
 		);

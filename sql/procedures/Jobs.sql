@@ -302,7 +302,6 @@ CREATE PROCEDURE RefreshEntriesByAncestor(IN _id INT, IN _time TIMESTAMP)
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
--- TODO: use a join instead of calling these functions (time trial after job_space_closure)
 DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
@@ -340,18 +339,32 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpace;
-CREATE PROCEDURE GetJobPairsByJobInJobSpace(IN _jobSpaceId INT)
+DROP PROCEDURE IF EXISTS GetCompletedJobPairsInJobSpace;
+CREATE PROCEDURE GetCompletedJobPairsInJobSpace(IN _jobSpaceId INT)
 	BEGIN
-		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,wallclock,job_pairs.id,bench_id
+		SELECT id, 
+						config_id,
+						config_name,
+						status_code,
+						solver_id,
+						solver_name,
+						bench_id,
+						bench_name,
+						job_attributes.attr_value AS result,
+						completion_id,
+						wallclock,
+						cpu
 		FROM job_pairs 				
-		WHERE job_space_id =_jobSpaceId;
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
+		JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
+
+		WHERE job_space_id =_jobSpaceId AND status_code=7;
 	END //
 	
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByJobInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairsByJobInJobSpaceHierarchy(IN _jobSpaceId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
 		SELECT solver_id,solver_name,config_id,config_name,status_code,cpu,
 		wallclock,job_pairs.id,job_pairs.bench_id,
@@ -482,6 +495,14 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 		WHERE id = _jobId;
 		DELETE FROM job_pairs
 		WHERE job_id=_jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetOrphanedJobIds;
+CREATE PROCEDURE GetOrphanedJobIds(IN _userId INT)
+	BEGIN
+		SELECT jobs.id FROM jobs
+		LEFT JOIN job_assoc ON job_assoc.job_id=jobs.id
+		WHERE jobs.user_id=_userId AND job_assoc.space_id IS NULL;
 	END //
 	
 -- Sets the "paused" property of a job to true

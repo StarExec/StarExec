@@ -31,19 +31,14 @@ function updateButtonActions() {
 		$.post(  
 				starexecRoot+"services/nodes/update",
 				function(nextDataTablePage){
-					switch(nextDataTablePage){
-					case 1:
-						break;
-					case 2:		
-						break;
-					default:	// Have to use the default case since this process returns JSON objects to the client
+					s=parseReturnCode(nextDataTablePage);
+					if (s) {
 						showMessage("success", "Node counts successfully updated" , 3000);
 					}
+
 				},  
 				"json"
-		).error(function(){
-			//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-		});
+		)
 	});
 	
 	$('#btnBack').button({
@@ -126,31 +121,18 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + "nodes/dates/pagination/" + string_last_date,
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:	
-					showMessage('error', "not a valid date; please try again", 5000);
-					break;
-				case 4: 
-					showMessage('error', "the date must be greater than provided dates; please try again", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
 
 					// Update the number displayed in this DataTable's fieldset
 					$('#nodeExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
 				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				
-				break;
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
 				}
 			},  
 			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
+	)
 }
 
 	

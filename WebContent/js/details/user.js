@@ -1,8 +1,9 @@
 var jobTable;
 var benchTable;
 var solverTable;
+var userId;
 $(document).ready(function(){
-	
+	userId=$("#userId").attr("value");
 	// Hide loading images by default
 	$('legend img').hide();
 	$("#dialog-confirm-delete").hide();
@@ -20,11 +21,19 @@ $(document).ready(function(){
 	}
 	});
 	
-	$(".recycleButton").click(function() {
+	$(".recycleSelected").click(function() {
 		recycleSelected($(this).attr("prim"));
+	});
+	
+	$(".recycleOrphaned").click(function() {
+		recycleOrphaned($(this).attr("prim"));
 	});
 	$("#deleteJob").click(function() {
 		deleteSelectedJobs();
+	});
+	
+	$("#deleteOrphanedJob").click(function() {
+		deleteOrphanedJobs();
 	});
 	
 	$('#editButton').button({
@@ -111,20 +120,13 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + usrId + "/" + tableName + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view primitives for this user", 5000);
-						break;
-					default:
-						updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
- 						fnCallback(nextDataTablePage);
- 						if('j' == tableName[0]){
- 							colorizeJobStatistics();
- 						} 
- 						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+						fnCallback(nextDataTablePage);
+						if('j' == tableName[0]){
+							colorizeJobStatistics();
+						} 
 				}
 			},  
 			"json"
@@ -264,20 +266,51 @@ function recycleSelected(prim) {
 				$.post(  
 						starexecRoot +"services/recycle/"+prim, 
 						{selectedIds : getSelectedRows(table)},
-						function(code){
+						function(returnCode){
 							destroyDialog();
-							switch(code){
-								case 1:
-									showMessage('error', "Internal error recycling "+prim+"s", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have permission to recycle the given prims",5000);
-								default:
-									solverTable.fnDraw(false);
-									benchTable.fnDraw(false);
-									handleSelectChange();
-			 						break;
+							s=parseReturnCode(returnCode);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleSelectChange();
 							}
+							
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error recycling "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
+function recycleOrphaned(prim) {
+	$('#dialog-confirm-recycle-txt').text('Are you sure you want to recycle all of your orphaned ' +prim +'(s)?');
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-recycle').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'recycle': function() {
+				$("#dialog-confirm-recycle").dialog("close");
+				createDialog("Recycling the selected "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
+				$.post(  
+						starexecRoot +"services/recycleOrphaned/"+prim+"/"+userId, 
+						{},
+						function(returnCode){
+							destroyDialog();
+							s=parseReturnCode(returnCode);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleSelectChange();
+							}
+							
 						},  
 						"json"
 				).error(function(){
@@ -293,7 +326,7 @@ function recycleSelected(prim) {
 
 function deleteSelectedJobs() {
 	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected job(s)? After deletion, they can not be recovered');
-	table=jobTable
+	table=jobTable;
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
@@ -307,14 +340,43 @@ function deleteSelectedJobs() {
 						{selectedIds : getSelectedRows(table)},
 						function(nextDataTablePage){
 							destroyDialog();
-							switch(nextDataTablePage){
-								case 1:
-									showMessage('error', "Internal error deleting job(s)", 5000);
-									break;
-								default:
-									jobTable.fnDraw(false);
-									handleSelectChange();
-			 						break;
+							s=parseReturnCode(nextDataTablePage);
+							if (s) {
+								jobTable.fnDraw(false);
+								handleSelectChange();
+							}
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error deleting job(s)",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
+function deleteOrphanedJobs() {
+	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected job(s)? After deletion, they can not be recovered');
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'delete permanently': function() {
+				$("#dialog-confirm-delete").dialog("close");
+				createDialog("Deleting the selected job(s), please wait. This will take some time for large numbers of jobs(s).");
+				$.post(  
+						starexecRoot +"services/deleteOrphaned/job/"+userId, 
+						{},
+						function(nextDataTablePage){
+							destroyDialog();
+							s=parseReturnCode(nextDataTablePage);
+							if (s) {
+								jobTable.fnDraw(false);
+								handleSelectChange();
 							}
 						},  
 						"json"

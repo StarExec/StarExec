@@ -245,3 +245,51 @@ function parseBoolean(string) {
 	}
 	return false;
 }
+
+/**
+ * Returns true if the given string is not undefined, null, or empty
+ * @param string
+ * @returns {Boolean}
+ */
+function stringExists(string) {
+	return (typeof string != 'undefined' && string!=null && string.length>0);
+}
+
+function getStatusCode(code) {
+	sc=code.statusCode;
+	if (typeof sc == 'undefined') {
+		return null;
+	}
+	return parseInt(sc);
+}
+
+/**
+ * Reads a status code encoded as a json object, prints its message if it has one, and returns 
+ * true or false depending on whether it was a success status.
+ * If the "code" object is not actually a status code, returns true
+ */
+function parseReturnCode(code) {
+	//alert("here");
+	s = code.success;
+	
+	//alert(s);
+	//we didn't get back a status code
+	if (typeof s =='undefined' || s==null) {
+		return true;
+	}
+	
+	m = code.message;
+
+	
+	if (s) {
+		if (stringExists(m)) {
+			showMessage("success", m , 5000);
+		}
+	} else {
+		if (stringExists(m)) {
+			showMessage("error",m,5000);
+		}
+	}
+	
+	return s;
+}

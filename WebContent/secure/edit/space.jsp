@@ -59,7 +59,7 @@
 				} else {
 					request.setAttribute("isNotSticky","checked=\"checked\"");
 				}
-				request.setAttribute("isCommunity",Communities.isCommunity(s.getId()));
+				request.setAttribute("isCommunity",(Communities.isCommunity(s.getId()) || Spaces.isRoot(s.getId()) ));
 			}
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Space does not exist or is restricted");
@@ -134,12 +134,13 @@
 							<td>sticky leaders</td>
 							<td>
 								<input id="sticky" type="radio" name="sticky" value="true" ${isSticky} /><label>yes</label>
-								<input id="sticky" type="radio" name="sticky" value="false" ${isNotSticky} /><label>no</label>
+								<input id="notSticky" type="radio" name="sticky" value="false" ${isNotSticky} /><label>no</label>
 							</td>		
 						</tr>	
 					</c:if>
 					<c:if test="${isCommunity}">
-						<input style="display:none" id="sticky" type="radio" name="sticky" value="false" checked="checked"/>
+						<!--  Include the sticky input, but don't set it to sticky -->
+						<input style="display:none" id="sticky" type="radio" name="sticky" value="true"/><label></label>
 					</c:if>																	
 				</tbody>
 			</table>

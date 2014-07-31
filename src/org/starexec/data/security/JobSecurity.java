@@ -20,13 +20,13 @@ public class JobSecurity {
 	 * Checks to see if the given user has permission to see the details of the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserSeeJob(int jobId, int userId) {
+	public static SecurityStatusCode canUserSeeJob(int jobId, int userId) {
 		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to see this job");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Checks whether a given string is a valid type for the pairsInSpace page
@@ -47,28 +47,28 @@ public class JobSecurity {
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
 	 * @param pid the ID of the post processor that would be used.
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserPostProcessJob(int jobId, int userId, int pid) {
+	public static SecurityStatusCode canUserPostProcessJob(int jobId, int userId, int pid) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The job could not be found");
 		}
 		boolean isAdmin=Users.isAdmin(userId);
 		
 		if (job.getUserId()!=userId && !isAdmin) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to post process this job");
 		}
 		Processor p=Processors.get(pid);
 		if (!Users.isMemberOfCommunity(userId, p.getCommunityId()) && !isAdmin) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to use the selected post processor");
 		}
 		
 		if (!Jobs.canJobBePostProcessed(jobId)) {
-			return SecurityStatusCodes.ERROR_JOB_INCOMPLETE;
+			return new SecurityStatusCode(false, "The job is not yet completed");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	/**
 	 * Ensures a given user has permission to rerun pairs of a given status code
@@ -77,35 +77,35 @@ public class JobSecurity {
 	 * @param statusCode
 	 * @return
 	 */
-	public static int canUserRerunPairs(int jobId, int userId, int statusCode) {
-		int result= canUserRerunPairs(jobId, userId);
-		if(result!=0) {
+	public static SecurityStatusCode canUserRerunPairs(int jobId, int userId, int statusCode) {
+		SecurityStatusCode result= canUserRerunPairs(jobId, userId);
+		if (!result.isSuccess()) {
 			return result;
 		}
 		
 		//can't rerun pairs that are not complete
 		if (statusCode<StatusCode.STATUS_COMPLETE.getVal() || statusCode>StatusCode.ERROR_GENERAL.getVal()) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "This pair is not yet completed");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
-	public static int canUserRerunPairs(int jobId, int userId) {
+	public static SecurityStatusCode canUserRerunPairs(int jobId, int userId) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The job could not be found");
 		}
 		boolean isAdmin=Users.isAdmin(userId);
 		
 		if (job.getUserId()!=userId && !isAdmin) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to rerun pairs in this job");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
-	public static int canUserRerunAllPairs(int jobId, int userId) {
+	public static SecurityStatusCode canUserRerunAllPairs(int jobId, int userId) {
 		if (!Jobs.isJobComplete(jobId)) {
-			return SecurityStatusCodes.ERROR_JOB_INCOMPLETE;
+			return new SecurityStatusCode(false, "This job is not yet completed");
 		}
 		return canUserRerunPairs(jobId, userId);
 	}
@@ -114,32 +114,32 @@ public class JobSecurity {
 	 * Checks to see if the given user has permission to pause the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static int canUserPauseJob(int jobId, int userId) {
+	public static SecurityStatusCode canUserPauseJob(int jobId, int userId) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The job could not be found");
 		}
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to pause this job");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to resume of the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
 	
-	public static int canUserResumeJob(int jobId, int userId) {
+	public static SecurityStatusCode canUserResumeJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to resume this job");
 		}
 		
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	
@@ -147,53 +147,58 @@ public class JobSecurity {
 	 * Checks to see if the given user has permission to delete all jobs in the given list of jobs
 	 * @param jobIds The IDs of the jobs being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise.
 	 * If the user does not have the needed permissions for even one job, the error code will be returned
 	 */
 	
-	public static int canUserDeleteJobs(List<Integer> jobIds, int userId) {
+	public static SecurityStatusCode canUserDeleteJobs(List<Integer> jobIds, int userId) {
 		for (Integer jid : jobIds) {
-			int status=canUserDeleteJob(jid,userId);
-			if (status!=0) {
+			SecurityStatusCode status=canUserDeleteJob(jid,userId);
+			if (!status.isSuccess()) {
 				return status;
 			}
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise.
 	 */
-	public static int canUserDeleteJob(int jobId, int userId) {
+	public static SecurityStatusCode canUserDeleteJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to delete this job");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to change the queue the given job is running on
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise.
 	 */
 	
-	//TODO: We need to make sure the user actually has access to this queue.
-	public static int canChangeQueue(int jobId, int userId, int queueId) {
+	public static SecurityStatusCode canChangeQueue(int jobId, int userId, int queueId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to change queues for this job");
 		}
-		Job j=Jobs.get(jobId);
 		Queue q=Queues.get(queueId);
 
 		if (q==null){
-			return SecurityStatusCodes.ERROR_INVALID_PARAMS;
+			return new SecurityStatusCode(false, "The given queue could not be found");
 		}
-		
-		return 0;
+		List<Queue> queues=Queues.getQueuesForUser(userId);
+		for (Queue queue : queues) {
+			if (queue.getId()==queueId) {
+				return new SecurityStatusCode(true);
+
+			}
+		}
+		return new SecurityStatusCode(false, "You do not have permission to access the selected queue");
+
 	}
 	
 	/**
@@ -217,24 +222,24 @@ public class JobSecurity {
 	 * Checks to see whether the given user is allowed to pause all jobs currently running
 	 * on the system
 	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from SecurityStatusCodes otherwise.
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise.
 	 */
-	public static int canUserPauseAllJobs(int userId){
+	public static SecurityStatusCode canUserPauseAllJobs(int userId){
 		if (!Users.isAdmin(userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see whether the given user is allowed to resume all jobs that the admin has paused
 	 * @param userId the ID of the user making the request
-	 * @return 0 if the operation is allowed and the status code from SecurityStatusCodes otherwise.
+	 * @return new SecurityStatusCode(true) if the operation is allowed and the status code from SecurityStatusCodes otherwise.
 	 */
-	public static int canUserResumeAllJobs(int userId){
+	public static SecurityStatusCode canUserResumeAllJobs(int userId){
 		if (!Users.isAdmin(userId)){
-			return SecurityStatusCodes.ERROR_INVALID_PERMISSIONS;
+			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return 0;
+		return new SecurityStatusCode(true);
 	}
 }

@@ -26,7 +26,7 @@ try {
 
 %>
 
-<star:template title="move nodes to queue" js="admin/moveNodes, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">	
+<star:template title="move nodes to queue" js="util/selectBetween, admin/moveNodes, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">	
 	<form id="addForm" method="POST" action="/${starexecRoot}/secure/move/nodes" class="queue">
 		<fieldset id="fieldStep1">
 			<legend>Move Nodes to Queue</legend>
@@ -53,6 +53,7 @@ try {
 				<thead>
 					<tr>
 						<th>node</th>
+						<th>queue</th>
 					</tr>
 				</thead>	
 				<tbody>
@@ -62,11 +63,15 @@ try {
 							<input type="hidden" name="node" value="${n.id}"/>
 							<p>${n.name}</p>							
 							
-						</td>																		
+						</td>		
+						<td>
+							<p>${n.queue.name}</p>
+						</td>																
 					</tr>
 				</c:forEach>
 				</tbody>					
 			</table>		
+			<span id="selectBetween">Select Rows Between</span>
 		</fieldset>
 	<div id="actionBar">
 		<fieldset>

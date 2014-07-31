@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.SecurityStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.CacheType;
@@ -132,7 +133,6 @@ public class Spaces {
 			idChain.add(spaceId);
 		}
 		Collections.reverse(idChain);
-		System.out.println("done");
 		return idChain;
 	}
 	
@@ -669,7 +669,7 @@ public class Spaces {
 	 * @param spaceId
 	 * @return
 	 */
-	public static int getCountInSpaceHierarchy(int spaceId) {
+	private static int getCountInSpaceHierarchy(int spaceId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -749,13 +749,12 @@ public class Spaces {
 		try {
 			con = Common.getConnection();
 			if (!hierarchy) {
-				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?, ?)}");
+				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?)}");
 			} else {
-				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdInHierarchy(?, ?, ?)}");
+				 procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdInHierarchy(?, ?)}");
 			}
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			procedure.setInt(3, R.PUBLIC_USER_ID);
 			 results = procedure.executeQuery();
 
 			if (results.next()) {
@@ -788,12 +787,11 @@ public class Spaces {
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdWithQuery(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdWithQuery(?, ?, ?)}");
 			
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			procedure.setInt(3, R.PUBLIC_USER_ID);
-			procedure.setString(4,query);
+			procedure.setString(3,query);
 			 results = procedure.executeQuery();
 
 			if (results.next()) {
@@ -824,7 +822,6 @@ public class Spaces {
 			s.setSolvers(Solvers.getBySpace(spaceId));
 			s.setJobs(Jobs.getBySpace(spaceId));
 			s.setSubspaces(Spaces.getSubSpaces(spaceId, userId));
-			//s.setPublic(Spaces.isPublicSpace(spaceId)); this should be there already
 			s.setPermission(Permissions.getSpaceDefault(spaceId));
 			return s;			
 		} catch (Exception e){			
@@ -1997,7 +1994,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		subspaces.add(Spaces.get(rootSpaceId));
 		List<Space> allowedSpaces=new ArrayList<Space>();
 		for (Space s : subspaces) {
-			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId)==0) {
+			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId).isSuccess()) {
 				allowedSpaces.add(s);
 			}
 		}
@@ -2147,7 +2144,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId) throws SQLException {
 		CallableStatement procedure = null;
 		try {
-			 procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
+			 procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
 			for(int userId : userIds){
 				procedure.setInt(1, userId);
 				procedure.setInt(2, spaceId);
@@ -2173,19 +2170,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 */
 	public static boolean removeUsers(List<Integer> userIds, int commId) {
 		Connection con = null;			
-		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			// Instantiate a transaction so users in 'userIds' get removed in an all-or-none fashion
 			Common.beginTransaction(con);
 			
-			 procedure = con.prepareCall("{CALL LeaveCommunity(?, ?)}");
-			for(int userId : userIds){
-				procedure.setInt(1, userId);
-				procedure.setInt(2, commId);
-				
-				procedure.executeUpdate();			
-			}
+			removeUsers(con,userIds,commId);
 			
 			// Commit changes to database
 			Common.endTransaction(con);
@@ -2197,7 +2187,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}
 		
 		log.error(userIds.size() + " user(s) were unsuccessfully removed from community " + commId);
@@ -2244,10 +2233,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return true if successful
 	 * @author Ruoyu Zhang
 	 */
-	//TODO: This is pretty slow at handling a full hierarchy. It would be nice to get rid of associating the "public user" to spaces
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		int status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
-		if (status!=0){
+		SecurityStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
+		if (!status.isSuccess()){
 			return false;
 		}
 
@@ -2255,43 +2243,34 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			//either add remove the public user, depending on the current operation
-			if (pbc){
-				Users.associate(con,R.PUBLIC_USER_ID, spaceId);//adds public user to space;
-				Permission publicPermission = new Permission(false);
-				Permissions.set(R.PUBLIC_USER_ID, spaceId, publicPermission);
-			} else {
-				List<Integer> userIds = new LinkedList<Integer>();
-				userIds.add(R.PUBLIC_USER_ID);
-				Spaces.removeUsers(con,userIds, spaceId);
-			}
+			
 			procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
-			//if (!pbc) {
-				//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
-			//}
+
 		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			log.error(e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		 if(hierarchy) {//is hierarchy, call recursively
-			
+			boolean success=true;
 			List<Space> subSpaces = Spaces.getSubSpaceHierarchy(spaceId, usrId);
 			for (Space space : subSpaces) {
 				try {				
-					setPublicSpace(space.getId(), usrId, pbc, false);
+					success=success && setPublicSpace(space.getId(), usrId, pbc, false);
 				} catch (Exception e){			
 					log.error(e.getMessage(), e);		
 				}
 			}
+			return success;
+		} else {
 			return true;
 		}
 		
-		return false;		
 	}
 	/**
 	 * Given a list of spaces, generates a HashMap maping spaceIds to the path for each space,
@@ -2680,5 +2659,13 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		}
 		
 		return null;
+	}
+	/**
+	 * Determines whether the given space ID is the ID of the root space
+	 * @param spaceId
+	 * @return
+	 */
+	public static boolean isRoot(int spaceId) {
+		return 1==spaceId;
 	}
 }

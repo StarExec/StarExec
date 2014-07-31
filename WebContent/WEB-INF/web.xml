@@ -187,16 +187,7 @@
     <servlet-name>BenchmarkUploader</servlet-name>
     <url-pattern>/secure/upload/benchmarks</url-pattern>
   </servlet-mapping>
-  
-  <servlet>
-    <servlet-name>SingleJobPair</servlet-name>
-    <servlet-class>org.starexec.servlets.SingleJobPair</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>SingleJobPair</servlet-name>
-    <url-pattern>/public/misc/SingleJobPair</url-pattern>
-  </servlet-mapping>
-  
+
   <servlet>
     <servlet-name>SolverUploader</servlet-name>
     <servlet-class>org.starexec.servlets.UploadSolver</servlet-class>

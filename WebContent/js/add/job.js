@@ -162,8 +162,11 @@ function attachFormValidation(){
 function initUI() {
 	
 	// Set the selected post processor to be the default one
+	
 	defaultPPId = $('#postProcess').attr('default');
-	$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	if (stringExists(defaultPPId)) {
+		$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	}
 	
 	//If there is only one post processor and for some reason it is not the default, set it as such
 	if ($("#postProcess").find("option").length==2) {

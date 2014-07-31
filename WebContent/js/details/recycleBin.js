@@ -153,20 +153,12 @@ function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + usrId + "/" + tableName + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view primitives for this user", 5000);
-						break;
-					default:
-						
-						updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
- 						fnCallback(nextDataTablePage);
- 					
- 						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+					fnCallback(nextDataTablePage);
 				}
+				
 			},  
 			"json"
 	).error(function(){
@@ -190,15 +182,11 @@ function deleteAll(prim) {
 						starexecRoot +"services/deleterecycled/"+prim+"s",
 						function(nextDataTablePage){
 							destroyDialog();
-							switch(nextDataTablePage){
-								case 1:
-									showMessage('error', "Internal error deleting "+prim+"s", 5000);
-									break;
-								default:
-									solverTable.fnDraw(false);
-									benchTable.fnDraw(false);
-									handleClassChange();
-			 						break;
+							s=parseReturnCode(nextDataTablePage);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleClassChange();
 							}
 						},  
 						"json"
@@ -228,15 +216,11 @@ function restoreAll(prim) {
 						starexecRoot +"services/restorerecycled/"+prim+"s",
 						function(nextDataTablePage){
 							destroyDialog();
-							switch(nextDataTablePage){
-								case 1:
-									showMessage('error', "Internal error restoring "+prim+"s", 5000);
-									break;
-								default:
-									solverTable.fnDraw(false);
-									benchTable.fnDraw(false);
-									handleClassChange();
-			 						break;
+							s=parseReturnCode(nextDataTablePage);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleClassChange();
 							}
 						},  
 						"json"
@@ -271,15 +255,11 @@ function deleteSelected(prim) {
 						{selectedIds : getSelectedRows(table)},
 						function(nextDataTablePage){
 							destroyDialog();
-							switch(nextDataTablePage){
-								case 1:
-									showMessage('error', "Internal error deleting "+prim+"s", 5000);
-									break;
-								default:
-									solverTable.fnDraw(false);
-									benchTable.fnDraw(false);
-									handleClassChange();
-			 						break;
+							s=parseReturnCode(nextDataTablePage);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleClassChange();
 							}
 						},  
 						"json"
@@ -312,19 +292,13 @@ function restoreSelected(prim) {
 				$.post(  
 						starexecRoot +"services/restore/"+prim, 
 						{selectedIds : getSelectedRows(table)},
-						function(code){
+						function(returnCode){
 							destroyDialog();
-							switch(code){
-								case 1:
-									showMessage('error', "Internal error restoring "+prim+"s", 5000);
-									break;
-								case 2:
-									showMessage('error', "you do not have permission to restore the selected prims",5000);
-								default:
-									solverTable.fnDraw(false);
-									benchTable.fnDraw(false);
-									handleClassChange();
-			 						break;
+							s=parseReturnCode(returnCode);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleClassChange();
 							}
 						},  
 						"json"

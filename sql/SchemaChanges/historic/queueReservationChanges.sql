@@ -1,7 +1,22 @@
 USE starexec;
 
 
-DELETE FROM queue_request;
+ ALTER TABLE queue_request DROP COLUMN code;
+
+ ALTER TABLE queue_request ADD COLUMN id INT NOT NULL AUTO_INCREMENT UNIQUE KEY;
+
+ DROP TABLE reservation_history;
+
+ DROP TABLE temp_node_changes;
+
+ DROP TABLE queue_reserved;
+
+ ALTER TABLE queue_request ADD COLUMN approved BOOLEAN NOT NULL DEFAULT FALSE;
+
+ ALTER TABLE queue_request ADD COLUMN queue_id INT DEFAULT NULL;
+
+ 
+ ALTER TABLE queue_request DROP COLUMN node_count;
 
  ALTER TABLE queue_request DROP COLUMN reserve_date;
 

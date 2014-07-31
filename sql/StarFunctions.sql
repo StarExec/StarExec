@@ -92,8 +92,7 @@ CREATE FUNCTION GetTotalPairs(_jobId INT)
 	END //
 
 --  Tells you whether a space is public or not
---  returns the number of times public_user is in the space (should be 0 or 1)	
---  Author: Benton McCune + Eric Burns
+-- Author: Eric Burns
 DROP FUNCTION IF EXISTS IsPublic;
 CREATE FUNCTION IsPublic(_spaceId int)
 	RETURNS BOOLEAN

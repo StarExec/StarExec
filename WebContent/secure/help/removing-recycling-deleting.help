@@ -1,0 +1,51 @@
+<h1>Removing, Recycling, and Deleting Primitives</h1>
+
+<p>This page explains the semantics of removing, recycling, and deleting with regards to
+solvers, benchmarks, and jobs.
+</p>
+
+<h2>Removing</h2>
+
+<p>Primitives (solvers, benchmarks, and jobs) on StarExec exist independently from the spaces they are associated with.
+In other words, primitives can be both added to and removed from spaces without having any affect on the underlying primitive.
+On StarExec, to "remove" a primitive simply means to disassociate a primitive with one or more spaces
+that it is currently associated with. </p>
+
+<p>Notably, this means that removing a solver, benchmark, or job from a space does not delete it.
+Removing and deleting are completely separate operations.
+Even if a primitive has no remaining space associations, that primitive still exists on StarExec.
+Such "orphaned" solvers and benchmarks can still be viewed, downloaded, and used in jobs. Importantly,
+they also still count against your disk quota! To remove the primitive from your quota, you need to delete it 
+permanently, which is discussed below.</p>
+
+<p>Because the normal method of adding primitives to new spaces is to drag them from a space they currently exist in
+to a new space, it is more challenging to place orphaned primitives into spaces.
+Orphaned primitives can still be added to spaces by uploading a space XML document to create new spaces
+that contain the orphaned primitive. We intend to make it possible to associate orphaned primitives with existing
+spaces in the near future.</p>
+
+<h2>Recycling</h2>
+
+<p>The recycling mechanism exists to safeguard against accidental deletion of primitives. When a primitive has been 
+recycled, it is no longer available to be used in jobs, but it does still exist on disk. This means you can still
+elect to restore primitives that have been recycled.</p>
+
+<p>Because recycled primitives still exist on disk, they do still count against your disk quota! To delete
+primitives that have been recycled, you can use <a href="/${starexecRoot}/secure/details/recycleBin.jsp">the recycle bin
+page.</a> This page can be accessed by clicking the trashcan icon in the space explorer or by clicking the "manage recycle bin"
+button on your profile page. That page also allows you to restore primitives, which means removing them from the recycle bin
+and allowing them to be used normally.</p>
+
+
+<p>The recycling mechanism currently exists only for solvers and benchmarks. Jobs cannot be recycled. If they are deleted, 
+they are gone permanently!</p>
+
+<h2>Deleting</h2>
+
+<p>To "delete" a primitive has the expected effect-- it permanently removes that primitive on disk. 
+Deleted primitives will no longer count against your disk quota, but they cannot be restored in any way.</p>
+
+<p>Even when a primitive is deleted, it is not removed from spaces! Again, deleting and removing are completely separate processes.
+Instead, primitives that have been deleted will be marked (deleted) in their spaces, and it is up to the members of that space
+to remove the deleted primitives. This allows you to see explicitly that a primitive in one of your spaces has been deleted, 
+rather than having the primitive vanish silently from the space.</p>

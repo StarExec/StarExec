@@ -236,7 +236,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
 
-		    // taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
+		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 
 		    // this task seems to have a number of problems currently, such as leaving jobs paused after it runs
 		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);

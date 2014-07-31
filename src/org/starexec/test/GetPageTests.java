@@ -2,7 +2,6 @@ package org.starexec.test;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -11,13 +10,10 @@ import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Processor;
@@ -29,10 +25,6 @@ import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
-/*
- * TODO:
- * uploadStatus
- */
 
 public class GetPageTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	

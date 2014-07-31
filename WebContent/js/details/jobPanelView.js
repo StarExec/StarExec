@@ -128,18 +128,9 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
-				
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view job pairs for this job", 5000);
-						break;
-					default:
-					
-						fnCallback(nextDataTablePage);						
-						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s)  {
+					fnCallback(nextDataTablePage);						
 				}
 			},  
 			"json"

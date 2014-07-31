@@ -30,9 +30,9 @@ public class SolverSecurityTests extends TestSequence {
 	Solver solver3=null;
 	@Test
 	private void deleteSolverPermissionTest() {
-		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolver(solver.getId(), admin.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserDeleteSolver(solver.getId(), regular.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), regular.getId()).isSuccess());
 	}
 	
 	@Test
@@ -41,15 +41,15 @@ public class SolverSecurityTests extends TestSequence {
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
-		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
 		
 		ids.add(solver3.getId());
 		
-		Assert.assertNotEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()));
+		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
 		
 	}
 	
@@ -59,15 +59,15 @@ public class SolverSecurityTests extends TestSequence {
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
-		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, admin.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolvers(ids, admin.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()).isSuccess());
 		
 		ids.add(solver3.getId());
 		
-		Assert.assertNotEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolvers(ids, admin.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()));
+		Assert.assertNotEquals(true,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolvers(ids, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()).isSuccess());
 	}
 	
 	@Test
@@ -76,64 +76,64 @@ public class SolverSecurityTests extends TestSequence {
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
-		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
 		
 		ids.add(solver3.getId());
 		
-		Assert.assertNotEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()));
+		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canAssociateWebsite() {
-		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","http://www.test.url"));
-		Assert.assertEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","http://www.test.url"));
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new","http://www.test.url"));
+		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","http://www.test.url").isSuccess());
+		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","http://www.test.url").isSuccess());
+		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new","http://www.test.url").isSuccess());
 		
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>","http://www.test.url"));
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>","http://www.test.url"));
+		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>","http://www.test.url").isSuccess());
+		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>","http://www.test.url").isSuccess());
 		
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","<script>"));
-		Assert.assertNotEquals(0, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","<script>"));
+		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","<script>").isSuccess());
+		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","<script>").isSuccess());
 	}
 	
 	@Test
 	private void CanDeleteWebsiteTest() {
 		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
 		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0).getId();
-		Assert.assertEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, admin.getId()));
+		Assert.assertEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, admin.getId()).isSuccess());
 
-		Assert.assertNotEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, regular.getId()));
+		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, regular.getId()).isSuccess());
 		
-		Assert.assertNotEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), -1, owner.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canDeleteWebsite(solver.getId(), -1, admin.getId()));
+		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), -1, owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), -1, admin.getId()).isSuccess());
 	}
 	
 	
 	@Test
 	private void recycleSolverPermissionTest() {
-		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserRecycleSolver(solver.getId(), regular.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), regular.getId()).isSuccess());
 	}
 	@Test
 	private void restoreSolverPermissionTest() {
-		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolver(solver.getId(), owner.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserRestoreSolver(solver.getId(), admin.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserRestoreSolver(solver.getId(), regular.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolver(solver.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolver(solver.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolver(solver.getId(), regular.getId()).isSuccess());
 	}
 	
 	@Test
 	private void canUserUpdateSolver() {
-		Assert.assertEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()));
-		Assert.assertEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId()));
-		Assert.assertNotEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId()));
+		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId()).isSuccess());
 		//make sure we can't change the name of solver1 to the same name as solver2, since names must be unique per space
-		Assert.assertNotEquals(0,SolverSecurity.canUserUpdateSolver(solver.getId(), solver2.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()));
+		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver2.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
 	}
 	
 	

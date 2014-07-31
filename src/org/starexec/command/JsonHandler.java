@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import org.apache.http.HttpResponse;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 class JsonHandler {
@@ -36,10 +37,62 @@ class JsonHandler {
 		try {
 
 			JsonElement jsonE=JsonHandler.getJsonString(response);
+		
 			JsonPrimitive p=jsonE.getAsJsonPrimitive();
 			return p.getAsInt();
 		} catch (Exception e) {
 			return -1;
+		}
+	}
+	
+	
+	/**
+	 * Gets back a status message from a SecurityStatusCode sent back from the server
+	 * object attached
+	 * @param response
+	 * @return The string message, or null if there is no SecurityStatusCode
+	 */
+	
+	protected static String getMessageOfResponse(HttpResponse response) {
+		try {
+			JsonObject obj=getJsonObject(response);
+			System.out.println(obj.get("message"));
+			return obj.get("success").getAsString();
+		} catch (Exception e) {
+			return null;
+		}
+
+	}
+	
+	/**
+	 * Gets back whether a request is successful from a response that has a JSON SecurityStatusCode
+	 * object attached
+	 * @param response
+	 * @return Whether the request was successful, or null if there is no SecurityStatusCode
+	 */
+	
+	protected static Boolean getSuccessOfResponse(HttpResponse response) {
+		
+		try {
+			JsonObject obj=getJsonObject(response);
+			System.out.println(obj.get("success"));
+			return obj.get("success").getAsBoolean();
+		} catch (Exception e) {
+			return null;
+		}
+
+	}
+	
+	protected static JsonObject getJsonObject(HttpResponse response) {
+		try {
+
+			JsonElement jsonE=JsonHandler.getJsonString(response);
+		
+			JsonObject obj=jsonE.getAsJsonObject();
+			
+			return obj;
+		} catch (Exception e) {
+			return null;
 		}
 	}
 }

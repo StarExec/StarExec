@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.security.SecurityStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -54,9 +55,10 @@ public class UploadConfiguration extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload configuration request was malformed.");
 					return;
 				} 
-
-				if (0!=SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId)) {
-					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only owners of a solver may upload configurations to it.");
+				
+				SecurityStatusCode status= SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId);
+				if (!status.isSuccess()) {
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, status.getMessage());
 					return;
 				}
 

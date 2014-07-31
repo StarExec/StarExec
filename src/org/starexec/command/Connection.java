@@ -59,7 +59,7 @@ public class Connection {
 	//private boolean testMode=false;
 	HttpClient client=null;
 	private String username,password;
-	
+	private String lastError;
 	private HashMap<Integer,Integer> job_info_indices; //these two map job ids to the max completion index
 	private HashMap<Integer,Integer> job_out_indices;
 	
@@ -131,7 +131,7 @@ public class Connection {
 		client.getParams();
 		setInfoIndices(con.getInfoIndices());
 		setOutputIndices(con.getOutputIndices());
-
+		setLastError(con.getLastError());
 	}
 	
 	/**
@@ -163,6 +163,8 @@ public class Connection {
 		client=getClient();
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,Integer>());
+		lastError="";
+
 
 	}
 
@@ -329,7 +331,7 @@ public class Connection {
 			//TODO: improve the error handling here
 			return 0;
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	/**
@@ -369,7 +371,7 @@ public class Connection {
 			
 			return Integer.parseInt(id);
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -416,7 +418,7 @@ public class Connection {
 			return id;
 		} catch (Exception e) {
 			
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 		
 	}
@@ -513,7 +515,7 @@ public class Connection {
 			return ids;
 		} catch (Exception e) {
 		    //System.out.println("Connection.java : "+e);
-		    ids.add(Status.ERROR_SERVER);  
+		    ids.add(Status.ERROR_INTERNAL);  
 			return ids;
 		}
 	    
@@ -594,7 +596,7 @@ public class Connection {
 			}
 			return newID;
 		} catch (Exception e) {	
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}	
 	}
 	
@@ -654,7 +656,7 @@ public class Connection {
 			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return newID;
 		} catch (Exception e) {	
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}	
 	}
 	
@@ -729,12 +731,20 @@ public class Connection {
 			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			HttpResponse response=client.execute(post);
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			return 0;
+			
+			if (success) {
+				return 0;
+			} else {
+				setLastError(message);
+				return Status.ERROR_SERVER;
+			}
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 		
 	}
@@ -802,9 +812,16 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
+	
+	/**
+	 * Changes one of the settings for a given user (like name, institution, or so on)
+	 * @param setting The name of the setting
+	 * @param val The new value for the setting
+	 * @return
+	 */
 	
 	protected int setUserSetting(String setting,String val) {
 		try {	
@@ -816,14 +833,14 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			
+			//TODO:
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return Status.ERROR_SERVER;
 			}
 			
 			return 0;
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -861,21 +878,19 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			int code=JsonHandler.getIntegerJsonCode(response);
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
+			
 			response.getEntity().getContent().close();
-			if (code==0) {
+			if (success) {
 				return 0;
-			} else if (code==3) {
-				return Status.ERROR_JOB_INCOMPLETE;
-			} else if (code>1) {
-
-				return Status.ERROR_PERMISSION_DENIED;
 			} else {
+				setLastError(message);
 				return Status.ERROR_SERVER;
 			}
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER; 
+			return Status.ERROR_INTERNAL; 
 		}
 	}
 	
@@ -894,19 +909,19 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			int code=JsonHandler.getIntegerJsonCode(response);
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
 
 			response.getEntity().getContent().close();
-			if (code==0) {
+			if (success) {
 				return 0;
-			} else if (code>1) {
-				return Status.ERROR_PERMISSION_DENIED;
 			} else {
+				setLastError(message);
 				return Status.ERROR_SERVER;
 			}
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER; 
+			return Status.ERROR_INTERNAL; 
 		}
 	}
 	
@@ -931,11 +946,20 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
 			response.getEntity().getContent().close();
-			return 0;
+			
+			
+			if (success) {
+				return 0;
+			}else {
+				setLastError(message);
+				return Status.ERROR_SERVER;
+			}
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER; 
+			return Status.ERROR_INTERNAL; 
 		}
 	}
 	
@@ -1017,9 +1041,15 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
 			response.getEntity().getContent().close();
-			
-			return 0;
+			if (success) {
+				return 0;
+			} else {
+				setLastError(message);
+				return Status.ERROR_SERVER;
+			}
 		} catch (Exception e) {
 			return Status.ERROR_SERVER;
 		}
@@ -1060,7 +1090,7 @@ public class Connection {
 				if (!baseURL.equals(R.URL_STAREXEC_BASE)) {
 					return Status.ERROR_BAD_URL;
 				}
-				return Status.ERROR_SERVER;
+				return Status.ERROR_INTERNAL;
 			}
 			
 			//first sets username and password data into HTTP POST request
@@ -1099,10 +1129,10 @@ public class Connection {
 			return Status.ERROR_BAD_URL;
 			
 		} catch (Exception e) {
-			
+			return Status.ERROR_INTERNAL;
 		}
 		
-		return Status.ERROR_SERVER;
+		
 	}
 	
 	public int linkSolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
@@ -1160,6 +1190,8 @@ public class Connection {
 				urlExtension=R.URL_COPYSPACE;
 			} else if (type.equals("job")) {
 				urlExtension=R.URL_COPYJOB;
+			} else if (type.equals("user")) {
+				urlExtension=R.URL_COPYUSER;
 			}
 			else {
 				urlExtension=R.URL_COPYBENCH;
@@ -1188,9 +1220,10 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
-			int code=JsonHandler.getIntegerJsonCode(response);
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
 			response.getEntity().getContent().close();
-			if (code==0) {
+			if (success) {
 				List<Integer> newPrimIds=new ArrayList<Integer>();
 				String[] newIds=HTMLParser.extractMultipartCookie(response.getAllHeaders(),"New_ID");
 				if (newIds!=null) {
@@ -1203,24 +1236,13 @@ public class Connection {
 				}
 				
 				return newPrimIds;
-				
-			} else if (code>=3 && code<=6) {
-				fail.add(Status.ERROR_PERMISSION_DENIED);
-				return fail;
-			} else if (code==7) {
-				fail.add(Status.ERROR_NAME_NOT_UNIQUE);
-				return fail;
-			} else if (code==8) {
-				fail.add(Status.ERROR_INSUFFICIENT_QUOTA);
-				return fail;
-			} 
-			else {
+			} else {
+				setLastError(message);
 				fail.add(Status.ERROR_SERVER);
 				return fail;
 			}
 		} catch (Exception e) {
-			//e.printStackTrace();
-			fail.add(Status.ERROR_SERVER);
+			fail.add(Status.ERROR_INTERNAL);
 			return fail;
 		}
 	}
@@ -1262,7 +1284,7 @@ public class Connection {
 			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return newID;
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -1404,8 +1426,8 @@ public class Connection {
 			
 			
 	    return prims;
-	}catch (Exception e) {
-		    errorMap.put(Status.ERROR_SERVER, e.getMessage());
+		}catch (Exception e) {
+		    errorMap.put(Status.ERROR_INTERNAL, e.getMessage());
 			
 			return errorMap;
 		}
@@ -1487,15 +1509,12 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			JsonElement jsonE=JsonHandler.getJsonString(response);
+			String message=JsonHandler.getMessageOfResponse(response);
 			response.getEntity().getContent().close();
-			if (jsonE.isJsonPrimitive()) {
-				
-				JsonPrimitive j=jsonE.getAsJsonPrimitive();
-				int x=j.getAsInt();
-				if (x==2) {
-					errorMap.put(Status.ERROR_PERMISSION_DENIED, null);
-					return errorMap;
-				} 
+			
+			//if we got back a SecurityStatusCode, there was an error
+			if (message!=null) {
+				setLastError(message);
 				errorMap.put(Status.ERROR_SERVER, null);
 				return errorMap;
 			}
@@ -1529,7 +1548,7 @@ public class Connection {
 			return prims;
 		
 		} catch (Exception e) {
-		    errorMap.put(Status.ERROR_SERVER, e.getMessage());
+		    errorMap.put(Status.ERROR_INTERNAL, e.getMessage());
 			
 			return errorMap;
 		}
@@ -1792,7 +1811,7 @@ public class Connection {
 			return 0;
 		} catch (Exception e) {
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 		
 	}
@@ -1919,9 +1938,9 @@ public class Connection {
 			if (Validator.isValidPosInteger(id)) {
 				return Integer.parseInt(id);
 			}
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -1949,6 +1968,21 @@ public class Connection {
 			job_info_indices.put(jobID, 0);
 		} 
 		return job_info_indices.get(jobID);
+	}
+
+	/**
+	 * @param lastError the lastError to set
+	 */
+	private void setLastError(String lastError) {
+		this.lastError = lastError;
+	}
+
+	/**
+	 * @return The last error that was sent back by the server. This will be updated whenever ERROR_SERVER is returned
+	 * as a status code by any function
+	 */
+	public String getLastError() {
+		return lastError;
 	}
 
 	

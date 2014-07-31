@@ -333,12 +333,13 @@ CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
 -- Author: Eric Burns
 
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdInHierarchy;
-CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
+CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS spaceCount
 		FROM closure
-				JOIN user_assoc ON ( (user_assoc.user_id in (_userId, _publicUserId)) AND user_assoc.space_id=descendant) 
-
+				JOIN spaces ON spaces.id=closure.descendant
+				JOIN user_assoc ON ( (user_assoc.user_id=_userId OR spaces.public_access) AND user_assoc.space_id=descendant) 
+	
 		WHERE ancestor=_spaceId AND ancestor!=descendant;
 	END //
 
@@ -364,24 +365,25 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdAdmin(IN _spaceId INT)
 -- Author: Todd Elvers + Eric Burns
 
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
-CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT, IN _publicUserId INT)
+CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		SELECT 	COUNT(DISTINCT child_id) AS spaceCount
 		FROM	set_assoc
 		JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
+		JOIN    spaces ON spaces.id=set_assoc.child_id
 		WHERE 	set_assoc.space_id = _spaceId
-		AND		(user_assoc.user_id = _userId OR user_assoc.user_id = _publicUserId);	
+		AND		(user_assoc.user_id = _userId OR spaces.public_access);	
 	END //
 -- Returns the number of subspaces in a given space that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery;
-CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId INT, IN _publicUserId INT, IN _query TEXT)
+CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT 	COUNT(DISTINCT child_id) AS spaceCount
 		FROM	set_assoc
 		JOIN 	spaces ON spaces.id=set_assoc.child_id
 		JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
-		WHERE 	set_assoc.space_id = _spaceId											
+		WHERE 	set_assoc.space_id = _spaceId AND (user_assoc.user_id = _userId OR spaces.public_access)										
 				AND 	(name			LIKE	CONCAT('%', _query, '%')
 				OR		description		LIKE 	CONCAT('%', _query, '%'));	
 	END //

@@ -19,11 +19,7 @@ function initUI() {
 		$.post(
 				starexecRoot+"services/jobs/rerunpairs/"+jobId+"/"+statusCode,
 				function(returnCode) {
-					if (returnCode==0) {
-						showMessage('success',"Pairs were successfully submitted to be rerun",5000);
-					} else {
-						showMessage('error',"There was an error rerunning pairs for this job",5000);
-					}
+					parseReturnCode(returnCode);
 				},
 				"json");
 	});
@@ -32,11 +28,8 @@ function initUI() {
 		$.post(
 				starexecRoot+"services/jobs/rerunpairs/"+jobId,
 				function(returnCode) {
-					if (returnCode==0) {
-						showMessage('success',"Pairs were successfully submitted to be rerun",5000);
-					} else {
-						showMessage('error',"There was an error rerunning pairs for this job",5000);
-					}
+					parseReturnCode(returnCode);
+
 				},
 				"json");
 	});
@@ -45,11 +38,7 @@ function initUI() {
 		$.post(
 				starexecRoot+"services/jobs/rerunallpairs/"+jobId,
 				function(returnCode) {
-					if (returnCode==0) {
-						showMessage('success',"Pairs were successfully submitted to be rerun",5000);
-					} else {
-						showMessage('error',"There was an error rerunning pairs for this job",5000);
-					}
+					parseReturnCode(returnCode);
 				},
 				"json");
 	});

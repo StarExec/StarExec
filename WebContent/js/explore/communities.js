@@ -148,18 +148,14 @@ function updateCommunityOverviewGraph() {
 	$.post(
 			starexecRoot+"services/secure/explore/testgraph",
 			function(returnCode) {
-				
-				switch (returnCode) {
-				
-				case "1":
-					showMessage('error',"an internal error occured while processing your request: please try again",5000);
-					$("#communityOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-					break;
-				default:
+				s=parseReturnCode(returnCode);
+				if (s) {
 				    jsonObject=$.parseJSON(returnCode);
 				    src=jsonObject.src;
 				    $("#communityOverview").attr("src",src);
-					
+				} else {
+					$("#communityOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
 				}
 			},
 			"text"
@@ -312,15 +308,10 @@ function leaveCommunity(id){
 	$.post(
 			starexecRoot+"services/leave/space/" + id,
 			function(returnCode) {
-				switch (returnCode) {
-					case 0:
-						// Repopulate data on the page to indicate to the user
-						// that they no longer are a member of that community
-						getCommunityDetails(id);
-						break;
-					default:
-						showMessage('error', "you are not a member of this community", 5000);
-						break;
+				s=parseReturnCode(returnCode);
+				if (s) {
+					getCommunityDetails(id);
+
 				}
 			},
 			"json"

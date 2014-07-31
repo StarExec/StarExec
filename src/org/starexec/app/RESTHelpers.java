@@ -712,7 +712,7 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
 	}
 	
-	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false);
 
@@ -743,19 +743,33 @@ public class RESTHelpers {
 
         
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
-
+		int totalPairsAfterQuery=0;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
-
-		jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
-    			attrMap.get(STARTING_RECORD),						// Record to start at  
-    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-    			attrMap.get(SORT_COLUMN), 							// Column sorted on
-    			request.getParameter(SEARCH_QUERY), 				// Search query
-    			jobId,													// Parent space id
-    			jobSpaceId	
-		);
+		if (!syncResults) {
+			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
+	    			attrMap.get(STARTING_RECORD),						// Record to start at  
+	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    			attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    			request.getParameter(SEARCH_QUERY), 				// Search query
+	    			jobId,													// Parent space id
+	    			jobSpaceId	
+			);
+		} else {
+			int[] totals = new int[2];
+			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),
+					attrMap.get(RECORDS_PER_PAGE), 
+					attrMap.get(SORT_DIRECTION) == ASC ? true : false,
+							attrMap.get(SORT_COLUMN),
+							request.getParameter(SEARCH_QUERY),
+							jobId, jobSpaceId, 
+							wallclock, 
+							totals);
+			totalJobPairs=totals[0];
+			totalPairsAfterQuery=totals[1];
+		}
+		
 
 		/**
     	 * Used to display the 'total entries' information at the bottom of the DataTable;
@@ -763,54 +777,63 @@ public class RESTHelpers {
     	 */
     	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		if(attrMap.get(SEARCH_QUERY) == EMPTY){
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+			totalPairsAfterQuery=totalJobPairs;
     	} 
     	else {
-    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY)));
+    		totalPairsAfterQuery=Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY));
     	}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,totalPairsAfterQuery,attrMap.get(SYNC_VALUE),true,wallclock);
 	}
 	
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
 			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock) {
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-				Primitive.JOB_PAIR, request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
-
-		int totalComparisons;
-		// Retrieves the relevant Job objects to use in constructing the JSON to
-		// send to the client
-		int[] totals = new int[2];
-		solverComparisonsToDisplay = Jobs
-				.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
-						jobId, // Parent space id
-						jobSpaceId, configId1,configId2, totals,wallclock);
 		
-		totalComparisons = totals[0];
+		
+		try {
+			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
+					Primitive.JOB_PAIR, request);
+			if (null == attrMap) {
+				return null;
+			}
 
-		/**
-    	* Used to display the 'total entries' information at the bottom of the DataTable;
-    	* also indirectly controls whether or not the pagination buttons are toggle-able
-    	*/
-    
-       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
-    	
-	   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock);
+			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
+
+			int totalComparisons;
+			// Retrieves the relevant Job objects to use in constructing the JSON to
+			// send to the client
+			int[] totals = new int[2];
+			solverComparisonsToDisplay = Jobs
+					.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(
+							attrMap.get(STARTING_RECORD), // Record to start at
+							attrMap.get(RECORDS_PER_PAGE), // Number of records to
+															// return
+							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																				// direction
+																				// (true
+																				// for
+																				// ASC)
+							attrMap.get(SORT_COLUMN), // Column sorted on
+							request.getParameter(SEARCH_QUERY), // Search query
+							jobId, // Parent space id
+							jobSpaceId, configId1,configId2, totals,wallclock);
+			
+			totalComparisons = totals[0];
+
+			/**
+	    	* Used to display the 'total entries' information at the bottom of the DataTable;
+	    	* also indirectly controls whether or not the pagination buttons are toggle-able
+	    	*/
+	    
+	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+	    	
+		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return null;
+		
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
@@ -1198,9 +1221,7 @@ public class RESTHelpers {
 		case USER:
     		List<User> usersToDisplay = new LinkedList<User>();
     		int totalUsersInSpace = Users.getCountInSpace(id);
-    		if (Spaces.isPublicSpace(id)){
-    			totalUsersInSpace--;
-    		}
+    		
     		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
     		usersToDisplay = Users.getUsersForNextPage(
     				attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -1857,7 +1878,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(permissionButton));
 			
 			String suspendButton = "";
-			if (user.getId() == R.PUBLIC_USER_ID || Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
+			if (Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
 				suspendButton = "N/A";
 			} else if (Users.isSuspended(user.getId())) {
 				sb = new StringBuilder();

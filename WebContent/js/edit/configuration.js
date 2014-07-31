@@ -33,22 +33,10 @@ function initUI(){
 					starexecRoot+"services/edit/configuration/" + getParameterByName("id"),
 					{ name: name, description: description, contents: contents },
 					function(returnCode) {
-						switch (returnCode) {
-							case 0:
-								window.location = starexecRoot+'secure/details/configuration.jsp?id=' + getParameterByName("id");
-								break;
-							case 1:
-								showMessage('error', "a configuration already exists for this solver with the name \""+name+"\"", 5000);
-								break;
-							case 2:
-								showMessage('error', "only the owner of this configuration file's solver can modify these details and contents", 5000);
-								break;
-							case 3:
-								showMessage('error', "invalid parameters; please ensure you fill out all of the configuration file's fields", 5000);
-								break;
-							case 4:
-								showMessage('error', "a configuration already exists for this solver with the name \""+name+"\"", 5000);
-								break;
+						s=parseReturnCode(returnCode);
+						if (s) {
+							window.location = starexecRoot+'secure/details/configuration.jsp?id=' + getParameterByName("id");
+
 						}
 					},
 					"json"

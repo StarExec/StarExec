@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -1307,11 +1308,101 @@ public class Jobs {
 		return returnList;
 	}
 	
+	/**
+	 * If the given string is null, returns a placeholder string. Otherwise, returns the given string
+	 * @param value
+	 * @return
+	 */
 	public static String getPropertyOrPlaceholder(String value) {
 		if (value==null) {
 			return "--";
 		}
 		return value;
+	}
+	
+	/**
+	 * Gets all the JobPairs in a given job space that were solved by every solver/configuration pair in that space
+	 * @param jobSpaceId
+	 * @return
+	 */
+	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId, int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		HashSet<String> solverConfigPairs=new HashSet<String>(); // will store all the solver/configuration pairs so we know how many there are
+		HashMap<Integer, Integer> benchmarksCount=new HashMap<Integer,Integer>(); //will store the number of pairs every benchmark has
+		List<JobPair> pairs=new ArrayList<JobPair>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetCompletedJobPairsInJobSpace(?)}");
+			procedure.setInt(1, jobSpaceId);
+			results=procedure.executeQuery();
+			
+			pairs=getJobPairsForDataTable(jobId,results,false,true);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return null;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		for (JobPair p : pairs) {
+			solverConfigPairs.add(p.getSolver().getId()+":"+p.getConfiguration().getId());
+			if (!benchmarksCount.containsKey(p.getBench().getId())) {
+				benchmarksCount.put(p.getBench().getId(), 1);
+			} else {
+				benchmarksCount.put(p.getBench().getId(), 1+benchmarksCount.get(p.getBench().getId()));
+			}
+		}
+		
+		//now, we exclude pairs that have benchmarks where the benchmark count is not equal to the solver/config count
+		
+		List<JobPair> returnList=new ArrayList<JobPair>();
+		int solverCount=solverConfigPairs.size();
+		for (JobPair p : pairs) {
+			if (benchmarksCount.get(p.getBench().getId())== solverCount) {
+				returnList.add(p);
+			}
+		}
+		return returnList;
+	}
+	/**
+	 * Gets the JobPairs necessary to make the next page of a DataTable of synchronized job pairs in a specific job space
+	 * @param startingRecord 
+	 * @param recordsPerPage
+	 * @param isSortedASC
+	 * @param indexOfColumnSortedBy
+	 * @param searchQuery
+	 * @param jobId
+	 * @param jobSpaceId
+	 * @param wallclock
+	 * @param totals Must be a size 2 array. The first slot will have the number of results before the query, and the second slot will have the number of results after the query
+	 * @return
+	 */
+	public static List<JobPair> getSynchronizedJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, boolean wallclock, int[] totals) {
+		long a=System.currentTimeMillis();
+		List<JobPair> pairs=Jobs.getSynchronizedPairsInJobSpace(jobSpaceId, jobId);
+		log.debug("getting synced pairs took "+(System.currentTimeMillis()-a));
+		totals[0]=pairs.size();
+		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
+		totals[1]=pairs.size();
+		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC, wallclock);
+		log.debug("sorting pairs took "+(System.currentTimeMillis()-a));
+
+		List<JobPair> returnList=new ArrayList<JobPair>();
+		if (startingRecord>=pairs.size()) {
+			//we'll just return nothing
+		} else if (startingRecord+recordsPerPage>pairs.size()) {
+			returnList = pairs.subList(startingRecord, pairs.size());
+		} else {
+			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
+		}
+		log.debug("returning pairs took "+(System.currentTimeMillis()-a));
+
+		return returnList;
 	}
 	
 	/**
@@ -1335,6 +1426,7 @@ public class Jobs {
 			searchQuery="";
 		}
 		try {
+			
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?,?)}");
 				
@@ -1346,36 +1438,9 @@ public class Jobs {
 			procedure.setInt(6,indexOfColumnSortedBy);
 
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = new LinkedList<JobPair>();
+			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
 			
-			while(results.next()){
-				JobPair jp = new JobPair();
-				jp.setJobId(jobId);
-				jp.setId(results.getInt("job_pairs.id"));
-				jp.setWallclockTime(results.getDouble("wallclock"));
-				jp.setCpuUsage(results.getDouble("cpu"));
-				Benchmark bench = jp.getBench();
-				bench.setId(results.getInt("bench_id"));
-				bench.setName(results.getString("bench_name"));
-
-				Solver solver = jp.getSolver();
-				solver.setId(results.getInt("solver_id"));
-				solver.setName(results.getString("solver_name"));
-
-				Configuration config = jp.getConfiguration();
-				config.setId(results.getInt("config_id"));
-				config.setName(results.getString("config_name"));
 				
-				Status status = jp.getStatus();
-				status.setCode(results.getInt("job_pairs.status_code"));
-				
-
-				Properties attributes = jp.getAttributes();
-				attributes.setProperty(R.STAREXEC_RESULT, getPropertyOrPlaceholder(results.getString("result")));
-
-				solver.addConfiguration(config);
-				jobPairs.add(jp);		
-			}	
 			
 			return jobPairs;
 		} catch (Exception e){			
@@ -1439,7 +1504,7 @@ public class Jobs {
 			Spaces.updateJobSpaceClosureTable(jobSpaceId);
 
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsByJobInJobSpaceHierarchy(?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsInJobSpaceHierarchy(?)}");
 
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
@@ -1468,7 +1533,7 @@ public class Jobs {
 	 * @return The list of job pairs or null on failure
 	 */
 	
-	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results) {
+	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results, boolean includeExpected, boolean includeCompletion) {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 		try{
 			while (results.next()) {
@@ -1486,7 +1551,7 @@ public class Jobs {
 				jp.getConfiguration().setId(results.getInt("config_id"));
 				jp.getConfiguration().setName(results.getString("config_name"));
 				jp.getSolver().addConfiguration(jp.getConfiguration());
-				jp.setCompletionId(results.getInt("completion_id"));
+				
 				Status status = jp.getStatus();
 				status.setCode(results.getInt("status_code"));
 				
@@ -1495,11 +1560,19 @@ public class Jobs {
 				if (result!=null) {
 					attributes.put(R.STAREXEC_RESULT, result);
 				}
-				String expected=results.getString("expected");
-				if (expected!=null) {
-					attributes.put(R.EXPECTED_RESULT, expected);
+				if (includeCompletion) {
+					jp.setCompletionId(results.getInt("completion_id"));
 
 				}
+				if (includeExpected) {
+
+					String expected=results.getString("expected");
+					if (expected!=null) {
+						attributes.put(R.EXPECTED_RESULT, expected);
+
+					}
+				}
+				
 				pairs.add(jp);	
 			}
 			return pairs;
@@ -1538,7 +1611,7 @@ public class Jobs {
 			procedure.setInt(2,id);
 
 			results = procedure.executeQuery();
-			List<JobPair> pairs = getJobPairsForDataTable(jobId,results);
+			List<JobPair> pairs = getJobPairsForDataTable(jobId,results,true,true);
 			
 			return pairs;
 		}catch (Exception e) {
@@ -2973,7 +3046,8 @@ public class Jobs {
 		if (j==null) {
 			return false;
 		}
-		if (j.getUserId()==R.PUBLIC_USER_ID){
+		//if the public user made a job, then that job must be public
+		if (Users.isPublicUser(j.getUserId())){
 			log.debug("Public User for Job Id" + jobId);
 			return true;
 		}
@@ -3940,5 +4014,44 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return null;
+	}
+	
+	
+	/**
+	 * Deletes all of the jobs a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their solvers recycled
+	 * @return
+	 */
+	public static boolean deleteOrphanedJobs(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		List<Integer> ids=new ArrayList<Integer>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetOrphanedJobIds(?)}");
+			procedure.setInt(1, userId);
+			results= procedure.executeQuery();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		try {
+			for (Integer id : ids) {
+				Jobs.delete(id);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return false;
 	}
 }

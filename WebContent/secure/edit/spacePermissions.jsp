@@ -26,7 +26,7 @@
 			request.setAttribute("communityIdList","1");
 			}
 
-		if (SpaceSecurity.canUserSeeSpace(spaceId,userId)==0 && spaceId > 0) {
+		if (SpaceSecurity.canUserSeeSpace(spaceId,userId).isSuccess() && spaceId > 0) {
 			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
 			StringBuilder stringChain=new StringBuilder();
 			for (Integer id : idChain) {

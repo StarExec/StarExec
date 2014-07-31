@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Users;
 
 import com.google.gson.annotations.Expose;
 
@@ -18,7 +19,6 @@ public class User extends Identifiable {
 	@Expose	private String firstName;
 	@Expose	private String lastName;
 	@Expose	private String institution;	
-	@Expose private boolean isPublic=false;
 	private String role;
 	private Timestamp createDate;	
 	private transient String password;		
@@ -31,14 +31,6 @@ public class User extends Identifiable {
 	public long getDiskQuota(){
 		return diskQuota;
 	}
-	public void setId(int ID) {
-		
-		if (ID==R.PUBLIC_USER_ID){
-			this.isPublic=true;
-		}
-		super.setId(ID);
-	}
-	
 	
 	/**
 	 * @param diskQuota the disk quota to set
@@ -82,13 +74,7 @@ public class User extends Identifiable {
 		return lastName;
 	}
 	
-	/**
-	 * @return whether this is the public user
-	 */
 	
-	public boolean isPublic() {
-		return isPublic;
-	}
 
 	/**
 	 * @param lastName the last name to set for the user

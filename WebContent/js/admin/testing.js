@@ -35,12 +35,9 @@ function initUI(){
 				starexecRoot+"services/test/runAllTests",
 				{},
 				function(returnCode) {
-					if (returnCode=="0") {
-						showMessage("success","testing started succesfully",5000);
-						testTable.api().ajax.reload(null,false);
-					} else {
-						showMessage("error","There was an error while starting the testing",5000);
-					}
+					s=parseReturnCode(returnCode);
+
+					
 				},
 				"json"
 		);
@@ -54,12 +51,9 @@ function initUI(){
 			starexecRoot+"services/test/runTests",
 			{testNames : nameArray},
 			function(returnCode) {
-				if (returnCode=="0") {
-					showMessage("success","testing started succesfully",5000);
-					testTable.api().ajax.reload(null,false);
-				} else {
-					showMessage("error","There was an error while starting the testing",5000);
-				}
+				s=parseReturnCode(returnCode);
+
+				
 			},
 			"json"
 		);
@@ -70,11 +64,8 @@ function initUI(){
 				starexecRoot+"services/test/runStressTest",
 				{},
 				function(returnCode) {
-					if (returnCode=="0") {
-						showMessage("success","stress testing started succesfully",5000);
-					} else {
-						showMessage("error","There was an error while starting the stress testing",5000);
-					}
+					s=parseReturnCode(returnCode);
+
 				}
 		),
 		"json"
@@ -126,18 +117,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	$.get(  
 			sSource,
 			function(nextDataTablePage){
-				
-				switch(nextDataTablePage){
-					case 1:
-						showMessage('error', "failed to get the next page of results; please try again", 5000);
-						break;
-					case 2:
-						showMessage('error', "you do not have sufficient permissions to view these tests", 5000);
-						break;
-					default:
-						fnCallback(nextDataTablePage);						
-						break;
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);						
 				}
+
 			},  
 			"json"
 	).error(function(){

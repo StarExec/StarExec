@@ -400,6 +400,11 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
+		File outputFile=new File(JobPairs.getFilePath(pair));
+		
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", outputFile.getParentFile().getAbsolutePath());
+
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", outputFile.getAbsolutePath());
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{

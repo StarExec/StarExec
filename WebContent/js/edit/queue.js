@@ -73,19 +73,9 @@ function attachButtonActions(){
 						starexecRoot+"services/edit/queue/" + getParameterByName("id"),
 						data,
 						function(returnCode) {
-							switch (returnCode) {
-								case 0:
-									window.location = starexecRoot+'secure/admin/cluster.jsp';
-									break;
-								case 1:
-									showMessage('error', "queue details were not updated; please try again", 5000);
-									break;
-								case 2:
-									showMessage('error', "only the admin can modify queues", 5000);
-									break;
-								default:
-									showMessage('error', "Invalid Parameters", 5000);
-									break;
+							s=parseReturnCode(returnCode);
+							if (s) {
+								window.location = starexecRoot+'secure/admin/cluster.jsp';
 							}
 						},
 						"json"

@@ -13,11 +13,12 @@ public class WorkerNode extends Identifiable {
 	@Expose private String status;
 	@Expose private HashMap<String, String> attributes;
 	@Expose private HashMap<Integer, String[]> jobPairs;
-	
+	@Expose private Queue queue;
 	public WorkerNode() {
 		// Default constructor
 		attributes = new HashMap<String, String>();
 		jobPairs = new HashMap<Integer, String[]>();
+		setQueue(new Queue());
 	}
 	
 	/**
@@ -86,5 +87,19 @@ public class WorkerNode extends Identifiable {
 	
 	public void putJobPair(int key, String[] values) {
 		this.jobPairs.put(key, values);
+	}
+
+	/**
+	 * @param queue the queue to set
+	 */
+	public void setQueue(Queue queue) {
+		this.queue = queue;
+	}
+
+	/**
+	 * @return the queue
+	 */
+	public Queue getQueue() {
+		return queue;
 	}
 }

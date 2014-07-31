@@ -4,7 +4,6 @@ var type;
 var defaultQueueId;
 var curQueueId;
 $(document).ready(function(){
-	
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = starexecRoot+"css/jstree/";
 	 
@@ -67,9 +66,7 @@ $(document).ready(function(){
 	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
 	   updateActionId(id, type, permanent, global);
 	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
-
 	initUI(id);
-	
 	initDataTables();
 	
 });
@@ -161,14 +158,8 @@ function initUI(id){
 					$.post(
 							starexecRoot+"services/permanent/queue/" + curQueueId,
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "the queue is now permament", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "queue was not made permanent; please try again", 5000);
-								}
+								parseReturnCode(returnCode);
+
 							},
 							"json"
 					);
@@ -199,21 +190,10 @@ function initUI(id){
 					$.post(
 					       starexecRoot+"services/remove/queue/" + curQueueId,
 					       function(returnCode) {
-						   switch (returnCode) {
-						   case 0:
-						       showMessage('success', "the queue was successfully removed", 5000);
+					       s=parseReturnCode(returnCode);
+					       if (s) {
 						       setTimeout(function(){document.location.reload(true);}, 1000);
-						       break;
-						   case 1:
-						       showMessage('error', "queue was not deleted; please try again", 5000);
-						       break;
-						   case 2:
-						       showMessage('error', "only the admin can delete this queue", 5000);
-						       break;
-						   default:
-						       showMessage('error', "invalid parameters", 5000);
-						       break;
-						   }
+					       }
 					       },
 					       "json"
 					       );
@@ -240,22 +220,12 @@ function initUI(id){
 					$.post(
 							starexecRoot+"services/queue/global/" + curQueueId,
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "the queue was successfully given global acccess", 5000);
-										//window.location = starexecRoot+'secure/admin/cluster.jsp';
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "queue was not given global access; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the admin can give global access to this queue", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
+
 								}
+									
 							},
 							"json"
 					);
@@ -282,22 +252,13 @@ function initUI(id){
 					$.post(
 							starexecRoot+"services/queue/global/remove/" + curQueueId,
 							function(returnCode) {
-								switch (returnCode) {
-									case 0:
-										showMessage('success', "successfully removed global access", 5000);
-										setTimeout(function(){document.location.reload(true);}, 1000);
-										break;
-									case 1:
-										showMessage('error', "global access was not removed; please try again", 5000);
-										break;
-									case 2:
-										showMessage('error', "only the admin can remove global access from this queue", 5000);
-										break;
-									default:
-										showMessage('error', "invalid parameters", 5000);
-										break;
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
+
 								}
 							},
+					
 							"json"
 					);
 				},
@@ -397,55 +358,30 @@ function fnPaginationHandler(sSource, aoData, fnCallback){
 			sSource + "queues/pending/pagination",
 			aoData,
 			function(nextDataTablePage){
-				switch(nextDataTablePage){
-				case 1:
-					showMessage('error', "failed to get the next page of results; please try again", 5000);
-					break;
-				case 2:		
-					// This error is a nuisance and the fieldsets are already hidden on spaces where the user lacks permissions
-					//showMessage('error', "you do not have sufficient permissions to view primitives in this space", 5000);
-					break;
-				default:	// Have to use the default case since this process returns JSON objects to the client
-
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
 					// Update the number displayed in this DataTable's fieldset
 					$('#reservationExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
 				
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
-				
-
-				break;
 				}
 			},  
 			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
+	)
 }
-
+/*
+ * 
+ */
 function cancelReservation(spaceId, queueId) {
 	$.post(
 		starexecRoot+"services/cancel/queueReservation/" + spaceId + "/" + queueId,
 		function(returnCode) {
-			switch (returnCode) {
-				case 0:
-					showMessage('success', "the queue reservation was successfuly cancelled", 5000);
-					//setTimeout(function(){document.location.reload(true);}, 1000);
-					setTimeout(function() {location.reload(true);}, 1000);
-					break;
-				case 1:
-					showMessage('error', "the queue was not successfuclly cancelled", 5000);
-					break;
-				case 2:
-					showMessage('error', "only a leader of this space can modify its details", 5000);
-					break;
-				case 7:
-					showMessage('error', "names must be unique among subspaces. It is possible a subspace you do not have permission to see shares the same name",5000);
-					break;
-				default:
-					showMessage('error', "invalid parameters", 5000);
-					break;
+			s=parseReturnCode(returnCode);
+			if (s) {
+				setTimeout(function() {location.reload(true);}, 1000);
 			}
+				
 		},
 		"json"
 	);
