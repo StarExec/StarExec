@@ -121,9 +121,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		window['type'] = 'queues';
 	}
 	//we have no pagination for inactive queues
-	if (type!="inactive_queue") {
 		$.get(  
-				sSource + type + "/" + id + "/pagination",
+				sSource + window['type'] + "/" + id + "/pagination",
 				aoData,
 				function(nextDataTablePage){
 					s=parseReturnCode(nextDataTablePage);
@@ -136,7 +135,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		).error(function(){
 			showMessage('error',"Internal error populating table",5000);
 		});
-	}
+	
 }
  
 /**
