@@ -79,7 +79,7 @@ CREATE PROCEDURE SetCommunityDefaultSettingsById(IN _id INT, IN _num INT, IN _se
 -- Removes every association a user has with every space in the hierarchy rooted at the given spacew
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS LeaveHierarchy;
-CREATE PROCEDURE LeaveCommunity(IN _userId INT, IN _commId INT)
+CREATE PROCEDURE LeaveHierarchy(IN _userId INT, IN _commId INT)
 	BEGIN
 		DELETE user_assoc FROM user_assoc
 		JOIN closure ON closure.descendant=user_assoc.space_id
