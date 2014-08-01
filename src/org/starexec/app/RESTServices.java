@@ -556,7 +556,7 @@ public class RESTServices {
 			return gson.toJson(new SecurityStatusCode(false, "The pair could not be found"));
 		}
 		int jobId=pair.getJobId();
-		SecurityStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
+		SecurityStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId);
 		
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
@@ -3803,7 +3803,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String addUserToSpace(@PathParam("spaceId") int space_id, @PathParam("userId") int user_id, @Context HttpServletRequest request) {
 		int userIdMakingRequest=SessionUtil.getUserId(request);
-		SecurityStatusCode status=SpaceSecurity.canAddUserToSpace(space_id, userIdMakingRequest);
+		SecurityStatusCode status=SpaceSecurity.canAddUserToSpace(space_id, userIdMakingRequest,user_id);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}

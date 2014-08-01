@@ -24,7 +24,7 @@ $(document).ready(function(){
 	initSpaceDetails();
 	//redraw the job table every 10 seconds so we can see continuous results
 	setInterval(function() {
-		if (spaceId!=1 && spaceId!=undefined) {
+		if (spaceId!=1 && typeof spaceId!='undefined') {
 			rows = $(jobTable).children('tbody').children('tr.row_selected');
 			if (rows.length==0) {
 				jobTable.fnDraw(false);
@@ -1270,10 +1270,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var idOfSelectedSpace = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 
 	// If we can't find the id of the space selected from the DOM, get it from the cookie instead
-	if(idOfSelectedSpace == null || idOfSelectedSpace == undefined){
+	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
 		idOfSelectedSpace = $.cookie("jstree_select");
 		// If we also can't find the cookie, then just set the space selected to be the root space
-		if(idOfSelectedSpace == null || idOfSelectedSpace == undefined){
+		if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
 			$('#exploreList').jstree('select_node', '#1', true);
 			idOfSelectedSpace = 1;
 		} else {
@@ -2132,7 +2132,7 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
 
 	// Resolves bug where tooltip is empty
-	if(undefined === perms || null == perms){
+	if('undefined' == typeof perms || null == perms){
 		perms = {
 				isLeader		: false,
 				addJob			: false,
@@ -2414,7 +2414,7 @@ function getTooltipConfig(type, message){
 					var tooltip = this;
 					api=$(this).qtip("api");
 					var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
-					if(userId != undefined && $(api.elements.target).children('td:first').children('input').val() == userId){
+					if(typeof userId != 'undefined' && $(api.elements.target).children('td:first').children('input').val() == userId){
 						var url = starexecRoot+'services/space/' + spaceId + '/perm/' + userId;
 						$.post(
 								url,

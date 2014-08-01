@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<tns:Spaces xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchSpaceSchema.xsd batchSpaceSchema.xsd" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_jccervantes/public/batchSpaceSchema.xsd">
+<tns:Spaces xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.starexec.org/starexec/public/batchSpaceSchema.xsd batchSpaceSchema.xsd" xmlns:tns="https://www.starexec.org/starexec/public/batchSpaceSchema.xsd">
 <Space id="11" name="cvc">
 <SpaceAttributes>
 <description value="the true test"/>

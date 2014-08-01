@@ -62,10 +62,10 @@ public class SpaceSecurityTests extends TestSequence {
 	
 	@Test
 	private void CanAddUserToSpace() {
-		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), admin.getId()).isSuccess());
-		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), owner.getId()).isSuccess());
-		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), nonOwner.getId()).isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), noPerms.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), admin.getId(),owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), owner.getId(),owner.getId()).isSuccess());
+		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), nonOwner.getId(),owner.getId()).isSuccess());
+		Assert.assertNotEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), noPerms.getId(), owner.getId()).isSuccess());
 	}
 	
 	@Test

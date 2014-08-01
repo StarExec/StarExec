@@ -61,10 +61,10 @@ function createDownloadRequest(item,type,returnIds,getCompleted) {
 	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
 	token=Math.floor(Math.random()*100000000);
 	href = starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
-	if (returnIds!=undefined) {
+	if (typeof returnIds!= 'undefined' ) {
 		href=href+"&returnids="+returnIds;
 	}
-	if (getCompleted!=undefined) {
+	if (typeof getCompleted!='undefined') {
 		href=href+"&getcompleted="+getCompleted;
 	}
 	$(item).attr('href', href);
@@ -909,7 +909,7 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 }
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
-	if (curSpaceId==undefined) {
+	if (typeof curSpaceId=='undefined') {
 		return;
 	}
 	outSpaceId=curSpaceId;
@@ -944,7 +944,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	if (curSpaceId==undefined) {
+	if (typeof curSpaceId=='undefined') {
 		return;
 	}
 	outSpaceId=curSpaceId;

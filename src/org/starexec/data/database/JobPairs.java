@@ -1359,6 +1359,19 @@ public class JobPairs {
 		return false;
 	}
 	
+	public static boolean killPair(int pairId, int sge_id) {
+		try {
+			Util.executeCommand("qdel " + sge_id);	
+			log.debug("Just executed qdel " + sge_id);
+			JobPairs.UpdateStatus(pairId, 21);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+
+	}
+	
 	/**
 	 * Updates the status of the given job pair, replacing its current status code with the given one
 	 * @param jobPairId The ID of the job pair in question

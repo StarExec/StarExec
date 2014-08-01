@@ -36,6 +36,9 @@ page.</a> This page can be accessed by clicking the trashcan icon in the space e
 button on your profile page. That page also allows you to restore primitives, which means removing them from the recycle bin
 and allowing them to be used normally.</p>
 
+<p>When you drag a primitive to the recycle bin and click "recycle," the primitive is also removed from the current space.
+This is for convenience, since users frequently want to remove and recycle primitives at the same time. However, it
+is important to remember that removing and recycling are still different operations!</p>
 
 <p>The recycling mechanism currently exists only for solvers and benchmarks. Jobs cannot be recycled. If they are deleted, 
 they are gone permanently!</p>

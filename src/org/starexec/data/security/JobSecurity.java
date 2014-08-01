@@ -9,8 +9,10 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 
 public class JobSecurity {
@@ -99,6 +101,17 @@ public class JobSecurity {
 		
 		if (job.getUserId()!=userId && !isAdmin) {
 			return new SecurityStatusCode(false, "You do not have permission to rerun pairs in this job");
+		}
+		
+		JobStatus status= Jobs.getJobStatusCode(jobId);
+		if (status.getCode().getVal()==JobStatusCode.STATUS_PAUSED.getVal()) {
+			return new SecurityStatusCode(false, "This job is currently paused. Please unpause it before rerunning pairs");
+		}
+		if (status.getCode().getVal()==JobStatusCode.STATUS_KILLED.getVal()) {
+			return new SecurityStatusCode(false, "This job has been killed. It may no longer be run");
+		}
+		if (Jobs.isJobDeleted(jobId)) {
+			return new SecurityStatusCode(false, "This job has been deleted already");
 		}
 		return new SecurityStatusCode(true);
 	}

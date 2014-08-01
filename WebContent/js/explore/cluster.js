@@ -1,9 +1,8 @@
 var jobPairTable;
 var qid=0;
-var type;
 // When the document is ready to be executed on
 $(document).ready(function(){
-	 
+	initDataTables();
 	//Set up row click to send to pair details page
 	$('#details tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
@@ -15,11 +14,10 @@ $(document).ready(function(){
 		}
 		
 	});
-	
 	// Build left-hand side of page (cluster explorer)
 	 initClusterExplorer();
 
-	 initDataTables();
+	 
 	 
 	 setInterval(function() {
 		 jobPairTable.fnDraw(false);
@@ -83,8 +81,7 @@ function initClusterExplorer() {
 		}).bind("select_node.jstree", function (event, data) {
 			// When a node is clicked, get its ID and display the info in the details pane		
 			id = data.rslt.obj.attr("id");
-	        window['type'] = data.rslt.obj.attr("rel"); 
-	        getDetails(id, type);
+	        getDetails(id,data.rslt.obj.attr("rel"));
 	    }).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 }
 
@@ -102,13 +99,12 @@ function initDataTables() {
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {		
-	
 	var id = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 	//If we can't find the id of the queue/node from the DOM, get it from the cookie instead
-	if (id == null || id == undefined) {
+	if (id == null || typeof id == 'undefined') {
 		id = $.cookie("jstree_select");
 		// If we also can't find the cookie, then just set the space selected to be the root space
-		if (id == null || id == undefined) {
+		if (id == null || typeof id == 'undefined') {
 			$('#exploreList').jstree('select_node', '#1', true);
 			id = 1;
 		} else {
@@ -117,13 +113,12 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 
 	//In case the paginate happens before type is set
-	if (type == undefined) {
+	if (typeof type == 'undefined') {
 		window['type'] = 'queues';
 	}
 	//we have no pagination for inactive queues
-	if (type!="inactive_queue") {
 		$.get(  
-				sSource + type + "/" + id + "/pagination",
+				sSource + window['type'] + "/" + id + "/pagination",
 				aoData,
 				function(nextDataTablePage){
 					s=parseReturnCode(nextDataTablePage);
@@ -136,7 +131,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		).error(function(){
 			showMessage('error',"Internal error populating table",5000);
 		});
-	}
+	
 }
  
 /**
@@ -146,7 +141,6 @@ function getDetails(id, type) {
 	var url = '';
 	qid=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
-
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
 		window['type'] = 'queues';
@@ -157,11 +151,9 @@ function getDetails(id, type) {
 		showMessage('error',"Invalid node type",5000);
 		return;
 	}
-	
 	$('#loader').show();
 	
 	jobPairTable.fnDraw();
-	
 	$.get(  
 		url,  
 		function(data){  			
