@@ -2429,9 +2429,26 @@ public class Jobs {
 		return false;
 	}
 	
+	/**
+	 * Begins the process of rerunning a single pair by removing it from the completed table (if applicable)
+	 * killing it (also if applicable), and setting it back to pending
+	 * @param jobId
+	 * @param pairId
+	 * @return
+	 */
+	
 	public static boolean rerunPair(int jobId, int pairId) {
 		log.debug("got a request to rerun pair id = "+pairId);
 		boolean success=true;
+		JobPair p=JobPairs.getPair(pairId);
+		Status status=p.getStatus();
+		//no rerunning for pairs that are still pending
+		if (status.getCode().getVal()==StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
+			return true;
+		}
+		if (status.getCode().getVal()<StatusCode.STATUS_COMPLETE.getVal()) {
+			JobPairs.killPair(pairId, p.getGridEngineId());
+		}
 		JobPairs.removePairFromCompletedTable(pairId);
 		JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
 		
@@ -3118,10 +3135,7 @@ public class Jobs {
 			
 			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 			for (JobPair jp : jobPairsEnqueued) {
-				int sge_id = jp.getGridEngineId();
-				Util.executeCommand("qdel " + sge_id);	
-				log.debug("Just executed qdel " + sge_id);
-				JobPairs.UpdateStatus(jp.getId(), 21);
+				JobPairs.killPair(jp.getId(), jp.getGridEngineId());
 			}
 			
 			log.debug("deletion of killed job pairs from the queue was successful");

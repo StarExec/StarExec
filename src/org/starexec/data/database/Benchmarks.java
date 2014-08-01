@@ -66,7 +66,7 @@ public class Benchmarks {
 		int benchId = Benchmarks.add(con, benchmark, spaceId, statusId);
 
 		if(benchId>=0){
-		    //Common.endTransaction(con);
+		    Common.endTransaction(con);
 		    log.debug("bench successfully added");
 					
 		    return benchId;
@@ -81,8 +81,7 @@ public class Benchmarks {
 		throw e;
 
 	    } finally {
-		Common.safeClose(con);
-		//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
+	    	Common.safeClose(con);
 	    }
 	} else {
 	    log.debug("Add called on invalid benchmark, no additions will be made to the database");
@@ -692,7 +691,13 @@ public class Benchmarks {
 		}
 		return false;
 	}
-	
+	/**
+	 * Copies a list of benchmarks into a new space, making the given user the new owner
+	 * @param benchmarks
+	 * @param userId
+	 * @param spaceId
+	 * @return
+	 */
 	public static List<Integer> copyBenchmarks(List<Benchmark> benchmarks,int userId, int spaceId) {
 		List<Integer> ids=new ArrayList<Integer>();
 		for (Benchmark b : benchmarks) {
@@ -1091,9 +1096,7 @@ public class Benchmarks {
 					benchList.get(benchList.size()-1).setAttributes(Benchmarks.getAttributes(con,id));
 				}
 			}
-
-
-
+			
 			return benchList;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

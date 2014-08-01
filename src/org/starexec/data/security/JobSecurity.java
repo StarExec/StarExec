@@ -70,7 +70,25 @@ public class JobSecurity {
 		
 		return new SecurityStatusCode(true);
 	}
-	
+	/**
+	 * Ensures a given user has permission to rerun pairs of a given status code
+	 * @param jobId
+	 * @param userId
+	 * @param statusCode
+	 * @return
+	 */
+	public static SecurityStatusCode canUserRerunPairs(int jobId, int userId, int statusCode) {
+		SecurityStatusCode result= canUserRerunPairs(jobId, userId);
+		if (!result.isSuccess()) {
+			return result;
+		}
+		
+		//can't rerun pairs that are not complete
+		if (statusCode<StatusCode.STATUS_COMPLETE.getVal() || statusCode>StatusCode.ERROR_GENERAL.getVal()) {
+			return new SecurityStatusCode(false, "This pair is not yet completed");
+		}
+		return new SecurityStatusCode(true);
+	}
 	
 	public static SecurityStatusCode canUserRerunPairs(int jobId, int userId) {
 		Job job=Jobs.get(jobId);
