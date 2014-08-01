@@ -86,7 +86,7 @@ public class JobSecurity {
 		}
 		
 		//can't rerun pairs that are not complete
-		if (statusCode<StatusCode.STATUS_COMPLETE.getVal() || statusCode>StatusCode.ERROR_GENERAL.getVal()) {
+		if (statusCode>StatusCode.ERROR_GENERAL.getVal()) {
 			return new SecurityStatusCode(false, "This pair is not yet completed");
 		}
 		return new SecurityStatusCode(true);
