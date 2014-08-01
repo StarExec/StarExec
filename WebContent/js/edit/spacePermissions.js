@@ -324,11 +324,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	console.log("selected space: " + idOfSelectedSpace);
 
 	// If we can't find the id of the space selected from the DOM, get it from the cookie instead
-	if(idOfSelectedSpace == null || idOfSelectedSpace == undefined){
+	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined)'{
 		idOfSelectedSpace = $.cookie("jstree_select");
 		console.log("cookies!  " + idOfSelectedSpace);
 		// If we also can't find the cookie, then just set the space selected to be the root space
-		if(idOfSelectedSpace == null || idOfSelectedSpace == undefined){
+		if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
 		    console.log("no cookies");
 		    $('#exploreList').jstree('select_node', '#1', false);
 			idOfSelectedSpace = 15;

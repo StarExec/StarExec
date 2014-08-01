@@ -371,7 +371,7 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String rerunJobPairs(@PathParam("id") int id, @PathParam("status") int statusCode, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		SecurityStatusCode status=JobSecurity.canUserRerunPairs(id, userId,statusCode);
+		SecurityStatusCode status=JobSecurity.canUserRerunPairs(id, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -556,7 +556,7 @@ public class RESTServices {
 			return gson.toJson(new SecurityStatusCode(false, "The pair could not be found"));
 		}
 		int jobId=pair.getJobId();
-		SecurityStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId,pair.getStatus().getCode().getVal());
+		SecurityStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId);
 		
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
