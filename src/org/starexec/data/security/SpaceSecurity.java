@@ -258,6 +258,20 @@ public class SpaceSecurity {
 	}
 	
 	/**
+	 * Checks whether a user may leave a community
+	 * @param spaceId The ID of the space containing the primitive
+	 * @param userId The ID of the user making the request
+	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 */
+	public static SecurityStatusCode canUserLeaveCommunity(int commId, int userId){
+		//the user can leave if they are in the space
+		if(!Users.isMemberOfCommunity(userId, commId)) {
+			return new SecurityStatusCode(false, "You are not a member of this community");
+		}
+		return new SecurityStatusCode(true);
+	}
+	
+	/**
 	 * Checks whether a user may leave a space
 	 * @param spaceId The ID of the space containing the primitive
 	 * @param userId The ID of the user making the request
@@ -695,10 +709,13 @@ public class SpaceSecurity {
 			}
 		}
 		for (Integer sid : spaceIds) {
-			status=canAddUserToSpace(sid,userIdDoingCopying);
-			if (!status.isSuccess()) {
-				return status;
+			for (Integer uid : userIdsBeingCopied) {
+				status=canAddUserToSpace(sid,userIdDoingCopying,uid);
+				if (!status.isSuccess()) {
+					return status;
+				}
 			}
+			
 		}
 		
 		return new SecurityStatusCode(true);
@@ -710,11 +727,15 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return  0 if the operation is allowed and a status code from SecurityStatusCodes otherwise
 	 */
-	public static SecurityStatusCode canAddUserToSpace(int spaceId, int userIdMakingRequest) {
+	public static SecurityStatusCode canAddUserToSpace(int spaceId, int userIdMakingRequest, int userIdToAdd) {
 		// Check permissions, the user must have add user permissions in the destination space
 		Permission perm = Permissions.get(userIdMakingRequest, spaceId);		
 		if(perm == null || !perm.canAddUser()) {
 			return new SecurityStatusCode(false, "You do not have permission to add a user to this space");
+		}
+		
+		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.GetCommunityOfSpace(spaceId))) {
+			return new SecurityStatusCode(false, "The user is not a member of the community you are trying to move them to. They must request to join the community first");
 		}
 
 		return new SecurityStatusCode(true);

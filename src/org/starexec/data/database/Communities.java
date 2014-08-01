@@ -212,7 +212,7 @@ public class Communities {
 	}
 	
 	/**
-	 * Removes a user's association to a given space, thereby leaving that space
+	 * Removes a user's association to every space within the given community
 	 * @param userId the id of the user to remove from the space
 	 * @param commId the id of the space to remove the user from
 	 * @return true iff the user was successfully removed from the community referenced by 'commId',
@@ -220,13 +220,12 @@ public class Communities {
 	 * @author Todd Elvers
 	 */
 	
-	//TODO: What is this supposed to be doing? It only causes the user to leave a single space
 	public static boolean leave(int userId, int commId) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
+			procedure = con.prepareCall("{CALL LeaveHierarchy(?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, commId);
 			
