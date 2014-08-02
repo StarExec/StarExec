@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -32,8 +33,9 @@ public class GetPicture extends HttpServlet{
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// If the request is not valid, then respond with an error
-		if (false == validateRequest(request)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The get picture request was malformed.");
+		ValidatorStatusCode status=validateRequest(request);
+		if (!status.isSuccess()) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}
 		
@@ -139,15 +141,14 @@ public class GetPicture extends HttpServlet{
 	 * @param request The request need to be validated.
 	 * @return true if the request is valid.
 	 */
-    private static boolean validateRequest(HttpServletRequest request) {
+    private static ValidatorStatusCode validateRequest(HttpServletRequest request) {
     	try {
-    		if (!Util.paramExists("type", request)
-    			|| !Util.paramExists("Id", request)) {
-    			return false;
+    		if (!Util.paramExists("type", request)) {
+    			return new ValidatorStatusCode(false, "The supplied type is not valid");
     		}
     		
     		if (!Validator.isValidInteger(request.getParameter("Id"))) {
-    			return false;
+    			return new ValidatorStatusCode(false, "The supplied id is not a valid integer");
     		}
         	
     		if (!(request.getParameter("type").equals("uthn") ||
@@ -158,15 +159,15 @@ public class GetPicture extends HttpServlet{
     			  request.getParameter("type").equals("borg") ||
     			  request.getParameter("type").equals("corg")
     			  )) {
-    			return false;
+    			return new ValidatorStatusCode(false, "The supplied type is not valid");
     		}
     		
-    		return true;
+			return new ValidatorStatusCode(true);
     	} catch (Exception e) {
     		log.warn(e.getMessage(), e);
     	}
     	
-    	return false;
+    	return new ValidatorStatusCode(false, "Internal error getting image");
     }
     
     

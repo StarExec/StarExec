@@ -16,7 +16,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.QueueSecurity;
-import org.starexec.data.security.SecurityStatusCode;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
@@ -50,7 +50,7 @@ public class CreateQueue extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		int userId=SessionUtil.getUserId(request);
 
-		SecurityStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserMakeQueue(userId);
 		if (!status.isSuccess()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, status.getMessage());
 			return;

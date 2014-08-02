@@ -16,7 +16,7 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.security.QueueSecurity;
-import org.starexec.data.security.SecurityStatusCode;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
@@ -52,7 +52,7 @@ public class CreatePermanentQueue extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 		int userId=SessionUtil.getUserId(request);
-		SecurityStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserMakeQueue(userId);
 		if (!status.isSuccess()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, status.getMessage());
 			return;

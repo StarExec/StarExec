@@ -30,6 +30,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -63,9 +64,10 @@ public class Download extends HttpServlet {
 		boolean success;
 		String shortName=null;
 		try {
-			if (!validateRequest(request)) {
-				log.debug("Bad download Request");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
+			ValidatorStatusCode status=validateRequest(request);
+			if (!status.isSuccess()) {
+				log.debug("Bad download Request--"+status.getMessage());
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}
 			
@@ -811,16 +813,15 @@ public class Download extends HttpServlet {
 	 * @return true iff the request is valid
 	 * @author Skylar Stark
 	 */
-	public static boolean validateRequest(HttpServletRequest request) {
+	public static ValidatorStatusCode validateRequest(HttpServletRequest request) {
 		try {
-			if (!Util.paramExists("type", request)
-					|| !Util.paramExists("id", request)) {
-				return false;
+			if (!Util.paramExists("type", request)) {
+				return new ValidatorStatusCode(false, "A download type was not specified");
 			}
 
 			if (!Validator.isValidInteger(request.getParameter("id"))) {
 
-				return false;
+				new ValidatorStatusCode(false, "The given id was not a valid integer");
 			}
 
 			if (!(request.getParameter("type").equals("solver") ||
@@ -834,13 +835,13 @@ public class Download extends HttpServlet {
 					request.getParameter("type").equals("space") ||
 					request.getParameter("type").equals("proc"))) {
 
-				return false;
+				return new ValidatorStatusCode(false, "The supplied download type was not valid");
 			}
 
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		return false;
+		return new ValidatorStatusCode(false, "Internal error processing download request");
 	}
 }

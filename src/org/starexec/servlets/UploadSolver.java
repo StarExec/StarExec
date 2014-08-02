@@ -32,6 +32,7 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.SolverSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
@@ -75,18 +76,10 @@ public class UploadSolver extends HttpServlet {
 				
 				// Make sure the request is valid
 				
-				String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
-
-				if (DescMethod.equals("file")) {
-					FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
-					if (!Validator.isValidPrimDescription(item_desc.getString())) {
-						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The local description file is malformed. Make sure it does not exceed 1024 characters.");
-						return;
-					}
-				}
 				
-				if(!this.isValidRequest(form)) {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload solver request was malformed");
+				ValidatorStatusCode status=this.isValidRequest(form);
+				if(!status.isSuccess()) {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST,status.getMessage());
 					return;
 				}
 				
@@ -401,54 +394,65 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representing the upload request.
 	 * @return true iff the request is valid
 	 */
-	private boolean isValidRequest(HashMap<String, Object> form) {
+	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
 		try {
 			if (!form.containsKey(UPLOAD_METHOD) ||
 					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
 					!form.containsKey(DESC_METHOD) ||
-					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file")) ||
-					!form.containsKey(SPACE_ID) ||
-					!form.containsKey(UploadSolver.SOLVER_NAME) || 
-					!form.containsKey(SOLVER_DESC) ||
-					!form.containsKey(SOLVER_DOWNLOADABLE)) {
+					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file"))) {
 				
-				return false;
+				return new ValidatorStatusCode(false, "Required parameters are missing from the request");
+			}
+			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			
-			Integer.parseInt((String)form.get(SPACE_ID));
-			Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE));
+			if (!Validator.isValidBool((String)form.get(SOLVER_DOWNLOADABLE))) {
+				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
+			}
 
 			
-			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)) ||
-					!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
+			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
 				
-				return false;
+				return new ValidatorStatusCode(false, "The given name is invalid-- please refer to the help files to see the proper format");
 			}
 			
+			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 
+			if (DescMethod.equals("file")) {
+				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+				if (!Validator.isValidPrimDescription(item_desc.getString())) {
+					return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
+				}
+			}
+
+			if(Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
+				return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
+			}
+			
+			boolean goodExtension=false;
+			String fileName=null;
 			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
-				String fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
-				for(String ext : UploadSolver.extensions) {
-					if(fileName.endsWith(ext)) {
-						return true;
-					}
-				}
+				fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
+				
 			} else {
-				String url=(String)form.get(UploadSolver.FILE_URL);
-				for (String ext:UploadSolver.extensions) {
-					if (url.endsWith(ext)) {
-						return true;
-					}
+				fileName=(String)form.get(UploadSolver.FILE_URL);
+				
+			}
+			for(String ext : UploadSolver.extensions) {
+				if(fileName.endsWith(ext)) {
+					goodExtension=true;
 				}
 			}
+			if (!goodExtension) {
+				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
+			}
 			
-			
-			
-			return false;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
-		return false;
+		return new ValidatorStatusCode(false, "Internal error uploading solver");
 	}
 }

@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.security.SecurityStatusCode;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -56,7 +56,7 @@ public class UploadConfiguration extends HttpServlet {
 					return;
 				} 
 				
-				SecurityStatusCode status= SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId);
+				ValidatorStatusCode status= SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId);
 				if (!status.isSuccess()) {
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, status.getMessage());
 					return;

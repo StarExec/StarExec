@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
@@ -48,21 +49,11 @@ public class Registration extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		// Begin registration for a new user		
-		int result = register(request, response);
-				
-		switch (result) {
-		  case SUCCESS: 
-			// Notify user of successful registration
+		ValidatorStatusCode result = register(request, response);
+		if (result.isSuccess()) {
 		      response.sendRedirect(Util.docRoot("secure/add/user.jsp?result=regSuccess"));
-		    break;
-		  case FAIL: 
-			// Notify user the email address they inputed is already in use
-		      response.sendRedirect(Util.docRoot("public/registration.jsp?result=regFail"));
-		    break;
-		  case MALFORMED:
-			// Handle malformed urls
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
-		    break;
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
 		}
 	}
 	
@@ -76,18 +67,17 @@ public class Registration extends HttpServlet {
 	 * 2 if parameter validation fails
 	 * @author Todd Elvers
 	 */
-	public static int register(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public static ValidatorStatusCode register(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		
 		// Validate parameters of the new user request
-		if(!validateRequest(request)) {
-			log.info(String.format("Registration was unsuccessfully started for new user because parameter validation failed."));
-			return MALFORMED;
+		ValidatorStatusCode status=validateRequest(request);
+		if(!status.isSuccess()) {
+			return status;
 		}
 		
 		boolean uniqueEmail = Users.getUserByEmail(request.getParameter(Registration.USER_EMAIL));
 		if (uniqueEmail) {
-			log.error("Duplicate entry " + request.getParameter(Registration.USER_EMAIL));
-			return FAIL;
+			return new ValidatorStatusCode(false, "The email address you specified has already been registered");
 		}
 		
 		// Create the user to add to the database
@@ -119,19 +109,19 @@ public class Registration extends HttpServlet {
 				log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
 				
 				Mail.sendActivationCode(user, code);
-				return SUCCESS;
+				return new ValidatorStatusCode(true);
 			} else {
 				log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
-				return FAIL;
+				return new ValidatorStatusCode(false,"Internal database error registering user");
 			} 
 		} else {
 			int id = Users.add(user);
 			boolean success = Users.addToCommunity(id, communityId);
 			if (success) {
 				//Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
-				return SUCCESS;
+				return new ValidatorStatusCode(true);
 			} else {
-				return FAIL;
+				return new ValidatorStatusCode(false,"Internal database error registering user");
 			}			
 		}
 	}
@@ -144,36 +134,42 @@ public class Registration extends HttpServlet {
 	 * @return true if the request is valid, false otherwise
 	 * @author Todd Elvers
 	 */
-    public static boolean validateRequest(HttpServletRequest request) {
+    public static ValidatorStatusCode validateRequest(HttpServletRequest request) {
     	try {
     		// Ensure the necessary parameters exist
-	    	if(!Util.paramExists(Registration.USER_FIRSTNAME, request) ||
-	    	   !Util.paramExists(Registration.USER_LASTNAME, request) ||
-	    	   !Util.paramExists(Registration.USER_EMAIL, request) ||
-	    	   !Util.paramExists(Registration.USER_PASSWORD, request) ||
-	    	   !Util.paramExists(Registration.USER_INSTITUTION, request) ||
-	    	   !Util.paramExists(Registration.USER_COMMUNITY, request)) {
-	    		log.debug("Registration missing parameter");
-	    		return false;
+	    	if(!Util.paramExists(Registration.USER_PASSWORD, request)) {
+	    		return new ValidatorStatusCode(false, "You need to supply a password");
 	    	}    	    	   
 		    
-	    	// Make sure community id is a valid int 
-	    	Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
+	    	if (!Validator.isValidInteger(request.getParameter(Registration.USER_COMMUNITY))) {
+	    		return new ValidatorStatusCode(false, "The given community id is not a valid integer");
+	    	}
+
 	    	
 	    	// Ensure the parameters are valid values
-	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_FIRSTNAME)) 
-					|| !Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME)) 
-					|| !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))
-					|| !Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))) {
-					//|| !Validator.isValidPassword((String)request.getParameter(Registration.USER_PASSWORD))) {
-	    		log.debug("Registration has invalid parameter");
-				return false;
+	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_FIRSTNAME))) {
+				return new ValidatorStatusCode(false,"The given first name is not valid-- please refer to the help files to see the proper format");
 			}
 	    	
-	    	return true;
+	    	// Ensure the parameters are valid values
+	    	if (!Validator.isValidUserName((String)request.getParameter(Registration.USER_LASTNAME))) {
+				return new ValidatorStatusCode(false,"The given last name is not valid-- please refer to the help files to see the proper format");
+			}
+	    	
+	    	// Ensure the parameters are valid values
+	    	if ( !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))) {
+				return new ValidatorStatusCode(false, "The given email address is not valid-- please refer to the help files to see the proper format");
+			}
+	    	
+	    	// Ensure the parameters are valid values
+	    	if (!Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))) {
+				return new ValidatorStatusCode(false, "The given institution is not valid-- please refer to the help files to see the proper format");
+			}
+	    	
+	    	return new ValidatorStatusCode(true);
     	} catch (Exception e) {
     		log.warn(e.getMessage(), e);
     	}
-    	return false;
+    	return new ValidatorStatusCode(false, "There was an internal error processing your registration request");
     }        
 }

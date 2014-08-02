@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.util.SessionUtil;
@@ -41,8 +42,9 @@ public class SaveConfiguration extends HttpServlet {
     	int userId = SessionUtil.getUserId(request);
     	try {	
 			// Parameter validation
-			if(!this.isValidRequest(request)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The save configuration request was malformed.");
+    		ValidatorStatusCode status=this.isValidRequest(request);
+			if(!status.isSuccess()) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			} 
 			
@@ -129,35 +131,32 @@ public class SaveConfiguration extends HttpServlet {
 	 * @return true iff all necessary configuration file info was provided by the client and is valid
 	 * @author Todd Elvers
 	 */
-	private boolean isValidRequest(HttpServletRequest request) {
+	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
 		try {
-			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_NAME))
-					|| Util.isNullOrEmpty((String) request.getParameter(SOLVER_ID))
-					|| Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
-				return false;
+			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
+				return new ValidatorStatusCode(false, "The configuration did not have any contents");
 			}
 			
 			
-			if (!Util.isNullOrEmpty((String) request.getParameter(CONFIG_DESC))) {
-				if (!Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
-					return false;
-				}
+			if (!Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
+				return new ValidatorStatusCode(false, "The supplied description is not valid-- please see the help files to see the correct format");
 			}
 			
-			// Ensure the parent solver id is valid
-			Integer.parseInt((String)request.getParameter(SOLVER_ID));
+			
+			if (!Validator.isValidInteger((String)request.getParameter(SOLVER_ID))) {
+				return new ValidatorStatusCode(false,"The supplied solver ID is not a valid integer");
+			}
 			
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))
-					|| !Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
-				return false;
+			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))) {
+				return new ValidatorStatusCode(false, "The supplied name is not valid-- please see the help files to see the correct format");
 			}
 			
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
-		return false;
+		return new ValidatorStatusCode(false, "Internal error creating configuration");
 	}
 }

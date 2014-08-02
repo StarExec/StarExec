@@ -1512,7 +1512,7 @@ public class Connection {
 			String message=JsonHandler.getMessageOfResponse(response);
 			response.getEntity().getContent().close();
 			
-			//if we got back a SecurityStatusCode, there was an error
+			//if we got back a ValidatorStatusCode, there was an error
 			if (message!=null) {
 				setLastError(message);
 				errorMap.put(Status.ERROR_SERVER, null);

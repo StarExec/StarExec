@@ -47,10 +47,10 @@ class JsonHandler {
 	
 	
 	/**
-	 * Gets back a status message from a SecurityStatusCode sent back from the server
+	 * Gets back a status message from a ValidatorStatusCode sent back from the server
 	 * object attached
 	 * @param response
-	 * @return The string message, or null if there is no SecurityStatusCode
+	 * @return The string message, or null if there is no ValidatorStatusCode
 	 */
 	
 	protected static String getMessageOfResponse(HttpResponse response) {
@@ -65,10 +65,10 @@ class JsonHandler {
 	}
 	
 	/**
-	 * Gets back whether a request is successful from a response that has a JSON SecurityStatusCode
+	 * Gets back whether a request is successful from a response that has a JSON ValidatorStatusCode
 	 * object attached
 	 * @param response
-	 * @return Whether the request was successful, or null if there is no SecurityStatusCode
+	 * @return Whether the request was successful, or null if there is no ValidatorStatusCode
 	 */
 	
 	protected static Boolean getSuccessOfResponse(HttpResponse response) {

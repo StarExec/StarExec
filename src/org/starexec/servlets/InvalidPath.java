@@ -26,7 +26,6 @@ public class InvalidPath extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		// Make sure the request is valid
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		
 	}

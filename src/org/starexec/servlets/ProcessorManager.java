@@ -23,6 +23,7 @@ import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.ArchiveUtil;
@@ -98,9 +99,9 @@ public class ProcessorManager extends HttpServlet {
 		try {
 			// If we're dealing with an upload request...
 			// Make sure the request is valid
-			if(!isValidCreateRequest(form)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The processor request was malformed. ");
-
+			ValidatorStatusCode status=isValidCreateRequest(form);
+			if(!status.isSuccess()) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}
 			// Make sure this user has the ability to add type to the space
@@ -310,53 +311,51 @@ public class ProcessorManager extends HttpServlet {
 	 * @param form The form to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
-	private boolean isValidCreateRequest(HashMap<String, Object> form) {
+	private ValidatorStatusCode isValidCreateRequest(HashMap<String, Object> form) {
 		try {			
-			if(!form.containsKey(PROCESSOR_NAME) ||
-			   !form.containsKey(PROCESSOR_DESC) ||
-			   !form.containsKey(OWNING_COMMUNITY) ||
-			   !form.containsKey(PROCESSOR_TYPE) ||
-			   !form.containsKey(PROCESSOR_FILE)) {
-				return false;
-			}
+			  
 										
 			if(!Validator.isValidPrimName((String)form.get(PROCESSOR_NAME))) {
 
-				return false;
+				return new ValidatorStatusCode(false,"The supplied name is invalid-- please refer to the help files to see the correct format");
 			}
 			
+			boolean goodExtension=false;
 			String fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
 			for(String ext : ProcessorManager.extensions) {
 				if(fileName.endsWith(ext)) {
-					return true;
+					goodExtension=true;
 				}
+			}
+			if (!goodExtension) {
+				return new ValidatorStatusCode(false,"Uploaded archives must be a .zip, .tar, or .tgz");
 			}
 																	
 			if(!Validator.isValidPrimDescription((String)form.get(PROCESSOR_DESC))) {
 
-				return false;
+				return new ValidatorStatusCode(false,"The supplied description is invalid-- please refer to the help files to see the correct format");
 			}
 			
 			if(!Validator.isValidInteger((String)form.get(OWNING_COMMUNITY))) {
 
-				return false;
+				return new ValidatorStatusCode(false,"The given community ID is not a valid integer");
 			}
 			
 			String procType = (String)form.get(PROCESSOR_TYPE);
-			if(!procType.equals(POST_PROCESS_TYPE) && 
+			if(procType==null || !procType.equals(POST_PROCESS_TYPE) && 
 			   !procType.equals(PRE_PROCESS_TYPE) && 
 			   !procType.equals(BENCH_TYPE)) {
 
-					return false;
+				return new ValidatorStatusCode(false,"The given processor type is invalid");
 			}
 			// Passed all checks, return true
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
 		// Return false control flow is broken and ends up here
-		return false;
+		return new ValidatorStatusCode(true, "Internal error processing request");
 	}
 	
 }

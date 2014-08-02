@@ -26,6 +26,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
@@ -33,6 +34,7 @@ import org.starexec.data.to.User;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 
 @SuppressWarnings("serial")
@@ -75,34 +77,25 @@ public class BenchmarkUploader extends HttpServlet {
 		try {	
 			// Extract data from the multipart request
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
-
+			ValidatorStatusCode status=isRequestValid(form,request);
 			// If the request is valid to act on...
-			if(this.isRequestValid(form)) {		
-				// If the user has benchmark adding permissions
-				Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+			if(status.isSuccess()) {		
 				
-				String uploadMethod = (String)form.get(UPLOAD_METHOD);
-				if(uploadMethod.equals("dump") && !perm.canAddBenchmark()) {
-					// They don't have permissions, send forbidden error
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to upload benchmarks to this space");
-				} else if (uploadMethod.equals("convert") && !(perm.canAddBenchmark() && perm.canAddSpace())) {
-					// They don't have permissions, send forbidden error
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to upload benchmarks and subspaces to this space");
-				} else { 
+				
 					// create status object
-					Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
-					Integer userId = SessionUtil.getUserId(request);					
-					Integer statusId = Uploads.createUploadStatus(spaceId, userId);
-					log.debug("upload status id is " + statusId);
-					
-					// Go ahead and process the request
-					this.handleUploadRequest(form, userId, statusId);
-					//go to upload status page
-					response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
-				}
+				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
+				Integer userId = SessionUtil.getUserId(request);					
+				Integer statusId = Uploads.createUploadStatus(spaceId, userId);
+				log.debug("upload status id is " + statusId);
+				
+				// Go ahead and process the request
+				this.handleUploadRequest(form, userId, statusId);
+				//go to upload status page
+				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
+				
 			} else {
 				// Or else the request was invalid, send bad request error
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid benchmark upload request");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					
 		} catch (Exception e) {
 			log.error("Benchmark Uploader Servlet says " + e.getMessage(), e);
@@ -310,53 +303,59 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @return True if the request is valid to act on, false otherwise
 	 * @author ??? - modified by Ben
 	 */
-	private boolean isRequestValid(HashMap<String, Object> form) {
+	private ValidatorStatusCode isRequestValid(HashMap<String, Object> form, HttpServletRequest request) {
 		try {			
-			if(!form.containsKey(SPACE_ID) ||
-					!form.containsKey(BENCHMARK_FILE) ||
-					!form.containsKey(BENCHMARK_TYPE) ||
-					!form.containsKey(UPLOAD_METHOD)  ||
-					!form.containsKey(BENCH_DOWNLOADABLE) ||
-					!form.containsKey(FILE_LOC)) {
-				return false;
-			}													
-
-			// Try parsing to ensure we have valid numbers
-			Integer.parseInt((String)form.get(BENCHMARK_TYPE));			
-			Integer.parseInt((String)form.get(SPACE_ID));
-			Boolean.parseBoolean((String)form.get(BENCH_DOWNLOADABLE));
-
+																
+			if (!Validator.isValidInteger((String)form.get(BENCHMARK_TYPE))) {
+				return new ValidatorStatusCode(false, "The given benchmark processor ID is not a valid integer");
+			}
+			
+			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
+			}
+			if (!Validator.isValidBool((String)form.get(BENCH_DOWNLOADABLE))) {
+				return new ValidatorStatusCode(false, "The 'bench downloadable' option needs to be a valid boolean");
+			}
+		
 			// Make sure we have a valid upload method
 			String uploadMethod = ((String)form.get(UPLOAD_METHOD));
 			if(!(uploadMethod.equals("convert") || uploadMethod.equals("dump"))) {
-				return false;
+				return new ValidatorStatusCode(false, "The upload method needs to be either 'convert' or 'dump'");
 			}
-
+			String fileName=null;
 			// Last test, return true when we find a valid file extension
 			if (((String)form.get(FILE_LOC)).equals("local")) {
-				String fileName = ((FileItem)form.get(BENCHMARK_FILE)).getName();
-				for(String ext : BenchmarkUploader.extensions) {
-					if(fileName.endsWith(ext)) {
-						return true;
-					}
-				}
+				fileName = ((FileItem)form.get(BENCHMARK_FILE)).getName();
 			} else {
-				String URL=(String)form.get(FILE_URL);
-				for (String ext : BenchmarkUploader.extensions) {
-					if (URL.endsWith(ext)) {
-						return true;
-					}
+				fileName=(String)form.get(FILE_URL);
+			}
+			boolean goodExtension=false;
+			for(String ext : BenchmarkUploader.extensions) {
+				if(fileName.endsWith(ext)) {
+					goodExtension=true;
 				}
 			}
 			
-
-			// If we got here we failed file extension validation
-			return false;
+			if (!goodExtension) {
+				return new ValidatorStatusCode(false, "Uploaded archives need to be either .zip, .tar, or .tgz");
+			}
+			
+			
+			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+			
+			if(uploadMethod.equals("dump") && !perm.canAddBenchmark()) {
+				// They don't have permissions, send forbidden error
+				return new ValidatorStatusCode(false, "You do not have permission to upload benchmarks to this space");
+			} else if (uploadMethod.equals("convert") && !(perm.canAddBenchmark() && perm.canAddSpace())) {
+				return new ValidatorStatusCode(false, "You do not have permission to upload benchmarks and subspaces to this space");
+			}
+			
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 
 		// Return false control flow is broken and ends up here
-		return false;	
+		return new ValidatorStatusCode(false, "Internal error uploading benchmarks");	
 	}
 }

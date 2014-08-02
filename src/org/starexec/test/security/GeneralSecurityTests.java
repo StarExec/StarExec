@@ -3,7 +3,7 @@ package org.starexec.test.security;
 import org.junit.Assert;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.security.SecurityStatusCode;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;

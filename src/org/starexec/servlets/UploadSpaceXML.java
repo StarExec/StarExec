@@ -20,10 +20,12 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * Allows for the uploading of space hierarchies represented in xml. Files can come in .zip,
@@ -49,9 +51,10 @@ public class UploadSpaceXML extends HttpServlet {
 			if (ServletFileUpload.isMultipartContent(request)) {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
+				ValidatorStatusCode status=this.isValidRequest(form);
 				// Make sure the request is valid
-				if(!this.isValidRequest(form)) {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload space xml request was malformed");
+				if(!status.isSuccess()) {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 					return;
 				} 
 				
@@ -144,27 +147,31 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @param form the HashMap representing the upload request.
 	 * @return true iff the request is valid
 	 */
-	private boolean isValidRequest(HashMap<String, Object> form) {
+	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
 		try {
-			if (!form.containsKey(UploadSpaceXML.UPLOAD_FILE) ||
-					!form.containsKey(SPACE_ID) ){
-				return false;
-			}
 			
+			if (!Validator.isValidInteger((String)form.get(SPACE_ID))){
+				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
+			}
 			Integer.parseInt((String)form.get(SPACE_ID));
 			
+			boolean goodExtension=false;
 			String fileName = ((FileItem)form.get(UploadSpaceXML.UPLOAD_FILE)).getName();
 			for(String ext : UploadSpaceXML.extensions) {
 				if(fileName.endsWith(ext)) {
-					return true;
+					goodExtension=true;
+					break;
 				}
-			}			
-			return false;
+			}	
+			if (!goodExtension) {
+				return new ValidatorStatusCode(false, "Uploaded archives must be .zip, .tar, or .tgz");
+			}
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
-		return false;
+		return new ValidatorStatusCode(false, "Internal error uploading space XML");
 	}
 	
 }

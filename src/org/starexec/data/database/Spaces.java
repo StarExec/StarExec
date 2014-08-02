@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.security.SecurityStatusCode;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.CacheType;
@@ -2234,7 +2234,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		SecurityStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
+		ValidatorStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
 		if (!status.isSuccess()){
 			return false;
 		}

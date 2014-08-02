@@ -18,6 +18,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -85,8 +86,9 @@ public class CreateJob extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		// Make sure the request is valid
-		if(!isValid(request)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The create job request was malformed");
+		ValidatorStatusCode status=isValid(request);
+		if(!status.isSuccess()) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}		
 
@@ -291,42 +293,42 @@ public class CreateJob extends HttpServlet {
 	 * @param request The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
-	private boolean isValid(HttpServletRequest request) {
+	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
 			if(!Validator.isValidInteger((String)request.getParameter(spaceId))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
 
 			// Make sure timeout an int
 			if(!Validator.isValidInteger((String)request.getParameter(clockTimeout))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
 			}
 
 			if(!Validator.isValidInteger((String)request.getParameter(cpuTimeout))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 			
 			if(!Validator.isValidDouble((String)request.getParameter(maxMemory))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given maximum memory needs to be a valid double");
 			}
 
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
 				if(!Validator.isValidInteger((String)request.getParameter(postProcessor))) {
-					return false;
+					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
 			}
 
 			if(Util.paramExists(preProcessor, request)) {
 				if(!Validator.isValidInteger((String)request.getParameter(preProcessor))) {
-					return false;
+					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
 			}
 
 			// Make sure the queue is a valid integer
 			if(!Validator.isValidInteger((String)request.getParameter(workerQueue))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given queue ID needs to be a valid integer");
 			}
 			
 			// Make sure the queue is a valid selection and user has access to it
@@ -341,21 +343,27 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 			
+			if (!queueFound){
+				return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
+			}
+			
 			//make sure both timeouts are <= the queue settings
 			int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 			int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
 			
 			Queue q=Queues.get(queueId);
-			if (cpuLimit>q.getCpuTimeout()  || runLimit > q.getWallTimeout()) {
-				return false;
+			if (runLimit > q.getWallTimeout()) {
+				return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
 			}
-			if (queueFound==false){
-				return false;
+			
+			if (cpuLimit>q.getCpuTimeout()) {
+				return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
 			}
+			
 			
 			// Ensure the job description is valid
 			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
 			}		
 
 			int sid = Integer.parseInt((String)request.getParameter(spaceId));
@@ -363,7 +371,7 @@ public class CreateJob extends HttpServlet {
 
 			// Make sure the user has access to the space
 			if(perm == null || !perm.canAddJob()) {
-				return false;
+				return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
 			}
 
 			// Only need these checks if we're choosing which solvers and benchmarks to run.
@@ -376,36 +384,36 @@ public class CreateJob extends HttpServlet {
 				// Check to see if we have a valid list of benchmark ids
 				if (!request.getParameter(benchChoice).equals("runAllBenchInHierarchy")){
 					if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
-						return false;
+						return new ValidatorStatusCode(false, "All selected benchmark IDs need to be valid integers");
 					}
 				}
 				// Make sure the user is using benchmarks they can see
 				if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
-					return false;
+					return new ValidatorStatusCode(false, "You do not have permission to use one or more of the benchmarks you have selected");
 				}
 
 				// Check to see if we have a valid list of solver ids
 				if(!Validator.isValidIntegerList(request.getParameterValues(solvers))) {
-					return false;
+					return new ValidatorStatusCode(false, "All selected solver IDs need to be valid integers");
 				}
 
 				// Check to see if we have a valid list of configuration ids
 				if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
-					return false;
+					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
 
 				// Make sure the user is using solvers they can see
 				if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
-					return false;
+					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
 			}
 			// Passed all checks, return true
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 
 		// Return false control flow is broken and ends up here
-		return false;
+		return new ValidatorStatusCode(false, "Internal error creating job");
 	}
 }
