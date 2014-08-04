@@ -426,7 +426,7 @@ public class UploadSolver extends HttpServlet {
 				}
 			}
 
-			if(Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
+			if(!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
 				return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
 			}
 			

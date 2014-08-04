@@ -39,7 +39,6 @@ public class Registration extends HttpServlet {
 	public static String USER_FIRSTNAME = "fn";
 	public static String USER_LASTNAME = "ln";
 	public static String USER_MESSAGE = "msg";
-	public static String ADMIN_CREATED = "adminCreated";
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -90,11 +89,16 @@ public class Registration extends HttpServlet {
 		user.setRole("user");
 		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		
-		
-		int userIdOfRequest=SessionUtil.getUserId(request);
+		int userIdOfRequest=-1;
+		try {
+			userIdOfRequest=SessionUtil.getUserId(request);
+		} catch (Exception e) {
+			//this occurs when someone tries to register, as they have no user ID
+			userIdOfRequest=-1;
+		}
 
 		
-		boolean adminCreated = Boolean.parseBoolean(request.getParameter(Registration.ADMIN_CREATED)) && Users.isAdmin(userIdOfRequest);
+		boolean adminCreated = Users.isAdmin(userIdOfRequest);
 		
 		if (!adminCreated) {
 			
@@ -108,7 +112,7 @@ public class Registration extends HttpServlet {
 			if(added) {
 				log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
 				
-				Mail.sendActivationCode(user, code);
+				//Mail.sendActivationCode(user, code);
 				return new ValidatorStatusCode(true);
 			} else {
 				log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
@@ -118,7 +122,7 @@ public class Registration extends HttpServlet {
 			int id = Users.add(user);
 			boolean success = Users.addToCommunity(id, communityId);
 			if (success) {
-				//Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
+				Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
 				return new ValidatorStatusCode(true);
 			} else {
 				return new ValidatorStatusCode(false,"Internal database error registering user");
@@ -157,7 +161,7 @@ public class Registration extends HttpServlet {
 			}
 	    	
 	    	// Ensure the parameters are valid values
-	    	if ( !Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))) {
+	    	if (!Validator.isValidEmail((String)request.getParameter(Registration.USER_EMAIL))) {
 				return new ValidatorStatusCode(false, "The given email address is not valid-- please refer to the help files to see the proper format");
 			}
 	    	

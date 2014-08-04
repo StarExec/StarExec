@@ -19,7 +19,6 @@
 <star:template title="user registration" css="common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec" js="lib/jquery.validate.min, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, add/user">	
 	<p class="registration">create a new user account</p>
 	<form method="POST" action="/${starexecRoot}/public/registration/manager" id="regForm" class="add">
-	<input type="hidden" name="adminCreated" value="true" />	
 	<fieldset>			
 		<legend>user information</legend>
 		<table class="shaded">

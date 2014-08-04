@@ -1116,7 +1116,7 @@ public class Users {
 	 */
 	public static boolean isAdmin(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("admin");
+		return u!=null && u.getRole().equals("admin");
 	}
 	
 	/**
@@ -1137,7 +1137,7 @@ public class Users {
 	 */
 	public static boolean isTestUser(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("test");
+		return u!=null && u.getRole().equals("test");
 	}
 	
 	/**
@@ -1147,7 +1147,7 @@ public class Users {
 	 */
 	public static boolean isUnauthorized(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("unauthorized");
+		return u!=null && u.getRole().equals("unauthorized");
 	}
 	
 	/**
@@ -1157,7 +1157,7 @@ public class Users {
 	 */
 	public static boolean isSuspended(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("suspended");
+		return u!=null && u.getRole().equals("suspended");
 	}
 	
 	/**
@@ -1167,7 +1167,7 @@ public class Users {
 	 */
 	public static boolean isNormalUser(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("user");
+		return u!=null && u.getRole().equals("user");
 	}
 	
 	
