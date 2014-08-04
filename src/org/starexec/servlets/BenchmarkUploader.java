@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -94,11 +95,14 @@ public class BenchmarkUploader extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
 				
 			} else {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				// Or else the request was invalid, send bad request error
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					
 		} catch (Exception e) {
 			log.error("Benchmark Uploader Servlet says " + e.getMessage(), e);
+			
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error uploading the benchmarks.");
 		}
 	}

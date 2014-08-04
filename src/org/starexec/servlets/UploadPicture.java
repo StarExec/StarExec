@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,6 +58,8 @@ public class UploadPicture extends HttpServlet {
 			if(status.isSuccess()) {
 				response.sendRedirect(this.handleUploadRequest(userId, form));
 			} else {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				// Or else the request was invalid, send bad request error
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					

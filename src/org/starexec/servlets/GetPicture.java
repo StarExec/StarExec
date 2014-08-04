@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +36,8 @@ public class GetPicture extends HttpServlet{
 		// If the request is not valid, then respond with an error
 		ValidatorStatusCode status=validateRequest(request);
 		if (!status.isSuccess()) {
+			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}

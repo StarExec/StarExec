@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
@@ -54,6 +56,8 @@ public class CreatePermanentQueue extends HttpServlet {
 		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserMakeQueue(userId);
 		if (!status.isSuccess()) {
+			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, status.getMessage());
 			return;
 		}

@@ -195,4 +195,6 @@ public class R {
     
     
     public static int NO_TYPE_PROC_ID=1;
+    
+    public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
 }	

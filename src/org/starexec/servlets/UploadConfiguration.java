@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
@@ -58,6 +59,8 @@ public class UploadConfiguration extends HttpServlet {
 				
 				ValidatorStatusCode status= SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId);
 				if (!status.isSuccess()) {
+					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, status.getMessage());
 					return;
 				}

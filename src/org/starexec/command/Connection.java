@@ -364,12 +364,13 @@ public class Connection {
 			
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
-			if (id==null) {
+			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			if (id<=0) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 			
-			return Integer.parseInt(id);
+			return id;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -412,6 +413,7 @@ public class Connection {
 			
 			//we are expecting to be redirected to the page for the processor
 			if (response.getStatusLine().getStatusCode()!=302) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
@@ -502,7 +504,7 @@ public class Connection {
 			int code = response.getStatusLine().getStatusCode();
 			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
-			        //System.out.println("Connection.java : "+code);
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 			    ids.add(Status.ERROR_SERVER);  
 				return ids;
 			}
@@ -514,7 +516,6 @@ public class Connection {
 			}
 			return ids;
 		} catch (Exception e) {
-		    //System.out.println("Connection.java : "+e);
 		    ids.add(Status.ERROR_INTERNAL);  
 			return ids;
 		}
@@ -590,8 +591,10 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			response.getEntity().getContent().close();
-			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			int newID=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			//if the request was not successful
 			if (newID<=0) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 			return newID;
@@ -776,6 +779,7 @@ public class Connection {
 	 * @return The integer user ID
 	 */
 	
+	//TODO: Improve error message handling
 	public int getUserID() {
 		try {
 			HttpGet get=new HttpGet(baseURL+R.URL_GETID);
@@ -787,7 +791,7 @@ public class Connection {
 			return json.getAsInt();
 			
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	
@@ -833,12 +837,16 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
-			//TODO:
-			if (response.getStatusLine().getStatusCode()!=200) {
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
+			
+			if (success) {
+				return 0;
+			} else {
+				setLastError(message);
 				return Status.ERROR_SERVER;
 			}
 			
-			return 0;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -1051,7 +1059,7 @@ public class Connection {
 				return Status.ERROR_SERVER;
 			}
 		} catch (Exception e) {
-			return Status.ERROR_SERVER;
+			return Status.ERROR_INTERNAL;
 		}
 	}
 	/**

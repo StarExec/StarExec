@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
@@ -51,6 +53,8 @@ public class BenchmarkProcessor extends HttpServlet {
 			// Make sure the request is valid
 			ValidatorStatusCode status=isValidProcessRequest(request);
 			if(!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}

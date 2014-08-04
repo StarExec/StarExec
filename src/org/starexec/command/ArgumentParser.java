@@ -18,6 +18,13 @@ class ArgumentParser {
 	Connection con;
 	
 	/**
+	 * Gets the last server error message that was returned
+	 * @return
+	 */
+	public String getLastServerError() {
+		return con.getLastError();
+	}
+	/**
 	 * Sets the new Connection object's username and password based on user-specified parameters.
 	 * Also sets the instance of StarExec that is being connected to
 	 * @param commandParams User specified parameters

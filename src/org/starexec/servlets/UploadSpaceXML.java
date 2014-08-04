@@ -54,6 +54,8 @@ public class UploadSpaceXML extends HttpServlet {
 				ValidatorStatusCode status=this.isValidRequest(form);
 				// Make sure the request is valid
 				if(!status.isSuccess()) {
+					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 					return;
 				} 

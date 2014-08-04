@@ -807,5 +807,18 @@ public class Validator {
 		return unnecessaryParams;
 	}
 	
+	/**
+	 * Attempts to parse the given string as an integer and return it. On failure, returns -1
+	 * @param str
+	 * @return
+	 */
+	public static Integer getIdOrMinusOne(String str) {
+		try {
+			return Integer.parseInt(str);
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+	
 	
 }

@@ -88,6 +88,8 @@ public class CreateJob extends HttpServlet {
 		// Make sure the request is valid
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {
+			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}		

@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -44,6 +46,8 @@ public class SaveConfiguration extends HttpServlet {
 			// Parameter validation
     		ValidatorStatusCode status=this.isValidRequest(request);
 			if(!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			} 

@@ -49,11 +49,11 @@
 		    /* If the user has Cookies disabled an alert will let him know 
 		        that cookies need to be enabled to log on.*/ 
 		
-		    $("#cookieexists").value("false");  
+		    document.getElementById("cookieexists").value = "false";  
 		  } else {
 		   /* this sets the value to true and nothing else will happen,
 		       the user will be able to log on*/
-			    $("#cookieexists").value("true");  
+			    document.getElementById("cookieexists").value = "true";  
 		       
 		   // document.Form1.cookieexists.value ="true"
 		  }

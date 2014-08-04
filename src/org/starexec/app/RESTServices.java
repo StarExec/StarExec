@@ -1206,11 +1206,6 @@ public class RESTServices {
 			}
 		} else if (attribute.equals("pagesize")) {
 			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
-			//if (success) {
-			//	Cookie c=new Cookie("datatables-page-size",newValue);
-			//	c.setPath("/");
-			//	response.addCookie(c);
-			//}
 		}
 
 		// Passed validation AND Database update successful
