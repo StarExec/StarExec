@@ -1067,6 +1067,12 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 	
+	/**
+	 * Runs TestSequences that are given by name
+	 * @param request
+	 * @return
+	 */
+	
 	@POST
 	@Path("/test/runTests")
 	@Produces("appliation/json")
@@ -1089,20 +1095,12 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 	}
-	
-	@POST
-	@Path("/test/runStressTest")
-	@Produces("application/json")
-	public String runStressTest(@Context HttpServletRequest request) {
-		int u=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		
-		boolean success=TestManager.executeStressTest();
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Testing started successfully")) : gson.toJson(ERROR_DATABASE);
-	}
+
+	/**
+	 * Runs every TestSequence. This does NOT run a stress test!
+	 * @param request
+	 * @return
+	 */
 	
 	@POST
 	@Path("/test/runAllTests")

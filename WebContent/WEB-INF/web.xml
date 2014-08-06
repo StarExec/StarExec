@@ -270,6 +270,15 @@
     <url-pattern>/secure/save/configurations</url-pattern>
   </servlet-mapping>
   
+    <servlet>
+    <servlet-name>CreateStressTest</servlet-name>
+    <servlet-class>org.starexec.servlets.CreateStressTest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CreateStressTest</servlet-name>
+    <url-pattern>/secure/add/stressTest</url-pattern>
+  </servlet-mapping>
+  
   <!-- RESTEasy webservice framework configuration -->
   <servlet>  	
     <servlet-name>Resteasy</servlet-name>
