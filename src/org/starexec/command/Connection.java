@@ -1142,30 +1142,89 @@ public class Connection {
 		
 		
 	}
+	/**
+	 * Links solvers to a new space
+	 * @param solverIds The solver Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @param hierarchy Whether to link to the entire hierarchy
+	 * @return 0 on success or a negative status code on error
+	 */
 	
 	public int linkSolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
 		return linkPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,"solver");
 	}
 	
+	/**
+	 * Links benchmark to a new space
+	 * @param benchmarkIds The benchmark Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @return 0 on success or a negative status code on error
+	 */
+	
 	public int linkBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
 		return linkPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,"benchmark");
 	}
 	
+	/**
+	 * Links jobs to a new space
+	 * @param jobIds The job Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @return 0 on success or a negative status code on error
+	 */
+	
 	public int linkJobs(Integer[] jobIds, Integer oldSpaceId, Integer newSpaceId) {
 		return linkPrimitives(jobIds,oldSpaceId,newSpaceId,false,"job");
 	}
+	
+	/**
+	 * Links users to a new space
+	 * @param userIds The user Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @return 0 on success or a negative status code on error
+	 */
 	public int linkUsers(Integer[] userIds, Integer oldSpaceId, Integer newSpaceId) {
 		return linkPrimitives(userIds,oldSpaceId,newSpaceId,false,"user");
 	}
 	
 	
+	/**
+	 * Copies solvers to a new space
+	 * @param solverIds The solver Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @param hierarchy Whether to link to the entire hierarchy
+	 * @return 0 on success or a negative status code on error
+	 */
+	
 	public List<Integer> copySolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
 		return copyPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,"solver");
 	}
 	
+	
+	/**
+	 * Copies benchmarks to a new space
+	 * @param benchmarkIds The benchmark Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @return 0 on success or a negative status code on error
+	 */
+	
 	public List<Integer> copyBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
 		return copyPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,"benchmark");
 	}
+	
+	/**
+	 * Copies spaces to a new space
+	 * @param spaceIds The space Ids to be added to a new space
+	 * @param oldSpaceId The space they are being linked from, or null if none exists
+	 * @param newSpaceId The ID of the space they are being linked to
+	 * @return 0 on success or a negative status code on error
+	 */
+	
 	
 	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
 		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,"space");
@@ -1214,7 +1273,9 @@ public class Connection {
 			//not all of the following are needed for every copy request, but including them does no harm
 			//and allows all the copy commands to be handled by this function
 			params.add(new BasicNameValuePair("copyToSubspaces", hierarchy.toString()));
-			params.add(new BasicNameValuePair("fromSpace",oldSpaceId.toString()));
+			if (oldSpaceId!=null) {
+				params.add(new BasicNameValuePair("fromSpace",oldSpaceId.toString()));
+			}
 			for (Integer id : ids) {
 				params.add(new BasicNameValuePair("selectedIds[]",id.toString()));
 			}

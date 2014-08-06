@@ -147,10 +147,11 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				if (s) {
 					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 						fnCallback(nextDataTablePage);
+						makeTableDraggable("#"+tableName,onDragStart,getDragClone);
+
 						if('j' == tableName[0]){
 							colorizeJobStatistics();
 						} 
-						makeTableDraggable("#"+tableName,onDragStart,getDragClone);
 
 				}
 			},  

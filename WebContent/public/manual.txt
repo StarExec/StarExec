@@ -456,32 +456,39 @@ then you will lose access to it. You may also copy or link primitives that you o
 multiple primitives at the same time by putting ids in a comma-seperated list, as illustrated in the examples
 below.
 
---copybench -Copies a benchmark from one space to another. "id" is a benchmark id, and "from" and "to" are
-space ids.
-REQUIRED: "id" "from" "to"
-OPTIONAL: None
+--copybench -Copies a benchmark from one space to another. If "from" is not given, you must own the benchmarks you want to copy.
+If "from" is given, the benchmarks will be copied from the specified space, and you may copy benchmarks you do not own given you have permission to copy from the 
+given space. "id" is a benchmark id, and "from" and "to" are space ids.
+REQUIRED: "id" "to"
+OPTIONAL: "from"
 EXAMPLE: 'copybench id=42,10,1 from=643 to=56"
 
---linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from""from" and "to" are
+--linkbench -links an existing benchmark and associates it with a space. If "from" is not given, you must own the benchmarks you want to link.
+If "from" is given, the benchmarks will be linked from the specified space, and you may link benchmarks you do not own given you have permission to link from the 
+given space. "id" is a benchmark id, and "from" and "to" are
 space ids.
-REQUIRED: "id" "from" "to"
-OPTIONAL: None
+REQUIRED: "id" "to"
+OPTIONAL: "from"
 EXAMPLE: 'linkbench id=6 from=63 to=124
 
---copysolver -Copies a solver from one space and places it into a new space or hierarchy. "id" is a solver id, and "from"
-and "to" are space ids
-REQUIRED: "id" "from" "to"
-OPTIONAL: "hier"
+--copysolver -Copies a solver and places it into a new space or hierarchy. If "from" is not given, you must own the solvers you want to copy.
+If "from" is given, the solvers will be copied from the specified space, and you may copy solvers you do not own given you have permission to copy from the 
+given space. "id" is a solver id, and "from" and "to" are space ids
+REQUIRED: "id" "to"
+OPTIONAL: "hier" "from"
 
---linksolver -links an existing solver and associates it with a new space or hierarchy. "id" is a solver id, and "from"
+--linksolver -links an existing solver and associates it with a new space or hierarchy. If "from" is not given, you must own the solvers you want to link.
+If "from" is given, the solvers will be linked from the specified space, and you may copy solvers you do not own given you have permission to link from the 
+given space. "id" is a solver id, and "from"
 and "to" are space ids
-REQUIRED: "id" "from" "to"
-OPTIONAL: "hier"
+REQUIRED: "id" "to"
+OPTIONAL: "hier" "from"
 
---linkjob -Links an existing job in a new space space. "id" is a job id, and "from" and "to" are
-space ids.
-REQUIRED: "id" "from" "to"
-OPTIONAL: None
+--linkjob -Links an existing job in a new space space. If "from" is not given, you must own the jobs you want to link.
+If "from" is given, the jobs will be linked from the specified space, and you may link jobs you do not own given you have permission to link from the 
+given space. "id" is a job id, and "from" and "to" are space ids.
+REQUIRED: "id" "to"
+OPTIONAL: "from"
 
 --copyspace -Copies an existing space or space hierarchy rooted at "id" from space "from" to space "to"
 REQUIRED: "id" "from", "to"
