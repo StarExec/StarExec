@@ -1,4 +1,7 @@
 .actionField {
-	width:95%;
-	
+	width:95%;	
+}
+
+#detailPanel.userDetailPanel {
+	float:left;
 }

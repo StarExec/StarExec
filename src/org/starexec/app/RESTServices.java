@@ -1849,7 +1849,6 @@ public class RESTServices {
 		try {
 			// Make sure we have a list of solvers to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 			if(null == request.getParameterValues("selectedIds[]") 
-					|| !Util.paramExists("fromSpace", request)
 					|| !Util.paramExists("copyToSubspaces", request)
 					|| !Util.paramExists("copy", request)
 					|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))
@@ -1861,8 +1860,12 @@ public class RESTServices {
 			int requestUserId = SessionUtil.getUserId(request);
 			
 			// Get the space the solver is being copied from
-			int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
-			
+			String fromSpace = request.getParameter("fromSpace");
+			Integer fromSpaceId=null;
+			//if null, we are not copying from anywhere-- we are just putting a solver into a new space
+			if (fromSpace!=null) {
+				fromSpaceId=Integer.parseInt(fromSpace);
+			}
 			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 			boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 			
@@ -1871,8 +1874,8 @@ public class RESTServices {
 			// Convert the solvers to copy to an int list
 			List<Integer> selectedSolvers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 			
-				
-			ValidatorStatusCode status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpace, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
+			
+			ValidatorStatusCode status=SpaceSecurity.canCopyOrLinkSolverBetweenSpaces(fromSpaceId, spaceId, requestUserId, selectedSolvers, copyToSubspaces, copy);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
@@ -1916,7 +1919,6 @@ public class RESTServices {
 		
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copy", request)
 				|| !Validator.isValidBool(request.getParameter("copy"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -1926,14 +1928,18 @@ public class RESTServices {
 		int requestUserId = SessionUtil.getUserId(request);
 		
 		// Get the space the benchmark is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
+		String fromSpace = request.getParameter("fromSpace");
 		
+		Integer fromSpaceId=null;
+		if (fromSpace!=null) {
+			fromSpaceId=Integer.parseInt(fromSpace);
+		}
 	
 		// Convert the benchmarks to copy to a int list
 		List<Integer> selectedBenchs= Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
 		boolean copy=Boolean.parseBoolean(request.getParameter("copy"));
 
-		ValidatorStatusCode status=SpaceSecurity.canCopyOrLinkBenchmarksBetweenSpaces(fromSpace, spaceId, requestUserId, selectedBenchs, copy);
+		ValidatorStatusCode status=SpaceSecurity.canCopyOrLinkBenchmarksBetweenSpaces(fromSpaceId, spaceId, requestUserId, selectedBenchs, copy);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -1972,15 +1978,18 @@ public class RESTServices {
 	public String copyJobToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		// Make sure we have a list of benchmarks to add and the space it's coming from
-		if(null == request.getParameterValues("selectedIds[]") || !Util.paramExists("fromSpace", request)){
+		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 				
 		// Get the space the benchmark is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
-				
+		String fromSpace = request.getParameter("fromSpace");
+		Integer fromSpaceId=null;	
+		if (fromSpace!=null) {
+			fromSpaceId=Integer.parseInt(fromSpace);
+		}
 		List<Integer> selectedJobs = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-		ValidatorStatusCode status=SpaceSecurity.canLinkJobsBetweenSpaces(fromSpace, spaceId, userId, selectedJobs);
+		ValidatorStatusCode status=SpaceSecurity.canLinkJobsBetweenSpaces(fromSpaceId, spaceId, userId, selectedJobs);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}

@@ -63,7 +63,6 @@ function populateDetails(jsonData) {
 }
 
 function removeUser(userid, id) {
-	alert("id inside = " + id);
 	var idArray = new Array();
 	idArray.push(userid);
 	$.post(  

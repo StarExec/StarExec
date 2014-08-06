@@ -15,6 +15,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -473,7 +474,7 @@ public class SpaceSecurity {
 		
 		//we can't copy a solver if it has been deleted on disk
 		if (Solvers.isSolverDeleted(solverId)) {
-			return new ValidatorStatusCode(false, "The solver you are trying to copy has already been deleted");
+			return new ValidatorStatusCode(false, "The solver you are trying to move has already been deleted");
 		}
 
 		return new ValidatorStatusCode(true);
@@ -566,13 +567,24 @@ public class SpaceSecurity {
  	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
 	
-	public static ValidatorStatusCode canLinkJobsBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> jobIdsBeingCopied) {
+	public static ValidatorStatusCode canLinkJobsBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> jobIdsBeingCopied) {
 		
 		ValidatorStatusCode status=null;
-		for(Integer jid : jobIdsBeingCopied) {
-			status=	canCopyJobFromSpace(fromSpaceId,userId,jid);
-			if (!status.isSuccess()) {
-				return status;
+		boolean isAdmin=Users.isAdmin(userId);
+		if (fromSpaceId!=null) {
+			for(Integer jid : jobIdsBeingCopied) {
+				status=	canCopyJobFromSpace(fromSpaceId,userId,jid);
+				if (!status.isSuccess()) {
+					return status;
+				}
+			}
+			
+		} else {
+			for (Integer jid : jobIdsBeingCopied) {
+				Job j=Jobs.get(jid);
+				if (j.getUserId()!=userId && !isAdmin) {
+					return new ValidatorStatusCode(false, "You are not the owner of all the jobs you are trying to move");
+				}
 			}
 		}
 		
@@ -599,21 +611,32 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and a status code from ValidatorStatusCodes otherwise
 	 */
 	
-	public static ValidatorStatusCode canCopyOrLinkBenchmarksBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied,boolean copy) {
+	public static ValidatorStatusCode canCopyOrLinkBenchmarksBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied,boolean copy) {
 		//if we are copying, but not linking, disk quota must be checked
 		if (copy) {
 			if (!doesUserHaveDiskQuotaForBenchmarks(benchmarkIdsBeingCopied,userId)) {
 				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
 			}
 		}
+		boolean isAdmin=Users.isAdmin(userId);
 		ValidatorStatusCode status=null;
-		for(Integer sid : benchmarkIdsBeingCopied) {
-			//first make sure the user can copy each benchmark FROM the original space
-			status=	canCopyBenchmarkFromSpace(fromSpaceId,userId,sid);
-			if (!status.isSuccess()) {
-				return status;
+		if (fromSpaceId!=null) {
+			for(Integer bid : benchmarkIdsBeingCopied) {
+				//first make sure the user can copy each benchmark FROM the original space
+				status=	canCopyBenchmarkFromSpace(fromSpaceId,userId,bid);
+				if (!status.isSuccess()) {
+					return status;
+				}
+			}
+		} else {
+			for (Integer bid : benchmarkIdsBeingCopied) {
+				Benchmark b=Benchmarks.get(bid);
+				if (b.getUserId()!=userId && !isAdmin) {
+					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move");
+				}
 			}
 		}
+		
 		//then, check to make sure they are allowed to copy TO the new space
 		status=canCopyBenchmarkToSpace(toSpaceId,userId);
 		if (!status.isSuccess()) {
@@ -640,7 +663,7 @@ public class SpaceSecurity {
 	 * @param copy If true, the primitives are being copied. Otherwise, they are being linked
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and a status code from ValidatorStatusCodes otherwise
 	 */
-	public static ValidatorStatusCode canCopyOrLinkSolverBetweenSpaces(int fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
+	public static ValidatorStatusCode canCopyOrLinkSolverBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
 			if (!doesUserHaveDiskQuotaForSolvers(solverIdsBeingCopied,userId)) {
@@ -660,13 +683,24 @@ public class SpaceSecurity {
 		}
 		
 		ValidatorStatusCode status=null;
-		for(Integer sid : solverIdsBeingCopied) {
-			//make sure the user is allowed to copy solvers FROM the original space
-			status=	canCopySolverFromSpace(fromSpaceId,userId,sid);
-			if (!status.isSuccess()) {
-				return status;
+		//we only need to check this if we are actually copying from another space
+		if (fromSpaceId!=null) {
+			for(Integer sid : solverIdsBeingCopied) {
+				//make sure the user is allowed to copy solvers FROM the original space
+				status=	canCopySolverFromSpace(fromSpaceId,userId,sid);
+				if (!status.isSuccess()) {
+					return status;
+				}
+			}
+		} else {
+			for (Integer sid : solverIdsBeingCopied) {
+				Solver solver=Solvers.get(sid);
+				if (!SolverSecurity.userOwnsSolverOrIsAdmin(solver, userId)) {
+					return new ValidatorStatusCode(false,"You are not the owner of all the solvers you are trying to move");
+				}
 			}
 		}
+		
 		
 		//then, for every destination space, make sure they can copy TO that space
 		for (Integer spaceId : spaceIds) {
