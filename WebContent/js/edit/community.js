@@ -218,6 +218,10 @@ function initUI(){
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
 	
+	$('#editPreProcess').change(function() {
+		saveChanges($(this).children('option:selected').attr('value'), true, 'PreProcess', 0);
+	});
+	
 	$('#editDependenciesEnabled').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
 	});
@@ -226,6 +230,13 @@ function initUI(){
 	if (stringExists(defaultPPId)) {
 		$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
 	}
+	
+	// Set the selected pre processor to be the default one
+	defaultPPId = $('#editPreProcess').attr('default');
+	if (stringExists(defaultPPId)) {
+		$('#editPreProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	}
+	
 	
 	defaultDepEnb=$('#editDependenciesEnabled').attr('default');
 	if (stringExists(defaultDepEnb)) {
@@ -398,7 +409,7 @@ function saveChanges(obj, save, attr, old) {
 				showMessage('error', $('#nameRow').attr('length')+ " characters maximum",5000);
 				return;
 			}
-		} else if (attr == "PostProcess"){
+		} else if (attr == "PostProcess" || attr == "PreProcess"){
 			newVal = obj;
 		} else if (attr == "CpuTimeout"){
 			newVal = $(obj).siblings('input:first').val();

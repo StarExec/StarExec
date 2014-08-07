@@ -23,6 +23,7 @@ import org.starexec.data.to.User;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 
 
@@ -49,9 +50,8 @@ public class CreateQueue extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		int userId=SessionUtil.getUserId(request);
 
-		ValidatorStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+		ValidatorStatusCode status=isRequestValid(request);
 		if (!status.isSuccess()) {
 			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
@@ -65,21 +65,10 @@ public class CreateQueue extends HttpServlet {
 		int queueUserId = req.getUserId();
 		Date start = req.getStartDate();
 		Date end = req.getEndDate();
-	
-		// Make sure that the queue has a unique name
-		if(Queues.notUniquePrimitiveName(queue_name)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The requested queue name is already in use. Please select another.");
-			return;
-		}
-		
-		
-		
+
 		//Add the queue, reserve the nodes, and approve the reservation
 		int newQueueId = Queues.add(queue_name + ".q",req.getCpuTimeout(),req.getWallTimeout());
 		Cluster.reserveNodes(req.getId(), start, end);
-		//boolean approved = Requests.removeQueueReservation(req.getId());
-		//Cluster.updateTempChanges();
-
 		
 		if(!Users.isAdmin(queueUserId)) {
 			// Notify user they've been approved	
@@ -100,5 +89,29 @@ public class CreateQueue extends HttpServlet {
 			response.addCookie(new Cookie("New_ID", String.valueOf(newQueueId)));
 		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));	
 		}		
+	}
+	
+	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
+		try {
+			int userId=SessionUtil.getUserId(request);
+			if (!Validator.isValidInteger(request.getParameter(id))) {
+				return new ValidatorStatusCode(false, "The request id needs to be a valid integer");
+			}
+			Integer requestId=  Integer.parseInt(request.getParameter(id));
+			QueueRequest req = Requests.getQueueRequest(requestId);
+			if (req==null) {
+				return new ValidatorStatusCode(false, "The queue request you are referencing could not be found");
+			}
+			String queueName = req.getQueueName();
+			// Make sure that the queue has a unique name
+			if(Queues.notUniquePrimitiveName(queueName)) {
+				return new ValidatorStatusCode(false,"The requested queue name is already in use. Please select another.");
+			}
+			
+			return QueueSecurity.canUserMakeQueue(userId, queueName);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return new ValidatorStatusCode(false, "There was an internal error processing your request");
 	}
 }

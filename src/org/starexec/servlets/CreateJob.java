@@ -108,11 +108,7 @@ public class CreateJob extends HttpServlet {
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
-		// Make sure that the job has a unique name in the space.
-		if(Spaces.notUniquePrimitiveName((String)request.getParameter(name), space, 3)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
-			return;
-		}
+
 		log.debug("confirmed the new job has a unique name");
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
@@ -271,10 +267,6 @@ public class CreateJob extends HttpServlet {
 		//if the user chose to immediately pause the job
 		if (start_paused.equals("yes")) {
 			Jobs.pause(j.getId());
-		} else {
-			//TODO: Why are we doing this here? The periodic task can handle this, and it interferes with 
-			//sending back a response to the user.
-			//JobManager.checkPendingJobs(); // to start this job running if it is not	
 		}
 		
 		if(submitSuccess) {
@@ -298,43 +290,43 @@ public class CreateJob extends HttpServlet {
 	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			if(!Validator.isValidInteger((String)request.getParameter(spaceId))) {
+			if(!Validator.isValidInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
-
+			int space=Integer.parseInt(request.getParameter(spaceId));
 			// Make sure timeout an int
-			if(!Validator.isValidInteger((String)request.getParameter(clockTimeout))) {
+			if(!Validator.isValidInteger(request.getParameter(clockTimeout))) {
 				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
 			}
 
-			if(!Validator.isValidInteger((String)request.getParameter(cpuTimeout))) {
+			if(!Validator.isValidInteger(request.getParameter(cpuTimeout))) {
 				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 			
-			if(!Validator.isValidDouble((String)request.getParameter(maxMemory))) {
+			if(!Validator.isValidDouble(request.getParameter(maxMemory))) {
 				return new ValidatorStatusCode(false, "The given maximum memory needs to be a valid double");
 			}
 
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
-				if(!Validator.isValidInteger((String)request.getParameter(postProcessor))) {
+				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
 			}
 
 			if(Util.paramExists(preProcessor, request)) {
-				if(!Validator.isValidInteger((String)request.getParameter(preProcessor))) {
+				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
 			}
 
 			// Make sure the queue is a valid integer
-			if(!Validator.isValidInteger((String)request.getParameter(workerQueue))) {
+			if(!Validator.isValidInteger(request.getParameter(workerQueue))) {
 				return new ValidatorStatusCode(false, "The given queue ID needs to be a valid integer");
 			}
 			
 			// Make sure the queue is a valid selection and user has access to it
-			Integer queueId = Integer.parseInt((String)request.getParameter(workerQueue));
+			Integer queueId = Integer.parseInt(request.getParameter(workerQueue));
 			int userId = SessionUtil.getUserId(request);
 			List<Queue> userQueues = Queues.getUserQueues(userId); 
 			Boolean queueFound=false;
@@ -350,8 +342,8 @@ public class CreateJob extends HttpServlet {
 			}
 			
 			//make sure both timeouts are <= the queue settings
-			int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
-			int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+			int cpuLimit = Integer.parseInt(request.getParameter(cpuTimeout));
+			int runLimit = Integer.parseInt(request.getParameter(clockTimeout));
 			
 			Queue q=Queues.get(queueId);
 			if (runLimit > q.getWallTimeout()) {
@@ -368,7 +360,7 @@ public class CreateJob extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
 			}		
 
-			int sid = Integer.parseInt((String)request.getParameter(spaceId));
+			int sid = Integer.parseInt(request.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(request, sid);
 
 			// Make sure the user has access to the space
@@ -407,6 +399,11 @@ public class CreateJob extends HttpServlet {
 				// Make sure the user is using solvers they can see
 				if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
+				}
+				
+				// Make sure that the job has a unique name in the space.
+				if(Spaces.notUniquePrimitiveName((String)request.getParameter(name), space, 3)) {
+					return new ValidatorStatusCode(false,"The job should have a unique name in the space.");	
 				}
 			}
 			// Passed all checks, return true

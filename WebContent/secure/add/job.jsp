@@ -27,7 +27,7 @@
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
-			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
+			request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
@@ -66,7 +66,7 @@
 					<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 						<td class="label"><p>pre processor</p></td>
 						<td>					
-							<select id="preProcess" name="preProcess" default="-1">
+							<select id="preProcess" name="preProcess" default="${defaultPreProcId}">
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${preProcs}">
 										<option value="${proc.id}">${proc.name} (${proc.id})</option>

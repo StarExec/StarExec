@@ -1,5 +1,7 @@
 package org.starexec.data.security;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.util.Validator;
@@ -7,12 +9,31 @@ import org.starexec.util.Validator;
 public class QueueSecurity {
 	
 	/**
+	 * Checks to see whether the given user is allowed to make a new queue
+	 * @param userId The ID of the user making the request
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
+	 */
+	
+	public static ValidatorStatusCode canUserMakeQueue(int userId, String queueName) {
+		if (!Users.isAdmin(userId)){
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+		}
+		
+		// Make sure that the queue has a unique name
+		if(Queues.notUniquePrimitiveName(queueName)) {
+			return new ValidatorStatusCode(false, "The requested queue name is already in use. Please select another.");
+		}
+		
+		return new ValidatorStatusCode(true);
+	}
+	
+	/**
 	 * Checks to see whether the given user is allowed to make a queue permanent
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
 	 */
 	
-	public static ValidatorStatusCode canUserMakeQueue(int userId) {
+	public static ValidatorStatusCode canUserMakeQueuePermanent(int userId) {
 		if (!Users.isAdmin(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}

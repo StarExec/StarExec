@@ -99,10 +99,7 @@ public class AddSpace extends HttpServlet {
 		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
 		int userId = SessionUtil.getUserId(request);
 		
-		if (Spaces.getSubSpaceIDbyName(spaceId, s.getName()) != -1) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
-			return;
-		}
+		
 		int newSpaceId = Spaces.add(s, spaceId, userId);
 		
 		//Inherit Users
@@ -149,15 +146,15 @@ public class AddSpace extends HttpServlet {
 			if (!Validator.isValidInteger(request.getParameter(parentSpace))) {
 				return new ValidatorStatusCode(false,"The space ID needs to be an integer");
 			}
-			int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
+			int spaceId = Integer.parseInt(request.getParameter(parentSpace));
 			
 			// Ensure the space name is valid (alphanumeric < SPACE_NAME_LEN chars)
-			if(!Validator.isValidSpaceName((String)request.getParameter(name))) {
+			if(!Validator.isValidSpaceName(request.getParameter(name))) {
 				return new ValidatorStatusCode(false, "The given name is invalid-- please reference the help pages to see valid space names");
 			}
-			
+			String n=request.getParameter(name);
 			// Ensure the description is < 1024 characters
-			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
+			if(!Validator.isValidPrimDescription(request.getParameter(description))) {
 				return new ValidatorStatusCode(false, "The given description is invalid-- please reference the help pages to see valid description names");
 			}
 			
@@ -180,12 +177,16 @@ public class AddSpace extends HttpServlet {
 				}
 				
 			}
-
-			
+		
 			// Verify this user can add spaces to this space
 			Permission p = SessionUtil.getPermission(request, spaceId);
 			if(!p.canAddSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a new space here");
+			}
+			
+			
+			if (Spaces.getSubSpaceIDbyName(spaceId, n) != -1) {
+				return new ValidatorStatusCode(false,"The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
 			}
 			
 			// Passed all checks, return true

@@ -85,7 +85,7 @@ public class Communities {
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
-		List<String> listOfDefaultSettings = Arrays.asList("id","no_type","1","1","0","0","0","1073741824");
+		List<String> listOfDefaultSettings = Arrays.asList("id","0","1","1","0","0","0","1073741824");
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -109,8 +109,8 @@ public class Communities {
 			}
 			
 			if(results.next()){
-				listOfDefaultSettings.set(0, results.getString("space_id"));
-				listOfDefaultSettings.set(1, results.getString("name"));
+				//TODO: Get rid of name and default benchmark,
+				listOfDefaultSettings.set(1, results.getString("pre_processor"));
 				listOfDefaultSettings.set(2, results.getString("cpu_timeout"));
 				listOfDefaultSettings.set(3, results.getString("clock_timeout"));
 				listOfDefaultSettings.set(4, results.getString("post_processor"));

@@ -173,6 +173,16 @@ function initUI() {
 		$("#postProcess").find("option").last().attr("selected","selected");
 	}
 	
+	defaultPPId = $('#preProcess').attr('default');
+	if (stringExists(defaultPPId)) {
+		$('#preProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	}
+	
+	//If there is only one pre processor and for some reason it is not the default, set it as such
+	if ($("#preProcess").find("option").length==2) {
+		$("#preProcess").find("option").last().attr("selected","selected");
+	}
+	
 	// Set up datatables
 	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
         "sDom": 'rt<"bottom"f><"clear">',        

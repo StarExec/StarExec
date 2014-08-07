@@ -25,6 +25,7 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.util.GridEngineUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 
 /**
@@ -53,32 +54,19 @@ public class CreatePermanentQueue extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+
+		ValidatorStatusCode status=isRequestValid(request);
 		if (!status.isSuccess()) {
 			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, status.getMessage());
 			return;
 		}
-		String queue_name = (String)request.getParameter(name);
-		Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
-		Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
+		
 		
 		//String node_name = (String)request.getParameter(Nodes);
 		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 
-	
-		// Make sure that the queue has a unique name
-		if(Queues.notUniquePrimitiveName(queue_name)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The requested queue name is already in use. Please select another.");
-			return;
-		}
-		if (cpuTimeout<=0 || wallTimeout<=0) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Timeouts need to be greater than 0.");
-			return;
-		}
-		
 		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
 		log.debug("nodeIds = " + nodeIds);
@@ -92,7 +80,8 @@ public class CreatePermanentQueue extends HttpServlet {
 				NQ.put(n, q);
 			}
 		}
-		
+		String queue_name = (String)request.getParameter(name);
+
 		//GridEngine Changes
 		QueueRequest req = new QueueRequest();
 		req.setQueueName(queue_name + ".q");
@@ -120,5 +109,30 @@ public class CreatePermanentQueue extends HttpServlet {
 			// On success, redirect to the space explorer so they can see changes
 		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 		}
+	}
+	
+	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
+		try {
+			int userId=SessionUtil.getUserId(request);
+			String queueName = request.getParameter(name);
+			if (!Validator.isValidInteger(request.getParameter(maxCpuTimeout)) || !Validator.isValidInteger(request.getParameter(maxWallTimeout))) {
+				return new ValidatorStatusCode(false, "Timeouts need to be valid integers");
+			}
+			
+			Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
+			Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
+			if (cpuTimeout<=0 || wallTimeout<=0) {
+				return new ValidatorStatusCode(false,"Timeouts need to be greater than 0.");
+			}
+			
+			
+			return	QueueSecurity.canUserMakeQueue(userId, queueName);
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return new ValidatorStatusCode(false, "Internal error processing queue creation request");
+		
 	}
 }

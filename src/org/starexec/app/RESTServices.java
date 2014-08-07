@@ -1261,6 +1261,8 @@ public class RESTServices {
 				double gigabytes=Double.parseDouble(request.getParameter("val"));
 				long bytes = Util.gigabytesToBytes(gigabytes); 
 				success=Communities.setDefaultMaxMemory(id, bytes);
+			} else if (attribute.equals("PreProcess")) {
+				success=Communities.setDefaultSettings(id, 6, Integer.parseInt(request.getParameter("val")));
 			}
 			
 			// Passed validation AND Database update successful
@@ -3774,7 +3776,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserMakeQueue(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserMakeQueuePermanent(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
