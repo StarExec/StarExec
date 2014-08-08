@@ -137,18 +137,6 @@ public class SolverSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to update this solver");
 		}
 		// Extract new solver details from request
-		
-		//if the name is actually being changed
-		if (!solver.getName().equals(name)) {
-			int editable=Solvers.isNameEditable(solverId);
-			if (editable<0) {
-				return new ValidatorStatusCode(false, "This solver is in more than one space, so its name cannot be changed");
-			}
-			//if editable is positive, that means it is the ID of the one space the solver is in
-			if (editable>0 && Spaces.notUniquePrimitiveName(name,editable, 1)) {
-				return new ValidatorStatusCode(false, "The name of the solver must be unique in the space");
-			}
-		}
 		return new ValidatorStatusCode(true);
 	}
 	/**

@@ -38,46 +38,6 @@ public class IntroStateTests extends TestSequence {
 	}
 	
 	@Test 
-	private void UniqueBenchmarkNamesTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
-		for (Space s : spaces) {
-			List<Benchmark> benchmarks=Benchmarks.getBySpace(s.getId());
-			
-			HashSet<String> names=new HashSet<String>();
-			for (Benchmark b : benchmarks) {
-				Assert.assertFalse(names.contains(b.getName()));
-				names.add(b.getName());
-			}
-		}
-	}
-	
-	@Test 
-	private void UniqueSolverNamesTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
-		for (Space s : spaces) {
-			List<Solver> solvers=Solvers.getBySpace(s.getId());
-			HashSet<String> names=new HashSet<String>();
-			for (Solver solver : solvers) {
-				Assert.assertFalse(names.contains(solver.getName()));
-				names.add(solver.getName());
-			}
-		}
-	}
-	
-	@Test 
-	private void UniqueJobNamesTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
-		for (Space s : spaces) {
-			List<Job> jobs=Jobs.getBySpace(s.getId());
-			HashSet<String> names=new HashSet<String>();
-			for (Job j : jobs) {
-				Assert.assertFalse(names.contains(j.getName()));
-				names.add(j.getName());
-			}
-		}
-	}
-	
-	@Test 
 	private void UniqueSubspaceNamesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		for (Space s : spaces) {

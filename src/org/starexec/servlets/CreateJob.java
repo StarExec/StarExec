@@ -400,11 +400,6 @@ public class CreateJob extends HttpServlet {
 				if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
-				
-				// Make sure that the job has a unique name in the space.
-				if(Spaces.notUniquePrimitiveName((String)request.getParameter(name), space, 3)) {
-					return new ValidatorStatusCode(false,"The job should have a unique name in the space.");	
-				}
 			}
 			// Passed all checks, return true
 			return new ValidatorStatusCode(true);

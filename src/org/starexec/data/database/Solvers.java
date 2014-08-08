@@ -1375,48 +1375,6 @@ public class Solvers {
 	}
 
 	
-	/**
-	 * Determines whether the solver identified by the given solver ID has an
-	 * editable name
-	 * @param solverId The ID of the solver in question
-	 * @return -1 if the name is not editable, 0 if it is editable and the solver is
-	 * associated with no spaces, and a positive integer if the name is editable and the
-	 * solver is associated only with the space with the returned ID.
-	 */
-	public static int isNameEditable(int solverId) {
-		Connection con =null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con=Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSolverAssoc(?)}");
-			procedure.setInt(1, solverId);
-			 results=procedure.executeQuery();
-			int id=-1;
-			if (results.next()) {
-				id=results.getInt("space_id");
-			} else {
-				log.debug("Solver associated with no spaces, so its name is editable");
-				return 0;
-			}
-			
-			if (results.next()) {
-				log.debug("Solver is found in multiple spaces, so its name is not editable");
-				return -1;
-			}
-			log.debug("Solver associated with one space id = "+id +" , so its name is editable");
-			return id;
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-	
 	
 	
 	public static boolean isPublic(int solverId) {

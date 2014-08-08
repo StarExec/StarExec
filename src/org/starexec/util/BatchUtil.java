@@ -615,7 +615,7 @@ public class BatchUtil {
 		//Also, this will hang if there are too many spaces with the given name
 		//seems unrealistic to run into that, but just in case, we'll count attempts
 		int attempt=0;
-		while (Spaces.notUniquePrimitiveName(space.getName(), parentId, 4)) {
+		while (Spaces.notUniquePrimitiveName(space.getName(), parentId)) {
 			int appendInt=rand.nextInt();
 			space.setName(baseSpaceName+appendInt);
 			if (attempt>1000) {
@@ -655,15 +655,13 @@ public class BatchUtil {
 				String elementType = childElement.getTagName();
 				if (elementType.equals("Benchmark")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
-					if (!Spaces.notUniquePrimitiveName(Benchmarks.get(id).getName(), parentId, 2)) {
-						benchmarks.add(id);
-					}
+					benchmarks.add(id);
+					
 				}
 				else if (elementType.equals("Solver")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
-					if (!Spaces.notUniquePrimitiveName(Solvers.get(id).getName(), parentId, 1)) {
-						solvers.add(id);
-					}
+					solvers.add(id);
+					
 				}
 				else if (elementType.equals("Space")){
 					createSpaceFromElement(childElement, spaceId, userId);

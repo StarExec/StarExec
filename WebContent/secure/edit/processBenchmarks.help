@@ -1,0 +1,17 @@
+<h1>Editing Your Account</h1>
+
+<p>This page describes how to edit the personal information and settings associated with your StarExec account. To
+change your settings, you can go to <a href="${starexecRoot}/secure/edit/account.jsp">this page.</a></p>
+
+<h2>Personal Information</h2>
+
+<p>In the personal information field, you have the ability to change your first name, last name, or institution. 
+Clicking on the row of the attribute you wish to change will allow you to edit the value in that row.</p>
+
+<p>Your email address may not be changed.</p>
+
+<h2>Site Settings</h2>
+
+<p>In the settings field, you will be able to find options that allow you to change your display preferences for StarExec.
+Currently, you have the ability to change the default number of rows per page shown in the tables throughout StarExec.</p>
+

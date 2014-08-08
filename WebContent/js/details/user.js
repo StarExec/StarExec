@@ -2,12 +2,17 @@ var jobTable;
 var benchTable;
 var solverTable;
 var userId;
+
+var spaceId;
+var spaceName
 $(document).ready(function(){
 	userId=$("#userId").attr("value");
 	// Hide loading images by default
 	$('legend img').hide();
 	
 	$("#explorer").hide();
+	$("#linkOrphanedButton").hide();
+
 	$("#detailPanel").css("width","100%");
 
 	$(".dialog").hide(); // hide all dialogs
@@ -16,8 +21,16 @@ $(document).ready(function(){
 	$('.popoutLink').button({
 		icons: {
 			secondary: "ui-icon-newwin"
-    }});
-	
+    	}
+	});
+	$("#linkOrphanedButton").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	$("#linkOrphanedButton").click(function() {
+		linkAllOrphaned();
+	});
 	$(".recycleButton, .deleteButton").button({
 		icons: {
 			primary: "ui-icon-trash"
@@ -55,7 +68,12 @@ $(document).ready(function(){
 	});
 	
 	jsTree=makeSpaceTree("#exploreList");
-
+	// Initialize the jstree plugin for the explorer list
+	jsTree.bind("select_node.jstree", function (event, data) {
+		// When a node is clicked, get its ID and display the info in the details pane
+		spaceId = data.rslt.obj.attr("id");
+		spaceName=$('.jstree-clicked').text();
+	}).
 	//Initiate job table
 	jobTable=$('#jobs').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -105,11 +123,14 @@ $(document).ready(function(){
 	$("#showSpaceExplorer").click(function() {
 		if (!$("#explorer").is(":visible")) {
 			$("#detailPanel").css("width","65%");
-
+			$("#showSpaceExplorer .ui-button-text").html("hide space explorer");
+			$("#linkOrphanedButton").show();
 		}
 		$( "#explorer" ).toggle( "slide", function() {
 			if (!$("#explorer").is(":visible")) {
 				$("#detailPanel").css("width","100%");
+				$("#showSpaceExplorer .ui-button-text").html("show space explorer");
+				$("#linkOrphanedButton").hide();
 			}
 		} );
 	});
@@ -305,6 +326,42 @@ function recycleSelected(prim) {
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error recycling "+prim+"s",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
+function linkAllOrphaned() {
+	$('#dialog-confirm-copy-txt').text('Are you sure you want to put all of your orphaned benchmarks, solvers, and jobs into ' +spaceName+'?');
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-copy').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'recycle': function() {
+				$("#dialog-confirm-copy").dialog("close");
+				createDialog("Linking the orphaned primitives, please wait. This will take some time for large numbers of primitives.");
+				$.post(  
+						starexecRoot +"services/linkAllOrphaned/"+userId+"/"+spaceId, 
+						{},
+						function(returnCode){
+							destroyDialog();
+							s=parseReturnCode(returnCode);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleSelectChange();
+							}
+							
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error linking primitives",5000);
 				});	
 			},
 			"cancel": function() {
@@ -556,7 +613,6 @@ function onSpaceDrop(event, ui) {
  * Sends a copy solver request to the server
  * @param ids The IDs of the solvers to copy
  * @param destSpace The ID of the destination space
- * @param spaceId The ID of the from space
  * @param copy A boolean indicating whether to copy (true) or link (false).
  * @param destName The name of the destination space
  * @author Eric Burns

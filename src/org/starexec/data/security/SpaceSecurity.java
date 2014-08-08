@@ -117,7 +117,7 @@ public class SpaceSecurity {
 		Space os=Spaces.get(spaceId);
 		if (!os.getName().equals(name)) {
 			int parentId=Spaces.getParentSpace(os.getId());
-			if (Spaces.notUniquePrimitiveName(name,parentId,4)) {
+			if (Spaces.notUniquePrimitiveName(name,parentId)) {
 				return new ValidatorStatusCode(false, "The new name needs to be unique in the space");
 			}
 		}
@@ -310,7 +310,7 @@ public class SpaceSecurity {
 			
 			
 			if (!s.getName().equals(newValue)) {
-				if (Spaces.notUniquePrimitiveName(newValue,spaceId,4)) {
+				if (Spaces.notUniquePrimitiveName(newValue,spaceId)) {
 					return new ValidatorStatusCode(false, "The new name needs to be unique in the space");
 				}
 			}
@@ -550,7 +550,7 @@ public class SpaceSecurity {
 		// Make sure the user can see the subSpaces they're trying to copy
 		for (int id : subspaceIds) {		
 			// Make sure that the subspace has a unique name in the space.
-			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), toSpaceId, 4)) {
+			if(Spaces.notUniquePrimitiveName(Spaces.get(id).getName(), toSpaceId)) {
 				return new ValidatorStatusCode(false, "The name of the space you are trying to copy is not unique in the destination space");
 			}
 		}
@@ -592,11 +592,7 @@ public class SpaceSecurity {
 		if (!status.isSuccess()) {
 			return status;
 		}
-		for (Integer jobId : jobIdsBeingCopied) { 
-			if(Spaces.notUniquePrimitiveName(Jobs.get(jobId).getName(), toSpaceId, 3)) {
-				return new ValidatorStatusCode(false, "The name of the job you are trying to copy is not unique in the destination space");
-			}
-		}
+		
 			
 		return new ValidatorStatusCode(true);
 	}
@@ -641,13 +637,6 @@ public class SpaceSecurity {
 		status=canCopyBenchmarkToSpace(toSpaceId,userId);
 		if (!status.isSuccess()) {
 			return status;
-		}
-		
-		//benchmark names must be unique in each space
-		for (Integer benchId : benchmarkIdsBeingCopied) { 
-			if(Spaces.notUniquePrimitiveName(Benchmarks.get(benchId).getName(), toSpaceId, 2)) {
-				return new ValidatorStatusCode(false, "The name of the benchmark you are trying to copy is not unique in the destination space");
-			}
 		}
 			
 		return new ValidatorStatusCode(true);
@@ -708,11 +697,7 @@ public class SpaceSecurity {
 			if (!status.isSuccess()) {
 				return status;
 			}
-			for (Integer solverId : solverIdsBeingCopied) { 
-				if(Spaces.notUniquePrimitiveName(Solvers.get(solverId).getName(), spaceId, 1)) {
-					return new ValidatorStatusCode(false, "The name of the solver you are trying to copy is not unique in the destination space");
-				}
-			}
+			
 			
 		}
 		return new ValidatorStatusCode(true);
@@ -976,6 +961,23 @@ public class SpaceSecurity {
 	
 		
 	return new ValidatorStatusCode(true);
+    }
+    
+    
+    public static ValidatorStatusCode canUserLinkAllOrphaned(int userId, int userIdOfCaller,  int spaceId) {
+    	if (!Users.isAdmin(userIdOfCaller) && userId!=userIdOfCaller) {
+    		return new ValidatorStatusCode(false, "You can only perform this operation on your own primitives");
+    	}
+    	Space s=Spaces.getDetails(spaceId, userIdOfCaller);
+    	if (s==null) {
+    		return new ValidatorStatusCode(false, "The given space could not be found");
+    	}
+    	
+    	Permission p=Permissions.get(userIdOfCaller, spaceId);
+    	if (!p.canAddJob() || !p.canAddBenchmark() || !p.canAddSolver()) {
+    		return new ValidatorStatusCode(false, "You do not have permissions to add primitives to the space");
+    	}   	
+    	return new ValidatorStatusCode(true);
     }
 
     

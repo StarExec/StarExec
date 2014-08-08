@@ -95,8 +95,6 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_INVALID_WEBSITE_TYPE=new ValidatorStatusCode(false, "The supplied website type was invalid");
 	private static final ValidatorStatusCode ERROR_EDIT_VAL_ABSENT=new ValidatorStatusCode(false, "No value specified");
 	private static final ValidatorStatusCode ERROR_IDS_NOT_GIVEN=new ValidatorStatusCode(false, "No ids specified");
-	private static final ValidatorStatusCode ERROR_SPACE_ALREADY_PUBLIC=new ValidatorStatusCode(false, "The space is already public");
-	private static final ValidatorStatusCode ERROR_SPACE_ALREADY_PRIVATE=new ValidatorStatusCode(false, "The space is already private");
 	
 	private static final ValidatorStatusCode ERROR_INVALID_PERMISSIONS=new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 	
@@ -2230,6 +2228,28 @@ public class RESTServices {
 			}
 		}
 		return gson.toJson(new ValidatorStatusCode(true,"Solver(s) deleted successfully"));
+	}
+	
+	/**
+	 * Links all of the given user's orphaned primitives to the given space
+	 * @param userId The ID of the user that will have their primitives affected
+	 * @param spaceId The ID of the space to put the primitives in
+	 * @param request 
+	 * @return
+	 */
+	@POST
+	@Path("/linkAllOrphaned/{userId}/{spaceId}")
+	@Produces("application/json")
+	public String linkAllOrphanedPrimitives(@PathParam("userId") int userId, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
+
+		ValidatorStatusCode status=SpaceSecurity.canUserLinkAllOrphaned(userId, userIdOfCaller, spaceId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+	
+		return Benchmarks.recycleOrphanedBenchmarks(userId) ?  gson.toJson(new ValidatorStatusCode(true,"Benchmark(s) recycled successfully")) :
+			gson.toJson(new ValidatorStatusCode(false, "Internal database error recycling benchmark(s)"));
 	}
 	
 	/**

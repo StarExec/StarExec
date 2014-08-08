@@ -52,11 +52,7 @@ public class SaveConfiguration extends HttpServlet {
 				return;
 			} 
 			
-			// Permissions check; ensure the user owns the solver to which they are saving
-			if(Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId){
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only owners of a solver may save configurations to it.");
-				return;
-			}
+			
 			
 			// Process the configuration file and write it to the parent solver's /bin directory, then update the solver's disk_size attribute
 			int result = handleConfiguration(request);
@@ -137,6 +133,7 @@ public class SaveConfiguration extends HttpServlet {
 	 */
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
 		try {
+			int userId=SessionUtil.getUserId(request);
 			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
 				return new ValidatorStatusCode(false, "The configuration did not have any contents");
 			}
@@ -154,6 +151,11 @@ public class SaveConfiguration extends HttpServlet {
 			// Ensure the configuration's name and description are valid
 			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))) {
 				return new ValidatorStatusCode(false, "The supplied name is not valid-- please see the help files to see the correct format");
+			}
+			
+			// Permissions check; ensure the user owns the solver to which they are saving
+			if(Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId){
+				return new ValidatorStatusCode(false, "Only owners of a solver may save configurations to it.");
 			}
 			
 			return new ValidatorStatusCode(true);

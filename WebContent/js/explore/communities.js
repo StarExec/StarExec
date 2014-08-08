@@ -111,7 +111,7 @@ $(document).ready(function(){
 	  	updateCommunityOverviewGraph();
 	});
 	$("#leaveComm").click(function(){
-		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
+		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '? This will remove you from every space in the communiity. Your primitives will not be affected.');
 			
 		// Display the confirmation dialog
 		$('#dialog-confirm-leave').dialog({

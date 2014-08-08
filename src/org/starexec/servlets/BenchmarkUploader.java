@@ -178,16 +178,7 @@ public class BenchmarkUploader extends HttpServlet {
 				}
 			} else if(uploadMethod.equals("dump")) {
 				List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-				for (Benchmark bench : results) {
-					// Make sure that the benchmark has a unique name in the space.
-					//TODO: verify that this is being done correctly. particularly whether benchmarks in THIS upload have unique names
-					if(Spaces.notUniquePrimitiveName(bench.getName(), spaceId, 2)) {
-						String message = "Benchmarks must have unique names within this space.  The following benchmark fails " + bench.getName();
-						Uploads.setErrorMessage(statusId, message);
-						log.error(message + " - status id = " + statusId);				
-						return null;
-					}
-				}
+				
 				Uploads.processingBegun(statusId);
 				if (!hasDependencies){	
 					benchmarkIds.addAll(Benchmarks.add(results, spaceId, statusId));

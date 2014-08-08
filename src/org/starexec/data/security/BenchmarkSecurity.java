@@ -188,15 +188,6 @@ public class BenchmarkSecurity {
 			return new ValidatorStatusCode(false, "The benchmark has been deleted");
 		}
 		
-		if (!bench.getName().equals(name)) {
-			int id=Benchmarks.isNameEditable(benchId);
-			if (id<0) {
-				return new ValidatorStatusCode(false, "The benchmark is in more than one space, so its name cannot be edited.");
-			}
-			if (id>0 && Spaces.notUniquePrimitiveName(name,id, 2)) {
-				return new ValidatorStatusCode(false, "The new name must be unique of all benchmarks in the space");
-			}
-		}
 		
 		
 		return new ValidatorStatusCode(true);

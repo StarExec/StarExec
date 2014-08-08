@@ -1610,14 +1610,11 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param prim The content of the primitive, such as a job's name
 	 * @param space_id The if of the space needed to be checked
 	 * @param type The type of the primitive
-	 *        1: solver
-	 *        2: benchmark
-	 *        3: job
-	 *        4: subspace
+	 *        1: subspace
 	 * @return True when there exists a primitive with the same name.
 	 * @author Ruoyu Zhang
 	 */
-	public static boolean notUniquePrimitiveName(String prim, int space_id, int type) {
+	public static boolean notUniquePrimitiveName(String prim, int space_id) {
 		// Initiate sql connection facilities.
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -1625,58 +1622,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		
 		try {
 			con = Common.getConnection();
-			// If the type of the primitive is solver.
-			if(type == 1) {
-					
-				procedure = con.prepareCall("{CALL countSpaceSolversByName(?, ?)}");
-				procedure.setString(1, prim);
-				procedure.setInt(2, space_id);
-				
-				results = procedure.executeQuery();		
-				
-				if(results.next()){
-					if(results.getInt(1) != 0) {
-						return true;
-					}
-					return false;
-				}
-			}
 			
-			//If the type of the primitive is benchmark.
-			else if(type == 2) {
-				procedure = con.prepareCall("{CALL countSpaceBenchmarksByName(?, ?)}");
-				procedure.setString(1, prim);
-				procedure.setInt(2, space_id);
-				
-				results = procedure.executeQuery();		
-				
-				if(results.next()){
-					if(results.getInt(1) != 0) {
-						return true;
-					}
-					return false;
-				}
-			}
-			
-			//If the type of the primitive is job.
-			else if(type == 3) {
-				
-				procedure = con.prepareCall("{CALL countSpaceJobsByName(?, ?)}");
-				procedure.setString(1, prim);
-				procedure.setInt(2, space_id);
-				
-				results = procedure.executeQuery();		
-				
-				if(results.next()){
-					if(results.getInt(1) != 0) {
-						return true;
-					}
-					return false;
-				}
-			}
 			
 			//If the type of the primitive is subspace.
-			else if(type == 4) {
 				procedure = con.prepareCall("{CALL countSubspacesByName(?, ?)}");
 				procedure.setString(1, prim);
 				procedure.setInt(2, space_id);
@@ -1689,7 +1637,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 					}
 					return false;
 				}
-			}
+			
 			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

@@ -77,7 +77,7 @@ public class UploadSolver extends HttpServlet {
 				// Make sure the request is valid
 				
 				
-				ValidatorStatusCode status=this.isValidRequest(form);
+				ValidatorStatusCode status=this.isValidRequest(form, request);
 				if(!status.isSuccess()) {
 					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
@@ -85,17 +85,7 @@ public class UploadSolver extends HttpServlet {
 					return;
 				}
 				
-				int spaceId=Integer.parseInt((String)form.get("space"));
-				if (!SessionUtil.getPermission(request, spaceId).canAddSolver()) {
-					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to add solvers to this space");
-					return;
-				}
 				
-				// Make sure that the solver has a unique name in the space.
-				if(Spaces.notUniquePrimitiveName((String)form.get(UploadSolver.SOLVER_NAME), Integer.parseInt((String)form.get(SPACE_ID)), 1)) {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The solver should have a unique name in the space.");
-					return;
-				}
 				
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
@@ -396,7 +386,7 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representing the upload request.
 	 * @return true iff the request is valid
 	 */
-	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
+	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form, HttpServletRequest request) {
 		try {
 			if (!form.containsKey(UPLOAD_METHOD) ||
 					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
@@ -449,6 +439,12 @@ public class UploadSolver extends HttpServlet {
 			if (!goodExtension) {
 				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
 			}
+			
+			int spaceId=Integer.parseInt((String)form.get("space"));
+			if (!SessionUtil.getPermission(request, spaceId).canAddSolver()) {
+				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");
+			}
+			
 			
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {

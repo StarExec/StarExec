@@ -78,10 +78,7 @@ public class Registration extends HttpServlet {
 			return status;
 		}
 		
-		boolean uniqueEmail = Users.getUserByEmail(request.getParameter(Registration.USER_EMAIL));
-		if (uniqueEmail) {
-			return new ValidatorStatusCode(false, "The email address you specified has already been registered");
-		}
+
 		
 		// Create the user to add to the database
 		User user = new User();
@@ -172,6 +169,11 @@ public class Registration extends HttpServlet {
 	    	// Ensure the parameters are valid values
 	    	if (!Validator.isValidInstitution((String)request.getParameter(Registration.USER_INSTITUTION))) {
 				return new ValidatorStatusCode(false, "The given institution is not valid-- please refer to the help files to see the proper format");
+			}
+	    	
+			boolean notUniqueEmail = Users.getUserByEmail(request.getParameter(Registration.USER_EMAIL));
+			if (notUniqueEmail) {
+				return new ValidatorStatusCode(false, "The email address you specified has already been registered");
 			}
 	    	
 	    	return new ValidatorStatusCode(true);

@@ -3,7 +3,14 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-		int userId = Integer.parseInt(request.getParameter("id"));	
+		int userId=-1;
+		try {
+			userId = Integer.parseInt(request.getParameter("id"));	
+
+		} catch (Exception e) {
+			// if we can't get it from the URL, try to just use the current user ID
+			userId=SessionUtil.getUserId(request);
+		}
 		User t_user = Users.get(userId);
 		int visiting_userId = SessionUtil.getUserId(request);		
 		

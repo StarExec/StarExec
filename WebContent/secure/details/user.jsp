@@ -187,6 +187,8 @@
 		<fieldset id="actionField">
 		<legend>actions</legend>
 			<button id="showSpaceExplorer">show space explorer</button>
+			<button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the space explorer
+			on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">associate orphaned primitives with space</button>
 			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
 			<a id="recycleBinButton" href="/${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>

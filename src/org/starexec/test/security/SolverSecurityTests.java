@@ -132,8 +132,6 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId()).isSuccess());
-		//make sure we can't change the name of solver1 to the same name as solver2, since names must be unique per space
-		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver2.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
 	}
 	
 	
