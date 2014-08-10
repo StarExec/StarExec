@@ -2006,11 +2006,15 @@ public class Connection {
 
 			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
 			
+			//make sure the id we got back is positive, indicating we made a job successfully
 			if (Validator.isValidPosInteger(id)) {
 				return Integer.parseInt(id);
 			}
-			return Status.ERROR_INTERNAL;
+			setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+
+			return Status.ERROR_SERVER;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}
 	}
@@ -2042,9 +2046,20 @@ public class Connection {
 	}
 
 	/**
-	 * @param lastError the lastError to set
+	 * @param lastError the lastError to set. Leading/trailing whitespace and quotes will be removed
 	 */
 	private void setLastError(String lastError) {
+		if (lastError==null) {
+			this.lastError="";
+			return;
+		}
+		lastError=lastError.trim();
+		if (lastError.charAt(0)=='"') {
+			lastError=lastError.replaceFirst("\"", "");
+		}
+		if (lastError.charAt(lastError.length()-1)=='"') {
+			lastError=lastError.substring(0,lastError.length()-1);
+		}
 		this.lastError = lastError;
 	}
 

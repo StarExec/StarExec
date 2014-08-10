@@ -90,6 +90,7 @@ public class CreateJob extends HttpServlet {
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {
 			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			log.debug("received and invalid job creation request");
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
@@ -304,7 +305,6 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
-			int space=Integer.parseInt(request.getParameter(spaceId));
 			// Make sure timeout an int
 			if(!Validator.isValidInteger(request.getParameter(clockTimeout))) {
 				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");

@@ -120,7 +120,7 @@ CREATE TABLE benchmarks (
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
-	CONSTRAINT benchmarks_user_iddas FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT benchmarks_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	CONSTRAINT benchmarks_bench_type FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
 );
 
