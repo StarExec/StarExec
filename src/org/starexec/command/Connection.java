@@ -839,10 +839,9 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
 			boolean success=JsonHandler.getSuccessOfResponse(response);
 			String message=JsonHandler.getMessageOfResponse(response);
-			
+			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
 			} else {
@@ -1484,7 +1483,7 @@ public class Connection {
 	    
 	    String line;
 	    while((line = br.readLine()) != null){
-		System.out.println(line);
+	    	System.out.println(line);
 		
 	    }
 

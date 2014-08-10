@@ -610,7 +610,7 @@ public class Spaces {
 	 * @param id the space from which to get its community
 	 * @return the id of the community of the space
 	 */
-	public static int GetCommunityOfSpace(int id) {
+	public static int getCommunityOfSpace(int id) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;

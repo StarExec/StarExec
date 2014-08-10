@@ -757,7 +757,7 @@ public class SpaceSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to add a user to this space");
 		}
 		
-		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.GetCommunityOfSpace(spaceId))) {
+		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.getCommunityOfSpace(spaceId))) {
 			return new ValidatorStatusCode(false, "The user is not a member of the community you are trying to move them to. They must request to join the community first");
 		}
 

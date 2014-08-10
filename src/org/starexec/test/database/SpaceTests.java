@@ -81,8 +81,8 @@ public class SpaceTests extends TestSequence {
 	
 	@Test
 	private void GetCommunityOfSpaceTest() {
-		Assert.assertEquals(community.getId(),Spaces.GetCommunityOfSpace(subspace.getId()));
-		Assert.assertEquals(community.getId(),Spaces.GetCommunityOfSpace(community.getId()));
+		Assert.assertEquals(community.getId(),Spaces.getCommunityOfSpace(subspace.getId()));
+		Assert.assertEquals(community.getId(),Spaces.getCommunityOfSpace(community.getId()));
 	}
 	
 	@Test

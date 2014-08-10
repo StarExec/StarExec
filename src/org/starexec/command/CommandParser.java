@@ -111,7 +111,6 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
-		    //System.out.println("CommandParser.java : " + e);
 			return Status.ERROR_INTERNAL;
 		}
 	}

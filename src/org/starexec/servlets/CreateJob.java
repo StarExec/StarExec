@@ -190,7 +190,10 @@ public class CreateJob extends HttpServlet {
 
 			if (configIds.size() == 0) {
 				// Either no solvers or no configurations; error out
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.");
+				String message="Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.";
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 				return;
 			}
 
@@ -233,14 +236,19 @@ public class CreateJob extends HttpServlet {
 				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
 				if (j.getJobPairs().size() == 0) {
 					// No pairs in the job means no benchmarks in the hierarchy; error out
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
+					String message="Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.";
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 					return;
 				}
 			} else {
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
 				if (benchmarkIds.size() == 0) {
-					// No benchmarks selected; error out
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
+					String message="Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.";
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 					return;
 				}
 
@@ -254,8 +262,11 @@ public class CreateJob extends HttpServlet {
 		}
 
 		if (j.getJobPairs().size() == 0) {
+			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 			// No pairs in the job means something went wrong; error out
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");
 			return;
 		}
 		

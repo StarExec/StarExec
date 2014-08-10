@@ -60,7 +60,8 @@ public class SolverSecurity {
 	 */
 	
 	public static ValidatorStatusCode canUserRunStarexecBuild(int userId, int spaceId) {
-		if (!Permissions.get(userId, Spaces.GetCommunityOfSpace(spaceId)).isLeader()) {
+		Permission p=Permissions.get(userId,Spaces.getCommunityOfSpace(spaceId));
+		if (p==null || !p.isLeader()) {
 			return new ValidatorStatusCode(false, "You do not have permission to use a starexec_build script. Only community leaders may use build scripts.");
 		}
 		return new ValidatorStatusCode(true);

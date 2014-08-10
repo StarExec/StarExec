@@ -175,7 +175,7 @@ public class SolverSecurityTests extends TestSequence {
 	private void canUserAddConfigurationTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,SolverSecurity.canUserAddConfiguration(solver3.getId(), regular.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), regular.getId()).isSuccess());
 		
 	}
 	

@@ -56,7 +56,6 @@ class JsonHandler {
 	protected static String getMessageOfResponse(HttpResponse response) {
 		try {
 			JsonObject obj=getJsonObject(response);
-			System.out.println(obj.get("message"));
 			return obj.get("success").getAsString();
 		} catch (Exception e) {
 			return null;
@@ -75,7 +74,6 @@ class JsonHandler {
 		
 		try {
 			JsonObject obj=getJsonObject(response);
-			System.out.println(obj.get("success"));
 			return obj.get("success").getAsBoolean();
 		} catch (Exception e) {
 			return null;

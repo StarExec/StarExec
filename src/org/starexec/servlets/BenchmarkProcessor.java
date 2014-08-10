@@ -66,7 +66,7 @@ public class BenchmarkProcessor extends HttpServlet {
 			boolean hier=Boolean.parseBoolean((String)request.getParameter(SPACE_HIERARCHY));
 				
 			Processor p=Processors.get(pid);
-			int commId=Spaces.GetCommunityOfSpace(spaceId);
+			int commId=Spaces.getCommunityOfSpace(spaceId);
 			
 			List<User> leaders = Spaces.getLeaders(commId);
 			boolean isCommunityLeader = false;
@@ -133,7 +133,7 @@ public class BenchmarkProcessor extends HttpServlet {
 				return new ValidatorStatusCode(false,  "You must be a member of the space you are trying to process");
 
 			}
-			int commId=Spaces.GetCommunityOfSpace(spaceId);
+			int commId=Spaces.getCommunityOfSpace(spaceId);
 			if (commId!=p.getCommunityId()) {
 				return new ValidatorStatusCode(false,  "You may only use processors that are a part of the community that owns the benchmarks");
 
