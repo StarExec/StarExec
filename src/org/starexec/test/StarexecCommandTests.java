@@ -30,7 +30,6 @@ import org.starexec.util.Util;
 
 
 /*TODO:
-	Delete[jobs]
 	Download[new job info, new job output]
 */
 public class StarexecCommandTests extends TestSequence {

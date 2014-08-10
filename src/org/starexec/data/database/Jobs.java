@@ -14,6 +14,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -1595,7 +1596,6 @@ public class Jobs {
 	
 	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobId,int jobSpaceId, int id) {
 		Spaces.updateJobSpaceClosureTable(jobSpaceId);
-		long a=System.currentTimeMillis();
 		log.debug("beginning function getJobPairsForTableByConfigInJobSpace");
 		Connection con = null;	
 		
@@ -2397,35 +2397,38 @@ public class Jobs {
 	public static boolean setTimelessPairsToPending(int jobId) {
 		boolean success=true;
 		//only continue if we could actually clear the job stats
-		success=success  && setTimelessPairsToPending(jobId,StatusCode.STATUS_COMPLETE.getVal());
-		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_CPU.getVal());
-		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_FILE_WRITE.getVal());
-		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_MEM.getVal());
-		success=success  && setTimelessPairsToPending(jobId,StatusCode.EXCEED_RUNTIME.getVal());
+		Set<Integer> ids=new HashSet<Integer>();
+		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.STATUS_COMPLETE.getVal()));
+		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_CPU.getVal()));
+		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_FILE_WRITE.getVal()));
+		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_MEM.getVal()));
+		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_RUNTIME.getVal()));
 		
-		// the cache must be cleared AFTER changing the pair status codes!
-		success=success && Jobs.removeCachedJobStats(jobId);
+		
+		for (Integer jp : ids) {
+			success=success && Jobs.rerunPair(jobId, jp);
+		}
+
 		return success;
 	}
 	
+	/**
+	 * Sets every pair in a job back to pending, allowing all pairs to be rerun
+	 * @param jobId
+	 * @return
+	 */
 	public static boolean setAllPairsToPending(int jobId) {
-		Connection con=null;
-		CallableStatement procedure=null;
+
 		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemovePairsFromComplete(?)}");
-			procedure.setInt(1, jobId);
-			procedure.executeUpdate();
-			
-			Jobs.setPairStatusByJob(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal(),con);
-			
-			return Jobs.removeCachedJobStats(jobId);
+			Job j=Jobs.getDetailed(jobId);
+			boolean success=true;
+			for (JobPair jp : j) {
+				success = success && Jobs.rerunPair(jobId, jp.getId());
+			}
+			return success;
 		} catch (Exception e) {
 			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
+		} 
 		return false;
 	}
 	
@@ -2438,58 +2441,34 @@ public class Jobs {
 	 */
 	
 	public static boolean rerunPair(int jobId, int pairId) {
-		log.debug("got a request to rerun pair id = "+pairId);
-		boolean success=true;
-		JobPair p=JobPairs.getPair(pairId);
-		Status status=p.getStatus();
-		//no rerunning for pairs that are still pending
-		if (status.getCode().getVal()==StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
-			return true;
+		try {
+			log.debug("got a request to rerun pair id = "+pairId);
+			boolean success=true;
+			JobPair p=JobPairs.getPair(pairId);
+			Status status=p.getStatus();
+			//no rerunning for pairs that are still pending
+			if (status.getCode().getVal()==StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
+				return true;
+			}
+			if (status.getCode().getVal()<StatusCode.STATUS_COMPLETE.getVal()) {
+				JobPairs.killPair(pairId, p.getGridEngineId());
+			}
+			JobPairs.removePairFromCompletedTable(pairId);
+			JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			
+			// the cache must be cleared AFTER changing the pair status code!
+			success=success && Jobs.removeCachedJobStats(jobId);
+			
+			return success;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		if (status.getCode().getVal()<StatusCode.STATUS_COMPLETE.getVal()) {
-			JobPairs.killPair(pairId, p.getGridEngineId());
-		}
-		JobPairs.removePairFromCompletedTable(pairId);
-		JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
 		
-		// the cache must be cleared AFTER changing the pair status code!
-		success=success && Jobs.removeCachedJobStats(jobId);
-		
-		return success;
+		return false;
+	
 	}
 	
-	/**
-	 * Sets all the job pairs of a given status code and job to pending if their cpu or wallclock
-	 * time is 0. Used to rerun pairs that didn't work in an initial job run
-	 * @param jobId The id of the job in question
-	 * @param statusCode The status code of pairs that should be rerun
-	 * @return true on success and false otherwise
-	 * @author Eric Burns
-	 */
-	private static boolean setTimelessPairsToPending(int jobId, int statusCode) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemoveTimelessPairsOfStatusFromComplete(?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2, statusCode);
-			procedure.executeUpdate();
-			
-			procedure=con.prepareCall("{CALL SetTimelessPairsToStatus(?,?,?)}");
-			procedure.setInt(1,jobId);
-			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
-			procedure.setInt(3,statusCode);
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e) {
-			log.error("setTimelessPairsToPending says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		return false;
-	} 
+	
 	
 	public static boolean removePairsOfStatusFromComplete(int jobId, int statusCode, Connection con) {
 		CallableStatement procedure=null;
@@ -2508,6 +2487,56 @@ public class Jobs {
 		return false;
 	}
 	
+	public static List<Integer> getTimelessPairsByStatus(int jobId, int statusCode) {
+		Connection con=null;
+		
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetTimelessJobPairsByStatus(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, statusCode);
+			results=procedure.executeQuery();
+			List<Integer> ids=new ArrayList<Integer>();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			
+			return ids;
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	public static List<Integer> getPairsByStatus(int jobId, int statusCode) {
+		Connection con=null;
+		
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetJobPairsByStatus(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, statusCode);
+			results=procedure.executeQuery();
+			List<Integer> ids=new ArrayList<Integer>();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			
+			return ids;
+		} catch (Exception e ) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
 	
 	/**
 	 * Sets all the job pairs of a given status code and job to pending. Used to rerun
@@ -2518,27 +2547,17 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static boolean setPairsToPending(int jobId, int statusCode) {
-		Connection con=null;
-		CallableStatement procedure=null;
+		
 		try {
-			con=Common.getConnection();
-			removePairsOfStatusFromComplete(jobId,statusCode,con);
-			procedure=con.prepareCall("{CALL SetPairsOfStatusToStatus(?,?,?)}");
-			procedure.setInt(1,jobId);
-			procedure.setInt(2,StatusCode.STATUS_PENDING_SUBMIT.getVal());
-			procedure.setInt(3,statusCode);
-			procedure.executeUpdate();
-			
-			// the cache must be cleared AFTER changing the pair status codes!
-			boolean success=Jobs.removeCachedJobStats(jobId);
-
+			boolean success=true;
+			List<Integer> pairs=Jobs.getPairsByStatus(jobId, statusCode);
+			for (Integer id : pairs) {
+				success=success && Jobs.rerunPair(jobId, id);
+			}
 			return success;
 		} catch (Exception e) {
 			log.error("setPairsToPending says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
+		} 
 		return false;
 	} 
 		
@@ -4030,13 +4049,12 @@ public class Jobs {
 		return null;
 	}
 	
-	
 	/**
-	 * Deletes all of the jobs a user has that are not in any spaces
-	 * @param userId The ID of the user who will have their solvers recycled
+	 * Gets the ID of every job a user owns that is orphaned
+	 * @param userId
 	 * @return
 	 */
-	public static boolean deleteOrphanedJobs(int userId) {
+	public static List<Integer> getOrphanedJobs(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -4049,7 +4067,7 @@ public class Jobs {
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
-			return true;
+			return ids;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}finally {
@@ -4058,6 +4076,18 @@ public class Jobs {
 			Common.safeClose(results);
 		}
 		
+		return null;
+	}
+	
+	
+	/**
+	 * Deletes all of the jobs a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their solvers recycled
+	 * @return
+	 */
+	public static boolean deleteOrphanedJobs(int userId) {
+		
+		List<Integer> ids = getOrphanedJobs(userId);
 		try {
 			for (Integer id : ids) {
 				Jobs.delete(id);

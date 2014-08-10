@@ -406,14 +406,22 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 		ORDER BY job_pairs.end_time DESC;
 	END //
 	
--- Retrieves basic info about job pairs with a given status
+-- Retrieves ids for job pairs with a given status in a given job
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS SetTimelessPairsToStatus;
+CREATE PROCEDURE SetTimelessPairsToStatus(IN _jobId INT, IN _statusCode INT)
+	BEGIN 
+		SELECT id FROM job_pairs
+		WHERE job_id = _jobId AND status_code=_statusCode AND (wallclock=0 OR cpu=0);
+	END //
+	
+-- Retrieves ids for job pairs with a given status in a given job
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsByStatus;
-CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _cap INT, IN _statusCode INT)
+CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN 
-		SELECT * FROM job_pairs
-		WHERE job_id=_id AND status_code=_statusCode
-		LIMIT _cap;
+		SELECT id FROM job_pairs
+		WHERE job_id=_id AND status_code=_statusCode;
 	END //
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
@@ -716,24 +724,7 @@ CREATE PROCEDURE RemovePairsFromComplete(IN _jobId INT)
 		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
 		WHERE job_id=_jobId;
 	END //
-		
 
-DROP PROCEDURE IF EXISTS RemovePairsOfStatusFromComplete;
-CREATE PROCEDURE RemovePairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
-	BEGIN 
-		DELETE job_pair_completion FROM job_pair_completion
-		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
-		WHERE job_id=_jobId AND status_code=_status;
-	END //
-	
-	
-DROP PROCEDURE IF EXISTS RemoveTimelessPairsOfStatusFromComplete;
-CREATE PROCEDURE RemoveTimelessPairsOfStatusFromComplete(IN _jobId INT, IN _status INT)
-	BEGIN 
-		DELETE job_pair_completion FROM job_pair_completion
-		JOIN job_pairs ON job_pairs.id=job_pair_completion.pair_id
-		WHERE job_id=_jobId AND status_code=_status AND (wallclock=0 OR cpu=0);
-	END //
 -- Sets all the pairs of a given job to the given status
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS SetPairsToStatus;

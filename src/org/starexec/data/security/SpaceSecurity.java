@@ -485,9 +485,13 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user in question
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
-	//TODO: fail gracefully with bad solver ids
-	private static boolean doesUserHaveDiskQuotaForSolvers(List<Integer> solverIds,int userId) {
+	private static ValidatorStatusCode doesUserHaveDiskQuotaForSolvers(List<Integer> solverIds,int userId) {
 		List<Solver> oldSolvers=Solvers.get(solverIds);
+		for (Solver s : oldSolvers) {
+			if (s==null) {
+				return new ValidatorStatusCode(false, "At least one of the given solvers does not exist or has been deleted");
+			}
+		}
 		//first, validate that the user has enough disk quota to copy all the selected solvers
 		//we don't copy any unless they have room for all of them
 		long userDiskUsage=Users.getDiskUsage(userId);
@@ -497,9 +501,9 @@ public class SpaceSecurity {
 			userDiskQuota-=s.getDiskSize();
 		}
 		if (userDiskQuota<0) {
-			return false;
+			return new ValidatorStatusCode(false, "Not enough disk quota");
 		}
-		return true;
+		return new ValidatorStatusCode(true);
 	}
 	
 	/**
@@ -655,7 +659,7 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canCopyOrLinkSolverBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
-			if (!doesUserHaveDiskQuotaForSolvers(solverIdsBeingCopied,userId)) {
+			if (!doesUserHaveDiskQuotaForSolvers(solverIdsBeingCopied,userId).isSuccess()) {
 				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the solver(s)");
 			}
 		}

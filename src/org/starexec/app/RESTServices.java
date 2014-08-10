@@ -2248,8 +2248,8 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 	
-		return Benchmarks.recycleOrphanedBenchmarks(userId) ?  gson.toJson(new ValidatorStatusCode(true,"Benchmark(s) recycled successfully")) :
-			gson.toJson(new ValidatorStatusCode(false, "Internal database error recycling benchmark(s)"));
+		return Spaces.addOrphanedPrimitivesToSpace(userId, spaceId) ?  gson.toJson(new ValidatorStatusCode(true,"Primitives linked successfully")) :
+			gson.toJson(new ValidatorStatusCode(false, "Internal database error linking primitives"));
 	}
 	
 	/**
@@ -2854,7 +2854,6 @@ public class RESTServices {
 	}
 	
 	
-	//TODO: This probably needs to be changed to support an admin changing people's passwords
 	/**
 	 * Updates the current user's password. First verifies that it is in
 	 * the correct format, then hashes is and updates it to the database.
@@ -2867,15 +2866,15 @@ public class RESTServices {
 	 */
 	
 	@POST
-	@Path("/edit/user/password/")
+	@Path("/edit/user/password/{userId}")
 	@Produces("application/json")
-	public String editUserPassword(@Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
+	public String editUserPassword(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
 		String currentPass = request.getParameter("current");
 		String newPass = request.getParameter("newpass");
 		String confirmPass = request.getParameter("confirm");
 		
-		ValidatorStatusCode status=GeneralSecurity.canUserUpdatePassword(userId,userId,currentPass,newPass,confirmPass);
+		ValidatorStatusCode status=GeneralSecurity.canUserUpdatePassword(userId,userIdOfCaller,currentPass,newPass,confirmPass);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -3119,7 +3118,6 @@ public class RESTServices {
 	}
 	
 	
-	//TODO: What are the permissions here?
 	/**
 	 * Demotes a user from a leader to only a member in a community
 	 * @param spaceId The Id of the community  

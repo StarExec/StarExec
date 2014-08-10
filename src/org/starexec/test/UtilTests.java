@@ -21,10 +21,7 @@ public class UtilTests extends TestSequence{
 		Assert.assertEquals("test",Util.getFileExtension("fake.test"));
 		
 	}
-	
-	
-	
-	//TODO: Make stronger?
+
 	@Test
 	private void GetTempPasswordTest() {
 		int index=0;
@@ -33,6 +30,7 @@ public class UtilTests extends TestSequence{
 			String pass=Util.getTempPassword();
 			Assert.assertNotNull(pass);
 			Assert.assertEquals(pass.length(),Util.clamp(6, 20, pass.length()));
+	
 		}
 	}
 	
@@ -107,13 +105,11 @@ public class UtilTests extends TestSequence{
 
 	@Override
 	protected void setup() throws Exception {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		// TODO Auto-generated method stub
 		
 	}
 

@@ -4,7 +4,12 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		int id = Integer.parseInt(request.getParameter("id"));	
+		int id=-1;
+		try {
+			id = Integer.parseInt(request.getParameter("id"));	
+		} catch (Exception e) {
+			id = SessionUtil.getUserId(request);
+		}
 		User t_user = Users.get(id);
 		int visiting_userId = SessionUtil.getUserId(request);
 		

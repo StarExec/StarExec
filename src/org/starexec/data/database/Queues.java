@@ -417,34 +417,23 @@ public class Queues {
 	 */
 	
 	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
+		String sqlQuery=null;
 		if (type == "queue") {
-			return getNextPageOfEnqueuedJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+			sqlQuery="GetNextPageOfEnqueuedJobPairs";
+
 		} else if (type == "node") {
-			return getNextPageOfRunningJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+			sqlQuery="GetNextPageOfRunningJobPairs";
 		} else {
 			return null;
 		}
-	}
-	
-	/**
-	 * Gets enqueued job pairs for the next page of a client-side datatables page
-	 * @param startingRecord The first desired records
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
-	 * @param searchQuery The search query to filter the results by
-	 * @param id The ID of the queue
-	 * @return A List of JobPairs enqueued in the given queue
-	 */
-	//TODO: Can this and getNextPageOfRunningJobPairs be combined?
-	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
+		
 		Connection con = null;		
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL "+sqlQuery+"(?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setBoolean(3, isSortedASC);
@@ -490,73 +479,7 @@ public class Queues {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-			return null;		
-	}
-	
-	/**
-	 * Gets running job pairs for the next page of a client-side datatables page
-	 * @param startingRecord The first desired records
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
-	 * @param searchQuery The search query to filter the results by
-	 * @param id The ID of the node
-	 * @return A List of JobPairs  running on the node
-	 */
-	
-	private static List<JobPair> getNextPageOfRunningJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setBoolean(3, isSortedASC);
-			procedure.setInt(4, id);
-			
-			
-			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-
-			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
-				Benchmark b=new Benchmark();
-				b.setId(results.getInt("bench_id"));
-				b.setName(results.getString("bench_name"));
-				jp.setBench(b);
-				
-				Solver s=new Solver();
-				s.setId(results.getInt("solver_id"));
-				s.setName(results.getString("solver_name"));
-				jp.setSolver(s);
-				
-				Configuration c = new Configuration();
-				c.setId(results.getInt("config_id"));
-				c.setName(results.getString("config_name"));
-				jp.setConfiguration(c);
-				jp.getSolver().addConfiguration(c);
-				Status stat = new Status();
-
-				stat.setCode(results.getInt("status_code"));
-				jp.setStatus(stat);
-				returnList.add(jp);
-			}			
-
-			Common.safeClose(results);
-			return returnList;			
-			
-		} catch (Exception e){			
-			log.error("getNextPageOfRunningJobPairs for node " + id + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-			return null;		
+			return null;
 	}
 	
 	/**

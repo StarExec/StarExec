@@ -16,6 +16,7 @@ public class R {
      * Any fields set here will be treated as defaults
      */
 	
+
 	public R() throws Exception{
 	throw new Exception("Cannot instantiate class because it is static.");
     }
@@ -197,4 +198,7 @@ public class R {
     public static int NO_TYPE_PROC_ID=1;
     
     public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
+    
+    public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
+
 }	

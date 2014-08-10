@@ -326,10 +326,15 @@ public class Connection {
 			
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
+			int returnCode=response.getStatusLine().getStatusCode();
 			response.getEntity().getContent().close();
 			
-			//TODO: improve the error handling here
-			return 0;
+			if (returnCode==302) {
+				return 0;
+			} else {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				return Status.ERROR_SERVER;
+			}
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -777,9 +782,7 @@ public class Connection {
 	/**
 	 * Gets the ID of the user currently logged in to StarExec
 	 * @return The integer user ID
-	 */
-	
-	//TODO: Improve error message handling
+	 */	
 	public int getUserID() {
 		try {
 			HttpGet get=new HttpGet(baseURL+R.URL_GETID);

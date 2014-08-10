@@ -109,7 +109,6 @@ public class Communities {
 			}
 			
 			if(results.next()){
-				//TODO: Get rid of name and default benchmark,
 				listOfDefaultSettings.set(1, results.getString("pre_processor"));
 				listOfDefaultSettings.set(2, results.getString("cpu_timeout"));
 				listOfDefaultSettings.set(3, results.getString("clock_timeout"));

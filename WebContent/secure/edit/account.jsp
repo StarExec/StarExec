@@ -44,7 +44,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 	<legend>personal information</legend>
-	<table id="infoTable" uid=${t_user.id}>
+	<table id="infoTable" uid="${t_user.id}">
 		<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">

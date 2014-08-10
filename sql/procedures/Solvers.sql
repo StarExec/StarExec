@@ -224,16 +224,6 @@ CREATE PROCEDURE UpdateSolverDiskSize(IN _solverId INT, IN _newDiskSize BIGINT)
 		WHERE id = _solverId;
 	END //
 
--- Finds the spaces associated with a given solver
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSolverAssoc;
-CREATE PROCEDURE GetSolverAssoc(IN _solverId INT)
-	BEGIN
-		SELECT space_id
-		FROM solver_assoc
-		WHERE _solverId = solver_id;
-	END //
-	
 -- Updates the details associated with a given configuration
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateConfigurationDetails;

@@ -1,8 +1,11 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -34,7 +37,6 @@ import org.starexec.util.Validator;
  * Creates a class to keep track of the Benchmark-Solver-Configuration Pairs
  * @author kais_wyatt
  */
-
 class BSC {
     List<Benchmark> b;
     List<Solver> s;
@@ -61,7 +63,6 @@ public class CreateJob extends HttpServlet {
 	private static final String postProcessor = "postProcess";
 	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
-	private static final String solvers = "solver";
 	private static final String configs = "configs";
 	private static final String run = "runChoice";
 	private static final String benchChoice = "benchChoice";
@@ -185,10 +186,9 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 		} else { //hierarchy OR choice
-			List<Integer> solverIds = Util.toIntegerList(request.getParameterValues(solvers));
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
-			if (solverIds.size() == 0 || configIds.size() == 0) {
+			if (configIds.size() == 0) {
 				// Either no solvers or no configurations; error out
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.");
 				return;
@@ -197,14 +197,14 @@ public class CreateJob extends HttpServlet {
 			if (benchMethod.equals("runAllBenchInHierarchy")) {
 				if (traversal.equals("depth")) {
 					log.debug("User selected depth-first traversal");
-					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit,memoryLimit, SP);
+					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
 				} else {
 					log.debug("User selected round-robin traversal");
 					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId));
 					spaces.add(0,Spaces.get(space));
 					HashMap<Space, BSC> SpaceToBSC = new HashMap<Space, BSC>();
 					int max = 0;
-					List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+					List<Solver> solvers = Solvers.getWithConfig(configIds);
 					HashMap<Solver, List<Configuration>> SC = new HashMap<Solver, List<Configuration>>();
 
 					for (Space s: spaces) {
@@ -244,7 +244,7 @@ public class CreateJob extends HttpServlet {
 					return;
 				}
 
-				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, solverIds, configIds, space, SP);
+				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, configIds, space, SP);
 			}
 		}
 		
@@ -386,18 +386,16 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to use one or more of the benchmarks you have selected");
 				}
 
-				// Check to see if we have a valid list of solver ids
-				if(!Validator.isValidIntegerList(request.getParameterValues(solvers))) {
-					return new ValidatorStatusCode(false, "All selected solver IDs need to be valid integers");
-				}
-
 				// Check to see if we have a valid list of configuration ids
 				if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
 					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
-
+				Set<Integer> solverIds=new HashSet<Integer>();
+				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
+					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
+				}
 				// Make sure the user is using solvers they can see
-				if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
+				if(!Permissions.canUserSeeSolvers(solverIds, userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
 			}

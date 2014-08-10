@@ -63,7 +63,5 @@ try {
 	<c:if test="${not empty param.result and param.result == 'requestSent'}">			
 		<div class='success message'>request sent successfully - you will receive an email when a leader of that community approves/declines your request</div>
 	</c:if>
-	<c:if test="${not empty param.result and param.result == 'requestNotSent'}">			
-		<div class='error message'>you are already a member of that community, or have already requested to be and are awaiting approval</div>
-	</c:if>
+	
 </star:template>

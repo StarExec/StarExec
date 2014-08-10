@@ -1,7 +1,12 @@
+<h1>Managing Your Account</h1>
+
+<p>On <a href="/${starexecRoot}/secure/details/user.jsp">this page,</a> you have the ability to view your account details,
+change your personal details, and manage your solvers, benchmarks, and jobs. </p>
+
 <h1>Editing Your Account</h1>
 
-<p>This page describes how to edit the personal information and settings associated with your StarExec account. To
-change your settings, you can go to <a href="${starexecRoot}/secure/edit/account.jsp">this page.</a></p>
+<p>To change your settings, you can go to <a href="/${starexecRoot}/secure/edit/account.jsp">this page.</a> To reach that page,
+you can click the 'edit account' button at the bottom of your profile.</p>
 
 <h2>Personal Information</h2>
 

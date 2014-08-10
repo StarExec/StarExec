@@ -2616,4 +2616,25 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	public static boolean isRoot(int spaceId) {
 		return 1==spaceId;
 	}
+	
+	/**
+	 * Associates every orphaned solver, benchmark, and job a user owns with the given space
+	 * @param userId The ID of the user who owns the orphaned primitives
+	 * @param spaceId The ID of the space in question
+	 * @return True on success, false otherwise
+	 */
+	public static boolean addOrphanedPrimitivesToSpace(int userId, int spaceId) {
+		try {
+			boolean success=true;
+			success = success && Benchmarks.associate(Benchmarks.getOrphanedBenchmarks(userId),spaceId);
+			success = success && Solvers.associate(Solvers.getOrphanedSolvers(userId), spaceId);
+			success = success && Jobs.associate(Jobs.getOrphanedJobs(userId), spaceId);
+			
+			return success;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return false;
+	}
 }

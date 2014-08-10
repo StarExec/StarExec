@@ -343,7 +343,7 @@ function linkAllOrphaned() {
 		modal: true,
 		height: 220,
 		buttons: {
-			'recycle': function() {
+			'link all': function() {
 				$("#dialog-confirm-copy").dialog("close");
 				createDialog("Linking the orphaned primitives, please wait. This will take some time for large numbers of primitives.");
 				$.post(  

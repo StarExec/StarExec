@@ -329,8 +329,7 @@ public class Download extends HttpServlet {
 			
 			String baseFileName="Job" + job.getId()+ "_XML";
 			
-			//TODO : should store public/batchJobSchema.xsd in a constant, in case it gets changed later
-				File schema = new File(R.STAREXEC_ROOT + File.separator + "public/batchJobSchema.xsd");
+				File schema = new File(R.STAREXEC_ROOT + File.separator + R.JOB_SCHEMA_LOCATION);
 				files.add(schema);
 			
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);

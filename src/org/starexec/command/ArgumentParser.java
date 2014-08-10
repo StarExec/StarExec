@@ -287,8 +287,8 @@ class ArgumentParser {
 				locked=true;
 			}
 			Permission p=new Permission(false);
-			//TODO: Might need to make this non-case sensitive
 			for (String x : R.PARAMS_PERMS) {
+				
 				if (commandParams.containsKey(x) || commandParams.containsKey(R.PARAM_ENABLE_ALL_PERMISSIONS)) {
 					p.setPermissionOn(x);
 				}
@@ -589,7 +589,6 @@ class ArgumentParser {
 			downloadable=true;
 		}
 		Permission p=new Permission();
-		//TODO: Might need to make this non-case sensitive
 		for (String x : R.PARAMS_PERMS) {
 			if (commandParams.containsKey(x) || commandParams.containsKey(R.PARAM_ENABLE_ALL_PERMISSIONS)) {
 				p.setPermissionOn(x);

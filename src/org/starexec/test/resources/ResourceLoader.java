@@ -147,7 +147,7 @@ public class ResourceLoader {
 		SP.put(spaceId, Spaces.get(spaceId).getName());
 		log.debug("building a job with a total number of configs = "+configIds.size());
 
-		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, solverIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
 		return job;

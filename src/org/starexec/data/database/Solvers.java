@@ -1347,22 +1347,21 @@ public class Solvers {
 	}
 	
 	/**
-	 * This takes in a list of solver and configuration ids. Both lists are stepped through in order
-	 * and paired up. For example the first solver is retrieved from the database, and the first config is retrieved
-	 * and added to the solver, and so on down the list.
+	 * This takes in a list of configuration ids and matches them up with the solvers they go with,
+	 * returning one solver object for each configuration.
 	 * @param solverIds A list of solvers to retrieve
 	 * @param configIds A list of configurations, where each one is retrieved along with the solvers in the given order.
 	 * @return A list of solvers, where each one has one configuration as specified in the configIds list
 	 * @author Tyler Jensen & Skylar Stark
 	 */
-	public static List<Solver> getWithConfig(List<Integer> solverIds, List<Integer> configIds) {
+	public static List<Solver> getWithConfig(List<Integer> configIds) {
 				
 		try {	
 			List<Solver> solvers = new LinkedList<Solver>();
 			for (int cid : configIds) {
 				Solver s = Solvers.getByConfigId(cid);
-				if (s != null & solverIds.contains(s.getId())) {
-					solvers.add(s); //Solver/config pair was valid and selected
+				if (s != null) {
+					solvers.add(s);
 				}
 			}
 			
@@ -1922,13 +1921,12 @@ public class Solvers {
 		return null;
 		
 	}
-	
 	/**
-	 * Recycles all of the solvers a user has that are not in any spaces
-	 * @param userId The ID of the user who will have their solvers recycled
+	 * Gets the ID of every orphaned solver the given user owns
+	 * @param userId 
 	 * @return
 	 */
-	public static boolean recycleOrphanedSolvers(int userId) {
+	public static List<Integer> getOrphanedSolvers(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -1941,14 +1939,24 @@ public class Solvers {
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
+			return ids;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-			return false;
 		}finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
+		return null;
+	}
+	
+	/**
+	 * Recycles all of the solvers a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their solvers recycled
+	 * @return
+	 */
+	public static boolean recycleOrphanedSolvers(int userId) {
+		List<Integer> ids  = getOrphanedSolvers(userId);
 		
 		//now that we have all the orphaned ids, we can recycle them
 		try {

@@ -256,4 +256,5 @@ public class R {
 	
     public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
 
+    
 }

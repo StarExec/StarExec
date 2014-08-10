@@ -154,6 +154,7 @@
 					<tr id="keepHierarchy">
 						<td><input type="hidden" name="runChoice" value="keepHierarchy" />run and keep hierarchy structure</td>
 						<td>this will run all solvers/configurations on all benchmarks in their respective spaces within the space hierarchy.</td>
+					</tr>
 					<tr id="runChoose">
 						<td><input type="hidden" name="runChoice" value="choose" />choose</td>
 						<td>you will choose which solvers/configurations to run from ${space.name} only.</td>
@@ -175,6 +176,7 @@
 					<tr id="allBenchInSpace">
 						<td><input type="hidden" name="benchChoice" value="runAllBenchInSpace" />all in ${space.name}</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in ${space.name}</td>
+					</tr>
 					<tr id="allBenchInHierarchy">
 						<td><input type="hidden" name="benchChoice" value="runAllBenchInHierarchy" />all in hierarchy</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>

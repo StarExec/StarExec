@@ -1,8 +1,11 @@
+var userId;
+
 $(document).ready(function(){
 	initUI();
 	attachFormValidation();
 	attachPasswordMonitor();
 	attachWebsiteMonitor();
+	userId=$("#infoTable").attr("uid");
 });
 
 
@@ -191,7 +194,7 @@ function attachPasswordMonitor(){
 			
 			var data = {current: currentPass, newpass: newPass, confirm: confirmPass};
 			$.post(
-					starexecRoot+"services/edit/user/password/",
+					starexecRoot+"services/edit/user/password/"+userId,
 					data,
 					function(returnCode) {
 						s=parseReturnCode(returnCode);

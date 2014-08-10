@@ -830,7 +830,6 @@ public class Benchmarks {
 					b.setDownloadable(downloadable);
 					benchmarks.add(b);
 				} else {
-					//TODO: Determine behavior if a name is invalid
 					return null;
 				}
 			}
@@ -2076,9 +2075,6 @@ public class Benchmarks {
 
 			procedure.executeUpdate();					
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
-			//invalidate the cache of every space associated with this benchmark
-			//Cache.invalidateSpacesAssociatedWithBench(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2269,7 +2265,6 @@ public class Benchmarks {
 	 * @author Eric Burns
 	 */
 	
-	//TODO: What should we do about the type of the benchmarks?
 	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
 				    boolean isCommunityLeader) {
 	    Connection con=null;
@@ -2298,6 +2293,9 @@ public class Benchmarks {
 			    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId)) {
 					return;	
 			    }
+			    //updates the type of the benchmark with the new processor
+			    Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), b.isDownloadable(), p.getId());
+			    
 			    Uploads.incrementCompletedBenchmarks(statusId);
 			}
 			if (hierarchy) {
@@ -2314,7 +2312,11 @@ public class Benchmarks {
 	    }
 		
 	}
-	
+	/**
+	 * Returns the ID of every benchmark a user owns that is orphaned
+	 * @param userId
+	 * @return
+	 */
 	public static List<Integer> getOrphanedBenchmarks(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -2329,6 +2331,7 @@ public class Benchmarks {
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
+			return ids;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}finally {

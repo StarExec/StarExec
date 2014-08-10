@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -254,7 +255,7 @@ public class Permissions {
 	 * @return True if the user can somehow see the solvers, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeSolvers(List<Integer> solverIds, int userId) {
+	public static boolean canUserSeeSolvers(Collection<Integer> solverIds, int userId) {
 		Connection con = null;			
 		if (Users.isAdmin(userId)) {
 			return true;

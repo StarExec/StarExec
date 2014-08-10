@@ -1,7 +1,9 @@
 package org.starexec.data.security;
 
+import java.io.File;
 import java.util.List;
 
+import org.starexec.util.Util;
 import org.starexec.util.Validator;
 import org.starexec.command.Status;
 import org.starexec.data.database.Permissions;
@@ -49,6 +51,13 @@ public class SolverSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+	/**
+	 * Checks to see whether the given user can upload a solver with a starexec_build script in the given space.
+	 * Only leaders of communities may do this, and they can only do it in their own community
+	 * @param userId
+	 * @param spaceId
+	 * @return
+	 */
 	
 	public static ValidatorStatusCode canUserRunStarexecBuild(int userId, int spaceId) {
 		if (!Permissions.get(userId, Spaces.GetCommunityOfSpace(spaceId)).isLeader()) {
@@ -56,6 +65,13 @@ public class SolverSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+	
+	/**
+	 * Checks to see whether a user can add a new configuration to the given solver
+	 * @param solverId
+	 * @param userId
+	 * @return
+	 */
 	
 	public static ValidatorStatusCode canUserAddConfiguration(int solverId, int userId) {
 		Solver s=Solvers.get(solverId);
@@ -151,13 +167,25 @@ public class SolverSecurity {
 			return new ValidatorStatusCode(false, "The new name is not in the correct format. Please see the help pages to see the correct format");
 		}
 		
+		Configuration c= Solvers.getConfiguration(configId);
+		Solver solver = Solvers.getSolverByConfig(configId,false);
+
+		// If the old config and new config names are NOT the same, ensure the file pointed to by
+		// the new config does not already exist on disk
+		if(!c.getName().equals(name)){
+			File newConfig = new File(Util.getSolverConfigPath(solver.getPath(), name));
+
+			if(newConfig.exists()){
+				return new ValidatorStatusCode(false, "The solver already has a configuration with the given name");
+			}
+		}
+		
 		if(!Validator.isValidPrimDescription(description)){
 			return new ValidatorStatusCode(false, "The new description is not in the correct format. Please see the help pages to see the correct format");
 		}
 		
-		Solver solver = Solvers.getSolverByConfig(configId,false);
 		if (solver==null) {
-			return new ValidatorStatusCode(false, "The solver owning this configuratino could not be found");
+			return new ValidatorStatusCode(false, "The solver owning this configuration could not be found");
 		} 
 		if(!userOwnsSolverOrIsAdmin(solver,userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to update any configurations associated with this solver");

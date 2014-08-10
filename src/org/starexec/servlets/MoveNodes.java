@@ -24,7 +24,6 @@ import org.starexec.util.GridEngineUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-//TODO: Secure
 /**
  * Servlet which handles incoming requests adding new permanent queues
  * @author Wyatt Kaiser
@@ -60,7 +59,6 @@ public class MoveNodes extends HttpServlet {
 	    log.debug("Received request to move nodes.");
 
 	    String queue_name = (String)request.getParameter(name);
-	    //String node_name = (String)request.getParameter(Nodes);
 	    List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 		
 	    HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
