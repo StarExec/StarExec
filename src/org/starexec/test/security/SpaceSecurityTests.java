@@ -190,9 +190,9 @@ public class SpaceSecurityTests extends TestSequence {
 	protected void teardown() throws Exception {
 		Space testCommunity=Communities.getTestCommunity();
 
-		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), owner.getId());
-		Spaces.removeSubspaces(space2.getId(), testCommunity.getId(), owner.getId());
-		Spaces.removeSubspaces(publicSpace.getId(),testCommunity.getId(),owner.getId());
+		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), admin.getId());
+		Spaces.removeSubspaces(space2.getId(), testCommunity.getId(), admin.getId());
+		Spaces.removeSubspaces(publicSpace.getId(),testCommunity.getId(),admin.getId());
 		Users.deleteUser(owner.getId(),admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());
 		Users.deleteUser(noPerms.getId(),admin.getId());

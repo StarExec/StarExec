@@ -92,11 +92,8 @@ public class Spaces {
 			perm.setLeader(true);
 			// Set maximal permissions for the user who added the space	
 			Permissions.set(userId, newSpaceId, perm, con);
-			
-			//Do we necessarily want to end the transaction here?  I don't think we do.
-			//Common.endTransaction(con);
+
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
-			//Cache.invalidateAndDeleteCache(parentId, CacheType.CACHE_SPACE);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("Spaces.add says "+e.getMessage(),e);
