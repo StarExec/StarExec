@@ -230,9 +230,9 @@ public class SolverSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.delete(solver.getId());
-		Solvers.delete(solver2.getId());
-		Solvers.delete(solver3.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
+		Solvers.deleteAndRemoveSolver(solver2.getId());
+		Solvers.deleteAndRemoveSolver(solver3.getId());
 		
 		Users.deleteUser(regular.getId(),admin.getId());
 		Users.deleteUser(owner.getId(), admin.getId());

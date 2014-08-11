@@ -46,7 +46,7 @@ public class SolverSecurity {
 	
 	public static ValidatorStatusCode canUserSeeBuildLog(int solverId,int userId) {
 		Solver s=Solvers.get(solverId);
-		if (userId!=s.getUserId()) {
+		if (userId!=s.getUserId() &&!Users.isAdmin(userId) ) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the build log for this solver");
 		}
 		return new ValidatorStatusCode(true);

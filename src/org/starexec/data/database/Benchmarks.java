@@ -88,6 +88,32 @@ public class Benchmarks {
 	}
 	return -1;
     }
+    
+	/**
+	 * Deletes a benchmark and permanently removes it from the database. This is NOT
+	 * the normal procedure for deleting a benchmark. It is used for testing. Calling "delete"
+	 * is typically what is desired
+	 * @param id
+	 * @return
+	 */
+	
+	public static boolean deleteAndRemoveBenchmark(int id) {
+		boolean success=Benchmarks.delete(id);
+		if (!success) {
+			return false;
+		}
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return Benchmarks.removeBenchmarkFromDatabase(id, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
 	
 	
 	public static boolean recycleAllOwnedByUser(Collection<Benchmark> benchmarks, int userId) {

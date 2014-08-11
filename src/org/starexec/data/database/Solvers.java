@@ -408,9 +408,35 @@ public class Solvers {
 		}	
 	}
 	
+	/**
+	 * Deletes a solver and permanently removes it from the database. This is NOT
+	 * the normal procedure for deleting a solver. It is used for testing. Calling "delete"
+	 * is typically what is desired
+	 * @param id
+	 * @return
+	 */
+	
+	public static boolean deleteAndRemoveSolver(int id) {
+		boolean success=delete(id);
+		if (!success) {
+			return false;
+		}
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return Solvers.removeSolverFromDatabase(id, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
 	
 	/**
-	 * Deletes a solver from the database (cascading deletes handle all dependencies) 
+	 * Sets the deleted flag of a solver and removes it from disk (cascading deletes handle all dependencies) 
 	 * @param id the id of the solver to delete
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
@@ -420,9 +446,7 @@ public class Solvers {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
-			//Cache.invalidateSpacesAssociatedWithSolver(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
-			//Cache.invalidateAndDeleteCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
+
 			File buildOutput=Solvers.getSolverBuildOutput(id);
 			if (buildOutput.exists()) {
 				Util.safeDeleteDirectory(buildOutput.getParent());

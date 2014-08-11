@@ -299,10 +299,28 @@ public class Jobs {
 		}
 		return -1;
 	}
+	
+	/**
+	 * Deletes the job with the given id from disk, and permanently removes the job from the database.
+	 * This is used for testing and is NOT the normal procedure for deleting a job! Call "delete" instead.
+	 * @param jobId The ID of the job to delete
+	 * @return True on success, false otherwise
+	 */
+	
+	public static boolean deleteAndRemove(int jobId) {
+		boolean success=delete(jobId);
+		if (!success) {
+			return false;
+		}
+		
+		success=Jobs.removeJobFromDatabase(jobId);
+		
+		return success;
+	}
+	
 	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
-	 * in the database jobs table to true. If  the job is referenced by no spaces,
-	 * it is deleted from the database.
+	 * in the database jobs table to true. 
 	 * @param jobId The ID of the job to delete
 	 * @return True on success, false otherwise
 	 */
@@ -326,6 +344,35 @@ public class Jobs {
 		
 		return false;
 	}
+	
+	/**
+	 * Permanently removes a job from the database. This is a helper function and should NOT be called to delete a job!
+	 * It will not delete a job on disk
+	 * @param solverId The ID of the solver to remove
+	 * @param con The open connection to make the SQL call on
+	 * @return True on success and false otherwise
+	 */
+	
+	private static boolean removeJobFromDatabase(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL RemoveJobFromDatabase(?)");
+			procedure.setInt(1,jobId);
+			procedure.executeUpdate();
+			return true;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	
 	
 	/**
 	 * Deletes a job from disk, and also sets the delete property to true in the database. Jobs

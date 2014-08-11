@@ -541,47 +541,6 @@ public class Util {
 	}
     }
 
-    /**
-     * Deletes all the solvers, benchmarks, users, and jobs that exist in any subspace of
-     * the test community. Items in the test community itself are not deleted, and only items
-     * owned by a test user are deleted.
-     */
-    public static void clearTestCommunity() {
-	Space testCom=Communities.getTestCommunity();
-	User admin=Users.getAdmins().get(0);
-	List<Space> subspaces=Spaces.getSubSpaceHierarchy(testCom.getId(), admin.getId());
-	for (Space s : subspaces) {
-	    Space space=Spaces.getDetails(s.getId(), admin.getId());
-			
-	    for (Solver solver : space.getSolvers()) {
-		if (Solvers.isTestSolver(solver.getId())) {
-		    Solvers.delete(solver.getId());
-		}
-	    }
-			
-	    for (Benchmark b : space.getBenchmarks()) {
-		if (Benchmarks.isTestBenchmark(b.getId())) {
-		    Benchmarks.delete(b.getId());
-		}
-	    }
-			
-	    for (Job j : space.getJobs()) {
-		if (Jobs.isTestJob(j.getId())) {
-		    Jobs.delete(j.getId());
-		}
-	    }
-			
-	    for (User u : space.getUsers()) {
-		if (Users.isTestUser(u.getId())) {
-		    Users.deleteUser(u.getId(),admin.getId());
-		}
-	    }
-	}
-		
-	for (Space s : subspaces) {
-	    Spaces.removeSubspaces(s.getId(), testCom.getId(), admin.getId());
-	}
-    }
 	
     public static String makeCommaSeparatedList(List<Integer> nums) {
     	StringBuilder sb=new StringBuilder();

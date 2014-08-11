@@ -66,7 +66,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(jobName,job.getName());
 		
 		
-		Assert.assertTrue(Jobs.delete(jobId));
+		Assert.assertTrue(Jobs.deleteAndRemove(jobId));
 		
 	}
 	
@@ -203,7 +203,7 @@ public class StarexecCommandTests extends TestSequence {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
 			Assert.assertEquals(testSolver.getName(), name);
-			Solvers.delete(testSolver.getId());
+			Solvers.deleteAndRemoveSolver(testSolver.getId());
 			
 		} else {
 			throw new Exception("an error code was returned "+result);
@@ -220,13 +220,13 @@ public class StarexecCommandTests extends TestSequence {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
 			Assert.assertEquals(testSolver.getName(), name);
-			Solvers.delete(testSolver.getId());
+			Solvers.deleteAndRemoveSolver(testSolver.getId());
 			
 		} else {
 			throw new Exception("an error code was returned "+result);
 		}
 	}
-	
+	//TODO: These benchmarks will need to be deleted
 	@Test
 	private void uploadBenchmarks() throws Exception {
 		
@@ -355,7 +355,7 @@ public class StarexecCommandTests extends TestSequence {
 		//delete all the newly created solvers and remove them from space2
 		Assert.assertTrue(Spaces.removeSolvers(solverIds, space2.getId()));	
 		for (Integer i : solverIds) {
-			Assert.assertTrue(Solvers.delete(i));
+			Assert.assertTrue(Solvers.deleteAndRemoveSolver(i));
 		}
 	}
 	
@@ -387,7 +387,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
 		for (Integer i : benchIds) {
-			Assert.assertTrue(Benchmarks.delete(i));
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 		Spaces.removeSubspaces(toCopy.getId(), space1.getId(), user.getId());		
 	}
@@ -549,7 +549,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(Solvers.get(temp.getId()));
 		//then, make sure it is not in the space
 		Assert.assertFalse(Solvers.getAssociatedSpaceIds(temp.getId()).contains(testCommunity.getId()));
-		Solvers.delete(temp.getId());
+		Solvers.deleteAndRemoveSolver(temp.getId());
 	}
 	
 	@Test
@@ -566,7 +566,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertFalse(Benchmarks.getAssociatedSpaceIds(ids.get(0)).contains(tempSpace.getId()));
 		
 		for (Integer i : ids) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId());
 	}
@@ -648,13 +648,13 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), user.getId());
 		Spaces.removeSubspaces(space2.getId(), testCommunity.getId(), user.getId());
-		Solvers.delete(solver.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
 		
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		
-		Jobs.delete(job.getId());
+		Jobs.deleteAndRemove(job.getId());
 		
 		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
 		

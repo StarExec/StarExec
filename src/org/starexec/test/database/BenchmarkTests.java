@@ -126,7 +126,7 @@ public class BenchmarkTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		for (Benchmark b : benchmarks) { 
-			Benchmarks.delete(b.getId());
+			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
 		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());
 		Users.deleteUser(user.getId(), admin.getId());

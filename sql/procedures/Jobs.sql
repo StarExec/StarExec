@@ -493,7 +493,6 @@ CREATE PROCEDURE GetIncompleteJobPairs(IN _jobId INT)
 	END //
 
 -- Sets the "deleted" property of a job to true and deletes all its job pairs from the database
--- If the job has no more space associations, it is deleted from the database
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS DeleteJob;
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
@@ -846,6 +845,7 @@ CREATE PROCEDURE GetAllJobs()
 		FROM jobs;
 	END //
 	
+-- Checks to see if there is a global pause on all jobs
 DROP PROCEDURE IF EXISTS IsSystemPaused;
 CREATE PROCEDURE IsSystemPaused()
 	BEGIN
@@ -853,6 +853,8 @@ CREATE PROCEDURE IsSystemPaused()
 		FROM system_flags;
 	END //
 	
+-- Gets all jobs for which there is no queue on which the job is currently being run
+
 DROP PROCEDURE IF EXISTS GetUnRunnableJobs;
 CREATE PROCEDURE GetUnRunnableJobs()
 	BEGIN
@@ -861,6 +863,14 @@ CREATE PROCEDURE GetUnRunnableJobs()
 		WHERE queue_id = null
 		OR id NOT IN (SELECT jobs.id 
 					FROM jobs JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id);
+	END //
+
+-- Permanently removes a job from the database
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS RemoveJobFromDatabase;
+CREATE PROCEDURE RemoveJobFromDatabase(IN _jobId INT)
+	BEGIN
+		DELETE FROM jobs WHERE id=_jobId;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file

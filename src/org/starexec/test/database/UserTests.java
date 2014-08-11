@@ -196,9 +196,9 @@ public class UserTests extends TestSequence {
 			size+=Benchmarks.get(i).getDiskSize();
 		}
 		Assert.assertEquals(size, Users.getDiskUsage(user1.getId()));
-		Assert.assertTrue(Solvers.delete(solver.getId()));
+		Assert.assertTrue(Solvers.deleteAndRemoveSolver(solver.getId()));
 		for (Integer i : benchmarkIds) {
-			Assert.assertTrue(Benchmarks.delete(i));
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 	}
 	

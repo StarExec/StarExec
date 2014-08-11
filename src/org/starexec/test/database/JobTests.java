@@ -177,11 +177,11 @@ public class JobTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.delete(job.getId());
-		Jobs.delete(job2.getId());
-		Solvers.delete(solver.getId());
+		Jobs.deleteAndRemove(job.getId());
+		Jobs.deleteAndRemove(job2.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
 		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());

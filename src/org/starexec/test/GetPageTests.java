@@ -309,10 +309,10 @@ public class GetPageTests extends TestSequence {
 	protected void teardown() throws Exception {
 		
 		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), user.getId());
-		Solvers.delete(solver.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
 		
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		
 	}

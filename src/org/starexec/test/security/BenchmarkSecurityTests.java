@@ -178,10 +178,10 @@ public class BenchmarkSecurityTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		for (Integer i : benchmarkIds2) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		User testUser=Users.getTestUser();
 		Users.deleteUser(user1.getId(),admin.getId());
