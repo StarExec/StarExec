@@ -111,7 +111,6 @@ public class CreateJob extends HttpServlet {
 		int userId = SessionUtil.getUserId(request);
 
 
-		log.debug("confirmed the new job has a unique name");
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -373,7 +372,8 @@ public class CreateJob extends HttpServlet {
 
 			int sid = Integer.parseInt(request.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(request, sid);
-
+			log.debug("this is the perm");
+			log.debug(perm);
 			// Make sure the user has access to the space
 			if(perm == null || !perm.canAddJob()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");

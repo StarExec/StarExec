@@ -150,7 +150,6 @@ public class BenchmarkSecurityTests extends TestSequence {
 		
 		
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()).isSuccess());
-
 	}
 	
 	

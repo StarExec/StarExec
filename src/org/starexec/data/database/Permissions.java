@@ -403,6 +403,12 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		
+		Space s=Spaces.get(spaceId);
+		if (s==null) {
+			return null; //the space does not even exist
+		}
+		
 		//the admin has full permissions everywhere
 		if (Users.isAdmin(userId)) {
 			log.debug("permissions for an admin were obtained userId = "+userId);

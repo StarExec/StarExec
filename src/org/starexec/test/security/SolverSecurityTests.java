@@ -39,8 +39,6 @@ public class SolverSecurityTests extends TestSequence {
 	Space tempCommunity2=null; //led by 'regular'
 	@Test
 	private void deleteSolverPermissionTest() {
-		
-		
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), regular.getId()).isSuccess());
@@ -61,7 +59,14 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
-		
+	}
+	
+	@Test
+	private void canUserSeeBuildLog() {
+		Assert.assertEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), admin.getId()).isSuccess());
+
+		Assert.assertNotEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), regular.getId()).isSuccess());
 	}
 	
 	@Test

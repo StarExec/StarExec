@@ -89,13 +89,7 @@ public class SessionUtil {
 	 */
 	public static Permission getPermission(HttpSession session, int spaceId) {
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
-		int userId = SessionUtil.getUserId(session);
-		if (Users.isAdmin(userId)) {
-			log.debug("Returning admin user permissions");
-			Permission p = Permissions.getFullPermission();
-			p.setId(userId);
-			return p;
-		}
+		
 
 		// If the cache doesn't contain the requested permission...
 		if(!cache.containsKey(spaceId)) {

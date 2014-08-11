@@ -40,6 +40,15 @@ public class JobSecurityTests extends TestSequence {
 	}
 	
 	@Test
+	private void CanRerunJobTest() {
+		Assert.assertEquals(true,JobSecurity.canUserRerunPairs(job.getId(), user.getId()).isSuccess());
+		Assert.assertEquals(true,JobSecurity.canUserRerunPairs(job.getId(), admin.getId()).isSuccess());
+
+		Assert.assertEquals(false,JobSecurity.canUserRerunPairs(job.getId(), nonOwner.getId()).isSuccess());
+
+	}
+	
+	@Test
 	private void CanPauseJob() {
 		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), user.getId()).isSuccess());

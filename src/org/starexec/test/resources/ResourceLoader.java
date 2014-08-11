@@ -337,6 +337,10 @@ public class ResourceLoader {
 	public static User loadUserIntoDatabase() {
 		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","test");
 	}
+	
+	public static User loadUserIntoDatabase(String password) {
+		return loadUserIntoDatabase("test","user",password,password,"The University of Iowa","test");
+	}
 	/**
 	 * Creates a user with the given attributes and adds them to the database
 	 * @param fname The first name for the user
