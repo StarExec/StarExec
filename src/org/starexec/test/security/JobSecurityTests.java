@@ -103,7 +103,7 @@ public class JobSecurityTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), admin.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());
 	}

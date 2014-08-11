@@ -272,6 +272,8 @@ public class Queues {
 	 * @return A queue object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
+	
+	//TODO: Is this working correctly? It doesn't seem to get any attributes
 	public static Queue getDetails(int id) {
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -290,7 +292,9 @@ public class Queues {
 				queue.setSlotsTotal(results.getInt("slots_total"));
 				queue.setSlotsAvailable(results.getInt("slots_free"));
 				queue.setSlotsReserved(results.getInt("slots_reserved"));
-				queue.setSlotsUsed(results.getInt("slots_used"));		
+				queue.setSlotsUsed(results.getInt("slots_used"));
+				queue.setWallTimeout(results.getInt("clockTimeout"));
+				queue.setCpuTimeout(results.getInt("cpuTimeout"));
 				return queue;
 			}
 		} catch (Exception e){			
@@ -1251,8 +1255,14 @@ public class Queues {
 		}
 		return false;
 	}
+	
+	/**
+	 * Deletes a queue from the database
+	 * @param queueId
+	 * @return
+	 */
 
-	public static void delete(int queueId) {
+	public static boolean delete(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -1261,13 +1271,15 @@ public class Queues {
 			procedure = con.prepareCall("{CALL RemoveQueue(?)}");
 			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
-
+			return true;
 		} catch (Exception e) {
 			log.error("RemoveQueue says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		
+		return false;
 	}
 	
 	public static boolean makeGlobal(int queue_id) {

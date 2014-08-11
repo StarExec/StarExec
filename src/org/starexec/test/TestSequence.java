@@ -53,9 +53,8 @@ public abstract class TestSequence {
 	}
 	
 	/**
-	 * The execute function handles  the status of the test both before and after execution,
-	 * and also calls the interalExecute function, which is where the real work is done.
-	 * Internal Execute should be implemented in all tests.
+	 * Runs this test sequence by calling setup, then running the tests, then calling teardown. All previous results
+	 * are cleared and the status of the TestSequence is updated throughout
 	 * @return
 	 */
 	protected final boolean execute() {

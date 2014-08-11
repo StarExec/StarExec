@@ -24,6 +24,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -32,8 +33,9 @@ import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
+import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
-
+import org.starexec.data.to.WorkerNode;
 
 /**
  * This file contains functions for loading test objects into the database.
@@ -366,6 +368,20 @@ public class ResourceLoader {
 		}
 		log.debug("loadUserIntoDatabase could not generate a user, returning null");
 		return null;
+	}
+	
+	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
+		QueueRequest req=new QueueRequest();
+		req.setQueueName(TestUtil.getRandomQueueName());
+		req.setNodeCount(0);
+		int queueId=Queues.getIdByName(req.getQueueName() + ".q");
+
+		GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
+		boolean success = Queues.makeQueuePermanent(queueId);
+		success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
+		success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+		
+		return Queues.get(queueId);
 	}
 	
 }

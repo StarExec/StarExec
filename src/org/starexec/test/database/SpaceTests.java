@@ -76,7 +76,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(space1Path, SP.get(space1.getId()));
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 		
-		Spaces.removeSubspaces(space1.getId(), community.getId(), leader.getId());
+		Spaces.removeSubspaces(space1.getId(), leader.getId());
 	}
 	
 	@Test
@@ -203,10 +203,10 @@ public class SpaceTests extends TestSequence {
 		Users.deleteUser(leader.getId(),admin.getId());
 		Users.deleteUser(member1.getId(),admin.getId());
 		Users.deleteUser(member2.getId(),admin.getId());
-		Spaces.removeSubspaces(subspace.getId(), 1, Users.getAdmins().get(0).getId());
-		Spaces.removeSubspaces(subspace2.getId(), 1, Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(subspace.getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(subspace2.getId(), Users.getAdmins().get(0).getId());
 
-		boolean success=Spaces.removeSubspaces(community.getId(), 1, Users.getAdmins().get(0).getId());
+		boolean success=Spaces.removeSubspaces(community.getId(), Users.getAdmins().get(0).getId());
 		Assert.assertTrue(success);
 	}
 	@Override

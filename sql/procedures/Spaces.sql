@@ -148,16 +148,7 @@ CREATE PROCEDURE GetAllSuperSpacesByUser(IN _userId INT)
                 WHERE user_assoc.user_id = _userId;
 	END //
 
--- Returns all super-spaces of the space with the given id.
--- Author: Wyatt Kaiser
- DROP PROCEDURE IF EXISTS GetSuperSpacesById;
- CREATE PROCEDURE GetSuperSpacesById(IN _spaceId INT)
-	BEGIN
-			SELECT ancestor AS id
-			FROM closure
-			WHERE descendant = _spaceId
-			AND ancestor != _spaceId;
-	END //
+
 
 -- Returns all spaces a user can see in the hierarchy rooted at the given space
 -- Author: Eric Burns

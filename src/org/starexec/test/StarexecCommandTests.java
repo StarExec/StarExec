@@ -235,7 +235,7 @@ public class StarexecCommandTests extends TestSequence {
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertEquals(0,result);
 		
-		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId()));
 	}
 	
 	@Test
@@ -247,7 +247,7 @@ public class StarexecCommandTests extends TestSequence {
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertEquals(0,result);
 		
-		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
 
 	}
 	
@@ -389,7 +389,8 @@ public class StarexecCommandTests extends TestSequence {
 		for (Integer i : benchIds) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
-		Spaces.removeSubspaces(toCopy.getId(), space1.getId(), user.getId());		
+		
+		Spaces.removeSubspaces(toCopy.getId(), Users.getAdmins().get(0).getId());		
 	}
 	
 	@Test 
@@ -422,7 +423,7 @@ public class StarexecCommandTests extends TestSequence {
 		benchIds.addAll(benches.keySet());
 		
 		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
-		Spaces.removeSubspaces(toCopy.getId(), space1.getId(), user.getId());
+		Spaces.removeSubspaces(toCopy.getId(), Users.getAdmins().get(0).getId());
 		
 	}
 	
@@ -474,7 +475,7 @@ public class StarexecCommandTests extends TestSequence {
 		for (Integer i :ids) {
 			Assert.assertNull(Benchmarks.get(i));
 		}
-		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), user.getId()));
 		
 	}
 	
@@ -568,7 +569,7 @@ public class StarexecCommandTests extends TestSequence {
 		for (Integer i : ids) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
-		Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId());
+		Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId());
 	}
 	
 	@Test
@@ -580,7 +581,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,con.removeJobs(jobIds, tempSpace.getId()));
 		Assert.assertNotNull(Jobs.getDirectory(job.getId())); //we do not want to have deleted the job
 		
-		Spaces.removeSubspaces(tempSpace.getId(), testCommunity.getId(), user.getId());
+		Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId());
 	}
 	
 	@Test
@@ -646,8 +647,8 @@ public class StarexecCommandTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), user.getId());
-		Spaces.removeSubspaces(space2.getId(), testCommunity.getId(), user.getId());
+		Spaces.removeSubspaces(space1.getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(space2.getId(), Users.getAdmins().get(0).getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		
 		for (Integer i : benchmarkIds) {

@@ -308,7 +308,7 @@ public class GetPageTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space1.getId(), testCommunity.getId(), user.getId());
+		Spaces.removeSubspaces(space1.getId(), admin.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		
 		for (Integer i : benchmarkIds) {

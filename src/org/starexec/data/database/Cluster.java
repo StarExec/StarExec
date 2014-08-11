@@ -150,7 +150,6 @@ public class Cluster {
 			procedure.setInt(1, id);			
 			results = procedure.executeQuery();
 			WorkerNode node = new WorkerNode();
-			
 			if(results.next()){
 				node.setName(results.getString("name"));
 				node.setId(results.getInt("id"));
@@ -730,15 +729,19 @@ public class Cluster {
 		return null;
 	}
 
-
-	public static int getNodeIdByName(String node_name) {
+	/**
+	 * Retrieves the ID of a node given its name. 
+	 * @param nodeName
+	 * @return The ID of the node, or -1 if it couldn't be found
+	 */
+	public static int getNodeIdByName(String nodeName) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetNodeIdByName(?)}");
-			procedure.setString(1, node_name);
+			procedure.setString(1, nodeName);
 			results = procedure.executeQuery();
 			while (results.next()) {
 				return results.getInt("id");
@@ -754,7 +757,11 @@ public class Cluster {
 		return -1;
 	}
 
-
+	/**
+	 * Gets the name of a node given its ID
+	 * @param id
+	 * @return
+	 */
 	public static String getNodeNameById(int id) {
 		Connection con = null;
 		CallableStatement procedure = null;

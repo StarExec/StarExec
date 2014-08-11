@@ -128,7 +128,7 @@ public class BenchmarkTests extends TestSequence {
 		for (Benchmark b : benchmarks) { 
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(space.getId(),Users.getAdmins().get(0).getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		
 	}

@@ -2531,7 +2531,7 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
+		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId,selectedSubspaces);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -2554,7 +2554,7 @@ public class RESTServices {
 		}
 		// Remove the subspaces from the space
 		boolean success=true;
-		if (Spaces.removeSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request))) {
+		if (Spaces.removeSubspaces(selectedSubspaces, SessionUtil.getUserId(request))) {
 			if (recycleAllAllowed) {
 				log.debug("Space removed successfully, recycling primitives");
 				success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
@@ -2598,7 +2598,7 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
-		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId);
+		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId,selectedSubspaces);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}

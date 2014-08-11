@@ -136,7 +136,7 @@ public class PermissionsTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space.getId(),Communities.getTestCommunity().getId(), admin.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Solvers.deleteAndRemoveSolver(solver2.getId());
 		for (Integer i : benchmarks) {

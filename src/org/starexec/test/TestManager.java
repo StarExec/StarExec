@@ -12,9 +12,12 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.BenchmarkTests;
+import org.starexec.test.database.ClusterTests;
+import org.starexec.test.database.JobPairTests;
 import org.starexec.test.database.JobTests;
 import org.starexec.test.database.PermissionsTests;
 import org.starexec.test.database.ProcessorTests;
+import org.starexec.test.database.QueueTests;
 import org.starexec.test.database.SolverTests;
 import org.starexec.test.database.SpaceTests;
 import org.starexec.test.database.UserTests;
@@ -66,6 +69,9 @@ public class TestManager {
 		tests.add(new ProcessorTests());
 		tests.add(new JobTests());
 		tests.add(new GetPageTests());
+		tests.add(new JobPairTests());
+		tests.add(new ClusterTests());
+		tests.add(new QueueTests());
 	}
 	
 	public static boolean areTestsRunning() {

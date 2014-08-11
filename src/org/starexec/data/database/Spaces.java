@@ -1340,65 +1340,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	
 	
 	/**
-	 * Gets the superSpaces of a given spaceId (RECURSIVE)
-	 * @param spaceId
-	 * @return
-	 */
-	public static List<Space> getSuperSpaces(int spaceId) {
-		Connection con = null;			
-		
-		try {
-			con = Common.getConnection();		
-			return Spaces.getSuperSpaces(spaceId, con);
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * Helper fcn: Gets the SuperSpaces of a given spaceId (RECURSIVE)
-	 * @param spaceId The id of the space to get the subspaces of
-	 * @param con the database connection to use
-	 * @return the list of subspaces of the given space
-	 * @throws Exception
-	 * @author Wyatt Kaiser
-	 */
-	
-	protected static List<Space> getSuperSpaces(int spaceId, Connection con) throws Exception{
-		CallableStatement procedure = null;
-
-		ResultSet results = null;
-		
-		
-		try {
-			procedure = con.prepareCall("{CALL GetSuperSpacesById(?)}");
-			procedure.setInt(1, spaceId);
-			
-			results = procedure.executeQuery();
-			List<Space> superSpaces = new LinkedList<Space>();
-			
-			while(results.next()){
-				Space s = Spaces.get(results.getInt("id"));
-				superSpaces.add(s);
-			}
-			
-			log.debug("Returning from adding superSpaces");
-			return superSpaces;
-		} catch (Exception e) {
-			log.error("getSuperSpacesById says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
-	
-	
-	/**
 	 * Gets all the subspaces of the given space that are used by the given job
 	 * 
 	 * @param jobSpaceId The id of the space to get the subspaces of
@@ -1407,11 +1348,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	//TODO: This shouldn't happen, but a cycle in the space hierarchy would
-	//cause this to run forever. Is that enough of a concern to use some extra time / memory preventing it?
 	public static List<Space> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
 		Connection con = null;			
-		
+		HashSet<Integer>seenSpaces=new HashSet<Integer>(); //will store everything we've already seen to prevent looping
 		try {
 			con = Common.getConnection();
 			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, con);
@@ -1421,6 +1360,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				int index=0;
 				while (index<subspaces.size()) {
 					int curSubspace=subspaces.get(index).getId();
+					if (seenSpaces.contains(curSubspace)) {
+						log.error("found a loop in the space hierarchy! Involved space ID =" +curSubspace);
+						return null; // there was a loop in the space hierarchy-- this should not happen
+					} else {
+						seenSpaces.add(curSubspace);
+					}
 					subspaces.addAll(Spaces.getSubSpacesForJob(curSubspace,con));
 					index++;
 				}
@@ -1683,6 +1628,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * false otherwise
 	 * @author Ben McCune
 	 */
+	//TODO: We need to get permissions checks out of here and into security
 	public static boolean quickRemoveSubspaces(List<Integer> subspaceIds, int parentSpaceId, int userId) {
 		// Ensure the user can remove subspaces
 		if (Permissions.checkSpaceHierRemovalPerms(subspaceIds, parentSpaceId, userId) == false){
@@ -1992,14 +1938,14 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param con the database transaction to use
 	 * @author Todd Elvers
 	 */
-	//TODO: Don't need parent space ID, user ID
-	public static void removeSubspaces(int spaceId, int userId, Connection con) throws Exception {
+	//TODO: Don't need user ID
+	private static void removeSubspaces(int spaceId, int userId, Connection con) throws Exception {
 		
 		CallableStatement procedure = null;
 		// For every subspace of the space to be deleted...
 		for(Space subspace : Spaces.getSubSpaces(spaceId, userId)){
 			// Ensure the user is the leader of that space
-			if(Permissions.get(userId, subspace.getId()).isLeader() == false){
+			if(!Permissions.get(userId, subspace.getId()).isLeader()){
 				log.error("User " + userId + " does not have permission to delete space " + subspace.getId() + ".");
 				throw new Exception();
 			}
@@ -2018,10 +1964,10 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	//TODO: Providing the parent space should not be necessary. Probably also shouldn't need to pass in the user ID.
 	// Security needs to be handled at a higher level
 	
-	public static boolean removeSubspaces(int subspaceId,int parentSpaceId,int userId) {
+	public static boolean removeSubspaces(int subspaceId,int userId) {
 		List<Integer> spaceId=new ArrayList<Integer>();
 		spaceId.add(subspaceId);
-		return removeSubspaces(spaceId,parentSpaceId,userId);
+		return removeSubspaces(spaceId,userId);
 	}
 	
 	/**
@@ -2034,8 +1980,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	//TODO: Don't need parent space id, user ID
-	public static boolean removeSubspaces(List<Integer> subspaceIds, int parentSpaceId, int userId) {
+	public static boolean removeSubspaces(List<Integer> subspaceIds, int userId) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -2047,12 +1992,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			// For each subspace in the list of subspaces to be deleted...
 			for(int subspaceId : subspaceIds){
 				log.debug("subspaceId = " + subspaceId);
-				
-				// Ensure the user can remove that subspace
-				if(!Permissions.get(userId, parentSpaceId).canRemoveSpace()){
-					throw new Exception();
-				}
-				
+
 				// Check if it has any subspaces itself, and if so delete them 
 				Spaces.removeSubspaces(subspaceId, userId, con);
 
@@ -2077,7 +2017,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		}
 		
 		
-		log.error(subspaceIds.size() + " subspaces were unsuccessfully removed from space " + parentSpaceId);
 		return false;
 	}
 	

@@ -285,7 +285,6 @@ public class Permissions {
 	 * @return True if the user belongs to the space, false otherwise
 	 * @author Tyler Jensen
 	 */
-	//TODO: Shouldn't we just make the root public instead of special-casing it like this?
 	public static boolean canUserSeeSpace(int spaceId, int userId) {		
 		if(spaceId <= 1) {
 			// Can always see root space

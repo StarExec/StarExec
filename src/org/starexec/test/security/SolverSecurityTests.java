@@ -20,8 +20,6 @@ import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
-
-//TODO:Keep writing tests here
 public class SolverSecurityTests extends TestSequence {
 	User admin=null;
 	User owner=null;
@@ -237,8 +235,8 @@ public class SolverSecurityTests extends TestSequence {
 		Users.deleteUser(regular.getId(),admin.getId());
 		Users.deleteUser(owner.getId(), admin.getId());
 		
-		Spaces.removeSubspaces(tempCommunity.getId(), 1, admin.getId());
-		Spaces.removeSubspaces(tempCommunity2.getId(), 1, admin.getId());
+		Spaces.removeSubspaces(tempCommunity.getId(), admin.getId());
+		Spaces.removeSubspaces(tempCommunity2.getId(), admin.getId());
 
 	
 	}

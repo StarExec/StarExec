@@ -1,0 +1,145 @@
+package org.starexec.test.database;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Assert;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.JobPairs;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Processors;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.User;
+import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.test.Test;
+import org.starexec.test.TestSequence;
+import org.starexec.test.TestUtil;
+import org.starexec.test.resources.ResourceLoader;
+
+public class JobPairTests extends TestSequence {
+
+	
+	private Space space=null; //space to put the test job
+	private Solver solver=null; //solver to use for the job
+	private Job job=null;       
+	private Processor postProc=null; //post processor to use for the job
+	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
+	private User user=null;                  //owner of all the test primitives
+	private User nonOwner=null;
+	private User admin=null;
+	private int wallclockTimeout=100;
+	private int cpuTimeout=100;
+	private int gbMemory=1;
+	
+	private User user2=null;
+	private Job job2=null;
+	
+	
+	@Override
+	protected String getTestName() {
+		return "JobPairTests";
+	}
+	
+	@Test
+	private void addAndRetrieveAttributesTest() {
+		JobPair jp=job.getJobPairs().get(0);
+		Properties p=new Properties();
+		String prop=TestUtil.getRandomAlphaString(14);
+		p.put(prop, prop);
+		Assert.assertTrue(JobPairs.addJobPairAttributes(jp.getId(), p));
+		Properties test=JobPairs.getAttributes(jp.getId());
+		Assert.assertTrue(test.contains(prop));		
+	}
+	
+	@Test
+	private void getJobPairLogTest() {
+		String path=JobPairs.getLogFilePath(job.getJobPairs().get(0));
+		Assert.assertNotNull(path);
+	}
+	
+	@Test
+	private void getJobPairLogByIdTest() {
+		String path=JobPairs.getFilePath(job.getJobPairs().get(0).getId());
+		Assert.assertNotNull(path);
+	}
+	
+	@Test
+	private void getJobPairPathTest() {
+		String path=JobPairs.getFilePath(job.getJobPairs().get(0));
+		Assert.assertNotNull(path);
+	}
+	
+	@Test
+	private void getJobPairPathByIdTest() {
+		String path=JobPairs.getFilePath(job.getJobPairs().get(0).getId());
+		Assert.assertNotNull(path);
+	}
+	
+	@Test
+	private void getJobPairTest() {
+		JobPair test=JobPairs.getPair(job.getJobPairs().get(0).getId());
+		Assert.assertNotNull(test);
+		Assert.assertEquals(test.getJobId(),job.getId());
+	}
+	
+	@Test
+	private void getJobPairDetailedTest() {
+		JobPair test=JobPairs.getPairDetailed(job.getJobPairs().get(0).getId());
+		Assert.assertNotNull(test);
+		Assert.assertEquals(test.getJobId(),job.getId());
+		
+		Assert.assertEquals(test.getSolver().getName(),solver.getName());
+	}
+	
+	@Test
+	private void setPairStatusTest() {
+		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
+		Assert.assertTrue(JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_UNKNOWN.getVal()));
+		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(),JobPairs.getPair(jp.getId()).getStatus().getCode().getVal());
+	}
+
+	@Override
+	protected void setup() throws Exception {
+		user=ResourceLoader.loadUserIntoDatabase();
+		user2=ResourceLoader.loadUserIntoDatabase();
+		nonOwner=ResourceLoader.loadUserIntoDatabase();
+		admin=Users.getAdmins().get(0);
+		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
+		
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
+		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
+		Assert.assertNotNull(Jobs.get(job.getId()));		
+	}
+
+	@Override
+	protected void teardown() throws Exception {
+		Jobs.deleteAndRemove(job.getId());
+		Jobs.deleteAndRemove(job2.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
+		for (Integer i : benchmarkIds) {
+			Benchmarks.deleteAndRemoveBenchmark(i);
+		}
+		Processors.delete(postProc.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
+		Users.deleteUser(user.getId(), admin.getId());
+		Users.deleteUser(user2.getId(),admin.getId());
+		Users.deleteUser(nonOwner.getId(),admin.getId());
+		
+	}
+
+}

@@ -202,11 +202,27 @@ public class SpaceSecurity {
 		return new ValidatorStatusCode(true);
 
 	}
-	
-	public static ValidatorStatusCode canUserRemoveSpace(int spaceId, int userId) {
+	/**
+	 * Checks to see if the given user can remove all of the given subspaces
+	 * @param spaceId
+	 * @param userId
+	 * @param subspaceIds
+	 * @return
+	 */
+	public static ValidatorStatusCode canUserRemoveSpace(int spaceId, int userId, List<Integer> subspaceIds) {
 		Permission perm = Permissions.get(userId, spaceId);		
 		if(null == perm || !perm.canRemoveSpace()) {
 			return new ValidatorStatusCode(false, "You do not have permission to remove subspaces from this space");
+		}
+		for (Integer sid : subspaceIds) {
+			Space subspace=Spaces.get(sid);
+			int parent=Spaces.getParentSpace(sid);
+			if (parent!=spaceId) {
+				return new ValidatorStatusCode(false, "One or more of the given subspaces does not belong to the given parent space");
+			}
+			if(!Permissions.get(userId, subspace.getId()).isLeader()){
+				return new ValidatorStatusCode(false, "You can not remove spaces that your are not a leader of");
+			}
 		}
 		return new ValidatorStatusCode(true);
 	}
