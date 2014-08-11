@@ -2010,11 +2010,10 @@ public class Connection {
 			if (Validator.isValidPosInteger(id)) {
 				return Integer.parseInt(id);
 			}
+			
 			setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
-
 			return Status.ERROR_SERVER;
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}
 	}
