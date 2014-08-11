@@ -47,7 +47,7 @@ handleUsrTwo() {
   kill -12 $runsolverpid
 }
 
-trap 'handleUserTwo' USR2
+trap 'handleUsrTwo' USR2
 
 #==========================================================================
 # Execute (prolog will take care of data staging)
