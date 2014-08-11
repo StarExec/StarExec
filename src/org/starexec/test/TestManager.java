@@ -68,6 +68,14 @@ public class TestManager {
 		tests.add(new GetPageTests());
 	}
 	
+	public static boolean areTestsRunning() {
+		return isRunning.get();
+	}
+	
+	public static boolean isStressTestRunning() {
+		return isRunningStress.get();
+	}
+	
 	/**
 	 * Executes every test sequence in tests
 	 * @return True if the tests were started, and false if they were not for some reason

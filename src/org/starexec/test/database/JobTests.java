@@ -184,7 +184,7 @@ public class JobTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());
+		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), admin.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());

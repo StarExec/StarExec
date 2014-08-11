@@ -4,7 +4,7 @@
 <%	
 	try {		
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(userId);
+		ValidatorStatusCode status=GeneralSecurity.canUserRunTestsNoRunningCheck(userId);
 		if (!status.isSuccess()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,status.getMessage());
 		} else {

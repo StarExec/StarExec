@@ -1076,23 +1076,23 @@ public class RESTServices {
 	@Produces("appliation/json")
 	public String runTest(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		
-		if (Users.isAdmin(u)) {
-			final String[] testNames=request.getParameterValues("testNames[]");
-			if (testNames==null || testNames.length==0) {
-				return gson.toJson(ERROR_INVALID_PARAMS);
-			}
-		
-			for (String testName : testNames) {
-				TestManager.executeTest(testName);
-			}
-				
-			return gson.toJson(new ValidatorStatusCode(true,"Testing started successfully"));
-			
-		} else {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u,false);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
+			
+		final String[] testNames=request.getParameterValues("testNames[]");
+		if (testNames==null || testNames.length==0) {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		for (String testName : testNames) {
+			TestManager.executeTest(testName);
+		}
+			
+		return gson.toJson(new ValidatorStatusCode(true,"Testing started successfully"));
+			
 	}
+	
 
 	/**
 	 * Runs every TestSequence. This does NOT run a stress test!
@@ -1105,7 +1105,7 @@ public class RESTServices {
 	@Produces("appliation/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u);
+		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u,false);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}

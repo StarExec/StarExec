@@ -1995,7 +1995,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param con the database transaction to use
 	 * @author Todd Elvers
 	 */
-	public static void removeSubspaces(int spaceId, int parentSpaceId, int userId, Connection con) throws Exception {
+	//TODO: Don't need parent space ID, user ID
+	public static void removeSubspaces(int spaceId, int userId, Connection con) throws Exception {
 		
 		CallableStatement procedure = null;
 		// For every subspace of the space to be deleted...
@@ -2007,7 +2008,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			}
 			
 			// Recursively delete its subspaces
-			Spaces.removeSubspaces(subspace.getId(), parentSpaceId, userId, con);
+			Spaces.removeSubspaces(subspace.getId(), userId, con);
 			
 			 procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 			procedure.setInt(1, subspace.getId());
@@ -2016,6 +2017,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			log.info("Space " + subspace.getId() +  " has been deleted.");
 		}
 	}
+	
+	//TODO: Providing the parent space should not be necessary. Probably also shouldn't need to pass in the user ID.
+	// Security needs to be handled at a higher level
 	
 	public static boolean removeSubspaces(int subspaceId,int parentSpaceId,int userId) {
 		List<Integer> spaceId=new ArrayList<Integer>();
@@ -2033,6 +2037,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
+	//TODO: Don't need parent space id, user ID
 	public static boolean removeSubspaces(List<Integer> subspaceIds, int parentSpaceId, int userId) {
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -2047,12 +2052,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				log.debug("subspaceId = " + subspaceId);
 				
 				// Ensure the user can remove that subspace
-				if(Permissions.get(userId, parentSpaceId).canRemoveSpace() == false){
+				if(!Permissions.get(userId, parentSpaceId).canRemoveSpace()){
 					throw new Exception();
 				}
 				
 				// Check if it has any subspaces itself, and if so delete them 
-				Spaces.removeSubspaces(subspaceId, parentSpaceId, userId, con);
+				Spaces.removeSubspaces(subspaceId, userId, con);
 
 				 procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 				procedure.setInt(1, subspaceId);

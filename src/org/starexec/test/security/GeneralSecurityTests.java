@@ -37,8 +37,8 @@ public class GeneralSecurityTests extends TestSequence {
 	
 	@Test 
 	private void canUserRunTests() {
-		Assert.assertEquals(true, GeneralSecurity.canUserRunTests(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserRunTests(user1.getId()).isSuccess());
+		Assert.assertEquals(true, GeneralSecurity.canUserRunTestsNoRunningCheck(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true, GeneralSecurity.canUserRunTestsNoRunningCheck(user1.getId()).isSuccess());
 	}
 	
 	@Test

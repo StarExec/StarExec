@@ -195,7 +195,7 @@ public class CreateStressTest extends HttpServlet {
 			
 			
 			// Validated inputs-- next make sure user has permission
-			return GeneralSecurity.canUserRunTests(SessionUtil.getUserId(request));
+			return GeneralSecurity.canUserRunTests(SessionUtil.getUserId(request),true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
