@@ -371,17 +371,24 @@ public class ResourceLoader {
 	}
 	
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
-		QueueRequest req=new QueueRequest();
-		req.setQueueName(TestUtil.getRandomQueueName());
-		req.setNodeCount(0);
-		int queueId=Queues.getIdByName(req.getQueueName() + ".q");
+		try {
+			QueueRequest req=new QueueRequest();
+			req.setQueueName(TestUtil.getRandomQueueName());
+			req.setNodeCount(0);
 
-		GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
-		boolean success = Queues.makeQueuePermanent(queueId);
-		success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
-		success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
+			int queueId=Queues.getIdByName(req.getQueueName() + ".q");
+
+			boolean success = Queues.makeQueuePermanent(queueId);
+			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
+			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			
+			return Queues.get(queueId);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
 		
-		return Queues.get(queueId);
 	}
 	
 }

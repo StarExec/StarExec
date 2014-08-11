@@ -561,7 +561,8 @@ public abstract class JobManager {
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
-				pair.setSolver(solver);				
+				pair.setSolver(solver);		
+				pair.setConfiguration(solver.getConfigurations().get(0));
 				pair.setCpuTimeout(cpuTimeout);
 				pair.setWallclockTimeout(clockTimeout);
 				pair.setMaxMemory(memoryLimit);

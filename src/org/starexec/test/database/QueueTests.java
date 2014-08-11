@@ -80,6 +80,7 @@ public class QueueTests extends TestSequence {
 		n=Queues.getNodes(allQueue.getId()).get(0);
 		testQueue=ResourceLoader.loadQueueIntoDatabase(1000,1000);
 		
+		Assert.assertNotNull(testQueue);
 	}
 
 	@Override
