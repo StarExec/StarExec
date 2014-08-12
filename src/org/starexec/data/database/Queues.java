@@ -205,6 +205,7 @@ public class Queues {
 				queue.setSlotsUsed(results.getInt("slots_used"));
 				queue.setWallTimeout(results.getInt("clockTimeout"));
 				queue.setCpuTimeout(results.getInt("cpuTimeout"));
+				queue.setGlobalAccess(results.getBoolean("global_access"));
 				return queue;				
 			}										
 			
@@ -295,6 +296,7 @@ public class Queues {
 				queue.setSlotsUsed(results.getInt("slots_used"));
 				queue.setWallTimeout(results.getInt("clockTimeout"));
 				queue.setCpuTimeout(results.getInt("cpuTimeout"));
+				queue.setGlobalAccess(results.getBoolean("global_access"));
 				return queue;
 			}
 		} catch (Exception e){			

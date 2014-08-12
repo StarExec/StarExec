@@ -181,7 +181,7 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 	BEGIN
 		UPDATE queues
 		SET global_access = false
-		WHERE _queueId = _queueId;
+		WHERE id = _queueId;
 	END //
 	
 -- Get the active queues that have been reserved for a particular space

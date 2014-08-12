@@ -171,7 +171,7 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 DROP PROCEDURE IF EXISTS GetQueue;
 CREATE PROCEDURE GetQueue(IN _id INT)
 	BEGIN		
-		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,clockTimeout
+		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,clockTimeout,global_access
 		FROM queues
 		WHERE id=_id;
 	END // 
