@@ -384,8 +384,10 @@ public class ResourceLoader {
 			req.setNodeCount(0);
 
 			GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
-			int queueId=Queues.getIdByName(req.getQueueName() + ".q");
-
+			
+			
+			int queueId=Queues.getIdByName(req.getQueueName());
+			
 			boolean success = Queues.makeQueuePermanent(queueId);
 			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);

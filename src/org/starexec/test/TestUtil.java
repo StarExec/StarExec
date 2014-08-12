@@ -15,7 +15,7 @@ public class TestUtil {
 		return getRandomAlphaString(R.SPACE_NAME_LEN-1);
 	}
 	public static String getRandomQueueName() {
-		return getRandomAlphaString(R.QUEUE_NAME_LEN-5);
+		return getRandomAlphaString(R.QUEUE_NAME_LEN-5)+".q";
 	}
 	public static String getRandomPassword() {
 		return getRandomAlphaString(R.PASSWORD_LEN-1);

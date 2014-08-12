@@ -555,8 +555,7 @@ public class GridEngineUtil {
 			String queueName = req.getQueueName();
 			String[] split = queueName.split("\\.");
 			String shortQueueName = split[0];
-			//int queueId = Queues.getIdByName(queueName);
-			//Queue q = Queues.get(queueId);
+
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
 			StringBuilder sb = new StringBuilder();
 			
