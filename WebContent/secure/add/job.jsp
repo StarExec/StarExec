@@ -85,6 +85,20 @@
 							</select>
 						</td>
 					</tr>
+					
+					<tr class="noHover" title="which queue should this job be submitted to?">
+						<td class="label"><p>worker queue</p></td>
+						<td>
+							<select id="workerQueue" name="queue">
+								<c:if test="${empty queues}">
+									<option value="" />
+								</c:if>				
+								<c:forEach var="q" items="${queues}">
+	                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
+								</c:forEach>
+							</select>
+						</td>
+					</tr>
 					<tr class="noHover" title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>wallclock timeout</p></td>
 						<td>	
@@ -104,19 +118,7 @@
 						</td>
 					</tr>
 					
-					<tr class="noHover" title="which queue should this job be submitted to?">
-						<td class="label"><p>worker queue</p></td>
-						<td>
-							<select id="workerQueue" name="queue">
-								<c:if test="${empty queues}">
-									<option value="" />
-								</c:if>				
-								<c:forEach var="q" items="${queues}">
-	                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
+					
 					<tr class="noHover" title="How would you like to traverse the job pairs?">
 						<td class="label"><p>Job-Pair Traversal</p></td>
 						<td>
