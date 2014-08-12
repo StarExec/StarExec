@@ -998,7 +998,13 @@ public class Queues {
 				procUpdateAttr.setString(1, name);				
 				// Must add _ to column name/value in case it conflicts with an SQL keyword
 				procUpdateAttr.setString(2, "_" + keyVal.getKey());
-				procUpdateAttr.setString(3, "_" + keyVal.getValue());
+				//we need to make sure the value isn't too long to fit in the field.
+				String value=keyVal.getValue();
+				if (value.length()>63) {
+					log.debug("queue id = "+id+ " had queue attribute "+keyVal.getKey()+" had value that was too long = "+value);
+					value=value.substring(0,63);
+				}
+				procUpdateAttr.setString(3, "_" + value);
 				procUpdateAttr.executeUpdate();
 			}
 						
