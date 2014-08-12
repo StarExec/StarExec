@@ -370,6 +370,13 @@ public class ResourceLoader {
 		return null;
 	}
 	
+	/**
+	 * Loads a queue with the given timeouts into the database. The queue will be set as permanent
+	 * @param wallTimeout
+	 * @param cpuTimeout
+	 * @return
+	 */
+	
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
 			QueueRequest req=new QueueRequest();
