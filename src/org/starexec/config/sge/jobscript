@@ -44,10 +44,7 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 
 
 handleUsrTwo() {
-  ps -ef | grep sandbox
-  runsolverpid=`/sbin/pidof runsolver`
-  echo "Received USR2, forwarding the signal to runsolver process $runsolverpid."
-  sudo -u sandbox kill -12 $runsolverpid
+  echo "Jobscript received USR2."
 }
 
 trap 'handleUsrTwo' USR2
@@ -78,6 +75,7 @@ then
 	
 fi
 
+echo "Jobscript ending."
 
 #==========================================================================
 # Complete (epilog will take care or reporting and data saving) 
