@@ -6,9 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.Test;
@@ -25,6 +29,12 @@ public class SpaceTests extends TestSequence {
 	User admin=null;
 	User member1=null;
 	User member2=null;
+	
+	
+	
+	Solver solver = null;
+	List<Benchmark> benchmarks=null; //all primitives owned by leader and placed into subspace
+	
 	@Test
 	private void getSpaceTest() {
 		Space test=Spaces.get(community.getId());
@@ -33,13 +43,57 @@ public class SpaceTests extends TestSequence {
 		test=Communities.getDetails(community.getId());
 		Assert.assertNotNull(test);
 		Assert.assertEquals(community.getId(), test.getId());
+		
+		
 	}
+	
+	
+	
 	@Test
 	private void getSpaceHierarchyTest() {
 		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
 		Assert.assertEquals(2, spaces.size());
 		
 	}
+	
+	@Test
+	private void removeSolverTest() {
+		List<Integer> solverId=new ArrayList<Integer>();
+		solverId.add(solver.getId());
+		Assert.assertTrue(Spaces.removeSolvers(solverId, subspace.getId()));
+		
+		List<Solver> spaceSolvers=Spaces.getDetails(subspace.getId(), admin.getId()).getSolvers();
+		boolean solverInSpace=false;
+		for (Solver s : spaceSolvers) {
+			if (s.getId()==solver.getId()) {
+				solverInSpace=true;
+				break;
+			}
+		}
+		Assert.assertFalse(solverInSpace);
+		Assert.assertTrue(Solvers.associate(solverId, subspace.getId()));
+	}
+	
+	@Test
+	private void removeBenchmarkTest() {
+		List<Integer> benchId=new ArrayList<Integer>();
+		benchId.add(benchmarks.get(0).getId());
+		Assert.assertTrue(Spaces.removeBenches(benchId, subspace.getId()));
+		
+		List<Benchmark> spaceBenchmarks=Spaces.getDetails(subspace.getId(), admin.getId()).getBenchmarks();
+		boolean benchmarkInSpace=false;
+		for (Benchmark b : spaceBenchmarks) {
+			if (b.getId()==benchmarks.get(0).getId()) {
+				benchmarkInSpace=true;
+				break;
+			}
+		}
+		
+		Assert.assertFalse(benchmarkInSpace);
+		Assert.assertTrue(Benchmarks.associate(benchId, subspace.getId()));
+		
+	}
+	
 	@Test
 	private void getAllSpacesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
@@ -90,7 +144,6 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(community.getName(),Spaces.getName(community.getId()));
 		Assert.assertEquals(subspace.getName(),Spaces.getName(subspace.getId()));
 		Assert.assertNotEquals(community.getName(),Spaces.getName(subspace.getId()));
-		
 	}	
 	
 	
@@ -196,6 +249,17 @@ public class SpaceTests extends TestSequence {
 		Users.associate(member2.getId(), subspace.getId());
 		Users.associate(member1.getId(), subspace2.getId());
 		Users.associate(member2.getId(), subspace2.getId());
+		
+		
+		
+		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
+
+		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
+		benchmarks=new ArrayList<Benchmark>();
+		for (Integer id : ids) {
+			benchmarks.add(Benchmarks.get(id));
+		}	
+		
 	}
 	
 	@Override

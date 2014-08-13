@@ -858,11 +858,10 @@ CREATE PROCEDURE IsSystemPaused()
 DROP PROCEDURE IF EXISTS GetUnRunnableJobs;
 CREATE PROCEDURE GetUnRunnableJobs()
 	BEGIN
-		SELECT DISTINCT *
+		SELECT DISTINCT id,name,deleted,paused,queue_id
 		FROM jobs
-		WHERE queue_id = null
-		OR id NOT IN (SELECT jobs.id 
-					FROM jobs JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id);
+		LEFT JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id
+		WHERE queue_id IS null OR queue_assoc.node_id IS NULL;
 	END //
 
 -- Permanently removes a job from the database

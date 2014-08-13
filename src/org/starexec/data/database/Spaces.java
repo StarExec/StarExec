@@ -1601,14 +1601,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * false otherwise
 	 * @author Ben McCune
 	 */
-	public static boolean quickRemoveSubspace(int subspaceId, int parentSpaceId, int userId, Connection con) {				
+	public static boolean quickRemoveSubspace(int subspaceId, int userId, Connection con) {				
 		CallableStatement procedure = null;
 		try {		
-				 procedure = con.prepareCall("{CALL QuickRemoveSubspace(?,?)}");
+				 procedure = con.prepareCall("{CALL QuickRemoveSubspace(?)}");
 				procedure.setInt(1, subspaceId);
-				procedure.setInt(2, parentSpaceId);
 				procedure.executeUpdate();		
-				//Cache.invalidateAndDeleteCache(subspaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
@@ -1628,16 +1626,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * false otherwise
 	 * @author Ben McCune
 	 */
-	//TODO: We need to get permissions checks out of here and into security
-	public static boolean quickRemoveSubspaces(List<Integer> subspaceIds, int parentSpaceId, int userId) {
-		// Ensure the user can remove subspaces
-		if (Permissions.checkSpaceHierRemovalPerms(subspaceIds, parentSpaceId, userId) == false){
-			log.warn("Permission failure in removing spaces for user " + userId);
-			return false;
-		}
-		else{
-			log.info("Permission success in removing spaces for user " + userId);
-		}
+	public static boolean quickRemoveSubspaces(List<Integer> subspaceIds, int userId) {
+		
 		Connection con = null;			
 		
 		try {
@@ -1648,7 +1638,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			// For each subspace in the list of subspaces to be deleted...
 			for(int subspaceId : subspaceIds){				
-				Spaces.quickRemoveSubspace(subspaceId, parentSpaceId, userId, con);
+				Spaces.quickRemoveSubspace(subspaceId, userId, con);
 			}
 			
 			// Commit changes to database
@@ -1938,17 +1928,14 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param con the database transaction to use
 	 * @author Todd Elvers
 	 */
-	//TODO: Don't need user ID
 	private static void removeSubspaces(int spaceId, int userId, Connection con) throws Exception {
 		
 		CallableStatement procedure = null;
 		// For every subspace of the space to be deleted...
+		
+		//TODO: I don't think it makes any sense to get spaces by user here. 
 		for(Space subspace : Spaces.getSubSpaces(spaceId, userId)){
-			// Ensure the user is the leader of that space
-			if(!Permissions.get(userId, subspace.getId()).isLeader()){
-				log.error("User " + userId + " does not have permission to delete space " + subspace.getId() + ".");
-				throw new Exception();
-			}
+			
 			
 			// Recursively delete its subspaces
 			Spaces.removeSubspaces(subspace.getId(), userId, con);
@@ -1960,9 +1947,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			log.info("Space " + subspace.getId() +  " has been deleted.");
 		}
 	}
-	
-	//TODO: Providing the parent space should not be necessary. Probably also shouldn't need to pass in the user ID.
-	// Security needs to be handled at a higher level
 	
 	public static boolean removeSubspaces(int subspaceId,int userId) {
 		List<Integer> spaceId=new ArrayList<Integer>();
@@ -2497,12 +2481,18 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return A set of integers containing the IDs of all the relevant users
 	 */
 	public static Set<Integer> getStickyLeaders(int spaceId) {
-		
+		//root space has no sticky leaders
 		if (spaceId==1) {
 			return new HashSet<Integer>();
 		}
 		return recGetStickyLeaders(Spaces.getParentSpace(spaceId));
 	}
+	
+	/**
+	 * Helper method for getStickyLeaders that recursively moves up the space tree to look for users
+	 * @param spaceId
+	 * @return
+	 */
 	private static Set<Integer> recGetStickyLeaders(int spaceId) {
 		HashSet<Integer> ids=new HashSet<Integer>();
 		//communities are not allowed to have the sticky leaders feature enabled, so if we've reached

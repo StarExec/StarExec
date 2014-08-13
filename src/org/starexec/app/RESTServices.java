@@ -2605,7 +2605,7 @@ public class RESTServices {
 
 		// Remove the associations
 		
-		return Spaces.quickRemoveSubspaces(selectedSubspaces, parentSpaceId, SessionUtil.getUserId(request)) ? gson.toJson(new ValidatorStatusCode(true,"Subspace(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
+		return Spaces.quickRemoveSubspaces(selectedSubspaces, SessionUtil.getUserId(request)) ? gson.toJson(new ValidatorStatusCode(true,"Subspace(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	/**
 	 * Updates the details of a solver. Solver id is required in the path. First

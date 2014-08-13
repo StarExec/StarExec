@@ -356,38 +356,7 @@ public class Permissions {
 		return false;		
 	}
 
-	public static Boolean checkSpaceHierRemovalPerms(List<Integer> subSpaceIds,
-			int parentSpaceId, int userId) {
-		log.debug("checking permissions for quick removal");
-		if(Permissions.get(userId, parentSpaceId).canRemoveSpace() == false){
-			return false;
-		}
-		for (Integer subSpaceId:subSpaceIds){
-			if (Permissions.canUserSeeSpace(subSpaceId, userId) == false){
-				return false;
-			}		
-			if (!Spaces.isLeaf(subSpaceId)){	
-				if ( Permissions.get(userId, subSpaceId).canRemoveSpace() == false){
-					return false;
-				}
-			}
-			//check all descendants of each subspace
-			List<Space> subSpaces = Spaces.getSubSpaceHierarchy(subSpaceId, userId);
-			for (Space descendant:subSpaces){
-				if (Permissions.canUserSeeSpace(descendant.getId(), userId) == false){
-					return false;
-				}		
-				if (!Spaces.isLeaf(subSpaceId)){	
-					if ( Permissions.get(userId, descendant.getId()).canRemoveSpace() == false){
-						return false;
-					}
-				}
-			}
-		}
-		log.debug("Permission to remove Spaces granted!");
-		return true;
 
-	}
 
 	
 	/**

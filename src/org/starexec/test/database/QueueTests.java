@@ -1,5 +1,7 @@
 package org.starexec.test.database;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Queues;
@@ -7,6 +9,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
+import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.GridEngineUtil;
 
@@ -74,6 +77,39 @@ public class QueueTests extends TestSequence {
 		Assert.assertNull(Queues.get(tempQueue.getId()));		
 	}
 	
+	@Test
+	private void notUniqueQueueNameTest() {
+		Assert.assertTrue(Queues.notUniquePrimitiveName(testQueue.getName()));
+		Assert.assertTrue(Queues.notUniquePrimitiveName(allQueue.getName()));
+		
+		//random names are long, so they should not appear in the queues just by chance
+		for (int x=0;x<10;x++) {
+			Assert.assertFalse(Queues.notUniquePrimitiveName(TestUtil.getRandomQueueName()));
+		}		
+	}
+	
+	@Test 
+	private void setStatusTest() {
+		String oldStatus=Queues.get(testQueue.getId()).getStatus();
+		String status=TestUtil.getRandomAlphaString(10);
+		Assert.assertTrue(Queues.setStatus(testQueue.getName(),status));
+		Assert.assertEquals(status,Queues.get(testQueue.getId()).getStatus());
+		
+		Assert.assertTrue(Queues.setStatus(testQueue.getName(),oldStatus));
+	}
+	
+	@Test
+	private void getAllActiveTest() {
+		List<Queue> queues=Queues.getAll();
+		Assert.assertNotNull(queues);
+		
+		for (Queue q : queues) {
+			Assert.assertEquals("ACTIVE",q.getStatus());
+		}		
+	}
+	
+	
+	
 	@Override
 	protected void setup() throws Exception {
 		allQueue=Queues.get(Queues.getIdByName(R.DEFAULT_QUEUE_NAME));
@@ -85,7 +121,7 @@ public class QueueTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Queues.delete(testQueue.getId());
+		GridEngineUtil.removeQueue(testQueue.getId());
 		
 		
 	}

@@ -39,7 +39,6 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.util.EntityUtils;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -147,12 +146,22 @@ public class Connection {
 		initializeComponents();
 	}
 	
+	/**
+	 * Sets the new Connection object's username and password based on user-specified parameters.
+	 * The URL instance used is the default (www.starexzec.org)
+	 * @param commandParams User specified parameters
+	 */
+	
 	public Connection(String user, String pass) {
 		setBaseURL(R.URL_STAREXEC_BASE);
 		setUsername(user);
 		setPassword(pass);
 		initializeComponents();
 	}
+	
+	/**
+	 * Creates a new connection to the default StarExec instance as a guest user
+	 */
 	public Connection() {
 		setBaseURL(R.URL_STAREXEC_BASE);
 		setUsername("public");
@@ -164,8 +173,6 @@ public class Connection {
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,Integer>());
 		lastError="";
-
-
 	}
 
 	protected void setBaseURL(String baseURL) {
@@ -632,6 +639,17 @@ public class Connection {
 		return uploadSolverFromURL(name,"","upload",spaceID,url,downloadable);
 	}
 	
+	/**
+	 * Uploads a solver to Starexec given a URL. 
+	 * @param name The name to give the solver
+	 * @param desc Either a string description OR a file path to a file containing the description, depending on the value of descMethod
+	 * @param descMethod The method by which a description is being provided, which is either 'file' or 'text'
+	 * @param spaceID The space to put the solver in
+	 * @param url The direct URL to the solver
+	 * @param downloadable Whether the solver should be downloadable or not
+	 * @return The positive ID for the solver or a negative error code
+	 */
+	
 	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable) {
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
@@ -691,42 +709,99 @@ public class Connection {
 
 		return msg;
 	}
+	/**
+	 * Sets all the default headers StarExec needs to an HttpMessage without any cookies
+	 * @param msg
+	 * @return
+	 */
 	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg) {
 		return setHeaders(msg,new String[0]);
 	}
 	
+	/**
+	 * Changes your first name on StarExec to the given value
+	 * @param name The new name
+	 * @return 0 on success or a negative error code on failure
+	 */
 	
 	public int setFirstName(String name) {
 		return this.setUserSetting("firstname", name);
 	}
 	
+	/**
+	 * Changes your last name on StarExec to the given value
+	 * @param name The new name
+	 * @return 0 on success or a negative error code on failure
+	 */
 	public int setLastName(String name) {
 		return this.setUserSetting("lastname", name);
 	}
+	
+	/**
+	 * Changes your institution on StarExec to the given value
+	 * @param institution The new institution
+	 * @return 0 on success or a negative error code on failure
+	 */
 	
 	public int setInstitution(String inst) {
 		return this.setUserSetting("institution",inst);
 	}
 	
+	/**
+	 * Deletes all of the given solvers permanently
+	 * @param ids The IDs of each solver to delete
+	 * @return 0 on success or a negative error code on failure
+	 */
+	
 	public int deleteSolvers(List<Integer> ids) {
 		return deletePrimitives(ids,"solver");
 	}
+	
+	/**
+	 * Deletes all of the given benchmarks permanently
+	 * @param ids The IDs of each benchmark to delete
+	 * @return 0 on success or a negative error code on failure
+	 */
 	
 	public int deleteBenchmarks(List<Integer> ids) {
 		return deletePrimitives(ids,"benchmark");
 	}
 	
+	/**
+	 * Deletes all of the given processors permanently
+	 * @param ids The IDs of each processor to delete
+	 * @return 0 on success or a negative error code on failure
+	 */
+	
 	public int deleteProcessors(List<Integer> ids) {
 		return deletePrimitives(ids,"processor");
 	}
 	
+	/**
+	 * Deletes all of the given configurations permanently
+	 * @param ids The IDs of each configuration to delete
+	 * @return 0 on success or a negative error code on failure
+	 */
+	
 	public int deleteConfigurations(List<Integer> ids) {
 		return deletePrimitives(ids,"configuration");
 	}
+	
+	/**
+	 * Deletes all of the given jobs permanently
+	 * @param ids The IDs of each job to delete
+	 * @return 0 on success or a negative error code on failure
+	 */
 	public int deleteJobs(List<Integer> ids) {
 		return deletePrimitives(ids,"job");
 	}
 	
+	/**
+	 * Deletes all of the given primitives of the given type
+	 * @param ids IDs of some primitive type
+	 * @param type The type of primitives being deleted
+	 * @return 0 on success or a negative error code on failure
+	 */
 	
 	protected int deletePrimitives(List<Integer> ids, String type) {
 		try {
@@ -758,7 +833,7 @@ public class Connection {
 	}
 	
 		/**
-		 * 
+		 * Checks to see whether the given page can be retrieved normally, meaning we get back HTTP status code 200
 		 * @param relURL The URL following starexecRoot
 		 * @return
 		 */
@@ -797,7 +872,13 @@ public class Connection {
 			return Status.ERROR_INTERNAL;
 		}
 	}
-	
+	/**
+	 * Sets a space or hierarchy to be public or private
+	 * @param spaceID The ID of the individual space or the root of the hierarchy to work on
+	 * @param hierarchy True if working on a hierarchy, false if a single space 
+	 * @param setPublic True if making the space(s) public, false if private
+	 * @return 0 on success or a negative error code otherwise
+	 */
 	protected int setSpaceVisibility(Integer spaceID,Boolean hierarchy, Boolean setPublic) {
 		try {
 			String pubOrPriv="";
@@ -1232,9 +1313,29 @@ public class Connection {
 		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,"space");
 	}
 	
+	/**
+	 * Copies all the primitives of the given types
+	 * @param ids The IDs of the primitives to copy
+	 * @param oldSpaceId A space where the primitives currently reside, or null if there is no old space
+	 * @param newSpaceID The ID of the space to put all the primitives in
+	 * @param hierarchy (only for solvers) True if copying the primitives to each space in a hierarchy (only 1 new prim is created per ID)
+	 * @param type The type of the primitives
+	 * @return A list of positive IDs on success, or size 1 list with a negative error code on failure
+	 */
+	
 	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
 		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, true, hierarchy, type);
 	}
+	
+	/**
+	 * Links all the primitives of the given types
+	 * @param ids The IDs of the primitives to link
+	 * @param oldSpaceId A space where the primitives currently reside, or null if there is no old space
+	 * @param newSpaceID The ID of the space to put all the primitives in
+	 * @param hierarchy (only for solvers) True if linking the primitives to each space in a hierarchy (only 1 new prim is created per ID)
+	 * @param type The type of the primitives
+	 * @return 0 on success or a negative error code on failure
+	 */
 	
 	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
 		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, type).get(0);

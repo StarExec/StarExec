@@ -87,13 +87,11 @@ public class CreatePermanentQueue extends HttpServlet {
 		req.setQueueName(queue_name + ".q");
 		GridEngineUtil.createPermanentQueue(req, true, NQ);
 		
-		//TODO: reduce the count of reservations for nodes that were removed from reservations
 		Collection<Queue> queues = NQ.values();
 		for (Queue q : queues) {
 			// if the queue is not all.q and it is not a permanent queue
 			// i.e. it is a reserved queue
 			if (q.getId() != 1 && !q.getPermanent()) {
-				//TODO: reduce the count of the reservation
 				Requests.DecreaseNodeCount(q.getId());
 			}
 		}

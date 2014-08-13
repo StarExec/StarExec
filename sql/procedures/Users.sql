@@ -52,9 +52,6 @@ CREATE PROCEDURE AddUserToCommunity(IN _userId INT, IN _communityId INT)
 DROP PROCEDURE IF EXISTS RemoveUserFromSpaceHierarchy;
 CREATE PROCEDURE RemoveUserFromSpaceHierarchy(IN _userId INT, IN _spaceId INT, IN _requestUserId INT)
 	BEGIN
-		DECLARE _newPermId INT;
-		DECLARE _pid INT;
-		
 		-- Remove the permission associated with this user/community
 		DELETE FROM permissions
 			WHERE id IN (SELECT permission FROM user_assoc 

@@ -187,9 +187,10 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 			FROM set_assoc 
 				JOIN closure ON set_assoc.child_id=closure.ancestor 
 				JOIN spaces ON spaces.id=set_assoc.child_id
-				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
-				WHERE set_assoc.space_id=_spaceId
-				ORDER BY name;
+				JOIN spaces AS s ON s.id=closure.descendant
+				LEFT JOIN user_assoc ON user_assoc.space_id=closure.descendant
+				WHERE set_assoc.space_id=_spaceId AND (s.public_access OR user_assoc.user_id=_userId)
+				ORDER BY spaces.name;
 		END IF;
 	END //
 	
@@ -408,12 +409,11 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 -- Removes only the association between a space and a subspace
 -- Author: Ben McCune
 DROP PROCEDURE IF EXISTS QuickRemoveSubspace;
-CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT, IN _parentspaceId INT)
+CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT)
 	BEGIN
 		-- Remove the space
 		DELETE FROM set_assoc
-		WHERE space_id = _parentspaceId
-		AND child_id = _subspaceId;		
+		WHERE child_id = _subspaceId;		
 	END //	
 	
 -- Updates the name of the space with the given id
