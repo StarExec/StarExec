@@ -156,17 +156,17 @@ public class BenchmarkUploader extends HttpServlet {
 
 			log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
 			if(uploadMethod.equals("convert")) {
+				log.debug("convert");
+
 				//first we test to see if any names conflict
-				List<Space> spaces =getSpaceNamesFromBenchmarkUpload(uniqueDir);
-				if (doSpaceNamesConflict(spaces)) {
-					String message = "There was a space name conflict. Benchmarks were not uploaded";
-					Uploads.setErrorMessage(statusId,message);
+				ValidatorStatusCode status=doSpaceNamesConflict(uniqueDir,spaceId);
+				if (!status.isSuccess()) {
+					Uploads.setErrorMessage(statusId,status.getMessage());
 					return null;
 				}
 				
 				
 				
-				log.debug("convert");
 				Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
 				if (result == null) {
 					String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
@@ -363,71 +363,36 @@ public class BenchmarkUploader extends HttpServlet {
 		// Return false control flow is broken and ends up here
 		return new ValidatorStatusCode(false, "Internal error uploading benchmarks");	
 	}
-	/**
-	 * Given a list of spaces that have names and depth set (see getSpaceNamesFromBenchmarkUpload),
-	 * returns true if there is a name conflict (two spaces with the same name at the same depth)
-	 * @param spaces
-	 * @return
-	 */
-	
-	private static boolean doSpaceNamesConflict(List<Space> spaces) {
-		HashMap<Integer, HashSet<String>> depthToNames = new HashMap<Integer, HashSet<String>>();
-		
-		for (Space s : spaces) {
-			log.debug("one of the space names was " + s.getName()+" with depth = "+s.getId());
-			if (!depthToNames.containsKey(s.getId())) {
-				depthToNames.put(s.getId(), new HashSet<String>());
-				
-			}
-			HashSet<String> nameHash=depthToNames.get(s.getId());
-			if (nameHash.contains(s.getName())) {
-				return true; //there was a conflict
-			} else {
-				nameHash.add(s.getName());
-			}
-		}
-		
-		
-		return false;
-	}
 	
 	/**
-	 * From a given benchmark upload directory, gets a list of spaces that will be created. The space
-	 * objects will have only 2 things set-- the name and the "depth." Depth will be in the ID field.
-	 * The "depth" of a space is how many spaces it will be from the root, which is the space the benchmarks
-	 * are uploaded to. Depth starts at one.
-	 * @param directory
-	 * @return
+	 * Checks to see if any of the spaces that will be created by the given upload directory conflict with existing names
+	 * @param uniqueDir
+	 * @return A ValidatorStatusCode set to True if there is NO conflict and set to false with a message if a conflict exists
 	 */
 	
-	private static List<Space> getSpaceNamesFromBenchmarkUpload(File directory) {
-		
+	private static ValidatorStatusCode doSpaceNamesConflict(File uniqueDir, int parentSpaceId) {
 		try {
-			List<Space> spaces=new ArrayList<Space>();
-			
-			
-			for(File f : directory.listFiles()) {
+			Space parent=Spaces.getDetails(parentSpaceId,Users.getAdmins().get(0).getId());
+			HashSet<String> curNames=new HashSet<String>();
+			for (Space s : parent.getSubspaces()) {
+				curNames.add(s.getName());
+			}
+			for(File f : uniqueDir.listFiles()) {
 				// If it's a sub-directory and as such a subspace
 				if(f.isDirectory()) {
-					Space thisSpace=new Space();
-					thisSpace.setId(1);
-					thisSpace.setName(directory.getName());
-					spaces.add(thisSpace);
-					List<Space> subspaces=getSpaceNamesFromBenchmarkUpload(f);
-					//depth of recursive spaces is one greater than whatever was set for them before
-					for (Space s : subspaces) {
-						s.setId(s.getId()+1);
+					String curName=f.getName();
+					if (curNames.contains(curName)) {
+						return new ValidatorStatusCode(false,"Creating spaces for your benchmarks would lead to having two subspaces with the name "+ curName); // found a conflict
 					}
-					spaces.addAll(subspaces);
+					curNames.add(curName);
 				} 
 			}
 			
-			return spaces;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-		} 
-		
-		return null;
-		
+		}
+		return new ValidatorStatusCode(false, "There was an internal error uploading your benchmarks");
 	}
+	
 }
