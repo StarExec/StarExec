@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -155,7 +156,16 @@ public class BenchmarkUploader extends HttpServlet {
 
 			log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
 			if(uploadMethod.equals("convert")) {
-
+				//first we test to see if any names conflict
+				List<Space> spaces =getSpaceNamesFromBenchmarkUpload(uniqueDir);
+				if (doSpaceNamesConflict(spaces)) {
+					String message = "There was a space name conflict. Benchmarks were not uploaded";
+					Uploads.setErrorMessage(statusId,message);
+					return null;
+				}
+				
+				
+				
 				log.debug("convert");
 				Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
 				if (result == null) {
@@ -352,5 +362,72 @@ public class BenchmarkUploader extends HttpServlet {
 
 		// Return false control flow is broken and ends up here
 		return new ValidatorStatusCode(false, "Internal error uploading benchmarks");	
+	}
+	/**
+	 * Given a list of spaces that have names and depth set (see getSpaceNamesFromBenchmarkUpload),
+	 * returns true if there is a name conflict (two spaces with the same name at the same depth)
+	 * @param spaces
+	 * @return
+	 */
+	
+	private static boolean doSpaceNamesConflict(List<Space> spaces) {
+		HashMap<Integer, HashSet<String>> depthToNames = new HashMap<Integer, HashSet<String>>();
+		
+		for (Space s : spaces) {
+			log.debug("one of the space names was " + s.getName()+" with depth = "+s.getId());
+			if (!depthToNames.containsKey(s.getId())) {
+				depthToNames.put(s.getId(), new HashSet<String>());
+				
+			}
+			HashSet<String> nameHash=depthToNames.get(s.getId());
+			if (nameHash.contains(s.getName())) {
+				return true; //there was a conflict
+			} else {
+				nameHash.add(s.getName());
+			}
+		}
+		
+		
+		return false;
+	}
+	
+	/**
+	 * From a given benchmark upload directory, gets a list of spaces that will be created. The space
+	 * objects will have only 2 things set-- the name and the "depth." Depth will be in the ID field.
+	 * The "depth" of a space is how many spaces it will be from the root, which is the space the benchmarks
+	 * are uploaded to. Depth starts at one.
+	 * @param directory
+	 * @return
+	 */
+	
+	private static List<Space> getSpaceNamesFromBenchmarkUpload(File directory) {
+		
+		try {
+			List<Space> spaces=new ArrayList<Space>();
+			
+			
+			for(File f : directory.listFiles()) {
+				// If it's a sub-directory and as such a subspace
+				if(f.isDirectory()) {
+					Space thisSpace=new Space();
+					thisSpace.setId(1);
+					thisSpace.setName(directory.getName());
+					spaces.add(thisSpace);
+					List<Space> subspaces=getSpaceNamesFromBenchmarkUpload(f);
+					//depth of recursive spaces is one greater than whatever was set for them before
+					for (Space s : subspaces) {
+						s.setId(s.getId()+1);
+					}
+					spaces.addAll(subspaces);
+				} 
+			}
+			
+			return spaces;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} 
+		
+		return null;
+		
 	}
 }
