@@ -10,6 +10,8 @@ import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -27,7 +29,6 @@ import org.starexec.util.Util;
 
 
 public class GetPageTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(TestSequence.class);	
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
 	private Space space1=null; //will contain both solvers and benchmarks
@@ -310,11 +311,12 @@ public class GetPageTests extends TestSequence {
 		
 		Spaces.removeSubspaces(space1.getId(), admin.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
-		
+		Processors.delete(proc.getId());
 		for (Integer i : benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		
+		Jobs.deleteAndRemove(job.getId());
 	}
 	
 

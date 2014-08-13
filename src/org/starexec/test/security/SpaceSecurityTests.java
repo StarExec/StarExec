@@ -188,8 +188,6 @@ public class SpaceSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Space testCommunity=Communities.getTestCommunity();
-
 		Spaces.removeSubspaces(space1.getId(), admin.getId());
 		Spaces.removeSubspaces(space2.getId(), admin.getId());
 		Spaces.removeSubspaces(publicSpace.getId(), admin.getId());

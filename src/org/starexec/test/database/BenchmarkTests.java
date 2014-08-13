@@ -66,14 +66,7 @@ public class BenchmarkTests extends TestSequence {
 		
 	}
 	
-	@Test
-	private void GetBenchmarkWithAttrsTest() {
-		Benchmark b = Benchmarks.get(benchmarks.get(0).getId(),true);
-		Assert.assertNotNull(b);
-		Assert.assertEquals(b.getName(),benchmarks.get(0).getName());
-		
-		Assert.assertNotNull(b.getAttributes());
-	}
+	
 	
 	@Test
 	private void GetAssociatedSpaceIds() {

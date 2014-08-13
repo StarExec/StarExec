@@ -170,7 +170,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(name,testProc.getName());
 		Assert.assertEquals(testCommunity.getId(),testProc.getCommunityId());
 		Assert.assertEquals(ProcessorType.POST,testProc.getType());
-		Processors.delete(testProc.getId());
+		Assert.assertTrue(Processors.delete(testProc.getId()));
 	}
 	@Test
 	private void uploadPreProcessor() {
@@ -181,7 +181,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(name,testProc.getName());
 		Assert.assertEquals(testCommunity.getId(),testProc.getCommunityId());
 		Assert.assertEquals(ProcessorType.PRE,testProc.getType());
-		Processors.delete(testProc.getId());
+		Assert.assertTrue(Processors.delete(testProc.getId()));
 	}
 	@Test
 	private void uploadBenchProcessor() {
@@ -192,7 +192,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(name,testProc.getName());
 		Assert.assertEquals(testCommunity.getId(),testProc.getCommunityId());
 		Assert.assertEquals(ProcessorType.BENCH,testProc.getType());
-		Processors.delete(testProc.getId());
+		Assert.assertTrue(Processors.delete(testProc.getId()));
 	}
 	@Test
 	private void uploadSolver() throws Exception {
@@ -203,7 +203,7 @@ public class StarexecCommandTests extends TestSequence {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
 			Assert.assertEquals(testSolver.getName(), name);
-			Solvers.deleteAndRemoveSolver(testSolver.getId());
+			Assert.assertTrue(Solvers.deleteAndRemoveSolver(testSolver.getId()));
 			
 		} else {
 			throw new Exception("an error code was returned "+result);
@@ -220,7 +220,7 @@ public class StarexecCommandTests extends TestSequence {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
 			Assert.assertEquals(testSolver.getName(), name);
-			Solvers.deleteAndRemoveSolver(testSolver.getId());
+			Assert.assertTrue(Solvers.deleteAndRemoveSolver(testSolver.getId()));
 			
 		} else {
 			throw new Exception("an error code was returned "+result);
@@ -658,7 +658,7 @@ public class StarexecCommandTests extends TestSequence {
 		Jobs.deleteAndRemove(job.getId());
 		
 		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
-		
+		Processors.delete(proc.getId());
 	}
 	
 	private boolean isErrorMap(HashMap<Integer,String> mapping) {
