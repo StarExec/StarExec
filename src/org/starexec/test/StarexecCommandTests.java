@@ -230,11 +230,14 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void uploadBenchmarks() throws Exception {
 		
-		//we are putting benchmarks in a new space to avoid name collisions
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertEquals(0,result);
-		
+		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+		Assert.assertTrue(t.getBenchmarks().size()>0);
+		for (Benchmark b : t.getBenchmarks()) {
+			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId()));
 	}
 	
@@ -247,6 +250,11 @@ public class StarexecCommandTests extends TestSequence {
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertEquals(0,result);
 		
+		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+		Assert.assertTrue(t.getBenchmarks().size()>0);
+		for (Benchmark b : t.getBenchmarks()) {
+			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
 
 	}
@@ -450,6 +458,8 @@ public class StarexecCommandTests extends TestSequence {
 		ids.add(tempSolver.getId());
 		Assert.assertEquals(0,con.deleteSolvers(ids));
 		Assert.assertNull(Solvers.get(tempSolver.getId()));
+		
+		Assert.assertTrue(Solvers.deleteAndRemoveSolver(tempSolver.getId()));
 	}
 	
 	@Test
@@ -462,6 +472,8 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(Jobs.get(tempJob.getId()));
 		Assert.assertEquals(0,con.deleteJobs(ids));
 		Assert.assertNull(Jobs.get(tempJob.getId()));
+		
+		Assert.assertTrue(Jobs.deleteAndRemove(tempJob.getId()));
 
 	}
 	
@@ -550,7 +562,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(Solvers.get(temp.getId()));
 		//then, make sure it is not in the space
 		Assert.assertFalse(Solvers.getAssociatedSpaceIds(temp.getId()).contains(testCommunity.getId()));
-		Solvers.deleteAndRemoveSolver(temp.getId());
+		Assert.assertTrue(Solvers.deleteAndRemoveSolver(temp.getId()));
 	}
 	
 	@Test
