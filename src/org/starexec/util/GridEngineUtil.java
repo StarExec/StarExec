@@ -483,7 +483,7 @@ public class GridEngineUtil {
 							"\nseq_no                0" +
 							"\nload_thresholds       np_load_avg=1.75" +
 							"\nsuspend_thresholds    NONE" +
-							"\nnsuspend              1" +
+							"\nnsuspend              1" +  // nsuspend is the correct name
 							"\nsuspend_interval      00:05:00" +
 							"\npriority              0" +
 							"\nmin_cpu_interval      00:05:00" +
@@ -492,7 +492,7 @@ public class GridEngineUtil {
 							"\nckpt_list             NONE" +
 							"\npe_list               make" +
 							"\nrerun                 FALSE" +
-							"\nslots                 1" +
+							"\nslots                 2" +
 							"\ntmpdir                /tmp" +
 							"\nshell                 /bin/csh" +
 							"\nprolog                NONE" +
@@ -639,7 +639,7 @@ public class GridEngineUtil {
 						"\nckpt_list             NONE" +
 						"\npe_list               make" +
 						"\nrerun                 FALSE" +
-						"\nslots                 1" +
+						"\nslots                 2" +
 						"\ntmpdir                /tmp" +
 						"\nshell                 /bin/csh" +
 						"\nprolog                NONE" +

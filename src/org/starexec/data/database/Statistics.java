@@ -46,11 +46,7 @@ import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
 import org.starexec.data.to.Space;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
 import com.mysql.jdbc.ResultSetMetaData;
 
@@ -372,7 +368,7 @@ public class Statistics {
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
-			
+			chart.getTitle().setPaint(new Color(255,255,255)); //makes the title white
 			XYPlot plot = (XYPlot) chart.getPlot();
 			
 			//make both axes identical, and make them span from 0
@@ -510,7 +506,8 @@ public class Statistics {
 			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview Plot", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
-			
+			chart.getTitle().setPaint(new Color(255,255,255)); //makes the title white
+
 			XYPlot plot = (XYPlot) chart.getPlot();
 			if (logX) {
 				LogAxis xAxis=new LogAxis("# solved");

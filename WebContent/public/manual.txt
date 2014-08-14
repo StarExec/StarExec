@@ -22,7 +22,7 @@ command followed by a set of parameters, using the following syntax
 Where {command} specifies a particular action and where parameters are space-separated key/value 
 pairs of the form {key}={value}. There should be no spaces between {key} and "="--there may be any 
 number of spaces in {value}. Some parameters may not have values, in which case {value} can be the 
-empty string. Neither command nor parameter keys are case sensitive--parameter values ARE case 
+empty string. Neither commands nor parameter keys are case sensitive--parameter values ARE case 
 sensitive.  Parameters can be specified in any order. The parameters accepted by StarExecCommand are 
 described below. An example command using this syntax is...
 
@@ -328,6 +328,8 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
+				  Instead, an ID for this upload request will be returned. This upload ID can be used to query the
+				  status of the benchmark upload to see its progress.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '

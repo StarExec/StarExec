@@ -266,7 +266,7 @@ public class Connection {
 	 * @param p The permission object representing permissions that should be applied to every space created when
 	 * these benchmarks are uploaded
 	 * @param downloadable Whether the benchmarks should be downloadable by other users.
-	 * @return 0 on success, and a negative error code otherwise.
+	 * @return A positive upload ID on success, and a negative error code otherwise.
 	 */
 	public int uploadBenchmarksToSpaceHierarchy(String filePath,Integer processorID, Integer spaceID,Permission p, Boolean downloadable) {
 		return uploadBenchmarks(filePath,processorID,spaceID,"local",p,"",downloadable,true,false,false,null);
@@ -279,7 +279,7 @@ public class Connection {
 	 * can be null
 	 * @param spaceID The ID of the space to put the benchmarks in
 	 * @param downloadable Whether the benchmarks should be downloadable by other users.
-	 * @return 0 on success, and a negative error code otherwise.
+	 * @return A positive upload id on success, and a negative error code otherwise.
 	 */
 	public int uploadBenchmarksToSingleSpace(String filePath,Integer processorID, Integer spaceID,Boolean downloadable) {
 		return uploadBenchmarks(filePath,processorID,spaceID,"local",new Permission(),"",downloadable,false,false,false,null);
@@ -337,7 +337,13 @@ public class Connection {
 			response.getEntity().getContent().close();
 			
 			if (returnCode==302) {
-				return 0;
+			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			if (id>0) {
+				return id;
+			} else {
+				return Status.ERROR_INTERNAL; //we should have gotten an error from the server and no redirect if there was a catchable error
+			}
+			
 			} else {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;

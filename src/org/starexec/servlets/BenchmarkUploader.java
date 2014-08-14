@@ -93,6 +93,8 @@ public class BenchmarkUploader extends HttpServlet {
 				// Go ahead and process the request
 				this.handleUploadRequest(form, userId, statusId);
 				//go to upload status page
+				response.addCookie(new Cookie("New_ID", String.valueOf(statusId)));
+
 				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
 				
 			} else {

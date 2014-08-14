@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.apache.tomcat.jni.Time;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
@@ -16,6 +17,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -226,15 +228,30 @@ public class StarexecCommandTests extends TestSequence {
 			throw new Exception("an error code was returned "+result);
 		}
 	}
-	//TODO: These benchmarks will need to be deleted
+	
+	private void waitForUpload(int uploadId, int maxSeconds) {
+		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
+		for (int x=0;x<maxSeconds;x++) {
+			if (Uploads.everythingComplete(uploadId)) {
+				break;
+			}
+			Time.sleep(1000);
+		}
+	}
+	
+	//TODO: These benchmarks will need to be deleted correctly
 	@Test
 	private void uploadBenchmarks() throws Exception {
 		
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
-		Assert.assertEquals(0,result);
+		Assert.assertTrue(result>0);
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+		waitForUpload(result,60);
+		
+		
 		Assert.assertTrue(t.getBenchmarks().size()>0);
+
 		for (Benchmark b : t.getBenchmarks()) {
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
@@ -248,8 +265,8 @@ public class StarexecCommandTests extends TestSequence {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 	
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
-		Assert.assertEquals(0,result);
-		
+		Assert.assertTrue(result>0);
+		waitForUpload(result, 60);
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 		for (Benchmark b : t.getBenchmarks()) {
@@ -445,6 +462,8 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertNotNull(testSpace);
 			Assert.assertEquals(name, testSpace.getName());
 			Assert.assertEquals(testCommunity.getId(), (int)Spaces.getParentSpace(testSpace.getId()));
+			
+			Assert.assertTrue(Spaces.removeSubspaces(newSpaceId, Users.getAdmins().get(0).getId()));
 		} else {
 			throw new Exception("there was an error creating a new subspace. code = "+newSpaceId);
 		}
