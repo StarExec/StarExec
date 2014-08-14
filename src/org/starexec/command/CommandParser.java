@@ -401,8 +401,8 @@ class CommandParser {
 				}
 				status=parseCommand(line);
 				if (verbose || test) {
-				    //MessagePrinter.printStatusMessage(status,this);	
-				    //MessagePrinter.printWarningMessages();
+				    MessagePrinter.printStatusMessage(status,this);	
+				    MessagePrinter.printWarningMessages();
 				}
 				
 				//either of the following two statuses indicate that we should stop
