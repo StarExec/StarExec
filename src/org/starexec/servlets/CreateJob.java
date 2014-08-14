@@ -187,7 +187,8 @@ public class CreateJob extends HttpServlet {
 			}
 		} else { //hierarchy OR choice
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
-
+			
+			//TODO: Put in validation code
 			if (configIds.size() == 0) {
 				// Either no solvers or no configurations; error out
 				String message="Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.";

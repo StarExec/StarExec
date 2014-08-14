@@ -1236,9 +1236,11 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		ResultSet results = null;
 		
 		if (Users.isAdmin(userId)) {
+			log.debug("calling GetSubSpaceHierarchyAdmin");
 			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyAdmin(?)}");
 			procedure.setInt(1, spaceId);
 		} else {
+			log.debug("calling GetSubSpaceHierarchyById");
 			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyById(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
@@ -1255,7 +1257,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				s.setLocked(results.getBoolean("locked"));
 				subSpaces.add(s);
 			}
-			
+			log.debug("now returning this many subspaces = "+subSpaces.size());
 			return subSpaces;
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
@@ -2164,6 +2166,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			int parentId=Spaces.getParentSpace(s.getId());
 			if (paths.containsKey(parentId)){
 				paths.put(s.getId(), paths.get(parentId)+File.separator+s.getName());
+				log.debug("added the following space to the space paths ="+ +s.getId());
 			} else {
 				//we'll keep searching until we get to something in the paths
 				Stack<String> names=new Stack<String>();
@@ -2179,6 +2182,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 							path.append(names.pop());
 						}
 						paths.put(s.getId(), path.toString());
+						log.debug("added the following space to the space paths ="+ +s.getId());
+
 					} else {
 						names.push(Spaces.getName(parentId));
 					}
