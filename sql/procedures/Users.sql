@@ -360,7 +360,9 @@ CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
 		SET password = _password
 		WHERE users.id = _id;
 	END //
-
+	
+-- Gets the default page size for a given user
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetDefaultPageSize;
 CREATE PROCEDURE GetDefaultPageSize(IN _id INT)
 	BEGIN
@@ -368,7 +370,9 @@ CREATE PROCEDURE GetDefaultPageSize(IN _id INT)
 		FROM users
 		WHERE id=_id;
 	END //
-	
+
+-- Sets the default page size for a user, which is the number of rows per datatable they see by default
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS SetDefaultPageSize;
 CREATE PROCEDURE SetDefaultPageSize(IN _id INT, IN _size INT)
 	BEGIN
@@ -434,6 +438,7 @@ CREATE PROCEDURE GetNameofUserByJob(IN _jobId INT)
 		WHERE owner.id = _jobId;
 	END //
 	
+-- Gets every user whose role is 'admin'
 DROP PROCEDURE IF EXISTS GetAdmins;
 CREATE PROCEDURE GetAdmins()
 	BEGIN
@@ -462,25 +467,17 @@ CREATE PROCEDURE DeleteUser(IN _userId INT)
 		DELETE FROM users WHERE id=_userId;
 	END //
 	
--- Suspends a user
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS SuspendUser;
-CREATE PROCEDURE SuspendUser(IN _userEmail VARCHAR(64))
+-- Sets the role of the given user to the given value
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS ChangeUserRole;
+CREATE PROCEDURE ChangeUserRole(IN _userId INT, IN _role VARCHAR(24))
 	BEGIN
 		UPDATE user_roles
-		SET role = "suspended"
-		WHERE email = _userEmail;
+		JOIN users ON users.email=user_roles.email
+		SET role=_role
+		WHERE id=_userId;
 	END //
 	
--- Suspends a suspended user
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS ReinstateUser;
-CREATE PROCEDURE ReinstateUser(IN _userEmail VARCHAR(64))
-	BEGIN
-		UPDATE user_roles
-		SET role = "user"
-		WHERE email = _userEmail;
-	END //
 	
 
 DELIMITER ; -- This should always be at the end of this file

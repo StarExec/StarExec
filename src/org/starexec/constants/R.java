@@ -200,5 +200,11 @@ public class R {
     public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
     
     public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
+    
+    public static String SUSPENDED_ROLE_NAME="suspended";
+    public static String DEFAULT_USER_ROLE_NAME="user";
+    public static String ADMIN_ROLE_NAME="admin";
+    public static String TEST_ROLE_NAME="test";
+    public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
 }	
