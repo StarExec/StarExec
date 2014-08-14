@@ -7,9 +7,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.TreeSet;
+import java.util.Date;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -51,22 +55,10 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.CacheType;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Processor.ProcessorType;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverStats;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Website;
+import org.starexec.data.to.Processor.ProcessorType;
+
 import org.starexec.test.TestManager;
 import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
@@ -695,38 +687,73 @@ public class RESTServices {
 		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
 	}
 
-	/**
-	 * Handles a request to get a test graph
-	 * @author Julio Cervantes
-	 * @return A json string containing the path to the newly created png chart as well as
-	 * an image map linking points to benchmarks
-	 */
-	@POST
-	@Path("/secure/explore/testgraph")
-	@Produces("application/json")	
-	public String getTestGraph(@Context HttpServletRequest request) {			
-		int userId = SessionUtil.getUserId(request);
-		String chartPath = null;
+
+
+
+    /**
+     * Handles a request to get a community statistical overview
+     * @author Julio Cervantes
+     * @return A json string containing the path to the newly created png chart as well as
+     * an image map linking points to benchmarks
+     */
+    @POST
+    @Path("/secure/explore/community/overview")
+    @Produces("application/json")	
+	public String getCommunityOverview(@Context HttpServletRequest request) throws Exception{
+	
+
+
+	    Communities.updateCommunityMapIf();
+
+	    if(R.COMM_INFO_MAP == null){
 		
-		/**
-		ValidatorStatusCode status= JobSecurity.canUserSeeJob(jobId, userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		**/
+		return gson.toJson(ERROR_DATABASE);
+	    }
+	    log.info("R.COMM_INFO_MAP: " + R.COMM_INFO_MAP);
+		JsonObject graphs = null;
 		
-		//chartPath=Statistics.makeTestChart();
-		if (chartPath==null) {
+		List<Space> communities = Communities.getAll();
+		
+		graphs=Statistics.makeCommunityGraphs(communities,R.COMM_INFO_MAP);
+		if (graphs==null) {
 			return gson.toJson(ERROR_DATABASE);
 		}
 
-		JsonObject json=new JsonObject();
-		json.addProperty("src", chartPath);
+
 		
+
+		String name;
+		int id;
+		JsonObject Comm;
+		JsonObject info = new JsonObject();
+		for(Space c : communities){
+		    name = c.getName();
+		    id = c.getId();
+
+		    Comm = new JsonObject();
+		    Comm.addProperty("users",R.COMM_INFO_MAP.get(id).get("users").toString());
+		    Comm.addProperty("solvers",R.COMM_INFO_MAP.get(id).get("solvers").toString());
+		    Comm.addProperty("benchmarks",R.COMM_INFO_MAP.get(id).get("benchmarks").toString());
+		    Comm.addProperty("jobs",R.COMM_INFO_MAP.get(id).get("jobs").toString());
+		    Comm.addProperty("job_pairs",R.COMM_INFO_MAP.get(id).get("job_pairs").toString());
+		    Comm.addProperty("disk_usage",Util.byteCountToDisplaySize(R.COMM_INFO_MAP.get(id).get("disk_usage")));
+
+		    info.add(name,Comm);
+
+		}
+
+		// Instantiate a Date object
+		Date last_update = new Date(R.COMM_ASSOC_LAST_UPDATE);
+		
+		JsonObject json=new JsonObject();
+		json.add("graphs", graphs);
+		json.add("info",info);
+		json.addProperty("date",last_update.toString());
 		
 		return gson.toJson(json);
 	}
 
+  
 	/**
 	 * Handles a request to get a solver comparison graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -740,7 +767,9 @@ public class RESTServices {
 	@POST
 	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}")
 	@Produces("application/json")	
-	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {			
+	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {		
+
+	        
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		

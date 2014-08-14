@@ -1,0 +1,17 @@
+<h1>Community Statistics</h1>
+
+<p>The Community Statistics compares communities based on number of:
+users, solvers, benchmarks, jobs, job pairs, and disk usage.
+
+</p>
+
+<p><strong>Notes: </strong>entities are counted as belonging to a community
+if they appear in at least one of its subspaces.  All entities are uniquely 
+counted by id.  Since copying primitives results in new ids, those copied primitives are counted as unique entities.   
+</p>
+
+<p>Disk usage is the total disk space used by solvers and benchmarks in a community
+</p>
+
+
+ 

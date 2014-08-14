@@ -44,6 +44,13 @@ import org.starexec.data.to.Status;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
+import org.starexec.data.to.Space;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import com.mysql.jdbc.ResultSetMetaData;
 
@@ -158,15 +165,37 @@ public class Statistics {
 		return map;
 	}
 
-    private static PieDataset createTestDataset() {
+    private static PieDataset createCommunityDataset(List<Space> communities, HashMap<Integer,HashMap<String,Long>> communityInfo, String type) {
         DefaultPieDataset dataset = new DefaultPieDataset();
-        dataset.setValue("One", new Double(43.2));
-        dataset.setValue("Two", new Double(10.0));
-        dataset.setValue("Three", new Double(27.5));
-        dataset.setValue("Four", new Double(17.5));
-        dataset.setValue("Five", new Double(11.0));
-        dataset.setValue("Six", new Double(19.4));
-        return dataset;        
+
+	String name;
+	int id;
+	Long data;
+
+	Double total = new Double(0);
+
+	HashMap<String,Long> commMap = new HashMap<String,Long>();
+
+	for(Space c : communities){
+	    id = c.getId();
+	    name = c.getName();
+	    data = communityInfo.get(id).get(type);
+	    commMap.put(name,data);
+
+	    total = total + data;
+	    
+	}
+
+	if(total.equals(0)){
+	    return null;
+	}
+	else{
+	    for(String n : commMap.keySet()){
+		dataset.setValue(n,(new Double(commMap.get(n)))/total);
+	    }
+	    return dataset;
+	}
+       
     }
 
 	/**
@@ -176,33 +205,55 @@ public class Statistics {
 	 * @author Julio Cervantes
 	 */
 	
-	public static String makeTestChart() {
+    public static JsonObject makeCommunityGraphs(List<Space> communities, HashMap<Integer,HashMap<String,Long>> communityInfo) {
 		try {
 				
-			log.info("making test chart");
 
-			PieDataset dataset = createTestDataset();
+			String[] infoTypes = {"users","solvers","benchmarks","jobs","job_pairs","disk_usage"};
 
-			JFreeChart chart = ChartFactory.createPieChart(
-			 "Pie Chart Demo 1",  // chart title
-                         dataset,             // data
-                         true,               // include legend
-                         true,
-                         false
-                         );
+			PieDataset dataset;
+			JFreeChart chart;
+			PiePlot plot;
+			File output;
+			String filename;
+			List<String> filenames = new ArrayList<String>();
 
-                         PiePlot plot = (PiePlot) chart.getPlot();
-			 plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 12));
-			 plot.setNoDataMessage("No data available");
-			 plot.setCircular(true);
-			 plot.setLabelGap(0.02);
+			Color backgroundColor =new Color(0,0,0,0); //makes the background clear
+			Color titleColor = new Color(255,255,255);
 
-			 String filename="test.png";
-			 File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
+			for(int i = 0; i < infoTypes.length; i++){
+			    dataset = createCommunityDataset(communities,communityInfo,infoTypes[i]);
+			    chart = ChartFactory.createPieChart(
+									   "Comparing Communities by " + infoTypes[i],  // chart title
+									   dataset,             // data
+									   true,               // include legend
+									   true,
+									   false
+									   );
+
+			    chart.setBackgroundPaint(backgroundColor);
+			    chart.getTitle().setPaint(titleColor);
+
+			    plot = (PiePlot) chart.getPlot();
+			    plot.setLabelFont(new Font("SansSerif", Font.PLAIN, 12));
+			    plot.setNoDataMessage("No data available");
+			    plot.setCircular(true);
+			    plot.setLabelGap(0.02);
+
+			    filename="community" + infoTypes[i] + "Comparison.png";
+			    output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
 			 
-			 ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			    ChartUtilities.saveChartAsPNG(output, chart, 400, 400);
 
-			 return Util.docRoot(R.JOBGRAPH_FILE_DIR+"/" + filename);
+			    filenames.add(filename);
+			}
+			
+			JsonObject graphs = new JsonObject();
+			for(int i = 0 ; i < infoTypes.length ; i++){
+			    graphs.addProperty(infoTypes[i],Util.docRoot(R.JOBGRAPH_FILE_DIR+"/"+filenames.get(i)));
+			}
+
+			 return graphs;
 			
 
 		} catch (Exception e) {

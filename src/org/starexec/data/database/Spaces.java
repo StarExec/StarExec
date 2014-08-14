@@ -24,11 +24,9 @@ import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
-import org.starexec.data.to.CacheType;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
+import org.starexec.data.to.Status.StatusCode;
 /*import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
@@ -273,6 +271,7 @@ public class Spaces {
 		}
 		return false;
 	}
+	
 	
 	/**
 	 * Adds every entry necessary in the closure table where the given space is the root.
@@ -803,6 +802,8 @@ public class Spaces {
 		}
 		return 0;
 	}
+
+ 
 	/**
 	 * Gets a space with detailed information (solvers, benchmarks, jobs and user belonging
 	 * to the space are also populated (but not job pairs))

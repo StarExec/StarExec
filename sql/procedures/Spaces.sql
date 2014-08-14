@@ -169,7 +169,14 @@ CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 				WHERE closure.ancestor=_spaceId and closure.ancestor!=closure.descendant;
 		END IF;
 	END //
-		
+	
+
+DROP PROCEDURE IF EXISTS GetClosureTableTest;
+CREATE PROCEDURE GetClosureTableTest()
+       BEGIN
+              SELECT *
+	      FROM closure;
+       END //	
 	
 -- Returns all spaces belonging to the space with the given id.
 -- Author: Tyler Jensen & Benton McCune & Eric Burns

@@ -29,8 +29,8 @@ public class Shell {
 				System.out.print("\nStarCom> ");
 				String nextLine = br.readLine();
 				status=parser.parseCommand(nextLine);
-				MessagePrinter.printStatusMessage(status,parser);
-				MessagePrinter.printWarningMessages();
+				//MessagePrinter.printStatusMessage(status,parser);
+				//MessagePrinter.printWarningMessages();
 				//if the user typed 'exit,' quit the program
 				if (status==R.SUCCESS_EXIT) {
 					return;

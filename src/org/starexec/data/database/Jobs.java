@@ -2151,6 +2151,7 @@ public class Jobs {
 			while(results.next()){
 			    JobPair jp = new JobPair();
 			    
+			    jp.setId(results.getInt("id"));
 			    jp.getStatus().setCode(results.getInt("status_code"));
 			    jp.getBench().setId(results.getInt("bench_id"));
 			    jp.getBench().setName(results.getString("bench_name"));

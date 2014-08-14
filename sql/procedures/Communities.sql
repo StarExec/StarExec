@@ -86,4 +86,68 @@ CREATE PROCEDURE LeaveHierarchy(IN _userId INT, IN _commId INT)
 		WHERE closure.ancestor=_commId AND user_id=_userId;
 	END //
 
+DROP PROCEDURE IF EXISTS DropCommunityAssoc;
+CREATE PROCEDURE DropCommunityAssoc()
+       BEGIN
+		DROP TABLE community_assoc;
+		
+       END //
+
+DROP PROCEDURE IF EXISTS UpdateCommunityAssoc;
+CREATE PROCEDURE UpdateCommunityAssoc()
+	BEGIN
+		CREATE TABLE community_assoc(
+		       comm_id INT NOT NULL,
+		       space_id INT NOT NULL
+		       );
+		
+
+		INSERT INTO community_assoc (comm_id,space_id)
+		SELECT ancestor, descendant
+		FROM closure
+		JOIN set_assoc
+		ON closure.ancestor=set_assoc.child_id
+		WHERE space_id=1;
+
+		SELECT * FROM community_assoc;
+
+	END //
+
+DROP PROCEDURE IF EXISTS GetCommunityStatsOverview;
+CREATE PROCEDURE GetCommunityStatsOverview()
+	BEGIN
+
+
+		   SELECT 1 AS infoType, community_assoc.comm_id AS commId, COUNT(DISTINCT user_assoc.user_id) AS infoCount, NULL AS infoExtra
+		   FROM community_assoc
+		   JOIN user_assoc
+		   ON community_assoc.space_id=user_assoc.space_id
+		   GROUP BY community_assoc.comm_id
+		
+		   UNION ALL
+
+		   SELECT 2, comm_id, COUNT(DISTINCT solverId), SUM(solverDiskSize)
+		   FROM (SELECT DISTINCT community_assoc.comm_id,solvers.id as solverId, solvers.disk_size as solverDiskSize
+		   FROM community_assoc JOIN solver_assoc On solver_assoc.space_id=community_assoc.space_id JOIN solvers ON solvers.id=solver_assoc.solver_id) as commStatSolver
+		   GROUP BY comm_id
+		   
+		   UNION ALL
+
+		   SELECT 3, comm_id, COUNT(DISTINCT benchId), SUM(benchDiskSize)
+		   FROM (SELECT DISTINCT community_assoc.comm_id,benchmarks.id as benchId, benchmarks.disk_size as benchDiskSize
+		   FROM community_assoc JOIN bench_assoc On bench_assoc.space_id=community_assoc.space_id JOIN benchmarks ON benchmarks.id=bench_assoc.bench_id) as commStatBench
+		   GROUP BY comm_id
+
+		   UNION ALL
+
+
+		   SELECT 4, community_assoc.comm_id, COUNT(DISTINCT job_pairs.job_id), COUNT(DISTINCT job_pairs.id)
+		   FROM community_assoc JOIN job_assoc ON job_assoc.space_id=community_assoc.space_id JOIN job_pairs ON job_pairs.job_id=job_assoc.job_id 
+		   WHERE job_pairs.status_code IN (7,14,15,16,17)
+		   GROUP BY community_assoc.comm_id;
+		   
+		   
+	END //
+
+
 DELIMITER ; -- This should always be at the end of this file
