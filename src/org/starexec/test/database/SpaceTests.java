@@ -264,13 +264,19 @@ public class SpaceTests extends TestSequence {
 	
 	@Override
 	protected void teardown() {
-		Users.deleteUser(leader.getId(),admin.getId());
-		Users.deleteUser(member1.getId(),admin.getId());
-		Users.deleteUser(member2.getId(),admin.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
+		for (Benchmark b : benchmarks)  {
+			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+		}
+		
 		Spaces.removeSubspaces(subspace.getId(), Users.getAdmins().get(0).getId());
 		Spaces.removeSubspaces(subspace2.getId(), Users.getAdmins().get(0).getId());
 
 		boolean success=Spaces.removeSubspaces(community.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(leader.getId(),admin.getId());
+		Users.deleteUser(member1.getId(),admin.getId());
+		Users.deleteUser(member2.getId(),admin.getId());
+
 		Assert.assertTrue(success);
 	}
 	@Override
