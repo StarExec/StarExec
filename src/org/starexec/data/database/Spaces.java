@@ -2156,13 +2156,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param rootSpaceId The ID of the space to root the paths at
 	 */
 	public static HashMap<Integer,String> spacePathCreate(int userId, List<Space> spaces, int rootSpaceId) {
+		
 		Space space=Spaces.get(rootSpaceId);
 		HashMap<Integer,String> paths=new HashMap<Integer,String>();
 		paths.put(space.getId(), space.getName());
 		for (Space s : spaces) {
-			if (!Users.isMemberOfSpace(userId,s.getId())) {
-				continue;
-			}
+			
 			int parentId=Spaces.getParentSpace(s.getId());
 			if (paths.containsKey(parentId)){
 				paths.put(s.getId(), paths.get(parentId)+File.separator+s.getName());
