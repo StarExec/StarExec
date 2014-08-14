@@ -101,16 +101,6 @@ function getCommunityIdList(){
 
 }
 
-/**
- * jstree utility
- * space chain (in spaces.js)
- **/
-
-function openSpace(curSp,childId) {
-	$("#exploreList").jstree("open_node", "#" + curSp, function() {
-		$.jstree._focused().select_node("#" + childId, true);	
-	});	
-}
 
 
 /**
@@ -195,7 +185,8 @@ function initButtonUI() {
  * @author Tyler Jensen & Todd Elvers & Skylar Stark changes Julio Cervantes
  */
 function initSpaceExplorer(){
-	// Set the path to the css theme for the jstree plugin
+	// Set the path to the css theme for the jstreeplugin
+    jsTree = makeSpaceTree("#exploreList", !usingSpaceChain);
 	jsTree.bind("select_node.jstree", function (event, data) {
 			
 
