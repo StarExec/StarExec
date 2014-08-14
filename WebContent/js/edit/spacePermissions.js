@@ -705,15 +705,15 @@ function setUpButtons() {
 
     $("#savePermChanges").unbind("click");
     $("#savePermChanges").click(function(){
-	    $("#dialog-confirm-update-txt").text("how do you want the permission changes to take effect?");
+	    $("#dialog-confirm-update-txt").text("do you want the changes to be hierarchical?");
 		
 	    $("#dialog-confirm-update").dialog({
 		    modal: true,
 			width: 380,
 			height: 165,
 			buttons: {
-			"change only this space": function(){ changePermissions(false,false)},
-			    "change this space's hierarchy" : function(){changePermissions(true,false)},
+			"yes" : function(){changePermissions(true,false)},
+			    "no" : function(){ changePermissions(false,false)},
 			    "cancel": function() {
 				
 				$(this).dialog("close");
