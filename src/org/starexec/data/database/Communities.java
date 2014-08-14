@@ -59,10 +59,19 @@ public class Communities {
 
     public static boolean commAssocExpired(){
 
+	/**
+	try{
+	    dropCommunityAssoc();
+	}
+	catch (Exception e){			
+
+	}
+	**/
+
 	long timeNow = System.currentTimeMillis();
 
 	if(R.COMM_ASSOC_LAST_UPDATE == null){
-	    R.COMM_ASSOC_LAST_UPDATE = timeNow;
+
 	    return true;
 	}
 
@@ -71,13 +80,7 @@ public class Communities {
 
 	log.info("timeElapsed since last comm_assoc update: " + timeElapsed);
 	if(timeElapsed > R.COMM_ASSOC_UPDATE_PERIOD){
-	    R.COMM_ASSOC_LAST_UPDATE = timeNow;
-	    try{
-		dropCommunityAssoc();
-	    }
-	    catch (Exception e){			
-			log.error(e.getMessage(), e);
-		}
+	    
 	    return true;
 	}
 	
@@ -161,6 +164,7 @@ public class Communities {
 		try {
 		    if(commAssocExpired()){
 
+			
 			List<Space> communities = Communities.getAll();
 	    
 
@@ -171,8 +175,111 @@ public class Communities {
 			}
 
 		        updateCommunityAssoc();
-			con = Common.getConnection();
+
+			Integer commId;
+			Long infoCount, infoExtra;
 			
+			
+			
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetCommunityStatsUsers()}");
+			results = procedure.executeQuery();
+			
+			while(results.next()){
+			    
+			    commId = results.getInt("comm_id");
+			    infoCount = results.getLong("userCount");
+
+			    commInfo.get(commId).put("users",infoCount);
+				
+			    log.info("commId: " + commId + " | userCount: " + infoCount);
+			}
+
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+			
+
+			
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetCommunityStatsSolvers()}");
+			results = procedure.executeQuery();
+			
+			while(results.next()){
+
+			    commId = results.getInt("comm_id");
+			    infoCount = results.getLong("solverCount");
+			    infoExtra = results.getLong("solverDiskUsage");
+
+			    commInfo.get(commId).put("solvers",infoCount);
+			    commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
+
+			    log.info("commId: " + commId + " | solverCount: " + infoCount + " | solverDisk: " + infoExtra);
+			    
+			}
+
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+
+			
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetCommunityStatsBenches()}");
+			results = procedure.executeQuery();
+			
+			while(results.next()){
+
+			    commId = results.getInt("comm_id");
+			    infoCount = results.getLong("benchCount");
+			    infoExtra = results.getLong("benchDiskUsage");
+
+			    commInfo.get(commId).put("benchmarks",infoCount);
+			    commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
+				
+				
+			    log.info("commId: " + commId + " | benchCount: " + infoCount + " | benchDisk: " + infoExtra);
+			    
+			}
+
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+			
+
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetCommunityStatsJobs()}");
+			results = procedure.executeQuery();
+			
+			while(results.next()){
+
+			    commId = results.getInt("comm_id");
+			    infoCount = results.getLong("jobCount");
+			    infoExtra = results.getLong("jobPairCount");
+
+			    commInfo.get(commId).put("jobs",infoCount);
+			    commInfo.get(commId).put("job_pairs",infoExtra);
+				
+			    log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
+			    
+			}
+
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+
+			/**
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+			
+			**/
+
+			/**
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetCommunityStatsOverview()}");
 
 			results = procedure.executeQuery();
@@ -237,9 +344,14 @@ public class Communities {
 				
 							
 			}
+			**/
 			
+			
+			dropCommunityAssoc();
+
 			R.COMM_INFO_MAP = commInfo;
-		    }
+			R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
+			 }
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {

@@ -149,5 +149,53 @@ CREATE PROCEDURE GetCommunityStatsOverview()
 		   
 	END //
 
+DROP PROCEDURE IF EXISTS GetCommunityStatsUsers;
+CREATE PROCEDURE GetCommunityStatsUsers()
+	BEGIN
+
+		   SELECT community_assoc.comm_id, COUNT(DISTINCT user_assoc.user_id) AS userCount
+		   FROM community_assoc
+		   JOIN user_assoc
+		   ON community_assoc.space_id=user_assoc.space_id
+		   GROUP BY community_assoc.comm_id;
+
+	END //
+
+DROP PROCEDURE IF EXISTS GetCommunityStatsSolvers;
+CREATE PROCEDURE GetCommunityStatsSolvers()
+	BEGIN
+
+		   SELECT comm_id, COUNT(DISTINCT solverId) as solverCount, SUM(solverDiskSize) as solverDiskUsage
+		   FROM (SELECT DISTINCT community_assoc.comm_id,solvers.id as solverId, solvers.disk_size as solverDiskSize
+		   FROM community_assoc JOIN solver_assoc On solver_assoc.space_id=community_assoc.space_id JOIN solvers ON solvers.id=solver_assoc.solver_id) as commStatSolver
+		   GROUP BY comm_id;
+
+
+	END //
+
+DROP PROCEDURE IF EXISTS GetCommunityStatsBenches;
+CREATE PROCEDURE GetCommunityStatsBenches()
+	BEGIN
+
+		   SELECT comm_id, COUNT(DISTINCT benchId) as benchCount, SUM(benchDiskSize) AS benchDiskUsage
+		   FROM (SELECT DISTINCT comm_id,benchmarks.id as benchId, benchmarks.disk_size as benchDiskSize
+		   FROM community_assoc JOIN bench_assoc On bench_assoc.space_id=community_assoc.space_id JOIN benchmarks ON benchmarks.id=bench_assoc.bench_id) as commStatBench
+		   GROUP BY comm_id;
+
+
+
+	END //
+
+DROP PROCEDURE IF EXISTS GetCommunityStatsJobs;
+CREATE PROCEDURE GetCommunityStatsJobs()
+	BEGIN
+
+		   SELECT community_assoc.comm_id, COUNT(DISTINCT job_pairs.job_id) AS jobCount, COUNT(DISTINCT job_pairs.id) AS jobPairCount
+		   FROM community_assoc JOIN job_assoc ON job_assoc.space_id=community_assoc.space_id JOIN job_pairs ON job_pairs.job_id=job_assoc.job_id 
+		   WHERE job_pairs.status_code IN (7,14,15,16,17)
+		   GROUP BY community_assoc.comm_id;
+
+
+	END //
 
 DELIMITER ; -- This should always be at the end of this file
