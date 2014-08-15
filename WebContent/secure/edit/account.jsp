@@ -3,7 +3,14 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-		int userId = Integer.parseInt(request.getParameter("id"));	
+		int userId=-1;
+		try {
+			userId = Integer.parseInt(request.getParameter("id"));	
+
+		} catch (Exception e) {
+			// if we can't get it from the URL, try to just use the current user ID
+			userId=SessionUtil.getUserId(request);
+		}
 		User t_user = Users.get(userId);
 		int visiting_userId = SessionUtil.getUserId(request);		
 		
@@ -37,7 +44,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 	<legend>personal information</legend>
-	<table id="infoTable" uid=${t_user.id}>
+	<table id="infoTable" uid="${t_user.id}">
 		<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">

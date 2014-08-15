@@ -4,7 +4,12 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		int id = Integer.parseInt(request.getParameter("id"));	
+		int id=-1;
+		try {
+			id = Integer.parseInt(request.getParameter("id"));	
+		} catch (Exception e) {
+			id = SessionUtil.getUserId(request);
+		}
 		User t_user = Users.get(id);
 		int visiting_userId = SessionUtil.getUserId(request);
 		
@@ -48,11 +53,19 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/user, common/delaySpinner, common/table, explore/spaces, details/shared">
+<star:template title="${t_user.fullName}" js="util/draggable, util/spaceTree, common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="explore/common, details/user, common/delaySpinner, common/table, explore/spaces, details/shared">
 	<span id="userId" value="${userId}"></span>
 	<div id="popDialog">
   		<img id="popImage" src=""/>
-	</div>				
+	</div>	
+	<div id="explorer">
+		<h3>Spaces</h3>
+		<ul id="exploreList">
+		</ul>
+	</div>
+	
+	
+	<div id="detailPanel" class="userDetailPanel">
 	<fieldset>
 		<legend>details</legend>
 		<table id="infoTable">
@@ -178,15 +191,22 @@
 			
 		<fieldset id="actionField">
 		<legend>actions</legend>
+			<button id="showSpaceExplorer">show space explorer</button>
+			<button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the space explorer
+			on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">associate orphaned primitives with space</button>
 			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
 			<a id="recycleBinButton" href="/${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
 		
-		<div id="dialog-confirm-delete" title="confirm delete">
+		<div id="dialog-confirm-delete" title="confirm delete" class="dialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>
-		<div id="dialog-confirm-recycle" title="confirm recycle">
+		<div id="dialog-confirm-recycle" title="confirm recycle" class="dialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-recycle-txt"></span></p>
 		</div>
+			<div id="dialog-confirm-copy" title="confirm copy" class="dialog">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
+	</div>
 	</c:if>
+	</div>
 </star:template>

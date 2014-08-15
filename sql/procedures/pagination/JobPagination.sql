@@ -836,11 +836,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetErrorPairs(id) 		AS errorPairs
 				
 				FROM	jobs
-				
-				-- Exclude Jobs that aren't in the specified space
-				WHERE 	id 	IN (SELECT job_id 
-								FROM job_assoc
-								WHERE space_id = _spaceId)
+				JOIN job_assoc ON job_assoc.job_id = jobs.id
+				WHERE job_assoc.space_id=_spaceId
 				
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -870,9 +867,8 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
-				WHERE 	id 	IN (SELECT job_id 
-								FROM job_assoc
-								WHERE space_id = _spaceId)
+				JOIN job_assoc ON job_assoc.job_id = jobs.id
+				WHERE job_assoc.space_id=_spaceId
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name
@@ -903,15 +899,12 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetErrorPairs(id) 		AS errorPairs
 				
 				FROM	jobs
-				
+				JOIN job_assoc ON job_assoc.job_id = jobs.id
+				WHERE job_assoc.space_id=_spaceId AND
 				-- Exclude Jobs whose name and status don't contain the query string
-				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-										
-				-- Exclude Jobs that aren't in the specified space
-				AND 	id 		IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
+
 										
 				-- Order results depending on what column is being sorted on
 				ORDER BY 
@@ -941,11 +934,11 @@ CREATE PROCEDURE GetNextPageOfJobs(IN _startingRecord INT, IN _recordsPerPage IN
 						GetPendingPairs(id) 	AS pendingPairs,
 						GetErrorPairs(id) 		AS errorPairs
 				FROM	jobs
-				WHERE 	(name				LIKE	CONCAT('%', _query, '%')
+				JOIN job_assoc ON job_assoc.job_id = jobs.id
+				WHERE job_assoc.space_id=_spaceId AND
+				(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'))
-				AND 	id 		IN (SELECT job_id 
-									FROM job_assoc
-									WHERE space_id = _spaceId)
+
 				ORDER BY 
 					 (CASE _colSortedOn
 					 	WHEN 0 THEN name

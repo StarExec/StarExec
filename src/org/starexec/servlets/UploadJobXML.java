@@ -18,10 +18,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.JobUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 import org.apache.log4j.Logger;
 
 /**
@@ -48,9 +50,11 @@ public class UploadJobXML extends HttpServlet {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
 				// Make sure the request is valid
-				String err = this.isValidRequest(form);
-				if (err != null) {
-				    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload job xml request was malformed: "+ err);
+				ValidatorStatusCode status =  this.isValidRequest(form);
+				if (!status.isSuccess()) {
+					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				    response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				    return;
 				}
 				
@@ -134,26 +138,35 @@ public class UploadJobXML extends HttpServlet {
 		return null;
 	}
 
-	private String isValidRequest(HashMap<String, Object> form) {
+	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
 		try {
 			if (!form.containsKey(UploadJobXML.UPLOAD_FILE) ||
 					!form.containsKey(SPACE_ID) ){
-				return "Missing field from the form for the file to upload or the space id";
+				return new ValidatorStatusCode(false,"Missing field from the form for the file to upload or the space id");
 			}
 			
-			Integer.parseInt((String)form.get(SPACE_ID));
+			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+				return new ValidatorStatusCode(false, "The supplied space ID was not a valid integer");
+			}
 			
+			boolean goodExtension=false;
 			String fileName = ((FileItem)form.get(UploadJobXML.UPLOAD_FILE)).getName();
 			for(String ext : UploadJobXML.extensions) {
 				if(fileName.endsWith(ext)) {
-					return null;
+					goodExtension=true;
+					break;
 				}
 			}			
-			return "The uploaded file is not a recognized compressed archive." ;
+			if (!goodExtension) {
+				return new ValidatorStatusCode(false, "Uploaded files must be .zip, .tar, or .tgz");
+			}
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
-			return e.getMessage();
+			
 		}
+		
+		return new ValidatorStatusCode(false, "Internal error uploading job XML");
 	}
 
 }

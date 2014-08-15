@@ -1,8 +1,11 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -18,6 +21,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -33,7 +37,6 @@ import org.starexec.util.Validator;
  * Creates a class to keep track of the Benchmark-Solver-Configuration Pairs
  * @author kais_wyatt
  */
-
 class BSC {
     List<Benchmark> b;
     List<Solver> s;
@@ -60,7 +63,6 @@ public class CreateJob extends HttpServlet {
 	private static final String postProcessor = "postProcess";
 	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
-	private static final String solvers = "solver";
 	private static final String configs = "configs";
 	private static final String run = "runChoice";
 	private static final String benchChoice = "benchChoice";
@@ -85,8 +87,12 @@ public class CreateJob extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		// Make sure the request is valid
-		if(!isValid(request)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The create job request was malformed");
+		ValidatorStatusCode status=isValid(request);
+		if(!status.isSuccess()) {
+			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			log.debug("received and invalid job creation request");
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}		
 
@@ -104,12 +110,7 @@ public class CreateJob extends HttpServlet {
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
-		// Make sure that the job has a unique name in the space.
-		if(Spaces.notUniquePrimitiveName((String)request.getParameter(name), space, 3)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The job should have a unique name in the space.");
-			return;
-		}
-		log.debug("confirmed the new job has a unique name");
+
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -185,26 +186,29 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 		} else { //hierarchy OR choice
-			List<Integer> solverIds = Util.toIntegerList(request.getParameterValues(solvers));
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
-
-			if (solverIds.size() == 0 || configIds.size() == 0) {
+			
+			//TODO: Put in validation code
+			if (configIds.size() == 0) {
 				// Either no solvers or no configurations; error out
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.");
+				String message="Either no solvers/configurations were selected, or there are none available in the current space. Could not create job.";
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 				return;
 			}
 
 			if (benchMethod.equals("runAllBenchInHierarchy")) {
 				if (traversal.equals("depth")) {
 					log.debug("User selected depth-first traversal");
-					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), solverIds, configIds, cpuLimit, runLimit,memoryLimit, SP);
+					JobManager.addBenchmarksFromHierarchy(j, Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
 				} else {
 					log.debug("User selected round-robin traversal");
 					List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId));
 					spaces.add(0,Spaces.get(space));
 					HashMap<Space, BSC> SpaceToBSC = new HashMap<Space, BSC>();
 					int max = 0;
-					List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+					List<Solver> solvers = Solvers.getWithConfig(configIds);
 					HashMap<Solver, List<Configuration>> SC = new HashMap<Solver, List<Configuration>>();
 
 					for (Space s: spaces) {
@@ -233,18 +237,23 @@ public class CreateJob extends HttpServlet {
 				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
 				if (j.getJobPairs().size() == 0) {
 					// No pairs in the job means no benchmarks in the hierarchy; error out
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
+					String message="Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.";
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 					return;
 				}
 			} else {
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
 				if (benchmarkIds.size() == 0) {
-					// No benchmarks selected; error out
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.");
+					String message="Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.";
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 					return;
 				}
 
-				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, solverIds, configIds, space, SP);
+				JobManager.buildJob(j, userId, cpuLimit, runLimit,memoryLimit, benchmarkIds, configIds, space, SP);
 			}
 		}
 		
@@ -254,8 +263,11 @@ public class CreateJob extends HttpServlet {
 		}
 
 		if (j.getJobPairs().size() == 0) {
+			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 			// No pairs in the job means something went wrong; error out
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error: no job pairs created for the job. Could not proceed with job submission.");
 			return;
 		}
 		
@@ -267,10 +279,6 @@ public class CreateJob extends HttpServlet {
 		//if the user chose to immediately pause the job
 		if (start_paused.equals("yes")) {
 			Jobs.pause(j.getId());
-		} else {
-			//TODO: Why are we doing this here? The periodic task can handle this, and it interferes with 
-			//sending back a response to the user.
-			//JobManager.checkPendingJobs(); // to start this job running if it is not	
 		}
 		
 		if(submitSuccess) {
@@ -291,46 +299,45 @@ public class CreateJob extends HttpServlet {
 	 * @param request The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
-	private boolean isValid(HttpServletRequest request) {
+	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			if(!Validator.isValidInteger((String)request.getParameter(spaceId))) {
-				return false;
+			if(!Validator.isValidInteger(request.getParameter(spaceId))) {
+				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
-
 			// Make sure timeout an int
-			if(!Validator.isValidInteger((String)request.getParameter(clockTimeout))) {
-				return false;
+			if(!Validator.isValidInteger(request.getParameter(clockTimeout))) {
+				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
 			}
 
-			if(!Validator.isValidInteger((String)request.getParameter(cpuTimeout))) {
-				return false;
+			if(!Validator.isValidInteger(request.getParameter(cpuTimeout))) {
+				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 			
-			if(!Validator.isValidDouble((String)request.getParameter(maxMemory))) {
-				return false;
+			if(!Validator.isValidDouble(request.getParameter(maxMemory))) {
+				return new ValidatorStatusCode(false, "The given maximum memory needs to be a valid double");
 			}
 
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
-				if(!Validator.isValidInteger((String)request.getParameter(postProcessor))) {
-					return false;
+				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
+					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
 			}
 
 			if(Util.paramExists(preProcessor, request)) {
-				if(!Validator.isValidInteger((String)request.getParameter(preProcessor))) {
-					return false;
+				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
+					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
 			}
 
 			// Make sure the queue is a valid integer
-			if(!Validator.isValidInteger((String)request.getParameter(workerQueue))) {
-				return false;
+			if(!Validator.isValidInteger(request.getParameter(workerQueue))) {
+				return new ValidatorStatusCode(false, "The given queue ID needs to be a valid integer");
 			}
 			
 			// Make sure the queue is a valid selection and user has access to it
-			Integer queueId = Integer.parseInt((String)request.getParameter(workerQueue));
+			Integer queueId = Integer.parseInt(request.getParameter(workerQueue));
 			int userId = SessionUtil.getUserId(request);
 			List<Queue> userQueues = Queues.getUserQueues(userId); 
 			Boolean queueFound=false;
@@ -341,29 +348,36 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 			
+			if (!queueFound){
+				return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
+			}
+			
 			//make sure both timeouts are <= the queue settings
-			int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
-			int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+			int cpuLimit = Integer.parseInt(request.getParameter(cpuTimeout));
+			int runLimit = Integer.parseInt(request.getParameter(clockTimeout));
 			
 			Queue q=Queues.get(queueId);
-			if (cpuLimit>q.getCpuTimeout()  || runLimit > q.getWallTimeout()) {
-				return false;
+			if (runLimit > q.getWallTimeout()) {
+				return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
 			}
-			if (queueFound==false){
-				return false;
+			
+			if (cpuLimit>q.getCpuTimeout()) {
+				return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
 			}
+			
 			
 			// Ensure the job description is valid
 			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
-				return false;
+				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
 			}		
 
-			int sid = Integer.parseInt((String)request.getParameter(spaceId));
+			int sid = Integer.parseInt(request.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(request, sid);
-
+			log.debug("this is the perm");
+			log.debug(perm);
 			// Make sure the user has access to the space
 			if(perm == null || !perm.canAddJob()) {
-				return false;
+				return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
 			}
 
 			// Only need these checks if we're choosing which solvers and benchmarks to run.
@@ -376,36 +390,34 @@ public class CreateJob extends HttpServlet {
 				// Check to see if we have a valid list of benchmark ids
 				if (!request.getParameter(benchChoice).equals("runAllBenchInHierarchy")){
 					if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
-						return false;
+						return new ValidatorStatusCode(false, "All selected benchmark IDs need to be valid integers");
 					}
 				}
 				// Make sure the user is using benchmarks they can see
 				if(!Permissions.canUserSeeBenchs(Util.toIntegerList(request.getParameterValues(benchmarks)), userId)) {
-					return false;
-				}
-
-				// Check to see if we have a valid list of solver ids
-				if(!Validator.isValidIntegerList(request.getParameterValues(solvers))) {
-					return false;
+					return new ValidatorStatusCode(false, "You do not have permission to use one or more of the benchmarks you have selected");
 				}
 
 				// Check to see if we have a valid list of configuration ids
 				if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
-					return false;
+					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
-
+				Set<Integer> solverIds=new HashSet<Integer>();
+				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
+					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
+				}
 				// Make sure the user is using solvers they can see
-				if(!Permissions.canUserSeeSolvers(Util.toIntegerList(request.getParameterValues(solvers)), userId)) {
-					return false;
+				if(!Permissions.canUserSeeSolvers(solverIds, userId)) {
+					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
 			}
 			// Passed all checks, return true
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 
 		// Return false control flow is broken and ends up here
-		return false;
+		return new ValidatorStatusCode(false, "Internal error creating job");
 	}
 }

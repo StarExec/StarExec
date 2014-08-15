@@ -24,10 +24,11 @@ public class QueueSecurityTests extends TestSequence {
 	}
 	
 	@Test
-	private void PermanentQueueTest() {
-		Assert.assertEquals(true,QueueSecurity.canUserMakeQueue(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user1.getId()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user2.getId()).isSuccess());
+	private void canUserMakeQueueTest() {
+		String randomName=TestUtil.getRandomQueueName();
+		Assert.assertEquals(true,QueueSecurity.canUserMakeQueue(admin.getId(), randomName).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user1.getId(),randomName).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user2.getId(),randomName).isSuccess());
 	}
 	
 	@Test
@@ -52,6 +53,37 @@ public class QueueSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()).isSuccess());
 		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName).isSuccess());
 		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName).isSuccess());
+	}
+	
+	@Test
+	private void canEditQueueTest() {
+		Assert.assertEquals(true,QueueSecurity.canUserEditQueue(admin.getId(), 50, 20).isSuccess());
+		
+		
+		Assert.assertNotEquals(true,QueueSecurity.canUserEditQueue(user1.getId(), 50, 20).isSuccess());
+		Assert.assertNotEquals(true,QueueSecurity.canUserEditQueue(admin.getId(), -1, 20).isSuccess());
+
+		Assert.assertNotEquals(true,QueueSecurity.canUserEditQueue(admin.getId(), 50, 0).isSuccess());
+	}
+	
+	@Test
+	private void canUserMakeQueueGlobal() {
+		Assert.assertEquals(true, QueueSecurity.canUserMakeQueueGlobal(admin.getId()).isSuccess());
+		Assert.assertEquals(false, QueueSecurity.canUserMakeQueueGlobal(user1.getId()).isSuccess());
+
+	}
+	
+	@Test
+	private void canUserRemoveQueueGlobal() {
+		Assert.assertEquals(true, QueueSecurity.canUserRemoveQueueGlobal(admin.getId()).isSuccess());
+		Assert.assertEquals(false, QueueSecurity.canUserRemoveQueueGlobal(user1.getId()).isSuccess());
+
+	}
+	
+	@Test
+	private void canUserMakeQueuePermanent() {
+		Assert.assertEquals(true, QueueSecurity.canUserMakeQueuePermanent(admin.getId()).isSuccess());
+		Assert.assertNotEquals(true, QueueSecurity.canUserMakeQueuePermanent(user1.getId()).isSuccess());
 	}
 	
 	

@@ -1,5 +1,6 @@
 var leaderTable;
 var memberTable;
+
 var commName; // Current community's name
 
 // When the document is ready to be executed on
@@ -44,12 +45,13 @@ $(document).ready(function(){
     }).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 	
 	memberTable = $('#members').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
-    });
+		"sDom": 'rt<"bottom"flpi><"clear">'
+	    });
 	
 	leaderTable = $('#leaders').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
-    });	
+		"sDom": 'rt<"bottom"flpi><"clear">'
+	    });	
+
 	
 	$("#members").on( "click", "tr", function(){
 		$(this).toggleClass("row_selected");
@@ -67,11 +69,7 @@ $(document).ready(function(){
 	$("#downloadPreProcessors").fadeOut('fast');
 	
 	
-	$('#communityOverviewUpdate').button( {
-		icons: {
-		    primary: "ui-icon-arrowrefresh-1-e"
-			
-    }});
+
 
 	$('#joinComm').button({
 		icons: {
@@ -107,11 +105,9 @@ $(document).ready(function(){
 	});
 	
 	initDialogs();
-	$("#communityOverviewUpdate").click(function() {
-	  	updateCommunityOverviewGraph();
-	});
+
 	$("#leaveComm").click(function(){
-		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '?');
+		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '? This will remove you from every space in the communiity. Your primitives will not be affected.');
 			
 		// Display the confirmation dialog
 		$('#dialog-confirm-leave').dialog({
@@ -140,27 +136,6 @@ $(document).ready(function(){
 	});
 });
 
-/**
- * refreshes graph in community page
- */
-function updateCommunityOverviewGraph() {
-
-	$.post(
-			starexecRoot+"services/secure/explore/testgraph",
-			function(returnCode) {
-				s=parseReturnCode(returnCode);
-				if (s) {
-				    jsonObject=$.parseJSON(returnCode);
-				    src=jsonObject.src;
-				    $("#communityOverview").attr("src",src);
-				} else {
-					$("#communityOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
-				}
-			},
-			"text"
-	);
-}
 
 /**
  * Hides all jquery ui dialogs for page startup
@@ -231,20 +206,7 @@ function populateDetails(jsonData) {
 		leaderTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 
-	// Show/hide the websites panel based on if there are websites or not
-	/*if(jsonData.websites.length < 1) {
-		$('#webDiv').fadeOut('fast');
-	} else {
-		$('#webDiv').fadeIn('fast');
-	}
-	
-	// Populate website list
-	$('#websiteField legend').children('span:first-child').text(jsonData.websites.length);
-	$('#websites').html('');	
-	$.each(jsonData.websites, function(i, site) {		
-		var link = '<a href="' + site.url + '" target="blank">' + site.name+ '<img class="extLink" src=starexecRoot+"images/external.png"/></a>';					
-		$('#websites').append('<li>' + link + '</li>');
-	});*/
+
 	
 	// Check the new permissions for the loaded space
 	checkPermissions(jsonData.perm,jsonData.isMember);	

@@ -60,7 +60,7 @@ function getHTML(URL) {
 				selectMatchingReference(stubURL);
 			} else {
 				//support linking to other parts of Starexec in help files
-				data=data.replace("/${starexecRoot}/",starexecRoot);
+				data=data.replace(/\/\$\{starexecRoot\}\//g,starexecRoot);
 				$( "#detailPanel" ).html( data );
 				setURL(URL);
 			}

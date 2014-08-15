@@ -12,9 +12,12 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.BenchmarkTests;
+import org.starexec.test.database.ClusterTests;
+import org.starexec.test.database.JobPairTests;
 import org.starexec.test.database.JobTests;
 import org.starexec.test.database.PermissionsTests;
 import org.starexec.test.database.ProcessorTests;
+import org.starexec.test.database.QueueTests;
 import org.starexec.test.database.SolverTests;
 import org.starexec.test.database.SpaceTests;
 import org.starexec.test.database.UserTests;
@@ -66,6 +69,17 @@ public class TestManager {
 		tests.add(new ProcessorTests());
 		tests.add(new JobTests());
 		tests.add(new GetPageTests());
+		tests.add(new JobPairTests());
+		tests.add(new ClusterTests());
+		tests.add(new QueueTests());
+	}
+	
+	public static boolean areTestsRunning() {
+		return isRunning.get();
+	}
+	
+	public static boolean isStressTestRunning() {
+		return isRunningStress.get();
 	}
 	
 	/**
@@ -140,8 +154,22 @@ public class TestManager {
 		
 		return true;
 	}
-	
-	public static boolean executeStressTest() {
+	/**
+	 * Runs a stress test using the given parameters
+	 * @param userCount How many new users will be created
+	 * @param spaceCount How many new spaces to create
+	 * @param jobCount How many new jobs to create
+	 * @param minUsersPerSpace
+	 * @param maxUsersPerSpace
+	 * @param minSolversPerSpace
+	 * @param maxSolversPerSpace
+	 * @param minBenchmarksPerSpace
+	 * @param maxBenchmarksPerSpace
+	 * @param spacesPerJobCount
+	 * @return
+	 */
+	public static boolean executeStressTest(final int userCount,final int spaceCount,final int jobCount, final int minUsersPerSpace, final int maxUsersPerSpace, final int minSolversPerSpace, 
+			final int maxSolversPerSpace,final int minBenchmarksPerSpace,final int maxBenchmarksPerSpace,final int spacesPerJobCount) {
 		if (Util.isProduction()) {
 			return false; //right now, don't run anything on production
 		}
@@ -155,8 +183,8 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
-				
-				StressTest.execute();
+				StressTest.execute(userCount,spaceCount,minUsersPerSpace,maxUsersPerSpace,minSolversPerSpace,maxSolversPerSpace,
+						minBenchmarksPerSpace, maxBenchmarksPerSpace,jobCount,spacesPerJobCount);
 				isRunningStress.set(false);
 			}
 		});	

@@ -1,5 +1,5 @@
 package org.starexec.constants;
-
+import java.util.HashMap;
 
 /**
  * Class which holds static resources (R) available for use
@@ -16,6 +16,7 @@ public class R {
      * Any fields set here will be treated as defaults
      */
 	
+
 	public R() throws Exception{
 	throw new Exception("Cannot instantiate class because it is static.");
     }
@@ -148,6 +149,9 @@ public class R {
     public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
     public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
+    public static HashMap<Integer,HashMap<String,Long>> COMM_INFO_MAP = null;
+    public static Long COMM_ASSOC_LAST_UPDATE = null;    //last time community_assoc table was updated (milliseconds)
+    public static long COMM_ASSOC_UPDATE_PERIOD = 10000;  //how much time we should wait before requerying for community_assoc table, currentely set to a 10 seconds (milliseconds)
     public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
     public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 	"this is your personal space";
@@ -169,7 +173,7 @@ public class R {
 	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for an SGE node (indicates the node is live)
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
 	
-    // SGE Configurations, see GridEngineUtil
+    // SGE Cnfigurations, see GridEngineUtil
     public static String SGE_ROOT = null; // root directory for SGE
     public static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
     public static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
@@ -195,4 +199,15 @@ public class R {
     
     
     public static int NO_TYPE_PROC_ID=1;
+    
+    public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
+    
+    public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
+    
+    public static String SUSPENDED_ROLE_NAME="suspended";
+    public static String DEFAULT_USER_ROLE_NAME="user";
+    public static String ADMIN_ROLE_NAME="admin";
+    public static String TEST_ROLE_NAME="test";
+    public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
+
 }	

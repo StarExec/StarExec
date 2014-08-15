@@ -24,6 +24,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -32,8 +33,9 @@ import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
+import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
-
+import org.starexec.data.to.WorkerNode;
 
 /**
  * This file contains functions for loading test objects into the database.
@@ -147,7 +149,7 @@ public class ResourceLoader {
 		SP.put(spaceId, Spaces.get(spaceId).getName());
 		log.debug("building a job with a total number of configs = "+configIds.size());
 
-		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, solverIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
 		return job;
@@ -337,6 +339,10 @@ public class ResourceLoader {
 	public static User loadUserIntoDatabase() {
 		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","test");
 	}
+	
+	public static User loadUserIntoDatabase(String password) {
+		return loadUserIntoDatabase("test","user",password,password,"The University of Iowa","test");
+	}
 	/**
 	 * Creates a user with the given attributes and adds them to the database
 	 * @param fname The first name for the user
@@ -362,6 +368,36 @@ public class ResourceLoader {
 		}
 		log.debug("loadUserIntoDatabase could not generate a user, returning null");
 		return null;
+	}
+	
+	/**
+	 * Loads a queue with the given timeouts into the database. The queue will be set as permanent
+	 * @param wallTimeout
+	 * @param cpuTimeout
+	 * @return
+	 */
+	
+	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
+		try {
+			QueueRequest req=new QueueRequest();
+			req.setQueueName(TestUtil.getRandomQueueName());
+			req.setNodeCount(0);
+
+			GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
+			
+			
+			int queueId=Queues.getIdByName(req.getQueueName());
+			
+			boolean success = Queues.makeQueuePermanent(queueId);
+			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
+			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			
+			return Queues.get(queueId);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+		
 	}
 	
 }

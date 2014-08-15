@@ -10,6 +10,15 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 DROP PROCEDURE IF EXISTS GetNextPageOfSpaces;
 CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _spaceId INT, IN _userId INT, IN _query TEXT)
 	BEGIN
+		-- we will need to know whether the user is an admin in the following code
+		DECLARE _admin BOOLEAN;
+		SELECT (role='admin') 
+		FROM user_roles
+		JOIN users ON users.email=user_roles.email
+		WHERE users.id=_userId INTO _admin;
+		-- Copy the default permission for the community 					
+		
+		
 		IF (_colSortedOn=0) THEN
 			IF _sortASC = TRUE THEN
 				SELECT DISTINCT	child_id AS id,
@@ -21,7 +30,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				LEFT JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId IN (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _admin)
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
@@ -42,7 +51,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				LEFT JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId IN (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _admin)
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
@@ -61,7 +70,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				LEFT JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId IN (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _admin)
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')
@@ -82,7 +91,7 @@ CREATE PROCEDURE GetNextPageOfSpaces(IN _startingRecord INT, IN _recordsPerPage 
 				-- and ensure only Spaces that this user is a member of are returned	
 				INNER JOIN spaces on spaces.id=set_assoc.child_id
 				LEFT JOIN user_assoc ON (user_assoc.space_id=set_assoc.child_id)
-				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _userId IN (SELECT id FROM users NATURAL JOIN user_roles where role = "admin"))
+				WHERE	set_assoc.space_id=_spaceId AND (user_assoc.user_id=_userId OR spaces.public_access=true OR _admin)
 																
 				-- Exclude Spaces whose name and description don't contain the query string
 				AND 	(spaces.name			LIKE	CONCAT('%', _query, '%')

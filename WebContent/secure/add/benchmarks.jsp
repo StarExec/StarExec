@@ -10,7 +10,7 @@
 		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 		int userId = SessionUtil.getUserId(request);
 		List<Space> userSpaces = new ArrayList<Space>();
-		List<Processor> postProcs = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId), ProcessorType.BENCH);
+		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
 		userSpaces = Spaces.GetSpacesByUser(userId);
 
 		postProcs.add(Processors.getNoTypeProcessor());

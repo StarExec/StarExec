@@ -728,6 +728,9 @@ public class Users {
 		
 		return null;
 	}
+
+
+
 	
 	/**
 	 * Checks to see whether the given user is in the given community
@@ -1088,9 +1091,11 @@ public class Users {
 			
 			//Only allow the deletion of test users, and only if the admin is asking
 			if (!UserSecurity.canDeleteUser(userIdToDelete, userIdMakingRequest).isSuccess()) {
+				log.debug("security permission error when trying to delete user with id = "+userIdToDelete);
 				return false;
 			}
 			if (!Users.isTestUser(userIdToDelete)) {
+				log.debug("can't delete user with id = "+userIdToDelete+" because they are not a test user");
 				return false; //we only want to delete test users for now
 			}
 			
@@ -1107,6 +1112,7 @@ public class Users {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		log.debug("internal error trying to delete user with id = "+userIdToDelete);
 		return false;
 	}
 	/**
@@ -1116,7 +1122,7 @@ public class Users {
 	 */
 	public static boolean isAdmin(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("admin");
+		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
 	}
 	
 	/**
@@ -1137,7 +1143,7 @@ public class Users {
 	 */
 	public static boolean isTestUser(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("test");
+		return u!=null && u.getRole().equals(R.TEST_ROLE_NAME);
 	}
 	
 	/**
@@ -1147,7 +1153,7 @@ public class Users {
 	 */
 	public static boolean isUnauthorized(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("unauthorized");
+		return u!=null && u.getRole().equals(R.UNAUTHORIZED_ROLE_NAME);
 	}
 	
 	/**
@@ -1157,7 +1163,7 @@ public class Users {
 	 */
 	public static boolean isSuspended(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("suspended");
+		return u!=null && u.getRole().equals(R.SUSPENDED_ROLE_NAME);
 	}
 	
 	/**
@@ -1167,7 +1173,7 @@ public class Users {
 	 */
 	public static boolean isNormalUser(int userId) {
 		User u=Users.get(userId);
-		return u.getRole().equals("user");
+		return u!=null && u.getRole().equals(R.DEFAULT_USER_ROLE_NAME);
 	}
 	
 	
@@ -1239,16 +1245,22 @@ public class Users {
 		}		
 		return false;
 	}
-
-	public static boolean suspend(int userId) {
-		User user = Users.get(userId);
+	
+	/**
+	 * Sets the role of the given user to the given role
+	 * @param userId The ID of the user to affect
+	 * @param role The role to give the user
+	 * @return True on success and false otherwise
+	 */
+	public static boolean changeUserRole(int userId, String role) {
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{
 			con = Common.getConnection();					
 						
-			procedure = con.prepareCall("{CALL SuspendUser(?)}");
-			procedure.setString(1, user.getEmail());
+			procedure = con.prepareCall("{CALL ChangeUserRole(?,?)}");
+			procedure.setInt(1, userId);
+			procedure.setString(2, role);
 			procedure.executeUpdate();			
 
 			return true;
@@ -1261,27 +1273,24 @@ public class Users {
 		}		
 		return false;
 	}
-
+	
+	/**
+	 * Sets the role of the given user to 'suspended' 
+	 * NOTE: The old role of the user is not stored, so if they are later reinstated, they will always be 
+	 * set to 'user,' regardless of their old role!
+	 * @param userId
+	 * @return
+	 */
+	public static boolean suspend(int userId) {
+		return changeUserRole(userId,R.SUSPENDED_ROLE_NAME);
+	}
+	/**
+	 * Sets the role of the given user back to 'user'
+	 * @param userId
+	 * @return
+	 */
 	public static boolean reinstate(int userId) {
-		User user = Users.get(userId);
-		Connection con = null;
-		CallableStatement procedure= null;
-		try{
-			con = Common.getConnection();					
-						
-			procedure = con.prepareCall("{CALL ReinstateUser(?)}");
-			procedure.setString(1, user.getEmail());
-			procedure.executeUpdate();			
-
-			return true;
-		} catch (Exception e){	
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);						
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}		
-		return false;
+		return changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
 	}	
 	
 }

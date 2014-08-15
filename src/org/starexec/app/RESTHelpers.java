@@ -1059,7 +1059,7 @@ public class RESTHelpers {
 			}
 			return convertJobsToJsonObject(jobsToDisplay, totalJobs,
 					attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
-					attrMap.get(SYNC_VALUE), 1);
+					attrMap.get(SYNC_VALUE));
 		case NODE:
 			List<WorkerNode> nodesToDisplay = new LinkedList<WorkerNode>();
 			int totalNodes = Cluster.getNodeCount();
@@ -1215,7 +1215,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE), forPage);
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
 			return answer;
 		    	
 		case USER:
@@ -1729,8 +1729,7 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertJobsToJsonObject(List<Job> jobs,
-			int totalRecords, int totalRecordsAfterQuery, int syncValue,
-			int forPage) {
+			int totalRecords, int totalRecordsAfterQuery, int syncValue) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1771,26 +1770,14 @@ public class RESTHelpers {
 			JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(jobLink));
 			entry.add(new JsonPrimitive(status));
-			if (forPage == PAGE_SPACE_EXPLORER) {
-				entry.add(new JsonPrimitive(getPercentStatHtml("asc", job
-						.getLiteJobPairStats().get("completionPercentage"),
-						true)));
-				entry.add(new JsonPrimitive(getPercentStatHtml("static", job
-						.getLiteJobPairStats().get("totalPairs"), false)));
-				entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
-						.getLiteJobPairStats().get("errorPercentage"), true)));
-			} else {
-				entry.add(new JsonPrimitive(getPairStatHtml("asc", job
-						.getLiteJobPairStats().get("completePairs"), job
-						.getLiteJobPairStats().get("totalPairs"))));
-				entry.add(new JsonPrimitive(getPairStatHtml("desc", job
-						.getLiteJobPairStats().get("pendingPairs"), job
-						.getLiteJobPairStats().get("totalPairs"))));
-				entry.add(new JsonPrimitive(getPairStatHtml("desc", job
-						.getLiteJobPairStats().get("errorPairs"), job
-						.getLiteJobPairStats().get("totalPairs"))));
-			}
-
+			entry.add(new JsonPrimitive(getPercentStatHtml("asc", job
+					.getLiteJobPairStats().get("completionPercentage"),
+					true)));
+			entry.add(new JsonPrimitive(getPercentStatHtml("static", job
+					.getLiteJobPairStats().get("totalPairs"), false)));
+			entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
+					.getLiteJobPairStats().get("errorPercentage"), true)));
+			
 			entry.add(new JsonPrimitive(job.getCreateTime().toString()));
 
 			dataTablePageEntries.add(entry);

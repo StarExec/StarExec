@@ -88,6 +88,32 @@ public class Benchmarks {
 	}
 	return -1;
     }
+    
+	/**
+	 * Deletes a benchmark and permanently removes it from the database. This is NOT
+	 * the normal procedure for deleting a benchmark. It is used for testing. Calling "delete"
+	 * is typically what is desired
+	 * @param id
+	 * @return
+	 */
+	
+	public static boolean deleteAndRemoveBenchmark(int id) {
+		boolean success=Benchmarks.delete(id);
+		if (!success) {
+			return false;
+		}
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return Benchmarks.removeBenchmarkFromDatabase(id, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
 	
 	
 	public static boolean recycleAllOwnedByUser(Collection<Benchmark> benchmarks, int userId) {
@@ -830,7 +856,6 @@ public class Benchmarks {
 					b.setDownloadable(downloadable);
 					benchmarks.add(b);
 				} else {
-					//TODO: Determine behavior if a name is invalid
 					return null;
 				}
 			}
@@ -838,6 +863,8 @@ public class Benchmarks {
 
 		return benchmarks;
 	}
+	
+	
 
 	/**
 	 * Creates a space named after the directory and finds any benchmarks within the directory.
@@ -909,12 +936,7 @@ public class Benchmarks {
 					b.setDownloadable(downloadable);
 
 					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
-					// Make sure that the benchmark has a unique name in the space.
-					if(Spaces.notUniquePrimitiveName(b.getName(), space.getId(), 2)) {
-					    String msg = "\""+b.getName() + "\" is not a unique name in the space.";
-					    Uploads.setErrorMessage(statusId, msg);
-					    throw new Exception(msg);
-					}
+					
 
 					space.addBenchmark(b);
 				} else {
@@ -1318,7 +1340,9 @@ public class Benchmarks {
 			results.last();
 			Integer numResults = results.getRow();
 			log.debug("# of Benchmarks with this name = " + numResults);
-
+			if (numResults!=1) {
+				return -1;
+			}
 			return benchId;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1866,47 +1890,7 @@ public class Benchmarks {
 		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
 		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
 	}
-	/**
-	 * Determines whether the benchmark identified by the given benchmark ID has an
-	 * editable name
-	 * @param benchId The ID of the benchmark in question
-	 * @return -1 if the name is not editable, 0 if it is editable and the benchmark is
-	 * associated with no spaces, and a positive integer if the name is editable and the
-	 * benchmark is associated only with the space with the returned ID.
-	 */
-	public static int isNameEditable(int benchId) {
-		Connection con =null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
-		try {
-			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetBenchAssoc(?)}");
-			procedure.setInt(1, benchId);
-			results=procedure.executeQuery();
-			int id=-1;
-			if (results.next()) {
-				id=results.getInt("space_id");
-			} else {
-				log.debug("Benchmark associated with no spaces, so its name is editable");
-				return 0;
-			}
-
-			if (results.next()) {
-				log.debug("Benchmark is found in multiple spaces, so its name is not editable");
-				return -1;
-			}
-			log.debug("Benchmark associated with one space id = "+id +" , so its name is editable");
-			return id;
-
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return -1;
-	}
+	
 	/**
 	 * Determines whether the benchmark with the given ID is public. It is public if it is in at least
 	 * one public space
@@ -2119,9 +2103,6 @@ public class Benchmarks {
 
 			procedure.executeUpdate();					
 			log.debug(String.format("Benchmark [id=%d] was successfully updated.", id));
-			//invalidate the cache of every space associated with this benchmark
-			//Cache.invalidateSpacesAssociatedWithBench(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2312,7 +2293,6 @@ public class Benchmarks {
 	 * @author Eric Burns
 	 */
 	
-	//TODO: What should we do about the type of the benchmarks?
 	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
 				    boolean isCommunityLeader) {
 	    Connection con=null;
@@ -2341,6 +2321,9 @@ public class Benchmarks {
 			    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId)) {
 					return;	
 			    }
+			    //updates the type of the benchmark with the new processor
+			    Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), b.isDownloadable(), p.getId());
+			    
 			    Uploads.incrementCompletedBenchmarks(statusId);
 			}
 			if (hierarchy) {
@@ -2358,15 +2341,16 @@ public class Benchmarks {
 		
 	}
 	/**
-	 * Recycles all of the benchmarks a user has that are not in any spaces
-	 * @param userId The ID of the user who will have their benchmarks recycled
+	 * Returns the ID of every benchmark a user owns that is orphaned
+	 * @param userId
 	 * @return
 	 */
-	public static boolean recycleOrphanedBenchmarks(int userId) {
+	public static List<Integer> getOrphanedBenchmarks(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		List<Integer> ids=new ArrayList<Integer>();
+
 		try {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetOrphanedBenchmarkIds(?)}");
@@ -2375,16 +2359,32 @@ public class Benchmarks {
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
+			return ids;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-			return false;
 		}finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 		
+		return null;
+	}
+	
+	/**
+	 * Recycles all of the benchmarks a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their benchmarks recycled
+	 * @return
+	 */
+	public static boolean recycleOrphanedBenchmarks(int userId) {
+		List<Integer> ids=getOrphanedBenchmarks(userId);
+		//on error
+		if (ids==null) {
+			return false;
+		}
+		
 		try {
+			
 			boolean success=true;
 			for (Integer id : ids) {
 				success=success && Benchmarks.recycle(id);

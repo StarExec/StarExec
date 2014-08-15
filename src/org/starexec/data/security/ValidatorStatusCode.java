@@ -2,25 +2,25 @@ package org.starexec.data.security;
 
 import com.google.gson.annotations.Expose;
 
-public class SecurityStatusCode {
+public class ValidatorStatusCode {
 	
 	@Expose private boolean success;
 	@Expose private String message;
 	@Expose private int statusCode;
 	
-	public SecurityStatusCode(boolean s, String m, int sc) {
+	public ValidatorStatusCode(boolean s, String m, int sc) {
 		setSuccess(s);
 		setMessage(m);
 		setStatusCode(sc);
 	}
 	
-	public SecurityStatusCode(boolean s, String m) {
+	public ValidatorStatusCode(boolean s, String m) {
 		setSuccess(s);
 		setMessage(m);
 		setStatusCode(0);
 	}
 	
-	public SecurityStatusCode(boolean s) {
+	public ValidatorStatusCode(boolean s) {
 		success=s;
 		message="";
 		setStatusCode(0);

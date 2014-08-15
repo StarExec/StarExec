@@ -15,7 +15,7 @@ var spaceChainInterval;
 var usingSpaceChain=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
-	usingSpaceChain=(getSpaceChain().length>1); //check whether to turn off cookies
+	usingSpaceChain=(getSpaceChain("#spaceChain").length>1); //check whether to turn off cookies
 
 	// Build left-hand side of page (space explorer)
 	initSpaceExplorer();
@@ -35,49 +35,7 @@ $(document).ready(function(){
 	
 
 });
-function openSpace(curSp,childId) {
-	$("#exploreList").jstree("open_node", "#" + curSp, function() {
-		$.jstree._focused().select_node("#" + childId, true);	
-	});	
-}
-function getSpaceChain() {
-	chain=new Array();
-	spaces=$("#spaceChain").attr("value").split(",");
-	index=0;
-	for (i=0;i<spaces.length;i++) {
-		if (spaces[i].trim().length>0) {
-			chain[index]=spaces[i];
-		}
-		index=index+1;
-	}
 
-	return chain;
-}
-
-function handleSpaceChain() {
-	spaceChain=getSpaceChain();
-	if (spaceChain.length<2) {
-		return;
-	}
-	p=spaceChain[0];
-
-	spaceChainIndex=1;
-	spaceChainInterval=setInterval(function() {
-		if (spaceChainIndex>=spaceChain.length) {
-			clearInterval(spaceChainInterval);
-		}
-		if (openDone) {
-			openDone=false;
-			c=spaceChain[spaceChainIndex];
-			openSpace(p,c);
-			spaceChainIndex=spaceChainIndex+1;
-			p=c;	
-		}
-		},100);
-		
-		
-	
-}
 
 /**
  * Convenience method for determining if a given fieldset has been expanded or not
@@ -273,29 +231,7 @@ function initButtonUI() {
  * @author Tyler Jensen & Todd Elvers
  */
 function initDraggable(table) {
-	var rows = $(table).children('tbody').children('tr');
-
-	// Using jQuery UI, make the first column in each row draggable
-	rows.draggable({
-		cursorAt: { cursor: 'move', left: -1, bottom: -1},	// Set the cursor to the move icon and make it start in the corner of the helper		
-		//containment: 'document',							// Allow the element to be dragged anywhere in the document
-		distance: 20,										// Only trigger a drag when the distanced dragged is > 20 pixels
-		scroll: true,										// Scroll with the page as the item is dragged if needed
-		helper: getDragClone,								// The method that returns the 'cloned' element that is dragged
-		start: onDragStart									// Method called when the dragging begins
-	});
-	
-
-	// Set the JQuery variables used during the drag/drop process
-	$.each(rows, function(i, row){
-		$(row).data("id", $(row).children('td:first-child').children('input').val());
-		$(row).data("type", $(row).children('td:first-child').children('input').attr('prim'));
-
-		
-		$(row).data("name", $(row).children('td:first-child').children('a').text());
-		
-	});
-
+	makeTableDraggable(table,onDragStart,getDragClone);
 	// Make the trash can in the explorer list be a droppable target
 	$('#trashcan').droppable({
 		drop		: onTrashDrop,
@@ -435,19 +371,19 @@ function onSpaceDrop(event, ui) {
 			buttons: {
 				'link in space hierarchy': function() {
 					$('#dialog-confirm-copy').dialog('close'); 
-					doSolverCopyPost(ids,destSpace,spaceId,true,false,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,true,false);
 				},
 				'copy to space hierarchy': function() {
 					$('#dialog-confirm-copy').dialog('close'); 
-					doSolverCopyPost(ids,destSpace,spaceId,true,true,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,true,true);
 				},
 				'link in space': function(){
 					$('#dialog-confirm-copy').dialog('close');
-					doSolverCopyPost(ids,destSpace,spaceId,false,false,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,false,false);
 				},
 				'copy to space': function() {
 					$('#dialog-confirm-copy').dialog('close');	
-					doSolverCopyPost(ids,destSpace,spaceId,false,true,destName);
+					doSolverCopyPost(ids,destSpace,spaceId,false,true);
 				},
 				"cancel": function() {
 					$(this).dialog("close");
@@ -623,10 +559,7 @@ function setURL(i) {
 
 function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 	// Make the request to the server		
-	copyOrLink="linked";
-	if (copy) {
-		copyOrLink="copied";
-	}
+	
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
 			{selectedIds : ids, fromSpace : spaceId, copy:copy},	
@@ -645,16 +578,12 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
  * @param destSpace The ID of the destination space
  * @param spaceId The ID of the from space
  * @param copy A boolean indicating whether to copy (true) or link (false).
- * @param destName The name of the destination space
  * @author Eric Burns
  */
 
-function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
+function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy) {
 	// Make the request to the server
-	copyOrLink="linked";
-	if (copy) {
-		copyOrLink="copied";
-	}
+	
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: hierarchy, copy : copy},
@@ -667,46 +596,7 @@ function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy,destName) {
 	});	
 }
 
-/**
- * Returns the html of an element that is dragged along with the mouse when an item is dragged on the page
- * @author Tyler Jensen
- */
-function getDragClone(event) {	
-	var src = $(event.currentTarget);	
-	if(false == $(src).hasClass('row_selected')){ //change
-		$(src).addClass('row_selected');
-	}
-	var ids = getSelectedRows($(src).parents('table:first'));
-	var txtDisplay = $(src).children(':first-child').text();
-	var icon = 'ui-icon ';	
-	var primType = $(src).data('type');
-	log(src);
 
-
-	if(ids.length > 1) {
-		txtDisplay = ids.length + ' ' + primType + 's';
-	}
-
-	// Change the drag icon based on what the type of object being dragged is
-	switch(primType[0]){
-	case 'u':
-		icon += 'ui-icon-person';
-		break;
-	case 'b':
-		icon += 'ui-icon-script';
-		break;
-	case 'j':
-		icon += 'ui-icon-gear';
-		break;
-	
-	default:
-		icon += 'ui-icon-newwin';
-	break;
-	}
-
-	// Return a styled div with the name of the element that was originally dragged
-	return '<div class="dragClone"><span class="' + icon + '"></span>' + txtDisplay + '</div>';
-}
 
 /**
  * Creates the space explorer tree for the left-hand side of the page, also
@@ -714,50 +604,9 @@ function getDragClone(event) {
  * @author Tyler Jensen & Todd Elvers & Skylar Stark
  */
 function initSpaceExplorer(){
-	// Set the path to the css theme for the jstree plugin
-	$.jstree._themes = starexecRoot+"css/jstree/";
-	plugins = [ "types", "themes", "json_data", "ui"];
-	if (!usingSpaceChain) {
-		plugins[4]="cookies";
-	}
-	var id;
 	// Initialize the jstree plugin for the explorer list
-	$("#exploreList").jstree({  
-		"json_data" : { 
-			"ajax" : { 
-				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
-				"data" : function (n) {
-					
-					return { id : n.attr ? n.attr("id") : -1 }; 	// What the default space id should be
-				} 
-			} 
-		}, 
-		"themes" : { 
-			"theme" : "default", 					
-			"dots" : true, 
-			"icons" : true
-		},		
-		"types" : {				
-			"max_depth" : -2,
-			"max_children" : -2,					
-			"valid_children" : [ "space" ],
-			"types" : {						
-				"space" : {
-					"valid_children" : [ "space" ],
-					"icon" : {
-						"image" : starexecRoot+"images/jstree/db.png"
-					}
-				}
-			}
-		},
-		"ui" : {			
-			"select_limit" : 1,			
-			"selected_parent_close" : "select_parent",			
-			"initially_select" : [ "1" ]			
-		},
-		"plugins" : plugins,
-		"core" : { animation : 200 }
-	}).bind("select_node.jstree", function (event, data) {
+	jsTree=makeSpaceTree("#exploreList",!usingSpaceChain);
+	jsTree.bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
 		log('Space explorer node ' + id + ' was clicked');
@@ -771,10 +620,10 @@ function initSpaceExplorer(){
 		$(".qtip-userTooltip").remove();
 		$(".qtip-expdTooltip").remove();
 	}).bind("loaded.jstree", function(event,data) {
-		handleSpaceChain();
+		handleSpaceChain("#spaceChain");
 	}).bind("open_node.jstree",function(event,data) {
 		openDone=true;
-	}).on( "click","a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title
+	});
 
 	log('Space explorer node list initialized');
 }

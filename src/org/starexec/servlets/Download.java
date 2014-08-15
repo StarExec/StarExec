@@ -30,6 +30,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -63,9 +64,12 @@ public class Download extends HttpServlet {
 		boolean success;
 		String shortName=null;
 		try {
-			if (!validateRequest(request)) {
-				log.debug("Bad download Request");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "the download request was invalid");
+			ValidatorStatusCode status=validateRequest(request);
+			if (!status.isSuccess()) {
+				log.debug("Bad download Request--"+status.getMessage());
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}
 			
@@ -325,8 +329,7 @@ public class Download extends HttpServlet {
 			
 			String baseFileName="Job" + job.getId()+ "_XML";
 			
-			//TODO : should store public/batchJobSchema.xsd in a constant, in case it gets changed later
-				File schema = new File(R.STAREXEC_ROOT + File.separator + "public/batchJobSchema.xsd");
+				File schema = new File(R.STAREXEC_ROOT + File.separator + R.JOB_SCHEMA_LOCATION);
 				files.add(schema);
 			
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
@@ -612,17 +615,19 @@ public class Download extends HttpServlet {
 					zipFileName.append(spaces[index]);
 					zipFileName.append(File.separator);
 				}
-					
-				
+
 				zipFileName.append(p.getSolver().getName());
 				zipFileName.append(File.separator);
 				zipFileName.append(p.getConfiguration().getName());
+				zipFileName.append(File.separator);
+				zipFileName.append(p.getId());
 				zipFileName.append(File.separator);
 				zipFileName.append(file.getName());
 				if (file.exists()) {
 					ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
 
 				} else {
+					//if we can't find output for the pair, just put an empty file there
 					ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
 				}
 			}
@@ -707,21 +712,12 @@ public class Download extends HttpServlet {
 		// If we can see this space AND the space is downloadable...
 		try {
 			if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
-				
-				
 				//String baseFileName=space.getName();
-				//File tempDir = new File(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR, UUID.randomUUID().toString() + File.separator + space.getName());
 				ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
 
-				storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks,includeSolvers,hierarchy,null,stream);
+				storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks,includeSolvers,hierarchy,stream);
 				stream.close();
-				//ArchiveUtil.createAndOutputZip(tempDir,response.getOutputStream(),baseFileName,false);
-				//if(tempDir.exists()){
-				//		FileUtils.deleteDirectory(tempDir);
-				//		log.debug("space directory exists = "+tempDir.exists());
-				//}
-				
-				
+
 				return true;
 			}
 			else {
@@ -748,7 +744,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang + Eric Burns
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive, String solverPath, ZipOutputStream stream) throws Exception {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive,ZipOutputStream stream) throws Exception {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			if (includeBenchmarks) {
@@ -756,7 +752,7 @@ public class Download extends HttpServlet {
 
 				for(Benchmark b: benchList){
 					if(b.isDownloadable() || b.getUserId()==uid ){
-						ArchiveUtil.addFileToArchive(stream, new File(b.getPath()), dest+File.separator+b.getName());					
+						ArchiveUtil.addFileToArchive(stream, new File(b.getPath()), dest+File.separator+b.getId()+File.separator+b.getName());					
 					}
 				}
 			}
@@ -765,23 +761,21 @@ public class Download extends HttpServlet {
 				List<Solver> solverList=null;
 				//if we're getting a full hierarchy and the solver path is
 				//not yet set, we want to store all solvers now 
-				if (solverPath==null && recursive) {
+				if (recursive) {
 					solverList=Solvers.getBySpaceHierarchy(space.getId(), uid);
 				} else{
 					solverList=Solvers.getBySpace(space.getId());
 				}
 
-				if (solverPath==null) {
 					
-					for (Solver s : solverList) {
-						if (s.isDownloadable() || s.getUserId()==uid) {
-							ArchiveUtil.addDirToArchive(stream, new File(s.getPath()), dest+File.separator+"solvers"+File.separator+s.getId());
-							
-						}
+				for (Solver s : solverList) {
+					if (s.isDownloadable() || s.getUserId()==uid) {
+						ArchiveUtil.addDirToArchive(stream, new File(s.getPath()), dest+File.separator+"solvers"+File.separator+s.getId());
+						
 					}
-				} 
+				}
+				 
 			}
-
 			
 			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest+File.separator+R.DESC_PATH);
 			
@@ -794,10 +788,10 @@ public class Download extends HttpServlet {
 			if(subspaceList ==  null || subspaceList.size() == 0){
 				return;
 			}
-			//TODO: rethink the solver path variable
 			for(Space s: subspaceList){
 				String subDir = dest + File.separator + s.getName();
-				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,includeSolvers,recursive,"fake",stream);
+				//include solvers is always false except at the top level
+				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,false,recursive,stream);
 			}
 			return;
 		}
@@ -811,16 +805,15 @@ public class Download extends HttpServlet {
 	 * @return true iff the request is valid
 	 * @author Skylar Stark
 	 */
-	public static boolean validateRequest(HttpServletRequest request) {
+	public static ValidatorStatusCode validateRequest(HttpServletRequest request) {
 		try {
-			if (!Util.paramExists("type", request)
-					|| !Util.paramExists("id", request)) {
-				return false;
+			if (!Util.paramExists("type", request)) {
+				return new ValidatorStatusCode(false, "A download type was not specified");
 			}
 
 			if (!Validator.isValidInteger(request.getParameter("id"))) {
 
-				return false;
+				new ValidatorStatusCode(false, "The given id was not a valid integer");
 			}
 
 			if (!(request.getParameter("type").equals("solver") ||
@@ -834,13 +827,13 @@ public class Download extends HttpServlet {
 					request.getParameter("type").equals("space") ||
 					request.getParameter("type").equals("proc"))) {
 
-				return false;
+				return new ValidatorStatusCode(false, "The supplied download type was not valid");
 			}
 
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		return false;
+		return new ValidatorStatusCode(false, "Internal error processing download request");
 	}
 }

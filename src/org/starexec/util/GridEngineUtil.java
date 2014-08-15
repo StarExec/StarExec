@@ -483,7 +483,7 @@ public class GridEngineUtil {
 							"\nseq_no                0" +
 							"\nload_thresholds       np_load_avg=1.75" +
 							"\nsuspend_thresholds    NONE" +
-							"\nnsuspend              1" +
+							"\nnsuspend              1" +  // nsuspend is the correct name
 							"\nsuspend_interval      00:05:00" +
 							"\npriority              0" +
 							"\nmin_cpu_interval      00:05:00" +
@@ -492,7 +492,7 @@ public class GridEngineUtil {
 							"\nckpt_list             NONE" +
 							"\npe_list               make" +
 							"\nrerun                 FALSE" +
-							"\nslots                 1" +
+							"\nslots                 2" +
 							"\ntmpdir                /tmp" +
 							"\nshell                 /bin/csh" +
 							"\nprolog                NONE" +
@@ -555,8 +555,7 @@ public class GridEngineUtil {
 			String queueName = req.getQueueName();
 			String[] split = queueName.split("\\.");
 			String shortQueueName = split[0];
-			//int queueId = Queues.getIdByName(queueName);
-			//Queue q = Queues.get(queueId);
+
 			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
 			StringBuilder sb = new StringBuilder();
 			
@@ -640,7 +639,7 @@ public class GridEngineUtil {
 						"\nckpt_list             NONE" +
 						"\npe_list               make" +
 						"\nrerun                 FALSE" +
-						"\nslots                 1" +
+						"\nslots                 2" +
 						"\ntmpdir                /tmp" +
 						"\nshell                 /bin/csh" +
 						"\nprolog                NONE" +
@@ -702,7 +701,7 @@ public class GridEngineUtil {
 	 * @param queueId The Id of the queue to remove.
 	 * @param permanent
 	 */
-	public static void removeQueue(int queueId) {
+	public static boolean removeQueue(int queueId) {
 		Queue q=Queues.get(queueId);
 		boolean permanent=q.getPermanent();
 		String queueName = q.getName();
@@ -729,14 +728,16 @@ public class GridEngineUtil {
 			}
 		}
 		
+		boolean success=true;
+		
 		
 		/***** DELETE THE QUEUE *****/	
 			//Database Change
 		if (permanent) {
-			Queues.delete(queueId);
+			success=success && Queues.delete(queueId);
 
 		} else {
-			Requests.DeleteReservation(queueId);
+			success = success && Requests.DeleteReservation(queueId);
 		}
 			
 			//DISABLE the queue: 
@@ -748,7 +749,8 @@ public class GridEngineUtil {
 			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
 			
 		    GridEngineUtil.loadWorkerNodes();
-		    GridEngineUtil.loadQueues();		
+		    GridEngineUtil.loadQueues();	
+		    return success;
 	}
 
     public static void moveNodes(QueueRequest req, HashMap<WorkerNode, Queue> NQ) {

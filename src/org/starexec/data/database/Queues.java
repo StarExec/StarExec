@@ -205,6 +205,7 @@ public class Queues {
 				queue.setSlotsUsed(results.getInt("slots_used"));
 				queue.setWallTimeout(results.getInt("clockTimeout"));
 				queue.setCpuTimeout(results.getInt("cpuTimeout"));
+				queue.setGlobalAccess(results.getBoolean("global_access"));
 				return queue;				
 			}										
 			
@@ -240,7 +241,7 @@ public class Queues {
 	}
 	
 	/**
-	 * Gets all queues in the starexec cluster
+	 * Gets all active queues in the starexec cluster
 	 * @return A list of queues 
 	 * @author Aaron Stump
 	 */
@@ -272,6 +273,8 @@ public class Queues {
 	 * @return A queue object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
+	
+	//TODO: Is this working correctly? It doesn't seem to get any attributes. Do we even want the attributes for any reason?
 	public static Queue getDetails(int id) {
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -290,7 +293,10 @@ public class Queues {
 				queue.setSlotsTotal(results.getInt("slots_total"));
 				queue.setSlotsAvailable(results.getInt("slots_free"));
 				queue.setSlotsReserved(results.getInt("slots_reserved"));
-				queue.setSlotsUsed(results.getInt("slots_used"));		
+				queue.setSlotsUsed(results.getInt("slots_used"));
+				queue.setWallTimeout(results.getInt("clockTimeout"));
+				queue.setCpuTimeout(results.getInt("cpuTimeout"));
+				queue.setGlobalAccess(results.getBoolean("global_access"));
 				return queue;
 			}
 		} catch (Exception e){			
@@ -392,8 +398,6 @@ public class Queues {
 			if (results.next()) {
 				return results.getInt("id");	
 			}
-			
-			
 		} catch (Exception e){			
 			log.error("getIdByName says " + e.getMessage(), e);		
 		} finally {
@@ -417,34 +421,23 @@ public class Queues {
 	 */
 	
 	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
+		String sqlQuery=null;
 		if (type == "queue") {
-			return getNextPageOfEnqueuedJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+			sqlQuery="GetNextPageOfEnqueuedJobPairs";
+
 		} else if (type == "node") {
-			return getNextPageOfRunningJobPairs(startingRecord, recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, id);
+			sqlQuery="GetNextPageOfRunningJobPairs";
 		} else {
 			return null;
 		}
-	}
-	
-	/**
-	 * Gets enqueued job pairs for the next page of a client-side datatables page
-	 * @param startingRecord The first desired records
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
-	 * @param searchQuery The search query to filter the results by
-	 * @param id The ID of the queue
-	 * @return A List of JobPairs enqueued in the given queue
-	 */
-	//TODO: Can this and getNextPageOfRunningJobPairs be combined?
-	private static List<JobPair> getNextPageOfEnqueuedJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
+		
 		Connection con = null;		
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfEnqueuedJobPairs(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL "+sqlQuery+"(?, ?, ?, ?)}");
 			procedure.setInt(1, startingRecord);
 			procedure.setInt(2,	recordsPerPage);
 			procedure.setBoolean(3, isSortedASC);
@@ -490,73 +483,7 @@ public class Queues {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-			return null;		
-	}
-	
-	/**
-	 * Gets running job pairs for the next page of a client-side datatables page
-	 * @param startingRecord The first desired records
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
-	 * @param searchQuery The search query to filter the results by
-	 * @param id The ID of the node
-	 * @return A List of JobPairs  running on the node
-	 */
-	
-	private static List<JobPair> getNextPageOfRunningJobPairs(int startingRecord, int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery, int id) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfRunningJobPairs(?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setBoolean(3, isSortedASC);
-			procedure.setInt(4, id);
-			
-			
-			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-
-			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
-				Benchmark b=new Benchmark();
-				b.setId(results.getInt("bench_id"));
-				b.setName(results.getString("bench_name"));
-				jp.setBench(b);
-				
-				Solver s=new Solver();
-				s.setId(results.getInt("solver_id"));
-				s.setName(results.getString("solver_name"));
-				jp.setSolver(s);
-				
-				Configuration c = new Configuration();
-				c.setId(results.getInt("config_id"));
-				c.setName(results.getString("config_name"));
-				jp.setConfiguration(c);
-				jp.getSolver().addConfiguration(c);
-				Status stat = new Status();
-
-				stat.setCode(results.getInt("status_code"));
-				jp.setStatus(stat);
-				returnList.add(jp);
-			}			
-
-			Common.safeClose(results);
-			return returnList;			
-			
-		} catch (Exception e){			
-			log.error("getNextPageOfRunningJobPairs for node " + id + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-			return null;		
+			return null;
 	}
 	
 	/**
@@ -1071,7 +998,13 @@ public class Queues {
 				procUpdateAttr.setString(1, name);				
 				// Must add _ to column name/value in case it conflicts with an SQL keyword
 				procUpdateAttr.setString(2, "_" + keyVal.getKey());
-				procUpdateAttr.setString(3, "_" + keyVal.getValue());
+				//we need to make sure the value isn't too long to fit in the field.
+				String value=keyVal.getValue();
+				if (value.length()>63) {
+					log.debug("queue id = "+id+ " had queue attribute "+keyVal.getKey()+" had value that was too long = "+value);
+					value=value.substring(0,63);
+				}
+				procUpdateAttr.setString(3, "_" + value);
 				procUpdateAttr.executeUpdate();
 			}
 						
@@ -1124,41 +1057,24 @@ public class Queues {
 		log.debug(String.format("Usage for queue [%s] failed to be updated.", q.getName()));
 		return false;
 	}
+	
+	/**
+	 * Checks to see whether the given name is already being used by a queue
+	 * @param queue_name
+	 * @return True if the given name IS used by a given queue. False if the name is NOT used by a queue OR on error
+	 */
 
-	public static boolean notUniquePrimitiveName(String queue_name) {
-		log.debug("staring notUniquePrimitiveName");
-		// Initiate sql connection facilities.
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		
-		try {
-			// If the type of the primitive is solver.
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL countQueueName(?)}");
-			procedure.setString(1, queue_name);
-			
-			results = procedure.executeQuery();		
-			
-			if(results.next()){
-				if(results.getInt(1) != 0) {
-					return true;
-				}
-				return false;
-			}
-			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		return true;
+	public static boolean notUniquePrimitiveName(String queueName) {
+		return Queues.getIdByName(queueName)>=0;
 	}
-
-	public static String getNameById(int queue_id) {
+	
+	/**
+	 * Gets the name of a queue given its ID
+	 * @param queue_id
+	 * @return The name of the queue, or null on error
+	 */
+	
+	public static String getNameById(int queueId) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1166,17 +1082,14 @@ public class Queues {
 			con = Common.getConnection();	
 			
 			procedure = con.prepareCall("{CALL GetNameById(?)}");
-			procedure.setInt(1, queue_id);
+			procedure.setInt(1, queueId);
 			
 			
 			results = procedure.executeQuery();
 
 			while(results.next()){
 				return results.getString("name");
-			}			
-
-			return null;			
-			
+			}						
 		} catch (Exception e){			
 			log.error("getIdByName says " + e.getMessage(), e);		
 		} finally {
@@ -1184,10 +1097,17 @@ public class Queues {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
+		//we couldn't find the name 
 		return null;
 	}
 	
-	public static boolean isQueuePermanent(int queue_id) {
+	/**
+	 * Checks to see whether the given queue is permanent
+	 * @param queue_id
+	 * @return True if the queue is permanent and false if it is not OR there is an error
+	 */
+	
+	public static boolean isQueuePermanent(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1195,14 +1115,12 @@ public class Queues {
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL IsQueuePermanent(?)}");
-			procedure.setInt(1, queue_id);
+			procedure.setInt(1, queueId);
 			
 			results = procedure.executeQuery();
-			boolean permanent = false;
 			while(results.next()) {
-				permanent = results.getBoolean("permanent");
+				return results.getBoolean("permanent");
 			}
-			return permanent;
 		} catch (Exception e) {
 			log.error("IsQueuePermanent says " + e.getMessage(), e);
 		} finally {
@@ -1303,7 +1221,13 @@ public class Queues {
 		return false;
 	}
 	
-	public static boolean isQueueGlobal(int queue_id) {
+	/**
+	 * Checks to see whether the given queue is global or not
+	 * @param queueId
+	 * @return True if it is global, and false if it is not OR if there is an error
+	 */
+	
+	public static boolean isQueueGlobal(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1311,14 +1235,12 @@ public class Queues {
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL IsQueueGlobal(?)}");
-			procedure.setInt(1, queue_id);
+			procedure.setInt(1, queueId);
 			
 			results = procedure.executeQuery();
-			boolean global = false;
 			while(results.next()) {
-				global = results.getBoolean("global_access");
+				return results.getBoolean("global_access");
 			}
-			return global;
 		} catch (Exception e) {
 			log.error("IsQueueGlobal says " + e.getMessage(), e);
 		} finally {
@@ -1328,8 +1250,14 @@ public class Queues {
 		}
 		return false;
 	}
+	
+	/**
+	 * Deletes a queue from the database
+	 * @param queueId
+	 * @return
+	 */
 
-	public static void delete(int queueId) {
+	public static boolean delete(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -1338,22 +1266,28 @@ public class Queues {
 			procedure = con.prepareCall("{CALL RemoveQueue(?)}");
 			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
-
+			return true;
 		} catch (Exception e) {
 			log.error("RemoveQueue says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		
+		return false;
 	}
-	
-	public static boolean makeGlobal(int queue_id) {
+	/**
+	 * Sets the global access column of the given queue to true
+	 * @param queueId
+	 * @return True on success and false on failure
+	 */
+	public static boolean makeGlobal(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL MakeQueueGlobal(?)}");
-			procedure.setInt(1, queue_id);
+			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
 			
 			return true;
@@ -1366,13 +1300,18 @@ public class Queues {
 		return false;
 	}
 	
-	public static boolean removeGlobal(int queue_id) {
+	/**
+	 * Sets the global_access column of the given queue to false
+	 * @param queueId
+	 * @return True on success and false on error
+	 */
+	public static boolean removeGlobal(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL RemoveQueueGlobal(?)}");
-			procedure.setInt(1, queue_id);
+			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
 			
 			return true;

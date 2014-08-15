@@ -148,16 +148,7 @@ CREATE PROCEDURE GetAllSuperSpacesByUser(IN _userId INT)
                 WHERE user_assoc.user_id = _userId;
 	END //
 
--- Returns all super-spaces of the space with the given id.
--- Author: Wyatt Kaiser
- DROP PROCEDURE IF EXISTS GetSuperSpacesById;
- CREATE PROCEDURE GetSuperSpacesById(IN _spaceId INT)
-	BEGIN
-			SELECT ancestor AS id
-			FROM closure
-			WHERE descendant = _spaceId
-			AND ancestor != _spaceId;
-	END //
+
 
 -- Returns all spaces a user can see in the hierarchy rooted at the given space
 -- Author: Eric Burns
@@ -178,7 +169,14 @@ CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 				WHERE closure.ancestor=_spaceId and closure.ancestor!=closure.descendant;
 		END IF;
 	END //
-		
+	
+
+DROP PROCEDURE IF EXISTS GetClosureTableTest;
+CREATE PROCEDURE GetClosureTableTest()
+       BEGIN
+              SELECT *
+	      FROM closure;
+       END //	
 	
 -- Returns all spaces belonging to the space with the given id.
 -- Author: Tyler Jensen & Benton McCune & Eric Burns
@@ -196,9 +194,10 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 			FROM set_assoc 
 				JOIN closure ON set_assoc.child_id=closure.ancestor 
 				JOIN spaces ON spaces.id=set_assoc.child_id
-				JOIN user_assoc ON ( (user_assoc.user_id = _userId OR spaces.public_access) AND user_assoc.space_id=closure.descendant) 
-				WHERE set_assoc.space_id=_spaceId
-				ORDER BY name;
+				JOIN spaces AS s ON s.id=closure.descendant
+				LEFT JOIN user_assoc ON user_assoc.space_id=closure.descendant
+				WHERE set_assoc.space_id=_spaceId AND (s.public_access OR user_assoc.user_id=_userId)
+				ORDER BY spaces.name;
 		END IF;
 	END //
 	
@@ -417,12 +416,11 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 -- Removes only the association between a space and a subspace
 -- Author: Ben McCune
 DROP PROCEDURE IF EXISTS QuickRemoveSubspace;
-CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT, IN _parentspaceId INT)
+CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT)
 	BEGIN
 		-- Remove the space
 		DELETE FROM set_assoc
-		WHERE space_id = _parentspaceId
-		AND child_id = _subspaceId;		
+		WHERE child_id = _subspaceId;		
 	END //	
 	
 -- Updates the name of the space with the given id
@@ -468,10 +466,8 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(255), IN _
 DROP PROCEDURE IF EXISTS GetSpaceDefaultSettingsById;
 CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
 	BEGIN
-		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor, dependencies_enabled, default_benchmark,maximum_memory
+		SELECT space_id, cpu_timeout, clock_timeout, post_processor, pre_processor, dependencies_enabled, default_benchmark,maximum_memory
 		FROM space_default_settings AS settings
-		LEFT OUTER JOIN processors AS pros
-		ON settings.post_processor = pros.id
 		WHERE space_id = _id;
 	END //
 
@@ -512,6 +508,11 @@ CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _settin
 		WHEN 5 THEN
 		UPDATE space_default_settings
 		SET default_benchmark=_setting
+		WHERE space_id=_id;
+		
+		WHEN 6 THEN
+		UPDATE space_default_settings
+		SET pre_processor=_setting
 		WHERE space_id=_id;
 		
     END CASE;

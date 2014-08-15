@@ -45,6 +45,22 @@ function getMaxWallTimeout() {
 	return parseInt(maxtime);
 }
 
+function getCpuTimeoutErrorMessage() {
+	timeout=getMaxCpuTimeout();
+	if (isNaN(timeout)) {
+		return "please select a queue";
+	}
+	return timeout+" second max timeout";
+}
+
+function getClockTimeoutErrorMessage() {
+	timeout=getMaxWallTimeout();
+	if (isNaN(timeout)) {
+		return "please select a queue";
+	}
+	return timeout+" second max timeout";
+}
+
 /**
  * Attach validation to the job creation form
  */
@@ -105,12 +121,12 @@ function attachFormValidation(){
 			},
 			cpuTimeout: {
 				required: "enter a timeout",			    
-			    max: getMaxCpuTimeout()+" second max timeout",
+			    max: getCpuTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
 			wallclockTimeout: {
 				required: "enter a timeout",			    
-			    max: getMaxWallTimeout()+" second max timeout",
+			    max: getClockTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
 			maxMem: {
@@ -171,6 +187,16 @@ function initUI() {
 	//If there is only one post processor and for some reason it is not the default, set it as such
 	if ($("#postProcess").find("option").length==2) {
 		$("#postProcess").find("option").last().attr("selected","selected");
+	}
+	
+	defaultPPId = $('#preProcess').attr('default');
+	if (stringExists(defaultPPId)) {
+		$('#preProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+	}
+	
+	//If there is only one pre processor and for some reason it is not the default, set it as such
+	if ($("#preProcess").find("option").length==2) {
+		$("#preProcess").find("option").last().attr("selected","selected");
 	}
 	
 	// Set up datatables
@@ -338,15 +364,6 @@ function initUI() {
 		$("#tblSolverConfig tr").removeClass("row_selected");
     	$("#tblSolverConfig tr").find('input').removeAttr('checked');
 	});
-	
-	// Choose benchmarks in hierarchy selected
-	/*$("#someBenchInHierarchy").click(function() {
-		benchMethodVal = 2;
-		$("#tblBenchConfig tr").removeClass("row_selected");
-		//$("#tblBenchHier tr").removeClass("row_selected");
-		$("#tblSolverConfig tr").removeClass("row_selected");
-    	$("#tblSolverConfig tr").find('input').removeAttr('checked');
-	});*/
 	
 	// all benchmarks in space 
 	$("#allBenchInSpace").click(function() {

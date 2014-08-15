@@ -54,8 +54,7 @@ $(document).ready(function(){
 			primary: "ui-icon-arrowthick-1-w"
 	}
 	});
-	//TODO : abstract space chain
-	usingSpaceChain=(getSpaceChain().length>1);
+	usingSpaceChain=(getSpaceChain("#spaceChain").length>1);
 
 	communityIdList=getCommunityIdList();
 
@@ -102,63 +101,7 @@ function getCommunityIdList(){
 
 }
 
-/**
- * jstree utility
- * space chain (in spaces.js)
- **/
 
-function openSpace(curSp,childId) {
-	$("#exploreList").jstree("open_node", "#" + curSp, function() {
-		$.jstree._focused().select_node("#" + childId, true);	
-	});	
-}
-/**
- *utility function (abstract space chain)
- *in spaces.js
- **/
-function getSpaceChain(){
-	chain=new Array();
-	spaces=$("#spaceChain").attr("value").split(",");
-	index=0;
-	for (i=0;i<spaces.length;i++) {
-		if (spaces[i].trim().length>0) {
-			chain[index]=spaces[i];
-		}
-		index=index+1;
-	}
-
-	return chain;
-}
-
-
-/**
- *utility function
- * in spaces.js
- **/
-function handleSpaceChain(){
-	spaceChain=getSpaceChain();
-	if (spaceChain.length<2) {
-		return;
-	}
-	p=spaceChain[0];
-
-	spaceChainIndex=1;
-	spaceChainInterval=setInterval(function() {
-		if (spaceChainIndex>=spaceChain.length) {
-			clearInterval(spaceChainInterval);
-		}
-		if (openDone) {
-			openDone=false;
-			c=spaceChain[spaceChainIndex];
-			openSpace(p,c);
-			spaceChainIndex=spaceChainIndex+1;
-			p=c;	
-		}
-		},100);
-		
-		
-	
-}
 
 /**
  * utility function (also in spaces.js)
@@ -239,71 +182,29 @@ function initButtonUI() {
 /**
  * Creates the space explorer tree for the left-hand side of the page, also
  * creates tooltips for the space explorer, .expd class, and userTable (if applicable)
- * TODO : utility function? (used in spaces.js) 
  * @author Tyler Jensen & Todd Elvers & Skylar Stark changes Julio Cervantes
  */
 function initSpaceExplorer(){
-	// Set the path to the css theme for the jstree plugin
-	$.jstree._themes = starexecRoot+"css/jstree/";
-	var id;
-	// Initialize the jstree plugin for the explorer list
-	$("#exploreList").jstree({  
-		"json_data" : { 
-			"ajax" : { 
-				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
-				"data" : function (n) {
-					return { id : n.attr ? n.attr("id") : -1 }; 	// What the default space id should be
-				} 
-			} 
-		}, 
-		"themes" : { 
-			"theme" : "default", 					
-			"dots" : true, 
-			"icons" : true
-		},		
-		"types" : {				
-			"max_depth" : -2,
-			"max_children" : -2,					
-			"valid_children" : [ "space" ],
-			"types" : {						
-				"space" : {
-					"valid_children" : [ "space" ],
-					"icon" : {
-						"image" : starexecRoot+"images/jstree/db.png"
-						    
-						    }
-				}
-			}
-		},
-		"ui" : {			
-			"select_limit" : 1,			
-			"selected_parent_close" : "select_parent"		
-		},
-		"plugins" : [ "types", "themes", "json_data", "ui"] ,
-		"core" : { animation : 200 }
-	        }).bind("select_node.jstree", function (event, data) {
+	// Set the path to the css theme for the jstreeplugin
+    jsTree = makeSpaceTree("#exploreList", !usingSpaceChain);
+	jsTree.bind("select_node.jstree", function (event, data) {
 			
 
 			// When a node is clicked, get its ID and display the info in the details pane
 			id = data.rslt.obj.attr("id");
-			console.log('Space explorer node ' + id + ' was clicked');
 
 			getSpaceDetails(id);
 			setUpButtons();
-			//setURL(id);
 			$('#permCheckboxes').hide();
 			$('#currentPerms').hide();
 		
 
 
 		    }).bind("loaded.jstree", function(event,data) {
-			    handleSpaceChain();
+			    handleSpaceChain("#spaceChain");
 			}).bind("open_node.jstree",function(event,data) {
-				
 				openDone=true;
-			    }).on("click", "a",  function (event, data) { event.preventDefault();  });// This just disable's links in the node title
-
-	log('Space explorer node list initialized');
+			});
 }
 
 
@@ -324,7 +225,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	console.log("selected space: " + idOfSelectedSpace);
 
 	// If we can't find the id of the space selected from the DOM, get it from the cookie instead
-	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined)'{
+	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
 		idOfSelectedSpace = $.cookie("jstree_select");
 		console.log("cookies!  " + idOfSelectedSpace);
 		// If we also can't find the cookie, then just set the space selected to be the root space
@@ -804,15 +705,15 @@ function setUpButtons() {
 
     $("#savePermChanges").unbind("click");
     $("#savePermChanges").click(function(){
-	    $("#dialog-confirm-update-txt").text("how do you want the permission changes to take effect?");
+	    $("#dialog-confirm-update-txt").text("do you want the changes to be hierarchical?");
 		
 	    $("#dialog-confirm-update").dialog({
 		    modal: true,
 			width: 380,
 			height: 165,
 			buttons: {
-			"change only this space": function(){ changePermissions(false,false)},
-			    "change this space's hierarchy" : function(){changePermissions(true,false)},
+			"yes" : function(){changePermissions(true,false)},
+			    "no" : function(){ changePermissions(false,false)},
 			    "cancel": function() {
 				
 				$(this).dialog("close");

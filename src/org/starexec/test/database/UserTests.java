@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.Assert;
 
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
@@ -175,7 +176,7 @@ public class UserTests extends TestSequence {
 		//this might fail if another user is added to the system at exactly this time,
 		//but that would be atypical, and failure is not highly costly
 		Assert.assertEquals(count+1,Users.getCount());
-		Users.deleteUser(temp.getId(),admin.getId());
+		Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
 	}
 	
 	
@@ -196,9 +197,9 @@ public class UserTests extends TestSequence {
 			size+=Benchmarks.get(i).getDiskSize();
 		}
 		Assert.assertEquals(size, Users.getDiskUsage(user1.getId()));
-		Assert.assertTrue(Solvers.delete(solver.getId()));
+		Assert.assertTrue(Solvers.deleteAndRemoveSolver(solver.getId()));
 		for (Integer i : benchmarkIds) {
-			Assert.assertTrue(Benchmarks.delete(i));
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 	}
 	
@@ -210,10 +211,18 @@ public class UserTests extends TestSequence {
 		
 	}
 	
+	@Test
+	private void SetAndGetDefaultPageSize() {
+		int pageSize=Users.getDefaultPageSize(user1.getId());
+		Assert.assertTrue(Users.setDefaultPageSize(user1.getId(), pageSize+1));
+		Assert.assertEquals(pageSize+1,Users.getDefaultPageSize(user1.getId()));
+	}
+	
 	//TODO: Make this stronger?
 	@Test
 	private void GetPasswordTest() {
 		Assert.assertNotNull(Users.getPassword(user1.getId()));
+		
 	}
 	
 	@Test
@@ -262,7 +271,6 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(Users.updateInstitution(user1.getId(), newInst));
 		Assert.assertEquals(newInst, Users.get(user1.getId()).getInstitution());
 	}
-	
 	@Test
 	private void SuspendAndReinstateTest() {
 		Assert.assertFalse(Users.isSuspended(user1.getId()));
@@ -270,6 +278,8 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(Users.isSuspended(user1.getId()));
 		Assert.assertTrue(Users.reinstate(user1.getId()));
 		Assert.assertFalse(Users.isSuspended(user1.getId()));
+		
+		Assert.assertTrue(Users.changeUserRole(user1.getId(), R.TEST_ROLE_NAME));
 	}
 	
 	
@@ -296,7 +306,7 @@ public class UserTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), testUser.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
 		
 	}
 	

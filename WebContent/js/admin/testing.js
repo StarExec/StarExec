@@ -60,15 +60,7 @@ function initUI(){
 		unselectAllRows(testTable);
 	});
 	$("#runStress").click(function() {
-		$.post(
-				starexecRoot+"services/test/runStressTest",
-				{},
-				function(returnCode) {
-					s=parseReturnCode(returnCode);
-
-				}
-		),
-		"json"
+		window.open(starexecRoot+"secure/admin/stressTest.jsp");
 	});
 	
 	testTable=$('#tableTests').dataTable( {

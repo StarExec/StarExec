@@ -2,6 +2,7 @@ package org.starexec.data.security;
 
 import org.owasp.esapi.ESAPI;
 import org.starexec.data.database.Users;
+import org.starexec.test.TestManager;
 import org.starexec.util.Hash;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -10,53 +11,74 @@ public class GeneralSecurity {
 	/**
 	 * Checks to see if the given user has permission to restart Starexec
 	 * @param userId The ID of the user making the request
-	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-	public static SecurityStatusCode canUserRestartStarexec(int userId){
+	public static ValidatorStatusCode canUserRestartStarexec(int userId){
 		if (!Users.isAdmin(userId)) {
-			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return new SecurityStatusCode(true);
+		return new ValidatorStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to change logging settings
 	 * @param userId The ID of the user making the request
-	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-	public static SecurityStatusCode canUserChangeLogging(int userId){
+	public static ValidatorStatusCode canUserChangeLogging(int userId){
 		if (!Users.isAdmin(userId)) {
-			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return new SecurityStatusCode(true);
+		return new ValidatorStatusCode(true);
 	}
 	/**
 	 * Checks to see if the given user has permission to view information related to
 	 * testing
 	 * @param userId The ID of the user making the request
-	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 
-	public static SecurityStatusCode canUserSeeTestInformation(int userId) {
+	public static ValidatorStatusCode canUserSeeTestInformation(int userId) {
 		if (!Users.isAdmin(userId)) {
-			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
-		return new SecurityStatusCode(true);
+		return new ValidatorStatusCode(true);
+	}
+	
+	/**
+	 * Checks to see if the given user has permission to execute tests without checking to see if tests are already running
+	 * @param userId The ID of the user making the request
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 */
+
+	public static ValidatorStatusCode canUserRunTestsNoRunningCheck(int userId) {
+		//only the admin can run tests, and they cannot be run on production
+		if (!Users.isAdmin(userId) || Util.isProduction()) {
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+		}
+		return new ValidatorStatusCode(true);
 	}
 	
 	/**
 	 * Checks to see if the given user has permission to execute tests
 	 * @param userId The ID of the user making the request
-	 * @return new SecurityStatusCode(true) if the operation is allowed and a status code from SecurityStatusCodes otherwise
+	 * @param stress True if the tests in question are stress tests, false otherwise
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 
-	public static SecurityStatusCode canUserRunTests(int userId) {
-		//only the admin can run tests, and they cannot be run on production
-		if (!Users.isAdmin(userId) || Util.isProduction()) {
-			return new SecurityStatusCode(false, "You do not have permission to perform this operation");
+	public static ValidatorStatusCode canUserRunTests(int userId, boolean stress) {
+
+		boolean testRunning=false;
+		if (stress) {
+			testRunning=TestManager.isStressTestRunning();
+		} else {
+			testRunning=TestManager.areTestsRunning();
+		}
+		if (testRunning) {
+			return new ValidatorStatusCode(false, "Tests are already running. Please wait until the current tests are finished");
 		}
 
-		return new SecurityStatusCode(true);
+		return canUserRunTestsNoRunningCheck(userId);
 	}
 	/**
 	 * Given a string, returns the same string in an HTML safe format
@@ -91,22 +113,22 @@ public class GeneralSecurity {
 	}
 	
 	
-	public static SecurityStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, String newPass, String confirmNewPass) {
+	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, String newPass, String confirmNewPass) {
 		String hashedPass = Hash.hashPassword(oldPass);
 		String databasePass = Users.getPassword(userId);
 		if (!hashedPass.equals(databasePass)) {
-			return new SecurityStatusCode(false, "The supplied password is incorrect");
+			return new ValidatorStatusCode(false, "The supplied password is incorrect");
 		}
 		if (!newPass.equals(confirmNewPass)) {
-			return new SecurityStatusCode(false, "The passwords are not the same");
+			return new ValidatorStatusCode(false, "The passwords are not the same");
 		}
 		
 		if (!Validator.isValidPassword(newPass)) {
-			return new SecurityStatusCode(false, "The supplied password is invalid");
+			return new ValidatorStatusCode(false, "The supplied password is invalid");
 		}
 		
 		
-		return new SecurityStatusCode(true);
+		return new ValidatorStatusCode(true);
 	}
 	
 }

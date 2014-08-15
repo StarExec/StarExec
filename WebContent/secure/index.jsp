@@ -1,20 +1,23 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-	import="org.starexec.util.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.Util"%>
+	import="org.starexec.constants.R,org.starexec.util.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%
 	int userId = SessionUtil.getUserId(request);
 		User user = Users.get(userId);
 		System.out.println("role = " + user.getRole());
-		System.out.println("unauthorized = " + user.getRole().equals("unauthorized"));
-		System.out.println("suspended = " + user.getRole().equals("suspended"));
-		if (!user.getRole().equals("unauthorized") && !user.getRole().equals("suspended")){
+		System.out.println("unauthorized = " + user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME));
+		System.out.println("suspended = " + user.getRole().equals(R.SUSPENDED_ROLE_NAME));
+		if (!user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME) && !user.getRole().equals(R.SUSPENDED_ROLE_NAME)){
 			String redirectURL = Util.docRoot("secure/explore/spaces.jsp");
     		response.sendRedirect(redirectURL);
 		}
+		request.setAttribute("isUnauthorized", user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME));
+		request.setAttribute("isSuspended",user.getRole().equals(R.SUSPENDED_ROLE_NAME));
+		
 %>
 <star:template title="Starexec Preview">
-	<c:if test="${user.role == 'unauthorized'}">
+	<c:if test="${isUnauthorized}">
 		<p>
 			<strong>You have not yet been authorized to use the StarExec
 				services.</strong>
@@ -33,7 +36,7 @@
 			setTimeout(logout, 20000);
 		</script>
 	</c:if>
-	<c:if test="${user.role == 'suspended'}">
+	<c:if test="${isSuspended}">
 		<p>
 			<strong>You have been suspended and have indefinitely lost access to StarExec services.</strong>
 		</p>

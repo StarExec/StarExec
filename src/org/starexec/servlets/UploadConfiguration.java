@@ -13,8 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.security.SecurityStatusCode;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -51,29 +52,34 @@ public class UploadConfiguration extends HttpServlet {
 				HashMap<String, Object> configAttrMap = Util.parseMultipartRequest(request); 
 				
 				// Parameter validation
-				if(!this.isValidRequest(configAttrMap)) {
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload configuration request was malformed.");
+				ValidatorStatusCode status=isValidRequest(configAttrMap);
+				
+				if(!status.isSuccess()) {
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, status.getMessage());
 					return;
 				} 
 				
-				SecurityStatusCode status= SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId);
+				status= SolverSecurity.canUserAddConfiguration(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)), userId);
 				if (!status.isSuccess()) {
+					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, status.getMessage());
 					return;
 				}
 
 				
 				// Process the configuration file and write it to the parent solver's /bin directory, then update the solver's disk_size attribute
-				int result = handleConfiguration(configAttrMap);
+				ValidatorStatusCode result = handleConfiguration(configAttrMap);
 				
 				// Redirect user based on how the configuration handling went
-				if(result == -1) {
+				if(!result.isSuccess()) {
 
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new configuration.");	
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.getMessage());	
 				} else {
 
 					//result should be the new ID of the configuration
-					response.addCookie(new Cookie("New_ID", String.valueOf(result)));
+					response.addCookie(new Cookie("New_ID", String.valueOf(result.getStatusCode())));
 				    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)configAttrMap.get(SOLVER_ID))));	
 				}									
 			} else {
@@ -97,7 +103,7 @@ public class UploadConfiguration extends HttpServlet {
      * 		-2 if a configuration file already exists on disk with the same name
      * @author Todd Elvers
      */
-	public int handleConfiguration(HashMap<String, Object> configAttrMap) {
+	public ValidatorStatusCode handleConfiguration(HashMap<String, Object> configAttrMap) {
 		try {
 			// Set up a new configuration object with the submitted information
 			FileItem uploadedFile = (FileItem)configAttrMap.get(UPLOAD_FILE);
@@ -111,16 +117,19 @@ public class UploadConfiguration extends HttpServlet {
 			File newConfigFile = new File(Util.getSolverConfigPath(solver.getPath(), newConfig.getName()));
 			
 			// If a configuration file exists on disk with the same name, append an integer to the file to make it unique
-			//TODO: if the given name is already the max length, this is going to fail
+			// If this cannot be done, and error is returned
 			if(newConfigFile.exists()){
 				boolean fileAlreadyExists = true;
 				int intSuffix = 0;
 				while(fileAlreadyExists){
 					File temp = new File(newConfigFile.getAbsolutePath() + (++intSuffix));
-					if(temp.exists() == false){
+					if(!temp.exists()){
 						newConfigFile = temp;
 						newConfig.setName((String)configAttrMap.get(CONFIG_NAME) + intSuffix);
 						fileAlreadyExists = false;
+						if (!Validator.isValidPrimName(newConfig.getName())) {
+							return new ValidatorStatusCode(false, "The solver already has a configuration with this name, and a new name could not be generated because the name was already the maximum length");
+						}
 					}
 				}
 			}
@@ -138,12 +147,16 @@ public class UploadConfiguration extends HttpServlet {
 			uploadedFile.delete();
 			
 			// Pass new configuration, and the parent solver objects, to the database & return the result
-			return Solvers.addConfiguration(solver, newConfig);
+			int configId=Solvers.addConfiguration(solver,newConfig);
+			if (configId>0) {
+				return new ValidatorStatusCode(true,"",configId);
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		
-		return -1;
+		return new ValidatorStatusCode(false, "Internal error adding configuration");
+
 	}	
 	
 	/**
@@ -154,36 +167,37 @@ public class UploadConfiguration extends HttpServlet {
 	 * @return true iff the configuration upload request is valid, false otherwise
 	 * @author Todd Elvers
 	 */
-	private boolean isValidRequest(HashMap<String, Object> configAttrMap) {
+	private ValidatorStatusCode isValidRequest(HashMap<String, Object> configAttrMap) {
 		try {
 			// Ensure the map contains all relevant keys
-			if (!configAttrMap.containsKey(UPLOAD_FILE) ||
-					!configAttrMap.containsKey(SOLVER_ID) ||
-					!configAttrMap.containsKey(CONFIG_NAME)) {
-				return false;
+			if (!configAttrMap.containsKey(UPLOAD_FILE)) {
+				return new ValidatorStatusCode(false, "No configuration file was given");
 			}
 			
-			// Ensure the parent solver id is valid
-			Integer.parseInt((String)configAttrMap.get(SOLVER_ID));
+			if (!Validator.isValidInteger((String)configAttrMap.get(SOLVER_ID))) {
+				return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
+			}
+
 			
 			
 			if (configAttrMap.containsKey(CONFIG_DESC)) {
 				if (!Validator.isValidPrimDescription((String)configAttrMap.get(CONFIG_DESC))) {
 
-					return false;
+					return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help pages to see the proper format");
 				}
 			}
 			// Ensure the configuration's name and description are valid
 			if(!Validator.isValidPrimName((String)configAttrMap.get(CONFIG_NAME))) {
 
-				return false;
+				return new ValidatorStatusCode(false, "The given name is invalid-- please refer to the help pages to see the proper format");
+
 			}
 			
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
-		return false;
+		return new ValidatorStatusCode(false, "Internal error uploading configuration");
 	}
 }

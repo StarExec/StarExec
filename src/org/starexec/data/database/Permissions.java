@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -254,7 +255,7 @@ public class Permissions {
 	 * @return True if the user can somehow see the solvers, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeSolvers(List<Integer> solverIds, int userId) {
+	public static boolean canUserSeeSolvers(Collection<Integer> solverIds, int userId) {
 		Connection con = null;			
 		if (Users.isAdmin(userId)) {
 			return true;
@@ -284,7 +285,6 @@ public class Permissions {
 	 * @return True if the user belongs to the space, false otherwise
 	 * @author Tyler Jensen
 	 */
-	//TODO: Shouldn't we just make the root public instead of special-casing it like this?
 	public static boolean canUserSeeSpace(int spaceId, int userId) {		
 		if(spaceId <= 1) {
 			// Can always see root space
@@ -356,38 +356,7 @@ public class Permissions {
 		return false;		
 	}
 
-	public static Boolean checkSpaceHierRemovalPerms(List<Integer> subSpaceIds,
-			int parentSpaceId, int userId) {
-		log.debug("checking permissions for quick removal");
-		if(Permissions.get(userId, parentSpaceId).canRemoveSpace() == false){
-			return false;
-		}
-		for (Integer subSpaceId:subSpaceIds){
-			if (Permissions.canUserSeeSpace(subSpaceId, userId) == false){
-				return false;
-			}		
-			if (!Spaces.isLeaf(subSpaceId)){	
-				if ( Permissions.get(userId, subSpaceId).canRemoveSpace() == false){
-					return false;
-				}
-			}
-			//check all descendants of each subspace
-			List<Space> subSpaces = Spaces.getSubSpaceHierarchy(subSpaceId, userId);
-			for (Space descendant:subSpaces){
-				if (Permissions.canUserSeeSpace(descendant.getId(), userId) == false){
-					return false;
-				}		
-				if (!Spaces.isLeaf(subSpaceId)){	
-					if ( Permissions.get(userId, descendant.getId()).canRemoveSpace() == false){
-						return false;
-					}
-				}
-			}
-		}
-		log.debug("Permission to remove Spaces granted!");
-		return true;
 
-	}
 
 	
 	/**
@@ -402,6 +371,12 @@ public class Permissions {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
+		
+		Space s=Spaces.get(spaceId);
+		if (s==null) {
+			return null; //the space does not even exist
+		}
+		
 		//the admin has full permissions everywhere
 		if (Users.isAdmin(userId)) {
 			log.debug("permissions for an admin were obtained userId = "+userId);

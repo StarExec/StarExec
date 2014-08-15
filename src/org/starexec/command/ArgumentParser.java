@@ -18,6 +18,13 @@ class ArgumentParser {
 	Connection con;
 	
 	/**
+	 * Gets the last server error message that was returned
+	 * @return
+	 */
+	public String getLastServerError() {
+		return con.getLastError();
+	}
+	/**
 	 * Sets the new Connection object's username and password based on user-specified parameters.
 	 * Also sets the instance of StarExec that is being connected to
 	 * @param commandParams User specified parameters
@@ -280,8 +287,8 @@ class ArgumentParser {
 				locked=true;
 			}
 			Permission p=new Permission(false);
-			//TODO: Might need to make this non-case sensitive
 			for (String x : R.PARAMS_PERMS) {
+				
 				if (commandParams.containsKey(x) || commandParams.containsKey(R.PARAM_ENABLE_ALL_PERMISSIONS)) {
 					p.setPermissionOn(x);
 				}
@@ -582,7 +589,6 @@ class ArgumentParser {
 			downloadable=true;
 		}
 		Permission p=new Permission();
-		//TODO: Might need to make this non-case sensitive
 		for (String x : R.PARAMS_PERMS) {
 			if (commandParams.containsKey(x) || commandParams.containsKey(R.PARAM_ENABLE_ALL_PERMISSIONS)) {
 				p.setPermissionOn(x);

@@ -20,6 +20,10 @@ class CommandParser {
 		parser=null;
 	}
 	
+	public String getLastServerError() {
+		return parser.getLastServerError();
+	}
+	
 	/**
 	 * Handles all commands that start with "set," indicating a command
 	 * to change some setting.
@@ -107,7 +111,6 @@ class CommandParser {
 			}
 			return serverStatus;
 		} catch (Exception e) {
-		    //System.out.println("CommandParser.java : " + e);
 			return Status.ERROR_INTERNAL;
 		}
 	}
@@ -398,8 +401,8 @@ class CommandParser {
 				}
 				status=parseCommand(line);
 				if (verbose || test) {
-					Shell.printStatusMessage(status);	
-					Shell.printWarningMessages();
+				    MessagePrinter.printStatusMessage(status,this);	
+				    MessagePrinter.printWarningMessages();
 				}
 				
 				//either of the following two statuses indicate that we should stop

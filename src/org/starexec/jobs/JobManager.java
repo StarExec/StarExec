@@ -61,18 +61,7 @@ public abstract class JobManager {
     	    	log.info("Not adding more job pairs to any queues, as the system is paused");
     	    	return false;
     	}
-        
-	    /*If a job's queue is null or the queue is empty,
-	      pause the job if it is not already deleted or paused 
-	    List<Job> jobs = Jobs.getUnRunnableJobs();
-	    if (jobs != null) {
-		for (Job j : jobs) {
-		    if (! (j.isDeleted() || j.isPaused() )) {
-			log.info("Pausing job from JobManager.checkPendingJobs()");
-			Jobs.pause(j.getId());
-		    }
-		}
-	    } */
+
 	    log.debug("about to get all queues");
 	    
 	    List<Queue> queues = Queues.getAll();
@@ -549,20 +538,20 @@ public abstract class JobManager {
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
 	 */
-	//TODO: We should think about changing this so we don't need to send in independently sorted lists of solver and benchmark IDs
-	public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout,long memoryLimit, List<Integer> benchmarkIds, List<Integer> solverIds, List<Integer> configIds, int spaceId, HashMap<Integer, String> SP) {
+	public static void buildJob(Job j, int userId, int cpuTimeout, int clockTimeout,long memoryLimit, List<Integer> benchmarkIds, List<Integer> configIds, int spaceId, HashMap<Integer, String> SP) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
 		// Retrieve all the solvers included in this job
-		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+		List<Solver> solvers = Solvers.getWithConfig(configIds);
 
 		// Pair up the solvers and benchmarks
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
-				pair.setSolver(solver);				
+				pair.setSolver(solver);		
+				pair.setConfiguration(solver.getConfigurations().get(0));
 				pair.setCpuTimeout(cpuTimeout);
 				pair.setWallclockTimeout(clockTimeout);
 				pair.setMaxMemory(memoryLimit);
@@ -699,8 +688,8 @@ public abstract class JobManager {
 	 * @param clockTimeout the clock timeout for the job
 	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 */
-	public static void addBenchmarksFromHierarchy(Job j, int spaceId, int userId, List<Integer> solverIds, List<Integer> configIds, int cpuTimeout, int clockTimeout, long memoryLimit, HashMap<Integer, String> SP) {
-		List<Solver> solvers = Solvers.getWithConfig(solverIds, configIds);
+	public static void addBenchmarksFromHierarchy(Job j, int spaceId, int userId, List<Integer> configIds, int cpuTimeout, int clockTimeout, long memoryLimit, HashMap<Integer, String> SP) {
+		List<Solver> solvers = Solvers.getWithConfig(configIds);
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 
 		// Pair up the solvers and benchmarks

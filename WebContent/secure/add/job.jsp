@@ -18,8 +18,8 @@
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
-			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.POST);
-			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),ProcessorType.PRE);
+			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
+			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
 			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
@@ -27,7 +27,7 @@
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
-			request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
+			request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
@@ -66,7 +66,7 @@
 					<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 						<td class="label"><p>pre processor</p></td>
 						<td>					
-							<select id="preProcess" name="preProcess" default="-1">
+							<select id="preProcess" name="preProcess" default="${defaultPreProcId}">
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${preProcs}">
 										<option value="${proc.id}">${proc.name} (${proc.id})</option>
@@ -81,6 +81,20 @@
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${postProcs}">
 										<option value="${proc.id}">${proc.name} (${proc.id})</option>
+								</c:forEach>
+							</select>
+						</td>
+					</tr>
+					
+					<tr class="noHover" title="which queue should this job be submitted to?">
+						<td class="label"><p>worker queue</p></td>
+						<td>
+							<select id="workerQueue" name="queue">
+								<c:if test="${empty queues}">
+									<option value="" />
+								</c:if>				
+								<c:forEach var="q" items="${queues}">
+	                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
 								</c:forEach>
 							</select>
 						</td>
@@ -104,19 +118,7 @@
 						</td>
 					</tr>
 					
-					<tr class="noHover" title="which queue should this job be submitted to?">
-						<td class="label"><p>worker queue</p></td>
-						<td>
-							<select id="workerQueue" name="queue">
-								<c:if test="${empty queues}">
-									<option value="" />
-								</c:if>				
-								<c:forEach var="q" items="${queues}">
-	                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
+					
 					<tr class="noHover" title="How would you like to traverse the job pairs?">
 						<td class="label"><p>Job-Pair Traversal</p></td>
 						<td>
@@ -154,6 +156,7 @@
 					<tr id="keepHierarchy">
 						<td><input type="hidden" name="runChoice" value="keepHierarchy" />run and keep hierarchy structure</td>
 						<td>this will run all solvers/configurations on all benchmarks in their respective spaces within the space hierarchy.</td>
+					</tr>
 					<tr id="runChoose">
 						<td><input type="hidden" name="runChoice" value="choose" />choose</td>
 						<td>you will choose which solvers/configurations to run from ${space.name} only.</td>
@@ -175,6 +178,7 @@
 					<tr id="allBenchInSpace">
 						<td><input type="hidden" name="benchChoice" value="runAllBenchInSpace" />all in ${space.name}</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in ${space.name}</td>
+					</tr>
 					<tr id="allBenchInHierarchy">
 						<td><input type="hidden" name="benchChoice" value="runAllBenchInHierarchy" />all in hierarchy</td>
 						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>

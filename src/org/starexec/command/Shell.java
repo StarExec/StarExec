@@ -15,47 +15,6 @@ public class Shell {
 	}
 	
 	
-	/**
-	 * Given an status code defined in R, prints the message that corresponds to that status code.
-	 * @param statusCode An integer status code.
-	 * @author Eric Burns
-	 */
-	protected static void printStatusMessage(int statusCode) {
-		
-		if (statusCode<0) {
-			System.out.print("ERROR: ");
-			
-			String message=Status.getStatusMessage(statusCode);
-			if (message!=null) {
-				System.out.println(message);
-			} else {
-				System.out.println("Unknown error");
-			}
-			if(statusCode==Status.ERROR_MISSING_PARAM) {
-				System.out.println("Missing param = \"" + Validator.getMissingParam()+  "\"");
-			}
-		} else if (statusCode>0) {
-			String message=R.successMessages.get(statusCode);
-			if (message!=null) {
-				System.out.println(message);
-			}
-		}
-		
-	}
-	
-	/**
-	 * Prints a warning if the user gave and unnecessary parameters that were ignored
-	 */
-	protected static void printWarningMessages() {
-		List<String> up=Validator.getUnnecessaryParams();
-		if (up.size()>0) {
-			System.out.print("WARNING: The following unnecessary parameters were ignored: ");
-			for (String x : up) {
-				System.out.print(x+" ");
-			}
-			System.out.print("\n");
-		}
-	}
 	
 	/**
 	 * Runs the interactive shell, which takes commands one at a time and passes them 
@@ -67,12 +26,11 @@ public class Shell {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			while (true) {
-				
 				System.out.print("\nStarCom> ");
 				String nextLine = br.readLine();
 				status=parser.parseCommand(nextLine);
-				printStatusMessage(status);
-				printWarningMessages();
+				MessagePrinter.printStatusMessage(status,parser);
+				MessagePrinter.printWarningMessages();
 				//if the user typed 'exit,' quit the program
 				if (status==R.SUCCESS_EXIT) {
 					return;

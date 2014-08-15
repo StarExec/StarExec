@@ -229,18 +229,25 @@ public class Validator {
      */
 	
     public static int isValidCopyRequest(HashMap<String,String> commandParams, String type) {
-    	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO},commandParams)) {
+    	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_TO},commandParams)) {
     		return Status.ERROR_MISSING_PARAM;
     	}
     	
+    	//these three types do NOT require PARAM_FROM, but other types do
+    	if (!type.equals("solver") && !type.equals("benchmark") && !type.equals("job")) {
+    		if (!paramsExist(new String[]{R.PARAM_FROM},commandParams)) {
+        		return Status.ERROR_MISSING_PARAM;
+        	}
+    	}
+    	
     	if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID)) 
-    			|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))
+    			|| (commandParams.containsKey(R.PARAM_FROM) && !isValidPosInteger(commandParams.get(R.PARAM_FROM)))
     			|| !isValidPosInteger(commandParams.get(R.PARAM_TO))) {
     		return Status.ERROR_INVALID_ID;
     	}
     	
     	//the hierarchy parameter is also acceptable if the type is either solver or space
-    	if (type=="solver" || type== "space") {
+    	if (type.equals("solver") || type.equals("space")) {
     		findUnnecessaryParams(allowedCopyHierParams,commandParams);
     	} else {
     		findUnnecessaryParams(allowedCopyParams,commandParams);
@@ -805,6 +812,19 @@ public class Validator {
 	 */
 	public static List<String> getUnnecessaryParams() {
 		return unnecessaryParams;
+	}
+	
+	/**
+	 * Attempts to parse the given string as an integer and return it. On failure, returns -1
+	 * @param str
+	 * @return
+	 */
+	public static Integer getIdOrMinusOne(String str) {
+		try {
+			return Integer.parseInt(str);
+		} catch (Exception e) {
+			return -1;
+		}
 	}
 	
 	

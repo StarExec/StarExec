@@ -7,27 +7,34 @@ import java.util.List;
 import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.SpaceSecurity;
+import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
-
-//TODO: Write tests for configurations
 public class SolverSecurityTests extends TestSequence {
 	User admin=null;
 	User owner=null;
-	User regular=null;
+	User regular=null; 
 	
-	Solver solver=null;
-	Solver solver2=null;
-	Solver solver3=null;
+	Solver solver=null;  //
+	Solver solver2=null; // these two are owned by 'owner'
+	Solver solver3=null; // this one is owned by 'regular'
+	
+	Configuration c =null; //this configuration goes with 'solver'
+	Configuration c2=null;
+	Configuration c3=null;
+	
+	Space tempCommunity=null; //led by 'owner'
+	Space tempCommunity2=null; //led by 'regular'
 	@Test
 	private void deleteSolverPermissionTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId()).isSuccess());
@@ -50,6 +57,31 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolvers(ids, admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
+	}
+	
+	@Test
+	private void canUserSeeBuildLog() {
+		Assert.assertEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), admin.getId()).isSuccess());
+
+		Assert.assertNotEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), regular.getId()).isSuccess());
+	}
+	
+	@Test
+	private void canDeleteConfigurationsTest() {
+		List<Integer> ids=new ArrayList<Integer>();
+		ids.add(c.getId());
+		ids.add(c2.getId());
+		
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfigurations(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfigurations(ids, admin.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfigurations(ids, owner.getId()).isSuccess());
+		
+		ids.add(c3.getId());
+		
+		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteConfigurations(ids, owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfigurations(ids, admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteConfigurations(ids, owner.getId()).isSuccess());
 		
 	}
 	
@@ -132,29 +164,80 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId()).isSuccess());
-		//make sure we can't change the name of solver1 to the same name as solver2, since names must be unique per space
-		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver2.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
 	}
 	
+	@Test 
+	private void canUserUpdateConfiguration() {
+		Assert.assertEquals(true,SolverSecurity.canUserUpdateConfiguration(c.getId(), owner.getId(), c.getName(), c.getDescription()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserUpdateConfiguration(c.getId(), admin.getId(), c.getName(), c.getDescription()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateConfiguration(c.getId(), regular.getId(), c.getName(), c.getDescription()).isSuccess());
+		
+	}
+	
+	@Test
+	private void canUserAddConfigurationTest() {
+		Assert.assertEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), regular.getId()).isSuccess());
+		
+	}
+	
+	@Test
+	private void canUserDeleteConfigurationTest() {
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfiguration(c.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfiguration(c.getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteConfiguration(c.getId(), regular.getId()).isSuccess());
+	}
+	
+	@Test
+	private void canRunStarexecBuildTest() {
+		Assert.assertEquals(true,SolverSecurity.canUserRunStarexecBuild(owner.getId(), tempCommunity.getId()).isSuccess());
+		Assert.assertEquals(true,SolverSecurity.canUserRunStarexecBuild(admin.getId(), tempCommunity.getId()).isSuccess());
+		Assert.assertNotEquals(true,SolverSecurity.canUserRunStarexecBuild(owner.getId(), tempCommunity2.getId()).isSuccess());
+	}
+	
+	@Test
+	private void canUserRecycleOrphanedSolversTest() {
+		Assert.assertEquals(true, SolverSecurity.canUserRecycleOrphanedSolvers(owner.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(true, SolverSecurity.canUserRecycleOrphanedSolvers(owner.getId(), admin.getId()).isSuccess());
+		Assert.assertEquals(false, SolverSecurity.canUserRecycleOrphanedSolvers(admin.getId(), owner.getId()).isSuccess());
+		Assert.assertEquals(false, SolverSecurity.canUserRecycleOrphanedSolvers(owner.getId(), regular.getId()).isSuccess());
+	}
 	
 	
 	@Override
 	protected void setup() throws Exception {
 		admin=Users.getAdmins().get(0);
-		owner=Users.getTestUser();
+		owner=ResourceLoader.loadUserIntoDatabase();
 		regular=ResourceLoader.loadUserIntoDatabase();
+		
+		tempCommunity=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
+		tempCommunity2=ResourceLoader.loadSpaceIntoDatabase(regular.getId(), 1);
+
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
 		solver2=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
 		solver3=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), regular.getId());
+		
+		c=Solvers.getConfigsForSolver(solver.getId()).get(0);
+		c2=Solvers.getConfigsForSolver(solver2.getId()).get(0);
+		c3=Solvers.getConfigsForSolver(solver3.getId()).get(0);
 
 	}
+	
+	
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.delete(solver.getId());
-		Solvers.delete(solver2.getId());
-		Solvers.delete(solver3.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
+		Solvers.deleteAndRemoveSolver(solver2.getId());
+		Solvers.deleteAndRemoveSolver(solver3.getId());
+		
 		Users.deleteUser(regular.getId(),admin.getId());
+		Users.deleteUser(owner.getId(), admin.getId());
+		
+		Spaces.removeSubspaces(tempCommunity.getId(), admin.getId());
+		Spaces.removeSubspaces(tempCommunity2.getId(), admin.getId());
+
 	
 	}
 

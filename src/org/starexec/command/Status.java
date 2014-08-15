@@ -12,7 +12,7 @@ public class Status {
 	public static int STATUS_SUCCESS;
 	public static int ERROR_BAD_COMMAND=-1;
 	public static int ERROR_BAD_ARGS=-2;
-	public static int ERROR_SERVER=-4;
+	public static int ERROR_SERVER=-4; //no error message exists for this status-- it is used when there is a server-supplied message
 	public static int ERROR_BAD_ARCHIVETYPE=-5;
 	public static int ERROR_FILE_AND_URL=-6;
 	public static int ERROR_MISSING_PARAM=-7;

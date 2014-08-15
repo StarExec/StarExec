@@ -269,10 +269,8 @@ function getStatusCode(code) {
  * If the "code" object is not actually a status code, returns true
  */
 function parseReturnCode(code) {
-	//alert("here");
 	s = code.success;
 	
-	//alert(s);
 	//we didn't get back a status code
 	if (typeof s =='undefined' || s==null) {
 		return true;

@@ -34,7 +34,7 @@ public class PermissionsTests extends TestSequence {
 	Solver solver=null;
 	Solver solver2=null;
 	List<Integer> benchmarks=null;
-	Benchmark benchmarkDownloadable=null;
+	Benchmark benchmarkDownloadable=null; //these two benchmarks are the first and second benchmark from the "benchmarks" array
 	Benchmark benchmarkNoDownload=null;
 	
 	@Test
@@ -135,16 +135,17 @@ public class PermissionsTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
+		
+		Spaces.removeSubspaces(space.getId(), admin.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
+		Solvers.deleteAndRemoveSolver(solver2.getId());
+		for (Integer i : benchmarks) {
+			Benchmarks.deleteAndRemoveBenchmark(i);
+		}
 		Users.deleteUser(owner.getId(),admin.getId());
 		Users.deleteUser(spaceMember.getId(),admin.getId());
 		Users.deleteUser(noPerms.getId(),admin.getId());
-		
-		Spaces.removeSubspaces(space.getId(),Communities.getTestCommunity().getId(), testUser.getId());
-		Solvers.delete(solver.getId());
-		Solvers.delete(solver2.getId());
-		for (Integer i : benchmarks) {
-			Benchmarks.delete(i);
-		}
+
 		
 	}
 

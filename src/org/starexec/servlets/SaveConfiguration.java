@@ -4,13 +4,16 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.util.SessionUtil;
@@ -41,16 +44,15 @@ public class SaveConfiguration extends HttpServlet {
     	int userId = SessionUtil.getUserId(request);
     	try {	
 			// Parameter validation
-			if(!this.isValidRequest(request)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The save configuration request was malformed.");
+    		ValidatorStatusCode status=this.isValidRequest(request);
+			if(!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			} 
 			
-			// Permissions check; ensure the user owns the solver to which they are saving
-			if(Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId){
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only owners of a solver may save configurations to it.");
-				return;
-			}
+			
 			
 			// Process the configuration file and write it to the parent solver's /bin directory, then update the solver's disk_size attribute
 			int result = handleConfiguration(request);
@@ -129,35 +131,38 @@ public class SaveConfiguration extends HttpServlet {
 	 * @return true iff all necessary configuration file info was provided by the client and is valid
 	 * @author Todd Elvers
 	 */
-	private boolean isValidRequest(HttpServletRequest request) {
+	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
 		try {
-			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_NAME))
-					|| Util.isNullOrEmpty((String) request.getParameter(SOLVER_ID))
-					|| Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
-				return false;
+			int userId=SessionUtil.getUserId(request);
+			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
+				return new ValidatorStatusCode(false, "The configuration did not have any contents");
 			}
 			
 			
-			if (!Util.isNullOrEmpty((String) request.getParameter(CONFIG_DESC))) {
-				if (!Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
-					return false;
-				}
+			if (!Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
+				return new ValidatorStatusCode(false, "The supplied description is not valid-- please see the help files to see the correct format");
 			}
 			
-			// Ensure the parent solver id is valid
-			Integer.parseInt((String)request.getParameter(SOLVER_ID));
+			
+			if (!Validator.isValidInteger((String)request.getParameter(SOLVER_ID))) {
+				return new ValidatorStatusCode(false,"The supplied solver ID is not a valid integer");
+			}
 			
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))
-					|| !Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
-				return false;
+			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))) {
+				return new ValidatorStatusCode(false, "The supplied name is not valid-- please see the help files to see the correct format");
 			}
 			
-			return true;
+			// Permissions check; ensure the user owns the solver to which they are saving
+			if(Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId){
+				return new ValidatorStatusCode(false, "Only owners of a solver may save configurations to it.");
+			}
+			
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
-		return false;
+		return new ValidatorStatusCode(false, "Internal error creating configuration");
 	}
 }

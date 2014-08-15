@@ -2,19 +2,35 @@ var jobTable;
 var benchTable;
 var solverTable;
 var userId;
+
+var spaceId;
+var spaceName
 $(document).ready(function(){
 	userId=$("#userId").attr("value");
 	// Hide loading images by default
 	$('legend img').hide();
-	$("#dialog-confirm-delete").hide();
-	$("#dialog-confirm-recycle").hide();
+	
+	$("#explorer").hide();
+	$("#linkOrphanedButton").hide();
+
+	$("#detailPanel").css("width","100%");
+
+	$(".dialog").hide(); // hide all dialogs
 	$("fieldset:not(:first)").expandable(true);
 	
 	$('.popoutLink').button({
 		icons: {
 			secondary: "ui-icon-newwin"
-    }});
-	
+    	}
+	});
+	$("#linkOrphanedButton").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	$("#linkOrphanedButton").click(function() {
+		linkAllOrphaned();
+	});
 	$(".recycleButton, .deleteButton").button({
 		icons: {
 			primary: "ui-icon-trash"
@@ -50,8 +66,14 @@ $(document).ready(function(){
 	$('img').click(function(event){
 		PopUp($(this).attr('enlarge'));
 	});
-
-
+	
+	jsTree=makeSpaceTree("#exploreList");
+	// Initialize the jstree plugin for the explorer list
+	jsTree.bind("select_node.jstree", function (event, data) {
+		// When a node is clicked, get its ID and display the info in the details pane
+		spaceId = data.rslt.obj.attr("id");
+		spaceName=$('.jstree-clicked').text();
+	}).
 	//Initiate job table
 	jobTable=$('#jobs').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -62,6 +84,7 @@ $(document).ready(function(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
+
 	
 	//Initiate solver table
 	solverTable=$('#solvers').dataTable( {
@@ -73,7 +96,6 @@ $(document).ready(function(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });
-    
 	
 	//Initiate benchmark table
 	benchTable=$('#benchmarks').dataTable( {
@@ -85,10 +107,32 @@ $(document).ready(function(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler
     });
+
 	
 	$(".selectableTable").on("mousedown", "tr", function(){
 		$(this).toggleClass("row_selected");
 		handleSelectChange();
+	});
+	
+	$("#showSpaceExplorer").button({
+		icons: {
+			primary: "ui-icon-check"
+	}
+	});
+	
+	$("#showSpaceExplorer").click(function() {
+		if (!$("#explorer").is(":visible")) {
+			$("#detailPanel").css("width","65%");
+			$("#showSpaceExplorer .ui-button-text").html("hide space explorer");
+			$("#linkOrphanedButton").show();
+		}
+		$( "#explorer" ).toggle( "slide", function() {
+			if (!$("#explorer").is(":visible")) {
+				$("#detailPanel").css("width","100%");
+				$("#showSpaceExplorer .ui-button-text").html("show space explorer");
+				$("#linkOrphanedButton").hide();
+			}
+		} );
 	});
 	
 });
@@ -124,9 +168,12 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				if (s) {
 					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 						fnCallback(nextDataTablePage);
+						makeTableDraggable("#"+tableName,onDragStart,getDragClone);
+
 						if('j' == tableName[0]){
 							colorizeJobStatistics();
 						} 
+
 				}
 			},  
 			"json"
@@ -288,6 +335,42 @@ function recycleSelected(prim) {
 	});
 }
 
+function linkAllOrphaned() {
+	$('#dialog-confirm-copy-txt').text('Are you sure you want to put all of your orphaned benchmarks, solvers, and jobs into ' +spaceName+'?');
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-copy').dialog({
+		modal: true,
+		height: 220,
+		buttons: {
+			'link all': function() {
+				$("#dialog-confirm-copy").dialog("close");
+				createDialog("Linking the orphaned primitives, please wait. This will take some time for large numbers of primitives.");
+				$.post(  
+						starexecRoot +"services/linkAllOrphaned/"+userId+"/"+spaceId, 
+						{},
+						function(returnCode){
+							destroyDialog();
+							s=parseReturnCode(returnCode);
+							if (s) {
+								solverTable.fnDraw(false);
+								benchTable.fnDraw(false);
+								handleSelectChange();
+							}
+							
+						},  
+						"json"
+				).error(function(){
+					showMessage('error',"Internal error linking primitives",5000);
+				});	
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+		}		
+	});
+}
+
 function recycleOrphaned(prim) {
 	$('#dialog-confirm-recycle-txt').text('Are you sure you want to recycle all of your orphaned ' +prim +'(s)?');
 
@@ -389,4 +472,162 @@ function deleteOrphanedJobs() {
 			}
 		}		
 	});
+}
+
+/**
+ * Called when any item is starting to be dragged within the browser
+ */
+function onDragStart(event, ui) {
+	// Make each space in the explorer list be a droppable target; moving this from the initDraggable()
+	// fixed the bug where spaces that were expanded after initDraggable() was called would not be 
+	// recognized as a viable drop target
+	$('#exploreList').find('a').droppable( {
+		drop		: onSpaceDrop,
+		tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
+        
+		activeClass	: 'active'		// Class applied to the space element when something is being dragged
+	});
+}
+
+/**
+ * Called when a draggable item (primitive) is dropped on a space
+ */
+function onSpaceDrop(event, ui) {
+	
+
+	// Collect the selected elements from the table being dragged from
+	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
+
+	// Get the destination space id and name
+	var destSpace = $(event.target).parent().attr('id');
+	var destName = $(event.target).text();
+
+	
+	if(ids.length < 2) {
+		// If 0 or 1 things are selected in the table, just use the element that is being dragged
+		ids = [ui.draggable.data('id')];
+
+		// Customize the confirmation message for the copy operation to the primitives/spaces involved
+		if(ui.draggable.data('type')[0] == 's'){
+			$('#dialog-confirm-copy-txt').text('do you want to link ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
+		}
+		//job or benchmark
+		else {
+			$('#dialog-confirm-copy-txt').text('do you want to link ' + ui.draggable.data('name') + ' to' + destName + '?');
+		}
+	} else {
+		if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
+			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
+		}
+		//job or benchmark
+		else {
+			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
+		}
+	}		
+
+	// If primitive being copied to another space is a solver...
+	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p'){
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			width: 500,
+			height: 200,
+			
+			//depending on what the user 
+			buttons: {
+				'link in space hierarchy': function() {
+					$('#dialog-confirm-copy').dialog('close'); 
+					doSolverLinkPost(ids,destSpace,true);
+				},
+				'link in space': function(){
+					$('#dialog-confirm-copy').dialog('close');
+					doSolverLinkPost(ids,destSpace,false);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+				
+			}		
+		});	
+	}
+	// Otherwise, if the primitive being copied to another space is a benchmark
+	else if(ui.draggable.data('type')[0] == 'b') {
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			buttons: {
+				'link':function() {
+					$('#dialog-confirm-copy').dialog('close');
+					$.post(  	    		
+							starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
+							{selectedIds : ids, copy:false},	
+							function(returnCode) {
+								parseReturnCode(returnCode);
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error copying benchmarks",5000);
+					});					
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}		
+		});			   		    	    	
+
+	}
+
+	// Otherwise, if the primitive being copied to another space is a job
+	else {
+		// Display the confirmation dialog
+		$('#dialog-confirm-copy').dialog({
+			modal: true,
+			buttons: {
+				'yes': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-copy').dialog('close');
+
+					// Make the request to the server				
+					$.post(  	    		
+							starexecRoot+'services/spaces/' + destSpace + '/add/job',
+							{selectedIds : ids},	
+							function(returnCode) {
+								parseReturnCode(returnCode);
+							},
+							"json"
+					).error(function(){
+						showMessage('error',"Internal error copying jobs",5000);
+					});	 									
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}		
+		});			   		    	    	
+
+	}
+}
+
+/**
+ * Sends a copy solver request to the server
+ * @param ids The IDs of the solvers to copy
+ * @param destSpace The ID of the destination space
+ * @param copy A boolean indicating whether to copy (true) or link (false).
+ * @param destName The name of the destination space
+ * @author Eric Burns
+ */
+
+function doSolverLinkPost(ids,destSpace,hierarchy) {
+	// Make the request to the server
+	$.post(  	    		
+			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
+			{selectedIds : ids,copyToSubspaces: hierarchy, copy : false},
+			function(returnCode) {
+				parseReturnCode(returnCode);
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error copying solvers",5000);
+	});	
 }

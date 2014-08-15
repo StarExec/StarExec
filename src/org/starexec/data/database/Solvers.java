@@ -408,9 +408,35 @@ public class Solvers {
 		}	
 	}
 	
+	/**
+	 * Deletes a solver and permanently removes it from the database. This is NOT
+	 * the normal procedure for deleting a solver. It is used for testing. Calling "delete"
+	 * is typically what is desired
+	 * @param id
+	 * @return
+	 */
+	
+	public static boolean deleteAndRemoveSolver(int id) {
+		boolean success=delete(id);
+		if (!success) {
+			return false;
+		}
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return Solvers.removeSolverFromDatabase(id, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	}
+	
 	
 	/**
-	 * Deletes a solver from the database (cascading deletes handle all dependencies) 
+	 * Sets the deleted flag of a solver and removes it from disk (cascading deletes handle all dependencies) 
 	 * @param id the id of the solver to delete
 	 * @return True if the operation was a success, false otherwise
 	 * @author Todd Elvers
@@ -420,9 +446,7 @@ public class Solvers {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
-			//Cache.invalidateSpacesAssociatedWithSolver(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
-			//Cache.invalidateAndDeleteCache(id,CacheType.CACHE_SOLVER_REUPLOAD);
+
 			File buildOutput=Solvers.getSolverBuildOutput(id);
 			if (buildOutput.exists()) {
 				Util.safeDeleteDirectory(buildOutput.getParent());
@@ -1347,22 +1371,21 @@ public class Solvers {
 	}
 	
 	/**
-	 * This takes in a list of solver and configuration ids. Both lists are stepped through in order
-	 * and paired up. For example the first solver is retrieved from the database, and the first config is retrieved
-	 * and added to the solver, and so on down the list.
+	 * This takes in a list of configuration ids and matches them up with the solvers they go with,
+	 * returning one solver object for each configuration.
 	 * @param solverIds A list of solvers to retrieve
 	 * @param configIds A list of configurations, where each one is retrieved along with the solvers in the given order.
 	 * @return A list of solvers, where each one has one configuration as specified in the configIds list
 	 * @author Tyler Jensen & Skylar Stark
 	 */
-	public static List<Solver> getWithConfig(List<Integer> solverIds, List<Integer> configIds) {
+	public static List<Solver> getWithConfig(List<Integer> configIds) {
 				
 		try {	
 			List<Solver> solvers = new LinkedList<Solver>();
 			for (int cid : configIds) {
 				Solver s = Solvers.getByConfigId(cid);
-				if (s != null & solverIds.contains(s.getId())) {
-					solvers.add(s); //Solver/config pair was valid and selected
+				if (s != null) {
+					solvers.add(s);
 				}
 			}
 			
@@ -1374,48 +1397,6 @@ public class Solvers {
 		return null;
 	}
 
-	
-	/**
-	 * Determines whether the solver identified by the given solver ID has an
-	 * editable name
-	 * @param solverId The ID of the solver in question
-	 * @return -1 if the name is not editable, 0 if it is editable and the solver is
-	 * associated with no spaces, and a positive integer if the name is editable and the
-	 * solver is associated only with the space with the returned ID.
-	 */
-	public static int isNameEditable(int solverId) {
-		Connection con =null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con=Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSolverAssoc(?)}");
-			procedure.setInt(1, solverId);
-			 results=procedure.executeQuery();
-			int id=-1;
-			if (results.next()) {
-				id=results.getInt("space_id");
-			} else {
-				log.debug("Solver associated with no spaces, so its name is editable");
-				return 0;
-			}
-			
-			if (results.next()) {
-				log.debug("Solver is found in multiple spaces, so its name is not editable");
-				return -1;
-			}
-			log.debug("Solver associated with one space id = "+id +" , so its name is editable");
-			return id;
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
 	
 	
 	
@@ -1964,13 +1945,12 @@ public class Solvers {
 		return null;
 		
 	}
-	
 	/**
-	 * Recycles all of the solvers a user has that are not in any spaces
-	 * @param userId The ID of the user who will have their solvers recycled
+	 * Gets the ID of every orphaned solver the given user owns
+	 * @param userId 
 	 * @return
 	 */
-	public static boolean recycleOrphanedSolvers(int userId) {
+	public static List<Integer> getOrphanedSolvers(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -1983,14 +1963,24 @@ public class Solvers {
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
+			return ids;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-			return false;
 		}finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
+		return null;
+	}
+	
+	/**
+	 * Recycles all of the solvers a user has that are not in any spaces
+	 * @param userId The ID of the user who will have their solvers recycled
+	 * @return
+	 */
+	public static boolean recycleOrphanedSolvers(int userId) {
+		List<Integer> ids  = getOrphanedSolvers(userId);
 		
 		//now that we have all the orphaned ids, we can recycle them
 		try {

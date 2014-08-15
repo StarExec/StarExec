@@ -146,9 +146,49 @@ public class JobTests extends TestSequence {
 	}
 	
 	@Test
-	private void IsPausedTest() {
+	private void PauseAndUnpauseTest() {
 		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
+		Assert.assertTrue(Jobs.pause(job.getId()));
+		Assert.assertTrue(Jobs.isJobPaused(job.getId()));
+
+		Assert.assertTrue(Jobs.resume(job.getId()));
 		
+		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
+
+	}
+	
+	@Test 
+	private void DeleteJobTest() {
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
+		Job temp=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
+		Assert.assertTrue(Jobs.delete(temp.getId()));
+		
+		
+		Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
+		
+		Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
+		
+		
+	}
+	
+	@Test
+	private void CountPendingPairsTest() {
+		int count=Jobs.countPendingPairs(job.getId());
+		Assert.assertTrue(count>=0);
+	}
+	
+	@Test
+	private void CountIncompletePairsTest() {
+		int count=Jobs.countIncompletePairs(job.getId());
+		Assert.assertTrue(count>=0);
+	}
+	
+	@Test
+	private void CountTimelessPairsTest() {
+		int count=Jobs.countTimelessPairs(job.getId());
+		Assert.assertTrue(count>=0);		
 	}
 	
 	@Override
@@ -177,14 +217,14 @@ public class JobTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.delete(job.getId());
-		Jobs.delete(job2.getId());
-		Solvers.delete(solver.getId());
+		Jobs.deleteAndRemove(job.getId());
+		Jobs.deleteAndRemove(job2.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());

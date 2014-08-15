@@ -27,7 +27,7 @@
 			</tr>
 		</table>
 		</fieldset>	
-		<input type="hidden" name="cookieexists" value="false">				
+		<input type="hidden" id="cookieexists" name="cookieexists" value="false">				
 	</form>
 	<body onload="cc()">
 	<c:if test="${not empty param.result and param.result == 'failed'}">
@@ -49,11 +49,13 @@
 		    /* If the user has Cookies disabled an alert will let him know 
 		        that cookies need to be enabled to log on.*/ 
 		
-		    document.Form1.cookieexists.value ="false"  
+		    document.getElementById("cookieexists").value = "false";  
 		  } else {
 		   /* this sets the value to true and nothing else will happen,
 		       the user will be able to log on*/
-		    document.Form1.cookieexists.value ="true"
+			    document.getElementById("cookieexists").value = "true";  
+		       
+		   // document.Form1.cookieexists.value ="true"
 		  }
 		}
 		

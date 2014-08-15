@@ -12,11 +12,7 @@
 		if(Permissions.canUserSeeSolver(solverId, userId)) {
 			s = Solvers.get(solverId);
 		}
-		boolean nameEditable=false;
-		if (Solvers.isNameEditable(solverId)>=0) {
-			nameEditable=true;
-		}
-		request.setAttribute("nameEditable",nameEditable);
+
 		if(s != null) {
 			// Ensure the user visiting this page is the owner of the solver
 			if(userId != s.getUserId()){
@@ -49,9 +45,7 @@
 
 <star:template title="edit ${solver.name}" js="lib/jquery.validate.min, edit/solver" css="edit/shared, edit/solver">				
 	<form id="editSolverForm">
-		<c:if test="${!nameEditable}">
-			<input id="name" type="hidden" name="name" value="${solver.name}">
-		</c:if>
+
 		<fieldset>
 			<legend>solver details</legend>
 			<table class="shaded">
@@ -65,12 +59,8 @@
 					<tr>
 						<td class="label">solver name</td>
 						<td>
-							<c:if test="${nameEditable}">
-								<input id="name" type="text" name="name" value="${solver.name}">
-							</c:if>
-							<c:if test="${!nameEditable}">
-								<p>${solver.name}</p>
-							</c:if>
+							<input id="name" type="text" name="name" value="${solver.name}">
+							
 						</td>
 					</tr>
 					<tr>

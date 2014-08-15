@@ -22,7 +22,7 @@ command followed by a set of parameters, using the following syntax
 Where {command} specifies a particular action and where parameters are space-separated key/value 
 pairs of the form {key}={value}. There should be no spaces between {key} and "="--there may be any 
 number of spaces in {value}. Some parameters may not have values, in which case {value} can be the 
-empty string. Neither command nor parameter keys are case sensitive--parameter values ARE case 
+empty string. Neither commands nor parameter keys are case sensitive--parameter values ARE case 
 sensitive.  Parameters can be specified in any order. The parameters accepted by StarExecCommand are 
 described below. An example command using this syntax is...
 
@@ -328,6 +328,8 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
+				  Instead, an ID for this upload request will be returned. This upload ID can be used to query the
+				  status of the benchmark upload to see its progress.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
@@ -456,32 +458,39 @@ then you will lose access to it. You may also copy or link primitives that you o
 multiple primitives at the same time by putting ids in a comma-seperated list, as illustrated in the examples
 below.
 
---copybench -Copies a benchmark from one space to another. "id" is a benchmark id, and "from" and "to" are
-space ids.
-REQUIRED: "id" "from" "to"
-OPTIONAL: None
+--copybench -Copies a benchmark from one space to another. If "from" is not given, you must own the benchmarks you want to copy.
+If "from" is given, the benchmarks will be copied from the specified space, and you may copy benchmarks you do not own given you have permission to copy from the 
+given space. "id" is a benchmark id, and "from" and "to" are space ids.
+REQUIRED: "id" "to"
+OPTIONAL: "from"
 EXAMPLE: 'copybench id=42,10,1 from=643 to=56"
 
---linkbench -links an existing benchmark and associates it with a space. "id" is a benchmark id, and "from""from" and "to" are
+--linkbench -links an existing benchmark and associates it with a space. If "from" is not given, you must own the benchmarks you want to link.
+If "from" is given, the benchmarks will be linked from the specified space, and you may link benchmarks you do not own given you have permission to link from the 
+given space. "id" is a benchmark id, and "from" and "to" are
 space ids.
-REQUIRED: "id" "from" "to"
-OPTIONAL: None
+REQUIRED: "id" "to"
+OPTIONAL: "from"
 EXAMPLE: 'linkbench id=6 from=63 to=124
 
---copysolver -Copies a solver from one space and places it into a new space or hierarchy. "id" is a solver id, and "from"
-and "to" are space ids
-REQUIRED: "id" "from" "to"
-OPTIONAL: "hier"
+--copysolver -Copies a solver and places it into a new space or hierarchy. If "from" is not given, you must own the solvers you want to copy.
+If "from" is given, the solvers will be copied from the specified space, and you may copy solvers you do not own given you have permission to copy from the 
+given space. "id" is a solver id, and "from" and "to" are space ids
+REQUIRED: "id" "to"
+OPTIONAL: "hier" "from"
 
---linksolver -links an existing solver and associates it with a new space or hierarchy. "id" is a solver id, and "from"
+--linksolver -links an existing solver and associates it with a new space or hierarchy. If "from" is not given, you must own the solvers you want to link.
+If "from" is given, the solvers will be linked from the specified space, and you may copy solvers you do not own given you have permission to link from the 
+given space. "id" is a solver id, and "from"
 and "to" are space ids
-REQUIRED: "id" "from" "to"
-OPTIONAL: "hier"
+REQUIRED: "id" "to"
+OPTIONAL: "hier" "from"
 
---linkjob -Links an existing job in a new space space. "id" is a job id, and "from" and "to" are
-space ids.
-REQUIRED: "id" "from" "to"
-OPTIONAL: None
+--linkjob -Links an existing job in a new space space. If "from" is not given, you must own the jobs you want to link.
+If "from" is given, the jobs will be linked from the specified space, and you may link jobs you do not own given you have permission to link from the 
+given space. "id" is a job id, and "from" and "to" are space ids.
+REQUIRED: "id" "to"
+OPTIONAL: "from"
 
 --copyspace -Copies an existing space or space hierarchy rooted at "id" from space "from" to space "to"
 REQUIRED: "id" "from", "to"

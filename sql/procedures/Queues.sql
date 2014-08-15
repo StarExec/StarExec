@@ -83,15 +83,7 @@ CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT)
 		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
 		ORDER BY sge_id ASC;
 		END //	
-	
--- Count the number of queues in a specific space with a specific name
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS countQueueName;
-CREATE PROCEDURE countQueueName(IN _name VARCHAR(128))
-	BEGIN
-		SELECT COUNT(*) FROM queues WHERE name = _name;		
-	END //
-	
+
 -- Get the name of a queue given its id
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS getNameById;
@@ -181,7 +173,7 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 	BEGIN
 		UPDATE queues
 		SET global_access = false
-		WHERE _queueId = _queueId;
+		WHERE id = _queueId;
 	END //
 	
 -- Get the active queues that have been reserved for a particular space
@@ -197,6 +189,7 @@ CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
 			AND queues.permanent = false;
 	END //
 	
+-- Gets all of the permanent queues that the given user is allowed to use
 DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
 CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
 	BEGIN

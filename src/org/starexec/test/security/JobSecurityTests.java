@@ -40,6 +40,15 @@ public class JobSecurityTests extends TestSequence {
 	}
 	
 	@Test
+	private void CanRerunJobTest() {
+		Assert.assertEquals(true,JobSecurity.canUserRerunPairs(job.getId(), user.getId()).isSuccess());
+		Assert.assertEquals(true,JobSecurity.canUserRerunPairs(job.getId(), admin.getId()).isSuccess());
+
+		Assert.assertEquals(false,JobSecurity.canUserRerunPairs(job.getId(), nonOwner.getId()).isSuccess());
+
+	}
+	
+	@Test
 	private void CanPauseJob() {
 		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), user.getId()).isSuccess());
@@ -88,13 +97,13 @@ public class JobSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.delete(job.getId());
-		Solvers.delete(solver.getId());
+		Jobs.deleteAndRemove(job.getId());
+		Solvers.deleteAndRemoveSolver(solver.getId());
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), user.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());
 	}

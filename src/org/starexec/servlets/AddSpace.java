@@ -12,9 +12,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -60,8 +62,11 @@ public class AddSpace extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		// Make sure the request is valid
-		if(!isValid(request)) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The add space request was malformed");
+		ValidatorStatusCode status=isValid(request);
+		if(!status.isSuccess()) {
+			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}
 		
@@ -94,11 +99,7 @@ public class AddSpace extends HttpServlet {
 		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
 		int userId = SessionUtil.getUserId(request);
 		
-		if (Spaces.getSubSpaceIDbyName(spaceId, s.getName()) != -1) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
-			return;
-		}
-		Space parent=Spaces.get(spaceId);		
+		
 		int newSpaceId = Spaces.add(s, spaceId, userId);
 		
 		//Inherit Users
@@ -139,55 +140,62 @@ public class AddSpace extends HttpServlet {
 	 * @param spaceRequest The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
-	private boolean isValid(HttpServletRequest spaceRequest) {
+	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			int spaceId = Integer.parseInt((String)spaceRequest.getParameter(parentSpace));
+			if (!Validator.isValidInteger(request.getParameter(parentSpace))) {
+				return new ValidatorStatusCode(false,"The space ID needs to be an integer");
+			}
+			int spaceId = Integer.parseInt(request.getParameter(parentSpace));
 			
 			// Ensure the space name is valid (alphanumeric < SPACE_NAME_LEN chars)
-			if(!Validator.isValidSpaceName((String)spaceRequest.getParameter(name))) {
-				return false;
+			if(!Validator.isValidSpaceName(request.getParameter(name))) {
+				return new ValidatorStatusCode(false, "The given name is invalid-- please reference the help pages to see valid space names");
 			}
-			
+			String n=request.getParameter(name);
 			// Ensure the description is < 1024 characters
-			if(!Validator.isValidPrimDescription((String)spaceRequest.getParameter(description))) {
-				return false;
+			if(!Validator.isValidPrimDescription(request.getParameter(description))) {
+				return new ValidatorStatusCode(false, "The given description is invalid-- please reference the help pages to see valid description names");
 			}
 			
 			// Ensure the isLocked value is a parseable boolean
-			String lockVal = (String)spaceRequest.getParameter(locked);
+			String lockVal = (String)request.getParameter(locked);
 			if(!lockVal.equals("true") && ! lockVal.equals("false")) {
-				return false;
+				return new ValidatorStatusCode(false, "The 'locked' attribute needs to be either true or false");
 			}
 			//sticky should also be a parsable boolean
-			String sticky = (String) spaceRequest.getParameter(stickyLeaders);
+			String sticky = (String) request.getParameter(stickyLeaders);
 			if (sticky != null) {
 				if (!sticky.equals("true") && ! sticky.equals("false")) {
-					return false;
+					return new ValidatorStatusCode(false, "The 'sticky leaders' attribute needs to be either true or false");
 				}
 				
 				
 				//subspaces of the root can not have sticky leaders enabled
 				if (spaceId==1 && sticky.equals("true")) {
-					return false;
+					return new ValidatorStatusCode(false, "Communities may not enable the sticky leaders option");
 				}
 				
 			}
-
-			
+		
 			// Verify this user can add spaces to this space
-			Permission p = SessionUtil.getPermission(spaceRequest, spaceId);
+			Permission p = SessionUtil.getPermission(request, spaceId);
 			if(!p.canAddSpace()) {
-				return false;
+				return new ValidatorStatusCode(false, "You do not have permission to add a new space here");
+			}
+			
+			
+			if (Spaces.getSubSpaceIDbyName(spaceId, n) != -1) {
+				return new ValidatorStatusCode(false,"The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
 			}
 			
 			// Passed all checks, return true
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
 		// Return false control flow is broken and ends up here
-		return false;
+		return new ValidatorStatusCode(false, "Internal error processing request");
 	}
 }

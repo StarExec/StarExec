@@ -42,6 +42,13 @@
 
 trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 
+
+handleUsrTwo() {
+  echo "Jobscript received USR2."
+}
+
+trap 'handleUsrTwo' USR2
+
 #==========================================================================
 # Execute (prolog will take care of data staging)
 # NOTE: Keep things in here to a MINIMUM. Anything below this line counts
@@ -56,17 +63,19 @@ then
 	cd /export/starexec/sandbox/solver/bin
 	pwd
 	echo "  $LOCAL_RUNSOLVER_PATH --timestamp --add-eof --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $STAREXEC_OUT_DIR/watcher.out -v $STAREXEC_OUT_DIR/var.out -o $STAREXEC_OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-	sudo -u sandbox STAREXEC_OUT_DIR=$$OUT_DIR$$ STAREXEC_MAX_MEM=$MAX_MEM STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$$MAX_CPUTIME$$ STAREXEC_WALLCLOCK_LIMIT=$$MAX_RUNTIME$$ "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$STAREXEC_OUT_DIR/watcher.out" -v "$STAREXEC_OUT_DIR/var.out" -o "$STAREXEC_OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH"
+
+	sudo -u sandbox STAREXEC_OUT_DIR=$$OUT_DIR$$ STAREXEC_MAX_MEM=$MAX_MEM STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$$MAX_CPUTIME$$ STAREXEC_WALLCLOCK_LIMIT=$$MAX_RUNTIME$$ "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$STAREXEC_OUT_DIR/watcher.out" -v "$STAREXEC_OUT_DIR/var.out" -o "$STAREXEC_OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" 
 	
 elif [ $SANDBOX -eq 2 ]
 then
 	cd /export/starexec/sandbox2/solver/bin
 	pwd
 	echo "  $LOCAL_RUNSOLVER_PATH --timestamp --add-eof --cores 4-7 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $STAREXEC_OUT_DIR/watcher.out -v "$STAREXEC_OUT_DIR/var.out" -o $STAREXEC_OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-	sudo -u sandbox2 STAREXEC_OUT_DIR=$$OUT_DIR$$ STAREXEC_MAX_MEM=$MAX_MEM STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$$MAX_CPUTIME$$ STAREXEC_WALLCLOCK_LIMIT=$$MAX_RUNTIME$$ "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 4-7 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$STAREXEC_OUT_DIR/watcher.out" -v "$STAREXEC_OUT_DIR/var.out" -o "$STAREXEC_OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH"
+	sudo -u sandbox2 STAREXEC_OUT_DIR=$$OUT_DIR$$ STAREXEC_MAX_MEM=$MAX_MEM STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$$MAX_CPUTIME$$ STAREXEC_WALLCLOCK_LIMIT=$$MAX_RUNTIME$$ "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 4-7 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$STAREXEC_OUT_DIR/watcher.out" -v "$STAREXEC_OUT_DIR/var.out" -o "$STAREXEC_OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" 
 	
 fi
 
+echo "Jobscript ending."
 
 #==========================================================================
 # Complete (epilog will take care or reporting and data saving) 

@@ -7,7 +7,7 @@ try {
 	// Grab relevant user id & processor info
 	int spaceId = Integer.parseInt((String)request.getParameter("sid"));
 	request.setAttribute("sid",spaceId);
-	List<Processor> procs=Processors.getByCommunity(Spaces.GetCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
+	List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
 	request.setAttribute("procs",procs);
 	
 } catch (Exception e) {

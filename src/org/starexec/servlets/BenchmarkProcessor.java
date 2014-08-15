@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,10 +12,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.User;
 import org.starexec.util.SessionUtil;
@@ -23,7 +26,7 @@ import org.starexec.util.Validator;
 
 
 /**
- * Servlet which handles incoming requests to add and update processors
+ * Servlet which handles incoming requests to reprocess benchmarks
  * @author Tyler Jensen
  */
 @SuppressWarnings("serial")
@@ -34,7 +37,6 @@ public class BenchmarkProcessor extends HttpServlet {
 	private static final String PROCESSOR_ID = "pid";
 	private static final String SPACE_ID = "sid";
 	
-	private static final String PROCESSOR_TYPE = "type";
 	private static final String SPACE_HIERARCHY = "hier";
 	private static final String CLEAR_OLD = "clear";
 	
@@ -49,8 +51,11 @@ public class BenchmarkProcessor extends HttpServlet {
 			// If we're dealing with an upload request...
 				
 			// Make sure the request is valid
-			if(!isValidProcessRequest(request)) {
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The benchmark processing request was malformed");
+			ValidatorStatusCode status=isValidProcessRequest(request);
+			if(!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}
 			
@@ -61,16 +66,8 @@ public class BenchmarkProcessor extends HttpServlet {
 			boolean hier=Boolean.parseBoolean((String)request.getParameter(SPACE_HIERARCHY));
 				
 			Processor p=Processors.get(pid);
-			if (!Users.isMemberOfCommunity(userId, p.getCommunityId())) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You must be a member of the community that owns the processor");
-			}
-			if (!Users.isMemberOfSpace(userId,spaceId)) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You must be a member of the space you are trying to process");
-			}
-			int commId=Spaces.GetCommunityOfSpace(spaceId);
-			if (commId!=p.getCommunityId()) {
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You may only use processors that are a part of the current community");
-			}
+			int commId=Spaces.getCommunityOfSpace(spaceId);
+			
 			List<User> leaders = Spaces.getLeaders(commId);
 			boolean isCommunityLeader = false;
 			for (User u : leaders) {
@@ -86,8 +83,8 @@ public class BenchmarkProcessor extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");	
 			}									
 		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");
 			log.error(e.getMessage(), e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");
 		}	
 	}	
 	
@@ -104,33 +101,53 @@ public class BenchmarkProcessor extends HttpServlet {
 	 * @param form The form to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
-	private boolean isValidProcessRequest(HttpServletRequest request) {
-		try {			
+	private ValidatorStatusCode isValidProcessRequest(HttpServletRequest request) {
+		try {	
+			if(!Validator.isValidInteger((String)request.getParameter(PROCESSOR_ID))) {
+				return new ValidatorStatusCode(false, "The processor ID needs to be a valid integer");
+			}
+			int userId=SessionUtil.getUserId(request);
 			
-			if(!Util.paramExists(PROCESSOR_ID,request) ||
-			   !Util.paramExists(SPACE_ID,request) ||
-			   !Util.paramExists(SPACE_HIERARCHY,request) ||
-			   //!form.containsKey(PROCESSOR_TYPE) ||
-			   !Util.paramExists(CLEAR_OLD,request)) {
-				return false;
+			if(!Validator.isValidInteger((String)request.getParameter(SPACE_ID))) {
+				return new ValidatorStatusCode(false, "The space ID needs to be a valid integer");
 			}
-										
-									
-			if(!Validator.isValidBool((String)request.getParameter(CLEAR_OLD)) || !Validator.isValidBool((String)request.getParameter(SPACE_HIERARCHY))) {
-				return false;
+					
+			if(!Validator.isValidBool((String)request.getParameter(CLEAR_OLD))) {
+				return new ValidatorStatusCode(false, "The 'clear old' option needs to be a valid boolean");
 			}
 			
-			if(!Validator.isValidInteger((String)request.getParameter(PROCESSOR_ID)) || !Validator.isValidInteger((String)request.getParameter(SPACE_ID))) {
-				return false;
+			if(!Validator.isValidBool((String)request.getParameter(SPACE_HIERARCHY))) {
+				return new ValidatorStatusCode(false, "The 'space hierarchy' option needs to be a valid boolean");
 			}
+			
+			
+			int spaceId=Integer.parseInt(request.getParameter(SPACE_ID));
+			int pid=Integer.parseInt(request.getParameter(PROCESSOR_ID));
+			Processor p=Processors.get(pid);
+			
+			
+			if (!Users.isMemberOfCommunity(userId, p.getCommunityId())) {
+				return new ValidatorStatusCode(false,  "You must be a member of the community that owns the processor");
+			}
+			if (!Users.isMemberOfSpace(userId,spaceId)) {
+				return new ValidatorStatusCode(false,  "You must be a member of the space you are trying to process");
+
+			}
+			int commId=Spaces.getCommunityOfSpace(spaceId);
+			if (commId!=p.getCommunityId()) {
+				return new ValidatorStatusCode(false,  "You may only use processors that are a part of the community that owns the benchmarks");
+
+			}
+			
+			
 			// Passed all checks, return true
-			return true;
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 		
 		// Return false control flow is broken and ends up here
-		return false;
+		return new ValidatorStatusCode(false, "Internal error processing request");
 	}
 	
 }

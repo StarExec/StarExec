@@ -32,11 +32,11 @@
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
 		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
 		request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
-		request.setAttribute("defaultPPName", listOfDefaultSettings.get(1));
 		request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
+		request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
 		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 		try {
 			Benchmark bench=Benchmarks.get(Integer.parseInt(listOfDefaultSettings.get(6)));
@@ -198,9 +198,20 @@
 		</thead>
 		<tbody>
 			<tr>
+				<td>pre processor </td>
+				<td>					
+					<select id="editPreProcess" name="editPreProcess" default="${defaultPreProcId}">
+					<option value=-1>none</option>
+					<c:forEach var="proc" items="${pre_proc}">
+							<option value="${proc.id}">${proc.name}</option>
+					</c:forEach>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td>post processor </td>
 				<td>					
-					<select id="editPostProcess" name="editPostProcess" default=${defaultPPId}>
+					<select id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
 					<option value=-1>none</option>
 					<c:forEach var="proc" items="${post_proc}">
 							<option value="${proc.id}">${proc.name}</option>

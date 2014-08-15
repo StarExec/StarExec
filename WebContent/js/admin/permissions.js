@@ -155,7 +155,7 @@ function initUI(userId, spaceId){
 							removeSolver: $("#removeSolver").is(':checked'),
 							removeSpace	: $("#removeSpace").is(':checked'),
 							removeUser	: $("#removeUser").is(':checked'),
-							isLeader 	: $("#isLeader").is(':checked'),
+							isLeader 	: $("#isLeader").is(':checked')
 					};
 					// Pass data to server via AJAX
 					$.post(

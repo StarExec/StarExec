@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,8 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * This class is to handle the upload of a picture. Notice that this upload
@@ -50,12 +53,15 @@ public class UploadPicture extends HttpServlet {
 			// Extract data from the multipart request
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
 			
+			ValidatorStatusCode status=this.isRequestValid(form);
 			// If the request is valid
-			if(this.isRequestValid(form)) {
+			if(status.isSuccess()) {
 				response.sendRedirect(this.handleUploadRequest(userId, form));
 			} else {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				// Or else the request was invalid, send bad request error
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The upload picture request was malformed.");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -138,19 +144,25 @@ public class UploadPicture extends HttpServlet {
 	 * @return True if the request is valid to act on, false otherwise
 	 * @author Ruoyu Zhang
 	 */
-	private boolean isRequestValid(HashMap<String, Object> form) {
+	private ValidatorStatusCode isRequestValid(HashMap<String, Object> form) {
 		try {			
-			if(!form.containsKey(PICTURE_FILE) ||
-			   !form.containsKey(TYPE) ||
-			   !form.containsKey(ID)) {
-				return false;
-			}			
+			if(!form.containsKey(PICTURE_FILE)) {
+				return new ValidatorStatusCode(false, "No picture was supplied");
+			}
+			if (!Validator.isValidInteger((String)form.get(ID))) {
+				return new ValidatorStatusCode(false, "The supplied ID is not a valid integer");
+			}
+			String type=(String)form.get(TYPE);
+			if (type==null || (!type.equals("solver") && !type.equals("user") && !type.equals("benchmark"))) {
+				return new ValidatorStatusCode(false, "The supplied image type is not valid");
+			}
+			
+			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		
-		// Return true if no problem
-		return true;	
+		return new ValidatorStatusCode(false, "Internal error handling picture upload request");	
 	}
 	
 	/**

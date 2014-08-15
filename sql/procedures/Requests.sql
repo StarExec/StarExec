@@ -91,8 +91,9 @@ CREATE PROCEDURE ApproveCommunityRequest(IN _id INT, IN _community INT)
 			-- make the user a 'user' if they are currently 'unauthorized'
 			IF EXISTS(SELECT email FROM user_roles WHERE email = (SELECT email FROM users WHERE users.id = _id) AND role = 'unauthorized') THEN
 				UPDATE user_roles
+				JOIN users ON users.email=user_roles.email
 				SET role = 'user'
-				WHERE user_roles.email IN (SELECT email FROM users WHERE users.id = _id);
+				WHERE users.id = _id;
 			END IF;
 		END IF;
 	END //
@@ -121,9 +122,10 @@ CREATE PROCEDURE DeclineCommunityRequest(IN _id INT, IN _community INT)
 		DELETE FROM community_requests 
 		WHERE user_id = _id and community = _community;
 
-		DELETE FROM users 
+		DELETE users FROM users 
+		JOIN user_roles ON user_roles.email=users.email
 		WHERE users.id = _id
-		AND users.email IN (SELECT email FROM user_roles WHERE role = 'unauthorized');
+		AND role = 'unauthorized';
 	END //
 	
 -- Returns the community request associated with given user id

@@ -98,49 +98,13 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 	BEGIN		
 		SELECT id, name, status, cpuTimeout, clockTimeout
 		FROM queues
+		LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
 		WHERE status="ACTIVE"
-		AND 
-			(id NOT IN (select queue_id from comm_queue))
+		AND (global_access
 			   OR
-			(id IN (select queue_id from comm_queue WHERE (IsLeader(space_id,_userId) = 1)))
+			(comm_queue.space_id IS NOT NULL AND IsLeader(comm_queue.space_id,_userId) = 1))
 		ORDER BY name;	
 	END //
-	
--- Gets the id, name, and status of all queues that are available for a job
--- Default Queue
--- Reserved for space
--- permanent and has given access to specified community that the user is a leader of
--- permanent and global
--- In all situations, the queue must not be empty
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllQueuesForJob;
-CREATE PROCEDURE GetAllQueuesForJob(IN _userId INT, IN _spaceId INT, IN _defaultQueueId INT)
-	BEGIN
-		SELECT DISTINCT id, name, status
-		FROM queues JOIN queue_assoc ON queues.id = queue_assoc.queue_id
-		WHERE status = "ACTIVE" 
-		AND 
-			-- If the queue is default queue
-			(id = _defaultQueueId)
-				OR
-			-- If the queue is reserved for this space...
-			(id IN (select queue_id from comm_queue WHERE queues.permanent = false AND space_id = _spaceId))
-				OR
-			-- If the queue is permanent and has given access to a specified community that the user is leader of
-			(id IN  
-				(SELECT queues.id
-				FROM comm_queue JOIN queues ON queues.id = comm_queue.queue_id
-				WHERE queues.permanent = true
-				AND ( (IsLeader(comm_queue.space_id, _userId) = 1))))
-				OR
-			-- the queue has global access
-			(id IN
-				(SELECT queues.id
-				FROM queues
-				WHERE global_access = true));
-			
-	END //
-		
 	
 -- Gets the id, name and status of all queues in the cluster that are active and the user can use and are unreserved
 -- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
@@ -150,9 +114,8 @@ CREATE PROCEDURE GetUnreservedQueues(IN _userID INT)
 	BEGIN		
 		SELECT id, name, status
 		FROM queues
-		WHERE status="ACTIVE"
-		AND 
-			(id NOT IN (select queue_id from comm_queue))
+		LEFT JOIN comm_queue ON queues.id=comm_queue.queue_id
+		WHERE status="ACTIVE" AND comm_queue.space_id IS NULL
 		ORDER BY name;	
 	END //
 	
@@ -171,7 +134,7 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 DROP PROCEDURE IF EXISTS GetQueue;
 CREATE PROCEDURE GetQueue(IN _id INT)
 	BEGIN		
-		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,clockTimeout
+		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,clockTimeout,global_access
 		FROM queues
 		WHERE id=_id;
 	END // 

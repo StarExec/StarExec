@@ -4,14 +4,17 @@ import java.io.IOException;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
@@ -25,12 +28,11 @@ import org.starexec.util.Validator;
 @SuppressWarnings("serial")
 public class CommunityRequester extends HttpServlet {
 	private static final Logger log = Logger.getLogger(CommunityRequest.class);	
-
+	private String errorMessage;
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
-
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		
@@ -39,12 +41,12 @@ public class CommunityRequester extends HttpServlet {
 		// Validate parameters of request & construct Invite object
 		CommunityRequest comRequest = constructComRequest(user, request);
 		if(comRequest == null){
-		    response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=-1"));
+			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, errorMessage));
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
 			return;
 		}
-		if (Users.isPublicUser(user.getId())){
-			return;
-		}
+		
 		boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
 		if(added){
 			// Send the invite to the leaders of the community 
@@ -66,21 +68,19 @@ public class CommunityRequester extends HttpServlet {
 	 */
 	private CommunityRequest constructComRequest(User user, HttpServletRequest request){
 		try {
-			if(!Util.paramExists(Registration.USER_MESSAGE, request) ||
-			   !Util.paramExists(Registration.USER_COMMUNITY, request)) {
-				return null;
-			}
-			
-			String message = request.getParameter(Registration.USER_MESSAGE);
-			int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY)); 		
-			
-			if(validateParameters(communityId, message)){
+
+			ValidatorStatusCode status=validateParameters(request, user.getId());
+			if(status.isSuccess()){
+				String message = request.getParameter(Registration.USER_MESSAGE);
+				int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY)); 		
 				CommunityRequest req = new CommunityRequest();
 				req.setUserId(user.getId());
 				req.setCommunityId(communityId);
 				req.setCode(UUID.randomUUID().toString());
 				req.setMessage(message);
 				return req;	
+			} else {
+				errorMessage=status.getMessage();
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -99,14 +99,28 @@ public class CommunityRequester extends HttpServlet {
 	 * @return true iff communityId is a valid space_id that is a child of the root space and 
 	 * that the user's message is between 1 and 300 characters in length
 	 */
-	private boolean validateParameters(int communityId, String message){
-		if(communityId < 0 
-				|| !Communities.isCommunity(communityId)
-				|| !Validator.isValidRequestMessage(message)){
-			return false;
+	private ValidatorStatusCode validateParameters(HttpServletRequest request, int userId){
+		if(Util.paramExists(Registration.USER_COMMUNITY, request)) {
+					return new ValidatorStatusCode(false, "You need to provide a community ID");
 		}
-
-		return true;		
+		
+		if(!Util.paramExists(Registration.USER_MESSAGE, request)) {
+					return new ValidatorStatusCode(false, "You need to provide a message explaining why you want to join");
+		}
+		String message = request.getParameter(Registration.USER_MESSAGE);
+		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY)); 		
+		
+		
+		if(!Validator.isValidRequestMessage(message)){
+			return new ValidatorStatusCode(false, "The given message is invalid-- please refer to the help pages to see the valid format");
+		}
+		if (!Communities.isCommunity(communityId)) {
+			return new ValidatorStatusCode(false, "The given ID does not represent any community");
+		}
+		if (Users.isPublicUser(userId)){
+			return new ValidatorStatusCode(false, "You cannot request a new community as a guest");
+		}
+		return new ValidatorStatusCode(true);		
 	}
 
 

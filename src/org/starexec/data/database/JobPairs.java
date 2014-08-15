@@ -39,6 +39,7 @@ public class JobPairs {
 	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
+			 log.debug("received a call to add a job pair with path = "+pair.getPath());
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
@@ -732,6 +733,7 @@ public class JobPairs {
 
 			file=new File(file,pair.getBench().getName());
 			
+			
 			if (!file.exists()) {	    // if the job output could not be found
 				File testFile=new File(file,pair.getSolver().getName());
 				testFile=new File(testFile,pair.getConfiguration().getName());
@@ -742,9 +744,10 @@ public class JobPairs {
 						testFile.delete();
 					}
 				}
-			} else if (file.isFile()) {
+			} else if (file.isFile()) { // if it is a file, we have already got the full path
 				return file.getAbsolutePath();
 			}
+			//otherwise, we need to add the pair ID as another directory (this is the most current path to job pairs)
 			file=new File(file,pair.getId()+".txt");
 
 			return file.getAbsolutePath();
@@ -1183,59 +1186,6 @@ public class JobPairs {
 		return jp;
 	}
 
-	/**
-	 * One-time only function for transferring legacy job pairs from their old file locations
-	 * to new file locations
-	 * @return True on success, false otherwise
-	 * @author Eric Burns
-	 */
-	public static boolean transferOutputFilesToNewDirectory() {
-		try {
-			List<JobPair> pairs = getAllPairsForMovingOutputFiles();
-			log.debug("we found this many pairs "+pairs.size()+"\n\n\n\n");
-			
-			File oldPairFile = null;
-			File newFileDir=null;
-			String path=null;
-			for (JobPair jp : pairs) {
-				log.debug("now working on pair "+jp.getId());
-				File tempDir=new File(new File(R.NEW_JOB_OUTPUT_DIR),String.valueOf(jp.getJobId()));
-
-				oldPairFile=new File(String.format("%s/%d/%d/%s___%s/%s", R.JOB_OUTPUT_DIR, jp.getId(), jp.getJobId(), jp.getSolver().getName(), jp.getConfiguration().getName(), jp.getBench().getName()));
-				if (!oldPairFile.exists()) {
-					log.debug(oldPairFile.getAbsolutePath());
-					continue;
-				}
-				log.debug("Searching for pair output at" + oldPairFile.getAbsolutePath());
-				
-				path=jp.getPath();
-				//if the pair has no  path for some reason, just assign a generic one
-				if (path==null) {
-					path="job space";
-				}
-				
-				String [] spaces=path.split("/");
-				newFileDir=new File(tempDir,spaces[0]);
-				newFileDir.mkdir();
-				for (int index=1;index<spaces.length;index++) {
-					newFileDir=new File(newFileDir,spaces[index]);
-				}
-				newFileDir=new File(newFileDir,jp.getSolver().getName());
-				newFileDir.mkdirs();
-				newFileDir=new File(newFileDir,jp.getConfiguration().getName());
-				newFileDir.mkdirs();				
-				FileUtils.copyFileToDirectory(oldPairFile,newFileDir);
-
-			}
-			
-			return true;
-		} catch (Exception e) {
-			log.debug("transferOutputFilesToNewDirectory says "+e.getMessage(),e);
-		}
-		return false;
-		
-	}
-	
 
 	/**
 	 * Update's a job pair's grid engine id

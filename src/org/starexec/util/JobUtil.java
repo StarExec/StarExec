@@ -147,12 +147,7 @@ public class JobUtil {
 	private Integer createJobFromElement(int userId, Integer spaceId,
 			Element jobElement) {
 	    try {
-		String name = jobElement.getAttribute("name");
-		if (Spaces.notUniquePrimitiveName(name, spaceId, 3)) {
-		    log.warn("not a unique primitive name for "+ name);
-		    errorMessage = "Error: The job should have a unique name in the space.";
-		    return -1;
-		}
+		
 
 		Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
 		

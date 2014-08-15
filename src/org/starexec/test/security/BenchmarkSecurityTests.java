@@ -126,10 +126,6 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
 		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), admin.getId()).isSuccess());
-		
-		//we can't change the name to the same name as b2 because the names cannot be the same
-		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), user1.getId()).isSuccess());
-		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b2.getName(),b2.getDescription(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(), user2.getId()).isSuccess());
 	}
 	
@@ -154,7 +150,6 @@ public class BenchmarkSecurityTests extends TestSequence {
 		
 		
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()).isSuccess());
-
 	}
 	
 	
@@ -183,17 +178,16 @@ public class BenchmarkSecurityTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		for (Integer i : benchmarkIds) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		for (Integer i : benchmarkIds2) {
-			Benchmarks.delete(i);
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
-		User testUser=Users.getTestUser();
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId(), Communities.getTestCommunity().getId(), testUser.getId());
-		Spaces.removeSubspaces(space2.getId(), Communities.getTestCommunity().getId(), testUser.getId());
+		Spaces.removeSubspaces(space.getId(), admin.getId());
+		Spaces.removeSubspaces(space2.getId(), admin.getId());
 
 		
 		
