@@ -97,7 +97,10 @@ public class CreatePermanentQueue extends HttpServlet {
 		}
 		
 		//DatabaseChanges
-		int queueId=Queues.getIdByName(queue_name + ".q");
+		log.debug("about to get queue with name = "+req.getQueueName());
+		int queueId=Queues.getIdByName(req.getQueueName());
+		log.debug("just added new permanent queue with id = "+queueId);
+
 		boolean success = Queues.makeQueuePermanent(queueId);
 		success = success && Queues.updateQueueCpuTimeout(queueId, req.getCpuTimeout());
 		success = success && Queues.updateQueueWallclockTimeout(queueId, req.getWallTimeout());

@@ -80,6 +80,7 @@ public class GridEngineUtil {
 		}
 
 		Session s = SessionFactory.getFactory().getSession();
+		
 		try {
 			s.init("");
 		} catch (Exception e) {
