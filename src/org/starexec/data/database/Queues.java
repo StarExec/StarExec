@@ -1191,7 +1191,6 @@ public class Queues {
 	public static boolean makeQueuePermanent(int queue_id) {
 		Connection con = null;
 		CallableStatement MakePermanent = null;
-		CallableStatement DeleteEntries = null;
 		CallableStatement DeleteAssociation = null;
 		try {
 			con = Common.getConnection();
@@ -1201,7 +1200,7 @@ public class Queues {
 			MakePermanent = con.prepareCall("{CALL MakeQueuePermanent(?)}");
 			MakePermanent.setInt(1, queue_id);
 			MakePermanent.executeUpdate();
-
+			log.debug("successfully made this queue permanent = "+queue_id);
 			
 			//Delete from comm_queue
 			DeleteAssociation = con.prepareCall("{CALL RemoveQueueAssociation(?)}");
@@ -1215,7 +1214,6 @@ public class Queues {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(MakePermanent);
-			Common.safeClose(DeleteEntries);
 			Common.safeClose(DeleteAssociation);
 		}
 		return false;
