@@ -198,9 +198,9 @@ public class StressTest {
 		addBenchmarks(spaces,users,minBenchmarksPerSpace,maxBenchmarksPerSpace,BENCHMARK_NAME);
 		String name=null;
 		name="aaaaJobSpace";
+		Space jobParentSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 		for (int x=0;x<jobCount;x++) {
-			name=name+"a";
-			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
+			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), jobParentSpace.getId());
 			StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), spaceCountPerJob, SOLVER_NAME, BENCHMARK_NAME,minSolversPerSpace,maxSolversPerSpace, minBenchmarksPerSpace,maxBenchmarksPerSpace);
 		}
 		

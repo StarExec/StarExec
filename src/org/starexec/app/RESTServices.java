@@ -43,6 +43,7 @@ import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.security.BenchmarkSecurity;
@@ -193,6 +194,17 @@ public class RESTServices {
 	    
 		}
 	
+	@GET
+	@Path("/benchmarks/uploadDescription/{statusId}")
+	@Produces("application/json")
+	public String getBenchmarkUploadDescription(@PathParam("statusId") int statusId, @Context HttpServletRequest request) {
+		int userId =SessionUtil.getUserId(request);
+		if (!Permissions.canUserSeeStatus(statusId, userId)) {
+			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to view this upload"));
+		}
+		
+		return gson.toJson(new ValidatorStatusCode(true,Uploads.getUploadStatusSummary(statusId)));
+	}
 	
 	/**
 	 * @return a json string representing all the subspaces of the job space
@@ -3726,10 +3738,7 @@ public class RESTServices {
 
 		String new_start = start_month + "/" + start_day + "/" + start_year;
 		String new_end = end_month + "/" + end_day + "/" + end_year;
-		log.debug(Validator.isValidPrimName(queueName));
-		log.debug(Validator.isValidInteger(nodeCount));
-		log.debug(Validator.isValidDate(new_start));
-		log.debug(Validator.isValidDate(new_end));
+
 		
 		if ((Validator.isValidInteger(nodeCount) && Validator.isValidDate(new_start) && Validator.isValidDate(new_end)) ) {
 			log.debug("validated");

@@ -85,6 +85,7 @@ public class CreatePermanentQueue extends HttpServlet {
 		//GridEngine Changes
 		QueueRequest req = new QueueRequest();
 		req.setQueueName(queue_name + ".q");
+	
 		GridEngineUtil.createPermanentQueue(req, true, NQ);
 		
 		Collection<Queue> queues = NQ.values();
@@ -100,11 +101,15 @@ public class CreatePermanentQueue extends HttpServlet {
 		log.debug("about to get queue with name = "+req.getQueueName());
 		int queueId=Queues.getIdByName(req.getQueueName());
 		log.debug("just added new permanent queue with id = "+queueId);
-		log.debug(req.getCpuTimeout());
-		log.debug(req.getWallTimeout());
+		
 		boolean success = Queues.makeQueuePermanent(queueId);
-		success = success && Queues.updateQueueCpuTimeout(queueId, req.getCpuTimeout());
-		success = success && Queues.updateQueueWallclockTimeout(queueId, req.getWallTimeout());
+		
+		Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
+		Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
+		log.debug(cpuTimeout);
+		log.debug(wallTimeout);
+		success = success && Queues.updateQueueCpuTimeout(queueId, cpuTimeout);
+		success = success && Queues.updateQueueWallclockTimeout(queueId, wallTimeout);
 		if (!success) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
 		} else {

@@ -2011,6 +2011,39 @@ public class Connection {
 	protected void setJobOutCompletion(int jobID,int completion) {
 		job_out_indices.put(jobID,completion);
 	}	
+	
+	/**
+	 * Gets the status of a benchmark archive upload given the ID of the upload status.
+	 * @param statusId The upload ID to use
+	 * @return A human-readable string containing details of the benchmark upload in the following format
+	 * benchmarks: {validated} / {failed validation} / {total} | spaces: {completed} / {total} 
+	 * {error message if exists}
+	 * {"upload complete" if finished}
+	 * Null is returned if there was an error, and this Connection's error message will have been set
+	 */
+	public String getBenchmarkUploadStatus(Integer statusId) {
+		try {
+			String URL=baseURL+R.URL_GETID;
+			URL=URL.replace("{statusId}",statusId.toString());
+			HttpGet get=new HttpGet(URL);
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			boolean success=JsonHandler.getSuccessOfResponse(response);
+			String message=JsonHandler.getMessageOfResponse(response);
+			response.getEntity().getContent().close();
+			if (success) {
+				return message;
+			} else {
+				setLastError(message);
+			}
+			
+		} catch (Exception e) {
+			setLastError("Internal error getting benchmark upload details");
+			return null;
+		}
+		return null;
+	}
 	/**
 	 * Creates a job on Starexec according to the given paramteters
 	 * @param spaceId The ID of the root space for the job

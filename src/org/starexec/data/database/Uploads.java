@@ -163,6 +163,35 @@ public class Uploads {
 	}
 	
 	/**
+	 * Gets a string summary of an upload status, suitable for printing out and displaying to users
+	 * (used in StarexeCommand)
+	 * @param statusId
+	 * @return The string summary, or null on error
+	 */
+	public static String getUploadStatusSummary(int statusId) {
+		UploadStatus status=get(statusId);
+		StringBuilder sb=new StringBuilder();
+		sb.append("benchmarks: ");
+		sb.append(status.getValidatedBenchmarks());
+		sb.append(" / ");
+		sb.append(status.getFailedBenchmarks());
+		sb.append(" / ");
+		sb.append(status.getTotalBenchmarks());
+		sb.append(" | ");
+		sb.append("spaces: ");
+		sb.append(status.getCompletedSpaces());
+		sb.append(" / ");
+		sb.append(status.getTotalSpaces());
+		sb.append("\n");
+		sb.append(status.getErrorMessage());
+		if(status.isEverythingComplete()) {
+			sb.append("\n");
+			sb.append("upload complete");
+		}
+		return sb.toString();
+	}
+	
+	/**
 	 * Gets the upload status object when given its id
 	 * @param statusId The id of the status to get information for
 	 * @return An upload status object

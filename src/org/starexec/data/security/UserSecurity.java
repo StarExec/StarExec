@@ -17,7 +17,7 @@ public class UserSecurity {
 	 */
 	public static ValidatorStatusCode canAssociateWebsite(String name, String URL){
 		
-		if (!Validator.isValidPrimName(name)) {
+		if (!Validator.isValidWebsiteName(name)) {
 			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the correct format");
 		}
 		

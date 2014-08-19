@@ -527,7 +527,10 @@ class CommandParser {
 			status=parser.pauseJob(commandParams);
 		} else if (c.equals(R.COMMAND_RERUNPAIR)) {
 			status=parser.rerunPair(commandParams);
-		} else if (c.equals(R.COMMAND_RERUNJOB)) {
+		} else if (c.equals(R.COMMAND_GET_BENCH_UPLOAD_STATUS)) {
+			status=parser.printBenchStatus(commandParams);
+		}	else if (c.equals(R.COMMAND_RERUNJOB)) {
+
 			status=parser.rerunJob(commandParams);
 		} else if (c.startsWith("get")) {
 			status=handleGetCommand(c,commandParams);

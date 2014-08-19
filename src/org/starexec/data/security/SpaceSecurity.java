@@ -46,7 +46,7 @@ public class SpaceSecurity {
 			return new ValidatorStatusCode(false, "The given URL is not in the proper format. Please refer to the help pages to see the correct format");
 		}
 		
-		if (!Validator.isValidPrimName(name)) {
+		if (!Validator.isValidWebsiteName(name)) {
 			return new ValidatorStatusCode(false, "The given name is not in the proper format. Please refer to the help pages to see the correct format");
 		}
 		return new ValidatorStatusCode(true);

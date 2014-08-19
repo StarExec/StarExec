@@ -1824,9 +1824,7 @@ public class Solvers {
 			
 			procedure.executeUpdate();						
 			log.debug(String.format("Solver [id=%d] was successfully updated.", id));
-			//Cache.invalidateSpacesAssociatedWithSolver(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_SOLVER_REUPLOAD);
+
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

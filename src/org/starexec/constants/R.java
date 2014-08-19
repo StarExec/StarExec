@@ -39,6 +39,7 @@ public class R {
     public static int CONFIGURATION_DESC_LEN=1024;
     public static int PRIM_NAME_LEN=64;
     public static int SOLVER_NAME_LEN=64;
+    public static int WEBSITE_NAME_LEN=64;
 
     public static int SOLVER_DESC_LEN=1024;
     public static int JOB_NAME_LEN=64;
@@ -61,8 +62,8 @@ public class R {
     //public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
     public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
     public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(PRIM_NAME_LEN)+"}$";
-    public static String BENCH_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(BENCH_NAME_LEN)+"}$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
+    
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,"+R.MSG_LEN+"}$";
     public static String PRIMITIVE_DESC_PATTERN="^[^<>\"\'%;)(&\\+-]{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
     public static String PASSWORD_PATTERN="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$";

@@ -27,7 +27,6 @@ public class Validator {
 	private static Pattern patternRequestMsg;
 	private static Pattern patternDate;
 	private static Pattern patternDouble;
-	private static Pattern patternBenchName;
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	
     public static void initialize() {
@@ -42,7 +41,6 @@ public class Validator {
 	    	patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
-	    	patternBenchName = Pattern.compile(R.BENCH_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternSpaceName = Pattern.compile(R.SPACE_NAME_PATTERN,Pattern.CASE_INSENSITIVE);
 	    	patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
@@ -111,6 +109,30 @@ public class Validator {
     	return message!=null && patternRequestMsg.matcher(message).matches();
     }
     
+    public static boolean isValidSolverName(String name) {
+    	return isValidPrimName(name, R.SOLVER_NAME_LEN);
+    }
+    
+    public static boolean isValidJobName(String name) {
+    	return isValidPrimName(name,R.JOB_NAME_LEN);
+    }
+    
+    public static boolean isValidProcessorName(String name) {
+    	return isValidPrimName(name,R.PROCESSOR_NAME_LEN);
+    }
+    
+    public static boolean isValidQueueName(String name) {
+    	return isValidPrimName(name,R.QUEUE_NAME_LEN);
+    }
+    
+    public static boolean isValidWebsiteName(String name) {
+    	return isValidPrimName(name,R.WEBSITE_NAME_LEN);
+    }
+    
+    public static boolean isValidConfigurationName(String name) {
+    	return isValidPrimName(name, R.CONFIGURATION_NAME_LEN);
+    }
+    
     /**
      * Validates a name and checks that it contains only letters, numbers and dashes
      * 
@@ -119,8 +141,8 @@ public class Validator {
      * contains only letters, numbers and dashes
      */
     //TODO: We need to break this down into the individual primitives
-    public static boolean isValidPrimName(String name){   
-    	return name!=null && patternPrimName.matcher(name).matches();    	
+    private static boolean isValidPrimName(String name, int maxLength){   
+    	return name!=null && patternPrimName.matcher(name).matches() && name.length()<=maxLength;    	
     }
     
     /**
@@ -131,7 +153,7 @@ public class Validator {
      * contains only letters, numbers and dashes
      */
     public static boolean isValidBenchName(String name){   
-    	return name!=null && patternBenchName.matcher(name).matches();    	
+    	return isValidPrimName(name, R.BENCH_NAME_LEN);
     }
     
     /**

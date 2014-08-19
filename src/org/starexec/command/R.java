@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="8/6/2014-1";
+	public static String VERSION="8/18/2014-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -38,6 +38,7 @@ public class R {
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
 	
+	public static String URL_GET_BENCH_UPLOAD_STATUS="services/benchmarks/uploads/{statusId}";
 	public static String URL_GETID="services/users/getid";
 	
 	public static String URL_COPYBENCH="services/spaces/{spaceID}/add/benchmark";
@@ -123,7 +124,8 @@ public class R {
 	public static String COMMAND_RESUMEJOB="resumejob";
 	public static String COMMAND_RERUNPAIR="rerunpair";
 	public static String COMMAND_RERUNJOB="rerunjob";
-
+	public static String COMMAND_GET_BENCH_UPLOAD_STATUS="viewuploadstatus";
+	
 		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
 	public static String COMMAND_GETJOBINFO="getjobinfo";

@@ -728,7 +728,25 @@ class ArgumentParser {
 			return fail;
 		}
 	}
-	
+    
+    /**
+     * Prints out the status of a benchmark upload request to stdout, assuming the status could be found
+     * @param commandParams
+     * @return 0 on success and a negative error code otherwise
+     */
+    protected int printBenchStatus(HashMap<String,String> commandParams) {
+    	int valid = Validator.isValidPrintBenchUploadStatusRequest(commandParams);
+    	if (valid<0) {
+    		return valid;
+    	}
+    	String status=con.getBenchmarkUploadStatus(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+    	if (status!=null) {
+    		System.out.println(status);
+    		return 0;
+    	} else {
+    		return Status.ERROR_SERVER;
+    	}
+    }
 	
 	/**
 	 * This method takes in a HashMap mapping String keys to String values
