@@ -1749,6 +1749,69 @@ public class Connection {
 	public int downloadJobPair(Integer pairId, String filePath) {
 		return downloadArchive(pairId,"jp_output",null,filePath,false,false,false,false,null,false);
 	}
+	
+	public int downloadJobPairs(List<Integer> pairIds, String filePath) {
+		HttpResponse response=null;
+		try {
+			HashMap<String,String> urlParams=new HashMap<String,String>();
+			urlParams.put(R.FORMPARAM_TYPE, "jp_outputs");
+			StringBuilder sb=new StringBuilder();
+			for (Integer id : pairIds) {
+				sb.append(id);
+				sb.append(",");
+			}
+			String ids=sb.substring(0,sb.length()-1);
+			
+			for (Integer id : pairIds) {
+				urlParams.put(R.FORMPARAM_ID+"[]",ids);
+			}
+			
+			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
+			//First, put in the request for the server to generate the desired archive			
+			
+			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+R.URL_DOWNLOAD,urlParams));
+			
+			get=(HttpGet) setHeaders(get);
+			response=client.execute(get);
+			
+			setSessionIDIfExists(response.getAllHeaders());
+			
+			
+			
+			boolean fileFound=false;
+			for (Header x : response.getAllHeaders()) {
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound=true;
+					break;
+				}
+			}
+			
+			if (!fileFound) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+
+				response.getEntity().getContent().close();
+				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			}
+			
+			
+			
+			//copy file from the HTTPResponse to an output stream
+			File out=new File(filePath);
+			File parent=new File(out.getAbsolutePath().substring(0,out.getAbsolutePath().lastIndexOf(File.separator)));
+			parent.mkdirs();
+			FileOutputStream outs=new FileOutputStream(out);
+			IOUtils.copy(response.getEntity().getContent(), outs);
+			outs.close();
+			response.getEntity().getContent().close();
+			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+
+			return 0;
+		} catch (Exception e) {
+			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+			return Status.ERROR_INTERNAL;
+		}
+		
+	}
 	/**
 	 * Downloads the job output from a job from StarExec in the form of a zip file
 	 * @param jobId The ID of the job to download the output from
@@ -1925,6 +1988,7 @@ public class Connection {
 			}
 			
 			if (!fileFound) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 				response.getEntity().getContent().close();
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}

@@ -140,7 +140,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidIntegerList(new String[]{}));
 		Assert.assertFalse(Validator.isValidIntegerList(new String[]{"3kd"}));
 		Assert.assertFalse(Validator.isValidIntegerList(new String[]{"0","132929","3492","d"}));
-		Assert.assertFalse(Validator.isValidIntegerList(null));
+		Assert.assertFalse(Validator.isValidIntegerList((String[])null));
 		
 
 	}

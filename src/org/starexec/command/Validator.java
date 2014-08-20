@@ -276,6 +276,17 @@ public class Validator {
 			return Status.ERROR_INVALID_FILEPATH;
 		}
 		
+		if (!type.equals("jp_outputs")) {
+			if (!Validator.isValidInteger(commandParams.get(R.PARAM_ID))) {
+				return Status.ERROR_INVALID_ID;
+			} 
+		} else {
+			if (!Validator.isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
+				return Status.ERROR_INVALID_ID;
+
+			}
+		}
+		
 		//if the file exists already, make sure the user explicitly wants to overwrite the existing file
 		File testFile=new File(outputLocale);
 		

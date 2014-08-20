@@ -521,11 +521,18 @@ public class JobPair extends Identifiable {
 	public String getJobSpaceName() {
 		return jobSpaceName;
 	}
-
+	
+/**
+ * Sets max memory usage
+ * @param maxMemory memory in bytes
+ */
 	public void setMaxMemory(long maxMemory) {
 		this.maxMemory = maxMemory;
 	}
-
+	/**
+	 * Gets max memory usage by this pair
+	 * @return Memory usage in bytes
+	 */
 	public long getMaxMemory() {
 		return maxMemory;
 	}

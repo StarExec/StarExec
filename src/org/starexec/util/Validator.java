@@ -1,6 +1,8 @@
 package org.starexec.util;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -289,4 +291,30 @@ public class Validator {
     	
     	return false;
     }
+    
+    /**
+     * Determines whether the given string is a valid comma-separated list of integers
+     * @param ids The string to check
+     * @return True if the string is a comma-separated list of  integers, false otherwise
+     */
+    
+    public static boolean isValidIntegerList(String ids) {
+    	String[] idArray=ids.split(",");
+    	for (String id : idArray) {
+    		if (!Validator.isValidInteger(id)) {
+    			return false;
+    		}
+    	}
+    	
+    	return true;
+    }
+    
+    public static List<Integer> convertToIntList(String str) {
+		String[] ids=str.split(",");
+		List<Integer> answer=new ArrayList<Integer>();
+		for (String s : ids) {
+			answer.add(Integer.parseInt(s));
+		}
+		return answer;
+	}
 }

@@ -752,6 +752,8 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_GETJOBPAIR)) {
 				type="jp_output";
 				
+			} else if (c.equals(R.COMMAND_GETJOBPAIRS)) {
+				type="jp_outputs";
 			} else if (c.equals(R.COMMAND_GETNEWJOBINFO)) {
 				type="job";
 				//Note: The reason the parameter "since" is not being taken from R.PARAM_SINCE

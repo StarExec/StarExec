@@ -232,7 +232,7 @@ OPTIONAL: "ow"
 --getjobinfo -Get the CSV pertaining to the job associated with the given id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow" "incids" "comp"
-EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.tar incids='
+EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.zip incids='
 
 --getjobout -Gets the output for all the job pairs associated with the job with the given id.
 REQUIRED: "id" "out"
@@ -241,6 +241,12 @@ OPTIONAL: "ow"
 --getjobpair -Downloads the output from the job pair associated with the given id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
+
+--getjobpairs -Downloads the output from every pair in the given list. Every pair must belong to the same job. 
+The value of the "id" parameter should be a comma-separated list of job pair ids.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+EXAMPLE: "getjobpairs id=5,20,30 out=outputs.zip"
 
 --getnewjobinfo -Get the CSV pertaining to the job associated with the given id containing only
 info related to job pairs that have been completed since the last time the command was used. 
@@ -371,7 +377,7 @@ Delete Commands
 ---------------
 
 These commands are all used to delete primitives from Starexec. All of them accept a single parameter, 
-"id." You may delete multiple primitives at once by putting all the ids in a comma-seperated list Delete commands all look like the following example.
+"id." You may delete multiple primitives at once by putting all the ids in a comma-seperated list. Delete commands all look like the following example.
 
 'deleteconfig id=5,47,23'
 
