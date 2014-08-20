@@ -53,10 +53,9 @@ class JsonHandler {
 	 * @return The string message, or null if there is no ValidatorStatusCode
 	 */
 	
-	protected static String getMessageOfResponse(HttpResponse response) {
+	protected static String getMessageOfResponse(JsonObject obj) {
 		try {
-			JsonObject obj=getJsonObject(response);
-			return obj.get("success").getAsString();
+			return obj.get("message").getAsString();
 		} catch (Exception e) {
 			return null;
 		}
@@ -70,12 +69,12 @@ class JsonHandler {
 	 * @return Whether the request was successful, or null if there is no ValidatorStatusCode
 	 */
 	
-	protected static Boolean getSuccessOfResponse(HttpResponse response) {
+	protected static Boolean getSuccessOfResponse(JsonObject obj) {
 		
 		try {
-			JsonObject obj=getJsonObject(response);
 			return obj.get("success").getAsBoolean();
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 
@@ -87,7 +86,6 @@ class JsonHandler {
 			JsonElement jsonE=JsonHandler.getJsonString(response);
 		
 			JsonObject obj=jsonE.getAsJsonObject();
-			
 			return obj;
 		} catch (Exception e) {
 			return null;

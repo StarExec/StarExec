@@ -202,7 +202,6 @@ public class RESTServices {
 		if (!Permissions.canUserSeeStatus(statusId, userId)) {
 			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to view this upload"));
 		}
-		
 		return gson.toJson(new ValidatorStatusCode(true,Uploads.getUploadStatusSummary(statusId)));
 	}
 	

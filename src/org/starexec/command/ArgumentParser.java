@@ -727,10 +727,7 @@ class ArgumentParser {
 			}
 			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
 			
-		} catch (Exception e) {
-
-		    //System.out.println("ArgumentParser.java : " +e);
-		  
+		} catch (Exception e) {		  
 		    fail.add(Status.ERROR_INTERNAL);
 			return fail;
 		}

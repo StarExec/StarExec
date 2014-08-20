@@ -14,6 +14,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import org.jfree.util.Log;
+
 /**
  * RunQstat.java, based on org.starexec.util.GridEngineUtil.setQueueAssociationsInDb()
  * 
@@ -40,7 +42,6 @@ public class RunQstat {
 	try {					
 	    Process p;
 	    if (command.length == 1) {
-		System.out.println("Executing the following command: " + command[0]);
 			
 		p = r.exec(command[0], envp);
 	    }
@@ -52,17 +53,10 @@ public class RunQstat {
 		    b.append(command[i]);
 		}
 
-		System.out.println(b.toString());
 			    
 		p = r.exec(command, envp);
 	    }
-	
-	    System.out.println("Command initiated.");
 
-	    /*	    if (p.waitFor() != 0) {
-		System.out.println("Command "+command[0]+" failed with value " + p.exitValue());				
-		} 
-	    System.out.println("Command finished.");*/
 
 	    InputStream in = p.getInputStream();
 	    BufferedInputStream buf = new BufferedInputStream(in);
@@ -81,12 +75,10 @@ public class RunQstat {
 			String line = null;
 			try {
 			    while ((line = errReader.readLine()) != null)
-				System.out.println("stdErr: "+line);
-			    System.out.println("Done reading error output of command."); 
+
 			    errReader.close();
 			}
 			catch(Exception e) {
-			    System.out.println("Error: "+e.toString());
 			}
 		    }
 		});
@@ -96,10 +88,9 @@ public class RunQstat {
 	    
 	    reader.close();
 
-	    System.out.println("Done reading regular output of command."); 
 	    return sb.toString();
 	} catch (Exception e) {
-	    System.out.println("execute command says " + e.getMessage());		
+		Log.error(e.getMessage(),e);
 	}
 		
 	return null;

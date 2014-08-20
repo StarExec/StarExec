@@ -314,6 +314,7 @@ DROP PROCEDURE IF EXISTS DecreaseNodeCount;
 CREATE PROCEDURE DecreaseNodeCount(IN _queueId INT)
 	BEGIN
 		UPDATE queue_request_assoc
+		JOIN queue_request ON queue_request_assoc.request_id = queue_request.id
 		SET node_count = node_count - 1
 		WHERE queue_id = _queueId
 		AND node_count > 0;

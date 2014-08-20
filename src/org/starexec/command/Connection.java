@@ -48,6 +48,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 
@@ -820,8 +821,9 @@ public class Connection {
 			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			HttpResponse response=client.execute(post);
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
 			
@@ -926,8 +928,10 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
@@ -975,8 +979,10 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			
 			response.getEntity().getContent().close();
 			if (success) {
@@ -1006,8 +1012,10 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 
 			response.getEntity().getContent().close();
 			if (success) {
@@ -1043,8 +1051,10 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			
 			
@@ -1138,8 +1148,10 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
@@ -1397,9 +1409,10 @@ public class Connection {
 			
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
 				List<Integer> newPrimIds=new ArrayList<Integer>();
@@ -1687,7 +1700,8 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			JsonElement jsonE=JsonHandler.getJsonString(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=jsonE.getAsJsonObject();
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			
 			//if we got back a ValidatorStatusCode, there was an error
@@ -2087,16 +2101,20 @@ public class Connection {
 	 */
 	public String getBenchmarkUploadStatus(Integer statusId) {
 		try {
-			String URL=baseURL+R.URL_GETID;
+			
+			String URL=baseURL+R.URL_GET_BENCH_UPLOAD_STATUS;
 			URL=URL.replace("{statusId}",statusId.toString());
 			HttpGet get=new HttpGet(URL);
 			get=(HttpGet) setHeaders(get);
 			HttpResponse response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
+				
 				return message;
 			} else {
 				setLastError(message);

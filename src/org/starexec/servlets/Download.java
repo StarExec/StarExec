@@ -107,7 +107,6 @@ public class Download extends HttpServlet {
 				success = handlePairOutput(id, u.getId(), response);				
 			} else if (request.getParameter("type").equals("jp_outputs")) {
 				List<Integer> ids=Validator.convertToIntList(request.getParameter("id[]"));
-				System.out.println(ids.size());
 				shortName="Pair_Output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success=handlePairOutputs(ids,u.getId(),response);
