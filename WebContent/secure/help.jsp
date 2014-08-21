@@ -40,6 +40,7 @@
   <li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/explore/cluster.help">Checking cluster status</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/explore/statistics.help">Viewing community statistics</a></li>
   <li class="topicHeader">Benchmarks</li>
   <li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Adding benchmarks</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/details/benchmark.help">Accessing benchmarks</a></li>
