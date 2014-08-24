@@ -753,9 +753,15 @@ public class GridEngineUtil {
 		    GridEngineUtil.loadQueues();	
 		    return success;
 	}
+	
+	/**
+	 * Moves the given set of nodes into the given queue
+	 * @param req The request object representing the destination queue, which must have the queue_name set
+	 * @param NQ A map of nodes to queues, where the nodes are the ones that will be moved and the queues
+	 * are the ones that currently own each node
+	 */
 
-    public static void moveNodes(QueueRequest req, HashMap<WorkerNode, Queue> NQ) {
-	String queueName = req.getQueueName();
+    public static void moveNodes(String queueName, HashMap<WorkerNode, Queue> NQ) {
 	log.info("moveNodes begins, for queue "+queueName);
 	String[] split = queueName.split("\\.");
 	String shortQueueName = split[0];
@@ -804,7 +810,7 @@ public class GridEngineUtil {
 		    String shortQName = split3[0];
 		    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
 		}
-
+		log.debug("adding node with name = "+n.getName() +" to queue = "+shortQueueName);
 		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
 	    }
 	}

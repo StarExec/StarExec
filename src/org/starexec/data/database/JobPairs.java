@@ -780,7 +780,12 @@ public class JobPairs {
 				jp.getNode().setId(results.getInt("node_id"));
 				jp.getStatus().setCode(results.getInt("status_code"));
 				jp.getBench().setId(results.getInt("bench_id"));
+				jp.getBench().setName(results.getString("bench_name"));
 				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
+				jp.getSolver().setId(results.getInt("solver_id"));
+				jp.getSolver().setName(results.getString("solver_name"));
+				jp.getSolver().getConfigurations().get(0).setName(results.getString("config_name"));
+				jp.setConfiguration(jp.getSolver().getConfigurations().get(0));
 				return jp;
 			}		
 			Common.safeClose(results);

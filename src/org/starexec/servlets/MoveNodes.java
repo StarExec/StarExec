@@ -58,7 +58,7 @@ public class MoveNodes extends HttpServlet {
 		}
 	    log.debug("Received request to move nodes.");
 
-	    String queue_name = (String)request.getParameter(name);
+	    String queueName = (String)request.getParameter(name);
 	    List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 		
 	    HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
@@ -75,10 +75,7 @@ public class MoveNodes extends HttpServlet {
 	    }
 		
 	    //GridEngine Changes
-	    QueueRequest req = new QueueRequest();
-	    req.setQueueName(queue_name);
-		
-	    GridEngineUtil.moveNodes(req, NQ);
+	    GridEngineUtil.moveNodes(queueName, NQ);
 		
 	    Collection<Queue> queues = NQ.values();
 	    for (Queue q : queues) {
