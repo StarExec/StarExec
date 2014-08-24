@@ -3457,6 +3457,7 @@ public class Jobs {
 
 			}
 			
+			
 			   
 		}
 		
@@ -3524,7 +3525,7 @@ public class Jobs {
 				p.put(R.EXPECTED_RESULT, expected);
 
 			}
-			
+			jp.setAttributes(p);
 			returnList.add(jp);			
 			
 		}
