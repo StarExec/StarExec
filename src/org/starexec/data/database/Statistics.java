@@ -30,6 +30,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.Range;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.plot.PiePlot;
@@ -325,7 +326,7 @@ public class Statistics {
 			HashMap<String,String> names=new HashMap<String,String>();
 			int series=0;
 			int item=0;
-			XYSeries d=new XYSeries("points");
+			XYSeries d=new XYSeries("points",false);
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			//for now, we are not including error pairs in this chart
 			int debugItem=0;
@@ -346,12 +347,7 @@ public class Statistics {
 						//when hovering over the point in the image map
 						names.put(key, jp.getBench().getName());
 						item+=1;
-						log.debug("adding new point for benchmark with id = "+jp.getBench().getId() +" at location "+jp.getWallclockTime()+" "+jp2.getWallclockTime());
-						log.debug("other bench = "+jp2.getBench().getId());
-						if (jp.getBench().getId()==46) {
-							debugItem=item-1;
-							debugSeries=series;
-						}
+											
 						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
 						
 					}
@@ -359,9 +355,7 @@ public class Statistics {
 			}
 			
 			dataset.addSeries(d);
-			log.debug("doing debug now");
-			log.debug(dataset.getX(debugSeries,debugItem));
-			log.debug(dataset.getY(debugSeries,debugItem));
+
 			String key=debugSeries+":"+debugItem;
 			log.debug(urls.get(key));
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
