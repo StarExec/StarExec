@@ -337,12 +337,10 @@ public class Statistics {
 				}
 				//if we haven't seen this benchmark, then it wasn't in pairs1 and
 				//there is no comparison to make on it
-				if (times.containsKey(jp.getBench().getId())) {
-					//if, for some reason, this job included runs of the same bench with the same config,
-					//we only want to use the first one we see.
-					if (times.get(jp.getBench().getId()).size()<2) {
-						times.get(jp.getBench().getId()).add(jp.getWallclockTime());
-					}
+				if (times.containsKey(jp.getBench().getId()) && times.get(jp.getBench().getId()).size()==1) {
+					
+					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+					
 					//points are identified by their series and item number
 					String key=series+":"+item;
 					
@@ -353,6 +351,8 @@ public class Statistics {
 					//when hovering over the point in the image map
 					names.put(key, jp.getBench().getName());
 					item+=1;
+				} else if (times.containsKey(jp.getBench().getId())) {
+					log.debug("benchmark id = " + jp.getBench().getId() +" had too many job pairs in solver comparision table");
 				}
 			}
 			
@@ -361,6 +361,8 @@ public class Statistics {
 			for(List<Double> time : times.values()) {
 				if (time.size()==2) {
 					d.add(time.get(0),time.get(1));
+				} else if (time.size()>2) {
+					log.error("times data included a benchmark with more than two points!");
 				}
 			}
 			dataset.addSeries(d);
