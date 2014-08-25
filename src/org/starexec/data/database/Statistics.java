@@ -328,6 +328,8 @@ public class Statistics {
 			XYSeries d=new XYSeries("points");
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			//for now, we are not including error pairs in this chart
+			int debugItem=0;
+			int debugSeries=0;
 			for (JobPair jp : pairs1) {
 				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
 					JobPair jp2=pairs2Map.get(jp.getBench().getId());
@@ -346,13 +348,22 @@ public class Statistics {
 						item+=1;
 						log.debug("adding new point for benchmark with id = "+jp.getBench().getId() +" at location "+jp.getWallclockTime()+" "+jp2.getWallclockTime());
 						log.debug("other bench = "+jp2.getBench().getId());
+						if (jp.getBench().getId()==46) {
+							debugItem=item-1;
+							debugSeries=series;
+						}
 						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
+						
 					}
 				}
 			}
 			
 			dataset.addSeries(d);
-			
+			log.debug("doing debug now");
+			log.debug(dataset.getX(debugSeries,debugItem));
+			log.debug(dataset.getY(debugSeries,debugItem));
+			String key=debugSeries+":"+debugItem;
+			log.debug(urls.get(key));
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
