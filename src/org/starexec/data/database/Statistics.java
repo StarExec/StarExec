@@ -363,6 +363,17 @@ public class Statistics {
 				if (time.size()==2) {
 					d.add(time.get(0),time.get(1));
 					String key="0:"+item;
+					int benchId=urls.get(key);
+					for (JobPair jp : pairs1) {
+						if (jp.getBench().getId()==benchId) {
+							log.debug(jp.getWallclockTime());
+						}
+					}
+					for (JobPair jp : pairs2) {
+						if (jp.getBench().getId()==benchId) {
+							log.debug(jp.getWallclockTime());
+						}
+					}
 					log.debug("adding a new point for benchmark id = "+urls.get(key) +" at "+time.get(0)+" "+time.get(1));
 					item++;
 				} else if (time.size()>2) {
