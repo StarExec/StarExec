@@ -344,7 +344,8 @@ public class Statistics {
 						//when hovering over the point in the image map
 						names.put(key, jp.getBench().getName());
 						item+=1;
-						log.debug("adding new point for benchmark with id = "+jp.getBench().getId());
+						log.debug("adding new point for benchmark with id = "+jp.getBench().getId() +" at location "+jp.getWallclockTime()+" "+jp2.getWallclockTime());
+						log.debug("other bench = "+jp2.getBench().getId());
 						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
 					}
 				}
