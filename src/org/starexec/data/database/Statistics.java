@@ -358,9 +358,13 @@ public class Statistics {
 			
 			XYSeries d=new XYSeries("points");
 			XYSeriesCollection dataset=new XYSeriesCollection();
+			item=0;
 			for(List<Double> time : times.values()) {
 				if (time.size()==2) {
 					d.add(time.get(0),time.get(1));
+					String key="0:"+item;
+					log.debug("adding a new point for benchmark id = "+urls.get(key) +" at "+time.get(0)+" "+time.get(1));
+					item++;
 				} else if (time.size()>2) {
 					log.error("times data included a benchmark with more than two points!");
 				}
