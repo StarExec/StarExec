@@ -312,74 +312,44 @@ public class Statistics {
 			if (pairs1.size()==0 || pairs2.size()==0) {
 				return null;
 			}
+			HashMap<Integer, JobPair> pairs2Map=new HashMap<Integer,JobPair>();
+			for (JobPair jp : pairs2) {
+				pairs2Map.put(jp.getBench().getId(), jp);
+			}
 			log.debug("making solver comparison chart");
 			
 			String xAxisName=pairs1.get(0).getSolver().getName()+"/"+pairs1.get(0).getConfiguration().getName() +" time(s)";
 			String yAxisName=pairs2.get(0).getSolver().getName() +"/"+pairs2.get(0).getConfiguration().getName()+" time(s)";
-			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
-			
 			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
 			int series=0;
 			int item=0;
+			XYSeries d=new XYSeries("points");
+			XYSeriesCollection dataset=new XYSeriesCollection();
 			//for now, we are not including error pairs in this chart
 			for (JobPair jp : pairs1) {
 				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
-					times.put(jp.getBench().getId(), new ArrayList<Double>());
-					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
-				}
-				
-			}
-			for(JobPair jp : pairs2) {
-				if (jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
-					continue;
-				}
-				//if we haven't seen this benchmark, then it wasn't in pairs1 and
-				//there is no comparison to make on it
-				if (times.containsKey(jp.getBench().getId()) && times.get(jp.getBench().getId()).size()==1) {
+					JobPair jp2=pairs2Map.get(jp.getBench().getId());
 					
-					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
-					
-					//points are identified by their series and item number
-					String key=series+":"+item;
-					
-					//put the id in urls so we can link to the benchmark details page
-					urls.put(key, jp.getBench().getId());
-					
-					//put the name in names so we can create a tooltip of the name
-					//when hovering over the point in the image map
-					names.put(key, jp.getBench().getName());
-					item+=1;
-				} else if (times.containsKey(jp.getBench().getId())) {
-					log.debug("benchmark id = " + jp.getBench().getId() +" had too many job pairs in solver comparision table");
+					//if we can find a second pair with this benchmark
+					if (jp2!=null && jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
+						//points are identified by their series and item number
+						String key=series+":"+item;
+						
+						//put the id in urls so we can link to the benchmark details page
+						urls.put(key, jp.getBench().getId());
+						
+						//put the name in names so we can create a tooltip of the name
+						//when hovering over the point in the image map
+						names.put(key, jp.getBench().getName());
+						item+=1;
+						
+						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
+					}
 				}
 			}
 			
-			XYSeries d=new XYSeries("points");
-			XYSeriesCollection dataset=new XYSeriesCollection();
-			item=0;
-			for(List<Double> time : times.values()) {
-				if (time.size()==2) {
-					d.add(time.get(0),time.get(1));
-					String key="0:"+item;
-					int benchId=urls.get(key);
-					for (JobPair jp : pairs1) {
-						if (jp.getBench().getId()==benchId) {
-							log.debug(jp.getWallclockTime());
-						}
-					}
-					for (JobPair jp : pairs2) {
-						if (jp.getBench().getId()==benchId) {
-							log.debug(jp.getWallclockTime());
-						}
-					}
-					log.debug("adding a new point for benchmark id = "+urls.get(key) +" at "+time.get(0)+" "+time.get(1));
-					item++;
-				} else if (time.size()>2) {
-					log.error("times data included a benchmark with more than two points!");
-				}
-			}
 			dataset.addSeries(d);
 			
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
