@@ -333,7 +333,7 @@ public class Statistics {
 					JobPair jp2=pairs2Map.get(jp.getBench().getId());
 					
 					//if we can find a second pair with this benchmark
-					if (jp2!=null && jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
+					if (jp2!=null && jp2.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
 						//points are identified by their series and item number
 						String key=series+":"+item;
 						
@@ -344,7 +344,7 @@ public class Statistics {
 						//when hovering over the point in the image map
 						names.put(key, jp.getBench().getName());
 						item+=1;
-						
+						log.debug("adding new point for benchmark with id = "+jp.getBench().getId());
 						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
 					}
 				}
