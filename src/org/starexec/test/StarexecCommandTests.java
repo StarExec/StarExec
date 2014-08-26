@@ -246,10 +246,12 @@ public class StarexecCommandTests extends TestSequence {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
-		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+		addMessage("upload ID = "+ result);
+		
 		waitForUpload(result,60);
-		
-		
+		addMessage(Uploads.everythingComplete(result).toString());
+		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 
 		for (Benchmark b : t.getBenchmarks()) {
