@@ -26,7 +26,7 @@ import org.starexec.util.Util;
 public class StressTest {
 	private static final Logger log = Logger.getLogger(StressTest.class);
 
-	private static String SOLVER_NAME="CVC4.zip";
+	private static String SOLVER_NAME="smallsolver.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
 	
 	
