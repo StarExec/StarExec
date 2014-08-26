@@ -26,6 +26,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.UploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -232,7 +233,8 @@ public class StarexecCommandTests extends TestSequence {
 	private void waitForUpload(int uploadId, int maxSeconds) {
 		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
 		for (int x=0;x<maxSeconds;x++) {
-			if (Uploads.everythingComplete(uploadId)) {
+			UploadStatus status= Uploads.get(uploadId);
+			if (status.isEverythingComplete()) {
 				break;
 			}
 			Time.sleep(1000);
@@ -249,7 +251,9 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("upload ID = "+ result);
 		
 		waitForUpload(result,60);
-		addMessage(Uploads.everythingComplete(result).toString());
+		UploadStatus status= Uploads.get(result);
+
+		addMessage(String.valueOf(status.isEverythingComplete()));
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
 		Assert.assertTrue(t.getBenchmarks().size()>0);
