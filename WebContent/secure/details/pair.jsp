@@ -74,6 +74,10 @@
 					<td>wallclock timeout</td>			
 					<td>${pair.wallclockTimeout} seconds</td>
 				</tr>
+				<tr>
+					<td>memory limit</td>
+					<td>${pair.maxMemory} bytes</td>
+				</tr>
 				<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>

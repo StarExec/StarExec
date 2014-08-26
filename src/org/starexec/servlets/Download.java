@@ -610,7 +610,8 @@ public class Download extends HttpServlet {
 
 			sb.append(",");
 			
-			sb.append(pair.getMaxMemory());
+			
+			sb.append(pair.getMaxVirtualMemory());
 			sb.append(",");
 			sb.append(pair.getStarexecResult());
 
