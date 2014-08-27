@@ -383,4 +383,20 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks to see whether the given user has permission to download the given solver
+	 * @param solverId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canUserDownloadSolver(int solverId, int userId) {
+		Solver s=Solvers.get(solverId);
+		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to download this solver");
+		
+		}
+		
+		return new ValidatorStatusCode(true);
+	}
+	
 }

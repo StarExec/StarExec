@@ -1,8 +1,6 @@
 package org.starexec.servlets;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
@@ -30,6 +27,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -238,25 +236,17 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	private static boolean handleSolver(Solver s, int userId,  HttpServletResponse response, boolean reupload) throws Exception {
-		
-		
+
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
 
-		if (Permissions.canUserSeeSolver(s.getId(), userId) && (s.isDownloadable() || s.getUserId()==userId)) {
-			if (reupload) {
-				ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), "",true);
-			} else {
-				ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName,false);
-			}
-		
-			return true;
+		if (reupload) {
+			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), "",true);
+		} else {
+			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName,false);
 		}
-		else {
-			//response.sendError(HttpServletResponse.SC_FORBIDDEN, "you do not have permission to download this solver.");
-		}
+		return true;
 
-		return false;
 	}
 
 	/**
@@ -856,7 +846,6 @@ public class Download extends HttpServlet {
 		return;
 	}
 	
-
 	/**
 	 * Validates the download request to make sure the requested data is of the right format
 	 * 
@@ -885,10 +874,22 @@ public class Download extends HttpServlet {
 
 				return new ValidatorStatusCode(false, "The supplied download type was not valid");
 			}
+			
+			
+			int userId=SessionUtil.getUserId(request);
 			if (!type.equals("jp_outputs")) {
 				if (!Validator.isValidInteger(request.getParameter("id"))) {
 					new ValidatorStatusCode(false, "The given id was not a valid integer");
 				}
+				int id=Integer.parseInt(request.getParameter("id"));
+				ValidatorStatusCode status=null;
+				if (type.equals("solver")) {
+					status=SolverSecurity.canUserDownloadSolver(id,userId);
+					if (!status.isSuccess()) {
+						return status;
+					}
+				}
+
 			} else {
 				//expecting a comma-separated list
 				String ids=request.getParameter("id[]");
@@ -899,7 +900,6 @@ public class Download extends HttpServlet {
 				
 			}
 			
-
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);

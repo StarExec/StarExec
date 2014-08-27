@@ -241,7 +241,6 @@ public class StarexecCommandTests extends TestSequence {
 		}
 	}
 	
-	//TODO: These benchmarks will need to be deleted correctly
 	@Test
 	private void uploadBenchmarks() throws Exception {
 		
@@ -259,7 +258,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 
 		for (Benchmark b : t.getBenchmarks()) {
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId()));
 	}
@@ -276,7 +275,7 @@ public class StarexecCommandTests extends TestSequence {
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 		for (Benchmark b : t.getBenchmarks()) {
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
 
@@ -511,6 +510,9 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,con.deleteBenchmarks(ids));
 		for (Integer i :ids) {
 			Assert.assertNull(Benchmarks.get(i));
+			
+			//once we've confirmed the deletion worked, make sure the benchmark is actually removed from the database
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), user.getId()));
 		

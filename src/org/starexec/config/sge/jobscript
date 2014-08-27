@@ -7,7 +7,7 @@
 #$ -q $$QUEUE$$
 
 # Request exclusive access
-#$ -l excl=true
+#$ -l excl=false
 
 # Enable resource limit signals
 #$ -notify

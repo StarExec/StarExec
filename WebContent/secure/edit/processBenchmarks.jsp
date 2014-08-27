@@ -4,11 +4,18 @@
 
 <%
 try {
-	// Grab relevant user id & processor info
+	int userId=SessionUtil.getUserId(request);
 	int spaceId = Integer.parseInt((String)request.getParameter("sid"));
-	request.setAttribute("sid",spaceId);
-	List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
-	request.setAttribute("procs",procs);
+
+	// Grab relevant user id & processor info
+	if (Users.isMemberOfSpace(userId,spaceId)) {
+		request.setAttribute("sid",spaceId);
+		List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
+		request.setAttribute("procs",procs);
+	} else {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN, "You must be a member of the space in which you want to process benchmarks");
+	}
+	
 	
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
