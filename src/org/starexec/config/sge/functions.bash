@@ -40,31 +40,11 @@ rm $TMP
 DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
 
+SANDBOX_LOCK_DIR='/export/starexec/sandboxlock.lock'
+
 # Path to local workspace for each node in cluster.
-#TODO: Should be either sandbox1 or sandbox2
-SANDBOX=1
 
-#TODO: "sandbox" needs to be "sandbox1"
-if [ $SANDBOX -eq 1 ]
-then
-WORKING_DIR='/export/starexec/sandbox'
-else
-WORKING_DIR='/export/starexec/sandbox2'
-fi
 
-# Path to where the solver will be copied
-LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
-
-# Path to where the benchmark will be copied
-LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
-
-# The benchmark's name
-BENCH_NAME="${BENCH_PATH##*/}"
-
-BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
-
-# The path to the benchmark on the execution host 
-LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
 
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
@@ -75,11 +55,7 @@ SOLVER_CACHED=0
 # Path to Olivier Roussel's runSolver
 RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
 
-# Path to where the solver will be copied
-LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
-# Path to where the pre-processor will be copied
-LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
@@ -90,14 +66,80 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 # The path to the benchmark on the execution host
 PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 
-# The path to the config run script on the execution host
-LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
-
-# The path to the bin directory of the solver on the execution host
-LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
 
 
 ######################################################################
+
+
+
+#initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
+# either by calling initSandbox or findSandbox
+function initWorkspaceVariables {
+	if [ $SANDBOX -eq 1 ]
+	then
+	WORKING_DIR='/export/starexec/sandbox'
+	else
+	WORKING_DIR='/export/starexec/sandbox2'
+	fi
+	
+	# Path to where the solver will be copied
+	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
+	
+	# Path to where the benchmark will be copied
+	LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
+	
+	# The benchmark's name
+	BENCH_NAME="${BENCH_PATH##*/}"
+	
+	BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
+	
+	# The path to the benchmark on the execution host 
+	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
+
+	# The path to the config run script on the execution host
+	LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+	
+	# Path to where the solver will be copied
+	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
+	
+	# Path to where the pre-processor will be copied
+	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
+	
+	
+	
+	# The path to the bin directory of the solver on the execution host
+	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+}
+
+#figures out which sandbox the given job pair should run in. First argument is a job pair ID
+function initSandbox {
+	#TODO: Need to think about this-- what happens if we can't delete the lock?
+	if mkdir "$SANDBOX_LOCK_DIR" ; then
+		# if we successfully made the directory
+		SANDBOX=1
+		log "putting this job into sandbox 1 $1" 
+		# make a file that is named with the given ID so we know which pair should be running here
+		touch "$SANDBOX_LOCK_DIR/$1"
+	else
+		log "putting this job into sandbox 2 $1"
+		SANDBOX=2
+	fi
+	initWorkspaceVariables
+	
+}
+
+#determines whether we should be running in sandbox 1 or sandbox 2, based on the value of the 
+function findSandbox {
+	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
+	then
+	log "found that the sandbox is 1 for job $1"
+	SANDBOX=1
+	else
+	log "found that the sandbox is 2 for job$1"
+	SANDBOX=2
+	fi
+	initWorkspaceVariables
+}
 
 function log {
 	echo "`date +'%D %r %Z'`: $1"
@@ -137,6 +179,11 @@ function cleanWorkspace {
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
 	rm -f "$SCRIPT_PATH"
+	
+	if [$SANDBOX -eq 1] 
+	then
+		rm -f "$SANDBOX_LOCK_DIR"
+	fi
 	
 	log "execution host $HOSTNAME cleaned"
 	return $?
