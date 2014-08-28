@@ -77,9 +77,9 @@ PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 function initWorkspaceVariables {
 	if [ $SANDBOX -eq 1 ]
 	then
-	WORKING_DIR='/export/starexec/sandbox'
+	WORKING_DIR='/export/starexec/sandbox/sandbox1'
 	else
-	WORKING_DIR='/export/starexec/sandbox2'
+	WORKING_DIR='/export/starexec/sandbox/sandbox2'
 	fi
 	
 	# Path to where the solver will be copied
@@ -180,7 +180,7 @@ function cleanWorkspace {
 	
 	rm -f "$SCRIPT_PATH"
 	
-	if [$SANDBOX -eq 1] 
+	if [ $SANDBOX -eq 1 ] 
 	then
 		rm -f "$SANDBOX_LOCK_DIR"
 	fi
