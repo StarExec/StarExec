@@ -1962,7 +1962,7 @@ public class Jobs {
 			while (results.next()) {
 				SolverStats s=new SolverStats();
 				s.setCompleteJobPairs(results.getInt("complete"));
-				s.setIncompleteJobPairs(results.getInt("failed")); //we only store things in the stats table when the job is totally done
+				s.setIncompleteJobPairs(results.getInt("incomplete")); 
 				s.setWallTime(results.getDouble("wallclock"));
 				s.setCpuTime(results.getDouble("cpu"));
 				s.setFailedJobPairs(results.getInt("failed"));
@@ -3698,7 +3698,7 @@ public class Jobs {
 	private static boolean saveStats(int jobSpaceId, SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,jobSpaceId);
 			procedure.setInt(2,stats.getConfiguration().getId());
 			procedure.setInt(3,stats.getCompleteJobPairs());
@@ -3708,6 +3708,7 @@ public class Jobs {
 			procedure.setDouble(7,stats.getWallTime());
 			procedure.setDouble(8,stats.getCpuTime());
 			procedure.setInt(9,stats.getResourceOutJobPairs());
+			procedure.setInt(10, stats.getIncompleteJobPairs());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
