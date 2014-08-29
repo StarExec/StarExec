@@ -32,7 +32,7 @@ public class SolverSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to associate a website with this solver");
 		}
 		
-		if (!Validator.isValidPrimName(name) ) {
+		if (!Validator.isValidWebsiteName(name) ) {
 			return new ValidatorStatusCode(false, "The website name is not formatted correctly. Please refer to the help pages to see the correct format");
 		}
 		
@@ -138,7 +138,7 @@ public class SolverSecurity {
 	
 	public static ValidatorStatusCode canUserUpdateSolver(int solverId, String name, String description, boolean isDownloadable, int userId) {
 		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(name)){
+		if(!Validator.isValidSolverName(name)){
 			return new ValidatorStatusCode(false, "The new name is not in the correct format. Please see the help pages to see the correct format");
 		}
 		
@@ -164,7 +164,7 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canUserUpdateConfiguration(int configId, int userId, String name, String description) {
 		// Ensure the parameters are valid
-		if(!Validator.isValidPrimName(name)){
+		if(!Validator.isValidConfigurationName(name)){
 			return new ValidatorStatusCode(false, "The new name is not in the correct format. Please see the help pages to see the correct format");
 		}
 		
@@ -380,6 +380,26 @@ public class SolverSecurity {
 		if(!userOwnsSolverOrIsAdmin(solver,userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to delete configurations attached to this solver");
 		}
+		return new ValidatorStatusCode(true);
+	}
+	
+	/**
+	 * Checks to see whether the given user has permission to download the given solver
+	 * @param solverId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canUserDownloadSolver(int solverId, int userId) {
+		Solver s=Solvers.get(solverId);
+		boolean isAdmin=Users.isAdmin(userId);
+		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see this solver");
+		
+		}
+		if (!(s.isDownloadable() || s.getUserId()==userId || isAdmin)) {
+			return new ValidatorStatusCode(false, "This solver is not available for download");
+		}
+		
 		return new ValidatorStatusCode(true);
 	}
 	

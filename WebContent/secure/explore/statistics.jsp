@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="Community Statistics" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/statistics" css="common/delaySpinner, common/table, details/shared, explore/common">			
+<star:template title="Community Statistics" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree,lib/jquery.qtip.min, explore/statistics" css="common/delaySpinner, common/table, details/shared,explore/jquery.qtip, explore/common">			
 
 	
 	<div id="mainPanel">

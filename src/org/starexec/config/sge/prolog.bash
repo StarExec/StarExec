@@ -162,14 +162,18 @@ function verifyWorkspace {
 
 	return $?
 }
-#TODO: need to change "sandbox" to "sandbox1"
+#TODO: need to have a second sandbox user
 function sandboxWorkspace {
-	if [[ $WORKING_DIR == *sandbox2* ]] 
-	then
-	sudo chown -R sandbox2 $WORKING_DIR 
-	else
 	sudo chown -R sandbox $WORKING_DIR
-	fi
+
+	#if [[ $WORKING_DIR == *sandbox2* ]] 
+	
+	#then
+	#sudo chown -R sandbox2 $WORKING_DIR 
+	#else
+	#	sudo chown -R sandbox $WORKING_DIR
+	
+	#fi
 	ls -lR "$WORKING_DIR"
 	return 0
 }
@@ -193,6 +197,8 @@ echo "benchmark: ${BENCH_PATH##*/}"
 echo "execution host: $HOSTNAME"
 echo ""
 
+
+initSandbox "$PAIR_ID"
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
 cleanWorkspace

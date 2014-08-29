@@ -26,6 +26,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.UploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -232,28 +233,32 @@ public class StarexecCommandTests extends TestSequence {
 	private void waitForUpload(int uploadId, int maxSeconds) {
 		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
 		for (int x=0;x<maxSeconds;x++) {
-			if (Uploads.everythingComplete(uploadId)) {
+			UploadStatus status= Uploads.get(uploadId);
+			if (status.isEverythingComplete()) {
 				break;
 			}
 			Time.sleep(1000);
 		}
 	}
 	
-	//TODO: These benchmarks will need to be deleted correctly
 	@Test
 	private void uploadBenchmarks() throws Exception {
 		
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
-		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+		addMessage("upload ID = "+ result);
+		
 		waitForUpload(result,60);
-		
-		
+		UploadStatus status= Uploads.get(result);
+
+		addMessage(String.valueOf(status.isEverythingComplete()));
+		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
+
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 
 		for (Benchmark b : t.getBenchmarks()) {
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId()));
 	}
@@ -270,7 +275,7 @@ public class StarexecCommandTests extends TestSequence {
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 		for (Benchmark b : t.getBenchmarks()) {
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
 
@@ -505,6 +510,9 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,con.deleteBenchmarks(ids));
 		for (Integer i :ids) {
 			Assert.assertNull(Benchmarks.get(i));
+			
+			//once we've confirmed the deletion worked, make sure the benchmark is actually removed from the database
+			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), user.getId()));
 		

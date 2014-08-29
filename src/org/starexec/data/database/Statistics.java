@@ -30,6 +30,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.Range;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.plot.PiePlot;
@@ -312,59 +313,51 @@ public class Statistics {
 			if (pairs1.size()==0 || pairs2.size()==0) {
 				return null;
 			}
+			HashMap<Integer, JobPair> pairs2Map=new HashMap<Integer,JobPair>();
+			for (JobPair jp : pairs2) {
+				pairs2Map.put(jp.getBench().getId(), jp);
+			}
 			log.debug("making solver comparison chart");
 			
 			String xAxisName=pairs1.get(0).getSolver().getName()+"/"+pairs1.get(0).getConfiguration().getName() +" time(s)";
 			String yAxisName=pairs2.get(0).getSolver().getName() +"/"+pairs2.get(0).getConfiguration().getName()+" time(s)";
-			HashMap<Integer,List<Double>> times=new HashMap<Integer,List<Double>>();
-			
 			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
 			int series=0;
 			int item=0;
+			XYSeries d=new XYSeries("points",false);
+			XYSeriesCollection dataset=new XYSeriesCollection();
 			//for now, we are not including error pairs in this chart
+			int debugItem=0;
+			int debugSeries=0;
 			for (JobPair jp : pairs1) {
 				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
-					times.put(jp.getBench().getId(), new ArrayList<Double>());
-					times.get(jp.getBench().getId()).add(jp.getWallclockTime());
-				}
-				
-			}
-			for(JobPair jp : pairs2) {
-				if (jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
-					continue;
-				}
-				//if we haven't seen this benchmark, then it wasn't in pairs1 and
-				//there is no comparison to make on it
-				if (times.containsKey(jp.getBench().getId())) {
-					//if, for some reason, this job included runs of the same bench with the same config,
-					//we only want to use the first one we see.
-					if (times.get(jp.getBench().getId()).size()<2) {
-						times.get(jp.getBench().getId()).add(jp.getWallclockTime());
+					JobPair jp2=pairs2Map.get(jp.getBench().getId());
+					
+					//if we can find a second pair with this benchmark
+					if (jp2!=null && jp2.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
+						//points are identified by their series and item number
+						String key=series+":"+item;
+						
+						//put the id in urls so we can link to the benchmark details page
+						urls.put(key, jp.getBench().getId());
+						
+						//put the name in names so we can create a tooltip of the name
+						//when hovering over the point in the image map
+						names.put(key, jp.getBench().getName());
+						item+=1;
+											
+						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
+						
 					}
-					//points are identified by their series and item number
-					String key=series+":"+item;
-					
-					//put the id in urls so we can link to the benchmark details page
-					urls.put(key, jp.getBench().getId());
-					
-					//put the name in names so we can create a tooltip of the name
-					//when hovering over the point in the image map
-					names.put(key, jp.getBench().getName());
-					item+=1;
 				}
 			}
 			
-			XYSeries d=new XYSeries("points");
-			XYSeriesCollection dataset=new XYSeriesCollection();
-			for(List<Double> time : times.values()) {
-				if (time.size()==2) {
-					d.add(time.get(0),time.get(1));
-				}
-			}
 			dataset.addSeries(d);
-			
+
+			String key=debugSeries+":"+debugItem;
+			log.debug(urls.get(key));
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);

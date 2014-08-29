@@ -5,12 +5,23 @@ users, solvers, benchmarks, jobs, job pairs, and disk usage.
 
 </p>
 
-<p><strong>Notes: </strong>entities are counted as belonging to a community
+<h2>Notes on statistics</h2>
+
+<p>Entities are counted as belonging to a community
 if they appear in at least one of its subspaces.  All entities are uniquely 
-counted by id.  Since copying primitives results in new ids, those copied primitives are counted as unique entities.   
+counted by id.  Since copying primitives results in new ids, those copied primitives are counted as unique entities.
 </p>
 
 <p>Disk usage is the total disk space used by solvers and benchmarks in a community
+</p>
+
+<h2>Notes on fetching data</h2>
+
+<p>The information needed to complete the statistics page requires searching and counting through
+all users, solvers, benchmarks, jobs, and job pairs.  Because of the scope of this task, we don't always query
+the database for this information.  Instead, after a database query, we save that information and set an arbitrary minimum time that must pass
+before we requery the database.  If the statistics page is requested before the minimum time has passed, we simply display the old information that we saved.  
+This means that sometimes the statistics page loads up very quickly and sometimes it might take a while.
 </p>
 
 

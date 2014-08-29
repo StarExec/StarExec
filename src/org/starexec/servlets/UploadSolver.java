@@ -404,7 +404,7 @@ public class UploadSolver extends HttpServlet {
 			}
 
 			
-			if(!Validator.isValidPrimName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
+			if(!Validator.isValidSolverName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
 				
 				return new ValidatorStatusCode(false, "The given name is invalid-- please refer to the help files to see the proper format");
 			}

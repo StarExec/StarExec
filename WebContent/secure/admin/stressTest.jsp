@@ -57,11 +57,11 @@
 					</tr>
 					
 					<tr>
-						<td title="the minimum number of benchmarks that will be placed in each space. All benchmarks will be unique (no benchmark linked to multiple spaces)">min benchmarks per space</td>
+						<td title="the minimum number of benchmarks that will be placed in each space (in thousands). All benchmarks will be unique (no benchmark linked to multiple spaces)">min benchmarks per space</td>
 						<td><input value="0" id="minBenchmarksPer" name="minBenchmarksPer" type="text"/></td>
 					</tr>
 					<tr>
-						<td title="the maximum number of benchmarks that will be placed in each space. All benchmarks will be unique (no benchmark linked to multiple spaces)">max benchmarks per space</td>
+						<td title="the maximum number of benchmarks that will be placed in each space (in thousands). All benchmarks will be unique (no benchmark linked to multiple spaces)">max benchmarks per space</td>
 						<td><input value="0" id="maxBenchmarksPer" name="maxBenchmarksPer" type="text"/></td>
 					</tr>
 					

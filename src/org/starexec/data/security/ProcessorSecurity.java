@@ -75,7 +75,7 @@ public class ProcessorSecurity {
 		if (perm==null || !perm.isLeader()) {
 			return new ValidatorStatusCode(false, "You do not have permission edit the selected processor");
 		}
-		if(!Validator.isValidPrimName(name)){
+		if(!Validator.isValidProcessorName(name)){
 			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the proper format");
 		}
 		

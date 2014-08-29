@@ -1,10 +1,8 @@
 package org.starexec.data.to;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import org.starexec.data.database.Jobs;
 
 import com.google.gson.annotations.Expose;
 

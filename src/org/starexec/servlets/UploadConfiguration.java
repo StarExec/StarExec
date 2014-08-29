@@ -127,7 +127,7 @@ public class UploadConfiguration extends HttpServlet {
 						newConfigFile = temp;
 						newConfig.setName((String)configAttrMap.get(CONFIG_NAME) + intSuffix);
 						fileAlreadyExists = false;
-						if (!Validator.isValidPrimName(newConfig.getName())) {
+						if (!Validator.isValidConfigurationName(newConfig.getName())) {
 							return new ValidatorStatusCode(false, "The solver already has a configuration with this name, and a new name could not be generated because the name was already the maximum length");
 						}
 					}
@@ -187,7 +187,7 @@ public class UploadConfiguration extends HttpServlet {
 				}
 			}
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidPrimName((String)configAttrMap.get(CONFIG_NAME))) {
+			if(!Validator.isValidConfigurationName((String)configAttrMap.get(CONFIG_NAME))) {
 
 				return new ValidatorStatusCode(false, "The given name is invalid-- please refer to the help pages to see the proper format");
 

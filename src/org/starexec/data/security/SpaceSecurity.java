@@ -46,7 +46,7 @@ public class SpaceSecurity {
 			return new ValidatorStatusCode(false, "The given URL is not in the proper format. Please refer to the help pages to see the correct format");
 		}
 		
-		if (!Validator.isValidPrimName(name)) {
+		if (!Validator.isValidWebsiteName(name)) {
 			return new ValidatorStatusCode(false, "The given name is not in the proper format. Please refer to the help pages to see the correct format");
 		}
 		return new ValidatorStatusCode(true);
@@ -350,10 +350,19 @@ public class SpaceSecurity {
 			if (!Validator.isValidPrimDescription(newValue)) {
 				return new ValidatorStatusCode(false, "The description is not in a valid format. Please refer to the help pages to see the correct format");
 			}
-		} else if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout") || attribute.equals("MaxMem")) {
+		} else if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
 			if (! Validator.isValidInteger(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid integer");
 			}
+			int timeout=Integer.parseInt(newValue);
+			if (timeout<=0) {
+				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
+			}
+		} else if (attribute.equals("MaxMem")) {
+			if (!Validator.isValidDouble(newValue)) {
+				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
+			}
+			
 			int timeout=Integer.parseInt(newValue);
 			if (timeout<=0) {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");

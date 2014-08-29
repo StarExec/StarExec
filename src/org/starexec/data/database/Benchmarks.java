@@ -100,6 +100,7 @@ public class Benchmarks {
 	public static boolean deleteAndRemoveBenchmark(int id) {
 		boolean success=Benchmarks.delete(id);
 		if (!success) {
+			log.warn("there was an error deleting benchmark with id = "+id);
 			return false;
 		}
 		Connection con=null;
@@ -2252,8 +2253,7 @@ public class Benchmarks {
      * @param isCommunityLeader true iff the user with the given userID is a community leader 
      * @author Eric Burns
      */
-    public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs, 
-				  boolean isCommunityLeader) {
+    public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs) {
 		Integer statusId = Uploads.createUploadStatus(spaceId, userId);
 		Uploads.fileUploadComplete(statusId);
 		Uploads.fileExtractComplete(statusId);
@@ -2264,7 +2264,9 @@ public class Benchmarks {
 		final int u=userId;
 		final boolean c=clearOldAttrs;
 		final Integer st=statusId;
-		final boolean l=isCommunityLeader;
+		int comm=Spaces.getCommunityOfSpace(spaceId);
+		
+		final boolean l=Permissions.get(userId, comm).isLeader();
 		//It will delay the redirect until this method is finished which is why a new thread is used
 		Util.threadPoolExecute(new Runnable() {
 			@Override
@@ -2293,22 +2295,27 @@ public class Benchmarks {
 	 * @author Eric Burns
 	 */
 	
-	private static void process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
+	private static boolean process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
 				    boolean isCommunityLeader) {
 	    Connection con=null;
 		
 	    log.info("Processing benchmarks in space "+new Integer(spaceId));
-	    if (isCommunityLeader)
-		log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+	    if (isCommunityLeader) {
+			log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+	    }
 
 	    try {
 			
 			con=Common.getConnection();
 			List<Benchmark> benchmarks=Benchmarks.getBySpace(spaceId);
-			Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
-				
+			boolean success=Benchmarks.attachBenchAttrs(benchmarks, p,statusId);
+			
+			if (! success) {
+				log.error("there was an error running the processor on each benchmark");
+				return false;
+			}
 			for (Benchmark b : benchmarks) {
-			    //only work on the benchmarks the given user owns
+			    //only work on the benchmarks the given user owns if they are not a community leader
 			    if (!isCommunityLeader && b.getUserId()!=userId) {
 					log.debug("Skipping benchmark "+b.getName());
 					continue;
@@ -2319,25 +2326,28 @@ public class Benchmarks {
 					
 			    Properties attrs=b.getAttributes();
 			    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId)) {
-					return;	
+					return false;	
 			    }
 			    //updates the type of the benchmark with the new processor
 			    Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), b.isDownloadable(), p.getId());
 			    
 			    Uploads.incrementCompletedBenchmarks(statusId);
 			}
+			success=true;
 			if (hierarchy) {
 			    List<Space> spaces=Spaces.getSubSpaceHierarchy(spaceId, userId);
 			    for (Space s : spaces) {
-			    	Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
+			    	success=success && Benchmarks.process(s.getId(), p, false, userId,clearOldAttrs,statusId, isCommunityLeader);
 			    }
 			}
+			return success;
 			
 	    } catch (Exception e) {
 	    	log.error("process says "+e.getMessage(),e);
 	    } finally {
 	    	Common.safeClose(con);
 	    }
+	    return false;
 		
 	}
 	/**

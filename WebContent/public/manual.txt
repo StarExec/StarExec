@@ -196,8 +196,13 @@ OPTIONAL: None
 			 created jobs and spaces in the form "id={newId}\n" The default behavior at the start of a session 
 			 is not to do this. This command does nothing if this behavior is already enabled.
 REQUIRED: None
-Optional: None
+OPTIONAL: None
 
+--viewuploadstatus -Instructs StarexecCommand to print the status of the benchmark upload request 
+					specified by the given ID. "id" refers to a benchmark upload ID, which is returned
+					whenever you upload benchmarks with the "returnids" option enabled
+REQUIRED: "id"
+OPTIONAL: None
 
 
 Download Commands
@@ -227,7 +232,7 @@ OPTIONAL: "ow"
 --getjobinfo -Get the CSV pertaining to the job associated with the given id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow" "incids" "comp"
-EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.tar incids='
+EXAMPLE: 'getjobinfo id=6 out=C:/Users/JohnSmith/Desktop/fakefile.zip incids='
 
 --getjobout -Gets the output for all the job pairs associated with the job with the given id.
 REQUIRED: "id" "out"
@@ -236,6 +241,12 @@ OPTIONAL: "ow"
 --getjobpair -Downloads the output from the job pair associated with the given id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
+
+--getjobpairs -Downloads the output from every pair in the given list. Every pair must belong to the same job. 
+The value of the "id" parameter should be a comma-separated list of job pair ids.
+REQUIRED: "id" "out"
+OPTIONAL: "ow"
+EXAMPLE: "getjobpairs id=5,20,30 out=outputs.zip"
 
 --getnewjobinfo -Get the CSV pertaining to the job associated with the given id containing only
 info related to job pairs that have been completed since the last time the command was used. 
@@ -329,7 +340,7 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 				  Instead, an ID for this upload request will be returned. This upload ID can be used to query the
-				  status of the benchmark upload to see its progress.
+				  status of the benchmark upload to see its progress using "viewuploadstatus".
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
@@ -366,7 +377,7 @@ Delete Commands
 ---------------
 
 These commands are all used to delete primitives from Starexec. All of them accept a single parameter, 
-"id." You may delete multiple primitives at once by putting all the ids in a comma-seperated list Delete commands all look like the following example.
+"id." You may delete multiple primitives at once by putting all the ids in a comma-seperated list. Delete commands all look like the following example.
 
 'deleteconfig id=5,47,23'
 

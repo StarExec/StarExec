@@ -416,17 +416,24 @@ class ArgumentParser {
 	
 	protected int downloadArchive(String type,Integer since,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
 		try {
-			Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			 
 			int valid=Validator.isValidDownloadRequest(commandParams,type,since);
 			if (valid<0) {
 				return valid;
 			}
-
 			String location=commandParams.get(R.PARAM_OUTPUT_FILE);
-			//First, put in the request for the server to generate the desired archive			
-			return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),
-					commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(R.PARAM_INCLUDE_IDS),
-					hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED));
+
+			if (type.equals("jp_outputs")) {
+				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
+				return con.downloadJobPairs(ids, location);
+			} else { 
+				Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			 
+
+				//First, put in the request for the server to generate the desired archive			
+				return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),
+						commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(R.PARAM_INCLUDE_IDS),
+						hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED));
+			}
+			
 
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -720,15 +727,30 @@ class ArgumentParser {
 			}
 			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
 			
-		} catch (Exception e) {
-
-		    //System.out.println("ArgumentParser.java : " +e);
-		  
+		} catch (Exception e) {		  
 		    fail.add(Status.ERROR_INTERNAL);
 			return fail;
 		}
 	}
-	
+    
+    /**
+     * Prints out the status of a benchmark upload request to stdout, assuming the status could be found
+     * @param commandParams
+     * @return 0 on success and a negative error code otherwise
+     */
+    protected int printBenchStatus(HashMap<String,String> commandParams) {
+    	int valid = Validator.isValidPrintBenchUploadStatusRequest(commandParams);
+    	if (valid<0) {
+    		return valid;
+    	}
+    	String status=con.getBenchmarkUploadStatus(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+    	if (status!=null) {
+    		System.out.println(status);
+    		return 0;
+    	} else {
+    		return Status.ERROR_SERVER;
+    	}
+    }
 	
 	/**
 	 * This method takes in a HashMap mapping String keys to String values

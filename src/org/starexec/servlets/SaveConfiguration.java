@@ -149,7 +149,7 @@ public class SaveConfiguration extends HttpServlet {
 			}
 			
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidPrimName(request.getParameter(CONFIG_NAME))) {
+			if(!Validator.isValidConfigurationName(request.getParameter(CONFIG_NAME))) {
 				return new ValidatorStatusCode(false, "The supplied name is not valid-- please see the help files to see the correct format");
 			}
 			

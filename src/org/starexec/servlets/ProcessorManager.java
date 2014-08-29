@@ -317,7 +317,7 @@ public class ProcessorManager extends HttpServlet {
 		try {			
 			  
 										
-			if(!Validator.isValidPrimName((String)form.get(PROCESSOR_NAME))) {
+			if(!Validator.isValidProcessorName((String)form.get(PROCESSOR_NAME))) {
 
 				return new ValidatorStatusCode(false,"The supplied name is invalid-- please refer to the help files to see the correct format");
 			}

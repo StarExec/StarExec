@@ -77,7 +77,7 @@ public class QueueSecurity {
 			return new ValidatorStatusCode(false, "The queue must have a unique name after the update");
 		}
 		
-		if (!Validator.isValidPrimName(queueName)) {
+		if (!Validator.isValidQueueName(queueName)) {
 			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the proper format");
 		}
 		

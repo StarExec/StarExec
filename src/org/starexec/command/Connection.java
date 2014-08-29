@@ -48,6 +48,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 
@@ -820,8 +821,9 @@ public class Connection {
 			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			HttpResponse response=client.execute(post);
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			setSessionIDIfExists(response.getAllHeaders());
 			response.getEntity().getContent().close();
 			
@@ -926,8 +928,10 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
@@ -975,8 +979,10 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			
 			response.getEntity().getContent().close();
 			if (success) {
@@ -1006,8 +1012,10 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 
 			response.getEntity().getContent().close();
 			if (success) {
@@ -1043,8 +1051,10 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			
 			
@@ -1138,8 +1148,10 @@ public class Connection {
 			HttpResponse response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
@@ -1397,9 +1409,10 @@ public class Connection {
 			
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			
-			boolean success=JsonHandler.getSuccessOfResponse(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			if (success) {
 				List<Integer> newPrimIds=new ArrayList<Integer>();
@@ -1687,7 +1700,8 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			JsonElement jsonE=JsonHandler.getJsonString(response);
-			String message=JsonHandler.getMessageOfResponse(response);
+			JsonObject obj=jsonE.getAsJsonObject();
+			String message=JsonHandler.getMessageOfResponse(obj);
 			response.getEntity().getContent().close();
 			
 			//if we got back a ValidatorStatusCode, there was an error
@@ -1748,6 +1762,69 @@ public class Connection {
 	 */
 	public int downloadJobPair(Integer pairId, String filePath) {
 		return downloadArchive(pairId,"jp_output",null,filePath,false,false,false,false,null,false);
+	}
+	
+	public int downloadJobPairs(List<Integer> pairIds, String filePath) {
+		HttpResponse response=null;
+		try {
+			HashMap<String,String> urlParams=new HashMap<String,String>();
+			urlParams.put(R.FORMPARAM_TYPE, "jp_outputs");
+			StringBuilder sb=new StringBuilder();
+			for (Integer id : pairIds) {
+				sb.append(id);
+				sb.append(",");
+			}
+			String ids=sb.substring(0,sb.length()-1);
+			
+			for (Integer id : pairIds) {
+				urlParams.put(R.FORMPARAM_ID+"[]",ids);
+			}
+			
+			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
+			//First, put in the request for the server to generate the desired archive			
+			
+			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+R.URL_DOWNLOAD,urlParams));
+			
+			get=(HttpGet) setHeaders(get);
+			response=client.execute(get);
+			
+			setSessionIDIfExists(response.getAllHeaders());
+			
+			
+			
+			boolean fileFound=false;
+			for (Header x : response.getAllHeaders()) {
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound=true;
+					break;
+				}
+			}
+			
+			if (!fileFound) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+
+				response.getEntity().getContent().close();
+				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			}
+			
+			
+			
+			//copy file from the HTTPResponse to an output stream
+			File out=new File(filePath);
+			File parent=new File(out.getAbsolutePath().substring(0,out.getAbsolutePath().lastIndexOf(File.separator)));
+			parent.mkdirs();
+			FileOutputStream outs=new FileOutputStream(out);
+			IOUtils.copy(response.getEntity().getContent(), outs);
+			outs.close();
+			response.getEntity().getContent().close();
+			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+
+			return 0;
+		} catch (Exception e) {
+			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+			return Status.ERROR_INTERNAL;
+		}
+		
 	}
 	/**
 	 * Downloads the job output from a job from StarExec in the form of a zip file
@@ -1925,6 +2002,7 @@ public class Connection {
 			}
 			
 			if (!fileFound) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 				response.getEntity().getContent().close();
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
@@ -2011,6 +2089,43 @@ public class Connection {
 	protected void setJobOutCompletion(int jobID,int completion) {
 		job_out_indices.put(jobID,completion);
 	}	
+	
+	/**
+	 * Gets the status of a benchmark archive upload given the ID of the upload status.
+	 * @param statusId The upload ID to use
+	 * @return A human-readable string containing details of the benchmark upload in the following format
+	 * benchmarks: {validated} / {failed validation} / {total} | spaces: {completed} / {total} 
+	 * {error message if exists}
+	 * {"upload complete" if finished}
+	 * Null is returned if there was an error, and this Connection's error message will have been set
+	 */
+	public String getBenchmarkUploadStatus(Integer statusId) {
+		try {
+			
+			String URL=baseURL+R.URL_GET_BENCH_UPLOAD_STATUS;
+			URL=URL.replace("{statusId}",statusId.toString());
+			HttpGet get=new HttpGet(URL);
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			JsonObject obj=JsonHandler.getJsonObject(response);
+
+			boolean success=JsonHandler.getSuccessOfResponse(obj);
+			String message=JsonHandler.getMessageOfResponse(obj);
+			response.getEntity().getContent().close();
+			if (success) {
+				
+				return message;
+			} else {
+				setLastError(message);
+			}
+			
+		} catch (Exception e) {
+			setLastError("Internal error getting benchmark upload details");
+			return null;
+		}
+		return null;
+	}
 	/**
 	 * Creates a job on Starexec according to the given paramteters
 	 * @param spaceId The ID of the root space for the job

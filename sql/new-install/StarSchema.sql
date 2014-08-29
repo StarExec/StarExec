@@ -541,6 +541,7 @@ CREATE TABLE job_stats (
 	complete INT NOT NULL,
 	correct INT NOT NULL,
 	incorrect INT NOT NULL,
+	incomplete INT NOT NULL,
 	failed INT NOT NULL,
 	wallclock DOUBLE,
 	cpu DOUBLE,

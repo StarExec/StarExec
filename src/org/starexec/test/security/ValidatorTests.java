@@ -33,15 +33,15 @@ public class ValidatorTests extends TestSequence {
 	}
 	
 	@Test
-	private void NameRegexTest() {
-		Assert.assertTrue(Validator.isValidPrimName("hello world"));
-		Assert.assertTrue(Validator.isValidPrimName("Mark"));
-		Assert.assertTrue(Validator.isValidPrimName("293md03 32idiu"));		
+	private void SolverNameRegexTest() {
+		Assert.assertTrue(Validator.isValidSolverName("hello world"));
+		Assert.assertTrue(Validator.isValidSolverName("Mark"));
+		Assert.assertTrue(Validator.isValidSolverName("293md03 32idiu"));		
 
-		Assert.assertFalse(Validator.isValidPrimName(""));
-		Assert.assertFalse(Validator.isValidPrimName(null));
-		Assert.assertFalse(Validator.isValidPrimName("\"\""));
-		Assert.assertFalse(Validator.isValidPrimName("<script>"));
+		Assert.assertFalse(Validator.isValidSolverName(""));
+		Assert.assertFalse(Validator.isValidSolverName(null));
+		Assert.assertFalse(Validator.isValidSolverName("\"\""));
+		Assert.assertFalse(Validator.isValidSolverName("<script>"));
 		
 	}
 	
@@ -140,7 +140,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidIntegerList(new String[]{}));
 		Assert.assertFalse(Validator.isValidIntegerList(new String[]{"3kd"}));
 		Assert.assertFalse(Validator.isValidIntegerList(new String[]{"0","132929","3492","d"}));
-		Assert.assertFalse(Validator.isValidIntegerList(null));
+		Assert.assertFalse(Validator.isValidIntegerList((String[])null));
 		
 
 	}

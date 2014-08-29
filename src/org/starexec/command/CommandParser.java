@@ -527,7 +527,10 @@ class CommandParser {
 			status=parser.pauseJob(commandParams);
 		} else if (c.equals(R.COMMAND_RERUNPAIR)) {
 			status=parser.rerunPair(commandParams);
-		} else if (c.equals(R.COMMAND_RERUNJOB)) {
+		} else if (c.equals(R.COMMAND_GET_BENCH_UPLOAD_STATUS)) {
+			status=parser.printBenchStatus(commandParams);
+		}	else if (c.equals(R.COMMAND_RERUNJOB)) {
+
 			status=parser.rerunJob(commandParams);
 		} else if (c.startsWith("get")) {
 			status=handleGetCommand(c,commandParams);
@@ -749,6 +752,8 @@ class CommandParser {
 			} else if (c.equals(R.COMMAND_GETJOBPAIR)) {
 				type="jp_output";
 				
+			} else if (c.equals(R.COMMAND_GETJOBPAIRS)) {
+				type="jp_outputs";
 			} else if (c.equals(R.COMMAND_GETNEWJOBINFO)) {
 				type="job";
 				//Note: The reason the parameter "since" is not being taken from R.PARAM_SINCE
