@@ -111,22 +111,22 @@
 	<configuration name="stardev_rmccleeary" inherit="stardev">
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
-                <property key="MYSQL_DATABASE" value="starexec_rmcleeary" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_rmcleeary?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_DATABASE" value="starexec_rmccleeary" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_rmccleeary?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
-                <property key="STAREXEC_APPNAME" value="starexec_rmcleeary"/>
-                <property key="BENCHMARK_PATH" value="/home/rmcleeary/starexec_rmcleeary_data/Benchmarks" />
-                <property key="SOLVER_PATH" value="/home/rmcleeary/starexec_rmcleeary_data/Solvers" />
-                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/Solvers/buildoutput"/>
-                <property key="PROCESSOR_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/processor_scripts" />           
-		<property key="STAREXEC_DATA_DIR" value="/home/rmcleeary/starexec_rmcleeary_data" />
-                <property key="JOB_INBOX_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/jobin" />
-                <property key="JOB_OUTPUT_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/jobout" />     
-		<property key="NEW_JOB_OUTPUT_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/joboutput/logs" />
-                <property key="PICTURE_PATH" value="/home/rmcleeary/starexec_rmcleeary_data/pictures" /> 
-                <property key="BATCH_SPACE_XML_DIR" value="/home/rmcleeary/starexec_rmcleeary_data/batchSpace/uploads" />           
+                <property key="STAREXEC_APPNAME" value="starexec_rmccleeary"/>
+                <property key="BENCHMARK_PATH" value="/home/rmccleeary/starexec_rmccleeary_data/Benchmarks" />
+                <property key="SOLVER_PATH" value="/home/rmccleeary/starexec_rmccleeary_data/Solvers" />
+                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/Solvers/buildoutput"/>
+                <property key="PROCESSOR_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/processor_scripts" />           
+		<property key="STAREXEC_DATA_DIR" value="/home/rmccleeary/starexec_rmccleeary_data" />
+                <property key="JOB_INBOX_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/jobin" />
+                <property key="JOB_OUTPUT_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/jobout" />     
+		<property key="NEW_JOB_OUTPUT_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/joboutput"/>	
+                <property key="JOB_LOG_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/joboutput/logs" />
+                <property key="PICTURE_PATH" value="/home/rmccleeary/starexec_rmccleeary_data/pictures" /> 
+                <property key="BATCH_SPACE_XML_DIR" value="/home/rmccleeary/starexec_rmccleeary_data/batchSpace/uploads" />           
 		</class>
 	</configuration>
 	<configuration name="stardev_tinelli" inherit="stardev">
