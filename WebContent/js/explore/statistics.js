@@ -9,8 +9,8 @@ var loadingMessage = "Please wait while the information is retrieved... ";
 var usersMessage = "a user is counted in a community if he/she is a member of at least one of that community's subspaces";
 var solversMessage = "a solver is counted as part of a community if it appears in at least one of that community's subspaces, whether or not it appears in a community is based on id so if a solver is copied, it's counted as a new solver because it has a new id";
 var benchesMessage = "a benchmark is counted as part of a community if it appears in at least one of that community's subspaces, whether or not it appears in a community is based on id so if a benchmark is copied, it's counted as a new benchmark because it has a new id";
-var jobsMessage = "a job is counted as part of a community if it appears in at least one of that community's subspaces, whether or not it appears in a community is based on id so if a job is copied, it's counted as a new job because it has a new id";
-var jobPairsMessage = "a job pair is counted as part of a community if it appears in at least one of that community's subspaces, whether or not it appears in a community is based on id so if a job pair is copied, it's counted as a new job pair because it has a new id";
+var jobsMessage = "a job is counted as part of a community if it appears in at least one of that community's subspaces";
+var jobPairsMessage = "a job pair is counted as part of a community if it appears in at least one of that community's subspaces";
 var diskUseMessage = "disk use = space used by solvers + space used by benchmarks, where solvers and benchmarks belong to the given community";
 
 // When the document is ready to be executed on
