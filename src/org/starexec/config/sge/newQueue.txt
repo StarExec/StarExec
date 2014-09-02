@@ -12,7 +12,7 @@ qname                   $$QUEUENAME$$
 \nckpt_list             NONE
 \npe_list               make
 \nrerun                 FALSE
-\nslots                 2
+\nslots                 1
 \ntmpdir                /tmp
 \nshell                 /bin/csh
 \nprolog                NONE

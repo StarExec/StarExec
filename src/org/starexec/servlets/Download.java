@@ -27,7 +27,6 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
@@ -258,6 +257,7 @@ public class Download extends HttpServlet {
 
 	private static boolean handleProc(List<Processor> procs, int userId, int spaceId, HttpServletResponse response) throws Exception {
 
+		if (Permissions.canUserSeeSpace(spaceId, userId)) {
 			
 			List<File> files=new LinkedList<File>();
 			for (Processor x : procs) {
@@ -274,7 +274,7 @@ public class Download extends HttpServlet {
 			}
 
 			
-		
+		}
 		return false;
 	}
 
@@ -289,10 +289,16 @@ public class Download extends HttpServlet {
 	 */
 	private static boolean handleBenchmark(Benchmark b, int userId,HttpServletResponse response) throws Exception {
 		// If we can see this benchmark AND the benchmark is downloadable...
+		if (Permissions.canUserSeeBench(b.getId(), userId) && (b.isDownloadable() || b.getUserId()==userId)) {
 
 			ArchiveUtil.createAndOutputZip(new File(b.getPath()),response.getOutputStream(),"",false);
 			return true;
+		}
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this benchmark.");
+		}
 
+		return false;
 	}
 
 		/**
@@ -307,6 +313,7 @@ public class Download extends HttpServlet {
 	private static boolean handleJobXML(Job job, int userId, HttpServletResponse response) throws Exception {
 	        
 		// If we can see this 
+	    if (Permissions.canUserSeeJob(job.getId(), userId)) {
 			List<File> files=new ArrayList<File>();
 			log.debug("Permission to download XML granted");	
 			
@@ -323,8 +330,12 @@ public class Download extends HttpServlet {
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
 			
 			return true;
-		
+		}
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job.");
+		}
 
+		return false;
 	}
 
 	/**
@@ -342,6 +353,7 @@ public class Download extends HttpServlet {
 					  boolean includeAttributes) throws Exception {
 		
 		// If we can see this Space
+		if (Permissions.canUserSeeSpace(space.getId(), userId)) {
 			List<File> files=new ArrayList<File>();
 			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));		
 			BatchUtil butil = new BatchUtil();
@@ -356,7 +368,12 @@ public class Download extends HttpServlet {
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), baseFileName);
 			
 			return true;
+		}
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+		}
 
+		return false;
 	}
     
     /**
@@ -408,11 +425,20 @@ public class Download extends HttpServlet {
 	 */
 	
 	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response) throws Exception {    	
+		// If the user can actually see the job the pair is apart of
+		if (Permissions.canUserSeeJob(pairId, userId)) {
+			
+			
 			String outputPath = JobPairs.getFilePath(pairId);  
 			
 			ArchiveUtil.createAndOutputZip(new File(outputPath),response.getOutputStream(),"",false);
 			return true;
+		}
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+		}
 
+		return false;
 	}
 
 	/**
@@ -429,6 +455,7 @@ public class Download extends HttpServlet {
 	private static boolean handleJob(Integer jobId, int userId, HttpServletResponse response, Integer since, Boolean returnIds, Boolean onlyCompleted) throws Exception {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		
+		if (Permissions.canUserSeeJob(jobId, userId)) {
 			
 			Job job;
 			if (since==null) {
@@ -460,7 +487,12 @@ public class Download extends HttpServlet {
 			ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(),"",false);
 
 			return true;
+		}
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+		}
 
+		return false;
 	}
 
 	/**
@@ -666,6 +698,7 @@ public class Download extends HttpServlet {
 	private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since) throws Exception {    	
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
+		if (Permissions.canUserSeeJob(jobId, userId)) {
 			log.debug("confirmed user can download job = "+jobId);
 			
 
@@ -700,6 +733,13 @@ public class Download extends HttpServlet {
 			}
 
 			return true;
+		}
+
+		else {
+			//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this job pair's output.");
+		}
+
+		return false;
 	}
 
 	/**
@@ -719,6 +759,7 @@ public class Download extends HttpServlet {
 	private boolean handleSpace(Space space, int uid, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws Exception {
 		// If we can see this space AND the space is downloadable...
 		try {
+			if (Permissions.canUserSeeSpace(space.getId(), uid)) {	
 				//String baseFileName=space.getName();
 				ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
 
@@ -726,8 +767,10 @@ public class Download extends HttpServlet {
 				stream.close();
 
 				return true;
-			
-			
+			}
+			else {
+				//response.sendError(HttpServletResponse.SC_BAD_REQUEST, "you do not have permission to download this space.");
+			}
 		} catch (Exception e) {
 			log.error("unable to delete directory because "+e.getMessage(),e);
 		}
@@ -840,27 +883,8 @@ public class Download extends HttpServlet {
 				}
 				int id=Integer.parseInt(request.getParameter("id"));
 				ValidatorStatusCode status=null;
-				if (type.equals("solver") || type.equals("reupload")) {
+				if (type.equals("solver")) {
 					status=SolverSecurity.canUserDownloadSolver(id,userId);
-					if (!status.isSuccess()) {
-						return status;
-					}
-				} else if (type.equals("spaceXML") || type.equals("space") || type.equals("proc")) {
-					if (!Permissions.canUserSeeSpace(id,userId)) {
-						return new ValidatorStatusCode(false, "You do not have permission to see this space");
-					}	
-
-				} else if (type.equals("job") || type.equals("jobXML") || type.equals("j_outputs")) {
-					if (!Permissions.canUserSeeJob(id, userId)) {
-						return new ValidatorStatusCode(false, "You do not have permission to see this job");
-					}
-				} else if (type.equals("jp_output")) {
-					int jobId=JobPairs.getPair(id).getJobId();
-					if (!Permissions.canUserSeeJob(jobId, userId)) {
-						return new ValidatorStatusCode(false, "You do not have permission to see this job");
-					}
-				} else if (type.equals("bench")) {
-					status=BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 					if (!status.isSuccess()) {
 						return status;
 					}

@@ -25,7 +25,6 @@ public class SolverSecurityTests extends TestSequence {
 	User owner=null;
 	User regular=null; 
 	
-	//no solvers are in any spaces
 	Solver solver=null;  //
 	Solver solver2=null; // these two are owned by 'owner'
 	Solver solver3=null; // this one is owned by 'regular'
@@ -118,14 +117,6 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolvers(ids, admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
-	}
-	
-	@Test
-	private void canDownloadSolverTest() {
-		Assert.assertTrue(SolverSecurity.canUserDownloadSolver(solver.getId(), owner.getId()).isSuccess());
-		Assert.assertTrue(SolverSecurity.canUserDownloadSolver(solver.getId(), admin.getId()).isSuccess());
-		Assert.assertFalse(SolverSecurity.canUserDownloadSolver(solver.getId(), regular.getId()).isSuccess());
-
 	}
 	
 	@Test
