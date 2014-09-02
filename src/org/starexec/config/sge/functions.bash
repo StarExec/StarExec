@@ -41,6 +41,7 @@ DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
 
 SANDBOX_LOCK_DIR='/export/starexec/sandboxlock.lock'
+SANDBOX2_LOCK_DIR='/export/starexec/sandbox2lock.lock'
 
 # Path to local workspace for each node in cluster.
 
@@ -77,9 +78,9 @@ PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 function initWorkspaceVariables {
 	if [ $SANDBOX -eq 1 ]
 	then
-	WORKING_DIR='/export/starexec/sandbox/sandbox1'
+	WORKING_DIR='/export/starexec/sandbox'
 	else
-	WORKING_DIR='/export/starexec/sandbox/sandbox2'
+	WORKING_DIR='/export/starexec/sandbox2'
 	fi
 	
 	# Path to where the solver will be copied
@@ -111,21 +112,96 @@ function initWorkspaceVariables {
 	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
 }
 
-#figures out which sandbox the given job pair should run in. First argument is a job pair ID
+# checks to see whether the pair with the given sge ID is actually running using qstat
+function isPairRunning {
+	log "isPairRunning called on pair id = $1" 
+	if (grep "Following jobs do not exist:" `qstat -j "$1"` ) then
+		return false 
+	fi
+	return true
+}
+
+
+
+
+#figures out which sandbox the given job pair should run in. First argument is a job pair SGE ID
 function initSandbox {
-	#TODO: Need to think about this-- what happens if we can't delete the lock?
+	
+	#check to see if we can make the lock directory-- if so, we can run in sandbox 
 	if mkdir "$SANDBOX_LOCK_DIR" ; then
-		# if we successfully made the directory
-		SANDBOX=1
-		log "putting this job into sandbox 1 $1" 
 		# make a file that is named with the given ID so we know which pair should be running here
 		touch "$SANDBOX_LOCK_DIR/$1"
-	else
-		log "putting this job into sandbox 2 $1"
-		SANDBOX=2
-	fi
-	initWorkspaceVariables
 	
+		# if we successfully made the directory
+		SANDBOX=1
+		log "putting this job into sandbox 1 $1"
+		initWorkspaceVariables
+		return 0
+	fi
+	#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
+	#or a previous job did not clean up the lock correctly. To check, we see if the pair given
+	#in the directory is still running
+		
+	sgeID=`ls "$SANDBOX_LOCK_DIR"`
+	log "found the sgeID = $sgeID"
+	
+	
+	if ! isPairRunning $sgeID ; then
+		#this means sandbox1 is NOT actually in use, and that the old pair just did not clean up
+		log "found that the pair is not running in sandbox1!"
+		safeRm "$SANDBOX_LOCK_DIR"
+		
+		#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
+		if mkdir "$SANDBOX_LOCK_DIR" ; THEN
+			#we got the lock, so take sandbox 1
+			touch "$SANDBOX_LOCK_DIR/$1"
+				# if we successfully made the directory
+			SANDBOX=1
+			log "putting this job into sandbox 1 $1"
+			initWorkspaceVariables
+			return 0
+		fi
+	else
+		log "found that pair $sgeID is running in sandbox1"
+	fi
+	
+	#definitely could not get sandbox 1, so now try to get sandbox2
+	if mkdir "$SANDBOX2_LOCK_DIR" ; then
+		log "got sandbox2!"
+		#got sandbox 2 correctly
+		touch "$SANDBOX2_LOCK_DIR/$1"
+		
+		SANDBOX=2
+		log "putting this job into sandbox 2 $1"
+		initWorkspaceVariables
+		return 0
+	fi
+	
+	#couldn't get sandbox2, but again it is possible that the lock was not cleaned up
+	
+	sgeID=`ls "$SANDBOX2_LOCK_DIR"`
+	log "found the sgeID = $sgeID"
+	
+	if ! isPairRunning $sgeID ; then
+		log "found that the pair is not running in sandbox2!"
+		safeRm "$SANDBOX2_LOCK_DIR"
+		
+		#assuming things work correctly, it should be impossible for two pairs to reach this point simultaneously on the same node
+		if mkdir "$SANDBOX2_LOCK_DIR" ; then
+			#todo: check to make sure touch is successful?
+			touch "$SANDBOX2_LOCK_DIR/$1"
+			SANDBOX=2
+			
+			log "putting this job into sandbox 2 $1" 
+			initWorkspaceVariables
+			return 0
+		fi
+	fi
+	
+	#Failed to get sandbox2 or sandbox 1. hopefully this never occurs.
+	log "unable to get either sandbox 1 or sandbox 2"
+	SANDBOX=-1	
+	return -1
 }
 
 #determines whether we should be running in sandbox 1 or sandbox 2, based on the value of the 
@@ -135,7 +211,7 @@ function findSandbox {
 	log "found that the sandbox is 1 for job $1"
 	SANDBOX=1
 	else
-	log "found that the sandbox is 2 for job$1"
+	log "found that the sandbox is 2 for job $1"
 	SANDBOX=2
 	fi
 	initWorkspaceVariables

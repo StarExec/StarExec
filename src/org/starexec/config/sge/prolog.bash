@@ -162,18 +162,18 @@ function verifyWorkspace {
 
 	return $?
 }
-#TODO: need to have a second sandbox user
+#TODO: syntax check this
 function sandboxWorkspace {
-	sudo chown -R sandbox $WORKING_DIR
 
-	#if [[ $WORKING_DIR == *sandbox2* ]] 
+	if [[ $WORKING_DIR == *sandbox2* ]] 
 	
-	#then
-	#sudo chown -R sandbox2 $WORKING_DIR 
-	#else
-	#	sudo chown -R sandbox $WORKING_DIR
-	
-	#fi
+	then
+	log "sandboxing workspace with sandbox2 user"
+	sudo chown -R sandbox2 $WORKING_DIR 
+	else
+		log "sandboxing workspace with sandbox user"
+		sudo chown -R sandbox $WORKING_DIR
+	fi
 	ls -lR "$WORKING_DIR"
 	return 0
 }
@@ -198,7 +198,13 @@ echo "execution host: $HOSTNAME"
 echo ""
 
 
-initSandbox "$PAIR_ID"
+initSandbox "$JOB_ID"
+#todo: how exactly do we return an error correctly?
+if [ $SANDBOX -eq -1 ] then
+	sendStatus $ERROR_RUNSCRIPT
+	log "unable to secure any sandbox for this job!"
+	exit -1
+fi
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
 cleanWorkspace

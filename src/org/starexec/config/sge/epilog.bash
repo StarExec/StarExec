@@ -25,7 +25,7 @@ whoami
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
-findSandbox $PAIR_ID
+findSandbox $JOB_ID
 
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
