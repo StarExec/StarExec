@@ -171,6 +171,10 @@ public class Registration extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given institution is not valid-- please refer to the help files to see the proper format");
 			}
 	    	
+	    	if (!Validator.isValidRequestMessage(request.getParameter(Registration.USER_MESSAGE))) {
+	    		return new ValidatorStatusCode(false, "The given request message is not valid-- please refer to the help files to see the proper format");
+	    	}
+	    	
 			boolean notUniqueEmail = Users.getUserByEmail(request.getParameter(Registration.USER_EMAIL));
 			if (notUniqueEmail) {
 				return new ValidatorStatusCode(false, "The email address you specified has already been registered");

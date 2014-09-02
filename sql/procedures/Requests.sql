@@ -17,7 +17,7 @@ CREATE PROCEDURE AddCode(IN _id INT, IN _code VARCHAR(36))
 -- Adds a request to join a community, provided the user isn't already a part of that community
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS AddCommunityRequest;
-CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VARCHAR(36), IN _message VARCHAR(300))
+CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VARCHAR(36), IN _message VARCHAR(512))
 	BEGIN
 		IF NOT EXISTS(SELECT * FROM user_assoc WHERE user_id = _id AND space_id = _community) THEN
 			INSERT INTO community_requests(user_id, community, code, message, created)
@@ -28,7 +28,7 @@ CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VAR
 -- Adds a request to reserve a queue
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS AddQueueRequest;
-CREATE PROCEDURE AddQueueRequest(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _message VARCHAR(300), IN _wall INT, IN _cpu INT, OUT _id INT)
+CREATE PROCEDURE AddQueueRequest(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _message VARCHAR(512), IN _wall INT, IN _cpu INT, OUT _id INT)
 	BEGIN
 		INSERT INTO queue_request(user_id, space_id, queue_name, message, created, clockTimeout,cpuTimeout)
 		VALUES (_userId, _spaceId, _queueName, _message,SYSDATE(), _wall, _cpu);
@@ -54,7 +54,7 @@ CREATE PROCEDURE DeleteQueueRequestAssocEntries(IN _request_id INT)
 	END //
 	
 DROP PROCEDURE IF EXISTS UpdateQueueRequest;
-CREATE PROCEDURE UpdateQueueRequest(IN _id INT, IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _message VARCHAR(300),  IN _created TIMESTAMP, IN _cpu INT, IN _wall INT)
+CREATE PROCEDURE UpdateQueueRequest(IN _id INT, IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _message VARCHAR(512),  IN _created TIMESTAMP, IN _cpu INT, IN _wall INT)
 	BEGIN
 		UPDATE queue_request
 		SET user_id=_userId,

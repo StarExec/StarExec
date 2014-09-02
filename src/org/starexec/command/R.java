@@ -84,8 +84,6 @@ public class R {
     public static int MSG_LEN=512;
     public static int BENCH_NAME_LEN=250;
     public static int BENCH_DESC_LEN=1024;
-    public static int COMMUNITY_NAME_LEN=64;
-    public static int COMMUNITY_DESC_LEN=300;
     public static int CONFIGURATION_NAME_LEN=64;
     public static int CONFIGURATION_DESC_LEN=1024;
     public static int SOLVER_NAME_LEN=64;

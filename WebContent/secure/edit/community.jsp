@@ -7,8 +7,8 @@
 		boolean admin = Users.isAdmin(userId);
 		
 		request.setAttribute("isAdmin", admin);
-		request.setAttribute("communityNameLen", R.COMMUNITY_NAME_LEN);
-		request.setAttribute("communityDescLen", R.COMMUNITY_DESC_LEN);
+		request.setAttribute("communityNameLen", R.SPACE_NAME_LEN);
+		request.setAttribute("communityDescLen", R.SPACE_DESC_LEN);
 		request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
 		request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
 		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);

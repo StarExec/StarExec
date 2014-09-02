@@ -385,6 +385,7 @@ public class Communities {
 	
 	/**
 	 * Get the default setting of the community given by the id.
+	 * If the default settings do not already exist, they are initialized to default values and returned
 	 * 
 	 * @param id the space id of the community
 	 * @return a list of string containing the default settings

@@ -7,20 +7,17 @@ try {
 	// Grab relevant user id and community id
 	int comId = Integer.parseInt((String)request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
-	request.setAttribute("comId",comId);
+	
 	// Only allowing editing of the default benchmark if the user
 	// is a leader of the community being edited
-	List<User> leaders=Spaces.getLeaders(comId);
-	boolean validUser=false;
-	for (User x : leaders) {
-		if (x.getId()==userId) {
-			validUser=true;
-			break;
-		}
-	}
+	
+	boolean isLeader=Permissions.get(userId,comId).isLeader();
+	boolean validUser=isLeader || Users.isAdmin(userId);
 	// The user does not have permission
 	if(!validUser) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "only community leaders can select default benchmarks");
+	} else {
+		request.setAttribute("comId",comId);
 	}
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);

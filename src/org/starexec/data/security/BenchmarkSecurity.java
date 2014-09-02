@@ -12,6 +12,31 @@ import org.starexec.util.Validator;
 public class BenchmarkSecurity {
 	
 	/**
+	 * Checks to see whether the given user has permission to download the given benchmark
+	 * @param benchId
+	 * @param userId
+	 * @return
+	 */
+	
+	public static ValidatorStatusCode canUserDownloadBenchmark(int benchId, int userId) {
+		Benchmark b=Benchmarks.get(benchId);
+		if (b==null) {
+			return new ValidatorStatusCode(false, "The given benchmark could not be found");
+		}
+		if (!Permissions.canUserSeeBench(benchId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the given benchmark");
+		
+		}
+		boolean isAdmin=Users.isAdmin(userId);
+		if (!(b.isDownloadable() || b.getUserId()==userId || isAdmin)) {
+			return new ValidatorStatusCode(false, "The given benchmark has been marked as being not downloadable");
+		}
+		
+		return new ValidatorStatusCode(true);
+		
+	}
+	
+	/**
 	 * Checks to see whether the given user is allowed to see the contents of the given 
 	 * benchmark
 	 * @param benchmarkId The ID of the benchmark being checked
