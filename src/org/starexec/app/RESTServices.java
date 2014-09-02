@@ -268,6 +268,24 @@ public class RESTServices {
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
 	
+	
+	/**
+	 * Clears the error state E (which is generally caused by runscript errors) off of every node in the cluster
+	 * @param request
+	 * @return 
+	 */
+	@POST
+	@Path("/cluster/clearerrors")
+	@Produces("application/json")	
+	public String clearErrorStates(@Context HttpServletRequest request) {	
+		int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status=QueueSecurity.canUserClearErrorStates(userId);
+		if (!status.isSuccess()) {
+			gson.toJson(status);
+		}
+		return GridEngineUtil.clearNodeErrorStates() ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
+	}
+	
 	/**
 	 * @return a json string representing all queues in the starexec cluster
 	 * @author Tyler Jensen

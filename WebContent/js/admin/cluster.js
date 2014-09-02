@@ -83,6 +83,16 @@ function initUI(id){
 		}
     });
 	
+	$("#clearErrorStates").button({
+		icons: {
+			primary: "ui-icon-pencil"
+		}
+	});
+	
+	$("#clearErrorStates").click(function() {
+		clearErrorStates();
+	});
+	
 	$("#newPermanent").button({
 		icons: {
 			primary: "ui-icon-plusthick"
@@ -370,9 +380,17 @@ function fnPaginationHandler(sSource, aoData, fnCallback){
 			"json"
 	)
 }
-/*
- * 
- */
+
+function clearErrorStates() {
+	$.post(
+			starexecRoot+"services/cluster/clearerrors",
+			function(returnCode) {
+				parseReturnCode(returnCode);	
+			},
+			"json"
+		);
+}
+
 function cancelReservation(spaceId, queueId) {
 	$.post(
 		starexecRoot+"services/cancel/queueReservation/" + spaceId + "/" + queueId,
