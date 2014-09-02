@@ -755,6 +755,22 @@ public class GridEngineUtil {
 	}
 	
 	/**
+	 * Clears off every currently running SGE job from every queue
+	 * @return
+	 */
+	public static boolean deleteAllSGEJobs() {
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+		try {
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -u *",envp);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+	} 
+	
+	/**
 	 * Clears the error states from every node associated with every queue
 	 */
 	public static boolean clearNodeErrorStates() {

@@ -33,6 +33,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
 
 /**
@@ -3294,6 +3295,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	
+	//TODO: Does just calling qdel -u * work here for killing pairs
 	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -3303,10 +3305,9 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
-			
+			GridEngineUtil.deleteAllSGEJobs();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
-
 			if (jobs != null) {
 				for (Job j : jobs) {
 					//Get the enqueued job pairs and remove them
