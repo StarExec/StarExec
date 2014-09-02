@@ -763,7 +763,7 @@ public class GridEngineUtil {
 			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 			for (Queue q : Queues.getAll()) {
 				
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qstat -cq "+q.getName(),envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+q.getName(),envp);
 			}
 			return true;
 		} catch (Exception e) {
