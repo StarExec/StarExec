@@ -152,7 +152,7 @@ function initSandbox {
 		safeRm "$SANDBOX_LOCK_DIR"
 		
 		#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
-		if mkdir "$SANDBOX_LOCK_DIR" ; THEN
+		if mkdir "$SANDBOX_LOCK_DIR" ; then
 			#we got the lock, so take sandbox 1
 			touch "$SANDBOX_LOCK_DIR/$1"
 				# if we successfully made the directory

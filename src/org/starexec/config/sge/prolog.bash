@@ -200,7 +200,8 @@ echo ""
 
 initSandbox "$JOB_ID"
 #todo: how exactly do we return an error correctly?
-if [ $SANDBOX -eq -1 ] then
+if [ $SANDBOX -eq -1 ] 
+then
 	sendStatus $ERROR_RUNSCRIPT
 	log "unable to secure any sandbox for this job!"
 	exit -1

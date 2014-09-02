@@ -101,11 +101,11 @@ public class Validator {
     
     /**
      * Validates a message by checking that it's not null or the empty string, and
-     * that its between 1 and 300 characters in length
+     * that its between 1 and 512 characters in length
      * 
      * @param message the message to be checked
      * @return true iff the message isn't empty and is between 
-     * 1 and 300 characters in length 
+     * 1 and 512 characters in length 
      */
     public static boolean isValidRequestMessage(String message){
     	return message!=null && patternRequestMsg.matcher(message).matches();
