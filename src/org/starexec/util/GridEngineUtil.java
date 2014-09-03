@@ -762,7 +762,7 @@ public class GridEngineUtil {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		try {
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -u *",envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -u tomcat",envp);
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);

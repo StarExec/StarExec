@@ -116,9 +116,9 @@ function initWorkspaceVariables {
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
 	if (grep "Following jobs do not exist:" `qstat -j "$1"` ) then
-		return false 
+		return 1
 	fi
-	return true
+	return 0
 }
 
 
@@ -149,7 +149,7 @@ function initSandbox {
 	if ! isPairRunning $sgeID ; then
 		#this means sandbox1 is NOT actually in use, and that the old pair just did not clean up
 		log "found that the pair is not running in sandbox1!"
-		safeRm "$SANDBOX_LOCK_DIR"
+		safeRmLock "$SANDBOX_LOCK_DIR"
 		
 		#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
 		if mkdir "$SANDBOX_LOCK_DIR" ; then
@@ -184,7 +184,7 @@ function initSandbox {
 	
 	if ! isPairRunning $sgeID ; then
 		log "found that the pair is not running in sandbox2!"
-		safeRm "$SANDBOX2_LOCK_DIR"
+		safeRmLock "$SANDBOX2_LOCK_DIR"
 		
 		#assuming things work correctly, it should be impossible for two pairs to reach this point simultaneously on the same node
 		if mkdir "$SANDBOX2_LOCK_DIR" ; then
@@ -220,6 +220,15 @@ function findSandbox {
 function log {
 	echo "`date +'%D %r %Z'`: $1"
 	return $?
+}
+
+function safeRmLock {
+	if [ "$1" == "" ] ; then
+		log "Unsafe rm all detected for lock"
+	else
+		log "doing rm all on  $1"
+		rm -rf "$1"
+	fi
 }
 
 # call "safeRm description dirname" to do an "rm -r dirname/*" except if

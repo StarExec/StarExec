@@ -421,7 +421,7 @@ DROP PROCEDURE IF EXISTS GetJobPairsByStatus;
 CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN 
 		SELECT id FROM job_pairs
-		WHERE job_id=_id AND status_code=_statusCode;
+		WHERE job_id=_jobId AND status_code=_statusCode;
 	END //
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune

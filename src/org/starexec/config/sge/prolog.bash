@@ -204,7 +204,7 @@ if [ $SANDBOX -eq -1 ]
 then
 	sendStatus $ERROR_RUNSCRIPT
 	log "unable to secure any sandbox for this job!"
-	exit -1
+	exit 1
 fi
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
