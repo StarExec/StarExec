@@ -2444,21 +2444,27 @@ public class Jobs {
 	 */
 	
 	public static boolean setTimelessPairsToPending(int jobId) {
-		boolean success=true;
-		//only continue if we could actually clear the job stats
-		Set<Integer> ids=new HashSet<Integer>();
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.STATUS_COMPLETE.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_CPU.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_FILE_WRITE.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_MEM.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_RUNTIME.getVal()));
-		
-		
-		for (Integer jp : ids) {
-			success=success && Jobs.rerunPair(jobId, jp);
-		}
+		try {
+			boolean success=true;
+			//only continue if we could actually clear the job stats
+			Set<Integer> ids=new HashSet<Integer>();
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.STATUS_COMPLETE.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_CPU.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_FILE_WRITE.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_MEM.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_RUNTIME.getVal()));
+			
+			
+			for (Integer jp : ids) {
+				success=success && Jobs.rerunPair(jobId, jp);
+			}
 
-		return success;
+			return success;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+		
 	}
 	
 	/**
@@ -2535,6 +2541,12 @@ public class Jobs {
 		}
 		return false;
 	}
+	/**
+	 * Returns all job pairs in the given job with the given status code that are a run time of 0
+	 * @param jobId
+	 * @param statusCode
+	 * @return
+	 */
 	
 	public static List<Integer> getTimelessPairsByStatus(int jobId, int statusCode) {
 		Connection con=null;

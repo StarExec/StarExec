@@ -423,6 +423,15 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 		SELECT id FROM job_pairs
 		WHERE job_id=_jobId AND status_code=_statusCode;
 	END //
+	
+-- Retrieves ids for job pairs with a given status in a given job where either cpu or wallclock is 0
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetTimelessJobPairsByStatus;
+CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
+	BEGIN 
+		SELECT id FROM job_pairs
+		WHERE job_id=_jobId AND status_code=_statusCode AND (cpu=0 OR wallclock=0);
+	END //
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
