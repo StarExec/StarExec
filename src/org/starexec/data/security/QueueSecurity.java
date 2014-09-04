@@ -8,6 +8,13 @@ import org.starexec.util.Validator;
 
 public class QueueSecurity {
 	
+	public static ValidatorStatusCode canUserClearErrorStates(int userId) {
+		if (!Users.isAdmin(userId)) {
+			return new ValidatorStatusCode(false, "Only administrators can perform this action");
+		}
+		return new ValidatorStatusCode(true);
+	}
+	
 	/**
 	 * Checks to see whether the given user is allowed to make a new queue
 	 * @param userId The ID of the user making the request

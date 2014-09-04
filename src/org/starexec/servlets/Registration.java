@@ -113,7 +113,7 @@ public class Registration extends HttpServlet {
 			if(added) {
 				log.info(String.format("Registration was successfully started for user [%s].", user.getFullName()));
 				
-				//Mail.sendActivationCode(user, code);
+				Mail.sendActivationCode(user, code);
 				return new ValidatorStatusCode(true);
 			} else {
 				log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
@@ -141,6 +141,7 @@ public class Registration extends HttpServlet {
 	 */
     public static ValidatorStatusCode validateRequest(HttpServletRequest request) {
     	try {
+    		
     		// Ensure the necessary parameters exist
 	    	if(!Util.paramExists(Registration.USER_PASSWORD, request)) {
 	    		return new ValidatorStatusCode(false, "You need to supply a password");
@@ -171,10 +172,20 @@ public class Registration extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given institution is not valid-- please refer to the help files to see the proper format");
 			}
 	    	
-	    	if (!Validator.isValidRequestMessage(request.getParameter(Registration.USER_MESSAGE))) {
-	    		return new ValidatorStatusCode(false, "The given request message is not valid-- please refer to the help files to see the proper format");
-	    	}
-	    	
+	    	int userIdOfRequest=-1;
+			try {
+				userIdOfRequest=SessionUtil.getUserId(request);
+			} catch (Exception e) {
+				//this occurs when someone tries to register, as they have no user ID
+			}
+			
+			//administrators don't need to provide a message
+			if (!Users.isAdmin(userIdOfRequest)) {
+				if (!Validator.isValidRequestMessage(request.getParameter(Registration.USER_MESSAGE))) {
+		    		return new ValidatorStatusCode(false, "The given request message is not valid-- please refer to the help files to see the proper format");
+		    	}
+			}
+
 			boolean notUniqueEmail = Users.getUserByEmail(request.getParameter(Registration.USER_EMAIL));
 			if (notUniqueEmail) {
 				return new ValidatorStatusCode(false, "The email address you specified has already been registered");

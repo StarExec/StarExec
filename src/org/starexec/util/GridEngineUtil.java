@@ -755,6 +755,40 @@ public class GridEngineUtil {
 	}
 	
 	/**
+	 * Clears off every currently running SGE job from every queue
+	 * @return
+	 */
+	public static boolean deleteAllSGEJobs() {
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+		try {
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -u tomcat",envp);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+	} 
+	
+	/**
+	 * Clears the error states from every node associated with every queue
+	 */
+	public static boolean clearNodeErrorStates() {
+		try {
+			String[] envp = new String[1];
+			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+			for (Queue q : Queues.getAll()) {
+				
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+q.getName(),envp);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+	}
+	
+	/**
 	 * Moves the given set of nodes into the given queue
 	 * @param req The request object representing the destination queue, which must have the queue_name set
 	 * @param NQ A map of nodes to queues, where the nodes are the ones that will be moved and the queues

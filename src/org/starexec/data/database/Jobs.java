@@ -33,6 +33,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
 
 /**
@@ -2443,21 +2444,27 @@ public class Jobs {
 	 */
 	
 	public static boolean setTimelessPairsToPending(int jobId) {
-		boolean success=true;
-		//only continue if we could actually clear the job stats
-		Set<Integer> ids=new HashSet<Integer>();
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.STATUS_COMPLETE.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_CPU.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_FILE_WRITE.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_MEM.getVal()));
-		ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_RUNTIME.getVal()));
-		
-		
-		for (Integer jp : ids) {
-			success=success && Jobs.rerunPair(jobId, jp);
-		}
+		try {
+			boolean success=true;
+			//only continue if we could actually clear the job stats
+			Set<Integer> ids=new HashSet<Integer>();
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.STATUS_COMPLETE.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_CPU.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_FILE_WRITE.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_MEM.getVal()));
+			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_RUNTIME.getVal()));
+			
+			
+			for (Integer jp : ids) {
+				success=success && Jobs.rerunPair(jobId, jp);
+			}
 
-		return success;
+			return success;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+		
 	}
 	
 	/**
@@ -2534,6 +2541,12 @@ public class Jobs {
 		}
 		return false;
 	}
+	/**
+	 * Returns all job pairs in the given job with the given status code that are a run time of 0
+	 * @param jobId
+	 * @param statusCode
+	 * @return
+	 */
 	
 	public static List<Integer> getTimelessPairsByStatus(int jobId, int statusCode) {
 		Connection con=null;
@@ -3294,6 +3307,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	
+	//TODO: Does just calling qdel -u * work here for killing pairs
 	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -3303,10 +3317,9 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
-			
+			GridEngineUtil.deleteAllSGEJobs();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
-
 			if (jobs != null) {
 				for (Job j : jobs) {
 					//Get the enqueued job pairs and remove them
@@ -3314,8 +3327,8 @@ public class Jobs {
 					if (jobPairsEnqueued != null) {
 						for (JobPair jp : jobPairsEnqueued) {
 							int sge_id = jp.getGridEngineId();
-							Util.executeCommand("qdel " + sge_id);
-							log.debug("enqueued: Just executed qdel " + sge_id);
+							//Util.executeCommand("qdel " + sge_id);
+							//log.debug("enqueued: Just executed qdel " + sge_id);
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
@@ -3325,8 +3338,8 @@ public class Jobs {
 					if (jobPairsRunning != null) {
 						for (JobPair jp: jobPairsRunning) {
 							int sge_id = jp.getGridEngineId();
-							Util.executeCommand("qdel " + sge_id);
-							log.debug("running: Just executed qdel " + sge_id);
+							//Util.executeCommand("qdel " + sge_id);
+							//log.debug("running: Just executed qdel " + sge_id);
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}

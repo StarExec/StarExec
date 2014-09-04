@@ -15,12 +15,12 @@
 				    	   <thead>
 						<tr>
 							<th>name</th>
-							<th>users</th>
-							<th>solvers</th>
-							<th>bench</th>
-							<th>jobs</th>
-							<th>job<br>pairs</th>
-							<th>disk use</th>
+							<th id="userHeader">users</th>
+							<th id="solverHeader">solvers</th>
+							<th id="benchHeader">bench</th>
+							<th id="jobHeader">jobs</th>
+							<th id="jobPairHeader">job<br>pairs</th>
+							<th id="diskUseHeader">disk use</th>
 						</tr>
 					   </thead>
 				    </table>

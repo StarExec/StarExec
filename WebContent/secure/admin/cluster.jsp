@@ -37,6 +37,7 @@
 		<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
+				<li><button type="button" id="clearErrorStates">clear error states</button></li>
 				<li><button type="button" id="removeQueue">remove queue</button></li>
 				<!--  <li><a type="btnRun" id="manageNodes" href="/${starexecRoot}/secure/admin/nodes.jsp">manage nodes</a></li>-->
 				<li><button type="button" id="makePermanent">make queue permanent</button></li>
