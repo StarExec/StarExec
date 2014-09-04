@@ -56,8 +56,9 @@ trap 'handleUsrTwo' USR2
 # against the user's execution time
 #==========================================================================
 
-findSandbox $JOB_ID
-
+#findSandbox $JOB_ID
+log "sandbox = $SANDBOX"
+initWorkspaceVariables
 if [ $SANDBOX -eq 1 ]
 then
 	cd /export/starexec/sandbox/solver/bin

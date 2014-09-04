@@ -206,6 +206,8 @@ then
 	log "unable to secure any sandbox for this job!"
 	exit 1
 fi
+
+export SANDBOX
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
 cleanWorkspace

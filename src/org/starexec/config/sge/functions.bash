@@ -115,26 +115,27 @@ function initWorkspaceVariables {
 # checks to see whether the pair with the given sge ID is actually running using qstat
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
-	if (grep "Following jobs do not exist:" `qstat -j "$1"` ) then
+	if (grep "Following jobs do not exist:" `ssh stardev "export SGE_ROOT=/cluster/sge-6.2u5; /cluster/sge-6.2u5/bin/lx24-amd64/qstat -j $1"` ) then
 		return 1
 	fi
 	return 0
 }
 
-
-
-
-#figures out which sandbox the given job pair should run in. First argument is a job pair SGE ID
-function initSandbox {
-	
+#first argument is the sandbox (1 or 2) and second argument is the SGE ID
+function trySandbox {
+	if [ $1 -eq 1 ] ; then
+		LOCK_DIR="$SANDBOX_LOCK_DIR"
+	else
+		LOCK_DIR="$SANDBOX2_LOCK_DIR"
+	fi
 	#check to see if we can make the lock directory-- if so, we can run in sandbox 
-	if mkdir "$SANDBOX_LOCK_DIR" ; then
+	if mkdir "$LOCK_DIR" ; then
 		# make a file that is named with the given ID so we know which pair should be running here
-		touch "$SANDBOX_LOCK_DIR/$1"
+		touch "$LOCK_DIR/$2"
 	
 		# if we successfully made the directory
-		SANDBOX=1
-		log "putting this job into sandbox 1 $1"
+		SANDBOX=$1
+		log "putting this job into sandbox $1 $2"
 		initWorkspaceVariables
 		return 0
 	fi
@@ -142,79 +143,67 @@ function initSandbox {
 	#or a previous job did not clean up the lock correctly. To check, we see if the pair given
 	#in the directory is still running
 		
-	sgeID=`ls "$SANDBOX_LOCK_DIR"`
+	sgeID=`ls "$LOCK_DIR"`
 	log "found the sgeID = $sgeID"
 	
 	
 	if ! isPairRunning $sgeID ; then
 		#this means sandbox1 is NOT actually in use, and that the old pair just did not clean up
 		log "found that the pair is not running in sandbox1!"
-		safeRmLock "$SANDBOX_LOCK_DIR"
+		safeRmLock "$LOCK_DIR"
 		
 		#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
-		if mkdir "$SANDBOX_LOCK_DIR" ; then
+		if mkdir "$LOCK_DIR" ; then
 			#we got the lock, so take sandbox 1
-			touch "$SANDBOX_LOCK_DIR/$1"
-				# if we successfully made the directory
-			SANDBOX=1
-			log "putting this job into sandbox 1 $1"
+			touch "$LOCK_DIR/$2"
+			# if we successfully made the directory
+			SANDBOX=$1
+			log "putting this job into sandbox $1 $2"
 			initWorkspaceVariables
 			return 0
 		fi
 	else
 		log "found that pair $sgeID is running in sandbox1"
 	fi
-	
-	#definitely could not get sandbox 1, so now try to get sandbox2
-	if mkdir "$SANDBOX2_LOCK_DIR" ; then
-		log "got sandbox2!"
-		#got sandbox 2 correctly
-		touch "$SANDBOX2_LOCK_DIR/$1"
-		
-		SANDBOX=2
-		log "putting this job into sandbox 2 $1"
-		initWorkspaceVariables
+	#could not get the sandbox
+	return 1
+}
+
+
+#figures out which sandbox the given job pair should run in. First argument is a job pair SGE ID
+function initSandbox {
+	#try to get sandbox1 first
+	if trySandbox 1 $1; then
 		return 0
 	fi
 	
-	#couldn't get sandbox2, but again it is possible that the lock was not cleaned up
-	
-	sgeID=`ls "$SANDBOX2_LOCK_DIR"`
-	log "found the sgeID = $sgeID"
-	
-	if ! isPairRunning $sgeID ; then
-		log "found that the pair is not running in sandbox2!"
-		safeRmLock "$SANDBOX2_LOCK_DIR"
-		
-		#assuming things work correctly, it should be impossible for two pairs to reach this point simultaneously on the same node
-		if mkdir "$SANDBOX2_LOCK_DIR" ; then
-			#todo: check to make sure touch is successful?
-			touch "$SANDBOX2_LOCK_DIR/$1"
-			SANDBOX=2
-			
-			log "putting this job into sandbox 2 $1" 
-			initWorkspaceVariables
-			return 0
-		fi
+	#couldn't get sandbox 1, so try sandbox2 next
+	if trySandbox 2 ; then
+		return 0
 	fi
+	#failed to get either sandbox
+	SANDBOX=-1
+	return 1
 	
-	#Failed to get sandbox2 or sandbox 1. hopefully this never occurs.
-	log "unable to get either sandbox 1 or sandbox 2"
-	SANDBOX=-1	
-	return -1
+	
 }
 
 #determines whether we should be running in sandbox 1 or sandbox 2, based on the value of the 
 function findSandbox {
 	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
 	then
-	log "found that the sandbox is 1 for job $1"
-	SANDBOX=1
-	else
-	log "found that the sandbox is 2 for job $1"
-	SANDBOX=2
+		log "found that the sandbox is 1 for job $1"
+		SANDBOX=1
+		initWorkspaceVariables
 	fi
-	initWorkspaceVariables
+	if [ -e "$SANDBOX2_LOCK_DIR/$1 ] 
+	then
+		log "found that the sandbox is 2 for job $1"
+		SANDBOX=2
+		initWorkspaceVariables
+	fi
+	SANDBOX=-1
+	
 }
 
 function log {
@@ -267,7 +256,11 @@ function cleanWorkspace {
 	
 	if [ $SANDBOX -eq 1 ] 
 	then
-		rm -f "$SANDBOX_LOCK_DIR"
+		safeRmLock "$SANDBOX_LOCK_DIR"
+	fi
+	if [ $SANDBOX -eq 2 ] 
+	then
+		safeRmLock "$SANDBOX2_LOCK_DIR"
 	fi
 	
 	log "execution host $HOSTNAME cleaned"
