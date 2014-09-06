@@ -242,6 +242,7 @@ function safeRm {
   fi
 }
 
+#takes in 1 argument-- true if in the epilog and false otherwise
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
@@ -261,16 +262,23 @@ function cleanWorkspace {
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
-	rm -f "$SCRIPT_PATH"
 	
-	if [ $SANDBOX -eq 1 ] 
-	then
-		safeRmLock "$SANDBOX_LOCK_DIR"
+	
+	#only delete the job script / lock files if we are in the epilog
+	if [ $1 ] ; then
+		log "cleaning up scripts and lock files"
+		rm -f "$SCRIPT_PATH"
+		if [ $SANDBOX -eq 1 ] 
+		then
+			safeRmLock "$SANDBOX_LOCK_DIR"
+		fi
+		if [ $SANDBOX -eq 2 ] 
+		then
+			safeRmLock "$SANDBOX2_LOCK_DIR"
+		fi
 	fi
-	if [ $SANDBOX -eq 2 ] 
-	then
-		safeRmLock "$SANDBOX2_LOCK_DIR"
-	fi
+	 
+	
 	
 	log "execution host $HOSTNAME cleaned"
 	return $?

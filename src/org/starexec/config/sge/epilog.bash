@@ -114,7 +114,7 @@ fi
 
 
 
-cleanWorkspace
+cleanWorkspace 0
 
 if [ "$JOB_ERROR" = "" ]; then
 	sendStatus $STATUS_COMPLETE

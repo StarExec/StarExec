@@ -211,7 +211,7 @@ fi
 
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
-cleanWorkspace
+cleanWorkspace 1
 fillDependArrays
 checkCache
 copyDependencies
