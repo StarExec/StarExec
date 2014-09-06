@@ -265,7 +265,8 @@ function cleanWorkspace {
 	
 	
 	#only delete the job script / lock files if we are in the epilog
-	if [ $1 ] ; then
+	log "about to check whether to delete lock files given $1"
+	if [ $1 -eq 0 ] ; then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
 		if [ $SANDBOX -eq 1 ] 
