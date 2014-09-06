@@ -56,7 +56,8 @@
 			<option value="all">all</option>
 			<option value="solved">solved</option>
 			<option value="wrong">wrong</option>
-			<option value="resource">resource out</option>		
+			<option value="resource">resource out</option>	
+			<option value="failed">failed</option>	
 			<option value="unknown">unknown</option>		
 			<option value="incomplete">incomplete</option>
 		</select>

@@ -189,6 +189,7 @@ echo "====================================="
 echo "date: `date`"
 echo "user: #$USER_ID"
 echo "sge job: #$JOB_ID"
+echo "pair id: $PAIR_ID"
 echo "solver: $SOLVER_NAME"
 echo "solverid: $SOLVER_ID"
 echo "timestamp: $SOLVER_TIMESTAMP"
@@ -198,7 +199,7 @@ echo "execution host: $HOSTNAME"
 echo ""
 
 
-initSandbox "$JOB_ID"
+initSandbox "$PAIR_ID"
 #todo: how exactly do we return an error correctly?
 if [ $SANDBOX -eq -1 ] 
 then
@@ -207,7 +208,7 @@ then
 	exit 1
 fi
 
-export SANDBOX
+
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
 cleanWorkspace

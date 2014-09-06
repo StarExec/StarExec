@@ -25,6 +25,9 @@
 				<td><a href="/${starexecRoot}/public/password_reset.jsp">Forgot password?</a></td>
 				<td><button type="submit">Login</button></td>
 			</tr>
+			<tr> 
+				<td><a href="/${starexecRoot}/public/registration.jsp">New user?</a></td>
+			</tr>
 		</table>
 		</fieldset>	
 		<input type="hidden" id="cookieexists" name="cookieexists" value="false">				

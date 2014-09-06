@@ -37,7 +37,7 @@ public class JobSecurity {
 	 */
 	public static boolean isValidGetPairType(String type) {
 		if (type.equals("all") || type.equals("solved") || type.equals("incomplete") || type.equals("wrong") ||
-				type.equals("unknown") || type.equals("resource")) {
+				type.equals("unknown") || type.equals("resource") || type.equals("failed")) {
 			return true;
 		}
 		return false;

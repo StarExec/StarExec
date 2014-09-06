@@ -50,33 +50,35 @@ thead {
 }
 
 .solvedHead, .resourceHead {
-	width: 12%;
-	max-width:12%;
-}
-
-.incompleteHead {
-	width: 18%;
-	max-width:18%;
-}
-
-
-.configHead, .unknownHead { 
-	width: 12%;
-	max-width:12%;
-}
-
-.solverHead, .wrongHead {
-	width: 12%;
-	max-width:12%;
-}
-.timeHead {
 	width: 10%;
 	max-width:10%;
 }
 
-.benchHead{
-	width: 18%
+.incompleteHead {
+	width: 12%;
+	max-width:12%;
 }
+
+
+.configHead, .unknownHead { 
+	width: 11%;
+	max-width:11%;
+}
+
+.solverHead, .wrongHead {
+	width: 11%;
+	max-width:11%;
+}
+.timeHead, .failedHead {
+	width: 9%;
+	max-width:9%;
+}
+
+.benchHead{
+	width: 17%
+}
+
+
 
 #graphField img {
 	border-style:solid;

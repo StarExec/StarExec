@@ -52,7 +52,7 @@ public class Registration extends HttpServlet {
 		// Begin registration for a new user		
 		ValidatorStatusCode result = register(request, response);
 		if (result.isSuccess()) {
-		      response.sendRedirect(Util.docRoot("secure/add/user.jsp?result=regSuccess"));
+		      response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
 		} else {
 			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));

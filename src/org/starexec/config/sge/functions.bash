@@ -112,16 +112,17 @@ function initWorkspaceVariables {
 	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
 }
 
-# checks to see whether the pair with the given sge ID is actually running using qstat
+# checks to see whether the pair with the given pair ID is actually running using qstat
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
-	if (grep "Following jobs do not exist:" `ssh stardev "export SGE_ROOT=/cluster/sge-6.2u5; /cluster/sge-6.2u5/bin/lx24-amd64/qstat -j $1"` ) then
+	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/n*/active_jobs/*/config`
+	if grep "job_name=job_$1" $output ; then
 		return 1
 	fi
 	return 0
 }
 
-#first argument is the sandbox (1 or 2) and second argument is the SGE ID
+#first argument is the sandbox (1 or 2) and second argument is the pair ID
 function trySandbox {
 	if [ $1 -eq 1 ] ; then
 		LOCK_DIR="$SANDBOX_LOCK_DIR"
@@ -170,7 +171,7 @@ function trySandbox {
 }
 
 
-#figures out which sandbox the given job pair should run in. First argument is a job pair SGE ID
+#figures out which sandbox the given job pair should run in. First argument is a job pair ID
 function initSandbox {
 	#try to get sandbox1 first
 	if trySandbox 1 $1; then
@@ -188,7 +189,7 @@ function initSandbox {
 	
 }
 
-#determines whether we should be running in sandbox 1 or sandbox 2, based on the value of the 
+#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs lock file
 function findSandbox {
 	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
 	then
@@ -196,7 +197,7 @@ function findSandbox {
 		SANDBOX=1
 		initWorkspaceVariables
 	fi
-	if [ -e "$SANDBOX2_LOCK_DIR/$1 ] 
+	if [ -e "$SANDBOX2_LOCK_DIR/$1" ] 
 	then
 		log "found that the sandbox is 2 for job $1"
 		SANDBOX=2

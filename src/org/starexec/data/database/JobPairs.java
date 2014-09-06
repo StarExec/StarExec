@@ -347,7 +347,14 @@ public class JobPairs {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("solved")) {
+		}else if (type.equals("failed")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().failed()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} 	else if (type.equals("solved")) {
+
 			for (JobPair jp : pairs) {
 				if (JobPairs.isPairCorrect(jp)==0) {
 					filteredPairs.add(jp);

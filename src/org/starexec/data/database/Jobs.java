@@ -3453,7 +3453,7 @@ public class Jobs {
 			if ( statusCode.resource()) {
 				curSolver.incrementResourceOutPairs();
 			}
-			if (statusCode.statIncomplete()) {
+			if (statusCode.incomplete()) {
 			    curSolver.incrementIncompleteJobPairs();
 			}
 			if (statusCode.complete()) {

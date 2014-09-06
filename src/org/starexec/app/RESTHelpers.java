@@ -2321,6 +2321,16 @@ public class RESTHelpers {
 				
 				sb = new StringBuilder();
 				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=failed&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getFailedJobPairs());
+				RESTHelpers.addImg(sb);
+				String failedLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
 								+ spaceId + "&configid="
 								+ js.getConfiguration().getId() + "&id=" + jobId));
@@ -2347,6 +2357,7 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(solvedLink));
 				entry.add(new JsonPrimitive(wrongLink));
 				entry.add(new JsonPrimitive(resourceLink));
+				entry.add(new JsonPrimitive(failedLink));
 				entry.add(new JsonPrimitive(unknownLink));
 				entry.add(new JsonPrimitive(incompleteLink));
 				if (wallTime) {
