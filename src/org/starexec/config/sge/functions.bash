@@ -194,17 +194,22 @@ function initSandbox {
 
 #determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs lock file
 function findSandbox {
+	log "trying to find sandbox for pair ID = $1"
+	ls "$SANDBOX_LOCK_DIR"
+	
 	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
 	then
 		log "found that the sandbox is 1 for job $1"
 		SANDBOX=1
 		initWorkspaceVariables
+		return 0
 	fi
 	if [ -e "$SANDBOX2_LOCK_DIR/$1" ] 
 	then
 		log "found that the sandbox is 2 for job $1"
 		SANDBOX=2
 		initWorkspaceVariables
+		return 0
 	fi
 	SANDBOX=-1
 	
