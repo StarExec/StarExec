@@ -116,10 +116,13 @@ function initWorkspaceVariables {
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
 	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/n*/active_jobs/*/config`
-	if grep "job_name=job_$1" $output ; then
-		return 1
-	fi
-	return 0
+	log "$output"
+
+	if [[ $output == *job_name=job_$1* ]]
+	then
+		return 0
+  	fi
+	return 1
 }
 
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
