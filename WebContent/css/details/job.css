@@ -52,26 +52,31 @@ thead {
 .solvedHead, .resourceHead {
 	width: 10%;
 	max-width:10%;
+	min-width:10%;
 }
 
 .incompleteHead {
 	width: 12%;
 	max-width:12%;
+	min-width:12%;
 }
 
 
 .configHead, .unknownHead { 
 	width: 11%;
 	max-width:11%;
+	min-width:11%;
 }
 
 .solverHead, .wrongHead {
 	width: 11%;
 	max-width:11%;
+	min-width:11%;
 }
 .timeHead, .failedHead {
 	width: 9%;
 	max-width:9%;
+	min-width:9%;
 }
 
 .benchHead{

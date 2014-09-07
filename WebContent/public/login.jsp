@@ -27,6 +27,7 @@
 			</tr>
 			<tr> 
 				<td><a href="/${starexecRoot}/public/registration.jsp">New user?</a></td>
+				<td></td>
 			</tr>
 		</table>
 		</fieldset>	

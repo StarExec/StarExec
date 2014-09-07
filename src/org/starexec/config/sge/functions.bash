@@ -242,7 +242,7 @@ function safeRm {
   fi
 }
 
-#takes in 1 argument-- true if in the epilog and false otherwise
+#takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
