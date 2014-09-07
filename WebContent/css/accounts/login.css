@@ -1,6 +1,6 @@
 #loginForm {
 	width: 370px;		
-	height: 130px;		
+	height: 140px;		
 	margin: auto;
 	margin-top: 50px;
 }
@@ -37,4 +37,8 @@
 	font-size: 14px;		
 	position: relative;
 	bottom: 7px;
+}
+
+#emailRow {
+	margin-bottom:3px;
 }

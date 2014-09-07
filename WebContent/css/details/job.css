@@ -45,8 +45,8 @@ thead {
 	width:inherit;
 }
 
-#solveTbl > thead {
-    font-size: 90%;
+#solveTbl {
+    font-size: 82%;
 }
 
 .solvedHead, .resourceHead {
@@ -56,9 +56,9 @@ thead {
 }
 
 .incompleteHead {
-	width: 12%;
-	max-width:12%;
-	min-width:12%;
+	width: 13%;
+	max-width:13%;
+	min-width:13%;
 }
 
 
@@ -73,7 +73,13 @@ thead {
 	max-width:11%;
 	min-width:11%;
 }
-.timeHead, .failedHead {
+.timeHead {
+	width: 8%;
+	max-width:8%;
+	min-width:8%;
+}
+
+.failedHead {
 	width: 9%;
 	max-width:9%;
 	min-width:9%;

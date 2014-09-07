@@ -13,7 +13,7 @@
 		<fieldset>
 			<legend>Credentials</legend>
 			<table cellspacing="10px">								
-			<tr>
+			<tr id="emailRow">
 				<td class="label">Email</td>
 				<td><input type="text" name="j_username" /></td>
 			</tr>
