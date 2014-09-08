@@ -120,9 +120,13 @@ function initWorkspaceVariables {
 # checks to see whether the pair with the given pair ID is actually running using qstat
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
+	#first, make sure we were actually given a valid number
+	re='^[0-9]+$'
+	if ! [[ $yournumber =~ $re ]] ; then
+   		return 1
+	fi
+	
 	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/n*/active_jobs/*/config`
-	log "$output"
-
 	if [[ $output == *job_name=job_$1* ]]
 	then
 		return 0
@@ -141,7 +145,7 @@ function trySandbox {
 	fi
 	COUNTER=0
 	#first, make sure we are the one editing the lock file
-	while ! mkdir "$LOCK_USED" ; do
+	while ! mkdir -p "$LOCK_USED" ; do
              let COUNTER=$COUNTER+1 
              
              

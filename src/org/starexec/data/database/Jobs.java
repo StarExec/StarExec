@@ -3307,7 +3307,6 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	
-	//TODO: Does just calling qdel -u * work here for killing pairs
 	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
