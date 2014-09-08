@@ -191,6 +191,19 @@ public class JobTests extends TestSequence {
 		Assert.assertTrue(count>=0);		
 	}
 	
+	//TODO: This only checks for SQL errors right now
+	@Test
+	private void getPairsByStatusTest() {
+		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), 7);
+		Assert.assertNotNull(pairs);
+	}
+	
+	@Test
+	private void getTimelessPairsByStatusTest() {
+		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), 7);
+		Assert.assertNotNull(pairs);
+	}
+	
 	@Override
 	protected String getTestName() {
 		return "JobTests";

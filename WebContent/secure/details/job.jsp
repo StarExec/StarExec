@@ -306,7 +306,7 @@
 					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 					<c:if test="${isAdmin}">
-						<button type="button" id="clearCache">clear cache</button>
+						<li><button type="button" id="clearCache">clear cache</button></li>
 					</c:if>
 					
 					<c:if test="${job.userId == userId or isAdmin}"> 

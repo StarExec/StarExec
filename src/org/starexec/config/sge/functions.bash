@@ -40,8 +40,13 @@ rm $TMP
 DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
 
+#lock files that indicate a particular sandbox is in use
 SANDBOX_LOCK_DIR='/export/starexec/sandboxlock.lock'
 SANDBOX2_LOCK_DIR='/export/starexec/sandbox2lock.lock'
+
+#files that indicate that lock files are currently being modified
+SANDBOX_LOCK_USED='/export/starexec/sandboxlock.active'
+SANDBOX2_LOCK_USED='/export/starexec/sandbox2lock.active'
 
 # Path to local workspace for each node in cluster.
 
@@ -128,15 +133,33 @@ function isPairRunning {
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
 function trySandbox {
 	if [ $1 -eq 1 ] ; then
-		LOCK_DIR="$SANDBOX_LOCK_DIR"
+		local LOCK_DIR="$SANDBOX_LOCK_DIR"
+		local LOCK_USED="$SANDBOX_LOCK_USED"
 	else
-		LOCK_DIR="$SANDBOX2_LOCK_DIR"
+		local LOCK_DIR="$SANDBOX2_LOCK_DIR"
+		local LOCK_USED="$SANDBOX2_LOCK_USED"
 	fi
+	COUNTER=0
+	#first, make sure we are the one editing the lock file
+	while ! mkdir "$LOCK_USED" ; do
+             let COUNTER=$COUNTER+1 
+             
+             
+             #wait 10 milliseconds
+             sleep 0.01
+             
+             #it should not have taken this long, so forcibly remove the hold so we can take it, under the assumption that
+             #the hold was not cleaned up properly before. Hopefully this is very rare.
+             if [ $COUNTER -gt 10 ] ; then
+             	log "forcibly removed the hold on sandbox $1!"
+             	rm "$LOCK_USED"
+             fi 
+	done
 	#check to see if we can make the lock directory-- if so, we can run in sandbox 
 	if mkdir "$LOCK_DIR" ; then
 		# make a file that is named with the given ID so we know which pair should be running here
 		touch "$LOCK_DIR/$2"
-	
+		rm "$LOCK_USED"
 		# if we successfully made the directory
 		SANDBOX=$1
 		log "putting this job into sandbox $1 $2"
@@ -147,11 +170,11 @@ function trySandbox {
 	#or a previous job did not clean up the lock correctly. To check, we see if the pair given
 	#in the directory is still running
 		
-	sgeID=`ls "$LOCK_DIR"`
-	log "found the sgeID = $sgeID"
+	pairID=`ls "$LOCK_DIR"`
+	log "found the pairID = $pairID"
 	
 	
-	if ! isPairRunning $sgeID ; then
+	if ! isPairRunning $pairID ; then
 		#this means sandbox1 is NOT actually in use, and that the old pair just did not clean up
 		log "found that the pair is not running in sandbox1!"
 		safeRmLock "$LOCK_DIR"
@@ -160,6 +183,7 @@ function trySandbox {
 		if mkdir "$LOCK_DIR" ; then
 			#we got the lock, so take sandbox 1
 			touch "$LOCK_DIR/$2"
+			rm "$LOCK_USED"
 			# if we successfully made the directory
 			SANDBOX=$1
 			log "putting this job into sandbox $1 $2"
@@ -167,9 +191,10 @@ function trySandbox {
 			return 0
 		fi
 	else
-		log "found that pair $sgeID is running in sandbox1"
+		log "found that pair $pairID is running in sandbox1"
 	fi
 	#could not get the sandbox
+	rm "$LOCK_USED"
 	return 1
 }
 
@@ -345,6 +370,11 @@ CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
 CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+
+
+SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+
+log "the solver exit code was $SOLVER_STATUS_CODE"
 
 MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
 PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`

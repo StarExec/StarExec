@@ -454,7 +454,7 @@ public class JobPairs {
 	
 	/**
 	 * Filters a list of job pairs against some search query. The query is compared to 
-	 * solver, benchmark, and config names, as well as integer status code. The job pair is not filtered if the query
+	 * solver, benchmark, and config names, as well as integer status code and result. The job pair is not filtered if the query
 	 * is a case-insensitive substring of any of those names
 	 * @param pairs The pairs to filter
 	 * @param searchQuery The query
@@ -472,7 +472,9 @@ public class JobPairs {
 		for (JobPair jp : pairs) {
 			try {
 				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
-						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery)) {
+						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
+						jp.getStarexecResult().contains(searchQuery)) {
+						
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
