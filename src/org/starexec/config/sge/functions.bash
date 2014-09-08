@@ -122,7 +122,8 @@ function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
 	#first, make sure we were actually given a valid number
 	re='^[0-9]+$'
-	if ! [[ $yournumber =~ $re ]] ; then
+	if ! [[ $1 =~ $re ]] ; then
+		log "$1 is not a valid integer, so no pair is running"
    		return 1
 	fi
 	
@@ -161,6 +162,7 @@ function trySandbox {
 	done
 	#check to see if we can make the lock directory-- if so, we can run in sandbox 
 	if mkdir "$LOCK_DIR" ; then
+		log "able to get sandbox $1!"
 		# make a file that is named with the given ID so we know which pair should be running here
 		touch "$LOCK_DIR/$2"
 		safeRmLock "$LOCK_USED"
