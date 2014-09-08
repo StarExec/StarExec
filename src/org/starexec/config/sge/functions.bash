@@ -152,14 +152,14 @@ function trySandbox {
              #the hold was not cleaned up properly before. Hopefully this is very rare.
              if [ $COUNTER -gt 10 ] ; then
              	log "forcibly removed the hold on sandbox $1!"
-             	rm "$LOCK_USED"
+             	safeRmLock "$LOCK_USED"
              fi 
 	done
 	#check to see if we can make the lock directory-- if so, we can run in sandbox 
 	if mkdir "$LOCK_DIR" ; then
 		# make a file that is named with the given ID so we know which pair should be running here
 		touch "$LOCK_DIR/$2"
-		rm "$LOCK_USED"
+		safeRmLock "$LOCK_USED"
 		# if we successfully made the directory
 		SANDBOX=$1
 		log "putting this job into sandbox $1 $2"
@@ -183,7 +183,7 @@ function trySandbox {
 		if mkdir "$LOCK_DIR" ; then
 			#we got the lock, so take sandbox 1
 			touch "$LOCK_DIR/$2"
-			rm "$LOCK_USED"
+			safeRmLock "$LOCK_USED"
 			# if we successfully made the directory
 			SANDBOX=$1
 			log "putting this job into sandbox $1 $2"
@@ -194,7 +194,7 @@ function trySandbox {
 		log "found that pair $pairID is running in sandbox1"
 	fi
 	#could not get the sandbox
-	rm "$LOCK_USED"
+	safeRmLock "$LOCK_USED"
 	return 1
 }
 
