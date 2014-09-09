@@ -182,7 +182,7 @@ function trySandbox {
 	
 	if ! isPairRunning $pairID ; then
 		#this means sandbox1 is NOT actually in use, and that the old pair just did not clean up
-		log "found that the pair is not running in sandbox1!"
+		log "found that the pair is not running in sandbox $1"
 		safeRmLock "$LOCK_DIR"
 		
 		#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
@@ -226,7 +226,11 @@ function initSandbox {
 #determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs lock file
 function findSandbox {
 	log "trying to find sandbox for pair ID = $1"
+	log "sandbox 1 contents:"
 	ls "$SANDBOX_LOCK_DIR"
+	
+	log "sandbox 2 contents:"
+	ls "$SANDBOX2_LOCK_DIR"
 	
 	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
 	then
@@ -242,6 +246,8 @@ function findSandbox {
 		initWorkspaceVariables
 		return 0
 	fi
+	
+	log "couldn't find a sandbox for pair ID = $1"
 	SANDBOX=-1
 	
 }
