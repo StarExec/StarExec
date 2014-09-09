@@ -97,12 +97,10 @@ public class R {
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
     public static String STAREXEC_DATA_DIR = null;   // the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
     public static String JOBPAIR_INPUT_DIR = null;
-    public static String NODE_WORKING_DIR = null;							// The directory on the local nodes where they can use for scratch space (read/write)
     public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node
     public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
     public static String NEW_JOB_OUTPUT_DIR= null;
     public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from SGE scripts when job runs)
-    public static String NODE_OUTPUT_DIR = null;							// The path to the directory on the local node where output should be placed by the user in order to be saved by starexec
     public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
     public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
     public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading

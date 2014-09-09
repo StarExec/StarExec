@@ -21,9 +21,7 @@
 			<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/joboutput"/>	
 			<property key="JOBPAIR_INPUT_DIR" value="/home/starexec/jobpairs"/>
 			<property key="JOB_LOG_DIR" value="/home/starexec/joboutput/logs" />
-			<property key="NODE_WORKING_DIR" value="/export/starexec/sandbox/" />
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
-			<property key="NODE_OUTPUT_DIR" value="/export/starexec/sandbox/output" />
 			<property key="SOLVER_BIN_DIR" value="/bin" />
 			<property key="SOLVER_BUILD_OUTPUT" value="starexec_build_log"/>;
 			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />	

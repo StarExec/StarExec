@@ -69,8 +69,6 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
-# The path to the benchmark on the execution host
-PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 
 
 
@@ -115,6 +113,11 @@ function initWorkspaceVariables {
 	
 	# The path to the bin directory of the solver on the execution host
 	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+	
+	OUT_DIR="$WORKING_DIR/output"
+	
+	# The path to the benchmark on the execution host
+	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 }
 
 # checks to see whether the pair with the given pair ID is actually running using qstat
@@ -292,7 +295,7 @@ function cleanWorkspace {
         ls -l $WORKING_DIR
 
 	# Clear the output directory	
-	safeRm output-directory "$STAREXEC_OUT_DIR"
+	safeRm output-directory "$OUT_DIR"
 
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"

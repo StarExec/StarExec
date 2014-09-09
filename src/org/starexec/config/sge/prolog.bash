@@ -107,10 +107,10 @@ function copyDependencies {
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-		mkdir $STAREXEC_OUT_DIR/preProcessor
-		cp -r "$PRE_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/preProcessor
-		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
-		cd "$STAREXEC_OUT_DIR"/preProcessor
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
 		log "executing pre processor"
 		log "random seed = "$RAND_SEED
 		

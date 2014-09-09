@@ -110,7 +110,6 @@ public abstract class JobManager {
 				log.error("Error reading the jobscript at "+f,e);
 			}
 			mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
-			mainTemplate = mainTemplate.replace("$$OUT_DIR$$", R.NODE_OUTPUT_DIR);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
@@ -321,7 +320,8 @@ public abstract class JobManager {
 			//log.debug("submitScript - Set Native Specification for  " + pair.getId());
 
 			// Tell the job where it will deal with files
-			sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
+			//TODO: This is not correct-- what should we do about this line?
+			sgeTemplate.setWorkingDirectory("/export/starexec/sandbox");
 			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
 
 			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)
