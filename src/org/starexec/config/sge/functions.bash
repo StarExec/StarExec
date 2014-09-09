@@ -181,7 +181,7 @@ function trySandbox {
 	
 	
 	if ! isPairRunning $pairID ; then
-		#this means sandbox1 is NOT actually in use, and that the old pair just did not clean up
+		#this means the sandbox is NOT actually in use, and that the old pair just did not clean up
 		log "found that the pair is not running in sandbox $1"
 		safeRmLock "$LOCK_DIR"
 		
@@ -213,7 +213,7 @@ function initSandbox {
 	fi
 	
 	#couldn't get sandbox 1, so try sandbox2 next
-	if trySandbox 2 ; then
+	if trySandbox 2 $1 ; then
 		return 0
 	fi
 	#failed to get either sandbox
