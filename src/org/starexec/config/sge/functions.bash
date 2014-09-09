@@ -145,8 +145,8 @@ function trySandbox {
 		local LOCK_USED="$SANDBOX2_LOCK_USED"
 	fi
 	COUNTER=0
-	#first, make sure we are the one editing the lock file
-	while ! mkdir -p "$LOCK_USED" ; do
+	#first, make sure we are the only one editing the lock file
+	while ! mkdir "$LOCK_USED" ; do
              let COUNTER=$COUNTER+1 
              
              
@@ -160,6 +160,7 @@ function trySandbox {
              	safeRmLock "$LOCK_USED"
              fi 
 	done
+	log "got the right to use the lock for sandbox $1"
 	#check to see if we can make the lock directory-- if so, we can run in sandbox 
 	if mkdir "$LOCK_DIR" ; then
 		log "able to get sandbox $1!"
