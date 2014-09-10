@@ -36,6 +36,8 @@ public class R {
 	public static String URL_POSTJOB="secure/add/job";
         public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
+	public static String URL_GETPRIMJSON="services/details/{type}/{id}/";
+
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
 	
 	public static String URL_GET_BENCH_UPLOAD_STATUS="services/benchmarks/uploadDescription/{statusId}";
@@ -122,7 +124,6 @@ public class R {
 	public static String COMMAND_RESUMEJOB="resumejob";
 	public static String COMMAND_RERUNPAIR="rerunpair";
 	public static String COMMAND_RERUNJOB="rerunjob";
-	public static String COMMAND_GET_BENCH_UPLOAD_STATUS="viewuploadstatus";
 	
 		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
@@ -142,7 +143,14 @@ public class R {
 	public static String COMMAND_GETNEWJOBOUT="getnewjobout";
 	public static String COMMAND_POLLJOB="polljob";
 
-	
+	//get information commands
+	public static String COMMAND_VIEWSOLVER="viewsolver";
+	public static String COMMAND_VIEWJOB="viewjob";
+	public static String COMMAND_VIEWBENCH="viewbench";
+	public static String COMMAND_VIEWSPACE="viewspace";
+	//TODO: Think about a better way to handle this command
+	public static String COMMAND_GET_BENCH_UPLOAD_STATUS="viewuploadstatus";
+
 	//Setting commands
 	public static String COMMAND_SETFIRSTNAME="setfirstname";
 	public static String COMMAND_SETLASTNAME="setlastname";

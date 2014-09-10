@@ -902,7 +902,7 @@ public class Jobs {
 		return null;		
 	}
 	
-	public static Job getIncludingDeleted(int jobId) {
+	public static Job getIncludeDeleted(int jobId) {
 		return get(jobId,true);
 	}
 	

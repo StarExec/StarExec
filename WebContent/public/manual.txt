@@ -552,6 +552,32 @@ OPTIONAL: "limit"
 REQUIRED: "id"
 OPTIONAL: "limit"
 
+
+View Commands
+-------------
+
+The following commands will print out information about Starexec primitives to the console.
+For each command, the following format is used to display information
+
+id= "1" : name= "example name" : description= "example description"
+
+
+--viewbench -Displays the ID, name, and description of the given benchmark
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewjob -Displays the ID, name, and description of the given job
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewsolver -Displays the ID, name, and description of the given solver
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewspace -Displays the ID, name, and description of the given space
+REQUIRED: "id"
+OPTIONAL: None
+
 Shell Mode
 ----------
 

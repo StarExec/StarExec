@@ -24,6 +24,59 @@ class CommandParser {
 		return parser.getLastServerError();
 	}
 	
+	
+	private void printAttributes(HashMap<String,String> attrs) {
+		//currently prints id, name, description
+		StringBuilder sb=new StringBuilder();
+		sb.append("id= \"");
+		sb.append(attrs.get("id"));
+		sb.append("\" : name= \"");
+		sb.append(attrs.get("name"));
+		sb.append("\" : description= \"");
+		sb.append(attrs.get("description"));
+		sb.append("\"");
+		
+		System.out.println(sb.toString());
+		
+	}
+	
+	/**
+	 * Handles all commands that begin with "view"
+	 * @param c
+	 * @param commandParams
+	 * @return
+	 */
+	
+	protected int handleViewCommand(String c, HashMap<String,String> commandParams) {
+		try {
+			HashMap<String,String> attrs=null;
+			if(c.equals(R.COMMAND_VIEWJOB)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "job");
+			} else if (c.equals(R.COMMAND_VIEWSOLVER)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "solver");
+			}  else if (c.equals(R.COMMAND_VIEWSPACE)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "space");
+			} else if (c.equals(R.COMMAND_VIEWBENCH)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "benchmark");
+			}
+			else {
+				return Status.ERROR_BAD_COMMAND;
+			}
+			//if there was an error
+			if (attrs.size()==1 && attrs.containsKey("-1")) {
+				return Integer.parseInt(attrs.get("-1"));
+			}
+			printAttributes(attrs);
+			
+			//success
+			return 0;
+		} catch (Exception e ) {
+			e.printStackTrace();
+			//likely a null pointer because we are missing an important argument
+			return Status.ERROR_INTERNAL;
+		}
+	}
+	
 	/**
 	 * Handles all commands that start with "set," indicating a command
 	 * to change some setting.
@@ -536,7 +589,10 @@ class CommandParser {
 			status=handleGetCommand(c,commandParams);
 		} else if (c.startsWith("set")) {
 			status=handleSetCommand(c, commandParams);
+		} else if (c.startsWith("view")) {
+			status=handleViewCommand(c,commandParams);
 		} else if (c.startsWith("push")) {
+
 			status=handlePushCommand(c, commandParams);
 		} else if (c.startsWith("delete")) {
 			status=handleDeleteCommand(c, commandParams);

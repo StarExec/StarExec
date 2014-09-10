@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Spaces;
+
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.util.Validator;
@@ -242,5 +242,21 @@ public class BenchmarkSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks to see whether the user is allowed to download the Json object representing the benchmark
+	 * @param benchmarkId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canGetJsonBenchmark(int benchmarkId, int userId) {
+		if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the specified benchmark");
+		}
+		Benchmark b=Benchmarks.getIncludeDeletedAndRecycled(benchmarkId,false);
+		if (b==null) {
+			return new ValidatorStatusCode(false, "The given benchmark could not be found");
+		}
+		return new ValidatorStatusCode(true);
+	}
 	
 }

@@ -2291,6 +2291,45 @@ public class Connection {
 	public String getLastError() {
 		return lastError;
 	}
+	
+	public HashMap<String,String> getSolverAttributes(int id) {
+		return getPrimitiveAttributes(id, "solver");
+	}
+	
+	public HashMap<String,String> getBenchmarkAttributes(int id) {
+		return getPrimitiveAttributes(id, "benchmark");
+	}
+	
+	public HashMap<String,String> getJobAttributes(int id) {
+		return getPrimitiveAttributes(id, "job");
+	}
+	
+	public HashMap<String,String> getSpaceAttributes(int id) {
+		return getPrimitiveAttributes(id, "space");
+	}
+	
+	protected HashMap<String,String> getPrimitiveAttributes(int id, String type) {
+		HashMap<String, String> failMap=new HashMap<String,String>();
+		try {
+			HttpGet get=new HttpGet(baseURL+R.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			JsonElement json=JsonHandler.getJsonString(response);
+			response.getEntity().getContent().close();
+			String errorMessage=JsonHandler.getMessageOfResponse(json.getAsJsonObject());
+			if (errorMessage!=null) {
+				this.setLastError(errorMessage);
+				failMap.put("-1", String.valueOf(Status.ERROR_SERVER));
+				return failMap;
+			}
+			return JsonHandler.getJsonAttributes(json.getAsJsonObject());
+		} catch (Exception e) {
+			e.printStackTrace();
+			failMap.put("-1", String.valueOf(Status.ERROR_INTERNAL));
+			return failMap;
+		}
+	}
 
 	
 }

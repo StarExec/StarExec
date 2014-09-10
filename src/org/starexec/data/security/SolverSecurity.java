@@ -403,4 +403,21 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks to see whether the user is allowed to download the Json object representing the solver
+	 * @param solverId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canGetJsonSolver(int solverId, int userId) {
+		if (!Permissions.canUserSeeSolver(solverId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the specified solver");
+		}
+		Solver s=Solvers.getIncludeDeleted(solverId);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given solver could not be found");
+		}
+		return new ValidatorStatusCode(true);
+	}
+	
 }
