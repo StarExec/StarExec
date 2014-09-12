@@ -149,19 +149,19 @@ function isPairRunning {
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
 function trySandbox {
 	
-	
-	#force script to wait until it can get the outer lock file to do the block in parens
-	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
-	if (
-	flock -x -w 4 200 || return 1
-		
-		if [ $1 -eq 1 ] ; then
+	if [ $1 -eq 1 ] ; then
 			LOCK_DIR="$SANDBOX_LOCK_DIR"
 			LOCK_USED="$SANDBOX_LOCK_USED"
 		else
 			LOCK_DIR="$SANDBOX2_LOCK_DIR"
 			LOCK_USED="$SANDBOX2_LOCK_USED"
 		fi
+	#force script to wait until it can get the outer lock file to do the block in parens
+	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
+	if (
+	flock -x -w 4 200 || return 1
+		
+		
 		log "got the right to use the lock for sandbox $1"
 		#check to see if we can make the lock directory-- if so, we can run in sandbox 
 		if mkdir "$LOCK_DIR" ; then
@@ -203,7 +203,7 @@ function trySandbox {
 	
 	
 	#End of Flock command
-	)200>$LOCK_USED ; then
+	)200>"$LOCK_USED" ; then
 		return 0
 	else
 		return 1
