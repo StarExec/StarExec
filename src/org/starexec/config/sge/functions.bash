@@ -203,7 +203,7 @@ function trySandbox {
 	
 	
 	#End of Flock command
-	)200>"$LOCK_USED" ; then
+	)200>$LOCK_USED ; then
 		return 0
 	else
 		return 1
