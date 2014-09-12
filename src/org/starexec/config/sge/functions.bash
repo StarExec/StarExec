@@ -140,29 +140,28 @@ function isPairRunning {
 
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
 function trySandbox {
-	if [ $1 -eq 1 ] ; then
-		local LOCK_DIR="$SANDBOX_LOCK_DIR"
-		local LOCK_USED="$SANDBOX_LOCK_USED"
-	else
-		local LOCK_DIR="$SANDBOX2_LOCK_DIR"
-		local LOCK_USED="$SANDBOX2_LOCK_USED"
-	fi
-	COUNTER=0
+	
 	
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
-	(
+	if (
 	flock -x -w 4 200 || return 1
+		
+		if [ $1 -eq 1 ] ; then
+			LOCK_DIR="$SANDBOX_LOCK_DIR"
+			LOCK_USED="$SANDBOX_LOCK_USED"
+		else
+			LOCK_DIR="$SANDBOX2_LOCK_DIR"
+			LOCK_USED="$SANDBOX2_LOCK_USED"
+		fi
 		log "got the right to use the lock for sandbox $1"
 		#check to see if we can make the lock directory-- if so, we can run in sandbox 
 		if mkdir "$LOCK_DIR" ; then
 			log "able to get sandbox $1!"
 			# make a file that is named with the given ID so we know which pair should be running here
 			touch "$LOCK_DIR/$2"
-			# if we successfully made the directory
-			SANDBOX=$1
+			
 			log "putting this job into sandbox $1 $2"
-			initWorkspaceVariables
 			return 0
 		fi
 		#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
@@ -183,9 +182,9 @@ function trySandbox {
 				#we got the lock, so take sandbox 1
 				touch "$LOCK_DIR/$2"
 				# if we successfully made the directory
-				SANDBOX=$1
+				
 				log "putting this job into sandbox $1 $2"
-				initWorkspaceVariables
+				
 				return 0
 			fi
 		else
@@ -196,7 +195,11 @@ function trySandbox {
 	
 	
 	#End of Flock command
-	)200>"$LOCK_USED"
+	)200>"$LOCK_USED" ; then
+		return 0
+	else
+		return 1
+	fi
 	
 }
 
@@ -205,11 +208,15 @@ function trySandbox {
 function initSandbox {
 	#try to get sandbox1 first
 	if trySandbox 1 $1; then
+		SANDBOX=1
+		initWorkspaceVariables
 		return 0
 	fi
 	
 	#couldn't get sandbox 1, so try sandbox2 next
 	if trySandbox 2 $1 ; then
+		SANDBOX=2
+		initWorkspaceVariables
 		return 0
 	fi
 	#failed to get either sandbox
