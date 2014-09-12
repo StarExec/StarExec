@@ -119,15 +119,23 @@ function initWorkspaceVariables {
 	# The path to the benchmark on the execution host
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 }
+#checks to see whether the first argument is a valid integer
+function isInteger {
+	re='^[0-9]+$'
+	if ! [[ $1 =~ $re ]] ; then
+   		return 1
+	fi
 
+}
 # checks to see whether the pair with the given pair ID is actually running using qstat
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
-	#first, make sure we were actually given a valid number
-	re='^[0-9]+$'
-	if ! [[ $1 =~ $re ]] ; then
+	
+	
+	if ! isInteger $1 ; then
 		log "$1 is not a valid integer, so no pair is running"
-   		return 1
+	
+		return 1
 	fi
 	
 	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/n*/active_jobs/*/config`
