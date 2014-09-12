@@ -196,7 +196,7 @@ function trySandbox {
 	
 	
 	#End of Flock command
-	)200>$LOCK_USED
+	)200>"$LOCK_USED"
 	
 }
 
