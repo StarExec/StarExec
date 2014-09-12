@@ -58,6 +58,12 @@ class CommandParser {
 				attrs=parser.getPrimitiveAttributes(commandParams, "space");
 			} else if (c.equals(R.COMMAND_VIEWBENCH)) {
 				attrs=parser.getPrimitiveAttributes(commandParams, "benchmark");
+			} else if (c.equals(R.COMMAND_VIEWPROCESSOR)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "processor");
+			} else if (c.equals(R.COMMAND_VIEWCONFIGURATION)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "configuration");
+			} else if (c.equals(R.COMMAND_VIEWQUEUE)) {
+				attrs=parser.getPrimitiveAttributes(commandParams,"queue");
 			}
 			else {
 				return Status.ERROR_BAD_COMMAND;

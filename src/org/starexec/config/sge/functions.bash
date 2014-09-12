@@ -148,64 +148,56 @@ function trySandbox {
 		local LOCK_USED="$SANDBOX2_LOCK_USED"
 	fi
 	COUNTER=0
-	#first, make sure we are the only one editing the lock file
-	while ! mkdir "$LOCK_USED" ; do
-             let COUNTER=$COUNTER+1 
-             
-             
-             #wait 10 milliseconds
-             sleep 0.01
-             
-             #it should not have taken this long, so forcibly remove the hold so we can take it, under the assumption that
-             #the hold was not cleaned up properly before. Hopefully this is very rare.
-             if [ $COUNTER -gt 10 ] ; then
-             	log "forcibly removed the hold on sandbox $1!"
-             	safeRmLock "$LOCK_USED"
-             fi 
-	done
-	log "got the right to use the lock for sandbox $1"
-	#check to see if we can make the lock directory-- if so, we can run in sandbox 
-	if mkdir "$LOCK_DIR" ; then
-		log "able to get sandbox $1!"
-		# make a file that is named with the given ID so we know which pair should be running here
-		touch "$LOCK_DIR/$2"
-		safeRmLock "$LOCK_USED"
-		# if we successfully made the directory
-		SANDBOX=$1
-		log "putting this job into sandbox $1 $2"
-		initWorkspaceVariables
-		return 0
-	fi
-	#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
-	#or a previous job did not clean up the lock correctly. To check, we see if the pair given
-	#in the directory is still running
-		
-	pairID=`ls "$LOCK_DIR"`
-	log "found the pairID = $pairID"
 	
-	
-	if ! isPairRunning $pairID ; then
-		#this means the sandbox is NOT actually in use, and that the old pair just did not clean up
-		log "found that the pair is not running in sandbox $1"
-		safeRmLock "$LOCK_DIR"
-		
-		#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
+	#force script to wait until it can get the outer lock file to do the block in parens
+	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
+	(
+	flock -x -w 4 200 || return 1
+		log "got the right to use the lock for sandbox $1"
+		#check to see if we can make the lock directory-- if so, we can run in sandbox 
 		if mkdir "$LOCK_DIR" ; then
-			#we got the lock, so take sandbox 1
+			log "able to get sandbox $1!"
+			# make a file that is named with the given ID so we know which pair should be running here
 			touch "$LOCK_DIR/$2"
-			safeRmLock "$LOCK_USED"
 			# if we successfully made the directory
 			SANDBOX=$1
 			log "putting this job into sandbox $1 $2"
 			initWorkspaceVariables
 			return 0
 		fi
-	else
-		log "found that pair $pairID is running in sandbox1"
-	fi
-	#could not get the sandbox
-	safeRmLock "$LOCK_USED"
-	return 1
+		#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
+		#or a previous job did not clean up the lock correctly. To check, we see if the pair given
+		#in the directory is still running
+			
+		pairID=`ls "$LOCK_DIR"`
+		log "found the pairID = $pairID"
+		
+		
+		if ! isPairRunning $pairID ; then
+			#this means the sandbox is NOT actually in use, and that the old pair just did not clean up
+			log "found that the pair is not running in sandbox $1"
+			safeRmLock "$LOCK_DIR"
+			
+			#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
+			if mkdir "$LOCK_DIR" ; then
+				#we got the lock, so take sandbox 1
+				touch "$LOCK_DIR/$2"
+				# if we successfully made the directory
+				SANDBOX=$1
+				log "putting this job into sandbox $1 $2"
+				initWorkspaceVariables
+				return 0
+			fi
+		else
+			log "found that pair $pairID is running in sandbox1"
+		fi
+		#could not get the sandbox
+		return 1
+	
+	
+	#End of Flock command
+	)200>$LOCK_USED
+	
 }
 
 

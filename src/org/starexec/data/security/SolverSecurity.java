@@ -420,4 +420,22 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks to see whether the user is allowed to download the Json object representing the solver
+	 * @param configId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canGetJsonConfiguration(int configId, int userId) {
+		Solver s=Solvers.getSolverByConfig(configId, true);
+		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the specified solver");
+		}
+		Configuration c=Solvers.getConfiguration(configId);
+		if (c==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
+		return new ValidatorStatusCode(true);
+	}
+	
 }

@@ -4070,6 +4070,26 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Spaces.get(id));
+ 		} else if (type.equals("configuration")) {
+ 			ValidatorStatusCode status=SolverSecurity.canGetJsonConfiguration(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+ 		
+ 			return gson.toJson(Solvers.getConfiguration(id));
+ 		} else if (type.equals("processor")) {
+ 			ValidatorStatusCode status=ProcessorSecurity.canGetJsonProcessor(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+ 			
+ 			return gson.toJson(Processors.get(id));
+ 		} else if (type.equals("queue")) {
+ 			ValidatorStatusCode status=QueueSecurity.canGetJsonQueue(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+ 			return gson.toJson(Queues.get(id));
  		}
 		
 		

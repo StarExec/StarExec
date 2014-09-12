@@ -3325,9 +3325,6 @@ public class Jobs {
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 					if (jobPairsEnqueued != null) {
 						for (JobPair jp : jobPairsEnqueued) {
-							int sge_id = jp.getGridEngineId();
-							//Util.executeCommand("qdel " + sge_id);
-							//log.debug("enqueued: Just executed qdel " + sge_id);
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
@@ -3336,9 +3333,6 @@ public class Jobs {
 					log.debug("JPR = " + jobPairsRunning);
 					if (jobPairsRunning != null) {
 						for (JobPair jp: jobPairsRunning) {
-							int sge_id = jp.getGridEngineId();
-							//Util.executeCommand("qdel " + sge_id);
-							//log.debug("running: Just executed qdel " + sge_id);
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}

@@ -566,7 +566,19 @@ id= "1" : name= "example name" : description= "example description"
 REQUIRED: "id"
 OPTIONAL: None
 
+--viewconfig -Displays the ID, name, and description of the given benchmark
+REQUIRED: "id"
+OPTIONAL: None
+
 --viewjob -Displays the ID, name, and description of the given job
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewproc -Displays the ID, name, and description of the given processor
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewqueue -Displays the ID, name, and description of the given queue
 REQUIRED: "id"
 OPTIONAL: None
 

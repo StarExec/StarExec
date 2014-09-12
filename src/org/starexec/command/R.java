@@ -148,6 +148,9 @@ public class R {
 	public static String COMMAND_VIEWJOB="viewjob";
 	public static String COMMAND_VIEWBENCH="viewbench";
 	public static String COMMAND_VIEWSPACE="viewspace";
+	public static String COMMAND_VIEWPROCESSOR="viewproc";
+	public static String COMMAND_VIEWCONFIGURATION="viewconfig";
+	public static String COMMAND_VIEWQUEUE="viewqueue";
 	//TODO: Think about a better way to handle this command
 	public static String COMMAND_GET_BENCH_UPLOAD_STATUS="viewuploadstatus";
 
