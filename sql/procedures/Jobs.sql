@@ -846,6 +846,7 @@ CREATE PROCEDURE GetAllJobs()
 				killed,
 				completed,
 				primary_space,
+				seed,
 				GetJobStatus(id) 		AS status,
 				GetTotalPairs(id) 		AS totalPairs,
 				GetCompletePairs(id)	AS completePairs,

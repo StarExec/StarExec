@@ -121,11 +121,12 @@ function initWorkspaceVariables {
 }
 #checks to see whether the first argument is a valid integer
 function isInteger {
+	log "isInteger called on $1"
 	re='^[0-9]+$'
 	if ! [[ $1 =~ $re ]] ; then
    		return 1
 	fi
-
+	return 0
 }
 # checks to see whether the pair with the given pair ID is actually running using qstat
 function isPairRunning {
@@ -196,7 +197,7 @@ function trySandbox {
 				return 0
 			fi
 		else
-			log "found that pair $pairID is running in sandbox1"
+			log "found that pair $pairID is running in sandbox $1"
 		fi
 		#could not get the sandbox
 		return 1

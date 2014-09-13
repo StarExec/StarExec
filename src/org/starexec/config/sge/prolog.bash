@@ -206,14 +206,14 @@ initSandbox "$PAIR_ID"
 if ! isInteger $SANDBOX ; then
 	sendStatus $ERROR_RUNSCRIPT
 	log "unable to secure any sandbox for this job!"
-	exit 1
+	exit 0
 fi
 
 if [ $SANDBOX -eq -1 ] 
 then
 	sendStatus $ERROR_RUNSCRIPT
 	log "unable to secure any sandbox for this job!"
-	exit 1
+	exit 0
 fi
 
 
