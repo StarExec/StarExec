@@ -3270,18 +3270,17 @@ public class Jobs {
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 	    for (JobPair jp : jobPairsEnqueued) {
-		int sge_id = jp.getGridEngineId();
-		Util.executeCommand("qdel " + sge_id);
-		log.debug("enqueued: Just executed qdel " + sge_id);
+		//TODO : remember to change name of getGridEngineId
+		int execId = jp.getGridEngineId();
+		R.BACKEND.killPair(execId);
 		JobPairs.UpdateStatus(jp.getId(), 20);
 	    }
 	    //Get the running job pairs and remove them
 	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 	    if (jobPairsRunning != null) {
 		for (JobPair jp: jobPairsRunning) {
-		    int sge_id = jp.getGridEngineId();
-		    Util.executeCommand("qdel " + sge_id);
-		    log.debug("running: Just executed qdel " + sge_id);
+		    int execId = jp.getGridEngineId();
+		    R.BACKEND.killPair(execId);
 		    JobPairs.UpdateStatus(jp.getId(), 20);
 		}
 	    }
@@ -3316,6 +3315,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
+			//R.BACKEND.killAll();
 			GridEngineUtil.deleteAllSGEJobs();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();

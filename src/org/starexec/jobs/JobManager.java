@@ -271,18 +271,38 @@ public abstract class JobManager {
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 
-							// Submit to the grid engine
-							int sgeId = JobManager.submitScript(scriptPath, pair);
+							String logPath=JobPairs.getLogFilePath(pair);
+							File file=new File(logPath);
+							file.getParentFile().mkdirs();
+			
+							if (file.exists()) {
+							    log.info("Deleting old log file for " + pair.getId());
+							    file.delete();
+							}
 
+							// Submit to the grid engine
+							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
+							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
+
+							//TODO : need a better way to handle error codes
+							if(!R.BACKEND.isError(execId)){
+							    //TODO : remember to change name of update gridEngineId to update execId or something similar
+							    JobPairs.updateGridEngineId(pair.getId(),execId);
+							} else{
+							    JobPairs.setPairStatus(pair.getId(),errorCode);
+							}
+
+							/**
 							// If the submission was successful
-							if(sgeId >= 0) {											
+							if(execId >= 0) {											
 								log.info("Submission of pair "+pair.getId() + " successful.");
-								JobPairs.updateGridEngineId(pair.getId(), sgeId);
+								JobPairs.updateGridEngineId(pair.getId(), execId);
 							}
 							else {
 								log.warn("Error submitting pair "+pair.getId() + " to SGE.");
 								JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
 							}
+							**/
 							count++;
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);

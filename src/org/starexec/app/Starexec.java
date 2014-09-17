@@ -35,7 +35,7 @@ import org.starexec.util.Validator;
 public class Starexec implements ServletContextListener {
     private Logger log;
     private ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);	
-    private Session session; // GridEngine session
+    // private Session session; // GridEngine session
 	
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
 	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
@@ -54,13 +54,14 @@ public class Starexec implements ServletContextListener {
 			
 		    log.debug("Releasing Util threadpool...");
 		    Util.shutdownThreadPool();
-			
-		    log.debug("session = " + session);
-			
+
+		    R.BACKEND.destroyIf();
+		    /**	
 		    if (!session.toString().contains("drmaa")) {
 			log.debug("Shutting down the session..." + session);
 			GridEngineUtil.destroySession(session);
 		    }
+		    **/
 		    // Wait for the task scheduler to finish
 		    taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
 		    taskScheduler.shutdownNow();
@@ -99,11 +100,13 @@ public class Starexec implements ServletContextListener {
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();		
 		
+		
+		//TODO : rename RUN_PERIODIC_SGE_TASKS
 		if (R.RUN_PERIODIC_SGE_TASKS) {
-		    session = GridEngineUtil.createSession();
-		    JobManager.setSession(session);
-		    log.info("Created GridEngine session");
+		    R.BACKEND.initialize();
+
 		}
+		
 
 		System.setProperty("http.proxyHost",R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort",R.HTTP_PROXY_PORT);

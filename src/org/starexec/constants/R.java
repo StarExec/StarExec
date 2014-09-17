@@ -1,5 +1,6 @@
 package org.starexec.constants;
 import java.util.HashMap;
+import org.starexec.backend.*;
 
 /**
  * Class which holds static resources (R) available for use
@@ -20,7 +21,8 @@ public class R {
 	public R() throws Exception{
 	throw new Exception("Cannot instantiate class because it is static.");
     }
-	
+
+    public static Backend BACKEND = new GridEngineBackend();
 	
     //maximum length properties
     public static int SPACE_NAME_LEN=250;
