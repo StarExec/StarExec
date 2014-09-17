@@ -134,7 +134,7 @@
 							<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If the result is starexec-unknown it is not counted">solved</span></th>
 							<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the result is starexec-unknown it is not counted.">wrong</span></th>
 							<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
-							<th class="failedHead"><span titile="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
+							<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
 							
 							<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 							<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
