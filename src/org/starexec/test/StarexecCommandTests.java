@@ -639,42 +639,42 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void viewSolverTest() {
 		Map<String,String> attrs=con.getSolverAttributes(solver.getId());
-		Assert.assertEquals(solver.getId(),attrs.get("id"));
+		Assert.assertEquals(String.valueOf(solver.getId()),attrs.get("id"));
 		Assert.assertEquals(solver.getName(),attrs.get("name"));
 	}
 	
 	@Test
 	private void viewSpaceTest() {
 		Map<String,String> attrs=con.getSpaceAttributes(testCommunity.getId());
-		Assert.assertEquals(testCommunity.getId(),attrs.get("id"));
+		Assert.assertEquals(String.valueOf(testCommunity.getId()),attrs.get("id"));
 		Assert.assertEquals(testCommunity.getName(),attrs.get("name"));
 	}
 	
 	@Test
 	private void viewJobTest() {
 		Map<String,String> attrs=con.getSpaceAttributes(job.getId());
-		Assert.assertEquals(job.getId(),attrs.get("id"));
+		Assert.assertEquals(String.valueOf(job.getId()),attrs.get("id"));
 		Assert.assertEquals(job.getName(),attrs.get("name"));
 	}
 	
 	@Test
 	private void viewProcessorTest() {
 		Map<String,String> attrs=con.getProcessorAttributes(proc.getId());
-		Assert.assertEquals(proc.getId(),attrs.get("id"));
+		Assert.assertEquals(String.valueOf(proc.getId()),attrs.get("id"));
 		Assert.assertEquals(proc.getName(),attrs.get("name"));
 	}
 	
 	@Test
 	private void viewConfigurationTest() {
 		Map<String,String> attrs=con.getConfigurationAttributes(config.getId());
-		Assert.assertEquals(config.getId(),attrs.get("id"));
+		Assert.assertEquals(String.valueOf(config.getId()),attrs.get("id"));
 		Assert.assertEquals(config.getName(),attrs.get("name"));
 	}
 	
 	@Test
 	private void viewBenchmarkTest() {
 		Map<String,String> attrs=con.getBenchmarkAttributes(benchmarkIds.get(0));
-		Assert.assertEquals(benchmarkIds.get(0),attrs.get("id"));
+		Assert.assertEquals(String.valueOf(benchmarkIds.get(0)),attrs.get("id"));
 	}
 	
 	

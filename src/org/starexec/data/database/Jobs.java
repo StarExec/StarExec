@@ -3885,6 +3885,12 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * Removes job stats for every job_space belonging to this job
+	 * @param jobId The ID of the job to remove the stats of
+	 * @param con The open Connection to make the database call on
+	 * @return True on success and false otherwise
+	 */
 	public static boolean removeCachedJobStats(int jobId, Connection con) {
 		CallableStatement procedure=null;
 		try {
@@ -3906,6 +3912,12 @@ public class Jobs {
 		}
 		return false;
 	}
+	
+	/**
+	 * Completely clears the cache of all job stats from the database
+	 * @param con
+	 * @return
+	 */
 	
 	public static boolean removeAllCachedJobStats(Connection con) {
 		CallableStatement procedure=null;
