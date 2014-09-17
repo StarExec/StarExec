@@ -159,9 +159,10 @@ function trySandbox {
 		fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
+	
 	if (
 	flock -x -w 4 200 || return 1
-		
+		#we have exclusive rights to work on the lock for this sandbox within this block
 		
 		log "got the right to use the lock for sandbox $1"
 		#check to see if we can make the lock directory-- if so, we can run in sandbox 
@@ -188,7 +189,7 @@ function trySandbox {
 			
 			#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
 			if mkdir "$LOCK_DIR" ; then
-				#we got the lock, so take sandbox 1
+				#we got the lock, so take this sandbox
 				touch "$LOCK_DIR/$2"
 				# if we successfully made the directory
 				
@@ -203,7 +204,7 @@ function trySandbox {
 		return 1
 	
 	
-	#End of Flock command
+	#End of Flock command. We return from trySandbox whatever flock returns
 	)200>"$LOCK_USED" ; then
 		return 0
 	else
@@ -235,7 +236,7 @@ function initSandbox {
 	
 }
 
-#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs lock file
+#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs' lock file
 function findSandbox {
 	log "trying to find sandbox for pair ID = $1"
 	log "sandbox 1 contents:"

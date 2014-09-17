@@ -1139,7 +1139,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
 			aoData,
 			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage);
+				s=parseReturnCode(nextDataTablePage,false);
 				if (s) {
 					// Update the number displayed in this DataTable's fieldset
 					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
@@ -1607,12 +1607,13 @@ function handlePublicButton(id) {
 			function(returnCode){
 				switch(returnCode){
 				case 0:
-					$('#makePublic').fadeIn('fast');
-					$('#makePrivate').fadeOut('fast');
+					$('#makePrivate').hide();
+
+					$('#makePublic').show();
 					break;
 				case 1:
-					$('#makePublic').fadeOut('fast');
-					$('#makePrivate').fadeIn('fast');
+					$('#makePublic').hide();
+					$('#makePrivate').show();
 					break;
 				}	
 			},  

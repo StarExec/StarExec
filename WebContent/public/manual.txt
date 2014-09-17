@@ -557,9 +557,24 @@ View Commands
 -------------
 
 The following commands will print out information about Starexec primitives to the console.
-For each command, the following format is used to display information
+For each command, the following format is used to display information. The order of the printed attributes 
+is not guaranteed.  
 
 id= "1" : name= "example name" : description= "example description"
+
+View commands can print out either every attribute or a limited set of attributes. By default, only 
+the id, name, and description (if applicable) is printed out for each primitive. The first two commands
+listed below can be used to change this setting.
+
+
+--viewall -Makes all subsequent "view" commands print out every attribute for the requested primitive
+REQUIRED: None
+OPTIONAL: None
+
+--viewlimit -Makes all subsequent "view" commands print out only the id, name, and description for the requested primitive
+REQUIRED: None
+OPTIONAL: None
+
 
 
 --viewbench -Displays the ID, name, and description of the given benchmark

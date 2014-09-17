@@ -379,7 +379,7 @@ public class SpaceSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeSpace(int spaceId, int userId){
 		if (!Permissions.canUserSeeSpace(spaceId, userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to see this space");
+			return new ValidatorStatusCode(false, "You do not have permission to view this space");
 		}
 		return new ValidatorStatusCode(true);
 	}

@@ -320,7 +320,7 @@ public abstract class JobManager {
 			//log.debug("submitScript - Set Native Specification for  " + pair.getId());
 
 			// Tell the job where it will deal with files
-			//TODO: This is not correct-- what should we do about this line?
+			//TODO: This is not correct-- what should we do about this line? It does not seem to break anything
 			sgeTemplate.setWorkingDirectory("/export/starexec/sandbox");
 			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.tomcat.jni.Time;
@@ -635,6 +636,47 @@ public class StarexecCommandTests extends TestSequence {
 
 	}
 	
+	@Test
+	private void viewSolverTest() {
+		Map<String,String> attrs=con.getSolverAttributes(solver.getId());
+		Assert.assertEquals(solver.getId(),attrs.get("id"));
+		Assert.assertEquals(solver.getName(),attrs.get("name"));
+	}
+	
+	@Test
+	private void viewSpaceTest() {
+		Map<String,String> attrs=con.getSpaceAttributes(testCommunity.getId());
+		Assert.assertEquals(testCommunity.getId(),attrs.get("id"));
+		Assert.assertEquals(testCommunity.getName(),attrs.get("name"));
+	}
+	
+	@Test
+	private void viewJobTest() {
+		Map<String,String> attrs=con.getSpaceAttributes(job.getId());
+		Assert.assertEquals(job.getId(),attrs.get("id"));
+		Assert.assertEquals(job.getName(),attrs.get("name"));
+	}
+	
+	@Test
+	private void viewProcessorTest() {
+		Map<String,String> attrs=con.getProcessorAttributes(proc.getId());
+		Assert.assertEquals(proc.getId(),attrs.get("id"));
+		Assert.assertEquals(proc.getName(),attrs.get("name"));
+	}
+	
+	@Test
+	private void viewConfigurationTest() {
+		Map<String,String> attrs=con.getConfigurationAttributes(config.getId());
+		Assert.assertEquals(config.getId(),attrs.get("id"));
+		Assert.assertEquals(config.getName(),attrs.get("name"));
+	}
+	
+	@Test
+	private void viewBenchmarkTest() {
+		Map<String,String> attrs=con.getBenchmarkAttributes(benchmarkIds.get(0));
+		Assert.assertEquals(benchmarkIds.get(0),attrs.get("id"));
+	}
+	
 	
 	@Override
 	protected void setup() throws Exception {
@@ -676,7 +718,7 @@ public class StarexecCommandTests extends TestSequence {
 		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 
 		Assert.assertNotNull(benchmarkIds);
-
+		
 		
 		solverURL=Util.url("public/resources/CVC4.zip");
 	}

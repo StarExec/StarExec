@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class ArgumentParser {
 	
@@ -752,7 +753,7 @@ class ArgumentParser {
     	}
     }
 	
-    protected HashMap<String, String> getPrimitiveAttributes(HashMap<String, String> commandParams, String type) {
+    protected Map<String, String> getPrimitiveAttributes(HashMap<String, String> commandParams, String type) {
     	HashMap<String,String> failMap=new HashMap<String,String>();
     	try{
     		int valid = Validator.isValidGetPrimitiveAttributesRequest(commandParams);

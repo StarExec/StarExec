@@ -2361,9 +2361,10 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(unknownLink));
 				entry.add(new JsonPrimitive(incompleteLink));
 				if (wallTime) {
-					entry.add(new JsonPrimitive(js.getWallTime()));
+					
+					entry.add(new JsonPrimitive(Math.round(js.getWallTime()*100)/100.0));
 				} else {
-					entry.add(new JsonPrimitive(js.getCpuTime()));
+					entry.add(new JsonPrimitive(Math.round(js.getCpuTime()*100)/100.0));
 				}
 				dataTablePageEntries.add(entry);
 			} else {
