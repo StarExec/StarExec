@@ -20,7 +20,7 @@ public class Identifiable {
 
 	/**
 	 * DO NOT set the ID of an identifiable outside of the database layer!
-	 * @param the unique ID of the object in the database.
+	 * @param id the unique ID of the object in the database.
 	 */
 	public void setId(int id) {
 		this.id = id;

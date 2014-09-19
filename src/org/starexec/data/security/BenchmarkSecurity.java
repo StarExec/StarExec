@@ -67,7 +67,7 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to delete the given benchmark
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchId The ID of the benchmark being checked
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed.
 	 */
@@ -88,7 +88,7 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to recycle the given benchmark
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchId The ID of the benchmark being checked
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed.
 	 */
@@ -108,7 +108,7 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to recycle all of the given benchmarks
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchIds The IDs of all the benchmarks being checked
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed. 
 	 * If the user doesn't have the required permissions for even 1 benchmark, a status
@@ -127,7 +127,7 @@ public class BenchmarkSecurity {
 	}
 	/**
 	 * Checks to see whether the given user is allowed to delete all of the given benchmarks
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchIds The IDs of all the benchmarks being checked
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed. 
 	 * If the user doesn't have the required permissions for even 1 benchmark, a status
@@ -147,7 +147,7 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to restore all of the given benchmarks
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchIds The IDs of all the benchmarks being checked
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed. 
 	 * If the user doesn't have the required permissions for even 1 benchmark, a status
@@ -166,7 +166,7 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to restore the given benchmark
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchId The ID of the benchmark being checked
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed.
 	 */
@@ -186,8 +186,9 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to edit the given benchmark
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param benchId The ID of the benchmark being checked
 	 * @param name The name that the benchmark will be given upon editing
+	 * @param desc the description that will be given to the benchmark upon editing
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed.
 	 */
@@ -220,8 +221,9 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Returns true if the given user owns the given benchmark or if the user is an admin
-	 * @param benchmarkId The ID of the benchmark being checked
+	 * @param bench The  Benchmark object being checked, which must have its userId field set
 	 * @param userId The ID of the user making the request
+	 * @return True of the user is the owner of the benchmark or an admin
 	 */
 	
 	private static boolean userOwnsBenchOrIsAdmin(Benchmark bench,int userId) {

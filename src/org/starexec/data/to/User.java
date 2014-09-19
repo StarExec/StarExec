@@ -4,8 +4,6 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.starexec.constants.R;
-import org.starexec.data.database.Users;
 
 import com.google.gson.annotations.Expose;
 

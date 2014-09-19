@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-import org.starexec.command.Status;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -15,7 +14,6 @@ import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Website;
 
 public class SolverSecurity {
@@ -102,7 +100,7 @@ public class SolverSecurity {
 	
 	/**
 	 * Checks to see whether the given user is allowed to delete a website associated with a solver
-	 * @param spaceId The ID of the solver that contains the site to be deleted
+	 * @param solverId The ID of the solver that contains the site to be deleted
 	 * @param websiteId The ID of the website to be deleted
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
@@ -160,6 +158,8 @@ public class SolverSecurity {
 	 * Checks to see whether the given user can update the given configuration.
 	 * @param configId The ID of the config that would be updated
 	 * @param userId The ID of the user making the request
+	 * @param name The new name that will be given to the configuration upon editing
+	 * @param description The new description that will be given to the configuration upon editing
 	 * @return  0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserUpdateConfiguration(int configId, int userId, String name, String description) {
@@ -195,7 +195,7 @@ public class SolverSecurity {
 	}
 	/**
 	 * Checks to see whether the given user can delete all of the given solvers
-	 * @param solverId The ID of the solver to check
+	 * @param solverIds The IDs of all the solvers to check
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
@@ -211,7 +211,7 @@ public class SolverSecurity {
 	
 	/**
 	 * Checks to see whether the given user can restore all of the given solvers
-	 * @param solverId The ID of the solver to check
+	 * @param solverIds The IDs of all the solvers to check
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
@@ -240,7 +240,7 @@ public class SolverSecurity {
 	
 	/**
 	 * Checks to see whether the given user can recycle all of the given solvers
-	 * @param solverId The ID of the solver to check
+	 * @param solverIds The IDs of all the solvers to check
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */

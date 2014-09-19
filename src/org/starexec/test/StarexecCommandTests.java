@@ -652,7 +652,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Test
 	private void viewJobTest() {
-		Map<String,String> attrs=con.getSpaceAttributes(job.getId());
+		Map<String,String> attrs=con.getJobAttributes(job.getId());
 		Assert.assertEquals(String.valueOf(job.getId()),attrs.get("id"));
 		Assert.assertEquals(job.getName(),attrs.get("name"));
 	}
