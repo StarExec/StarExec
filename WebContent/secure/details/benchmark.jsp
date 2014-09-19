@@ -1,6 +1,6 @@
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@page import="java.util.TreeMap" %>
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.GeneralSecurity,org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.BenchmarkSecurity,org.starexec.data.security.GeneralSecurity,org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -31,10 +31,8 @@
 			request.setAttribute("com", s);
 			request.setAttribute("depends", deps);
 			request.setAttribute("attributes",attrs);
-			boolean down=b.isDownloadable();
-			if (b.getUserId()==userId) {
-				down=true;
-			}
+			boolean down=BenchmarkSecurity.canUserDownloadBenchmark(benchId,userId).isSuccess();
+			
 			request.setAttribute("downloadable",down);
 			String content=GeneralSecurity.getHTMLSafeString(Benchmarks.getContents(b,100));
 			request.setAttribute("content",content);

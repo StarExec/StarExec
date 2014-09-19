@@ -116,6 +116,7 @@ public class Processor extends Identifiable {
 	
 	/**
 	 * Gets the physical path to the executable script for this processor. Requires filePath to be set.
+	 * @return The path to the process script for this processor on disk
 	 */
 	public String getExecutablePath() {
 		return new File(this.getFilePath(),R.PROCSSESSOR_RUN_SCRIPT).getAbsolutePath();

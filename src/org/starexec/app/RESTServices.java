@@ -4040,4 +4040,60 @@ public class RESTServices {
 		return Queues.removeGlobal(queue_id) ? gson.toJson(new ValidatorStatusCode(true,"Queue no longer global")) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	@GET
+	@Path("/details/{type}/{id}")
+	@Produces("application/json")
+	public String getGsonPrimitive(@Context HttpServletRequest request, @PathParam("id") int id, @PathParam("type") String type) {
+		int userId=SessionUtil.getUserId(request);
+		if (type.equals("solver")) {
+			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+			return gson.toJson(Solvers.getIncludeDeleted(id));
+		} else if (type.equals("benchmark")) {
+			ValidatorStatusCode status=BenchmarkSecurity.canGetJsonBenchmark(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+			return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id,false));
+		} else if (type.equals("job")) {
+			ValidatorStatusCode status=JobSecurity.canGetJsonJob(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+			return gson.toJson(Jobs.getIncludeDeleted(id));
+			
+ 		} else if (type.equals("space")) {
+ 			ValidatorStatusCode status=SpaceSecurity.canGetJsonSpace(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+			return gson.toJson(Spaces.get(id));
+ 		} else if (type.equals("configuration")) {
+ 			ValidatorStatusCode status=SolverSecurity.canGetJsonConfiguration(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+ 		
+ 			return gson.toJson(Solvers.getConfiguration(id));
+ 		} else if (type.equals("processor")) {
+ 			ValidatorStatusCode status=ProcessorSecurity.canGetJsonProcessor(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+ 			
+ 			return gson.toJson(Processors.get(id));
+ 		} else if (type.equals("queue")) {
+ 			ValidatorStatusCode status=QueueSecurity.canGetJsonQueue(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+ 			return gson.toJson(Queues.get(id));
+ 		}
+		
+		
+		return gson.toJson(new ValidatorStatusCode(false,"Invalid type specified"));
+	}
+	
 }

@@ -140,7 +140,7 @@ public class Space extends Identifiable implements Iterable<Space> {
 	}
 
 	/**
-	 * @param benchmarks the benchmarks to set
+	 * @param benchmark the benchmark to add to this space
 	 */
 	public void addBenchmark(Benchmark benchmark) {
 		this.benchmarks.add(benchmark);

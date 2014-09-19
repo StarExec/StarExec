@@ -37,7 +37,7 @@ public class JobSecurity {
 	 */
 	public static boolean isValidGetPairType(String type) {
 		if (type.equals("all") || type.equals("solved") || type.equals("incomplete") || type.equals("wrong") ||
-				type.equals("unknown") || type.equals("resource")) {
+				type.equals("unknown") || type.equals("resource") || type.equals("failed")) {
 			return true;
 		}
 		return false;
@@ -252,6 +252,23 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserResumeAllJobs(int userId){
 		if (!Users.isAdmin(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
+	
+	/**
+	 * Checks to see whether the user is allowed to download the Json object representing the job
+	 * @param jobId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canGetJsonJob(int jobId, int userId) {
+		if (!Permissions.canUserSeeJob(jobId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the specified job");
+		}
+		Job s=Jobs.getIncludeDeleted(jobId);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given job could not be found");
 		}
 		return new ValidatorStatusCode(true);
 	}

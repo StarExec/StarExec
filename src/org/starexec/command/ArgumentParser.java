@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class ArgumentParser {
 	
@@ -752,6 +753,25 @@ class ArgumentParser {
     	}
     }
 	
+    protected Map<String, String> getPrimitiveAttributes(HashMap<String, String> commandParams, String type) {
+    	HashMap<String,String> failMap=new HashMap<String,String>();
+    	try{
+    		int valid = Validator.isValidGetPrimitiveAttributesRequest(commandParams);
+        	if (valid<0) {
+        		failMap.put("-1", String.valueOf(valid));
+        		return failMap;
+        	}
+    		int id=Integer.parseInt(commandParams.get(R.PARAM_ID));
+    		
+    		return con.getPrimitiveAttributes(id, type);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		failMap.put("-1", String.valueOf(Status.ERROR_INTERNAL));
+    		return failMap;
+    	}
+    	
+    }
+    
 	/**
 	 * This method takes in a HashMap mapping String keys to String values
 	 * and creates and HTTP POST request that pushes a solver to Starexec

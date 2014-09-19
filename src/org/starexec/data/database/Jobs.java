@@ -902,7 +902,7 @@ public class Jobs {
 		return null;		
 	}
 	
-	public static Job getIncludingDeleted(int jobId) {
+	public static Job getIncludeDeleted(int jobId) {
 		return get(jobId,true);
 	}
 	
@@ -3270,18 +3270,17 @@ public class Jobs {
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 	    for (JobPair jp : jobPairsEnqueued) {
-		int sge_id = jp.getGridEngineId();
-		Util.executeCommand("qdel " + sge_id);
-		log.debug("enqueued: Just executed qdel " + sge_id);
+		//TODO : remember to change name of getGridEngineId
+		int execId = jp.getGridEngineId();
+		R.BACKEND.killPair(execId);
 		JobPairs.UpdateStatus(jp.getId(), 20);
 	    }
 	    //Get the running job pairs and remove them
 	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 	    if (jobPairsRunning != null) {
 		for (JobPair jp: jobPairsRunning) {
-		    int sge_id = jp.getGridEngineId();
-		    Util.executeCommand("qdel " + sge_id);
-		    log.debug("running: Just executed qdel " + sge_id);
+		    int execId = jp.getGridEngineId();
+		    R.BACKEND.killPair(execId);
 		    JobPairs.UpdateStatus(jp.getId(), 20);
 		}
 	    }
@@ -3307,7 +3306,6 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	
-	//TODO: Does just calling qdel -u * work here for killing pairs
 	public static boolean pauseAll() {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -3317,6 +3315,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
+			//R.BACKEND.killAll();
 			GridEngineUtil.deleteAllSGEJobs();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
@@ -3326,9 +3325,6 @@ public class Jobs {
 					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
 					if (jobPairsEnqueued != null) {
 						for (JobPair jp : jobPairsEnqueued) {
-							int sge_id = jp.getGridEngineId();
-							//Util.executeCommand("qdel " + sge_id);
-							//log.debug("enqueued: Just executed qdel " + sge_id);
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
@@ -3337,9 +3333,6 @@ public class Jobs {
 					log.debug("JPR = " + jobPairsRunning);
 					if (jobPairsRunning != null) {
 						for (JobPair jp: jobPairsRunning) {
-							int sge_id = jp.getGridEngineId();
-							//Util.executeCommand("qdel " + sge_id);
-							//log.debug("running: Just executed qdel " + sge_id);
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
@@ -3453,7 +3446,7 @@ public class Jobs {
 			if ( statusCode.resource()) {
 				curSolver.incrementResourceOutPairs();
 			}
-			if (statusCode.statIncomplete()) {
+			if (statusCode.incomplete()) {
 			    curSolver.incrementIncompleteJobPairs();
 			}
 			if (statusCode.complete()) {
@@ -3892,6 +3885,12 @@ public class Jobs {
 		return null;
 	}
 	
+	/**
+	 * Removes job stats for every job_space belonging to this job
+	 * @param jobId The ID of the job to remove the stats of
+	 * @param con The open Connection to make the database call on
+	 * @return True on success and false otherwise
+	 */
 	public static boolean removeCachedJobStats(int jobId, Connection con) {
 		CallableStatement procedure=null;
 		try {
@@ -3913,6 +3912,12 @@ public class Jobs {
 		}
 		return false;
 	}
+	
+	/**
+	 * Completely clears the cache of all job stats from the database
+	 * @param con
+	 * @return
+	 */
 	
 	public static boolean removeAllCachedJobStats(Connection con) {
 		CallableStatement procedure=null;

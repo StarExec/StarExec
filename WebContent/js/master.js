@@ -268,7 +268,11 @@ function getStatusCode(code) {
  * true or false depending on whether it was a success status.
  * If the "code" object is not actually a status code, returns true
  */
-function parseReturnCode(code) {
+function parseReturnCode(code,printMessage) {
+	if (typeof printMessage == 'undefined') {
+		printMessage=true;
+	}
+	
 	s = code.success;
 	
 	//we didn't get back a status code
@@ -278,16 +282,18 @@ function parseReturnCode(code) {
 	
 	m = code.message;
 
-	
-	if (s) {
-		if (stringExists(m)) {
-			showMessage("success", m , 5000);
-		}
-	} else {
-		if (stringExists(m)) {
-			showMessage("error",m,5000);
+	if (printMessage) {
+		if (s) {
+			if (stringExists(m)) {
+				showMessage("success", m , 5000);
+			}
+		} else {
+			if (stringExists(m)) {
+				showMessage("error",m,5000);
+			}
 		}
 	}
+	
 	
 	return s;
 }

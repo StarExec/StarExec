@@ -2,11 +2,9 @@ package org.starexec.app;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -80,8 +78,8 @@ public class RESTHelpers {
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
 	 * 
-	 * @param spaces
-	 *            The list of spaces to convert
+	 * @param spaceList The list of spaces to convert
+	 * @param userID The ID of the user making this request, which is used to tell whether nodes are leaves or not
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
@@ -109,8 +107,7 @@ public class RESTHelpers {
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
 	 * 
-	 * @param spaces
-	 *            The list of spaces to convert
+	 * @param jobSpaceList
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
@@ -621,13 +618,9 @@ public class RESTHelpers {
 
 	 * Returns the HTML representing a job pair's status
 	 * 
-	 * @param statType
-	 *            'asc' or 'desc'
-	 * @param numerator
-	 *            a job pair's completePairs, pendingPairs, or errorPairs
-	 *            variable
-	 * @param denominator
-	 *            a job pair's totalPairs variable
+	 * @param statType 'asc' or 'desc'
+	 * @param value  a job pair's completePairs, pendingPairs, or errorPairs  variable
+	 * @param percentage  a job pair's totalPairs variable
 	 * @return HTML representing a job pair's status
 	 * @author Todd Elvers
 	 */
@@ -2321,6 +2314,16 @@ public class RESTHelpers {
 				
 				sb = new StringBuilder();
 				sb.append("<a href=\""
+						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=failed&sid="
+								+ spaceId + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + jobId));
+				sb.append("\" target=\"_blank\" >");
+				sb.append(js.getFailedJobPairs());
+				RESTHelpers.addImg(sb);
+				String failedLink = sb.toString();
+				
+				sb = new StringBuilder();
+				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
 								+ spaceId + "&configid="
 								+ js.getConfiguration().getId() + "&id=" + jobId));
@@ -2347,12 +2350,14 @@ public class RESTHelpers {
 				entry.add(new JsonPrimitive(solvedLink));
 				entry.add(new JsonPrimitive(wrongLink));
 				entry.add(new JsonPrimitive(resourceLink));
+				entry.add(new JsonPrimitive(failedLink));
 				entry.add(new JsonPrimitive(unknownLink));
 				entry.add(new JsonPrimitive(incompleteLink));
 				if (wallTime) {
-					entry.add(new JsonPrimitive(js.getWallTime()));
+					
+					entry.add(new JsonPrimitive(Math.round(js.getWallTime()*100)/100.0));
 				} else {
-					entry.add(new JsonPrimitive(js.getCpuTime()));
+					entry.add(new JsonPrimitive(Math.round(js.getCpuTime()*100)/100.0));
 				}
 				dataTablePageEntries.add(entry);
 			} else {
@@ -2539,8 +2544,7 @@ public class RESTHelpers {
 	 * Given a list of users, creates a JsonObject that can be used to populate
 	 * a datatable client-side
 	 * 
-	 * @param users
-	 *            The users that will be the rows of the table
+	 * @param requests The QueueRequests that will make up the table
 	 * @param totalRecords
 	 *            The total number of records in the table (not the same as the
 	 *            size of pairs)

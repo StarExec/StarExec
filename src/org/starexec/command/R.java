@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class R {
 	
-	public static String VERSION="8/19/2014-1";
+	public static String VERSION="9/13/2014-1";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -36,6 +36,8 @@ public class R {
 	public static String URL_POSTJOB="secure/add/job";
         public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
+	public static String URL_GETPRIMJSON="services/details/{type}/{id}/";
+
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
 	
 	public static String URL_GET_BENCH_UPLOAD_STATUS="services/benchmarks/uploadDescription/{statusId}";
@@ -118,11 +120,12 @@ public class R {
 	public static String COMMAND_RUNFILE="runfile";
 	public static String COMMAND_RETURNIDS="returnids";
 	public static String COMMAND_IGNOREIDS="ignoreids";
+	public static String COMMAND_VIEWALL ="viewall";
+	public static String COMMAND_VIEWLIMITED="viewlimit";
 	public static String COMMAND_PAUSEJOB="pausejob";
 	public static String COMMAND_RESUMEJOB="resumejob";
 	public static String COMMAND_RERUNPAIR="rerunpair";
 	public static String COMMAND_RERUNJOB="rerunjob";
-	public static String COMMAND_GET_BENCH_UPLOAD_STATUS="viewuploadstatus";
 	
 		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
@@ -142,7 +145,17 @@ public class R {
 	public static String COMMAND_GETNEWJOBOUT="getnewjobout";
 	public static String COMMAND_POLLJOB="polljob";
 
-	
+	//get information commands
+	public static String COMMAND_VIEWSOLVER="viewsolver";
+	public static String COMMAND_VIEWJOB="viewjob";
+	public static String COMMAND_VIEWBENCH="viewbench";
+	public static String COMMAND_VIEWSPACE="viewspace";
+	public static String COMMAND_VIEWPROCESSOR="viewproc";
+	public static String COMMAND_VIEWCONFIGURATION="viewconfig";
+	public static String COMMAND_VIEWQUEUE="viewqueue";
+	//TODO: Think about a better way to handle this command
+	public static String COMMAND_GET_BENCH_UPLOAD_STATUS="viewuploadstatus";
+
 	//Setting commands
 	public static String COMMAND_SETFIRSTNAME="setfirstname";
 	public static String COMMAND_SETLASTNAME="setlastname";

@@ -10,18 +10,109 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class CommandParser {
 	
 	private ArgumentParser parser=null;
 	
 	private boolean returnIDsOnUpload=false;
+	private boolean printVerbosePrimDetails=false;
 	protected CommandParser() {
 		parser=null;
 	}
 	
 	public String getLastServerError() {
 		return parser.getLastServerError();
+	}
+	
+	/**
+	 * Prints out the given attributes
+	 * @param attrs Key value pairs of strings to be printed out
+	 * @param verbose If false, only looks for the "id" "name" and "description" attributes.
+	 * Otherwise, prints all attributes
+	 */
+	private void printAttributes(Map<String,String> attrs, boolean verbose) {
+		//currently prints id, name, description
+		StringBuilder sb=new StringBuilder();
+		
+		sb.append("id= \"");
+		sb.append(attrs.get("id"));
+		sb.append("\"");
+		
+		if (!verbose) {
+			if (attrs.containsKey("name")) {
+				sb.append(" : name= \"");
+				sb.append(attrs.get("name"));
+				sb.append("\"");
+			}
+			if (attrs.containsKey("description")) {
+				sb.append(" : description= \"");
+				sb.append(attrs.get("description"));
+				sb.append("\"");
+			}
+
+		} else {
+			for (String key : attrs.keySet()) {
+				if (key.equals("id")) {
+					continue;
+				}
+				sb.append(" : ");
+				sb.append(key);
+				sb.append("= \"");
+				sb.append(attrs.get(key));
+				sb.append("\"");
+			}
+		}
+		
+		
+
+		
+		System.out.println(sb.toString());
+		
+	}
+	
+	/**
+	 * Handles all commands that begin with "view"
+	 * @param c
+	 * @param commandParams
+	 * @return
+	 */
+	
+	protected int handleViewCommand(String c, HashMap<String,String> commandParams) {
+		try {
+			Map<String,String> attrs=null;
+			if(c.equals(R.COMMAND_VIEWJOB)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "job");
+			} else if (c.equals(R.COMMAND_VIEWSOLVER)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "solver");
+			}  else if (c.equals(R.COMMAND_VIEWSPACE)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "space");
+			} else if (c.equals(R.COMMAND_VIEWBENCH)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "benchmark");
+			} else if (c.equals(R.COMMAND_VIEWPROCESSOR)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "processor");
+			} else if (c.equals(R.COMMAND_VIEWCONFIGURATION)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, "configuration");
+			} else if (c.equals(R.COMMAND_VIEWQUEUE)) {
+				attrs=parser.getPrimitiveAttributes(commandParams,"queue");
+			}
+			else {
+				return Status.ERROR_BAD_COMMAND;
+			}
+			//if there was an error
+			if (attrs.size()==1 && attrs.containsKey("-1")) {
+				return Integer.parseInt(attrs.get("-1"));
+			}
+			printAttributes(attrs,printVerbosePrimDetails);
+			
+			//success
+			return 0;
+		} catch (Exception e ) {
+			e.printStackTrace();
+			//likely a null pointer because we are missing an important argument
+			return Status.ERROR_INTERNAL;
+		}
 	}
 	
 	/**
@@ -507,6 +598,10 @@ class CommandParser {
 		} else if (c.equals(R.COMMAND_RETURNIDS)) {
 			returnIDsOnUpload=true;
 			return 0;
+		} else if (c.equals(R.COMMAND_VIEWALL)) {
+			printVerbosePrimDetails=true;
+		} else if (c.equals(R.COMMAND_VIEWLIMITED)) {
+			printVerbosePrimDetails=false;
 		}
 		int status;
 		if (parser==null) {
@@ -536,7 +631,10 @@ class CommandParser {
 			status=handleGetCommand(c,commandParams);
 		} else if (c.startsWith("set")) {
 			status=handleSetCommand(c, commandParams);
+		} else if (c.startsWith("view")) {
+			status=handleViewCommand(c,commandParams);
 		} else if (c.startsWith("push")) {
+
 			status=handlePushCommand(c, commandParams);
 		} else if (c.startsWith("delete")) {
 			status=handleDeleteCommand(c, commandParams);

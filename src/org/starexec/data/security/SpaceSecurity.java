@@ -379,7 +379,7 @@ public class SpaceSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeSpace(int spaceId, int userId){
 		if (!Permissions.canUserSeeSpace(spaceId, userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to see this space");
+			return new ValidatorStatusCode(false, "You do not have permission to view this space");
 		}
 		return new ValidatorStatusCode(true);
 	}
@@ -1023,6 +1023,23 @@ public class SpaceSecurity {
     	}   	
     	return new ValidatorStatusCode(true);
     }
+    
+    /**
+	 * Checks to see whether the user is allowed to download the Json object representing the space
+	 * @param spaceId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canGetJsonSpace(int spaceId, int userId) {
+		if (!Permissions.canUserSeeSpace(spaceId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the specified space");
+		}
+		Space s=Spaces.get(spaceId);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given space could not be found");
+		}
+		return new ValidatorStatusCode(true);
+	}
 
     
 

@@ -40,31 +40,17 @@ rm $TMP
 DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
 
+#lock files that indicate a particular sandbox is in use
+SANDBOX_LOCK_DIR='/export/starexec/sandboxlock.lock'
+SANDBOX2_LOCK_DIR='/export/starexec/sandbox2lock.lock'
+
+#files that indicate that lock files are currently being modified
+SANDBOX_LOCK_USED='/export/starexec/sandboxlock.active'
+SANDBOX2_LOCK_USED='/export/starexec/sandbox2lock.active'
+
 # Path to local workspace for each node in cluster.
-#TODO: Should be either sandbox1 or sandbox2
-SANDBOX=1
 
-#TODO: "sandbox" needs to be "sandbox1"
-if [ $SANDBOX -eq 1 ]
-then
-WORKING_DIR='/export/starexec/sandbox'
-else
-WORKING_DIR='/export/starexec/sandbox2'
-fi
 
-# Path to where the solver will be copied
-LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
-
-# Path to where the benchmark will be copied
-LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
-
-# The benchmark's name
-BENCH_NAME="${BENCH_PATH##*/}"
-
-BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
-
-# The path to the benchmark on the execution host 
-LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
 
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
@@ -75,11 +61,7 @@ SOLVER_CACHED=0
 # Path to Olivier Roussel's runSolver
 RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
 
-# Path to where the solver will be copied
-LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 
-# Path to where the pre-processor will be copied
-LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
@@ -87,21 +69,214 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
-# The path to the benchmark on the execution host
-PROCESSED_BENCH_PATH="$STAREXEC_OUT_DIR/procBenchmark"
 
-# The path to the config run script on the execution host
-LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
-
-# The path to the bin directory of the solver on the execution host
-LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
 
 
 ######################################################################
 
+
+
+#initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
+# either by calling initSandbox or findSandbox
+function initWorkspaceVariables {
+	if [ $SANDBOX -eq 1 ]
+	then
+	WORKING_DIR='/export/starexec/sandbox'
+	else
+	WORKING_DIR='/export/starexec/sandbox2'
+	fi
+	
+	# Path to where the solver will be copied
+	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
+	
+	# Path to where the benchmark will be copied
+	LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
+	
+	# The benchmark's name
+	BENCH_NAME="${BENCH_PATH##*/}"
+	
+	BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
+	
+	# The path to the benchmark on the execution host 
+	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
+
+	# The path to the config run script on the execution host
+	LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+	
+	# Path to where the solver will be copied
+	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
+	
+	# Path to where the pre-processor will be copied
+	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
+	
+	
+	
+	# The path to the bin directory of the solver on the execution host
+	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+	
+	OUT_DIR="$WORKING_DIR/output"
+	
+	# The path to the benchmark on the execution host
+	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
+}
+#checks to see whether the first argument is a valid integer
+function isInteger {
+	log "isInteger called on $1"
+	re='^[0-9]+$'
+	if ! [[ $1 =~ $re ]] ; then
+   		return 1
+	fi
+	return 0
+}
+# checks to see whether the pair with the given pair ID is actually running using qstat
+function isPairRunning {
+	log "isPairRunning called on pair id = $1" 
+	
+	
+	if ! isInteger $1 ; then
+		log "$1 is not a valid integer, so no pair is running"
+	
+		return 1
+	fi
+	
+	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/n*/active_jobs/*/config`
+	if [[ $output == *job_name=job_$1* ]]
+	then
+		return 0
+  	fi
+	return 1
+}
+
+#first argument is the sandbox (1 or 2) and second argument is the pair ID
+function trySandbox {
+	
+	if [ $1 -eq 1 ] ; then
+			LOCK_DIR="$SANDBOX_LOCK_DIR"
+			LOCK_USED="$SANDBOX_LOCK_USED"
+		else
+			LOCK_DIR="$SANDBOX2_LOCK_DIR"
+			LOCK_USED="$SANDBOX2_LOCK_USED"
+		fi
+	#force script to wait until it can get the outer lock file to do the block in parens
+	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
+	
+	if (
+	flock -x -w 4 200 || return 1
+		#we have exclusive rights to work on the lock for this sandbox within this block
+		
+		log "got the right to use the lock for sandbox $1"
+		#check to see if we can make the lock directory-- if so, we can run in sandbox 
+		if mkdir "$LOCK_DIR" ; then
+			log "able to get sandbox $1!"
+			# make a file that is named with the given ID so we know which pair should be running here
+			touch "$LOCK_DIR/$2"
+			
+			log "putting this job into sandbox $1 $2"
+			return 0
+		fi
+		#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
+		#or a previous job did not clean up the lock correctly. To check, we see if the pair given
+		#in the directory is still running
+			
+		pairID=`ls "$LOCK_DIR"`
+		log "found the pairID = $pairID"
+		
+		
+		if ! isPairRunning $pairID ; then
+			#this means the sandbox is NOT actually in use, and that the old pair just did not clean up
+			log "found that the pair is not running in sandbox $1"
+			safeRmLock "$LOCK_DIR"
+			
+			#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
+			if mkdir "$LOCK_DIR" ; then
+				#we got the lock, so take this sandbox
+				touch "$LOCK_DIR/$2"
+				# if we successfully made the directory
+				
+				log "putting this job into sandbox $1 $2"
+				
+				return 0
+			fi
+		else
+			log "found that pair $pairID is running in sandbox $1"
+		fi
+		#could not get the sandbox
+		return 1
+	
+	
+	#End of Flock command. We return from trySandbox whatever flock returns
+	)200>"$LOCK_USED" ; then
+		return 0
+	else
+		return 1
+	fi
+	
+}
+
+
+#figures out which sandbox the given job pair should run in. First argument is a job pair ID
+function initSandbox {
+	#try to get sandbox1 first
+	if trySandbox 1 $1; then
+		SANDBOX=1
+		initWorkspaceVariables
+		return 0
+	fi
+	
+	#couldn't get sandbox 1, so try sandbox2 next
+	if trySandbox 2 $1 ; then
+		SANDBOX=2
+		initWorkspaceVariables
+		return 0
+	fi
+	#failed to get either sandbox
+	SANDBOX=-1
+	return 1
+	
+	
+}
+
+#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs' lock file
+function findSandbox {
+	log "trying to find sandbox for pair ID = $1"
+	log "sandbox 1 contents:"
+	ls "$SANDBOX_LOCK_DIR"
+	
+	log "sandbox 2 contents:"
+	ls "$SANDBOX2_LOCK_DIR"
+	
+	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
+	then
+		log "found that the sandbox is 1 for job $1"
+		SANDBOX=1
+		initWorkspaceVariables
+		return 0
+	fi
+	if [ -e "$SANDBOX2_LOCK_DIR/$1" ] 
+	then
+		log "found that the sandbox is 2 for job $1"
+		SANDBOX=2
+		initWorkspaceVariables
+		return 0
+	fi
+	
+	log "couldn't find a sandbox for pair ID = $1"
+	SANDBOX=-1
+	
+}
+
 function log {
 	echo "`date +'%D %r %Z'`: $1"
 	return $?
+}
+
+function safeRmLock {
+	if [ "$1" == "" ] ; then
+		log "Unsafe rm all detected for lock"
+	else
+		log "doing rm all on  $1"
+		rm -rf "$1"
+	fi
 }
 
 # call "safeRm description dirname" to do an "rm -r dirname/*" except if
@@ -117,6 +292,7 @@ function safeRm {
   fi
 }
 
+#takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
 
@@ -128,7 +304,7 @@ function cleanWorkspace {
         ls -l $WORKING_DIR
 
 	# Clear the output directory	
-	safeRm output-directory "$STAREXEC_OUT_DIR"
+	safeRm output-directory "$OUT_DIR"
 
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
@@ -136,7 +312,24 @@ function cleanWorkspace {
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
-	rm -f "$SCRIPT_PATH"
+	
+	
+	#only delete the job script / lock files if we are in the epilog
+	log "about to check whether to delete lock files given $1"
+	if [ $1 -eq 0 ] ; then
+		log "cleaning up scripts and lock files"
+		rm -f "$SCRIPT_PATH"
+		if [ $SANDBOX -eq 1 ] 
+		then
+			safeRmLock "$SANDBOX_LOCK_DIR"
+		fi
+		if [ $SANDBOX -eq 2 ] 
+		then
+			safeRmLock "$SANDBOX2_LOCK_DIR"
+		fi
+	fi
+	 
+	
 	
 	log "execution host $HOSTNAME cleaned"
 	return $?
@@ -202,6 +395,11 @@ CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
 CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+
+
+SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+
+log "the solver exit code was $SOLVER_STATUS_CODE"
 
 MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
 PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`

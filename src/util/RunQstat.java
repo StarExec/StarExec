@@ -1,15 +1,9 @@
 package util;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -72,13 +66,13 @@ public class RunQstat {
 	    threadPool.execute(new Runnable() {
 		    @Override
 	            public void run() {
-			String line = null;
 			try {
-			    while ((line = errReader.readLine()) != null)
+			    while (errReader.readLine() != null)
 
 			    errReader.close();
 			}
 			catch(Exception e) {
+				//ignore if we can't read in the output correctly
 			}
 		    }
 		});

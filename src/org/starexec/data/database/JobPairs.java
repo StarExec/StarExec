@@ -347,7 +347,14 @@ public class JobPairs {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("solved")) {
+		}else if (type.equals("failed")) {
+			for (JobPair jp : pairs) {
+				if (jp.getStatus().getCode().failed()) {
+					filteredPairs.add(jp);
+				}
+			}
+		} 	else if (type.equals("solved")) {
+
 			for (JobPair jp : pairs) {
 				if (JobPairs.isPairCorrect(jp)==0) {
 					filteredPairs.add(jp);
@@ -447,7 +454,7 @@ public class JobPairs {
 	
 	/**
 	 * Filters a list of job pairs against some search query. The query is compared to 
-	 * solver, benchmark, and config names, as well as integer status code. The job pair is not filtered if the query
+	 * solver, benchmark, and config names, as well as integer status code and result. The job pair is not filtered if the query
 	 * is a case-insensitive substring of any of those names
 	 * @param pairs The pairs to filter
 	 * @param searchQuery The query
@@ -465,7 +472,9 @@ public class JobPairs {
 		for (JobPair jp : pairs) {
 			try {
 				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
-						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery)) {
+						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
+						jp.getStarexecResult().contains(searchQuery)) {
+						
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
@@ -1313,19 +1322,21 @@ public class JobPairs {
 
 		return false;
 	}
-	
-	public static boolean killPair(int pairId, int sge_id) {
-		try {
-			Util.executeCommand("qdel " + sge_id);	
-			log.debug("Just executed qdel " + sge_id);
-			JobPairs.UpdateStatus(pairId, 21);
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
 
+    
+    //TODO : marked for grid engine interface
+    public static boolean killPair(int pairId, int execId) {
+	try {	
+	    R.BACKEND.killPair(execId);
+	    JobPairs.UpdateStatus(pairId, 21);
+	    return true;
+	} catch (Exception e) {
+	    log.error(e.getMessage(),e);
 	}
+	return false;
+
+    }
+    
 	
 	/**
 	 * Updates the status of the given job pair, replacing its current status code with the given one

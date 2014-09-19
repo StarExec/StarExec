@@ -4,8 +4,11 @@ import java.util.List;
 
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Solver;
 import org.starexec.util.Validator;
 
 public class ProcessorSecurity {
@@ -83,6 +86,35 @@ public class ProcessorSecurity {
 			return new ValidatorStatusCode(false, "The given description is not formatted correctly. Please refer to the help pages to see the proper format");
 		}
 		
+		return new ValidatorStatusCode(true);
+	}
+	
+	public static ValidatorStatusCode canUserSeeProcessor(int procId, int userId) {
+		Processor p=Processors.get(procId);
+		if (p==null) {
+			return new ValidatorStatusCode(false, "The given processor could not be found");
+		}
+		
+		if (!Users.isAdmin(userId) && !Users.isMemberOfCommunity(userId, p.getCommunityId())) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the given processor");
+		}
+		
+		return new ValidatorStatusCode(true);
+		
+	}
+	
+	/**
+	 * Checks to see whether the user is allowed to download the Json object representing the solver
+	 * @param procId
+	 * @param userId
+	 * @return
+	 */
+	public static ValidatorStatusCode canGetJsonProcessor(int procId, int userId) {
+		
+		ValidatorStatusCode status=canUserSeeProcessor(procId,userId);
+		if (!status.isSuccess()) {
+			return status;
+		}
 		return new ValidatorStatusCode(true);
 	}
 }

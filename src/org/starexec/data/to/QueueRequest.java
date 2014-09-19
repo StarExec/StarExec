@@ -43,7 +43,7 @@ public class QueueRequest extends Identifiable {
 	}
 	
 	/**
-	 * @param userId the userId of the user who created this invite
+	 * @param spaceId The space this queue would be created for
 	 */
 	public void setSpaceId(int spaceId){
 		this.spaceId = spaceId;
@@ -57,7 +57,7 @@ public class QueueRequest extends Identifiable {
 	}
 	
 	/**
-	 * @param userId the userId of the user who created this invite
+	 * @param queueName The name of this queue
 	 */
 	public void setQueueName(String queueName){
 		this.queueName = queueName;
@@ -71,7 +71,7 @@ public class QueueRequest extends Identifiable {
 	}
 	
 	/**
-	 * @param node_count the count of nodes the user requested
+	 * @param nodeCount the count of nodes the user requested
 	 */
 	public void setNodeCount(int nodeCount){
 		this.node_count = nodeCount;
@@ -99,7 +99,7 @@ public class QueueRequest extends Identifiable {
 	}
 	
 	/**
-	 * @param node_count the date the end the reservation
+	 * @param end_date the date the end the reservation
 	 */
 	public void setEndDate(Date end_date){
 		this.end_date = end_date;

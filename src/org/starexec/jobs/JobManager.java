@@ -110,7 +110,6 @@ public abstract class JobManager {
 				log.error("Error reading the jobscript at "+f,e);
 			}
 			mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
-			mainTemplate = mainTemplate.replace("$$OUT_DIR$$", R.NODE_OUTPUT_DIR);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
@@ -272,18 +271,38 @@ public abstract class JobManager {
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 
-							// Submit to the grid engine
-							int sgeId = JobManager.submitScript(scriptPath, pair);
+							String logPath=JobPairs.getLogFilePath(pair);
+							File file=new File(logPath);
+							file.getParentFile().mkdirs();
+			
+							if (file.exists()) {
+							    log.info("Deleting old log file for " + pair.getId());
+							    file.delete();
+							}
 
+							// Submit to the grid engine
+							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
+							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
+
+							//TODO : need a better way to handle error codes
+							if(!R.BACKEND.isError(execId)){
+							    //TODO : remember to change name of update gridEngineId to update execId or something similar
+							    JobPairs.updateGridEngineId(pair.getId(),execId);
+							} else{
+							    JobPairs.setPairStatus(pair.getId(),errorCode);
+							}
+
+							/**
 							// If the submission was successful
-							if(sgeId >= 0) {											
+							if(execId >= 0) {											
 								log.info("Submission of pair "+pair.getId() + " successful.");
-								JobPairs.updateGridEngineId(pair.getId(), sgeId);
+								JobPairs.updateGridEngineId(pair.getId(), execId);
 							}
 							else {
 								log.warn("Error submitting pair "+pair.getId() + " to SGE.");
 								JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
 							}
+							**/
 							count++;
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
@@ -321,7 +340,8 @@ public abstract class JobManager {
 			//log.debug("submitScript - Set Native Specification for  " + pair.getId());
 
 			// Tell the job where it will deal with files
-			sgeTemplate.setWorkingDirectory(R.NODE_WORKING_DIR);
+			//TODO: This is not correct-- what should we do about this line? It does not seem to break anything
+			sgeTemplate.setWorkingDirectory("/export/starexec/sandbox");
 			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
 
 			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)

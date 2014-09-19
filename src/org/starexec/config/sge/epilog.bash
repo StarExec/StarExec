@@ -25,12 +25,17 @@ whoami
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
-#TODO: sandbox1 or 2.
-SANDBOX=1
+findSandbox $PAIR_ID
+
+if [ $SANDBOX -eq -1 ] 
+then
+	log "epilog was not completed because no sandbox could be found"
+	exit 0
+fi
 
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
-WATCHFILE="$STAREXEC_OUT_DIR"/watcher.out
-VARFILE="$STAREXEC_OUT_DIR"/var.out
+WATCHFILE="$OUT_DIR"/watcher.out
+VARFILE="$OUT_DIR"/var.out
 
 # /////////////////////////////////////////////
 # Functions
@@ -43,20 +48,20 @@ function copyOutput {
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 
-	cp "$STAREXEC_OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
 	if [ "$POST_PROCESSOR_PATH" != "null" ]; then
 		log "getting postprocessor"
-		mkdir $STAREXEC_OUT_DIR/postProcessor
-		cp -r "$POST_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/postProcessor
-		chmod -R gu+rwx $STAREXEC_OUT_DIR/postProcessor
-		cd "$STAREXEC_OUT_DIR"/postProcessor
+		mkdir $OUT_DIR/postProcessor
+		cp -r "$POST_PROCESSOR_PATH"/* $OUT_DIR/postProcessor
+		chmod -R gu+rwx $OUT_DIR/postProcessor
+		cd "$OUT_DIR"/postProcessor
 		log "executing post processor"
-		./process $STAREXEC_OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$STAREXEC_OUT_DIR"/attributes.txt
+		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
-		#cat $STAREXEC_OUT_DIR/attributes.txt
-		processAttributes $STAREXEC_OUT_DIR/attributes.txt
+		#cat $OUT_DIR/attributes.txt
+		processAttributes $OUT_DIR/attributes.txt
 	fi
 
 	return $?	
@@ -109,7 +114,7 @@ fi
 
 
 
-cleanWorkspace
+cleanWorkspace 0
 
 if [ "$JOB_ERROR" = "" ]; then
 	sendStatus $STATUS_COMPLETE

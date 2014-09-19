@@ -240,6 +240,7 @@ public class Status {
 	
 	/**
 	 * Gets all the status codes for which a user is allowed to rerun pairs
+	 * @return a list of status codes that are eligible for job pair rerunning
 	 */
 	
 	public static List<StatusCode> rerunCodes() {

@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -2290,6 +2291,97 @@ public class Connection {
 	 */
 	public String getLastError() {
 		return lastError;
+	}
+	/**
+	 * Gets the attributes for a queue in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	public Map<String,String> getQueueAttributes(int id) {
+		return getPrimitiveAttributes(id, "queue");
+	}
+	/**
+	 * Gets the attributes for a configuration in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	public Map<String,String> getConfigurationAttributes(int id) {
+		return getPrimitiveAttributes(id, "configuration");
+	}
+	/**
+	 * Gets the attributes for a processor in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	public Map<String,String> getProcessorAttributes(int id) {
+		return getPrimitiveAttributes(id, "processor");
+	}
+	/**
+	 * Gets the attributes for a solver in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	public Map<String,String> getSolverAttributes(int id) {
+		return getPrimitiveAttributes(id, "solver");
+	}
+	
+	/**
+	 * Gets the attributes for a benchmark in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	
+	public Map<String,String> getBenchmarkAttributes(int id) {
+		return getPrimitiveAttributes(id, "benchmark");
+	}
+	
+	/**
+	 * Gets the attributes for a job in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	
+	public Map<String,String> getJobAttributes(int id) {
+		return getPrimitiveAttributes(id, "job");
+	}
+	/**
+	 * Gets the attributes for a space in a Map
+	 * @param id The primitive ID
+	 * @return The Map of attributes, or null on error
+	 */
+	
+	public Map<String,String> getSpaceAttributes(int id) {
+		return getPrimitiveAttributes(id, "space");
+	}
+	
+	/**
+	 * Asks the server for a Json object representing a primitive and returns the attributes of that primitive in a
+	 * Map of keys to values.
+	 * @param id The ID of the primitive
+	 * @param type The type of the primitive
+	 * @return The Map, or null on error
+	 */
+	protected Map<String,String> getPrimitiveAttributes(int id, String type) {
+		HashMap<String, String> failMap=new HashMap<String,String>();
+		try {
+			HttpGet get=new HttpGet(baseURL+R.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
+			get=(HttpGet) setHeaders(get);
+			HttpResponse response=client.execute(get);
+			setSessionIDIfExists(get.getAllHeaders());
+			JsonElement json=JsonHandler.getJsonString(response);
+			response.getEntity().getContent().close();
+			String errorMessage=JsonHandler.getMessageOfResponse(json.getAsJsonObject());
+			if (errorMessage!=null) {
+				this.setLastError(errorMessage);
+				failMap.put("-1", String.valueOf(Status.ERROR_SERVER));
+				return failMap;
+			}
+			return JsonHandler.getJsonAttributes(json.getAsJsonObject());
+		} catch (Exception e) {
+			e.printStackTrace();
+			failMap.put("-1", String.valueOf(Status.ERROR_INTERNAL));
+			return failMap;
+		}
 	}
 
 	

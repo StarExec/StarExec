@@ -59,8 +59,9 @@ public class Validator {
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
 	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
-        private static String[] allowedUploadXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
-        private static String[] allowedPrintStatusParams=new String[]{R.PARAM_ID};
+    private static String[] allowedUploadXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
+    private static String[] allowedPrintStatusParams=new String[]{R.PARAM_ID};
+    private static String[] allowedGetPrimitiveAttributesParams=new String[]{R.PARAM_ID};
 
 	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT,R.PARAM_USER}; 
 	
@@ -793,6 +794,20 @@ public class Validator {
 		}
 		
 		findUnnecessaryParams(allowedPrintStatusParams,commandParams);
+		
+		return 0;
+	}
+	
+	public static int isValidGetPrimitiveAttributesRequest(HashMap<String,String> commandParams) {
+		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+			return Status.ERROR_MISSING_PARAM;
+		}
+		
+		if(!Validator.isValidInteger(commandParams.get(R.PARAM_ID))) {
+			return Status.ERROR_INVALID_ID;
+		}
+		
+		findUnnecessaryParams(allowedGetPrimitiveAttributesParams,commandParams);
 		
 		return 0;
 	}

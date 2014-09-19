@@ -2,6 +2,9 @@ package org.starexec.command;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.http.HttpResponse;
 
@@ -90,5 +93,19 @@ class JsonHandler {
 		} catch (Exception e) {
 			return null;
 		}
+	}
+	
+	protected static HashMap<String,String> getJsonAttributes(JsonObject obj) {
+		Iterator<Entry<String, JsonElement>> iterator=obj.entrySet().iterator();
+		HashMap<String,String> attrs=new HashMap<String,String>();
+		while (iterator.hasNext()) {
+			Entry<String,JsonElement> e=iterator.next();
+			String key=e.getKey();
+			JsonElement value=e.getValue();
+			if (value.isJsonPrimitive()) {
+				attrs.put(key, value.getAsJsonPrimitive().getAsString());
+			}
+		}
+		return attrs;
 	}
 }

@@ -34,10 +34,8 @@
 			
 
 			request.setAttribute("isAdmin",Users.isAdmin(userId));
-			boolean downloadable=s.isDownloadable();
-			if (s.getUserId()==userId) {
-				downloadable=true;
-			}
+			boolean downloadable=SolverSecurity.canUserDownloadSolver(solverId,userId).isSuccess();
+			
 		
 			request.setAttribute("downloadable",downloadable);
 		} else {

@@ -1,9 +1,12 @@
 package org.starexec.data.security;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Queue;
 import org.starexec.util.Validator;
 
 public class QueueSecurity {
@@ -152,5 +155,20 @@ public class QueueSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
+	}
+	
+	public static ValidatorStatusCode canGetJsonQueue(int queueId, int userId) {
+		
+		List<Queue> queues=Queues.getQueuesForUser(userId);
+		for (Queue q : queues) {
+			if (q.getId()==queueId) {
+				return new ValidatorStatusCode(true);
+			}
+		}
+		
+		return new ValidatorStatusCode(false, "The given queue does not exist or you do not have permission to see it");
+		
+		
+		
 	}
 }

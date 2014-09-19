@@ -552,6 +552,59 @@ OPTIONAL: "limit"
 REQUIRED: "id"
 OPTIONAL: "limit"
 
+
+View Commands
+-------------
+
+The following commands will print out information about Starexec primitives to the console.
+For each command, the following format is used to display information. The order of the printed attributes 
+is not guaranteed.  
+
+id= "1" : name= "example name" : description= "example description"
+
+View commands can print out either every attribute or a limited set of attributes. By default, only 
+the id, name, and description (if applicable) is printed out for each primitive. The first two commands
+listed below can be used to change this setting.
+
+
+--viewall -Makes all subsequent "view" commands print out every attribute for the requested primitive
+REQUIRED: None
+OPTIONAL: None
+
+--viewlimit -Makes all subsequent "view" commands print out only the id, name, and description for the requested primitive
+REQUIRED: None
+OPTIONAL: None
+
+
+
+--viewbench -Displays the ID, name, and description of the given benchmark
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewconfig -Displays the ID, name, and description of the given benchmark
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewjob -Displays the ID, name, and description of the given job
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewproc -Displays the ID, name, and description of the given processor
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewqueue -Displays the ID, name, and description of the given queue
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewsolver -Displays the ID, name, and description of the given solver
+REQUIRED: "id"
+OPTIONAL: None
+
+--viewspace -Displays the ID, name, and description of the given space
+REQUIRED: "id"
+OPTIONAL: None
+
 Shell Mode
 ----------
 

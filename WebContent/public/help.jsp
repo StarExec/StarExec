@@ -20,11 +20,6 @@
 			<br><br>
 		</li>		
 		<li>
-			<a href="http://starexec.wordpress.com">StarExec Blog</a>, 
-			for upcoming features and current issues
-			<br><br>
-		</li>
-		<li>
 			<a href="http://starexec.forumotion.com">StarExec Forum</a>, 
 			for questions, bug reports, feature requests
 			<br><br>

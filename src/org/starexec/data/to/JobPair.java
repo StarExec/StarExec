@@ -280,7 +280,7 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * @param cpuUsage the cpu usage to set for this pair
+	 * @param cpuTime the cpu usage to set for this pair
 	 */
 	public void setCpuUsage(double cpuTime) {
 		this.cpuTime = cpuTime;

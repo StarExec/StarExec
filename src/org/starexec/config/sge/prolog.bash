@@ -107,10 +107,10 @@ function copyDependencies {
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
-		mkdir $STAREXEC_OUT_DIR/preProcessor
-		cp -r "$PRE_PROCESSOR_PATH"/* $STAREXEC_OUT_DIR/preProcessor
-		chmod -R gu+rwx $STAREXEC_OUT_DIR/preProcessor
-		cd "$STAREXEC_OUT_DIR"/preProcessor
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
 		log "executing pre processor"
 		log "random seed = "$RAND_SEED
 		
@@ -162,13 +162,17 @@ function verifyWorkspace {
 
 	return $?
 }
-#TODO: need to change "sandbox" to "sandbox1"
+#TODO: syntax check this
 function sandboxWorkspace {
+
 	if [[ $WORKING_DIR == *sandbox2* ]] 
+	
 	then
+	log "sandboxing workspace with sandbox2 user"
 	sudo chown -R sandbox2 $WORKING_DIR 
 	else
-	sudo chown -R sandbox $WORKING_DIR
+		log "sandboxing workspace with sandbox user"
+		sudo chown -R sandbox $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"
 	return 0
@@ -185,6 +189,7 @@ echo "====================================="
 echo "date: `date`"
 echo "user: #$USER_ID"
 echo "sge job: #$JOB_ID"
+echo "pair id: $PAIR_ID"
 echo "solver: $SOLVER_NAME"
 echo "solverid: $SOLVER_ID"
 echo "timestamp: $SOLVER_TIMESTAMP"
@@ -193,9 +198,28 @@ echo "benchmark: ${BENCH_PATH##*/}"
 echo "execution host: $HOSTNAME"
 echo ""
 
+
+initSandbox "$PAIR_ID"
+
+#todo: how exactly do we return an error correctly?
+
+if ! isInteger $SANDBOX ; then
+	sendStatus $ERROR_RUNSCRIPT
+	log "unable to secure any sandbox for this job!"
+	exit 0
+fi
+
+if [ $SANDBOX -eq -1 ] 
+then
+	sendStatus $ERROR_RUNSCRIPT
+	log "unable to secure any sandbox for this job!"
+	exit 0
+fi
+
+
 sendStatus $STATUS_PREPARING
 sendNode "$HOSTNAME"
-cleanWorkspace
+cleanWorkspace 1
 fillDependArrays
 checkCache
 copyDependencies
