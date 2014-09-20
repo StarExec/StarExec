@@ -138,7 +138,8 @@ function isPairRunning {
 	
 		return 1
 	fi
-	HOST={$HOSTNAME:0:4}
+	HOST=${HOSTNAME:0:4}
+	
 	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/$HOST/active_jobs/*/config`
 	log $output
 	ls /cluster/sge-6.2u5/default/spool/$HOST/active_jobs/
