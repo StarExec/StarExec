@@ -25,7 +25,7 @@ whoami
 . /home/starexec/sge_scripts/functions.bash
 
 # Path to local workspace for each node in cluster.
-findSandbox $PAIR_ID
+findSandbox $JOB_ID
 
 if [ $SANDBOX -eq -1 ] 
 then
