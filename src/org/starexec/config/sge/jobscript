@@ -76,6 +76,7 @@ then
 
 else
 	log "no job run for pair $PAIR_ID because a sandbox was not found"
+	sendStatus $ERROR_RUNSCRIPT
 fi
 
 echo "Jobscript ending."

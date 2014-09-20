@@ -30,6 +30,7 @@ findSandbox $PAIR_ID
 if [ $SANDBOX -eq -1 ] 
 then
 	log "epilog was not completed because no sandbox could be found"
+	sendStatus $ERROR_RUNSCRIPT
 	exit 0
 fi
 
