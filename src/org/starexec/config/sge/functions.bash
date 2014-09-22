@@ -128,7 +128,7 @@ function isInteger {
 	fi
 	return 0
 }
-# checks to see whether the pair with the given pair ID is actually running using qstat
+# checks to see whether the pair with the given pair SGE ID is actually running using qstat
 function isPairRunning {
 	log "isPairRunning called on pair id = $1" 
 	
@@ -138,12 +138,23 @@ function isPairRunning {
 	
 		return 1
 	fi
+	HOST=${HOSTNAME:0:4}
 	
-	output=`awk '/^job_name|^job_id|^host=/ {print $1}' /cluster/sge-6.2u5/default/spool/n*/active_jobs/*/config`
-	if [[ $output == *job_name=job_$1* ]]
+	output=`ls /cluster/sge-6.2u5/default/spool/$HOST/active_jobs/`
+	log "$output"
+	
+	#be conservative and say that the pair is running if we fail to check properly
+	if [[ $output == *cannot* ]]
 	then
+		log "could not carry out ls command-- assuming pair is still running"
+		return 0
+	fi
+	if [[ $output == *$1* ]]
+	then
+		#the active jobs directory still contains the job, so it is still running
 		return 0
   	fi
+  	#otherwise, the job is not still running
 	return 1
 }
 

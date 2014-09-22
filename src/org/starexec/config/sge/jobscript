@@ -56,7 +56,7 @@ trap 'handleUsrTwo' USR2
 # against the user's execution time
 #==========================================================================
 
-findSandbox $PAIR_ID
+findSandbox $JOB_ID
 
 
 if [ $SANDBOX -eq 1 ]
@@ -76,6 +76,7 @@ then
 
 else
 	log "no job run for pair $PAIR_ID because a sandbox was not found"
+	sendStatus $ERROR_RUNSCRIPT
 fi
 
 echo "Jobscript ending."

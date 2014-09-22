@@ -199,7 +199,7 @@ echo "execution host: $HOSTNAME"
 echo ""
 
 
-initSandbox "$PAIR_ID"
+initSandbox "$JOB_ID"
 
 #todo: how exactly do we return an error correctly?
 
