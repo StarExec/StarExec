@@ -142,10 +142,19 @@ function isPairRunning {
 	
 	output=`ls /cluster/sge-6.2u5/default/spool/$HOST/active_jobs/`
 	log "$output"
+	
+	#be conservative and say that the pair is running if we fail to check properly
+	if [[ $output == *cannot access* ]]
+	then
+		log "could not carry out ls command-- assuming pair is still running"
+		return 0
+	fi
 	if [[ $output == *$1* ]]
 	then
+		#the active jobs directory still contains the job, so it is still running
 		return 0
   	fi
+  	#otherwise, the job is not still running
 	return 1
 }
 
