@@ -549,10 +549,11 @@ public class Connection {
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param filePath the path to the solver archive to upload
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @param runTestJob Whether to run a test job after uploading this solver
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	public int uploadSolver(String name,String desc,Integer spaceID, String filePath, Boolean downloadable) {
-		return uploadSolver(name,desc,"text",spaceID,filePath,downloadable);
+	public int uploadSolver(String name,String desc,Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob) {
+		return uploadSolver(name,desc,"text",spaceID,filePath,downloadable,runTestJob);
 	}
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
@@ -560,10 +561,11 @@ public class Connection {
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param filePath the path to the solver archive to upload
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @param runTestJob Whether to run a test job after uploading this solver
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	public int uploadSolver(String name,Integer spaceID,String filePath,Boolean downloadable) {
-		return uploadSolver(name,"","upload",spaceID,filePath,downloadable);
+	public int uploadSolver(String name,Integer spaceID,String filePath,Boolean downloadable,Boolean runTestJob) {
+		return uploadSolver(name,"","upload",spaceID,filePath,downloadable,runTestJob);
 	}
 	
 	/**
@@ -575,9 +577,10 @@ public class Connection {
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param filePath The path to the solver archive to upload.
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @param runTestJob Whether to run a test job after uploading this solver
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable) {
+	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable, Boolean runTestJob) {
 		try {
 			
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
@@ -599,7 +602,9 @@ public class Connection {
 			entity.addPart("url",new StringBody("",utf8));
 			entity.addPart("descMethod", new StringBody(descMethod,utf8));
 			entity.addPart("dlable", new StringBody(downloadable.toString(), utf8));
-
+			entity.addPart("runTestJob",new StringBody(runTestJob.toString(),utf8));
+			
+			
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("f", fileBody);
 
@@ -624,30 +629,6 @@ public class Connection {
 	}
 	
 	/**
-	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
-	 * @param name The name of the solver
-	 * @param desc The description of the solver
-	 * @param spaceID The ID of the space to put the solver in
-	 * @param url The URL of the archived solver to upload
-	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
-	 * @return The ID of the new solver, which must be positive, or a negative error code
-	 */
-	public int uploadSolverFromURL(String name,String desc,Integer spaceID, String url, Boolean downloadable) {
-		return uploadSolverFromURL(name,desc,"text",spaceID,url,downloadable);
-	}
-	/**
-	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
-	 * @param name The name of the solver
-	 * @param spaceID The ID of the space to put the solver in
-	 * @param url The URL of hte archived solver to upload
-	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
-	 * @return The ID of the new solver, which must be positive, or a negative error code
-	 */
-	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable) {
-		return uploadSolverFromURL(name,"","upload",spaceID,url,downloadable);
-	}
-	
-	/**
 	 * Uploads a solver to Starexec given a URL. 
 	 * @param name The name to give the solver
 	 * @param desc Either a string description OR a file path to a file containing the description, depending on the value of descMethod
@@ -655,10 +636,11 @@ public class Connection {
 	 * @param spaceID The space to put the solver in
 	 * @param url The direct URL to the solver
 	 * @param downloadable Whether the solver should be downloadable or not
+	 * @param runTestJob Whether to run a test job for this solver after uploading it
 	 * @return The positive ID for the solver or a negative error code
 	 */
-	
-	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable) {
+	//TODO: This needs to be merged with the uploadSolver function
+	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob) {
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
 			MultipartEntity entity = new MultipartEntity();
@@ -675,10 +657,12 @@ public class Connection {
 			}
 			entity.addPart("space", new StringBody(spaceID.toString(), utf8));
 			entity.addPart("upMethod",new StringBody("URL",utf8));
-			entity.addPart("url",new StringBody(url,utf8));
 			entity.addPart("descMethod", new StringBody(descMethod,utf8));
 			entity.addPart("dlable", new StringBody(downloadable.toString(), utf8));
-			
+			entity.addPart("runTestJob", new StringBody(runTestJob.toString(), utf8));
+
+			entity.addPart("url",new StringBody(url,utf8));
+
 			post.setEntity(entity);
 			post=(HttpPost) setHeaders(post);
 			
@@ -693,6 +677,34 @@ public class Connection {
 			return Status.ERROR_INTERNAL;
 		}	
 	}
+	
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param desc The description of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param url The URL of the archived solver to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @param runTestJob Whether to run a test job for this solver after uploading it
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolverFromURL(String name,String desc,Integer spaceID, String url, Boolean downloadable, Boolean runTestJob) {
+		return uploadSolverFromURL(name,desc,"text",spaceID,url,downloadable, runTestJob);
+	}
+	/**
+	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
+	 * @param name The name of the solver
+	 * @param spaceID The ID of the space to put the solver in
+	 * @param url The URL of hte archived solver to upload
+	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
+	 * @param runTestJob Whether to run a test job for this solver after uploading it
+	 * @return The ID of the new solver, which must be positive, or a negative error code
+	 */
+	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable, Boolean runTestJob) {
+		return uploadSolverFromURL(name,"","upload",spaceID,url,downloadable, runTestJob);
+	}
+	
+	
 	
 	/**
 	 * Sets HTTP headers required to communicate with the StarExec server

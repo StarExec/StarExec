@@ -16,8 +16,10 @@
 
 		int id = Integer.parseInt((String)request.getParameter("cid"));
 		request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.SPACE));
-
-		request.setAttribute("defaultBenchLink", Util.docRoot("secure/edit/defaultBenchmark.jsp?id="+((Integer)id).toString()));
+		String url = Util.docRoot("secure/edit/defaultPrimitive.jsp?id="+String.valueOf(id));
+		
+		request.setAttribute("defaultBenchLink", url+"&type=benchmark");
+		request.setAttribute("defaultSolverLink", url+"&type=solver");
 		Space com = Communities.getDetails(id);
 		Permission perm = SessionUtil.getPermission(request, id);
 		
@@ -35,7 +37,9 @@
 		request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
-		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
+		request.setAttribute("defaultBPId", listOfDefaultSettings.get(4));
+
+		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(9));
 		request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
 		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 		try {
@@ -47,6 +51,16 @@
 			}
 		} catch (Exception e) {
 			request.setAttribute("defaultBenchmark", "none specified");
+		}
+		try {
+			Solver solver = Solvers.get(Integer.parseInt(listOfDefaultSettings.get(8)));
+			if (solver!=null) {
+				request.setAttribute("defaultSolver",solver.getName());
+			} else {
+				request.setAttribute("defaultSolver","none specified");
+			}
+		} catch (Exception e) {
+			request.setAttribute("defaultSolver","none specified");
 		}
 		
 		
@@ -208,6 +222,19 @@
 					</select>
 				</td>
 			</tr>
+			
+			<tr>
+				<td>bench processor </td>
+				<td>					
+					<select id="editBenchProcess" name="editBenchProcess" default="${defaultBPId}">
+					<option value=-1>none</option>
+					<c:forEach var="proc" items="${bench_proc}">
+							<option value="${proc.id}">${proc.name}</option>
+					</c:forEach>
+					</select>
+				</td>
+			</tr>
+			
 			<tr>
 				<td>post processor </td>
 				<td>					
@@ -234,7 +261,7 @@
 			<tr>
 				<td>dependencies enabled</td>
 				<td>
-					<select id="editDependenciesEnabled" name="editDependenciesEnabled" default=${dependenciesEnabled}>
+					<select id="editDependenciesEnabled" name="editDependenciesEnabled" default="${dependenciesEnabled}">
 						<option value="1">True</option>
 						<option value="0">False</option>
 					</select>
@@ -242,7 +269,11 @@
 			</tr>
 			<tr id="defaultBenchRow">
 				<td>default benchmark</td>
-				<td>${defaultBenchmark} <a href="${defaultBenchLink}"><span id="selectBenchmark">select benchmark</span></a></td>
+				<td>${defaultBenchmark} <a href="${defaultBenchLink}"><span class="selectPrim">select benchmark</span></a></td>
+			</tr>
+			<tr id="defaultSolverRow">
+				<td>default solver</td>
+				<td>${defaultSolver} <a href="${defaultSolverLink}"><span class="selectPrim">select solver</span></a></td>
 			</tr>
 		</tbody>
 	</table>

@@ -388,12 +388,21 @@ public class Communities {
 	 * If the default settings do not already exist, they are initialized to default values and returned
 	 * 
 	 * @param id the space id of the community
-	 * @return a list of string containing the default settings
+	 * @return a list of string containing the default settings with the following values
+	 * index 1 = pre processor id
+	 * index 2 = cpu timeout
+	 * index 3 = wallclock timeout
+	 * index 4 = post processor id
+	 * index 5 = dependencies enabled boolean
+	 * index 6 = default benchmark id
+	 * index 7 = maximum memory (in bytes)
+	 * index 8 = default solver ID
+	 * index 9 = bench processor ID
 	 * @author Ruoyu Zhang
 	 */
 	public static List<String> getDefaultSettings(int id) {
 		Connection con = null;			
-		List<String> listOfDefaultSettings = Arrays.asList("id","0","1","1","0","0","0","1073741824");
+		List<String> listOfDefaultSettings = Arrays.asList("id","0","1","1","0","0","0","1073741824","0","0");
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -424,10 +433,12 @@ public class Communities {
 				listOfDefaultSettings.set(5, results.getString("dependencies_enabled"));
 				listOfDefaultSettings.set(6, results.getString("default_benchmark"));
 				listOfDefaultSettings.set(7,results.getString("maximum_memory"));
+				listOfDefaultSettings.set(8,results.getString("default_solver"));
+				listOfDefaultSettings.set(0,results.getString("bench_processor"));
 			}
 			else {
 			        Common.safeClose(procedure);
-				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?)}");
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?,?,?)}");
 				procedure.setInt(1, community);
 				procedure.setInt(2, 1);
 				procedure.setInt(3, 10);
@@ -435,6 +446,8 @@ public class Communities {
 				procedure.setInt(5, 0);
 				procedure.setObject(6, null);
 				procedure.setLong(7,1073741824); //memory initialized to 1 gigabyte
+				procedure.setObject(8,null);
+				procedure.setInt(9, 1);
 				procedure.executeUpdate();
 			}
 		} catch (Exception e){			
@@ -580,6 +593,9 @@ public class Communities {
 	 * 3 = wallclock_timeout
 	 * 4 = dependencies_enabled
 	 * 5 = default_benchmark_id
+	 * 6 = pre_processor_id
+	 * 7 = default_solver_id
+	 * 8 = bench_processor_id
 	 * @param setting The new value of the setting
 	 * @return True if the operation is successful
 	 * @author Ruoyu Zhang

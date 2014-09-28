@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 
 public abstract class TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
-	protected String name="No Name";
+	protected String sequenceName="No Name";
 	protected TestStatus status=new TestStatus();
 	protected String message="No Message";
 	protected int testsPassed=0;
@@ -23,7 +23,7 @@ public abstract class TestSequence {
 	
 	public TestSequence() {
 		initTestResults();
-		name=getTestName(); //this method is implemented in every subclass
+		sequenceName=getTestName(); //this method is implemented in every subclass
 	}
 	
 	private final void initTestResults() {
@@ -139,7 +139,7 @@ public abstract class TestSequence {
 	abstract protected void teardown() throws Exception;
 	
 	public final String getName() {
-		return name;
+		return sequenceName;
 	}
 	public final TestStatus getStatus() {
 		return status;	
@@ -158,7 +158,7 @@ public abstract class TestSequence {
 		status.setCode(statusCode);
 	}
 	protected final void setName(String newName) {
-		name=newName;
+		sequenceName=newName;
 	}
 	
 	

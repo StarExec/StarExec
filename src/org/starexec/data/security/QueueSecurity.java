@@ -167,8 +167,20 @@ public class QueueSecurity {
 		}
 		
 		return new ValidatorStatusCode(false, "The given queue does not exist or you do not have permission to see it");
+	}
+	
+	public static ValidatorStatusCode canUserSubmitToQueue(int userId, int queueId, int spaceId) {
+		if (Queues.get(queueId)==null) {
+			return new ValidatorStatusCode(false, "The given queue could not be found");
+		}
+		List<Queue> validQueues=Queues.getQueuesForUser(userId);
+		validQueues.addAll(Queues.getQueuesForSpace(spaceId));
+		for (Queue q : validQueues) {
+			if (q.getId()==queueId) {
+				return new ValidatorStatusCode(true);
+			}
+		}
 		
-		
-		
+		return new ValidatorStatusCode(false, "You do not have permission to utilize the selected queue");
 	}
 }

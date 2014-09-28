@@ -305,7 +305,24 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a json string that holds the log of job pair with the given id
+	 * @return a text string that holds the result of running qstat 0f
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/cluster/qstat")
+	@Produces("text/plain")		
+	public String getQstatOutput(@Context HttpServletRequest request) {		
+		int userId = SessionUtil.getUserId(request);
+		String qstat=R.BACKEND.getRunningJobsStatus();
+		if(!Util.isNullOrEmpty(qstat)) {
+			return qstat;
+		}
+
+		return "not available";
+	}
+	
+	/**
+	 * @return a text string that holds the log of job pair with the given id
 	 * @author Tyler Jensen
 	 */
 	@GET
@@ -1305,14 +1322,20 @@ public class RESTServices {
 				
 			} else if (attribute.equals("PostProcess")) {
 				success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
-			}else if (attribute.equals("CpuTimeout")) {
+			} else if (attribute.equals("BenchProcess")) {
+				Communities.setDefaultSettings(id,8,Integer.parseInt(request.getParameter("val")));
+			}
+			
+			else if (attribute.equals("CpuTimeout")) {
 				success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
 			}else if (attribute.equals("ClockTimeout")) {
 				success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
 			} else if (attribute.equals("DependenciesEnabled")) {
 				success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
-			} else if (attribute.equals("defaultBenchmark")) {
+			} else if (attribute.equals("defaultbenchmark")) {
 				success=Communities.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
+			} else if (attribute.equals("defaultsolver")) {
+				success=Communities.setDefaultSettings(id, 7, Integer.parseInt(request.getParameter("val")));
 			} else if(attribute.equals("MaxMem")) {
 				double gigabytes=Double.parseDouble(request.getParameter("val"));
 				long bytes = Util.gigabytesToBytes(gigabytes); 

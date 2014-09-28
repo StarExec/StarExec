@@ -16,7 +16,18 @@ $(document).ready(function(){
 	});
 	// Build left-hand side of page (cluster explorer)
 	 initClusterExplorer();
-
+	 loadQstatOutput();
+	 
+	 $("#refreshQstat").button( {
+		 icons: {
+		 	primary: "ui-icon-refresh"
+	 	}
+	 });
+	 $("#refreshQstat").click(function() {
+		 loadQstatOutput();
+	 });
+	 
+	 $("#qstatField").expandable(true);
 	 
 	 
 	 setInterval(function() {
@@ -165,7 +176,17 @@ function getDetails(id, type) {
 	});
 }
 
+function loadQstatOutput() {
+	$.get(  
+			starexecRoot+"services/cluster/qstat",
+			{},
+			function(data){
+				$("#qstatOutput").val(data);
 
+			},  
+			"text"
+	);
+}
 
 /**
  * Takes in a json  response and populates the details panel with information

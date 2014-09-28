@@ -28,12 +28,13 @@
 					<!-- This will be populated by the job pair pagination feature -->
 				</tbody>		
 			</table>
+			
 		</fieldset>	
+		<fieldset id="qstatField">
+			<legend>qstat output</legend>
+			<button id="refreshQstat">refresh</button>
+			<textarea id="qstatOutput" ></textarea>
 		
-		<!-- <fieldset>
-			<legend>actions</legend>
-			<ul id="actionList">							
-			</ul>
-		</fieldset>-->				
+		</fieldset>
 	</div>	
 </star:template>

@@ -26,6 +26,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
@@ -52,6 +53,47 @@ public class Jobs {
 		}
 		return path.split("/");
 	}
+	
+	
+	
+	/**
+	 * Creates a new quick job, which is a job with only one job pair. Quick jobs
+	 * are implemented differently than normal jobs with just one pair, because
+	 * no space hierarchy information is used for quick jobs. As such, no relationship
+	 * is necessary between the the space of the solver, the space of the benchmark, and the 
+	 * space the job is being created in.
+	 * @param job The Job object representing the job to create, which should have exactly 1 pair
+	 * and all other relevant fields set
+	 * @param spaceId
+	 * @return
+	 */
+	public static boolean addJob(Job job,int spaceId) {
+		Connection con=null;
+		try {
+			int jobSpaceId=Spaces.addJobSpace("job space",con);
+			job.setPrimarySpace(jobSpaceId);
+
+			job.getJobPairs().get(0).setJobSpaceId(jobSpaceId);
+			Jobs.addJob(con, job);
+			//put the job in the space it was created in
+			Jobs.associate(con, job.getId(), spaceId);
+			for(JobPair pair : job) {
+				pair.setJobId(job.getId());
+				//writer.write(getPairString(pair));
+				JobPairs.addJobPair(con, pair);
+			}
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			Common.doRollback(con);
+
+		}finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	} 
 	
 	/**
 	 * Adds a new job to the database. NOTE: This only records the job in the 
@@ -98,30 +140,18 @@ public class Jobs {
 			if (neededSpaces.get(0).size()>1) {
 				log.warn("a job was created that has more than one top level space!");
 			}
+			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
 			
 			//put the job in the space it was created in
 			Jobs.associate(con, job.getId(), spaceId);
 			
 			log.debug("adding job pairs");
-			File dir=new File(R.JOBPAIR_INPUT_DIR);
-			dir.mkdirs();
-			File jobPairFile=new File(R.JOBPAIR_INPUT_DIR,UUID.randomUUID().toString());
-			jobPairFile.createNewFile();
-			BufferedWriter writer=new BufferedWriter(new FileWriter(jobPairFile));
+			
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
-				//writer.write(getPairString(pair));
 				JobPairs.addJobPair(con, pair);
 			}
-			writer.flush();
-			writer.close();
-			procedure=con.prepareStatement("LOAD DATA INFILE ? INTO TABLE JOB_PAIRS " +
-					" FIELDS TERMINATED BY ',' " +
-					"(job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id);");
-			procedure.setString(1, jobPairFile.getAbsolutePath());
-			//procedure.executeUpdate();
-			jobPairFile.delete();
 			Common.endTransaction(con);
 			log.debug("job added successfully");
 			

@@ -19,18 +19,23 @@
 			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
+			List<Processor> ListOfBenchProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.BENCH);
+
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
-			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
-			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
+			request.setAttribute("benchProcs",ListOfBenchProcessors);
 			request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
+			request.setAttribute("defaultBPId", listOfDefaultSettings.get(9));
+
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
+			
+			request.setAttribute("solver", Solvers.get(Integer.parseInt(listOfDefaultSettings.get(8))));
 			
 		}
 	} catch (NumberFormatException nfe) {
@@ -42,9 +47,10 @@
 
 <jsp:useBean id="now" class="java.util.Date" />
 <star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+	<input type="hidden" name="benchChoice" value="quickJob" />
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>
-		<fieldset id="fieldStep1">
+		<fieldset id="baseSettings">
 			<legend>configure job</legend>
 			<table id="tblConfig" class="shaded contentTbl">
 				<thead>
@@ -54,12 +60,31 @@
 					</tr>
 				</thead>
 				<tbody>
-					
 					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
 						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 					</tr>
-					<tr class="noHover" title="are there any additional details that you want to document with the job?">
+					<tr>
+						<td class="label"><p>solver</p></td>
+						<td><input type="hidden" name="solver" value="${solver.id}"/>${solver.name}</td>
+					</tr>
+					<tr class="noHover" title="what benchmark would you like to use?">
+						<td>benchmark selection</td>
+						<td><textarea id="benchmarkField" name="benchmark" rows="6" cols="40"></textarea></td>
+					</tr>
+				</tbody>
+			</table>
+			<fieldset id= "advancedSettings">
+				<legend>advanced settings</legend>
+				<table id="tblAdvancedConfig" class="shaed contentTbl">
+					<thead>
+						<tr>
+							<th>attribute</th>
+							<th>value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="noHover" title="are there any additional details that you want to document with the job?">
 						<td class="label"><p>description</p></td>
 						<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
 					</tr>
@@ -74,6 +99,18 @@
 							</select>
 						</td>
 					</tr>
+					<tr class="noHover" title="do you want to extract any attributes from your benchmark?">
+						<td class="label"><p>post processor</p></td>
+						<td>					
+							<select id="benchProcess" name="benchProcess" default="${defaultBPId}">
+								<option value="-1">none</option>
+								<c:forEach var="proc" items="${benchProcs}">
+										<option value="${proc.id}">${proc.name} (${proc.id})</option>
+								</c:forEach>
+							</select>
+						</td>
+					</tr>
+					
 					<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
 						<td>					
@@ -117,15 +154,6 @@
 							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
 						</td>
 					</tr>
-					
-					
-					<tr class="noHover" title="How would you like to traverse the job pairs?">
-						<td class="label"><p>Job-Pair Traversal</p></td>
-						<td>
-							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/> 	
-							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>	
-						</td>
-					</tr>	
 					<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
 						<td class="label"><p>Create Paused</p></td>
 						<td>
@@ -133,128 +161,13 @@
 							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
 						</td>
 					</tr>
-					<tr class="noHover" title="a random value that will be passed into any preprocessor used for this job">
-						<td class="label"><p>pre-processor seed</p></td>
-						<td>
-							<input type="text" name="seed" id="seed" value="0">
-						</td>
-					</tr>							
-				</tbody>					
-			</table>
-		</fieldset>
-		<%-- <fieldset id="fieldStep2"> --%>
-		<fieldset id="fieldSolverMethod">
-			<legend>solver selection method</legend>
-			<table id="tblSpaceSelection" class="contentTbl">
-				<thead>
-					<tr>
-						<th>choice</th>
-						<th>description</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr id="keepHierarchy">
-						<td><input type="hidden" name="runChoice" value="keepHierarchy" />run and keep hierarchy structure</td>
-						<td>this will run all solvers/configurations on all benchmarks in their respective spaces within the space hierarchy.</td>
-					</tr>
-					<tr id="runChoose">
-						<td><input type="hidden" name="runChoice" value="choose" />choose</td>
-						<td>you will choose which solvers/configurations to run from ${space.name} only.</td>
-					</tr>
-				</tbody>
-			</table>
-		</fieldset>
-		<%--<fieldset id="fieldStep22"> --%>
-				<fieldset id="fieldBenchMethod">
-			<legend>benchmark selection method</legend>
-			<table id="tblBenchMethodSelection" class="contentTbl">
-				<thead>
-					<tr>
-						<th>choice</th>
-						<th>description</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr id="allBenchInSpace">
-						<td><input type="hidden" name="benchChoice" value="runAllBenchInSpace" />all in ${space.name}</td>
-						<td>this will run chosen solvers/configurations on all benchmarks in ${space.name}</td>
-					</tr>
-					<tr id="allBenchInHierarchy">
-						<td><input type="hidden" name="benchChoice" value="runAllBenchInHierarchy" />all in hierarchy</td>
-						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
-					</tr>
-						<tr id="someBenchInSpace">
-						<td><input type="hidden" name="benchChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
-						<td>this will run chosen solvers/configurations on your selection of benchmarks in the hierarchy</td>
-					</tr>
 					
-				</tbody>
-			</table>
+					</tbody>
+				</table>
+			</fieldset>
 		</fieldset>
-		<%-- <fieldset id="fieldStep3"> --%>
-		<fieldset id="fieldSolverSelection">
-			<legend>solver selection</legend>
-			<table id="tblSolverConfig" class="contentTbl">	
-				<thead>
-					<tr>
-						<th>solver</th>
-						<th>configuration</th>						
-					</tr>
-				</thead>
-				<tbody>
-				<c:forEach var="s" items="${solvers}">
-					<tr id="solver_${s.id}">
-							<td>
-								<input type="hidden" name="solver" value="${s.id}"/>
-								<star:solver value='${s}'/></td>
-							<td>
-								<div class="selectConfigs">
-									<c:forEach var="c" items="${s.configurations}">
-										<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
-									</c:forEach>
-								</div>
-							</td>
-					</tr>
-				</c:forEach>			
-				</tbody>						
-			</table>				
-			<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectDefault"><span class="ui-icon ui-icon-circlesmall-plus"></span>all default</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-			</div>
-			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
-		</fieldset>
-		<%--<fieldset id="fieldStep4"> --%>
-		 <fieldset id="fieldSelectBenchSpace"> 
-			<legend>benchmark selection from space</legend>
-			<table id="tblBenchConfig" class="contentTbl">
-				<thead>
-					<tr>
-						<th>benchmark</th>
-						<th>type</th>						
-					</tr>
-				</thead>	
-				<tbody>
-				<c:forEach var="b" items="${benchs}">
-					<tr id="bench_${b.id}">
-						<td>
-							<input type="hidden" name="bench" value="${b.id}"/>
-							<star:benchmark value='${b}'/></td>
-						<td>
-							<p>${b.type.name}</p>							
-						</td>																		
-					</tr>
-				</c:forEach>
-				</tbody>					
-			</table>	
-			<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-			</div>	
-		</fieldset>
-	
 		<div id="actionBar">
 			<button type="submit" class="round" id="btnDone">submit</button>			
-			<button type="button" class="round" id="btnNext">next</button>			
-			<button type="button" class="round" id="btnPrev">Prev</button>	
 			<button type="button" class="round" id="btnBack">Cancel</button>			
 		</div>			
 	</form>		

@@ -202,7 +202,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void uploadSolver() throws Exception {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
-		int result=con.uploadSolver(name, space1.getId(), solverFile.getAbsolutePath(), true);
+		int result=con.uploadSolver(name, space1.getId(), solverFile.getAbsolutePath(), true,false);
 		if (result>0) {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
@@ -219,7 +219,7 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
 		
-		int result=con.uploadSolverFromURL(name, space1.getId(), solverURL, true);
+		int result=con.uploadSolverFromURL(name, space1.getId(), solverURL, true,false);
 		if (result>0) {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);

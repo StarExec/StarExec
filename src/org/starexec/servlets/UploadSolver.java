@@ -66,6 +66,7 @@ public class UploadSolver extends HttpServlet {
     private static final String UPLOAD_METHOD="upMethod";
     private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
+    private static final String RUN_TEST_JOB="runTestJob";
         
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -402,7 +403,10 @@ public class UploadSolver extends HttpServlet {
 			if (!Validator.isValidBool((String)form.get(SOLVER_DOWNLOADABLE))) {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
-
+			
+			if (!Validator.isValidBool((String)form.get(RUN_TEST_JOB))) {
+				return new ValidatorStatusCode(false, "The 'run test job' attribute needs to be a valid boolean");
+			}
 			
 			if(!Validator.isValidSolverName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
 				

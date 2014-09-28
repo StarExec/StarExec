@@ -1,6 +1,7 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -154,6 +155,9 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	    return attrs;
 	}
 
+	public void addJobPairs(Collection<JobPair> pairs) {
+		jobPairs.addAll(pairs);
+	}
 	/**
 	 * @param jobPair the job pair to add to the job
 	 */

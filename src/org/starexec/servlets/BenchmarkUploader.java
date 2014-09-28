@@ -109,19 +109,75 @@ public class BenchmarkUploader extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error uploading the benchmarks.");
 		}
 	}
+	/**
+	 * Creates a directory that benchmarks can be placed in, which is empty on initialization.
+	 * 
+	 * @param userId The ID of the user who will own the new benchmarks
+	 * @param name An optional name to be used in the directory structure of userId/date/name.
+	 * If null, benchmarks will be directly under the /date/ directory
+	 * @return File object representing the new directory
+	 */
+	public static File getDirectoryForBenchmarkUpload(int userId, String name) {
+		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		if (name!=null) {
+			uniqueDir = new File(uniqueDir, name);
+		}
+		uniqueDir.mkdirs();
+		return uniqueDir;
+	}
 	
-	public static List<Integer> handleUploadRequestAfterExtraction(File archiveFile, int userId, int spaceId, int typeId,
+	/**
+	 * Adds a single new benchmark to the database with contents given by a string
+	 * @param benchText The contents of the new benchmark
+	 * @param name The name to give the new benchmark 
+	 * @param userId The ID of the user creating this benchmark
+	 * @param typeId The ID of the benchmark processor to use on this benchmark
+	 * @param downloadable Whether the benchmark should be set as being "downloadable"
+	 * @return The ID of the newly created benchmark
+	 */
+	public static Integer addBenchmarkFromText(String benchText,String name, int userId, int typeId,
+			boolean downloadable) {
+		try {
+			File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
+			FileUtils.writeStringToFile(new File(uniqueDir,name), benchText);
+			List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+			//add the benchmark to the database, but don't put it in any spaces
+			return Benchmarks.add(bench.get(0), null, null);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+			
+		
+		
+		
+		return null;
+	}
+	
+	/**
+	 * Adds a set of benchmarks to the database by extracting the given archive and finding the
+	 * benchmarks inside of it
+	 * @param archiveFile The archive to look into
+	 * @param userId The user who will own all of the new benchmarks
+	 * @param spaceId The ID of the root space for this upload (what space did the user click "upload benchmarks" in?)
+	 * @param typeId The ID of the benchmark processor that will be applied to the new benchmarks, 
+	 * @param downloadable Whether each of the benchmarks should be flagged as downloadable
+	 * @param perm Permissions object representing the permissions for any new spaces created as a result of this upload 
+	 * @param uploadMethod "convert" or "dump", depending on whether to make a hierarchy or just put all benchmarks in the root space
+	 * @param statusId The ID of the UploadStatus object for tracking this upload
+	 * @param hasDependencies Whether the benchmarks have dependencies
+	 * @param linked 
+	 * @param depRootSpaceId The root space for dependencies for these benchmarks
+	 * @return A list of IDs of the newly created benchmarks
+	 */
+	public static List<Integer> addBechmarksFromArchive(File archiveFile, int userId, int spaceId, int typeId,
 			boolean downloadable, Permission perm, String uploadMethod, int statusId,
 			boolean hasDependencies, boolean linked, Integer depRootSpaceId) {
 		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		try {
 			// Create a unique path the zip file will be extracted to
-			File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
-			uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
-			// Create the paths on the filesystem
-			uniqueDir.mkdirs();
-			
+			File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
 			
 			// Create the zip file object-to-be
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
@@ -267,7 +323,7 @@ public class BenchmarkUploader extends HttpServlet {
 						FileUtils.copyURLToFile(url,archiveFile);
 					}
 					
-					handleUploadRequestAfterExtraction(archiveFile, userId, spaceId, typeId,
+					addBechmarksFromArchive(archiveFile, userId, spaceId, typeId,
 							downloadable, perm, uploadMethod, statusId,
 							hasDependencies, linked, depRootSpaceId);
 					
