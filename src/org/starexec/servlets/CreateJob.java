@@ -66,6 +66,7 @@ public class CreateJob extends HttpServlet {
 	private static final String description = "desc";
 	private static final String postProcessor = "postProcess";
 	private static final String benchProcessor = "benchProcess";
+	private static final String benchName = "benchName";
 	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
 	private static final String configs = "configs";
@@ -181,8 +182,9 @@ public class CreateJob extends HttpServlet {
 		if (selection.equals("quickJob")) {
 			int solverId=Integer.parseInt(request.getParameter(solver));
 			String benchText=request.getParameter(benchmarks);
+			String bName=request.getParameter(benchName);
 			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
-			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, error, userId, benchProc, false);
+			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
 			createQuickJob(j, cpuLimit, runLimit, memoryLimit, solverId, benchId, space);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");

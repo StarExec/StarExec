@@ -57,7 +57,7 @@ function attachFormValidation(){
 		rules: {
 			name: {
 				required: true,
-				minlength: 2,
+				minlength: 1,
 				maxlength: $("#txtJobName").attr("length"),
 				regex : getPrimNameRegex()
 			},
@@ -82,13 +82,25 @@ function attachFormValidation(){
 			},
 			queue: {
 				required: true
+			},
+			benchName: {
+				required:true,
+				minlength: 1,
+				maxlength: $("#txtBenchName").attr("length"),
+				regex : getPrimNameRegex()
 			}
 		},
 		messages: {
 			name:{
 				required: "enter a job name",
-				minlength: "2 characters minimum",
+				minlength: "1 character minimum",
 				maxlength: $("#txtJobName").attr("length") + " characters maximum",
+				regex: "invalid character(s)"
+			},
+			benchName:{
+				required: "enter a benchmark name",
+				minlength: "1 character minimum",
+				maxlength: $("#txtBenchName").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
 			},
 			desc: {

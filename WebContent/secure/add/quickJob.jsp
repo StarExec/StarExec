@@ -16,6 +16,7 @@
 			request.setAttribute("space", Spaces.get(spaceId));
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
+			request.setAttribute("benchNameLen",R.BENCH_NAME_LEN);
 			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
@@ -84,83 +85,87 @@
 						</tr>
 					</thead>
 					<tbody>
+						<tr class="noHover" title="what name would you like to give this benchmark in StarExec?">
+							<td class="label"><p>benchmark name</p></td>
+							<td><input length="${benchNameLen}" id="txtBenchName" name="benchName" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
+						</tr>
 						<tr class="noHover" title="are there any additional details that you want to document with the job?">
-						<td class="label"><p>description</p></td>
-						<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
-					</tr>
-					<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
-						<td class="label"><p>pre processor</p></td>
-						<td>					
-							<select id="preProcess" name="preProcess" default="${defaultPreProcId}">
-								<option value="-1">none</option>
-								<c:forEach var="proc" items="${preProcs}">
-										<option value="${proc.id}">${proc.name} (${proc.id})</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
-					<tr class="noHover" title="do you want to extract any attributes from your benchmark?">
-						<td class="label"><p>post processor</p></td>
-						<td>					
-							<select id="benchProcess" name="benchProcess" default="${defaultBPId}">
-								<option value="-1">none</option>
-								<c:forEach var="proc" items="${benchProcs}">
-										<option value="${proc.id}">${proc.name} (${proc.id})</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
-					
-					<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
-						<td class="label"><p>post processor</p></td>
-						<td>					
-							<select id="postProcess" name="postProcess" default="${defaultPPId}">
-								<option value="-1">none</option>
-								<c:forEach var="proc" items="${postProcs}">
-										<option value="${proc.id}">${proc.name} (${proc.id})</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
-					
-					<tr class="noHover" title="which queue should this job be submitted to?">
-						<td class="label"><p>worker queue</p></td>
-						<td>
-							<select id="workerQueue" name="queue">
-								<c:if test="${empty queues}">
-									<option value="" />
-								</c:if>				
-								<c:forEach var="q" items="${queues}">
-	                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
-								</c:forEach>
-							</select>
-						</td>
-					</tr>
-					<tr class="noHover" title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
-						<td class="label"><p>wallclock timeout</p></td>
-						<td>	
-							<input type="text" name="wallclockTimeout" id="wallclockTimeout" value="${defaultClockTimeout}"/>
-						</td>
-					</tr>
-					<tr class="noHover" title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
-						<td class="label"><p>cpu timeout</p></td>
-						<td>	
-							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
-						</td>
-					</tr>
-					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The minimum of this value and half the available memory on the nodes will be used.">
-						<td class="label"><p>maximum memory</p></td>
-						<td>	
-							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
-						</td>
-					</tr>
-					<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
-						<td class="label"><p>Create Paused</p></td>
-						<td>
-							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
-							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
-						</td>
-					</tr>
+							<td class="label"><p>description</p></td>
+							<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
+						</tr>
+						<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
+							<td class="label"><p>pre processor</p></td>
+							<td>					
+								<select id="preProcess" name="preProcess" default="${defaultPreProcId}">
+									<option value="-1">none</option>
+									<c:forEach var="proc" items="${preProcs}">
+											<option value="${proc.id}">${proc.name} (${proc.id})</option>
+									</c:forEach>
+								</select>
+							</td>
+						</tr>
+						<tr class="noHover" title="do you want to extract any attributes from your benchmark?">
+							<td class="label"><p>post processor</p></td>
+							<td>					
+								<select id="benchProcess" name="benchProcess" default="${defaultBPId}">
+									<option value="-1">none</option>
+									<c:forEach var="proc" items="${benchProcs}">
+											<option value="${proc.id}">${proc.name} (${proc.id})</option>
+									</c:forEach>
+								</select>
+							</td>
+						</tr>
+						
+						<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
+							<td class="label"><p>post processor</p></td>
+							<td>					
+								<select id="postProcess" name="postProcess" default="${defaultPPId}">
+									<option value="-1">none</option>
+									<c:forEach var="proc" items="${postProcs}">
+											<option value="${proc.id}">${proc.name} (${proc.id})</option>
+									</c:forEach>
+								</select>
+							</td>
+						</tr>
+						
+						<tr class="noHover" title="which queue should this job be submitted to?">
+							<td class="label"><p>worker queue</p></td>
+							<td>
+								<select id="workerQueue" name="queue">
+									<c:if test="${empty queues}">
+										<option value="" />
+									</c:if>				
+									<c:forEach var="q" items="${queues}">
+		                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
+									</c:forEach>
+								</select>
+							</td>
+						</tr>
+						<tr class="noHover" title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
+							<td class="label"><p>wallclock timeout</p></td>
+							<td>	
+								<input type="text" name="wallclockTimeout" id="wallclockTimeout" value="${defaultClockTimeout}"/>
+							</td>
+						</tr>
+						<tr class="noHover" title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
+							<td class="label"><p>cpu timeout</p></td>
+							<td>	
+								<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
+							</td>
+						</tr>
+						<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The minimum of this value and half the available memory on the nodes will be used.">
+							<td class="label"><p>maximum memory</p></td>
+							<td>	
+								<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
+							</td>
+						</tr>
+						<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
+							<td class="label"><p>Create Paused</p></td>
+							<td>
+								Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
+								No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
+							</td>
+						</tr>
 					
 					</tbody>
 				</table>
