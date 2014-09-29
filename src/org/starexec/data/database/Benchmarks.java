@@ -1964,7 +1964,7 @@ public class Benchmarks {
 	
 	/**
 	 * Determines whether the benchmark with the given ID is public. It is public if it is in at least
-	 * one public space
+	 * one public space or if it is the default benchmark for some community
 	 * @param benchId The ID of the benchmark in question
 	 * @return True if the benchmark exists and is in a public space, false otherwise.
 	 */
@@ -1978,9 +1978,24 @@ public class Benchmarks {
 			procedure = con.prepareCall("{CALL IsBenchPublic(?)}");
 			procedure.setInt(1, benchId);
 			results = procedure.executeQuery();
-
+			boolean publicSpace=false;
 			if (results.next()) {
-				return (results.getInt("benchPublic") > 0);
+				publicSpace=(results.getInt("benchPublic") > 0);
+			}
+			
+			if (publicSpace) {
+				return true;
+			}
+			
+			Common.safeClose(results);
+
+			Common.safeClose(procedure);
+			//if the benchmark is in no public spaces, check to see if it is the default benchmark for some community
+			procedure=con.prepareCall("CALL IsBenchACommunityDefault(?)");
+			procedure.setInt(1,benchId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return (results.getInt("benchDefault") > 0);
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

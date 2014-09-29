@@ -46,7 +46,7 @@
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
-<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
 	<input type="hidden" name="benchChoice" value="quickJob" />
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>
@@ -70,7 +70,7 @@
 					</tr>
 					<tr class="noHover" title="what benchmark would you like to use?">
 						<td>benchmark selection</td>
-						<td><textarea id="benchmarkField" name="benchmark" rows="6" cols="40"></textarea></td>
+						<td><textarea id="benchmarkField" name="bench"></textarea></td>
 					</tr>
 				</tbody>
 			</table>

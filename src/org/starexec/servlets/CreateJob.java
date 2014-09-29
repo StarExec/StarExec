@@ -65,9 +65,11 @@ public class CreateJob extends HttpServlet {
 	private static final String name = "name";
 	private static final String description = "desc";
 	private static final String postProcessor = "postProcess";
+	private static final String benchProcessor = "benchProcess";
 	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
 	private static final String configs = "configs";
+	private static final String solver = "solver";
 	private static final String run = "runChoice";
 	private static final String benchChoice = "benchChoice";
 	private static final String benchmarks = "bench";
@@ -86,25 +88,12 @@ public class CreateJob extends HttpServlet {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 	
-	public Integer createQuickJobWithCommunityDefaults(int userId, int solverId, int sId, String n, String desc, int queueId) {
-		
-		
-		List<String> defaultSettings=Communities.getDefaultSettings(sId);
-		int preProc=Integer.parseInt(defaultSettings.get(1));
-		int postProc=Integer.parseInt(defaultSettings.get(4));
-		
-		int cpu=Integer.parseInt(defaultSettings.get(2));
-		int clock=Integer.parseInt(defaultSettings.get(3));
-		int benchId=Integer.parseInt(defaultSettings.get(6));
-		long maxMem=Long.parseLong(defaultSettings.get(7));
-		Queues.getQueuesForSpace(sId);
-		return createQuickJob(userId, cpu, clock, maxMem, 0, solverId, benchId, sId, n, desc, preProc, postProc, queueId);
-	}
 	
 	/**
 	 * Creates a quick job, which is a flat job with only a single solver and benchmark. Every configuration is run
 	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
-	 * @param userId The ID of the user creating this job
+	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor, 
+	 * queue, name, description, seed
 	 * @param cpuLimit The CPU runtime limit for the job pairs
 	 * @param wallclockLimit The wallclock runtime limit for the job pairs
 	 * @param memoryLimit The memory limit, in bytes, for the job pairs
@@ -112,24 +101,12 @@ public class CreateJob extends HttpServlet {
 	 * @param solverId The ID of the solver that will be run
 	 * @param benchId The ID of the benchmark that will be run
 	 * @param sId The ID of the space to put the job in 
-	 * @param n The name to give the job
-	 * @param desc The description to give the job
-	 * @param preProc The ID of the preprocessor to run, or -1 if we aren't using a preprocessor
-	 * @param postProc The ID of the postprocessor to run, or -1 if we aren't using a postprocessor
-	 * @param queueId The ID of the queue to run the job on 
 	 * @return The ID of the new job, or null if there was an error
 	 */
-	public Integer createQuickJob(int userId,int cpuLimit, int wallclockLimit, long memoryLimit, long seed, int solverId,
-			int benchId, int sId,String n, String desc, int preProc, int postProc, int queueId) {
+	public Integer createQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
+			int benchId, int sId) {
 		//Setup the job's attributes
-		Job j = JobManager.setupJob(
-				userId,
-				n, 
-				desc,
-				preProc,
-				postProc, 
-				queueId,
-				seed);
+		
 		//the root space for the job. By the time this job is added to the database, it will be changed to a job space ID
 		j.setPrimarySpace(sId);
 		
@@ -201,7 +178,13 @@ public class CreateJob extends HttpServlet {
 		String traversalMethod = request.getParameter(traversal);
 		//Depending on our run selection, handle each case differently
 		String error=null;
-		if (selection.equals("keepHierarchy")) {
+		if (selection.equals("quickJob")) {
+			int solverId=Integer.parseInt(request.getParameter(solver));
+			String benchText=request.getParameter(benchmarks);
+			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
+			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, error, userId, benchProc, false);
+			createQuickJob(j, cpuLimit, runLimit, memoryLimit, solverId, benchId, space);
+		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 			HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer,List<JobPair>>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
@@ -390,11 +373,24 @@ public class CreateJob extends HttpServlet {
 			if(perm == null || !perm.canAddJob()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
 			}
+			
+			if (request.getParameter(run).equals("quickJob")) {
+				if (!Util.paramExists(benchmarks, request)) {
+					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
+				}
+				
+				if (!Validator.isValidInteger(request.getParameter(solver))) {
+					return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
+				}
+				int solverId=Integer.parseInt(request.getParameter(solver));
+				if (!Permissions.canUserSeeSolver(solverId, userId)) {
+					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
+				}
 
-			// Only need these checks if we're choosing which solvers and benchmarks to run.
-			// In any other case, we automatically get them so we don't have to pass them
-			// as part of the request.
-			if (request.getParameter(run).equals("choose")) {
+				// Only need these checks if we're choosing which solvers and benchmarks to run.
+				// In any other case, we automatically get them so we don't have to pass them
+				// as part of the request.
+			} else if (request.getParameter(run).equals("choose")) {
 
 				// Check to see if we have a valid list of benchmark ids
 				if (!request.getParameter(benchChoice).equals("runAllBenchInHierarchy")){

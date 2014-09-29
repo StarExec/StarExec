@@ -1399,7 +1399,11 @@ public class Solvers {
 
 	
 	
-	
+	/**
+	 * A solver is public if it is in any public space or if it is the default solver for a community
+	 * @param solverId
+	 * @return
+	 */
 	public static boolean isPublic(int solverId) {
 		Connection con = null;
 		ResultSet results=null;
@@ -1410,8 +1414,23 @@ public class Solvers {
 			procedure.setInt(1, solverId);
 			 results = procedure.executeQuery();
 
+			boolean publicSpace=false;
 			if (results.next()) {
-				return (results.getInt("solverPublic") > 0);
+				publicSpace= (results.getInt("solverPublic") > 0);
+			}
+			if (publicSpace) {
+				return true;
+			}
+			
+			Common.safeClose(results);
+
+			Common.safeClose(procedure);
+			//if the solver is in no public spaces, check to see if it is the default solver for some community
+			procedure=con.prepareCall("CALL IsSolverACommunityDefault(?)");
+			procedure.setInt(1,solverId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return (results.getInt("solverDefault") > 0);
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

@@ -187,19 +187,6 @@ function initUI() {
 		$("#preProcess").find("option").last().attr("selected","selected");
 	}
 	
-	// Set up datatables
-	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
-        "sDom": 'rt<"bottom"f><"clear">',        
-        "bPaginate": false,        
-        "bSort": true        
-    });
-	
-	// Place the select all/none buttons in the datatable footer
-	/*$('#fieldStep3 div.selectWrap').detach().prependTo('#fieldStep3 div.bottom');
-	$('#fieldStep4 div.selectWrap').detach().prependTo('#fieldStep4 div.bottom');*/
-	$('#fieldSelectBenchSpace div.selectWrap').detach().prependTo('#fieldSelectBenchSpace div.bottom');
-	$('#fieldSolverSelection div.selectWrap').detach().prependTo('#fieldSolverSelection div.bottom');
-	
 	$('#btnBack').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
@@ -207,10 +194,7 @@ function initUI() {
 		
 		history.back(-1);
 	});
-	
-	
-	
-    
+	$("#advancedSettings").expandable(true);
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
