@@ -104,7 +104,7 @@ public class CreateJob extends HttpServlet {
 	 * @param sId The ID of the space to put the job in 
 	 * @return The ID of the new job, or null if there was an error
 	 */
-	public Integer createQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
+	public void buildQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
 			int benchId, int sId) {
 		//Setup the job's attributes
 		
@@ -120,11 +120,7 @@ public class CreateJob extends HttpServlet {
 		benchmarkIds.add(benchId);
 		JobManager.buildJob(j, cpuLimit, wallclockLimit,memoryLimit, benchmarkIds, configIds, sId, null);
 		boolean submitSuccess = Jobs.add(j, sId);
-		if (submitSuccess) {
-			return j.getId();
-		} else {
-			return null;
-		}
+		
 
 	}
 
@@ -185,7 +181,7 @@ public class CreateJob extends HttpServlet {
 			String bName=request.getParameter(benchName);
 			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
 			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
-			createQuickJob(j, cpuLimit, runLimit, memoryLimit, solverId, benchId, space);
+			buildQuickJob(j, cpuLimit, runLimit, memoryLimit, solverId, benchId, space);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 			HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer,List<JobPair>>();

@@ -48,8 +48,9 @@
 
 <jsp:useBean id="now" class="java.util.Date" />
 <star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
-	<input type="hidden" name="runChoice" value="quickJob" />
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
+		<input type="hidden" name="runChoice" value="quickJob" />
+		
 		<input type="hidden" name="sid" value="${space.id}"/>
 		<fieldset id="baseSettings">
 			<legend>configure job</legend>
