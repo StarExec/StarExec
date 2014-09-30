@@ -362,6 +362,7 @@ public class CreateJob extends HttpServlet {
 			}
 			
 			
+			
 			// Ensure the job description is valid
 			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
 				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
@@ -375,7 +376,9 @@ public class CreateJob extends HttpServlet {
 			if(perm == null || !perm.canAddJob()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
 			}
-			
+			if (!Util.paramExists(run, request)) {
+				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
+			}
 			if (request.getParameter(run).equals("quickJob")) {
 				if (!Util.paramExists(benchmarks, request)) {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");

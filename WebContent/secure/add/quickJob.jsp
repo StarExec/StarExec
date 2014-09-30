@@ -48,7 +48,7 @@
 
 <jsp:useBean id="now" class="java.util.Date" />
 <star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
-	<input type="hidden" name="benchChoice" value="quickJob" />
+	<input type="hidden" name="runChoice" value="quickJob" />
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>
 		<fieldset id="baseSettings">
@@ -90,7 +90,7 @@
 							<td><input length="${benchNameLen}" id="txtBenchName" name="benchName" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 						</tr>
 						<tr class="noHover" title="are there any additional details that you want to document with the job?">
-							<td class="label"><p>description</p></td>
+							<td class="label"><p>job description</p></td>
 							<td><textarea length="${jobDescLen}" id="txtDesc" name="desc" rows="6" draggable="false"></textarea></td>
 						</tr>
 						<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
