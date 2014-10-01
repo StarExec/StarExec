@@ -1,8 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.servlets.CreateJob,org.apache.log4j.*, org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%	
+	Logger log=Logger.getLogger(CreateJob.class);
+
 	try {		
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
@@ -69,9 +71,11 @@
 			
 		}
 	} catch (NumberFormatException nfe) {
+		log.error(nfe.getMessage(),nfe);
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
 	} catch (Exception e) {
-		e.printStackTrace();
+		
+		log.error(e.getMessage(),e);
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");		
 	}
 %>
