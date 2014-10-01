@@ -44,6 +44,8 @@
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(commId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(commId),ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(commId),ProcessorType.BENCH);
+			ListOfBenchProcessors.add(Processors.getNoTypeProcessor());
+
 			System.out.println("four");
 
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
@@ -134,10 +136,9 @@
 							</td>
 						</tr>
 						<tr class="noHover" title="do you want to extract any attributes from your benchmark?">
-							<td class="label"><p>post processor</p></td>
+							<td class="label"><p>bench processor</p></td>
 							<td>					
 								<select id="benchProcess" name="benchProcess" default="${defaultBPId}">
-									<option value="-1">none</option>
 									<c:forEach var="proc" items="${benchProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>
 									</c:forEach>

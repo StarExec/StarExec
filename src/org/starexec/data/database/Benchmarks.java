@@ -141,32 +141,32 @@ public class Benchmarks {
      * @return True on success and false otherwise
      */
     protected static boolean addAttributeSetToDbIfValid(Connection con, Properties attrs, Benchmark benchmark, Integer statusId) {
-	if(!Benchmarks.isBenchValid(attrs)) {
-	    Uploads.setErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
-					       +benchmark.getName()+" (starexec-valid was not true)."));
-	    return false;
-	}
-
-	// Discard the valid attribute, we don't need it
-	attrs.remove("starexec-valid");
-	log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
-	// For each attribute (key, value)...
-	int count = 0;			
-	for(Entry<Object, Object> keyVal : attrs.entrySet()) {
-	    // Add the attribute to the database
-	    count++;
-	    log.debug("Adding att number " + count + " " 
-		      + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
-	    
-	    if (!Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue())) {
-	    	Uploads.setErrorMessage(statusId, "Problem adding the following attribute-value pair to the db, for benchmark "
-					+benchmark.getId()+": "+(String)keyVal.getKey() + ", " + (String)keyVal.getValue());
-		
-	    	return false;
-	    }
-	}							
-
-	return true;
+		if(!Benchmarks.isBenchValid(attrs)) {
+		    Uploads.setErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
+						       +benchmark.getName()+" (starexec-valid was not true)."));
+		    return false;
+		}
+	
+		// Discard the valid attribute, we don't need it
+		attrs.remove("starexec-valid");
+		log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
+		// For each attribute (key, value)...
+		int count = 0;			
+		for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+		    // Add the attribute to the database
+		    count++;
+		    log.debug("Adding att number " + count + " " 
+			      + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
+		    
+		    if (!Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue())) {
+		    	Uploads.setErrorMessage(statusId, "Problem adding the following attribute-value pair to the db, for benchmark "
+						+benchmark.getId()+": "+(String)keyVal.getKey() + ", " + (String)keyVal.getValue());
+			
+		    	return false;
+		    }
+		}							
+	
+		return true;
     }	
 
 
@@ -276,6 +276,7 @@ public class Benchmarks {
 				log.info(benchmarks.size() + " benchmarks being added to space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
+				log.debug("found the following processor ID for the new benchmark " +p.getId());
 				Common.endTransaction(con);
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
