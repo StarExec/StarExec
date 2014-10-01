@@ -567,13 +567,17 @@ public abstract class JobManager {
 	 * @param SP A mapping of space IDs to space paths for every space in this job, with paths being relative to the space this job is
 	 * being created in. If null, the job will be flat, with every job pair in a single top level job space
 	 */
-	public static void buildJob(Job j, int cpuTimeout, int clockTimeout,long memoryLimit, List<Integer> benchmarkIds, List<Integer> configIds, int spaceId, HashMap<Integer, String> SP) {
+	public static void buildJob(Job j, int cpuTimeout, int clockTimeout,long memoryLimit, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId, HashMap<Integer, String> SP) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
 		// Retrieve all the solvers included in this job
 		List<Solver> solvers = Solvers.getWithConfig(configIds);
-		String spaceName=Spaces.getName(spaceId);
+		String spaceName="job space";
+		String sm=Spaces.getName(spaceId);
+		if (sm!=null) {
+			spaceName=sm;
+		}
 		// Pair up the solvers and benchmarks
 		for(Benchmark bench : benchmarks){
 			for(Solver solver : solvers) {

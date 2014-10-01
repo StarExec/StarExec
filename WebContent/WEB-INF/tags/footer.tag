@@ -16,6 +16,8 @@
 			<li><a id="help" href="/${starexecRoot}/public/help.jsp">Support</a></li>
 			<li>|</li>
 			<li><a id="starexeccommand" href="/${starexecRoot}/public/starexeccommand.jsp">StarExec Command</a></li>
+			<li>|</li>
+			<li><a id="quickjob" href="/${starexecRoot}/secure/add/quickJob.jsp?sid=-1">Quick Job</a></li>
 		</ul>
 	</c:if>
 	<c:if test="${empty user}">

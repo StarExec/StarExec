@@ -55,34 +55,34 @@ public class Benchmarks {
 	 * @throws Exception 
 	 */
     public static int add(Benchmark benchmark, Integer spaceId, Integer statusId) throws Exception{
-	if (Benchmarks.isBenchValid(benchmark.getAttributes())){
+    if (Benchmarks.isBenchValid(benchmark.getAttributes())){
 	    Connection con = null;		
 			
 
 	    try {
-		con = Common.getConnection();
-		Common.beginTransaction(con);
-
-		// Add benchmark to database
-		int benchId = Benchmarks.add(con, benchmark, statusId);
-
-		if(benchId>=0){
-			if (spaceId!=null) {
-				Benchmarks.associate(benchId, spaceId,con);
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+	
+			// Add benchmark to database
+			int benchId = Benchmarks.add(con, benchmark, statusId);
+	
+			if(benchId>=0){
+				if (spaceId!=null) {
+					Benchmarks.associate(benchId, spaceId,con);
+				}
+			    Common.endTransaction(con);
+			    log.debug("bench successfully added");
+						
+			    return benchId;
+			} else {
+			    //will throw exception in calling method
+			    Common.doRollback(con);
+			    return -1;
 			}
-		    Common.endTransaction(con);
-		    log.debug("bench successfully added");
-					
-		    return benchId;
-		} else {
-		    //will throw exception in calling method
-		    Common.doRollback(con);
-		    return -1;
-		}
 	    } catch (Exception e){
-		Common.doRollback(con);
-		log.error(e.getMessage(), e);	
-		throw e;
+			Common.doRollback(con);
+			log.error(e.getMessage(), e);	
+			throw e;
 
 	    } finally {
 	    	Common.safeClose(con);
@@ -202,9 +202,10 @@ public class Benchmarks {
 			benchmark.setId(procedure.getInt(7));
 			log.debug("new bench id is " + benchmark.getId());
 			// If the benchmark is valid according to its processor...
-
-			if (!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId))
+			
+			if (!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId)) {
 			    return -1;
+			}
 
 			log.info("(within internal add method) Added Benchmark " + benchmark.getName());	
 			return benchmark.getId();
@@ -256,13 +257,13 @@ public class Benchmarks {
 	 * The benchmark types are also processed based on the type of the first benchmark only.  This method assumes
 	 * we are not introducing benchmark dependencies.
 	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to
-	 * @return A list of IDs of the new benchmarks if true, and null otherwise
+	 * @param spaceId The space the benchmarks will belong to. If null, they will not be added to any space.
+	 * @return A list of IDs of the new benchmarks if true, and null otherwise.
 	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
 
 	 * @author Tyler Jensen
 	 */
-	public static List<Integer> add(List<Benchmark> benchmarks, int spaceId, int statusId) {
+	public static List<Integer> add(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) {
 		log.info("adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
@@ -297,8 +298,6 @@ public class Benchmarks {
 		}
 		return null;
 	}
-
-	
 
 	/**
 	 * Adds a new attribute to a benchmark
@@ -440,7 +439,7 @@ public class Benchmarks {
 	 * @return
 	 * @throws Exception
 	 */
-	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, int spaceId, Integer statusId) throws Exception {		
+	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws Exception {		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		for(Benchmark b : benchmarks) {

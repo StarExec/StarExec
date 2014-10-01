@@ -8,31 +8,58 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		// Verify this user can add jobs to this space
-		Permission p = SessionUtil.getPermission(request, spaceId);
+		Permission p=null;
+		if (spaceId>0) {
+			p = SessionUtil.getPermission(request, spaceId);
+		}
 		
-		if(!p.canAddJob()) {
+		//having a negative space ID just means that no space was given
+		if(spaceId>0 && !p.canAddJob()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
-			request.setAttribute("space", Spaces.get(spaceId));
+			System.out.println("here");
+			if (spaceId>0) {
+				request.setAttribute("spaceName", Spaces.getName(spaceId));
+			} else {
+				request.setAttribute("spaceName", "job space");
+			}
+			request.setAttribute("spaceId", spaceId);
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 			request.setAttribute("benchNameLen",R.BENCH_NAME_LEN);
-			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
-			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
-			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
-			List<Processor> ListOfBenchProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.BENCH);
+			List<String> listOfDefaultSettings = null;
+			System.out.println("there");
+			int commId=-1;
+			if (spaceId>0) {
+				commId=spaceId;
+				listOfDefaultSettings=Communities.getDefaultSettings(spaceId);
+			} else {
+				List<Integer> comms=Users.getCommunities(userId);
+				//TODO: Allow users to choose and also set up default settings for the entire system
+				if (comms.size()>0) {
+					listOfDefaultSettings=Communities.getDefaultSettings(comms.get(0));
+					commId=comms.get(0);
+				}
+			}
+			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(commId),ProcessorType.POST);
+			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(commId),ProcessorType.PRE);
+			List<Processor> ListOfBenchProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(commId),ProcessorType.BENCH);
+			System.out.println("four");
 
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
-			//This is for the currently shuttered select from hierarchy
-			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
+			System.out.println("five");
+
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
+			System.out.println("six");
+
 			request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
 			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
 			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
 			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
 			request.setAttribute("defaultBPId", listOfDefaultSettings.get(9));
+			System.out.println("seven");
 
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
 			
@@ -42,16 +69,17 @@
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
 	} catch (Exception e) {
+		e.printStackTrace();
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");		
 	}
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
-<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+<star:template title="run quick job" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="runChoice" value="quickJob" />
-		
-		<input type="hidden" name="sid" value="${space.id}"/>
+		<input type="hidden" name="seed" value="0" />
+		<input type="hidden" name="sid" value="${spaceId}"/>
 		<fieldset id="baseSettings">
 			<legend>configure job</legend>
 			<table id="tblConfig" class="shaded contentTbl">
@@ -64,7 +92,7 @@
 				<tbody>
 					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
-						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
+						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${spaceName} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 					</tr>
 					<tr>
 						<td class="label"><p>solver</p></td>
@@ -88,7 +116,7 @@
 					<tbody>
 						<tr class="noHover" title="what name would you like to give this benchmark in StarExec?">
 							<td class="label"><p>benchmark name</p></td>
-							<td><input length="${benchNameLen}" id="txtBenchName" name="benchName" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
+							<td><input length="${benchNameLen}" id="txtBenchName" name="benchName" type="text" value="${spaceName} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 						</tr>
 						<tr class="noHover" title="are there any additional details that you want to document with the job?">
 							<td class="label"><p>job description</p></td>

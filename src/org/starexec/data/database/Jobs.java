@@ -143,8 +143,10 @@ public class Jobs {
 			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
 			
-			//put the job in the space it was created in
-			Jobs.associate(con, job.getId(), spaceId);
+			//put the job in the space it was created in, assuming a space was selected
+			if (spaceId>0) {
+				Jobs.associate(con, job.getId(), spaceId);
+			}
 			
 			log.debug("adding job pairs");
 			

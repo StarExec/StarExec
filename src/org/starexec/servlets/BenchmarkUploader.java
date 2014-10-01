@@ -139,11 +139,14 @@ public class BenchmarkUploader extends HttpServlet {
 	public static Integer addBenchmarkFromText(String benchText,String name, int userId, int typeId,
 			boolean downloadable) {
 		try {
+			log.debug("trying to add benchmark with text = "+benchText+" and name = "+name);
 			File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
 			FileUtils.writeStringToFile(new File(uniqueDir,name), benchText);
 			List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+			log.debug("found this many benchmarks to add from text "+bench.size());
 			//add the benchmark to the database, but don't put it in any spaces
-			return Benchmarks.add(bench.get(0), null, null);
+			
+			return Benchmarks.add(bench, null, null).get(0);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}

@@ -11,8 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.UserSecurity;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Solver;
+
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
@@ -31,6 +30,7 @@ public class Users {
 	 * @param permId The permissions the user should have on the space
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
+	 * @throws Exception 
 	 */
 	protected static boolean associate(Connection con, int userId, int spaceId) throws Exception {
 		CallableStatement procedure= null;
@@ -53,7 +53,8 @@ public class Users {
 	
 	/**
 	 * Gets the user preference for a default dataTables page size
-	 * @param userId
+	 * @param userId The ID of the user having the setting changed
+	 * @param newSize the number of elements in a default table page
 	 * @return
 	 */
 	
@@ -337,6 +338,7 @@ public class Users {
 	 * Gets the number of Users in the whole system
 	 * 
 	 * @author Wyatt Kaiser
+	 * @return The integer number of users in the system
 	 */
 	
 	public static int getCount() {
@@ -1082,6 +1084,7 @@ public class Users {
 	 * Completely deletes a user from the database. Right now, this is only
 	 * being used to delete temporary users created during testing
 	 * @param userIdToDelete The ID of the user to delete
+	 * @param userIdMakingRequest The ID of the user trying to perform the deletion
 	 * @return True on success, false on error
 	 */
 	public static boolean deleteUser(int userIdToDelete, int userIdMakingRequest) {
@@ -1292,5 +1295,31 @@ public class Users {
 	public static boolean reinstate(int userId) {
 		return changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
 	}	
+	
+	/**
+	 * Returns the list of community IDs for every community this user is a part of
+	 * @param userId The ID of the user in question
+	 * @return A list of community IDs for every community this user is a member of
+	 * 
+	 */
+	public static List<Integer> getCommunities(int userId) {
+		
+		try {
+			List<Integer> comms=new ArrayList<Integer>();
+
+			for (Space s : Communities.getAll()) {
+				System.out.println("considering community id = "+s.getId());
+				if (Users.isMemberOfCommunity(userId, s.getId())) {
+					System.out.println("adding user to community id = " + s.getId());
+					comms.add(s.getId());
+				}
+			}
+			
+			return comms;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} 
+		return null;
+	}
 	
 }

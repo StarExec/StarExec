@@ -105,11 +105,8 @@ public class CreateJob extends HttpServlet {
 	 * @return The ID of the new job, or null if there was an error
 	 */
 	public void buildQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
-			int benchId, int sId) {
+			int benchId, Integer sId) {
 		//Setup the job's attributes
-		
-		//the root space for the job. By the time this job is added to the database, it will be changed to a job space ID
-		j.setPrimarySpace(sId);
 		
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
 		List<Integer> configIds = new ArrayList<Integer>();
@@ -119,7 +116,6 @@ public class CreateJob extends HttpServlet {
 		List<Integer> benchmarkIds = new ArrayList<Integer>();
 		benchmarkIds.add(benchId);
 		JobManager.buildJob(j, cpuLimit, wallclockLimit,memoryLimit, benchmarkIds, configIds, sId, null);
-		boolean submitSuccess = Jobs.add(j, sId);
 		
 
 	}
@@ -137,7 +133,7 @@ public class CreateJob extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}		
-
+		
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
 		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
@@ -150,6 +146,7 @@ public class CreateJob extends HttpServlet {
 		
 		//memory is in units of bytes
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
+		
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
@@ -163,27 +160,28 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
 				seed);
-		//the root space for the job. By the time this job is added to the database, it will be changed to a job space ID
-		j.setPrimarySpace(space);
-		//Create the HashMap to be used for creating job-pair path
-		log.debug("started building the new job");
-		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-		log.debug("HASHMAP = " + SP);
+		
+		
 		
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversalMethod = request.getParameter(traversal);
+		HashMap<Integer, String> SP=null;
 		//Depending on our run selection, handle each case differently
 		String error=null;
+		//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 		if (selection.equals("quickJob")) {
 			int solverId=Integer.parseInt(request.getParameter(solver));
 			String benchText=request.getParameter(benchmarks);
 			String bName=request.getParameter(benchName);
 			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
 			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
+			log.debug("new benchmark created for quickJob with id = "+benchId);
 			buildQuickJob(j, cpuLimit, runLimit, memoryLimit, solverId, benchId, space);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
+			//Create the HashMap to be used for creating job-pair path
+			SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 			HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer,List<JobPair>>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
 			log.debug("got all the subspaces for the job");		
@@ -211,7 +209,8 @@ public class CreateJob extends HttpServlet {
 			}
 		} else { //user selected "choose"
 			
-			
+			SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+
 			if (benchMethod.equals("runAllBenchInSpace")) {
 			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, cpuLimit, runLimit, memoryLimit, space, Spaces.getName(space));
 			    if (pairs==null) {
@@ -277,7 +276,11 @@ public class CreateJob extends HttpServlet {
 		    // If the submission was successful, send back to space explorer
 
 			response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
-		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
+			if (!selection.equals("quickJob")) {
+			    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
+			} else {
+				response.sendRedirect(Util.docRoot("secure/details/job.jsp?id="+j.getId()));
+			}
 		}else  {
 		    // Or else send an error
 		    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
@@ -308,6 +311,10 @@ public class CreateJob extends HttpServlet {
 			
 			if(!Validator.isValidDouble(request.getParameter(maxMemory))) {
 				return new ValidatorStatusCode(false, "The given maximum memory needs to be a valid double");
+			}
+			
+			if (!Validator.isValidLong(request.getParameter(randSeed))) {
+				return new ValidatorStatusCode(false, "The random seed needs to be a valid long integer");
 			}
 
 			// If processors are specified, make sure they're valid ints
@@ -364,18 +371,21 @@ public class CreateJob extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
 			}		
 
+			
 			int sid = Integer.parseInt(request.getParameter(spaceId));
 			Permission perm = SessionUtil.getPermission(request, sid);
-			log.debug("this is the perm");
-			log.debug(perm);
 			// Make sure the user has access to the space
-			if(perm == null || !perm.canAddJob()) {
-				return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
-			}
+			
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
 			}
 			if (request.getParameter(run).equals("quickJob")) {
+				//we only need to check to see if the space is valid if a space was actually specified
+				if (sid>=0) {
+					if(perm == null || !perm.canAddJob()) {
+						return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
+					}
+				}
 				if (!Util.paramExists(benchmarks, request)) {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
 				}
@@ -388,10 +398,14 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
 				}
 
-				// Only need these checks if we're choosing which solvers and benchmarks to run.
-				// In any other case, we automatically get them so we don't have to pass them
-				// as part of the request.
-			} else if (request.getParameter(run).equals("choose")) {
+				
+			}
+				
+				
+			// Only need these checks if we're choosing which solvers and benchmarks to run.
+			// In any other case, we automatically get them so we don't have to pass them
+			// as part of the request.
+			if (request.getParameter(run).equals("choose")) {
 
 				// Check to see if we have a valid list of benchmark ids
 				if (!request.getParameter(benchChoice).equals("runAllBenchInHierarchy")){
