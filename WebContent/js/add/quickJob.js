@@ -1,6 +1,6 @@
 
 var defaultPPId = 0;
-
+var dialog=null;
 
 
 $(document).ready(function(){
@@ -10,6 +10,7 @@ $(document).ready(function(){
 	
 	$('#radioNoPause').attr('checked','checked');
 	populateDefaults();
+	
 	
 
 });
@@ -90,6 +91,10 @@ function attachFormValidation(){
 				minlength: 1,
 				maxlength: $("#txtBenchName").attr("length"),
 				regex : getPrimNameRegex()
+			},
+			bench: {
+				required:true,
+				minlength :1
 			}
 		},
 		messages: {
@@ -104,6 +109,10 @@ function attachFormValidation(){
 				minlength: "1 character minimum",
 				maxlength: $("#txtBenchName").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
+			},
+			bench: {
+				required: "enter a benchmark",
+				minlength: "1 character minimum"
 			},
 			desc: {
 				required: "enter a job description",
@@ -160,11 +169,34 @@ function attachFormValidation(){
 
 		
 	});
+	
+	$("#useSolver").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	$("#useSolver").click(function(e) {
+		useSelectedSolver();
+		e.preventDefault();
+	});
 };
+
+function useSelectedSolver() {
+	selection=$("#solverList").find("tr.row_selected");
+	//nothing is selected
+	if (selection.length==0) {
+		return;
+	}
+	name=$(selection).find("td:first").text();
+	id=$(selection).find("td:nth-child(2)").text();
+	setInputToValue("#solver",id);
+
+	$("#solver").siblings("p").children("#solverNameSpan").text(name);
+
+}
 
 function setInputToValue(inputSelector, value) {
 	$(inputSelector).attr("value",value);
-	$(inputSelector+" p").text(value);
 }
 
 /**
@@ -178,6 +210,8 @@ function populateDefaults() {
 	clockTimeout=$(profile).find("span.clockTimeout").attr("value");
 	maxMemory=$(profile).find("span.maxMemory").attr("value");
 	solverId=$(profile).find("span.solverId").attr("value");
+	solverName=$(profile).find("span.solverName").attr("value");
+
 	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
 	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
 	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
@@ -185,12 +219,10 @@ function populateDefaults() {
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
 	setInputToValue("#solver",solverId);
+	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
 	$("#preProcess").val(preProcessorId);
 	$("#postProcess").val(postProcessorId);
 	$("#benchProcess").val(benchProcessorId);
-
-	
-
 }
 
 /**
@@ -239,6 +271,7 @@ function initUI() {
 		history.back(-1);
 	});
 	$("#advancedSettings").expandable(true);
+	$("#solverField").expandable(true);
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
@@ -252,4 +285,22 @@ function initUI() {
 		populateDefaults();
 	});
 
+    $("#solverList").dataTable({ 
+		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"iDisplayStart"	: 0,
+		"iDisplayLength": defaultPageSize
+	});
+    
+    $("#solverList").on("mousedown", "tr",function() {
+		if ($(this).hasClass("row_selected")) {
+			$(this).removeClass("row_selected");
+		} else {
+			unselectAll();
+			$(this).addClass("row_selected");
+		}
+	});
 }
+function unselectAll() {
+	$("#solverList").find("tr").removeClass("row_selected");
+}
+

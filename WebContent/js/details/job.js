@@ -22,6 +22,8 @@ $(document).ready(function(){
 		refreshPanels();
 	},30000);
 	
+	
+	
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
 });

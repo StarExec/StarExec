@@ -1,5 +1,6 @@
 package org.starexec.data.to;
 
+import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
 
 public class DefaultSettings {
@@ -14,6 +15,7 @@ public class DefaultSettings {
 	private boolean dependenciesEnabled;
 	private String name;
 	private int tempId;
+	private String solverName;
 
 	/**
 	 * Initializes a new DefaultSettings object with every field set to the system default.
@@ -98,5 +100,16 @@ public class DefaultSettings {
 	}
 	public int getTempId() {
 		return tempId;
+	}
+	
+	public String getSolverName() {
+		if (solverId==null) {
+			return "None";
+		}
+		Solver s=Solvers.get(solverId);
+		if (s==null) {
+			return "None";
+		}
+		return s.getName();
 	}
 }

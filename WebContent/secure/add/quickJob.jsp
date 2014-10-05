@@ -43,18 +43,19 @@
 				}
 				commId=comms.get(0);
 			}
+			
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
+			List<Solver> listOfSolvers = Solvers.getByUser(userId);
 			ListOfBenchProcessors.add(Processors.getNoTypeProcessor());
 
-			//todo: this all needs to be redone using the list of default settings thing above
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
 
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
-
+			request.setAttribute("solvers",listOfSolvers);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);
 		}
 	} catch (NumberFormatException nfe) {
@@ -75,6 +76,8 @@
 			<span class="clockTimeout" value="${setting.wallclockTimeout}"/>
 			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"/>
 			<span class="solverId" value="${setting.solverId}"/>
+			<span class="solverName" value="${setting.getSolverName()}"/>
+			
 			<span class="preProcessorId" value="${setting.preProcessorId}"/>
 			<span class="postProcessorId" value="${setting.postProcessorId}"/>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"/>
@@ -113,9 +116,9 @@
 						<td class="label"><p>job name</p></td>
 						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${spaceName} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
 					</tr>
-					<tr>
+					<tr class="noHover" title="what solver would you like to run during this job?">
 						<td class="label"><p>solver</p></td>
-						<td><input id="solver" type="hidden" name="solver"/><p></p></td>
+						<td><input id="solver" type="hidden" name="solver"/><p><span id="solverNameSpan"></span></td>
 					</tr>
 					<tr class="noHover" title="what benchmark would you like to use?">
 						<td>benchmark selection</td>
@@ -219,9 +222,34 @@
 				</table>
 			
 		</fieldset>
-		<div id="actionBar">
-			<button type="submit" class="round" id="btnDone">submit</button>			
-			<button type="button" class="round" id="btnBack">Cancel</button>			
-		</div>			
+		<fieldset id="solverField">
+			<legend>solvers</legend>
+			<table id="solverList">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>id</th>
+					</tr>
+				</thead>
+				<tbody>
+				<c:forEach var="solver" items="${solvers}">
+					<tr>
+						<td>${solver.name}</td>
+						<td>${solver.id}</td>
+					</tr>
+					
+				</c:forEach>
+			</tbody>
+			</table>
+			<button id="useSolver">use selected solver</button>
+		</fieldset>
+		<fieldset id="actionField">
+			<legend>actions</legend>
+			<div id="actionBar">
+				<button type="submit" class="round" id="btnDone">submit</button>			
+				<button type="button" class="round" id="btnBack">Cancel</button>			
+			</div>	
+		</fieldset>		
 	</form>		
+	
 </star:template>

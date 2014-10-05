@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -721,6 +722,32 @@ public class Solvers {
 	}
 	
 	/**
+	 * Retrieves a list of every solver the given user is allowed to use. Used for quick jobs.
+	 * @param userId
+	 * @return
+	 */
+	public static List<Solver> getByUser(int userId) {
+		try {
+			//will stores solvers according to their IDs
+			HashMap<Integer,Solver> uniqueSolvers=new HashMap<Integer,Solver>();
+			List<Solver> solvers=getByOwner(userId);
+			solvers.addAll(Solvers.getPublicSolvers());
+			//remove duplicates using a hash map
+			for (Solver s : solvers) {
+				uniqueSolvers.put(s.getId(), s);
+			}
+			solvers=new ArrayList<Solver>();
+			for (Solver s : uniqueSolvers.values()) {
+				solvers.add(s);
+			}
+			return solvers;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+	}
+	
+	/**
 	 * Returns a list of solvers owned by a given user
 	 * 
 	 * @param userId the id of the user who is the owner of the solvers we are to retrieve
@@ -1064,6 +1091,8 @@ public class Solvers {
 	 * @return a list of all solvers that reside in a public space
 	 * @author Benton McCune
 	 */
+	
+	//TODO: This does not currently return community default solvers
 	public static List<Solver> getPublicSolvers(){
 		Connection con = null;	
 		CallableStatement procedure = null;
