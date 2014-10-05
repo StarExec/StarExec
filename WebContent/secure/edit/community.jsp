@@ -28,22 +28,22 @@
 		} else if (perm == null || !perm.isLeader()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 		} else {
-			List<String> listOfDefaultSettings = Communities.getDefaultSettings(id);
+			DefaultSettings settings = Communities.getDefaultSettings(id);
 
 		request.setAttribute("com", com);	
 		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
 		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
 		request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
-		request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
-		request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
-		request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
-		request.setAttribute("defaultBPId", listOfDefaultSettings.get(4));
+		request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
+		request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
+		request.setAttribute("defaultPPId", settings.getPostProcessorId());
+		request.setAttribute("defaultBPId", settings.getBenchProcessorId());
 
-		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(9));
-		request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
-		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
+		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
+		request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
+		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
 		try {
-			Benchmark bench=Benchmarks.get(Integer.parseInt(listOfDefaultSettings.get(6)));
+			Benchmark bench=Benchmarks.get(settings.getBenchId());
 			if (bench!=null) {
 				request.setAttribute("defaultBenchmark", bench.getName());
 			} else {
@@ -53,7 +53,7 @@
 			request.setAttribute("defaultBenchmark", "none specified");
 		}
 		try {
-			Solver solver = Solvers.get(Integer.parseInt(listOfDefaultSettings.get(8)));
+			Solver solver = Solvers.get(settings.getSolverId());
 			if (solver!=null) {
 				request.setAttribute("defaultSolver",solver.getName());
 			} else {

@@ -1308,9 +1308,7 @@ public class Users {
 			List<Integer> comms=new ArrayList<Integer>();
 
 			for (Space s : Communities.getAll()) {
-				System.out.println("considering community id = "+s.getId());
 				if (Users.isMemberOfCommunity(userId, s.getId())) {
-					System.out.println("adding user to community id = " + s.getId());
 					comms.add(s.getId());
 				}
 			}

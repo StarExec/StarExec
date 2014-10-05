@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Space;
 
 /**
@@ -363,23 +364,20 @@ public class Communities {
  
 	
 	public static int getDefaultCpuTimeout(int id) {
-		List<String> settings= getDefaultSettings(id);
-		return (Integer.parseInt(settings.get(2)));
+		return getDefaultSettings(id).getCpuTimeout();
 	}
 	
 	public static int getDefaultWallclockTimeout(int id) {
-		List<String> settings= getDefaultSettings(id);
-		return (Integer.parseInt(settings.get(3)));
+		return getDefaultSettings(id).getWallclockTimeout();
 	}
 	
 	public static int getDefaultPostProcessorId(int id) {
-		List<String> settings= getDefaultSettings(id);
-		return (Integer.parseInt(settings.get(4)));
+		return getDefaultSettings(id).getPostProcessorId();
 	}
 	
 	public static long getDefaultMaxMemory(int id) {
-		List<String> settings= getDefaultSettings(id);
-		return (Long.parseLong(settings.get(7)));
+		return getDefaultSettings(id).getMaxMemory();
+		
 	}
 	
 	
@@ -388,21 +386,13 @@ public class Communities {
 	 * If the default settings do not already exist, they are initialized to default values and returned
 	 * 
 	 * @param id the space id of the community
-	 * @return a list of string containing the default settings with the following values
-	 * index 1 = pre processor id
-	 * index 2 = cpu timeout
-	 * index 3 = wallclock timeout
-	 * index 4 = post processor id
-	 * index 5 = dependencies enabled boolean
-	 * index 6 = default benchmark id
-	 * index 7 = maximum memory (in bytes)
-	 * index 8 = default solver ID
-	 * index 9 = bench processor ID
+	 * @return DefaultSettings object 
 	 * @author Ruoyu Zhang
 	 */
-	public static List<String> getDefaultSettings(int id) {
+	public static DefaultSettings getDefaultSettings(int id) {
 		Connection con = null;			
-		List<String> listOfDefaultSettings = Arrays.asList("id","0","1","1","0","0","0","1073741824","0","0");
+		//List<String> listOfDefaultSettings = Arrays.asList("id","0","1","1","0","0","0","1073741824","0","0");
+		DefaultSettings settings=new DefaultSettings();
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -426,28 +416,30 @@ public class Communities {
 			}
 			
 			if(results.next()){
-				listOfDefaultSettings.set(1, results.getString("pre_processor"));
-				listOfDefaultSettings.set(2, results.getString("cpu_timeout"));
-				listOfDefaultSettings.set(3, results.getString("clock_timeout"));
-				listOfDefaultSettings.set(4, results.getString("post_processor"));
-				listOfDefaultSettings.set(5, results.getString("dependencies_enabled"));
-				listOfDefaultSettings.set(6, results.getString("default_benchmark"));
-				listOfDefaultSettings.set(7,results.getString("maximum_memory"));
-				listOfDefaultSettings.set(8,results.getString("default_solver"));
-				listOfDefaultSettings.set(0,results.getString("bench_processor"));
+				settings.setPreProcessorId(results.getInt("pre_processor"));
+				settings.setWallclockTimeout(results.getInt("clock_timeout"));
+				settings.setCpuTimeout(results.getInt("cpu_timeout"));
+				settings.setPostProcessorId(results.getInt("post_processor"));
+				settings.setDependenciesEnabled(results.getBoolean("dependencies_enabled"));
+				settings.setBenchId(results.getInt("default_benchmark"));
+				settings.setSolverId(results.getInt("default_solver"));
+				settings.setBenchProcessorId(results.getInt("bench_processor"));
+				settings.setMaxMemory(results.getLong("maximum_memory"));
+				settings.setName(Spaces.getName(id));
 			}
 			else {
-			        Common.safeClose(procedure);
-				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?,?,?)}");
+			    Common.safeClose(procedure);
+				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?,?,?,?)}");
 				procedure.setInt(1, community);
-				procedure.setInt(2, 1);
-				procedure.setInt(3, 10);
-				procedure.setInt(4, 10);
-				procedure.setInt(5, 0);
-				procedure.setObject(6, null);
-				procedure.setLong(7,1073741824); //memory initialized to 1 gigabyte
-				procedure.setObject(8,null);
-				procedure.setInt(9, 1);
+				procedure.setObject(2, settings.getPostProcessorId());
+				procedure.setInt(3, settings.getCpuTimeout());
+				procedure.setInt(4, settings.getWallclockTimeout());
+				procedure.setBoolean(5, settings.isDependenciesEnabled());
+				procedure.setObject(6, settings.getBenchId());
+				procedure.setLong(7,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+				procedure.setObject(8,settings.getSolverId());
+				procedure.setObject(9, settings.getBenchProcessorId());
+				procedure.setObject(10,settings.getPreProcessorId());
 				procedure.executeUpdate();
 			}
 		} catch (Exception e){			
@@ -458,7 +450,7 @@ public class Communities {
 			Common.safeClose(results);
 		}
 		
-		return listOfDefaultSettings;
+		return settings;
 	}
 	
 	/**

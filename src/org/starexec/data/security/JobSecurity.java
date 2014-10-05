@@ -13,6 +13,7 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Processor;
@@ -291,10 +292,10 @@ public class JobSecurity {
 			if (!Users.isMemberOfCommunity(userId, Spaces.getCommunityOfSpace(sId))) {
 				return new ValidatorStatusCode(false, "You are not a member of the community in which you are trying to create a job");
 			}
-			List<String> defaultSettings=Communities.getDefaultSettings(sId);
+			DefaultSettings settings=Communities.getDefaultSettings(sId);
 			
-			int benchId=Integer.parseInt(defaultSettings.get(6));
-			if (Benchmarks.get(benchId)==null) {
+			
+			if (Benchmarks.get(settings.getBenchId())==null) {
 				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 			}
 			if (!Validator.isValidJobName(name)) {

@@ -1,5 +1,5 @@
 #benchmarkField {
-	width:100%;
+	width:96%;
 	height: 300px;
 }
 
@@ -20,6 +20,7 @@
 	width: 200px;
 }
 #content fieldset {
-	width: 600px;
+	width: 700px;
 	margin: 50px auto 50px auto;	
 }
+

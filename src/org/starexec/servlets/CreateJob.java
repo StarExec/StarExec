@@ -397,7 +397,10 @@ public class CreateJob extends HttpServlet {
 				if (!Permissions.canUserSeeSolver(solverId, userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
 				}
-
+				
+				if (Solvers.getConfigsForSolver(solverId).size()==0) {
+					return new ValidatorStatusCode(false, "The given solver does not have any configurations");
+				}
 				
 			}
 				
