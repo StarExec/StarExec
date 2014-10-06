@@ -57,6 +57,11 @@ function attachFormValidation(){
 	
 	// Set up form validation
 	$("#addForm").validate({
+		submitHandler: function(form) {
+ 			createDialog("Creating your job, please wait. This will take some time for large jobs.");
+
+			form.submit();
+		},
 		rules: {
 			name: {
 				required: true,
@@ -270,16 +275,20 @@ function initUI() {
 		
 		history.back(-1);
 	});
+	
+	
+	$("#btnSave").button({
+		icons: {
+			primary: "ui-icon-disk"
+		}
+	});
 	$("#advancedSettings").expandable(true);
 	$("#solverField").expandable(true);
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
 		}
-    }).click(function(){
-
- 		createDialog("Creating your job, please wait. This will take some time for large jobs.");
-    });
+    })
     
     $("#settingProfile").change(function() {
 		populateDefaults();
