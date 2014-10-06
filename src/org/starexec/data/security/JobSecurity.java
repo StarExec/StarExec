@@ -25,6 +25,20 @@ import org.starexec.util.Validator;
 public class JobSecurity {
 	
 	
+	public static ValidatorStatusCode canUserRecompileJob(int jobId, int userId) {
+		if (!Users.isAdmin(userId)) {
+			return new ValidatorStatusCode(false, "Only administrators can perform this action");
+			
+		}
+		
+		Job j=Jobs.get(jobId);
+		if (j==null) {
+			return new ValidatorStatusCode(false, "The given job could not be found");
+		}
+		
+		return new ValidatorStatusCode(true);
+	}
+	
 	/**
 	 * Checks to see if the given user has permission to see the details of the given job
 	 * @param jobId The ID of the job being checked

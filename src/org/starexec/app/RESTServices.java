@@ -100,6 +100,29 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
 	private static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
 	
+	
+	/**
+	 * Recompiles all the job spaces for the given job
+	 * @param jobId ID of the job to recompile
+	 * @param request
+	 * @return ValidatorStatusCode with true on success and false otherwise
+	 */
+	@GET
+	@Path("/recompile/{jobid}")
+	@Produces("application/json")	
+	public String recompileJobSpaces(@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
+		int userId = SessionUtil.getUserId(request);
+		
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		boolean success=Jobs.recompileJobSpaces(jobId);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "recompilation successful")) :  gson.toJson(ERROR_DATABASE);
+	}
+	
+	
+	
 	/**
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id

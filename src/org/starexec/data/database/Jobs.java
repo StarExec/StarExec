@@ -96,26 +96,18 @@ public class Jobs {
 	} 
 	
 	/**
-	 * Adds a new job to the database. NOTE: This only records the job in the 
-	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
-	 * This method also fills in the IDs of job pairs of the given job object.
-	 * @param job The job data to add to the database
-	 * @param spaceId The id of the space to add the job to
-	 * @return True if the operation was successful, false otherwise.
+	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
+	 * they must all be rooted at the same space. Upon return, each pair will have its job space id set
+	 * to the correct job space
+	 * @param pairs The list of pairs to make paths for
+	 * @param con The open connection to make calls on
+	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 */
-	public static boolean add(Job job, int spaceId) {
-		Connection con = null;
-		PreparedStatement procedure=null;
-		try {			
-			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
-			con = Common.getConnection();
-			
-			Common.beginTransaction(con);
-			//todo: creating these job spaces needs to be a function
-			// maps depth to name to job space id for job spaces
+	public static Integer createJobSpacesForPairs(List<JobPair> pairs, Connection con) {
+		try {
 			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
 			String topLevel="";
-			for (JobPair pair : job) {
+			for (JobPair pair : pairs) {
 				log.debug("adding a new pair with path = " +pair.getPath());
 				String[] spaces=getSpaceNames(pair.getPath());
 				StringBuilder curPathBuilder=new StringBuilder();
@@ -140,10 +132,64 @@ public class Jobs {
 				}
 				pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
 			}
+			return pathsToIds.get(topLevel);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Makes all new job spaces for the given job and moves all the pairs over to the new spaces.
+	 * Useful if the job spaces for the given job were somehow corrupted, but path information for the
+	 * pairs is correct
+	 * @param jobId The ID of the job to fix
+	 * @return True on success and false otherwise
+	 */
+	public static boolean recompileJobSpaces(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			Common.beginTransaction(con);
+
+			Job j=Jobs.getDetailed(jobId);
+			int topLevel=createJobSpacesForPairs(j.getJobPairs(),con);
+			Jobs.updatePrimarySpace(jobId, topLevel,con);
+			JobPairs.updateJobSpaces(j.getJobPairs(),con);
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e) {
+			Common.doRollback(con);
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	/**
+	 * Adds a new job to the database. NOTE: This only records the job in the 
+	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
+	 * This method also fills in the IDs of job pairs of the given job object.
+	 * @param job The job data to add to the database
+	 * @param spaceId The id of the space to add the job to
+	 * @return True if the operation was successful, false otherwise.
+	 */
+	public static boolean add(Job job, int spaceId) {
+		Connection con = null;
+		PreparedStatement procedure=null;
+		try {			
+			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
+			con = Common.getConnection();
+			
+			Common.beginTransaction(con);
+			//todo: creating these job spaces needs to be a function
+			// maps depth to name to job space id for job spaces
+			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(pathsToIds.get(topLevel));
+			job.setPrimarySpace(topLevel);
 			
 			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
@@ -3848,7 +3894,7 @@ public class Jobs {
 				Spaces.updateJobSpaceClosureTable(id);
 			}
 			log.debug("setupjobpairs-- done looking at pairs, updating the database");
-			JobPairs.UpdateJobSpaces(p);
+			JobPairs.updateJobSpaces(p);
 			updatePrimarySpace(jobId,primarySpaceId);
 			log.debug("returning new job space id = "+primarySpaceId);
 			return primarySpaceId;
@@ -3864,27 +3910,47 @@ public class Jobs {
 	 * of an older job from nothing to its new job space
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The new job space ID
+	 * @param con the open connection to make the call on
+	 * @return true on success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	private static boolean updatePrimarySpace(int jobId, int jobSpaceId, Connection con) {
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
+			procedure.setInt(1, jobId);		
+			procedure.setInt(2, jobSpaceId);
+			procedure.executeUpdate();	
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+		
+	}
+	
+	/**
+	 * Updates the primary space of a job. This should only be necessary when changing the primary space
+	 * of an older job from nothing to its new job space
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The new job space ID
 	 * @return true on success, false otherwise
 	 * @author Eric Burns
 	 */
 	
 	private static boolean updatePrimarySpace(int jobId, int jobSpaceId) {
 		Connection con=null;
-		CallableStatement procedure = null;
 		try {
 			con=Common.getConnection();
-			 procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
-			procedure.setInt(1, jobId);		
-			procedure.setInt(2, jobSpaceId);
-			procedure.executeUpdate();	
-
-			log.debug("Primary space for job with id = "+jobId + " updated succesfully");
-			return true;
+			return updatePrimarySpace(jobId, jobSpaceId, con);
+			
 		} catch (Exception e) {
 			log.error("Update Primary Space says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}
 		return false;
 	}
