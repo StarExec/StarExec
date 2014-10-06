@@ -111,35 +111,40 @@ public class Jobs {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
+			//todo: creating these job spaces needs to be a function
 			// maps depth to name to job space id for job spaces
-			HashMap<Integer,HashMap<String,Integer>> neededSpaces=new HashMap<Integer,HashMap<String,Integer>>();
+			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
+			String topLevel="";
 			for (JobPair pair : job) {
 				log.debug("adding a new pair with path = " +pair.getPath());
 				String[] spaces=getSpaceNames(pair.getPath());
+				StringBuilder curPathBuilder=new StringBuilder();
 				for (int i=0;i<spaces.length;i++) {
 					String name=spaces[i];
-					if (!neededSpaces.containsKey(i)) {
-						neededSpaces.put(i, new HashMap<String,Integer>());
+					curPathBuilder.append("/");
+					curPathBuilder.append(name);
+					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
+						topLevel=curPathBuilder.toString(); 
 					}
-					HashMap<String,Integer> depthMap=neededSpaces.get(i);
-					//this job space needs to be created
-					if (!depthMap.containsKey(name)) {
-						depthMap.put(name, Spaces.addJobSpace(name,con));
-						//associate with a parent
-						if (i>0) {
-							Spaces.associateJobSpaces(neededSpaces.get(i-1).get(spaces[i-1]), depthMap.get(name), con);
+					//if we need to create a new space
+					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
+						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
+						//associate the new space to its parent
+						String parentPath=curPathBuilder.toString();
+						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
+						if (parentPath.length()>0) {
+							Spaces.associateJobSpaces(pathsToIds.get(parentPath), pathsToIds.get(curPathBuilder.toString()));
 						}
 					}
+					
 				}
-				pair.setJobSpaceId(neededSpaces.get(spaces.length-1).get(spaces[spaces.length-1]));
+				pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
 			}
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(neededSpaces.get(0).values().iterator().next());
-			if (neededSpaces.get(0).size()>1) {
-				log.warn("a job was created that has more than one top level space!");
-			}
+			job.setPrimarySpace(pathsToIds.get(topLevel));
+			
 			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
 			
