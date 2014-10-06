@@ -1,5 +1,6 @@
 package org.starexec.data.to;
 
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
 
@@ -15,7 +16,6 @@ public class DefaultSettings {
 	private boolean dependenciesEnabled;
 	private String name;
 	private int tempId;
-	private String solverName;
 
 	/**
 	 * Initializes a new DefaultSettings object with every field set to the system default.
@@ -30,7 +30,7 @@ public class DefaultSettings {
 		preProcessorId=null;
 		name="settings";
 		dependenciesEnabled=false;
-		benchProcessorId=null;
+		benchProcessorId=Processors.getNoTypeProcessor().getId();
 	}
 	public void setPreProcessorId(int preProcessorId) {
 		this.preProcessorId = preProcessorId;

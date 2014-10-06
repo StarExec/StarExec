@@ -1,5 +1,4 @@
 
-var defaultPPId = 0;
 var dialog=null;
 
 
@@ -100,6 +99,9 @@ function attachFormValidation(){
 			bench: {
 				required:true,
 				minlength :1
+			},
+			benchProcess: {
+				required: true
 			}
 		},
 		messages: {
@@ -140,6 +142,9 @@ function attachFormValidation(){
 			},
 			queue: {
 				required: "error - no worker queues"
+			},
+			benchProcess:  {
+				required: "choose a benchmark processor"
 			}
 		}
 	});
@@ -235,38 +240,9 @@ function populateDefaults() {
  */
 function initUI() {
 	
-	// Set the selected post processor to be the default one
+	//there must be some bench processor selected, so make sure we are using one
+	$("#benchProcess").find("option").first().attr("selected","selected");
 	
-	defaultPPId = $('#postProcess').attr('default');
-	defaultBPId = $('#benchProcess').attr("default");
-	if (stringExists(defaultPPId)) {
-		$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
-	}
-	
-	if (stringExists(defaultBPId)) {
-		$('#benchProcess option[value=' + defaultBPId + ']').attr('selected', 'selected');
-
-	}
-	
-	//If there is only one post processor and for some reason it is not the default, set it as such
-	if ($("#postProcess").find("option").length==2) {
-		$("#postProcess").find("option").last().attr("selected","selected");
-	}
-	
-	//do the same for bench processors
-	if ($("#benchProcess").find("option").length==2) {
-		$("#benchProcess").find("option").last().attr("selected","selected");
-	}
-	
-	defaultPPId = $('#preProcess').attr('default');
-	if (stringExists(defaultPPId)) {
-		$('#preProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
-	}
-	
-	//If there is only one pre processor and for some reason it is not the default, set it as such
-	if ($("#preProcess").find("option").length==2) {
-		$("#preProcess").find("option").last().attr("selected","selected");
-	}
 	
 	$('#btnBack').button({
 		icons: {

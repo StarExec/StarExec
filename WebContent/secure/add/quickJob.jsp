@@ -148,8 +148,8 @@
 						<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 							<td class="label"><p>pre processor</p></td>
 							<td>					
-								<select id="preProcess" name="preProcess">
-									<option value="-1">none</option>
+								<select id="preProcess" name="preProcess"">
+									<option value="-1" selected="selected">none</option>
 									<c:forEach var="proc" items="${preProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>
 									</c:forEach>
@@ -171,7 +171,7 @@
 							<td class="label"><p>post processor</p></td>
 							<td>					
 								<select id="postProcess" name="postProcess">
-									<option value="-1">none</option>
+									<option value="-1" selected="selected">none</option>
 									<c:forEach var="proc" items="${postProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>
 									</c:forEach>
@@ -247,7 +247,8 @@
 			<legend>actions</legend>
 			<div id="actionBar">
 				<button type="submit" class="round" id="btnDone">submit</button>			
-				<button type="button" class="round" id="btnBack">Cancel</button>			
+				<button type="button" class="round" id="btnBack">cancel</button>	
+				<button type="button" class="round" id="btnSave">save profile</button>		
 			</div>	
 		</fieldset>		
 	</form>		
