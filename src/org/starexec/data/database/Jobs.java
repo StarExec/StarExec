@@ -133,7 +133,7 @@ public class Jobs {
 						String parentPath=curPathBuilder.toString();
 						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
 						if (parentPath.length()>0) {
-							Spaces.associateJobSpaces(pathsToIds.get(parentPath), pathsToIds.get(curPathBuilder.toString()));
+							Spaces.associateJobSpaces(pathsToIds.get(parentPath), pathsToIds.get(curPathBuilder.toString()),con);
 						}
 					}
 					
