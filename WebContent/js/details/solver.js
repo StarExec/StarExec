@@ -56,10 +56,10 @@ function initUI(){
 		}
     });
 	
-	//Warn if solver is uploaded without configuration
-	var flag = window.location.search.split('flag=')[1]; //Check to see if flag was set
-	if (flag == 'true') {
-		$('#dialog-warning-txt').text('WARNING: No Configurations.');
+	//Warn if there was some error during upload (no configs, running test job failed).
+	var msg = getParameterByName("msg");
+	if (stringExists(msg)) {
+		$('#dialog-warning-txt').text(msg);
 		
 		$('#dialog-warning').dialog({
 			modal: true,

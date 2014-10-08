@@ -294,7 +294,16 @@ public class JobSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int solverId, int sId, String name, String desc, int queueId) {
+	/**
+	 * Checks to see whether a job can be run with community default settings in the given space
+	 * @param userId ID of the user creating the job
+	 * @param solverId ID of the solver being used
+	 * @param sId Id of the space to put the job in
+	 * @param name Name of the new job
+	 * @param desc Description for the new job
+	 * @return
+	 */
+	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int solverId, int sId, String name, String desc) {
 			
 			if (!Permissions.canUserSeeSolver(solverId, userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to use the given solver");
@@ -319,9 +328,6 @@ public class JobSecurity {
 				return new ValidatorStatusCode(false, "The given description is not valid-- please refer to the help files to see the proper format");
 
 			}
-			
-			
-			return QueueSecurity.canUserSubmitToQueue(userId, queueId, sId);
-		
+			return new ValidatorStatusCode(true);
 	}
 }

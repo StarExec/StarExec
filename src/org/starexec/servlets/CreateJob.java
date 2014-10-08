@@ -26,6 +26,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
@@ -104,7 +105,7 @@ public class CreateJob extends HttpServlet {
 	 * @param sId The ID of the space to put the job in 
 	 * @return The ID of the new job, or null if there was an error
 	 */
-	public void buildQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
+	public static void buildQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
 			int benchId, Integer sId) {
 		//Setup the job's attributes
 		
@@ -116,8 +117,31 @@ public class CreateJob extends HttpServlet {
 		List<Integer> benchmarkIds = new ArrayList<Integer>();
 		benchmarkIds.add(benchId);
 		JobManager.buildJob(j, cpuLimit, wallclockLimit,memoryLimit, benchmarkIds, configIds, sId, null);
+	}
+	/**
+	 * Tests a solver using default info for the space it is being uploaded in
+	 * @param solverId
+	 * @param spaceId
+	 * @return The ID of the job that was newly created, or -1 on error
+	 */
+	public static int buildSolverTestJob(int solverId, int spaceId, int userId) {
+		Solver s=Solvers.get(solverId);
+		DefaultSettings settings=Communities.getDefaultSettings(spaceId);
+		Job j = JobManager.setupJob(
+				userId,
+				s.getName(), 
+				"",
+				settings.getPreProcessorId(),
+				settings.getPostProcessorId(), 
+				1, //TODO queue?
+				0);
 		
-
+		buildQuickJob(j, settings.getCpuTimeout(), settings.getWallclockTimeout(), settings.getMaxMemory(), solverId, settings.getBenchId(), spaceId);
+		boolean submitSuccess = Jobs.add(j, spaceId);
+		if (submitSuccess) {
+			return j.getId();
+		}
+		return -1; //error
 	}
 
 	/**
