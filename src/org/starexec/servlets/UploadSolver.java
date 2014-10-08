@@ -86,8 +86,8 @@ public class UploadSolver extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,status.getMessage());
 					return;
 				}
+				boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
 				
-				boolean runTestJob=Boolean.parseBoolean(request.getParameter(RUN_TEST_JOB));
 				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
