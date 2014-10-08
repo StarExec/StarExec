@@ -104,7 +104,7 @@ public class UploadSolver extends HttpServlet {
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
 						if (runTestJob) {
-							
+							log.debug("attempting to run test job");
 							
 							ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, return_value, spaceId, "test", "");
 							if (testJobStatus.isSuccess()) {
