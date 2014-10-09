@@ -15,7 +15,7 @@
 	}
 %>
 
-<star:template title="run diagnostic tests" js="admin/testing, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, admin/testing">	
+<star:template title="run diagnostic tests" js="admin/testing, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, admin/testing">	
 		<fieldset id="fieldTable">
 			<legend>Existing Tests</legend>
 			<table id="tableTests" class="shaded contentTbl">

@@ -22,7 +22,7 @@ try {
 }
 %>
 
-<star:template title="process benchmarks" css="common/delaySpinner, common/table, edit/processBenchmarks, edit/shared" js="jquery.cookie.js, common/delaySpinner, lib/jquery.validate.min, edit/processBenchmarks ">
+<star:template title="process benchmarks" css="common/delaySpinner, common/table, edit/processBenchmarks, edit/shared" js=" common/delaySpinner, lib/jquery.validate.min, edit/processBenchmarks ">
 	
 	<form id="processBenchForm" method="post" action="/${starexecRoot}/secure/process/benchmarks">
 	<input type="hidden" name="sid" id="sid" value="${sid}"/>

@@ -221,7 +221,8 @@ function populateDefaults() {
 	maxMemory=$(profile).find("span.maxMemory").attr("value");
 	solverId=$(profile).find("span.solverId").attr("value");
 	solverName=$(profile).find("span.solverName").attr("value");
-
+	benchContents=$(profile).find("span.benchContents").attr("value");
+	
 	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
 	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
 	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
@@ -229,6 +230,7 @@ function populateDefaults() {
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
 	setInputToValue("#solver",solverId);
+	setInputToValue("#benchmarkField",benchContents);
 	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
 	$("#preProcess").val(preProcessorId);
 	$("#postProcess").val(postProcessorId);
@@ -264,7 +266,7 @@ function initUI() {
 		icons: {
 			secondary: "ui-icon-check"
 		}
-    })
+    });
     
     $("#settingProfile").change(function() {
 		populateDefaults();

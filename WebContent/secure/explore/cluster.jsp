@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="Compute Cluster" js="lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, explore/cluster, lib/jquery.progressbar.min" css="explore/cluster, common/table, explore/common">			
+<star:template title="Compute Cluster" js="lib/jquery.dataTables.min, lib/jquery.jstree, explore/cluster, lib/jquery.progressbar.min" css="explore/cluster, common/table, explore/common">			
 	<div id="explorer">
 		<h3>Active Queues</h3>
 		<ul id="exploreList">

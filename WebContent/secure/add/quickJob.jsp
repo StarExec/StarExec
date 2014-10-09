@@ -81,7 +81,7 @@
 			<span class="preProcessorId" value="${setting.preProcessorId}"/>
 			<span class="postProcessorId" value="${setting.postProcessorId}"/>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"/>
-			
+			<span class="benchContents" value="${setting.getBenchmarkContents()}"/>
 			
 		</span>
 	</c:forEach>

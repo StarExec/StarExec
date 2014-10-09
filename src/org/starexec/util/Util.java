@@ -359,7 +359,6 @@ public class Util {
     public static String executeCommand(String[] command, String[] envp, File workingDirectory) {
 	Runtime r = Runtime.getRuntime();
 		
-	BufferedReader reader = null;		
 	//
 	try {					
 	    Process p;

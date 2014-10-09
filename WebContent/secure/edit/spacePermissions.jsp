@@ -44,7 +44,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="edit permissions" js="util/spaceTree, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, edit/spacePermissions, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
+<star:template title="edit permissions" js="util/spaceTree, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, edit/spacePermissions, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="isAdmin" value="${isAdmin}"></span>
 	<span id="spaceChain" value="${spaceChain}"></span>

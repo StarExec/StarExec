@@ -29,7 +29,7 @@
 	}
 %>
 
-<star:template title="manage nodes" js="admin/nodes, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, admin/admin">
+<star:template title="manage nodes" js="admin/nodes, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, admin/admin">
 	<style>
 		.statusConflict { color: red; }
 		.statusClear {color : green; }

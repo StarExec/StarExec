@@ -20,7 +20,7 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to upload jobs to this space or the space does not exist");		
 	}
 %>
-<star:template title="upload XML configuration for a job in ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.validate.min, add/batchSpace">
+<star:template title="upload XML configuration for a job in ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner, lib/jquery.validate.min, add/batchSpace">
 	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/jobXML" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>

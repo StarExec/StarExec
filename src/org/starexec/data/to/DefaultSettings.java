@@ -1,5 +1,6 @@
 package org.starexec.data.to;
 
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
@@ -16,7 +17,6 @@ public class DefaultSettings {
 	private boolean dependenciesEnabled;
 	private String name;
 	private int tempId;
-
 	/**
 	 * Initializes a new DefaultSettings object with every field set to the system default.
 	 */
@@ -111,5 +111,17 @@ public class DefaultSettings {
 			return "None";
 		}
 		return s.getName();
+	}
+	
+	public String getBenchmarkContents() {
+		if (benchId==null) {
+			return "None";
+		}
+		Benchmark b=Benchmarks.get(benchId);
+		if (b==null) {
+			return "None";
+		}
+		return Benchmarks.getContents(b, -1);
+		
 	}
 }

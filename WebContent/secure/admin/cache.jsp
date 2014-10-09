@@ -29,7 +29,7 @@
 	}
 
 %>
-<star:template title="manage cache" js="admin/cache, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">	
+<star:template title="manage cache" js="admin/cache, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">	
 		<fieldset id="fieldTable">
 			<legend>Cache Types</legend>
 			<table id="tableTypes" class="shaded contentTbl">

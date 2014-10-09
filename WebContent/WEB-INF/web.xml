@@ -376,7 +376,7 @@
   
   <!-- Default pages to load -->
   <welcome-file-list>
-    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>secure/index.jsp</welcome-file>
   </welcome-file-list>
   
   <!-- Application event listeners -->

@@ -33,7 +33,7 @@ try {
 }
 %>
 
-<star:template title="select default ${type}" css="common/delaySpinner, edit/defaultPrimitive, edit/shared, common/table" js="common/delaySpinner, lib/jquery.cookie, lib/jquery.dataTables.min, lib/jquery.validate.min, edit/defaultPrimitive">
+<star:template title="select default ${type}" css="common/delaySpinner, edit/defaultPrimitive, edit/shared, common/table" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.validate.min, edit/defaultPrimitive">
 	<span style="display:none;" id="primType" value="${type}"></span>
 	<span style="display:none;" id="cid" value="${comId}"></span>
 	<fieldset>

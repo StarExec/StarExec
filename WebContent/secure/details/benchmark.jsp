@@ -53,7 +53,7 @@
 	}
 %>
 
-<star:template title="${bench.name}" js="lib/jquery.cookie, common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table">				
+<star:template title="${bench.name}" js="common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table">				
 	<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	<fieldset>
 		<legend>details</legend>
