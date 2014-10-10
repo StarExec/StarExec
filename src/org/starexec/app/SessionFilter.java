@@ -39,7 +39,7 @@ public class SessionFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		// Cast the servlet request to an httpRequest so we have access to the session
 		HttpServletRequest httpRequest = (HttpServletRequest) request; 		
-		
+		System.out.println(httpRequest.getRequestURL()+" "+httpRequest.getQueryString());
 		// If the user is logged in...
 		if(httpRequest.getUserPrincipal() != null) {
 			// Check if they have the necessary user SessionUtil stored in their session

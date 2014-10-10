@@ -242,7 +242,7 @@ public class Processors {
 	
 	/**	 
 	 * Gets all processors that a user can see because they share a community
-	 * @param userId-- the user to retrieve post processors for
+	 * @param userId the user to retrieve post processors for
 	 * @param type The type of processors to get
 	 * @return A list of all unique processors of the given type that the user can see
 	 * @author Eric Burns

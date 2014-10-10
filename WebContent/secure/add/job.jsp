@@ -10,14 +10,13 @@
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		
-				
 		if(!p.canAddJob()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
 			request.setAttribute("space", Spaces.get(spaceId));
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
-			List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
+			DefaultSettings settings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
@@ -27,11 +26,11 @@
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
-			request.setAttribute("defaultPreProcId", listOfDefaultSettings.get(1));
-			request.setAttribute("defaultCpuTimeout", listOfDefaultSettings.get(2));
-			request.setAttribute("defaultClockTimeout", listOfDefaultSettings.get(3));
-			request.setAttribute("defaultPPId", listOfDefaultSettings.get(4));
-			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(Long.parseLong(listOfDefaultSettings.get(7))));
+			request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
+			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
+			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
+			request.setAttribute("defaultPPId", settings.getPostProcessorId());
+			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
 			
 		}
 	} catch (NumberFormatException nfe) {
@@ -55,6 +54,7 @@
 					</tr>
 				</thead>
 				<tbody>
+					
 					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
 						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
@@ -187,10 +187,7 @@
 						<td><input type="hidden" name="benchChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
 						<td>this will run chosen solvers/configurations on your selection of benchmarks in the hierarchy</td>
 					</tr>
-					<%--<tr id="someBenchInHierarchy">
-						<td><input type="hidden" name="runChoice" value="runChosenFromHierarchy" />choose in hierarchy</td>
-						<td>this will run chosen solvers/configurations on all benchmarks in the hierarchy</td>
-					</tr>--%>
+					
 				</tbody>
 			</table>
 		</fieldset>
@@ -253,28 +250,7 @@
 				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>	
 		</fieldset>
-	<%--	<fieldset id="fieldSelectBenchHierarchy">
-			<legend>benchmark selection from hierarchy</legend>
-			<table id="tblBenchHier" class="contentTbl">
-				<thead>
-					<tr>
-						<th>benchmark</th>					
-					</tr>
-				</thead>	
-				<tbody>
-				<c:forEach var="b" items="${allBenchs}">
-					<tr id="bench_${b.id}">
-						<td>
-							<input type="hidden" name="bench" value="${b.id}"/>
-							<star:benchmark value='${b}'/></td>																
-					</tr>
-				</c:forEach>
-				</tbody>					
-			</table>	
-			<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-			</div>	
-		</fieldset>--%>
+	
 		<div id="actionBar">
 			<button type="submit" class="round" id="btnDone">submit</button>			
 			<button type="button" class="round" id="btnNext">next</button>			

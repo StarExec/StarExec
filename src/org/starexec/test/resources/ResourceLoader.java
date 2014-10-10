@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -20,6 +19,7 @@ import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -89,7 +89,6 @@ public class ResourceLoader {
 	 */
 	public static Processor loadProcessorIntoDatabase(String fileName,ProcessorType type, int communityId) {
 		try {
-			File file=new File(fileName);
 			Processor p=new Processor();
 			p.setName(TestUtil.getRandomSolverName());
 			p.setCommunityId(communityId);
@@ -126,6 +125,14 @@ public class ResourceLoader {
 	 * queue that the given user owns
 	 * @param spaceId The ID of the space to put the job in
 	 * @param userId The ID of the user who will own the job
+	 * @param preProcessorId The ID of the preprocessor to use for this job
+	 * @param postProcessorId The ID of the postprocessor to use for this job
+	 * @param solverIds The solvers to use for the job, which need to have at least 1 configuration each. The first
+	 * 					configuration for every solver will be matched with every benchmark given
+	 * @param benchmarkIds The benchmarks to use in job pairs
+	 * @param cpuTimeout The cpu timeout for every pair in this job
+	 * @param wallclockTimeout The wallclock timeout for every pair in this job
+	 * @param memory The max memory limit, in bytes, for every pair in this job
 	 * @param solvers The solverIds that will be matched to every benchmark
 	 * @param benchmarks The benchmarkIDs to run
 	 * @return The job object
@@ -149,7 +156,7 @@ public class ResourceLoader {
 		SP.put(spaceId, Spaces.get(spaceId).getName());
 		log.debug("building a job with a total number of configs = "+configIds.size());
 
-		JobManager.buildJob(job, userId, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
 		return job;
@@ -172,10 +179,12 @@ public class ResourceLoader {
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
 		job.setPrimarySpace(rootSpaceId);
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
-
+		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
 		for (Space s : spaces) {
-			JobManager.addJobPairsFromSpace(job, userId, 100, 100,Util.gigabytesToBytes(1), s.getId(), SP);
+			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, 100, 100,Util.gigabytesToBytes(1), s.getId(), SP.get(s.getName()));
+			spaceToPairs.put(s.getId(), pairs);
 		}
+		JobManager.addJobPairsDepthFirst(job, spaceToPairs);
 		Jobs.add(job, rootSpaceId);
 		if (job.getId()<=0) {
 			log.error("could not load a job hierarchy into the database");
@@ -259,7 +268,7 @@ public class ResourceLoader {
 			FileUtils.copyFile(archive, archiveCopy);
 			Integer statusId = Uploads.createUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
-			List<Integer> ids=BenchmarkUploader.handleUploadRequestAfterExtraction(archiveCopy, userId, parentSpaceId, 1, false, p, 
+			List<Integer> ids=BenchmarkUploader.addBechmarksFromArchive(archiveCopy, userId, parentSpaceId, 1, false, p, 
 					"dump", statusId, false, false, null);
 			return ids;
 		} catch (Exception e) {

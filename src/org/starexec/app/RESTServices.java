@@ -100,6 +100,29 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
 	private static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
 	
+	
+	/**
+	 * Recompiles all the job spaces for the given job
+	 * @param jobId ID of the job to recompile
+	 * @param request
+	 * @return ValidatorStatusCode with true on success and false otherwise
+	 */
+	@GET
+	@Path("/recompile/{jobid}")
+	@Produces("application/json")	
+	public String recompileJobSpaces(@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
+		int userId = SessionUtil.getUserId(request);
+		
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		boolean success=Jobs.recompileJobSpaces(jobId);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "recompilation successful")) :  gson.toJson(ERROR_DATABASE);
+	}
+	
+	
+	
 	/**
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id
@@ -305,7 +328,24 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a json string that holds the log of job pair with the given id
+	 * @return a text string that holds the result of running qstat 0f
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/cluster/qstat")
+	@Produces("text/plain")		
+	public String getQstatOutput(@Context HttpServletRequest request) {		
+		int userId = SessionUtil.getUserId(request);
+		String qstat=R.BACKEND.getRunningJobsStatus();
+		if(!Util.isNullOrEmpty(qstat)) {
+			return qstat;
+		}
+
+		return "not available";
+	}
+	
+	/**
+	 * @return a text string that holds the log of job pair with the given id
 	 * @author Tyler Jensen
 	 */
 	@GET
@@ -1305,14 +1345,20 @@ public class RESTServices {
 				
 			} else if (attribute.equals("PostProcess")) {
 				success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
-			}else if (attribute.equals("CpuTimeout")) {
+			} else if (attribute.equals("BenchProcess")) {
+				Communities.setDefaultSettings(id,8,Integer.parseInt(request.getParameter("val")));
+			}
+			
+			else if (attribute.equals("CpuTimeout")) {
 				success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
 			}else if (attribute.equals("ClockTimeout")) {
 				success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
 			} else if (attribute.equals("DependenciesEnabled")) {
 				success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
-			} else if (attribute.equals("defaultBenchmark")) {
+			} else if (attribute.equals("defaultbenchmark")) {
 				success=Communities.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
+			} else if (attribute.equals("defaultsolver")) {
+				success=Communities.setDefaultSettings(id, 7, Integer.parseInt(request.getParameter("val")));
 			} else if(attribute.equals("MaxMem")) {
 				double gigabytes=Double.parseDouble(request.getParameter("val"));
 				long bytes = Util.gigabytesToBytes(gigabytes); 
@@ -2541,6 +2587,7 @@ public class RESTServices {
 	public String deleteJobs(@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
+			System.out.println("this is here");
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
 		

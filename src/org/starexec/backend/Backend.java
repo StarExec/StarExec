@@ -36,6 +36,11 @@ public interface Backend{
     boolean killPair(int execId);
 
     /**end taken from JobPairs**/
+    
+    /**
+     * Returns a string representing the status of jobs running on the system
+     */
+    public String getRunningJobsStatus();
 }
 
 

@@ -291,7 +291,7 @@ public class SpaceSecurity {
 	
 	/**
 	 * Checks whether a user may leave a community
-	 * @param spaceId The ID of the space containing the primitive
+	 * @param commId The ID of the community a user wants to leave
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
@@ -324,7 +324,7 @@ public class SpaceSecurity {
 	 * @param attribute The name of the setting being changed
 	 * @param newValue The new value that would be given to the setting
 	 * @param userId The ID of the user making the request
-	 * @return0 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	
 	//TODO: Consider how to handle where to use the Validator class
@@ -363,8 +363,8 @@ public class SpaceSecurity {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
 			}
 			
-			int timeout=Integer.parseInt(newValue);
-			if (timeout<=0) {
+			double limit=Double.parseDouble(newValue);
+			if (limit<=0) {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
 		}
@@ -453,7 +453,7 @@ public class SpaceSecurity {
 	/**
 	 * Checks to see whether a user can copy a given space from the given space
 	 * @param fromSpaceId The space ID the user is being copied FROM
-	 * @param userIdDoingCopying The ID of the user making the request
+	 * @param userId The ID of the user making the request
 	 * @param spaceIdBeingCopied The ID of the space that would be copied
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
@@ -548,7 +548,7 @@ public class SpaceSecurity {
 	
 	/**
 	 * Checks whether the user has enough disk quota to fit all of a list of benchmarks
-	 * @param benchmarkIds The solver IDs that would be added
+	 * @param benchIDs The solver IDs that would be added
 	 * @param userId The ID of the user in question
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
@@ -607,7 +607,7 @@ public class SpaceSecurity {
 	 * @param fromSpaceId The ID of the spaces that jobs are being copied FROM
 	 * @param toSpaceId The ID of the space that new jobs will be copied TO
 	 * @param userId The ID of the user making the request
-	 * @param jobIds The IDs of the jobs that would be copied
+	 * @param jobIdsBeingCopied The IDs of the jobs that would be copied
  	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
 	
@@ -645,7 +645,7 @@ public class SpaceSecurity {
 	 * Checks to see whether a list of benchmarks can be copied or linked from one space to another
 	 * @param fromSpaceId The ID of the space the benchmarks are already in
 	 * @param toSpaceId The ID of the space the benchmarks would be placed in
-	 * @param userIdDoingCopying The ID of the user making the request
+	 * @param userId The ID of the user making the request
 	 * @param benchmarkIdsBeingCopied The IDs of the benchmarks that would be copied or linked
 	 * @param copy If true, the primitives are being copied. Otherwise, they are being linked
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and a status code from ValidatorStatusCodes otherwise
@@ -690,7 +690,7 @@ public class SpaceSecurity {
 	 * Checks to see whether a list of solvers can be copied or linked from one space to another
 	 * @param fromSpaceId The ID of the space the solvers are already in
 	 * @param toSpaceId The ID of the space the solvers would be placed in
-	 * @param userIdDoingCopying The ID of the user making the request
+	 * @param userId The ID of the user making the request
 	 * @param solverIdsBeingCopied The IDs of the solvers that would be copied or linked
 	 * @param hierarchy If true, the copy will take place in the entire hierarchy rooted at the space with ID toSpaceId
 	 * @param copy If true, the primitives are being copied. Otherwise, they are being linked
@@ -787,7 +787,8 @@ public class SpaceSecurity {
 	/**
 	 * Checks to see whether the given user can copy a user into another space
 	 * @param spaceId The ID of the space where the new user would be PLACED.
-	 * @param userId The ID of the user making the request
+	 * @param userIdMakingRequest The ID of the user making the request
+	 * @param userIdToAdd The user that would be added to a new space
 	 * @return  0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canAddUserToSpace(int spaceId, int userIdMakingRequest, int userIdToAdd) {
@@ -950,6 +951,7 @@ public class SpaceSecurity {
      * @param spaceId The ID of the space in question
      * @param userIdBeingUpdated The ID of the user who would have their permissions updated
      * @param requestUserId The Id of the user making the request
+     * @param leaderStatusChange Whether the user being updated would have their leader status changed
      * @return list of spaces where permissions can be changed
      */
     public static List<Integer> getUpdatePermissionSpaces(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange){
@@ -984,6 +986,7 @@ public class SpaceSecurity {
      * @param spaceId The ID of the space in question
      * @param userIdBeingUpdated The ID of the user who would have their permissions updated
      * @param requestUserId The Id of the user making the request
+     * @param leaderStatusChange Whether the user having their permissions updated will have their leader status changed
      * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
      */
     public static ValidatorStatusCode canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange) {

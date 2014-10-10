@@ -1261,14 +1261,33 @@ public class JobPairs {
 	 * @author Eric Burns
 	 */
 	
-	public static boolean UpdateJobSpaces(List<JobPair> jobPairs) {
-		Connection con = null;
+	public static boolean updateJobSpaces(List<JobPair> jobPairs,Connection con) {
+		
 		try {
 			con = Common.getConnection();
 			for (JobPair jp : jobPairs) {
 				UpdateJobSpaces(jp.getId(),jp.getJobSpaceId(),con);
 			}
 			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}	
+		return false;
+	}
+	
+	/**
+	 * Given a list of JobPair objects that have their jobSpaceIds set, updates the database
+	 * to reflect these new job space ids
+	 * @param jobPairs The pairs to update
+	 * @return True on success and false otherwise
+	 * @author Eric Burns
+	 */
+	
+	public static boolean updateJobSpaces(List<JobPair> jobPairs) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return updateJobSpaces(jobPairs,con);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {

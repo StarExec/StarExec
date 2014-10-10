@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
 
 /**
  * Handles all database interaction for permissions
@@ -23,6 +22,7 @@ public class Permissions {
 	 * @param con The connection to add the permission with
 	 * @return The ID of the inserted record
 	 * @author Tyler Jensen
+	 * @throws Exception 
 	 */
 	protected static int add(Permission p, Connection con) throws Exception {
 		CallableStatement procDefaultPerm = null;
@@ -559,8 +559,11 @@ public class Permissions {
 	 * @param userId the id of the user to set the permissions of
 	 * @param spaceId the id of the space where the permissions will effect
 	 * @param newPerm the new set of permissions to set
+	 * @param con The open connection to make the call on
 	 * @return true iff the permissions were successfully set, false otherwise
 	 * @author Todd Elvers
+	 * 
+	 * @throws Exception 
 	 */
 	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) throws Exception {				
 		CallableStatement procedure = null;
@@ -588,8 +591,10 @@ public class Permissions {
 	 * 
 	 * @param permId the id of the permission to change
 	 * @param perm a Permission object containing the new permissions
+	 * @param con The open connection to make the call on
 	 * @return true iff the permission update was successful
 	 * @author Skylar Stark
+	 * @throws Exception 
 	 */
 	protected static boolean updatePermission(int permId, Permission perm, Connection con) throws Exception {
 		CallableStatement procedure = null;

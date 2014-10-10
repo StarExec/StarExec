@@ -103,6 +103,8 @@ corresponds to a dependent bench space.
 
 "qid" -Specifies a queue id (used only in job creation).
 
+"run" -Says that a test job should be created for a solver immediately upon uploading it
+
 "seed" -An integer that will be passed into the preprocessor when it is used for a particular job.
 
 "since" -When downloading job info, specifies the earliest completed pair after which to get info.
@@ -334,7 +336,7 @@ individually unique than previous commands, and many accept a large number of op
 --pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID.
 			  The ID of the newly uploaded solver will be printed if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id"
-OPTIONAL: "n" ("d" OR "df") "downloadable"
+OPTIONAL: "n" ("d" OR "df") "downloadable" "run"
 EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
 
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.

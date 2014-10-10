@@ -218,6 +218,10 @@ function initUI(){
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
 	
+	$('#editBenchProcess').change(function() {
+		saveChanges($(this).children('option:selected').attr('value'), true, 'BenchProcess', 0);
+	});
+	
 	$('#editPreProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PreProcess', 0);
 	});
@@ -409,7 +413,7 @@ function saveChanges(obj, save, attr, old) {
 				showMessage('error', $('#nameRow').attr('length')+ " characters maximum",5000);
 				return;
 			}
-		} else if (attr == "PostProcess" || attr == "PreProcess"){
+		} else if (attr == "PostProcess" || attr == "PreProcess" || attr=="BenchProcess"){
 			newVal = obj;
 		} else if (attr == "CpuTimeout"){
 			newVal = $(obj).siblings('input:first').val();

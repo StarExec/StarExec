@@ -21,7 +21,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/starexec, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/starexec, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, admin/admin">
 	<div id="actionPanel">
 		<fieldset>
 		<legend>actions</legend>

@@ -44,7 +44,7 @@ try {
 
 %>
 
-<star:template title="create queue" css="admin/admin, explore/common, common/table, add/queue" js="admin/queue, lib/jquery-ui-1.8.16.custom.min, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min">	
+<star:template title="create queue" css="admin/admin, explore/common, common/table, add/queue" js="admin/queue, lib/jquery-ui-1.8.16.custom.min, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min">	
 	<style>
 		.statusConflict { color: red; }
 		.statusClear {color : green; }

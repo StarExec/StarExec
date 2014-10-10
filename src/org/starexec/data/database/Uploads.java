@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.UploadStatus;
+import org.starexec.util.Validator;
 /**
  * Handles database interaction for the uploading Benchmarks Status Page.
  */
@@ -17,14 +18,16 @@ public class Uploads {
 	/**
 	 * Adds failed benchmark name to db
 	 * @param statusId - id of status object being changed
+	 * @param name 
 	 * @return true if successful, false if not
 	 */
 	public static Boolean addFailedBenchmark(Integer statusId, String name){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;	
 		CallableStatement procedure = null;
-		if (name.length() > 512){
-			throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + name.length());
-		}
+		
 		try {
 			con = Common.getConnection();	
 			Common.beginTransaction(con);
@@ -54,6 +57,7 @@ public class Uploads {
 	 * @author Benton McCune
 	 */
 	public static Integer createUploadStatus(Integer spaceId, Integer userId){
+		
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -85,6 +89,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean everythingComplete(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -112,6 +119,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean fileExtractComplete(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -140,6 +150,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean fileUploadComplete(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -169,26 +182,31 @@ public class Uploads {
 	 * @return The string summary, or null on error
 	 */
 	public static String getUploadStatusSummary(int statusId) {
-		UploadStatus status=get(statusId);
-		StringBuilder sb=new StringBuilder();
-		sb.append("benchmarks: ");
-		sb.append(status.getValidatedBenchmarks());
-		sb.append(" / ");
-		sb.append(status.getFailedBenchmarks());
-		sb.append(" / ");
-		sb.append(status.getTotalBenchmarks());
-		sb.append(" | ");
-		sb.append("spaces: ");
-		sb.append(status.getCompletedSpaces());
-		sb.append(" / ");
-		sb.append(status.getTotalSpaces());
-		sb.append("\n");
-		sb.append(status.getErrorMessage());
-		if(status.isEverythingComplete()) {
+		try {
+			UploadStatus status=get(statusId);
+			StringBuilder sb=new StringBuilder();
+			sb.append("benchmarks: ");
+			sb.append(status.getValidatedBenchmarks());
+			sb.append(" / ");
+			sb.append(status.getFailedBenchmarks());
+			sb.append(" / ");
+			sb.append(status.getTotalBenchmarks());
+			sb.append(" | ");
+			sb.append("spaces: ");
+			sb.append(status.getCompletedSpaces());
+			sb.append(" / ");
+			sb.append(status.getTotalSpaces());
 			sb.append("\n");
-			sb.append("upload complete");
+			sb.append(status.getErrorMessage());
+			if(status.isEverythingComplete()) {
+				sb.append("\n");
+				sb.append("upload complete");
+			}
+			return sb.toString();
+		} catch (Exception e) {
+			log.error(e.getMessage());
 		}
-		return sb.toString();
+		return null;
 	}
 	
 	/**
@@ -243,6 +261,7 @@ public class Uploads {
 	 * @author Benton McCune
 	 */
 	public static List<String> getFailedBenches(int statusId) {
+		
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -273,6 +292,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementCompletedBenchmarks(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -300,6 +322,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementCompletedSpaces(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -328,6 +353,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementFailedBenchmarks(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -357,6 +385,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementTotalBenchmarks(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -386,6 +417,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementTotalSpaces(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -415,6 +449,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementValidatedBenchmarks(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -444,6 +481,9 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean processingBegun(Integer statusId){
+		if (statusId==null) {
+			return false;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -472,12 +512,14 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean setErrorMessage(Integer statusId, String message){
-	    if (statusId == null)
-		return false;
+	    if (statusId == null) {
+			return false;
+
+	    }
 	    Connection con = null;	
 	    CallableStatement procedure = null;
-	    if (message.length() > 512){
-		throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
+	    if (!Validator.isValidRequestMessage(message)){
+	    	throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
 	    }
 	    try {
 		con = Common.getConnection();	

@@ -14,7 +14,7 @@ public class HashPassword {
 
 	/**
 	 * @param raw A raw byte array
-	 * @return A string representing the hexidecimal version of the raw input
+	 * @return A string representing the hexadecimal version of the raw input
 	 */
 	public static String getHex( byte [] raw ) {
 	    if ( raw == null ) {

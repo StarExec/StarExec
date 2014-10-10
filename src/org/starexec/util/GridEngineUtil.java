@@ -1,6 +1,5 @@
 package org.starexec.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -9,9 +8,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -262,7 +259,7 @@ public class GridEngineUtil {
     /**
      * Finds the standard output of a job pair and returns it as a string. Null
      * is returned if the output doesn't exist or cannot be found
-     * @param job The job the pair is apart of
+     * @param limit The max number of characters to return
      * @param pair The pair to get output for
      * @return All console output from a job pair run for the given pair
      */
@@ -340,7 +337,7 @@ public class GridEngineUtil {
 				
 				//When the node count is decreasing for this reservation on this day
 				//Need to move a certain number of nodes back to all.q
-				transferOverflowNodes(req, shortQueueName, nodeCount, actualNodeCount, actualNodes);
+				transferOverflowNodes(shortQueueName, nodeCount, actualNodeCount, actualNodes);
 				
 			}
 			
@@ -373,7 +370,7 @@ public class GridEngineUtil {
 				
 			//When the node count is increasing for this reservation on this day
 			//Need to move a certain number of nodes from all.q to this queue
-			transferUnderflowNodes(req, shortQueueName, nodeCount, actualNodeCount);
+			transferUnderflowNodes(shortQueueName, nodeCount, actualNodeCount);
 				
 		    }
 		    GridEngineUtil.loadWorkerNodes();
@@ -382,8 +379,13 @@ public class GridEngineUtil {
 		}
 		log.info("Completed checking queue reservation.");
     }
-		
-	private static void transferOverflowNodes(QueueRequest req, String queueName, int nodeCount, int actualNodeCount, List<WorkerNode> actualNodes) {
+	/**
+	 * 
+	 * @param queueName
+	 * @param nodeCount
+	 * @param actualNodeCount
+	 */
+	private static void transferOverflowNodes(String queueName, int nodeCount, int actualNodeCount, List<WorkerNode> actualNodes) {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		
@@ -404,8 +406,12 @@ public class GridEngineUtil {
 			}
 		}		
 	}
-	
-	private static void transferUnderflowNodes(QueueRequest req, String queueName, int nodeCount, int actualNodeCount) {
+	/**
+	 * 
+	 * @param queueName
+	 * @param nodeCount
+	 */
+	private static void transferUnderflowNodes(String queueName, int nodeCount, int actualNodeCount) {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
 		List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
@@ -701,6 +707,7 @@ public class GridEngineUtil {
 	 * Removes a queue from grid engine and the database
 	 * @param queueId The Id of the queue to remove.
 	 * @param permanent
+	 * @return True on success and false otherwise
 	 */
 	public static boolean removeQueue(int queueId) {
 		Queue q=Queues.get(queueId);
@@ -772,6 +779,7 @@ public class GridEngineUtil {
 	
 	/**
 	 * Clears the error states from every node associated with every queue
+	 * @return True on success and false otherwise
 	 */
 	public static boolean clearNodeErrorStates() {
 		try {
@@ -789,8 +797,23 @@ public class GridEngineUtil {
 	}
 	
 	/**
+	 * Runs qstat -f and returns the result
+	 * @return The qstat output, or null if there was an error
+	 */
+	public static String getQstatOutput() {
+		try {
+			
+			return Util.executeCommand("qstat -f");
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Moves the given set of nodes into the given queue
-	 * @param req The request object representing the destination queue, which must have the queue_name set
+	 * @param queueName The name of the queue we are moving nodes to
 	 * @param NQ A map of nodes to queues, where the nodes are the ones that will be moved and the queues
 	 * are the ones that currently own each node
 	 */

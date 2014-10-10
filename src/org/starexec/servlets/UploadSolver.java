@@ -31,6 +31,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -66,6 +67,8 @@ public class UploadSolver extends HttpServlet {
     private static final String UPLOAD_METHOD="upMethod";
     private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
+    //TODO: Enable
+    //private static final String RUN_TEST_JOB="runTestJob";
         
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -84,9 +87,10 @@ public class UploadSolver extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,status.getMessage());
 					return;
 				}
+				//TODO: Re enable
+				boolean runTestJob=false;//Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
 				
-				
-				
+				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
 				//should be 2 element array where the first element is the new solver ID and the
@@ -98,9 +102,29 @@ public class UploadSolver extends HttpServlet {
 				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4 && return_value!=-5) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
 					if (configs == -4) { //If there are no configs
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&flag=true"));
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
 					} else {
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
+						//if this solver has some configurations, we should check to see if the user wanted a test job
+						if (runTestJob) {
+							log.debug("attempting to run test job");
+							
+							ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, return_value, spaceId, "test", "");
+							if (testJobStatus.isSuccess()) {
+								int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId);
+								if (jobId>0) {
+								    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
+
+								} else {
+								    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job"));
+								}
+							} else {
+							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Could not create test job because:"+status.getMessage()+" "));
+							    
+							}
+							
+						} else {
+						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
+						}
 					}
 				} else {
 					//Archive Description File failed validation
@@ -155,19 +179,14 @@ public class UploadSolver extends HttpServlet {
 			int[] returnArray = new int[2];
 			returnArray[0] = 0;
 			returnArray[1] = 0;
+			
+			//first, we upload the solver to the head node sandbox directory
 			String randomDirectory=TestUtil.getRandomAlphaString(64);
 			File sandboxDirectory=Util.getSandboxDirectory();
 			File tempDir=new File(sandboxDirectory,randomDirectory);
-			//String[] mkdirCommand=new String[6];
-			//mkdirCommand[0]="sudo";
-			//mkdirCommand[1]="-u";
-			//mkdirCommand[2]="sandbox";
-			//mkdirCommand[3]="mkdir";
-			//mkdirCommand[4]="-p";
-			//mkdirCommand[5]=tempDir.getAbsolutePath();
-			//Util.executeCommand(mkdirCommand);                          
+			                        
 			tempDir.mkdirs();
-			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD);
+			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
 			FileItem item=null;
 			String name=null;
 			URL url=null;
@@ -232,28 +251,25 @@ public class UploadSolver extends HttpServlet {
 				returnArray[0]=-4;
 				return returnArray;
 			}
-			//String[] cpCmd =new String[6];
-			//cpCmd[0]="sudo";
-			//cpCmd[1]="-u";
-			//cpCmd[2]="sandbox";
-			//cpCmd[3]="cp";
-			//cpCmd[4]=archiveFile.getAbsolutePath();
-			//cpCmd[5]=tempDir.getAbsolutePath();
-			//Util.executeCommand(cpCmd);
+			
+			//move the archive to the sandbox
 			FileUtils.copyFileToDirectory(archiveFile, tempDir);
 			archiveFile.delete();
 			archiveFile=new File(tempDir,archiveFile.getName());
 			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
+			
+			//extracts the given archive using the sandbox user
 			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
-			//ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
 			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
-				if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) {
+				if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
 					FileUtils.deleteDirectory(tempDir);
 					FileUtils.deleteDirectory(uniqueDir);
-					returnArray[0]=-5;
+					returnArray[0]=-5;                   //fail due to invalid permissions
 					return returnArray;
 				}
+				
+				//change the owner of the sandboxed solver directory to sandbox
 				String[] chmod=new String[7];
 				chmod[0]="sudo";
 				chmod[1]="-u";
@@ -265,7 +281,8 @@ public class UploadSolver extends HttpServlet {
 					chmod[6]=f.getAbsolutePath();
 					Util.executeCommand(chmod);
 				}
-
+				
+				//debugging command
 				String[] lsCommand=new String[5];
 				lsCommand[0]="sudo";
 				lsCommand[1]="-u";
@@ -277,6 +294,7 @@ public class UploadSolver extends HttpServlet {
 				String lsstr=Util.executeCommand(lsCommand,null,tempDir);
 				log.debug(lsstr);
 
+				//run the build script as sandbox
 				String[] command=new String[4];
 				command[0]="sudo";
 				command[1]="-u";
@@ -287,6 +305,7 @@ public class UploadSolver extends HttpServlet {
 				build=true;
 				log.debug("got back the output "+buildstr);
 			}
+			
 			String[] chmodCommand=new String[7];
 			chmodCommand[0]="sudo";
 			chmodCommand[1]="-u";
@@ -350,6 +369,8 @@ public class UploadSolver extends HttpServlet {
 			}
 			//Try adding the solver to the database
 			int solver_Success = Solvers.add(newSolver, spaceId);
+			
+			//if we were successful and this solver had a build script, save the build output to show the uploader
 			if (solver_Success>0 && build) {
 				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
 				log.debug("output file = "+buildOutputFile.getAbsolutePath());
@@ -362,6 +383,7 @@ public class UploadSolver extends HttpServlet {
 				}
 			}
 			returnArray[0] = solver_Success;
+			
 			return returnArray;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -402,7 +424,10 @@ public class UploadSolver extends HttpServlet {
 			if (!Validator.isValidBool((String)form.get(SOLVER_DOWNLOADABLE))) {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
-
+			
+			//if (!Validator.isValidBool((String)form.get(RUN_TEST_JOB))) {
+			//	return new ValidatorStatusCode(false, "The 'run test job' attribute needs to be a valid boolean");
+			//}
 			
 			if(!Validator.isValidSolverName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
 				

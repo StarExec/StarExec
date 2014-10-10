@@ -91,7 +91,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js="util/sortButtons, common/delaySpinner, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
+<star:template title="${job.name}" js="util/sortButtons, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
 	<p id="displayJobID" class="accent">id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
@@ -307,6 +307,7 @@
 					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 					<c:if test="${isAdmin}">
 						<li><button type="button" id="clearCache">clear cache</button></li>
+						<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
 					</c:if>
 					
 					<c:if test="${job.userId == userId or isAdmin}"> 

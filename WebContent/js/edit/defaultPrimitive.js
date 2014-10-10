@@ -1,4 +1,7 @@
+var primType;
 $(document).ready(function(){
+	primType=$("#primType").attr("value");
+
 	initUI();
 	attachFormValidation();
 });
@@ -8,8 +11,8 @@ $(document).ready(function(){
  * Initializes the user-interface
  */
 function initUI(){
-	//initialize benchmark table
-	benchTable = $('#benchmarks').dataTable( {
+	//initialize primitive table
+	primTable = $('#prims').dataTable( {
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
@@ -19,7 +22,7 @@ function initUI(){
 		"fnServerData"	: fnPaginationHandler
 	});
 	
-	$("#benchmarks").on("mousedown", "tr",function() {
+	$("#prims").on("mousedown", "tr",function() {
 		if ($(this).hasClass("row_selected")) {
 			$(this).removeClass("row_selected");
 		} else {
@@ -50,12 +53,12 @@ function initUI(){
 
 
 /**
- * Returns the id of the selected benchmark or -1 if there is not one.
+ * Returns the id of the selected primitive or -1 if there is not one.
  * @author Eric Burns
  */
-function benchSelected() {
-	row=$("#benchmarks").find(".row_selected");
-	if (row.length==0) { //means no benchmark is selected
+function primSelected() {
+	row=$("#prims").find(".row_selected");
+	if (row.length==0) { //means no primitive is selected
 		return -1;
 	}
 	input=row.find("input");
@@ -64,18 +67,18 @@ function benchSelected() {
 }
 
 /**
- * Validates that a user has selected a benchmark when update is clicked
+ * Validates that a user has selected a primitive when update is clicked
  */
 function attachFormValidation(){
 	
 	$("#update").click(function(){
-		var selectedBench = benchSelected();
+		var selectedPrim = primSelected();
 		
-		if(selectedBench>=0){
-			createDialog("Updating default benchmark, please wait");
+		if(selectedPrim>=0){
+			createDialog("Updating default "+primType+", please wait");
 			$.post(
-					starexecRoot+"services/edit/space/" + "defaultBenchmark" + "/" + $("#cid").attr("value"),
-					{val : selectedBench},
+					starexecRoot+"services/edit/space/" + "default"+primType + "/" + $("#cid").attr("value"),
+					{val : selectedPrim},
 					function(returnCode) {
 						s=parseReturnCode(returnCode);
 						if (s) {
@@ -86,7 +89,7 @@ function attachFormValidation(){
 					"json"
 			);
 		} else {
-			showMessage('error',"Select a benchmark to proceed","5000");
+			showMessage('error',"Select a "+primType+" to proceed","5000");
 		}
 	});
 }
@@ -94,7 +97,7 @@ function attachFormValidation(){
 
 
 function unselectAll() {
-	$("#benchmarks").find("tr").removeClass("row_selected");
+	$("#prims").find("tr").removeClass("row_selected");
 }
 
 /**
@@ -110,7 +113,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var idOfSelectedSpace = $('#cid').attr("value");
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
-			sSource + idOfSelectedSpace + "/" + "benchmarks" + "/pagination",
+			sSource + idOfSelectedSpace + "/" + primType+"s" + "/pagination",
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

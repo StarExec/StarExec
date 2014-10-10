@@ -30,7 +30,7 @@
 	
 	
 %>
-<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces,  lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
+<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces,  lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
@@ -146,6 +146,7 @@
 				<li><a class="btnUp" id="uploadBench" href="/${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
 				<li><a class="btnUp" id="uploadSolver" href="/${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>				
 				<li><a class="btnRun" id="addJob" href="/${starexecRoot}/secure/add/job.jsp">create job</a></li>
+				<!-- <li><a class="btnRun" id="addQuickJob" href="/${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li> -->
 				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>				
 				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
 				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>

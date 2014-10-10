@@ -1,4 +1,4 @@
-var jobTable;
+var jTable;
 var benchTable;
 var solverTable;
 var userId;
@@ -73,9 +73,9 @@ $(document).ready(function(){
 		// When a node is clicked, get its ID and display the info in the details pane
 		spaceId = data.rslt.obj.attr("id");
 		spaceName=$('.jstree-clicked').text();
-	}).
+	});
 	//Initiate job table
-	jobTable=$('#jobs').dataTable( {
+	jTable=$('#jobs').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
@@ -84,7 +84,6 @@ $(document).ready(function(){
         "sServerMethod" : "POST",
         "fnServerData"	: fnPaginationHandler 
     });
-
 	
 	//Initiate solver table
 	solverTable=$('#solvers').dataTable( {
@@ -409,7 +408,7 @@ function recycleOrphaned(prim) {
 
 function deleteSelectedJobs() {
 	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected job(s)? After deletion, they can not be recovered');
-	table=jobTable;
+	
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
@@ -420,12 +419,12 @@ function deleteSelectedJobs() {
 				createDialog("Deleting the selected job(s), please wait. This will take some time for large numbers of jobs(s).");
 				$.post(  
 						starexecRoot +"services/delete/job", 
-						{selectedIds : getSelectedRows(table)},
+						{selectedIds : getSelectedRows(jTable)},
 						function(nextDataTablePage){
 							destroyDialog();
 							s=parseReturnCode(nextDataTablePage);
 							if (s) {
-								jobTable.fnDraw(false);
+								jTable.fnDraw(false);
 								handleSelectChange();
 							}
 						},  
@@ -458,7 +457,7 @@ function deleteOrphanedJobs() {
 							destroyDialog();
 							s=parseReturnCode(nextDataTablePage);
 							if (s) {
-								jobTable.fnDraw(false);
+								jTable.fnDraw(false);
 								handleSelectChange();
 							}
 						},  

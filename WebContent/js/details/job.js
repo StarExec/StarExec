@@ -22,6 +22,8 @@ $(document).ready(function(){
 		refreshPanels();
 	},30000);
 	
+	
+	
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
 });
@@ -262,6 +264,12 @@ function initUI(){
 		}
 	});
 	
+	$('#recompileSpaces').button( {
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	});
+	
 	$("#postProcess").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
@@ -375,6 +383,14 @@ function initUI(){
 		pairTable.fnDraw(false);
 	});
 	
+	$("#recompileSpaces").click(function() {
+		$.get(
+				starexecRoot+"services/recompile/"+jobId,
+				function(returnCode) {
+					s=parseReturnCode(returnCode);	
+		});
+	});
+	
 	$("#clearCache").click(function(){
 			
 			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
@@ -385,7 +401,6 @@ function initUI(){
 				buttons: {
 					'clear cache': function() {
 						$(this).dialog("close");
-							
 							$.post(
 									starexecRoot+"services/cache/clear/stats"+jobId+"/",
 									function(returnCode) {

@@ -690,8 +690,8 @@ CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 		where id = _jobId and deleted=false;
 	END //
 	
--- Sets the "paused" property of a job to true
--- Author: Wyatt Kaiser
+-- Sets the primary space of a job to a new space
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS UpdatePrimarySpace;
 CREATE PROCEDURE UpdatePrimarySpace(IN _jobId INT, IN _jobSpaceId INT)
 	BEGIN
@@ -882,5 +882,7 @@ CREATE PROCEDURE RemoveJobFromDatabase(IN _jobId INT)
 	BEGIN
 		DELETE FROM jobs WHERE id=_jobId;
 	END //
+	
+
 	
 DELIMITER ; -- this should always be at the end of the file

@@ -118,7 +118,7 @@ tr th {
 	vertical-align: bottom;
 }
 
-#selectBenchmark {
+.selectPrim {
 	float:right;
 	font-size: 14px;
 	margin-top: 10px;

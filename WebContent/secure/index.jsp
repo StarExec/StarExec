@@ -8,7 +8,8 @@
 		System.out.println("role = " + user.getRole());
 		System.out.println("unauthorized = " + user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME));
 		System.out.println("suspended = " + user.getRole().equals(R.SUSPENDED_ROLE_NAME));
-		if (!user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME) && !user.getRole().equals(R.SUSPENDED_ROLE_NAME)){
+		
+		if (!Users.isUnauthorized(userId) && !Users.isSuspended(userId)){
 			String redirectURL = Util.docRoot("secure/explore/spaces.jsp");
     		response.sendRedirect(redirectURL);
 		}

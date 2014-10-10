@@ -47,7 +47,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
 	
 	<script src="/${starexecRoot}/js/lib/jquery-ui.min.js"></script>
-	
+	<script src="/${starexecRoot}/js/lib/jquery.cookie.js"></script>
 	<script src="/${starexecRoot}/js/master.js"></script>
 	<c:if test="${not empty js}">	
 		<c:forEach var="jsFile" items="${fn:split(js, ',')}">

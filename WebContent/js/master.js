@@ -1,12 +1,23 @@
 var debugMode = false; //console.log statements are turned off by default
 
+//redirects the user to the quick job page (used if they clicked on "quick job" while not logged in
+cookie = $.cookie('redirectToQuickJob');
+if (cookie!= null && cookie!=2) {
+     
+	 $.cookie("redirectToQuickJob",2);
+     window.location.href=starexecRoot+"secure/add/quickJob.jsp?sid=-1";
+}
+
 /**
  * Contains javascript relevant to all pages within starexec 
  */
 
 // When the document is ready to be executed on
 $(document).ready(function(){
-		
+	$("#quickJobGuest").click(function() {
+		$.cookie("redirectToQuickJob", 1);
+	});
+	
 	// If the JSP contains a single message to display to the user...
 	if ($(".message").length == 1){
 				

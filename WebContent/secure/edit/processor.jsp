@@ -14,9 +14,9 @@ try {
 
 	
 	try {
-		List<String> settings=Communities.getDefaultSettings(proc.getCommunityId());
+		DefaultSettings settings=Communities.getDefaultSettings(proc.getCommunityId());
 		
-		request.setAttribute("defaultPPId",settings.get(4));
+		request.setAttribute("defaultPPId",settings.getPostProcessorId());
 	} catch (Exception e) {
 		//We couldn't find the default post processor ID, which is not a big deal
 	}

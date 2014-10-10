@@ -1800,10 +1800,13 @@ function checkPermissions(perms, id) {
 
 	if(perms.addJob) {
 		$('#addJob').fadeIn('fast');
+		$("#addQuickJob").fadeIn('fast');
 		$('#uploadJobXML').fadeIn('fast');
+		
 	} else {
 		$('#addJob').fadeOut('fast');
 		$('#uploadJobXML').fadeOut('fast');
+		$("#addQuickJob").fadeOut('fast');
 	}
 
 
@@ -1825,6 +1828,8 @@ function updateButtonIds(id) {
 	$('#uploadBench').attr('href', starexecRoot+"secure/add/benchmarks.jsp?sid=" + id);
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
+	$('#addQuickJob').attr('href', starexecRoot+"secure/add/quickJob.jsp?sid=" + id);
+
 	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	

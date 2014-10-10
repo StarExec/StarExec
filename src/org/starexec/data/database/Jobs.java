@@ -26,6 +26,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
@@ -53,6 +54,119 @@ public class Jobs {
 		return path.split("/");
 	}
 	
+	
+	
+	/**
+	 * Creates a new quick job, which is a job with only one job pair. Quick jobs
+	 * are implemented differently than normal jobs with just one pair, because
+	 * no space hierarchy information is used for quick jobs. As such, no relationship
+	 * is necessary between the the space of the solver, the space of the benchmark, and the 
+	 * space the job is being created in.
+	 * @param job The Job object representing the job to create, which should have exactly 1 pair
+	 * and all other relevant fields set
+	 * @param spaceId
+	 * @return
+	 */
+	public static boolean addJob(Job job,int spaceId) {
+		Connection con=null;
+		try {
+			int jobSpaceId=Spaces.addJobSpace("job space",con);
+			job.setPrimarySpace(jobSpaceId);
+
+			job.getJobPairs().get(0).setJobSpaceId(jobSpaceId);
+			Jobs.addJob(con, job);
+			//put the job in the space it was created in
+			Jobs.associate(con, job.getId(), spaceId);
+			for(JobPair pair : job) {
+				pair.setJobId(job.getId());
+				//writer.write(getPairString(pair));
+				JobPairs.addJobPair(con, pair);
+			}
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			Common.doRollback(con);
+
+		}finally {
+			Common.safeClose(con);
+		}
+		
+		return false;
+	} 
+	
+	/**
+	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
+	 * they must all be rooted at the same space. Upon return, each pair will have its job space id set
+	 * to the correct job space
+	 * @param pairs The list of pairs to make paths for
+	 * @param con The open connection to make calls on
+	 * @return The ID of the root job space for this list of pairs, or null on error.
+	 */
+	public static Integer createJobSpacesForPairs(List<JobPair> pairs, Connection con) {
+		try {
+			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
+			String topLevel="";
+			for (JobPair pair : pairs) {
+				log.debug("adding a new pair with path = " +pair.getPath());
+				String[] spaces=getSpaceNames(pair.getPath());
+				StringBuilder curPathBuilder=new StringBuilder();
+				for (int i=0;i<spaces.length;i++) {
+					String name=spaces[i];
+					curPathBuilder.append("/");
+					curPathBuilder.append(name);
+					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
+						topLevel=curPathBuilder.toString(); 
+					}
+					//if we need to create a new space
+					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
+						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
+						//associate the new space to its parent
+						String parentPath=curPathBuilder.toString();
+						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
+						if (parentPath.length()>0) {
+							Spaces.associateJobSpaces(pathsToIds.get(parentPath), pathsToIds.get(curPathBuilder.toString()),con);
+						}
+					}
+					
+				}
+				pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
+			}
+			return pathsToIds.get(topLevel);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Makes all new job spaces for the given job and moves all the pairs over to the new spaces.
+	 * Useful if the job spaces for the given job were somehow corrupted, but path information for the
+	 * pairs is correct
+	 * @param jobId The ID of the job to fix
+	 * @return True on success and false otherwise
+	 */
+	public static boolean recompileJobSpaces(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			Common.beginTransaction(con);
+
+			Job j=Jobs.getDetailed(jobId);
+			int topLevel=createJobSpacesForPairs(j.getJobPairs(),con);
+			Jobs.updatePrimarySpace(jobId, topLevel,con);
+			JobPairs.updateJobSpaces(j.getJobPairs(),con);
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e) {
+			Common.doRollback(con);
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
 	/**
 	 * Adds a new job to the database. NOTE: This only records the job in the 
 	 * database, this does not actually submit a job for execution (see JobManager.submitJob).
@@ -69,59 +183,28 @@ public class Jobs {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
+			//todo: creating these job spaces needs to be a function
 			// maps depth to name to job space id for job spaces
-			HashMap<Integer,HashMap<String,Integer>> neededSpaces=new HashMap<Integer,HashMap<String,Integer>>();
-			for (JobPair pair : job) {
-				log.debug("adding a new pair with path = " +pair.getPath());
-				String[] spaces=getSpaceNames(pair.getPath());
-				for (int i=0;i<spaces.length;i++) {
-					String name=spaces[i];
-					if (!neededSpaces.containsKey(i)) {
-						neededSpaces.put(i, new HashMap<String,Integer>());
-					}
-					HashMap<String,Integer> depthMap=neededSpaces.get(i);
-					//this job space needs to be created
-					if (!depthMap.containsKey(name)) {
-						depthMap.put(name, Spaces.addJobSpace(name,con));
-						//associate with a parent
-						if (i>0) {
-							Spaces.associateJobSpaces(neededSpaces.get(i-1).get(spaces[i-1]), depthMap.get(name), con);
-						}
-					}
-				}
-				pair.setJobSpaceId(neededSpaces.get(spaces.length-1).get(spaces[spaces.length-1]));
-			}
+			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(neededSpaces.get(0).values().iterator().next());
-			if (neededSpaces.get(0).size()>1) {
-				log.warn("a job was created that has more than one top level space!");
-			}
+			job.setPrimarySpace(topLevel);
+			
+			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
 			
-			//put the job in the space it was created in
-			Jobs.associate(con, job.getId(), spaceId);
+			//put the job in the space it was created in, assuming a space was selected
+			if (spaceId>0) {
+				Jobs.associate(con, job.getId(), spaceId);
+			}
 			
 			log.debug("adding job pairs");
-			File dir=new File(R.JOBPAIR_INPUT_DIR);
-			dir.mkdirs();
-			File jobPairFile=new File(R.JOBPAIR_INPUT_DIR,UUID.randomUUID().toString());
-			jobPairFile.createNewFile();
-			BufferedWriter writer=new BufferedWriter(new FileWriter(jobPairFile));
+			
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
-				//writer.write(getPairString(pair));
 				JobPairs.addJobPair(con, pair);
 			}
-			writer.flush();
-			writer.close();
-			procedure=con.prepareStatement("LOAD DATA INFILE ? INTO TABLE JOB_PAIRS " +
-					" FIELDS TERMINATED BY ',' " +
-					"(job_id, bench_id, config_id, status_code, cpuTimeout, clockTimeout, path,job_space_id,solver_name,bench_name,config_name,solver_id);");
-			procedure.setString(1, jobPairFile.getAbsolutePath());
-			//procedure.executeUpdate();
-			jobPairFile.delete();
 			Common.endTransaction(con);
 			log.debug("job added successfully");
 			
@@ -3811,7 +3894,7 @@ public class Jobs {
 				Spaces.updateJobSpaceClosureTable(id);
 			}
 			log.debug("setupjobpairs-- done looking at pairs, updating the database");
-			JobPairs.UpdateJobSpaces(p);
+			JobPairs.updateJobSpaces(p);
 			updatePrimarySpace(jobId,primarySpaceId);
 			log.debug("returning new job space id = "+primarySpaceId);
 			return primarySpaceId;
@@ -3827,27 +3910,47 @@ public class Jobs {
 	 * of an older job from nothing to its new job space
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The new job space ID
+	 * @param con the open connection to make the call on
+	 * @return true on success, false otherwise
+	 * @author Eric Burns
+	 */
+	
+	private static boolean updatePrimarySpace(int jobId, int jobSpaceId, Connection con) {
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
+			procedure.setInt(1, jobId);		
+			procedure.setInt(2, jobSpaceId);
+			procedure.executeUpdate();	
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+		
+	}
+	
+	/**
+	 * Updates the primary space of a job. This should only be necessary when changing the primary space
+	 * of an older job from nothing to its new job space
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The new job space ID
 	 * @return true on success, false otherwise
 	 * @author Eric Burns
 	 */
 	
 	private static boolean updatePrimarySpace(int jobId, int jobSpaceId) {
 		Connection con=null;
-		CallableStatement procedure = null;
 		try {
 			con=Common.getConnection();
-			 procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
-			procedure.setInt(1, jobId);		
-			procedure.setInt(2, jobSpaceId);
-			procedure.executeUpdate();	
-
-			log.debug("Primary space for job with id = "+jobId + " updated succesfully");
-			return true;
+			return updatePrimarySpace(jobId, jobSpaceId, con);
+			
 		} catch (Exception e) {
 			log.error("Update Primary Space says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}
 		return false;
 	}

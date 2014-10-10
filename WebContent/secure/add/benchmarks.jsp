@@ -7,7 +7,7 @@
 	try {
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
-		List<String> listOfDefaultSettings = Communities.getDefaultSettings(spaceId);
+		DefaultSettings settings = Communities.getDefaultSettings(spaceId);
 		int userId = SessionUtil.getUserId(request);
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
@@ -18,7 +18,7 @@
 		request.setAttribute("space", Spaces.get(spaceId));
 		request.setAttribute("types", postProcs);
 		request.setAttribute("userSpaces",userSpaces);
-		request.setAttribute("dependenciesEnabled",listOfDefaultSettings.get(5));
+		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if (!p.canAddBenchmark()) {

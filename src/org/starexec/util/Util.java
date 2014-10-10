@@ -268,24 +268,24 @@ public class Util {
      * @return A hashmap containing the field name to field value mapping
      */
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
-	// Use Tomcat's multipart form utilities
-	FileItemFactory factory = new DiskFileItemFactory();
-	ServletFileUpload upload = new ServletFileUpload(factory);
-	List<FileItem> items = upload.parseRequest(request);
-	HashMap<String, Object> form = new HashMap<String, Object>();
-		
-	for(FileItem f : items) {
-	    // If we're dealing with a regular form field...
-	    if(f.isFormField()) {
-		// Add the field name and field value to the hashmap
-		form.put(f.getFieldName(), f.getString());				
-	    } else {
-		// Else we've encountered a file, so add the FileItem to the hashmap
-		form.put(f.getFieldName(), f);					
-	    }	
-	}
-		
-	return form;
+		// Use Tomcat's multipart form utilities
+		FileItemFactory factory = new DiskFileItemFactory();
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		List<FileItem> items = upload.parseRequest(request);
+		HashMap<String, Object> form = new HashMap<String, Object>();
+			
+		for(FileItem f : items) {
+		    // If we're dealing with a regular form field...
+		    if(f.isFormField()) {
+			// Add the field name and field value to the hashmap
+			form.put(f.getFieldName(), f.getString());				
+		    } else {
+			// Else we've encountered a file, so add the FileItem to the hashmap
+			form.put(f.getFieldName(), f);					
+		    }	
+		}
+			
+		return form;
     }
 	
 	
@@ -359,7 +359,6 @@ public class Util {
     public static String executeCommand(String[] command, String[] envp, File workingDirectory) {
 	Runtime r = Runtime.getRuntime();
 		
-	BufferedReader reader = null;		
 	//
 	try {					
 	    Process p;

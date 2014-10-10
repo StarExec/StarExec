@@ -156,6 +156,15 @@ public class GridEngineBackend implements Backend{
 
     }
 
+    /**
+     * Returns the result of running qstat -f
+     */
+	@Override
+	public String getRunningJobsStatus() {
+		return GridEngineUtil.getQstatOutput();
+		
+	}
+
     /**end taken from JobPairs**/
 
 

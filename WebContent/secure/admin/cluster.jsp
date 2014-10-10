@@ -21,7 +21,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/cluster, lib/jquery.dataTables.min, lib/jquery.cookie, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/cluster, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
 	<div id="explorer">
 		<h3>queues</h3>
 		<ul id="exploreList"></ul>

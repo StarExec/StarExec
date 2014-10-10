@@ -3,7 +3,6 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +18,6 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
-import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -37,9 +35,11 @@ public class Queues {
 	 * an atomic unit.
 	 * @param con The connection to perform the operation on
 	 * @param queueName The name of the queue to add
-	 * @param nodeIds list of node ids to set associations for
-	 * @return The ID of the newly inserted space, -1 if the operation failed
+	 * @param cpuTimeout the max cpu timeout for the new queue
+	 * @param wallTimeout the max wallclock timeout for the new queue
+	 * @return The ID of the newly inserted queue, -1 if the operation failed
 	 * @author Tyler Jensen
+	 * @throws Exception 
 	 */
 	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) throws Exception {			
 		log.debug("preparing to call sql procedures to add queue with name = "+queueName);
@@ -70,6 +70,8 @@ public class Queues {
 	/**
 	 * Adds a new queue to the system.
 	 * @param queueName The name of the queue to add
+	 * @param cpuTimeout the max cpu timeout for the new queue
+	 * @param wallTimeout the max wallclock timeout for the new queue
 	 * @return The ID of the newly inserted queue, -1 if the operation failed
 	 * @author Wyatt Kaiser
 	 */
@@ -100,8 +102,8 @@ public class Queues {
 	/**
 	 * Associates a queue and a worker node to indicate the node belongs to the queue.
 	 * If the association already exists, any errors are ignored.
-	 * @param queueName The FULL name of the owning queue
-	 * @param nodeName The FULL name of the worker node that belongs to the queue
+	 * @param queueId the ID of the queue
+	 * @param nodeId The ID of the worker node that belongs to the queue
 	 * @return True if the operation was a success, false otherwise. 
 	 */
 	public static boolean associate(int queueId, int nodeId) {
@@ -183,6 +185,7 @@ public class Queues {
 	 * @param con The connection to make the query with
 	 * @param qid The id of the queue to retrieve
 	 * @return a queue object representing the queue to retrieve
+	 * @throws Exception 
 	 */
 	protected static Queue get(Connection con, int qid) throws Exception {	
 		log.debug("starting get");
@@ -316,9 +319,10 @@ public class Queues {
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
 	 * @param con The connection to make the query on 
-	 * @param jobId The id of the job to get pairs for
+	 * @param qId the ID of the queue to get the enqueued pairs of
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
+	 * @throws Exception 
 	 */
 	protected static List<JobPair> getEnqueuedPairsDetailed(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
@@ -363,7 +367,7 @@ public class Queues {
 	/**
 	 * Gets all job pairs that are enqueued (up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param jobId The id of the job to get pairs for
+	 * @param qId The id of the queue to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
@@ -697,17 +701,17 @@ public class Queues {
 
 	/**
 	 * Get all the queues that have been reserved for a particular space
-	 * @param space_id
+	 * @param spaceId
 	 * @return
 	 */
-	public static List<Queue> getQueuesForSpace(int space_id) {
+	public static List<Queue> getQueuesForSpace(int spaceId) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetQueuesForSpace(?)}");
-			procedure.setInt(1, space_id);
+			procedure.setInt(1, spaceId);
 	
 			results = procedure.executeQuery();
 			List<Queue> queues = new LinkedList<Queue>();
@@ -734,9 +738,10 @@ public class Queues {
 	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated)
 	 * @param con The connection to make the query on 
-	 * @param jobId The id of the job to get pairs for
+	 * @param qId The id of the queue to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
+	 * @throws Exception 
 	 */
 	protected static List<JobPair> getRunningPairsDetailed(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
@@ -776,7 +781,7 @@ public class Queues {
 	/**
 	 * Gets all job pairs that are running (up to limit) for the given queue and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param jobId The id of the job to get pairs for
+	 * @param qId The id of the queue to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
@@ -796,9 +801,10 @@ public class Queues {
 	}
 	
 	/**
-	 * Returns the number of job pairs running in the given queue
+	 * Returns the number of job pairs running in the given queue that are owned by the given user
 	 * @param queueId The queue in question
-	 * @return The integer number of jobs, or null on failure
+	 * @param userId The ID of the user who owns the pairs we are counting
+	 * @return The integer number of job pairs, or null on failure
 	 */
 
 	public static Integer getSizeOfQueue(int queueId, int userId) {
@@ -895,7 +901,9 @@ public class Queues {
 	/**
 	 * Gets all queues in the starexec cluster accessible by the user with the given id
 	 * @return A list of queues that are defined the cluster
+	 * @param userId The ID of the user to ge tqueues for
 	 * @author Aaron Stump
+
 	 */
 	public static List<Queue> getUserQueues(int userId) {
 	    return getQueues(userId);
@@ -1060,7 +1068,7 @@ public class Queues {
 	
 	/**
 	 * Checks to see whether the given name is already being used by a queue
-	 * @param queue_name
+	 * @param queueName The name we want to check against all existing queues
 	 * @return True if the given name IS used by a given queue. False if the name is NOT used by a queue OR on error
 	 */
 
@@ -1070,7 +1078,7 @@ public class Queues {
 	
 	/**
 	 * Gets the name of a queue given its ID
-	 * @param queue_id
+	 * @param queueId The ID of the queue to retrieve the name of
 	 * @return The name of the queue, or null on error
 	 */
 	
@@ -1103,7 +1111,7 @@ public class Queues {
 	
 	/**
 	 * Checks to see whether the given queue is permanent
-	 * @param queue_id
+	 * @param queueId The ID of the queue to check
 	 * @return True if the queue is permanent and false if it is not OR there is an error
 	 */
 	

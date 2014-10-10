@@ -267,7 +267,7 @@ public class Cluster {
 	
 	/**
 	 * retrieves all the nodes that are not reserved for a certain time
-	 * @param name the name of the node to set the status for
+	 * @param sequenceName the name of the node to set the status for
 	 * @param status the status to set for the node
 	 * @return True if the operation was a success, false otherwise.
 	 */

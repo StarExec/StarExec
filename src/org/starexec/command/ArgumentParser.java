@@ -794,7 +794,7 @@ class ArgumentParser {
 		String url="";
 		String descMethod="upload";
 		Boolean downloadable=false;
-		
+		Boolean runTestJob=false;
 		//if a url is present, the file should be taken from the url
 		if (commandParams.containsKey(R.PARAM_URL)) {
 			upMethod="URL";
@@ -824,10 +824,13 @@ class ArgumentParser {
 		if (commandParams.containsKey(R.PARAM_DOWNLOADABLE)) {
 			downloadable=true;
 		}
+		if (commandParams.containsKey(R.PARAM_RUN)) {
+			runTestJob=true;
+		}
 		if (upMethod.equals("local")) {
-			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable);
+			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable,runTestJob);
 		} else {
-			return con.uploadSolverFromURL(name, desc,descMethod, Integer.parseInt(space), url, downloadable);
+			return con.uploadSolverFromURL(name, desc,descMethod, Integer.parseInt(space), url, downloadable,runTestJob);
 		}
 		
 	}

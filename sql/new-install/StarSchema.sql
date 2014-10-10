@@ -465,12 +465,16 @@ CREATE TABLE space_default_settings (
 	dependencies_enabled BOOLEAN DEFAULT FALSE,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	default_benchmark INT DEFAULT NULL,
-
+	default_solver INT DEFAULT NULL,
+	bench_processor INT,
 	PRIMARY KEY (space_id),
 	CONSTRAINT space_default_settings_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT space_default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
 	CONSTRAINT space_default_settings_default_benchmark FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL,
-	CONSTRAINT space_default_settings_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL
+	CONSTRAINT space_default_settings_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	CONSTRAINT space_default_settings_default_solver FOREIGN KEY (default_solver) REFERENCES solvers(id) ON DELETE SET NULL,
+	CONSTRAINT space_default_settings_bench_processor FOREIGN KEY (bench_processor) REFERENCES processors(id) ON DELETE SET NULL,
+
 );
 
 -- For Status Updates on a Benchmark upload
