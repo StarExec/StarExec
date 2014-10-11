@@ -394,7 +394,7 @@ jQuery.editable = {
                 console.log(select);
                 select.children().each(function() {
                     if (jQuery(this).val() == which) {
-                        jQuery(this).attr('selected', 'selected');
+                        jQuery(this).prop('selected', true);
                     };                    
                 });
             }
