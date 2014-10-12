@@ -190,8 +190,8 @@ DROP PROCEDURE IF EXISTS IsSolverACommunityDefault;
 CREATE PROCEDURE IsSolverACommunityDefault(IN _solverId INT)
 	BEGIN
 		SELECT count(*) as solverDefault
-		FROM space_default_settings
-		WHERE default_solver = _solverId;
+		FROM default_settings
+		WHERE default_solver = _solverId AND setting_type="comm";
 	END //
 -- Returns the number of public spaces a solver is in
 -- Benton McCune

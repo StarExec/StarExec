@@ -175,8 +175,8 @@ DROP PROCEDURE IF EXISTS IsBenchACommunityDefault;
 CREATE PROCEDURE IsBenchACommunityDefault(IN _benchId INT)
 	BEGIN
 		SELECT count(*) as benchDefault
-		FROM space_default_settings
-		WHERE default_benchmark = _benchId;
+		FROM default_settings
+		WHERE default_benchmark = _benchId AND setting_type="comm";
 	END //
 	
 -- Returns the number of public spaces a benchmark is in

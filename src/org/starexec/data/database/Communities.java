@@ -560,10 +560,10 @@ public class Communities {
 		CallableStatement procedure= null;
 		try {			
 			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL SetSpaceMaximumMemorySetting(?, ?)}");
+			procedure = con.prepareCall("{CALL SetMaximumMemorySetting(?, ?, ? )}");
 			procedure.setInt(1, id);
 			procedure.setLong(2, bytes);
-
+			procedure.setString(3,"comm");
 			procedure.executeUpdate();
 		
 		} catch (Exception e){			
@@ -597,7 +597,7 @@ public class Communities {
 		CallableStatement procedure= null;
 		try {			
 			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL SetSpaceDefaultSettingsById(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL SetDefaultSettingsById(?, ?, ?,?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
 			//if we are setting one of the IDs and it is -1, this means there is no setting
@@ -608,6 +608,7 @@ public class Communities {
 					procedure.setInt(3,(int)setting);
 				
 			}
+			procedure.setString(4, "comm");
 			
 			
 			procedure.executeUpdate();

@@ -467,64 +467,64 @@ DROP PROCEDURE IF EXISTS GetSpaceDefaultSettingsById;
 CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
 	BEGIN
 		SELECT *
-		FROM space_default_settings AS settings
-		WHERE space_id = _id;
+		FROM default_settings AS settings
+		WHERE space_id = _id AND setting_type="comm";
 	END //
 
 -- For a community, sets the default maximum memory setting in bytes
-DROP PROCEDURE IF EXISTS SetSpaceMaximumMemorySetting;
-CREATE PROCEDURE SetSpaceMaximumMemorySetting(IN _spaceId INT, IN _bytes BIGINT)
+DROP PROCEDURE IF EXISTS SetMaximumMemorySetting;
+CREATE PROCEDURE SetMaximumMemorySetting(IN _spaceId INT, IN _bytes BIGINT, IN _type CHAR(8))
 	BEGIN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET maximum_memory=_bytes
-		WHERE space_id = _spaceId;
+		WHERE space_id = _spaceId AND setting_type=_type;
 	END //
 
 -- Set a default setting of a space given by id.
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS SetSpaceDefaultSettingsById;
-CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT)
+DROP PROCEDURE IF EXISTS SetDefaultSettingsById;
+CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT, IN _type CHAR(8))
 	BEGIN
       CASE _num
 		WHEN 1 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET post_processor = _setting
-		WHERE space_id = _id;
+		WHERE space_id = _id AND setting_type=_type;
 		
 		WHEN 2 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET cpu_timeout = _setting
-		WHERE space_id = _id;
+		WHERE space_id = _id AND setting_type=_type;
 		
 		WHEN 3 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET clock_timeout = _setting
-		WHERE space_id = _id;
+		WHERE space_id = _id AND setting_type=_type;
 		
 		WHEN 4 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET dependencies_enabled=_setting
-		WHERE space_id=_id;
+		WHERE space_id=_id AND setting_type=_type;
 		
 		WHEN 5 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET default_benchmark=_setting
-		WHERE space_id=_id;
+		WHERE space_id=_id AND setting_type=_type;
 		
 		WHEN 6 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET pre_processor=_setting
-		WHERE space_id=_id;
+		WHERE space_id=_id AND setting_type=_type;
 		
 		WHEN 7 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET default_solver=_setting
-		WHERE space_id=_id;
+		WHERE space_id=_id AND setting_type=_type;
 		
 		WHEN 8 THEN
-		UPDATE space_default_settings
+		UPDATE default_settings
 		SET bench_processor=_setting
-		WHERE space_id=_id;
+		WHERE space_id=_id AND setting_type=_type;
 		
     END CASE;
 	END //
@@ -534,7 +534,7 @@ CREATE PROCEDURE SetSpaceDefaultSettingsById(IN _id INT, IN _num INT, IN _settin
 DROP PROCEDURE IF EXISTS InitSpaceDefaultSettingsById;
 CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT)
 	BEGIN
-		INSERT INTO space_default_settings (space_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor) VALUES (_id, _pp, _cto, _clto, _dp, _db,_dm,default_solver,_benchProc, _preProc);
+		INSERT INTO default_settings (id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor, setting_type) VALUES (_id, _pp, _cto, _clto, _dp, _db,_dm,default_solver,_benchProc, _preProc, "comm");
 	END //
 
 -- Get the id of the community where the space belongs to
