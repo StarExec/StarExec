@@ -30,18 +30,18 @@
 			request.setAttribute("benchNameLen",R.BENCH_NAME_LEN);
 			int commId=-1;
 			List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
-			List<Integer> comms=Users.getCommunities(userId);
+			List<Space> comms=Communities.getAll();
 			//TODO: Allow users to choose and also set up default settings for the entire system
-			int settingCounter=5;
+			int settingCounter=0;
 			if (comms.size()>0) {
 				for (int i=0;i<comms.size();i++) {
-					DefaultSettings s=Communities.getDefaultSettings(comms.get(i));
+					DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
 					s.setTempId(settingCounter);
 					settingCounter++;
 					listOfDefaultSettings.add(s);
 
 				}
-				commId=comms.get(0);
+				commId=comms.get(0).getId();
 			}
 			
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);

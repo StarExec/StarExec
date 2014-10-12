@@ -102,6 +102,14 @@ function attachFormValidation(){
 			},
 			benchProcess: {
 				required: true
+			},
+			postProcess: {
+				required: true
+				
+			},
+			preProcess: {
+				required: true
+				
 			}
 		},
 		messages: {
@@ -145,6 +153,12 @@ function attachFormValidation(){
 			},
 			benchProcess:  {
 				required: "choose a benchmark processor"
+			},
+			postProcess:  {
+				required: "choose a postprocessor"
+			},
+			preProcess:  {
+				required: "choose a preprocessor"
 			}
 		}
 	});
@@ -232,9 +246,17 @@ function populateDefaults() {
 	setInputToValue("#solver",solverId);
 	setInputToValue("#benchmarkField",benchContents);
 	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
-	$("#preProcess").val(preProcessorId);
-	$("#postProcess").val(postProcessorId);
-	$("#benchProcess").val(benchProcessorId);
+	alert(preProcessorId);
+	if (stringExsits(preProcessorId)) {
+		$("#preProcess").val(preProcessorId);
+	}
+	if (stringExists(postProcessorId)) {
+		$("#postProcess").val(postProcessorId);
+
+	}
+	if (stringExists(benchProcessorId)) {
+		$("#benchProcess").val(benchProcessorId);
+	}
 }
 
 /**

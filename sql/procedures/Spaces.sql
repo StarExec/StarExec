@@ -468,16 +468,16 @@ CREATE PROCEDURE GetSpaceDefaultSettingsById(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM default_settings AS settings
-		WHERE space_id = _id AND setting_type="comm";
+		WHERE id = _id AND setting_type="comm";
 	END //
 
 -- For a community, sets the default maximum memory setting in bytes
 DROP PROCEDURE IF EXISTS SetMaximumMemorySetting;
-CREATE PROCEDURE SetMaximumMemorySetting(IN _spaceId INT, IN _bytes BIGINT, IN _type CHAR(8))
+CREATE PROCEDURE SetMaximumMemorySetting(IN _id INT, IN _bytes BIGINT, IN _type CHAR(8))
 	BEGIN
 		UPDATE default_settings
 		SET maximum_memory=_bytes
-		WHERE space_id = _spaceId AND setting_type=_type;
+		WHERE id = _id AND setting_type=_type;
 	END //
 
 -- Set a default setting of a space given by id.
@@ -489,42 +489,42 @@ CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT
 		WHEN 1 THEN
 		UPDATE default_settings
 		SET post_processor = _setting
-		WHERE space_id = _id AND setting_type=_type;
+		WHERE id = _id AND setting_type=_type;
 		
 		WHEN 2 THEN
 		UPDATE default_settings
 		SET cpu_timeout = _setting
-		WHERE space_id = _id AND setting_type=_type;
+		WHERE id = _id AND setting_type=_type;
 		
 		WHEN 3 THEN
 		UPDATE default_settings
 		SET clock_timeout = _setting
-		WHERE space_id = _id AND setting_type=_type;
+		WHERE id = _id AND setting_type=_type;
 		
 		WHEN 4 THEN
 		UPDATE default_settings
 		SET dependencies_enabled=_setting
-		WHERE space_id=_id AND setting_type=_type;
+		WHERE id=_id AND setting_type=_type;
 		
 		WHEN 5 THEN
 		UPDATE default_settings
 		SET default_benchmark=_setting
-		WHERE space_id=_id AND setting_type=_type;
+		WHERE id=_id AND setting_type=_type;
 		
 		WHEN 6 THEN
 		UPDATE default_settings
 		SET pre_processor=_setting
-		WHERE space_id=_id AND setting_type=_type;
+		WHERE id=_id AND setting_type=_type;
 		
 		WHEN 7 THEN
 		UPDATE default_settings
 		SET default_solver=_setting
-		WHERE space_id=_id AND setting_type=_type;
+		WHERE id=_id AND setting_type=_type;
 		
 		WHEN 8 THEN
 		UPDATE default_settings
 		SET bench_processor=_setting
-		WHERE space_id=_id AND setting_type=_type;
+		WHERE id=_id AND setting_type=_type;
 		
     END CASE;
 	END //

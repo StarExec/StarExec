@@ -46,11 +46,11 @@ CREATE PROCEDURE LeaveSpace(IN _userId INT, IN _spaceId INT)
 DROP PROCEDURE IF EXISTS GetCommunityDefaultSettingsById;
 CREATE PROCEDURE GetCommunityDefaultSettingsById(IN _id INT)
 	BEGIN
-		SELECT space_id, name, cpu_timeout, clock_timeout, post_processor
+		SELECT default_settings.id, name, cpu_timeout, clock_timeout, post_processor
 		FROM default_settings AS settings
 		LEFT OUTER JOIN processors AS pros
 		ON settings.post_processor = pros.id
-		WHERE space_id = _id AND setting_type="comm";
+		WHERE default_settings.id = _id AND setting_type="comm";
 	END //
 
 
