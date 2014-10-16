@@ -679,20 +679,25 @@ public abstract class JobManager {
 	 * @param spaceToPairs A mapping from spaces to lists of job pairs in that space
 	 */
 	public static void addJobPairsRoundRobin(Job j, HashMap<Integer, List<JobPair>> spaceToPairs) {
-		int index=0;
-		while (spaceToPairs.size()>0) {
-			Set<Integer> keys=spaceToPairs.keySet();
-			for (Integer spaceId : keys) {
-				//if there is at least one pair left in this space
-				if (spaceToPairs.get(spaceId).size()>index) {
-					j.addJobPair(spaceToPairs.get(spaceId).get(index));
-				} else {
-					//otherwise, the space is done, and we should remove it from the hashmap of spaces
-					spaceToPairs.remove(spaceId);
+		try {
+			int index=0;
+			while (spaceToPairs.size()>0) {
+				Set<Integer> keys=spaceToPairs.keySet();
+				for (Integer spaceId : keys) {
+					//if there is at least one pair left in this space
+					if (spaceToPairs.get(spaceId).size()>index) {
+						j.addJobPair(spaceToPairs.get(spaceId).get(index));
+					} else {
+						//otherwise, the space is done, and we should remove it from the hashmap of spaces
+						spaceToPairs.remove(spaceId);
+					}
 				}
+				index++;
 			}
-			index++;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
+		
 	}
 
 	/**

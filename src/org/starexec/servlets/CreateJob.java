@@ -250,7 +250,7 @@ public class CreateJob extends HttpServlet {
 
 				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
 				
-				if (traversal.equals("depth")) {
+				if (traversalMethod.equals("depth")) {
 					log.debug("User selected depth-first traversal");
 
 					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
