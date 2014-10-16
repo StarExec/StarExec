@@ -711,36 +711,42 @@ public abstract class JobManager {
 	 * desirable order
 	 */
 	public static HashMap<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, int cpuTimeout, int clockTimeout, long memoryLimit, HashMap<Integer, String> SP) {
-		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
-		
-		List<Solver> solvers = Solvers.getWithConfig(configIds);
-		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
-		List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
-		spaces.add(Spaces.get(spaceId));
-		// Pair up the solvers and benchmarks
+		try {
+			HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
+			
+			List<Solver> solvers = Solvers.getWithConfig(configIds);
+			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
+			spaces.add(Spaces.get(spaceId));
+			// Pair up the solvers and benchmarks
 
-		for (Space s : spaces) {
-			benchmarks = Benchmarks.getBySpace(s.getId());
-			List<JobPair> curPairs=new ArrayList<JobPair>();
-			for(Benchmark bench : benchmarks){
-				for(Solver solver : solvers) {
-					JobPair pair = new JobPair();
-					pair.setBench(bench);
-					pair.setSolver(solver);				
-					pair.setCpuTimeout(cpuTimeout);
-					pair.setWallclockTimeout(clockTimeout);
-					pair.setMaxMemory(memoryLimit);
-					pair.setPath(SP.get(spaceId));
-					pair.setSpace(Spaces.get(s.getId()));
-					curPairs.add(pair);
-					
+			for (Space s : spaces) {
+				benchmarks = Benchmarks.getBySpace(s.getId());
+				List<JobPair> curPairs=new ArrayList<JobPair>();
+				for(Benchmark bench : benchmarks){
+					for(Solver solver : solvers) {
+						JobPair pair = new JobPair();
+						pair.setBench(bench);
+						pair.setSolver(solver);				
+						pair.setCpuTimeout(cpuTimeout);
+						pair.setWallclockTimeout(clockTimeout);
+						pair.setMaxMemory(memoryLimit);
+						pair.setPath(SP.get(spaceId));
+						pair.setSpace(Spaces.get(s.getId()));
+						curPairs.add(pair);
+						
+					}
 				}
-			}
-			spaceToPairs.put(s.getId(), curPairs);
+				spaceToPairs.put(s.getId(), curPairs);
 
+			}
+			
+			return spaceToPairs;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		
-		return spaceToPairs;
+		return null;
+
 	}
 
 
