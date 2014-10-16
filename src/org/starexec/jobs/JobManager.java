@@ -720,9 +720,15 @@ public abstract class JobManager {
 			HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
 			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
-			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+			
+			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 			spaces.add(Spaces.get(spaceId));
+			
+			for (Space s : spaces) {
+				benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+			}
+			
 			// Pair up the solvers and benchmarks
 
 			for (Space s : spaces) {
