@@ -668,6 +668,7 @@ public abstract class JobManager {
 	 */
 	public static void addJobPairsDepthFirst(Job j, HashMap<Integer, List<JobPair>> spaceToPairs) {
 		for (Integer spaceId : spaceToPairs.keySet()) {
+			log.debug("adding this many pairs from space id = "+spaceId+" "+spaceToPairs.get(spaceId).size());
 			j.addJobPairs(spaceToPairs.get(spaceId));
 		}
 	}
@@ -724,15 +725,13 @@ public abstract class JobManager {
 			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 			spaces.add(Spaces.get(spaceId));
-			
-			for (Space s : spaces) {
-				benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
-			}
+		
 			
 			// Pair up the solvers and benchmarks
 
 			for (Space s : spaces) {
 				benchmarks = Benchmarks.getBySpace(s.getId());
+				log.debug("found this many benchmarks for space id = "+s.getId()+" "+benchmarks.size());
 				List<JobPair> curPairs=new ArrayList<JobPair>();
 				for(Benchmark bench : benchmarks){
 					for(Solver solver : solvers) {
