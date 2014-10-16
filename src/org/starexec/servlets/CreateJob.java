@@ -245,6 +245,7 @@ public class CreateJob extends HttpServlet {
 			
 			
 			}else if (benchMethod.equals("runAllBenchInHierarchy")) {
+				log.debug("got request to run all in bench hierarchy");
 				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
