@@ -689,7 +689,7 @@ public abstract class JobManager {
 						j.addJobPair(spaceToPairs.get(spaceId).get(index));
 					} else {
 						//otherwise, the space is done, and we should remove it from the hashmap of spaces
-						spaceToPairs.remove(spaceId);
+						keys.remove(spaceId);
 					}
 				}
 				index++;

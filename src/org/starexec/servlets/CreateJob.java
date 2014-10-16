@@ -255,6 +255,7 @@ public class CreateJob extends HttpServlet {
 
 					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
 				} else {
+					log.debug("users selected round robin traversal");
 					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 				}
 				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
