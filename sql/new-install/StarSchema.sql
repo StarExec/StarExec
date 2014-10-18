@@ -457,7 +457,7 @@ CREATE TABLE bench_dependency (
 -- Author: Ruoyu Zhang + Eric Burns
 
 CREATE TABLE default_settings (
-    id INT,
+    id INT, -- either a user ID or community ID depending on what the setting_type is
     post_processor INT,
     pre_processor INT,
     cpu_timeout INT DEFAULT 1,
@@ -468,7 +468,8 @@ CREATE TABLE default_settings (
 	default_solver INT DEFAULT NULL,
 	bench_processor INT,
 	setting_type CHAR(8) DEFAULT "comm",
-	PRIMARY KEY (id, setting_type),
+	name VARCHAR(32) DEFAULT "settings",
+	PRIMARY KEY (id, setting_type,name),
 	CONSTRAINT default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
 	CONSTRAINT default_settings_default_benchmark FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL,
 	CONSTRAINT default_settings_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,

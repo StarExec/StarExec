@@ -215,6 +215,17 @@ public class Validator {
     	}
     }
     
+    public static boolean isValidTimeout(String s) {
+    	if (!isValidInteger(s)) {
+    		return false;
+    	}
+    	int x=Integer.parseInt(s);
+    	if (x<=0) {
+    		return false;
+    	}
+    	return true;
+    }
+    
     /**
      * Validates a string to ensure it can be treated as a double 
      * @param s The string to validate as a double

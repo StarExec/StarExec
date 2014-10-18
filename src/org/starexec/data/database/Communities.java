@@ -380,6 +380,10 @@ public class Communities {
 		
 	}
 	
+	public static boolean createNewDefaultSettings(DefaultSettings d) {
+		return Settings.addNewSettingsProfile(d, "comm");
+	}
+	
 	
 	/**
 	 * Get the default setting of the community given by the id.
@@ -391,8 +395,8 @@ public class Communities {
 	 */
 	public static DefaultSettings getDefaultSettings(int id) {
 		Connection con = null;			
-		//List<String> listOfDefaultSettings = Arrays.asList("id","0","1","1","0","0","0","1073741824","0","0");
 		DefaultSettings settings=new DefaultSettings();
+		settings.setId(id);
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -428,19 +432,9 @@ public class Communities {
 				settings.setName(Spaces.getName(id));
 			}
 			else {
-			    Common.safeClose(procedure);
-				procedure = con.prepareCall("{CALL InitSpaceDefaultSettingsById(?, ?, ?, ?, ?, ?,?,?,?,?)}");
-				procedure.setInt(1, community);
-				procedure.setObject(2, settings.getPostProcessorId());
-				procedure.setInt(3, settings.getCpuTimeout());
-				procedure.setInt(4, settings.getWallclockTimeout());
-				procedure.setBoolean(5, settings.isDependenciesEnabled());
-				procedure.setObject(6, settings.getBenchId());
-				procedure.setLong(7,settings.getMaxMemory()); //memory initialized to 1 gigabyte
-				procedure.setObject(8,settings.getSolverId());
-				procedure.setObject(9, settings.getBenchProcessorId());
-				procedure.setObject(10,settings.getPreProcessorId());
-				procedure.executeUpdate();
+				String name=Spaces.getName(community);
+				settings.setName(name);
+			    createNewDefaultSettings(settings);
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

@@ -531,10 +531,10 @@ CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT
 
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS InitSpaceDefaultSettingsById;
-CREATE PROCEDURE InitSpaceDefaultSettingsById(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT)
+DROP PROCEDURE IF EXISTS CreateDefaultSettings;
+CREATE PROCEDURE CreateDefaultSettings(IN _id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _type CHAR(8), IN _name VARCHAR(32))
 	BEGIN
-		INSERT INTO default_settings (id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor, setting_type) VALUES (_id, _pp, _cto, _clto, _dp, _db,_dm,default_solver,_benchProc, _preProc, "comm");
+		INSERT INTO default_settings (id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name) VALUES (_id, _pp, _cto, _clto, _dp, _db,_dm,default_solver,_benchProc, _preProc, _type,_name);
 	END //
 
 -- Get the id of the community where the space belongs to

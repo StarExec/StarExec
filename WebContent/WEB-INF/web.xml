@@ -130,6 +130,15 @@
     <url-pattern>/secure/add/to_community/request</url-pattern>  
   </servlet-mapping>
 
+<servlet>
+    <servlet-name>AddSettingsProfile</servlet-name>
+    <servlet-class>org.starexec.servlets.AddSettingProfile</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AddSettingsProfile</servlet-name>
+    <url-pattern>/secure/add/profile</url-pattern>  
+  </servlet-mapping>
+
   <servlet>
     <servlet-name>JobCreator</servlet-name>
     <servlet-class>org.starexec.servlets.CreateJob</servlet-class>

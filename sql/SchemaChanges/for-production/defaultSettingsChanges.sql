@@ -6,7 +6,10 @@ ALTER TABLE space_default_settings CHANGE space_id id INT;
 
 ALTER TABLE space_default_settings ADD COLUMN setting_type CHAR(8) DEFAULT "comm";
 
-ALTER TABLE space_default_settings DROP PRIMARY KEY, ADD PRIMARY KEY(id, setting_type);
+ALTER TABLE space_default_settings ADD COLUMN name VARCHAR(32) DEFAULT "settings";
+
+
+ALTER TABLE space_default_settings DROP PRIMARY KEY, ADD PRIMARY KEY(id, setting_type,name);
 
 
 -- renaming all the foreign keys next to match our naming convention to the name of the table

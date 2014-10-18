@@ -5,7 +5,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
 
-public class DefaultSettings {
+public class DefaultSettings extends Identifiable {
 	private Integer preProcessorId;
 	private Integer postProcessorId;
 	private Integer benchProcessorId;

@@ -246,7 +246,6 @@ function populateDefaults() {
 	setInputToValue("#solver",solverId);
 	setInputToValue("#benchmarkField",benchContents);
 	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
-	alert(preProcessorId);
 	if (stringExsits(preProcessorId)) {
 		$("#preProcess").val(preProcessorId);
 	}
@@ -281,6 +280,19 @@ function initUI() {
 		icons: {
 			primary: "ui-icon-disk"
 		}
+	}).click(function() {
+		
+		$.post(  
+				starexecRoot+"secure/add/profile",
+				{postp: $("#postProcess").attr("value"), prep: $("#preProcess").attr("value"), benchp: $("#benchProcess").attr("value"),
+					solver: $("#solver").attr("value"), name: "test3", cpu: $("#cpuTimeout").attr("value"),
+					wall: $("#wallclockTimeout").attr("value"), dep: "false", bench: "", mem: $("#maxMem").attr("value")},
+				function(returnCode) {
+					alert(returnCode);
+				}
+			).error(function(){
+				showMessage('error',"Internal error removing user",5000);
+			});
 	});
 	$("#advancedSettings").expandable(true);
 	$("#solverField").expandable(true);
