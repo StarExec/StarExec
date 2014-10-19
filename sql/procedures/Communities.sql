@@ -41,18 +41,6 @@ CREATE PROCEDURE LeaveSpace(IN _userId INT, IN _spaceId INT)
 		AND space_id = _spaceId;
 	END //
 	
--- Get the default settings of the community given by id.
--- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS GetCommunityDefaultSettingsById;
-CREATE PROCEDURE GetCommunityDefaultSettingsById(IN _id INT)
-	BEGIN
-		SELECT default_settings.id, name, cpu_timeout, clock_timeout, post_processor
-		FROM default_settings AS settings
-		LEFT OUTER JOIN processors AS pros
-		ON settings.post_processor = pros.id
-		WHERE default_settings.id = _id AND setting_type="comm";
-	END //
-
 
 	
 -- Removes every association a user has with every space in the hierarchy rooted at the given spacew

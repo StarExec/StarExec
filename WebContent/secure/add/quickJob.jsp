@@ -43,7 +43,7 @@
 				}
 				commId=comms.get(0).getId();
 			}
-			List<DefaultSettings> userSettings=Settings.getUserProfiles(userId);
+			List<DefaultSettings> userSettings=Settings.getDefaultSettingsByUser(userId);
 			if (userSettings!=null) {
 				for (DefaultSettings s : userSettings) {
 					settingCounter++;

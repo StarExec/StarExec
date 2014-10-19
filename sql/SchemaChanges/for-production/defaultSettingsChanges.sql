@@ -2,14 +2,14 @@ USE starexec;
 
 ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_space_id;
 
-ALTER TABLE space_default_settings CHANGE space_id id INT;
+ALTER TABLE space_default_settings CHANGE space_id prim_id INT;
 
-ALTER TABLE space_default_settings ADD COLUMN setting_type CHAR(8) DEFAULT "comm";
+ALTER TABLE space_default_settings ADD COLUMN setting_type INT DEFAULT 1;
 
 ALTER TABLE space_default_settings ADD COLUMN name VARCHAR(32) DEFAULT "settings";
 
 
-ALTER TABLE space_default_settings DROP PRIMARY KEY, ADD PRIMARY KEY(id, setting_type,name);
+ALTER TABLE space_default_settings DROP PRIMARY KEY, ADD COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;
 
 
 -- renaming all the foreign keys next to match our naming convention to the name of the table

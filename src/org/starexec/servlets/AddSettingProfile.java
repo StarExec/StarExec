@@ -120,10 +120,6 @@ public class AddSettingProfile extends HttpServlet {
 			return new ValidatorStatusCode(false, "Invalid name");
 		}
 		
-		if (Settings.getUserProfileByIdAndName(userId, request.getParameter(NAME))!=null) {
-			return new ValidatorStatusCode(false, "The given name is already in use");
-		}
-		
 		if (!Validator.isValidBool(request.getParameter(DEPENDENCIES))) {
 			return new ValidatorStatusCode(false, "invalid dependency selection");
 		}

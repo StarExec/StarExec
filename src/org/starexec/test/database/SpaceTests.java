@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -162,10 +163,12 @@ public class SpaceTests extends TestSequence {
 	}
 	@Test 
 	private void updateDefaultCpuTimeoutTest() {
+		int settingId=Communities.getDefaultSettings(community.getId()).getId();
+		
 		int timeout=Communities.getDefaultCpuTimeout(community.getId());
-		Assert.assertTrue(Communities.setDefaultSettings(community.getId(), 2, timeout+1));
+		Assert.assertTrue(Settings.setDefaultSettings(settingId, 2, timeout+1));
 		Assert.assertEquals(timeout+1, Communities.getDefaultCpuTimeout(community.getId()));
-		Assert.assertTrue(Communities.setDefaultSettings(community.getId(), 2, timeout));
+		Assert.assertTrue(Settings.setDefaultSettings(settingId, 2, timeout));
 	}
 	@Test
 	private void getDefaultWallclockTimeoutTest() {
@@ -176,10 +179,12 @@ public class SpaceTests extends TestSequence {
 	}
 	@Test
 	private void updateDefaultWallclockTimeoutTest() {
+		int settingId=Communities.getDefaultSettings(community.getId()).getId();
+
 		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
-		Assert.assertTrue(Communities.setDefaultSettings(community.getId(), 3, timeout+1));
+		Assert.assertTrue(Settings.setDefaultSettings(settingId, 3, timeout+1));
 		Assert.assertEquals(timeout+1, Communities.getDefaultWallclockTimeout(community.getId()));
-		Assert.assertTrue(Communities.setDefaultSettings(community.getId(), 3, timeout));
+		Assert.assertTrue(Settings.setDefaultSettings(settingId, 3, timeout));
 	}
 	
 	@Test
@@ -192,10 +197,12 @@ public class SpaceTests extends TestSequence {
 	}
 	@Test
 	private void updateDefaultMemoryLimitTest() {
+		int settingId=Communities.getDefaultSettings(community.getId()).getId();
+
 		long memory=Communities.getDefaultMaxMemory(community.getId());
-		Assert.assertTrue(Communities.setDefaultMaxMemory(community.getId(), memory+1));
+		Assert.assertTrue(Settings.setDefaultMaxMemory(settingId, memory+1));
 		Assert.assertEquals(memory+1, Communities.getDefaultMaxMemory(community.getId()));
-		Assert.assertTrue(Communities.setDefaultMaxMemory(community.getId(), memory));
+		Assert.assertTrue(Settings.setDefaultMaxMemory(settingId, memory));
 	}
 	
 	@Test

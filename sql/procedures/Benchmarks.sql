@@ -168,16 +168,6 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 		WHERE bench_assoc.space_id=_id and bench.deleted=false and bench.recycled=false
 		ORDER BY order_id ASC;
 	END //
-
--- Checks to see whether the given benchmark is a community default for any community
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS IsBenchACommunityDefault;
-CREATE PROCEDURE IsBenchACommunityDefault(IN _benchId INT)
-	BEGIN
-		SELECT count(*) as benchDefault
-		FROM default_settings
-		WHERE default_benchmark = _benchId AND setting_type="comm";
-	END //
 	
 -- Returns the number of public spaces a benchmark is in
 -- Benton McCune

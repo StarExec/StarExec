@@ -10,18 +10,21 @@ import org.starexec.data.database.Common;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
 
@@ -317,60 +320,6 @@ public class SpaceSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks whether a user can update the default settings (default timeouts, max-memory, etc.) of a 
-	 * community.
-	 * @param spaceId The ID of the space that would have its settings changed
-	 * @param attribute The name of the setting being changed
-	 * @param newValue The new value that would be given to the setting
-	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	
-	//TODO: Consider how to handle where to use the Validator class
-	public static ValidatorStatusCode canUpdateSettings(int spaceId, String attribute, String newValue, int userId) {
-		
-		Permission perm = Permissions.get(userId, spaceId);		
-		if(perm == null || !perm.isLeader()) {
-			return new ValidatorStatusCode(false, "Only leaders can update settings in a space");
-		}
-		
-		Space s=Spaces.get(spaceId);
-		// Go through all the cases, depending on what attribute we are changing.
-		if (attribute.equals("name")) {
-			
-			
-			if (!s.getName().equals(newValue)) {
-				if (Spaces.notUniquePrimitiveName(newValue,spaceId)) {
-					return new ValidatorStatusCode(false, "The new name needs to be unique in the space");
-				}
-			}
-			
-		} else if (attribute.equals("description")) {
-			if (!Validator.isValidPrimDescription(newValue)) {
-				return new ValidatorStatusCode(false, "The description is not in a valid format. Please refer to the help pages to see the correct format");
-			}
-		} else if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
-			if (! Validator.isValidInteger(newValue)) {
-				return new ValidatorStatusCode(false, "The new limit needs to be a valid integer");
-			}
-			int timeout=Integer.parseInt(newValue);
-			if (timeout<=0) {
-				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
-			}
-		} else if (attribute.equals("MaxMem")) {
-			if (!Validator.isValidDouble(newValue)) {
-				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
-			}
-			
-			double limit=Double.parseDouble(newValue);
-			if (limit<=0) {
-				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
-			}
-		}
-		
-		return new ValidatorStatusCode(true);
-	}
 	/**
 	 * Checks to see whether the given user can see the given space
 	 * @param spaceId The ID of the space in question 
@@ -1044,6 +993,43 @@ public class SpaceSecurity {
 		return new ValidatorStatusCode(true);
 	}
 
-    
+	/**
+	 * Checks whether a user can update the default settings (default timeouts, max-memory, etc.) of a 
+	 * community.
+	 * @param spaceId The ID of the space that would have its settings changed
+	 * @param attribute The name of the setting being changed
+	 * @param newValue The new value that would be given to the setting
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 */
+	
+	//TODO: Consider how to handle where to use the Validator class
+	public static ValidatorStatusCode canUpdateSettings(int spaceId, String attribute, String newValue, int userId) {
+		
+		Permission perm = Permissions.get(userId, spaceId);		
+		if(perm == null || !perm.isLeader()) {
+			return new ValidatorStatusCode(false, "Only leaders can update settings in a space");
+		}
+		
+		Space s=Spaces.get(spaceId);
+		// Go through all the cases, depending on what attribute we are changing.
+		if (attribute.equals("name")) {
+			
+			
+			if (!s.getName().equals(newValue)) {
+				if (Spaces.notUniquePrimitiveName(newValue,spaceId)) {
+					return new ValidatorStatusCode(false, "The new name needs to be unique in the space");
+				}
+			}
+			
+		} else if (attribute.equals("description")) {
+			if (!Validator.isValidPrimDescription(newValue)) {
+				return new ValidatorStatusCode(false, "The description is not in a valid format. Please refer to the help pages to see the correct format");
+			}
+		}
+		
+		
+		return new ValidatorStatusCode(true);
+	}
 
 }
