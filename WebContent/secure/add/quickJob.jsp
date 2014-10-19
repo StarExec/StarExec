@@ -9,6 +9,7 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
+		boolean isPublicUser=Users.isPublicUser(userId);
 		// Verify this user can add jobs to this space
 		Permission p=null;
 		if (spaceId>0) {
@@ -31,8 +32,7 @@
 			int commId=-1;
 			List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
 			List<Space> comms=Communities.getAll();
-			//TODO: Allow users to choose and also set up default settings for the entire system
-			int settingCounter=0;
+			int settingCounter=0; //used as a temporary unique identifier for a settings object
 			if (comms.size()>0) {
 				for (int i=0;i<comms.size();i++) {
 					DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
@@ -43,7 +43,14 @@
 				}
 				commId=comms.get(0).getId();
 			}
-			
+			List<DefaultSettings> userSettings=Settings.getUserProfiles(userId);
+			if (userSettings!=null) {
+				for (DefaultSettings s : userSettings) {
+					settingCounter++;
+					s.setTempId(settingCounter);
+				}
+				listOfDefaultSettings.addAll(userSettings);
+			}
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
@@ -57,6 +64,7 @@
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
 			request.setAttribute("solvers",listOfSolvers);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);
+			request.setAttribute("isPublicUser",isPublicUser);
 		}
 	} catch (NumberFormatException nfe) {
 		log.error(nfe.getMessage(),nfe);
@@ -129,7 +137,7 @@
 			</fieldset>
 			<fieldset id= "advancedSettings">
 				<legend>advanced settings</legend>
-				<table id="tblAdvancedConfig" class="shaed contentTbl">
+				<table id="tblAdvancedConfig" class="shaded contentTbl">
 					<thead>
 						<tr>
 							<th>attribute</th>
@@ -248,9 +256,14 @@
 			<div id="actionBar">
 				<button type="submit" class="round" id="btnDone">submit</button>			
 				<button type="button" class="round" id="btnBack">cancel</button>	
-				<button type="button" class="round" id="btnSave">save profile</button>		
+				<c:if test="${!isPublicUser}">
+					<button type="button" class="round" id="btnSave">save profile</button>		
+				</c:if>
 			</div>	
 		</fieldset>		
 	</form>		
-	
+	<div id="dialog-createSettingsProfile" title="create settings profile">
+		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
+		<p><label>name: </label><input id="settingName" type="text"/></p>			
+	</div>
 </star:template>

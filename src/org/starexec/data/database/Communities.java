@@ -420,16 +420,7 @@ public class Communities {
 			}
 			
 			if(results.next()){
-				settings.setPreProcessorId(results.getInt("pre_processor"));
-				settings.setWallclockTimeout(results.getInt("clock_timeout"));
-				settings.setCpuTimeout(results.getInt("cpu_timeout"));
-				settings.setPostProcessorId(results.getInt("post_processor"));
-				settings.setDependenciesEnabled(results.getBoolean("dependencies_enabled"));
-				settings.setBenchId(results.getInt("default_benchmark"));
-				settings.setSolverId(results.getInt("default_solver"));
-				settings.setBenchProcessorId(results.getInt("bench_processor"));
-				settings.setMaxMemory(results.getLong("maximum_memory"));
-				settings.setName(Spaces.getName(id));
+				settings=Settings.resultsToSettings(results);
 			}
 			else {
 				String name=Spaces.getName(community);

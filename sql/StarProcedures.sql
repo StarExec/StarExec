@@ -18,6 +18,7 @@ source procedures/Websites.sql;
 source procedures/JobPairs.sql;
 source procedures/Queues.sql;
 source procedures/Cache.sql;
+source procedures/Settings.sql;
 source procedures/pagination/PairPagination.sql;
 source procedures/pagination/JobPagination.sql;
 source procedures/pagination/SolverPagination.sql;

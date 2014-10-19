@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
@@ -55,7 +56,7 @@ public class AddSettingProfile extends HttpServlet {
 		
 		ValidatorStatusCode status=isValidRequest(request);
 		if (!status.isSuccess()) {
-			
+			log.debug(status.getMessage());
 			response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,status.getMessage());
 			return;
 		}
@@ -67,13 +68,14 @@ public class AddSettingProfile extends HttpServlet {
 		d.setWallclockTimeout(Integer.parseInt(request.getParameter(WALLCLOCK_TIMEOUT)));
 		d.setCpuTimeout(Integer.parseInt(request.getParameter(CPU_TIMEOUT)));
 		d.setMaxMemory(Util.gigabytesToBytes(Double.parseDouble(request.getParameter(MAX_MEMORY))));
-
+		log.debug("wallclock is "+request.getParameter(WALLCLOCK_TIMEOUT));
+		
 		
 		String postId=request.getParameter(POST_PROCESSOR);
 		String solver=request.getParameter(SOLVER);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
-		String benchId=request.getParameter(BENCH_PROCESSOR);
+		String benchId=request.getParameter(BENCH_ID);
 		if (Validator.isValidInteger(postId)) {
 			int p=Integer.parseInt(postId);
 			if (p>0) {
@@ -101,6 +103,7 @@ public class AddSettingProfile extends HttpServlet {
 		if (Validator.isValidInteger(benchId)) {
 			int p=Integer.parseInt(benchId);
 			if (p>0) {
+				log.debug("setting the benchmark id = "+p);
 				d.setBenchId(p);
 			}
 		}
@@ -110,9 +113,15 @@ public class AddSettingProfile extends HttpServlet {
 	
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		
+		if (Users.isPublicUser(userId)) {
+			return new ValidatorStatusCode(false, "Only registered users can take this action");
+		}
 		if (!Validator.isValidSolverName(request.getParameter(NAME))) {
 			return new ValidatorStatusCode(false, "Invalid name");
+		}
+		
+		if (Settings.getUserProfileByIdAndName(userId, request.getParameter(NAME))!=null) {
+			return new ValidatorStatusCode(false, "The given name is already in use");
 		}
 		
 		if (!Validator.isValidBool(request.getParameter(DEPENDENCIES))) {

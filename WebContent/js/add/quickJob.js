@@ -228,6 +228,7 @@ function setInputToValue(inputSelector, value) {
  */
 function populateDefaults() {
 	selectedSettingId=$("#settingProfile option:selected").attr("value");
+	
 	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
 	//first, pull out
 	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
@@ -266,6 +267,7 @@ function initUI() {
 	//there must be some bench processor selected, so make sure we are using one
 	$("#benchProcess").find("option").first().attr("selected","selected");
 	
+	$("#dialog-createSettingsProfile").hide();
 	
 	$('#btnBack').button({
 		icons: {
@@ -281,18 +283,32 @@ function initUI() {
 			primary: "ui-icon-disk"
 		}
 	}).click(function() {
-		
-		$.post(  
-				starexecRoot+"secure/add/profile",
-				{postp: $("#postProcess").attr("value"), prep: $("#preProcess").attr("value"), benchp: $("#benchProcess").attr("value"),
-					solver: $("#solver").attr("value"), name: "test3", cpu: $("#cpuTimeout").attr("value"),
-					wall: $("#wallclockTimeout").attr("value"), dep: "false", bench: "", mem: $("#maxMem").attr("value")},
-				function(returnCode) {
-					alert(returnCode);
+		$("#dialog-createSettingsProfile").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'create': function() {
+					$(this).dialog("close");
+						$.post(  
+							starexecRoot+"secure/add/profile",
+							{postp: $("#postProcess").val(), prep: $("#preProcess").val(), benchp: $("#benchProcess").val(),
+								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
+								wall: $("#wallclockTimeout").val(), dep: "false", bench: "", mem: $("#maxMem").val()},
+							function(returnCode) {
+									//success
+							}
+						).error(function(xhr, textStatus, errorThrown){
+							showMessage('error',"Invalid parameters",5000);
+						});
+														
+				},
+				"cancel": function() {
+					$(this).dialog("close");
 				}
-			).error(function(){
-				showMessage('error',"Internal error removing user",5000);
-			});
+			}
+		});
+		
 	});
 	$("#advancedSettings").expandable(true);
 	$("#solverField").expandable(true);
