@@ -25,7 +25,15 @@ CREATE PROCEDURE IsBenchACommunityDefault(IN _benchId INT)
 		WHERE default_benchmark = _benchId AND setting_type=1;
 	END //
 	
-	
+-- Checks to see whether the given solver is a community default for any community
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS IsSolverACommunityDefault;
+CREATE PROCEDURE IsSolverACommunityDefault(IN _solverId INT)
+	BEGIN
+		SELECT count(*) as solverDefault
+		FROM default_settings
+		WHERE default_solver = _solverId AND setting_type=1;
+	END //
 
 -- Updates the maximum memory setting for a defaultsettings tuple
 DROP PROCEDURE IF EXISTS SetMaximumMemorySetting;

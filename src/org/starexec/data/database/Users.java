@@ -13,6 +13,7 @@ import org.starexec.constants.R;
 import org.starexec.data.security.UserSecurity;
 
 import org.starexec.data.to.DefaultSettings;
+import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
@@ -53,7 +54,8 @@ public class Users {
 	}
 	
 	public static boolean createNewDefaultSettings(DefaultSettings d) {
-		return Settings.addNewSettingsProfile(d, "user");
+		d.setType(SettingType.USER);
+		return Settings.addNewSettingsProfile(d);
 	}
 	
 	/**

@@ -389,7 +389,8 @@ public class Communities {
 	 */
 	
 	public static boolean createNewDefaultSettings(DefaultSettings d) {
-		return Settings.addNewSettingsProfile(d, "comm");
+		d.setType(SettingType.COMMUNITY);
+		return Settings.addNewSettingsProfile(d);
 	}
 	
 	

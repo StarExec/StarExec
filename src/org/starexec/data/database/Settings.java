@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 public class Settings {
 	private static Logger log=Logger.getLogger(Settings.class);
-	protected static boolean addNewSettingsProfile(DefaultSettings settings, String type) {
+	protected static boolean addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
@@ -27,7 +27,7 @@ public class Settings {
 			procedure.setObject(8,settings.getSolverId());
 			procedure.setObject(9, settings.getBenchProcessorId());
 			procedure.setObject(10,settings.getPreProcessorId());
-			procedure.setString(11, type);
+			procedure.setInt(11, settings.getType().getValue());
 			procedure.setString(12,settings.getName());
 			procedure.executeUpdate();
 			return true;
