@@ -116,7 +116,7 @@ public class AddSettingProfile extends HttpServlet {
 		if (Users.isPublicUser(userId)) {
 			return new ValidatorStatusCode(false, "Only registered users can take this action");
 		}
-		if (!Validator.isValidSolverName(request.getParameter(NAME))) {
+		if (!Validator.isValidSettingsName(request.getParameter(NAME))) {
 			return new ValidatorStatusCode(false, "Invalid name");
 		}
 		

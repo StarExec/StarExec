@@ -93,6 +93,7 @@ public class DefaultSettings extends Identifiable {
 		this.name = name;
 	}
 	public String getName() {
+		
 		return name;
 	}
 	public void setTempId(int tempId) {

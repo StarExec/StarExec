@@ -380,6 +380,13 @@ public class Communities {
 		
 	}
 	
+	/**
+	 * Given a DefaultSettings object with all of its fields yet, adds the
+	 * settings object to the database
+	 * @param d
+	 * @return
+	 */
+	
 	public static boolean createNewDefaultSettings(DefaultSettings d) {
 		return Settings.addNewSettingsProfile(d, "comm");
 	}
@@ -420,6 +427,9 @@ public class Communities {
 				return null;
 			}
 			String name=Spaces.getName(community);
+			if (name.length()>R.SETTINGS_NAME_LEN) {
+				name=name.substring(0,R.SETTINGS_NAME_LEN); //make sure it isn't too large
+			}
 			settings.setName(name);
 			if(results.next()){
 				

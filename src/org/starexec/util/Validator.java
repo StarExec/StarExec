@@ -115,6 +115,10 @@ public class Validator {
     	return isValidPrimName(name, R.SOLVER_NAME_LEN);
     }
     
+    public static boolean isValidSettingsName(String name) {
+    	return isValidPrimName(name, R.SETTINGS_NAME_LEN);
+    }
+    
     public static boolean isValidJobName(String name) {
     	return isValidPrimName(name,R.JOB_NAME_LEN);
     }
