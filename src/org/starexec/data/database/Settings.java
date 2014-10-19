@@ -16,8 +16,8 @@ public class Settings {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
-			procedure.setInt(1, settings.getId());
+			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)}");
+			procedure.setInt(1, settings.getPrimId());
 			procedure.setObject(2, settings.getPostProcessorId());
 			procedure.setInt(3, settings.getCpuTimeout());
 			procedure.setInt(4, settings.getWallclockTimeout());
@@ -29,7 +29,11 @@ public class Settings {
 			procedure.setObject(10,settings.getPreProcessorId());
 			procedure.setInt(11, settings.getType().getValue());
 			procedure.setString(12,settings.getName());
-			procedure.executeUpdate();
+			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.executeUpdate();			
+
+			// Update the job's ID so it can be used outside this method
+			settings.setId(procedure.getInt(13));
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);

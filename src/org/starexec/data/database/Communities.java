@@ -439,6 +439,8 @@ public class Communities {
 						name=name.substring(0,R.SETTINGS_NAME_LEN); //make sure it isn't too large
 					}
 					d.setName(name);
+					d.setPrimId(community);
+					log.debug("calling createNewDefaultSettings on community with id = "+community);
 				    createNewDefaultSettings(d);
 				    return d;
 				}

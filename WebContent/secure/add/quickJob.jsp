@@ -32,12 +32,9 @@
 			int commId=-1;
 			List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
 			List<Space> comms=Communities.getAll();
-			int settingCounter=0; //used as a temporary unique identifier for a settings object
 			if (comms.size()>0) {
 				for (int i=0;i<comms.size();i++) {
 					DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
-					s.setTempId(settingCounter);
-					settingCounter++;
 					listOfDefaultSettings.add(s);
 
 				}
@@ -45,10 +42,7 @@
 			}
 			List<DefaultSettings> userSettings=Settings.getDefaultSettingsByUser(userId);
 			if (userSettings!=null) {
-				for (DefaultSettings s : userSettings) {
-					settingCounter++;
-					s.setTempId(settingCounter);
-				}
+				
 				listOfDefaultSettings.addAll(userSettings);
 			}
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
@@ -79,7 +73,7 @@
 <jsp:useBean id="now" class="java.util.Date" />
 <star:template title="run quick job" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
 	<c:forEach items="${defaultSettings}" var="setting">
-		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.tempId}">
+		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
 			<span class="cpuTimeout" value="${setting.cpuTimeout}" />
 			<span class="clockTimeout" value="${setting.wallclockTimeout}"/>
 			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"/>
@@ -115,7 +109,7 @@
 										<option value="" />
 									</c:if>				
 									<c:forEach var="setting" items="${defaultSettings}">
-		                                <option value="${setting.tempId}">${setting.name}</option>
+		                                <option value="${setting.getId()}">${setting.name}</option>
 									</c:forEach>
 							</select>
 						</td>

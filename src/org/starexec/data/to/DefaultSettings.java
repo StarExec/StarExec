@@ -44,7 +44,6 @@ public class DefaultSettings extends Identifiable {
 	private boolean dependenciesEnabled;
 	private String name;
 	private SettingType type;
-	private int tempId;
 	/**
 	 * Initializes a new DefaultSettings object with every field set to the system default.
 	 */
@@ -126,12 +125,7 @@ public class DefaultSettings extends Identifiable {
 		
 		return name;
 	}
-	public void setTempId(int tempId) {
-		this.tempId = tempId;
-	}
-	public int getTempId() {
-		return tempId;
-	}
+
 	
 	public String getSolverName() {
 		if (solverId==null) {
