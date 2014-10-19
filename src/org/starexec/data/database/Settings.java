@@ -171,7 +171,7 @@ public class Settings {
 	
 	/**
 	 * Set the default settings for a community given by the id.
-	 * @param id The space id of the community
+	 * @param id The ID of the DefaultSettings object
 	 * @param num Indicates which attribute needs to be set
 	 * 1 = post_processor_id
 	 * 2 = cpu_timeout
@@ -190,7 +190,7 @@ public class Settings {
 		CallableStatement procedure= null;
 		try {			
 			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL SetDefaultSettingsById(?, ?, ?,?)}");
+			procedure = con.prepareCall("{CALL SetDefaultSettingsById(?, ?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setInt(2, num);
 			//if we are setting one of the IDs and it is -1, this means there is no setting
@@ -200,9 +200,7 @@ public class Settings {
 			} else {
 					procedure.setInt(3,(int)setting);
 				
-			}
-			procedure.setString(4, "comm");
-			
+			}			
 			
 			procedure.executeUpdate();
 
