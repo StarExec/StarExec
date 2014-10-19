@@ -397,6 +397,7 @@ public class Communities {
 		Connection con = null;			
 		DefaultSettings settings=new DefaultSettings();
 		settings.setId(id);
+		
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {			
@@ -418,13 +419,14 @@ public class Communities {
 				log.error("We were unable to find the community for the space ="+id);
 				return null;
 			}
-			
+			String name=Spaces.getName(community);
+			settings.setName(name);
 			if(results.next()){
+				
 				settings=Settings.resultsToSettings(results);
 			}
 			else {
-				String name=Spaces.getName(community);
-				settings.setName(name);
+				log.debug("unable to find any default settings for community id = "+community);
 			    createNewDefaultSettings(settings);
 			}
 		} catch (Exception e){			
