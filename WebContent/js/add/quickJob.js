@@ -249,6 +249,7 @@ function populateDefaults() {
 	
 	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
 	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
+
 	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
 	setInputToValue("#cpuTimeout",cpuTimeout);
 	setInputToValue("#wallclockTimeout",clockTimeout);
@@ -256,15 +257,26 @@ function populateDefaults() {
 	setInputToValue("#solver",solverId);
 	//setInputToValue("#benchmarkField",benchContents);
 	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
-	if (stringExsits(preProcessorId)) {
-		$("#preProcess").val(preProcessorId);
+	
+	if (stringExists(preProcessorId)) {
+		//only set the pre processor if one with this ID actually exists in the dropdown
+		if (($('#preProcess > [value='+preProcessorId+']').length > 0)) {
+			$("#preProcess").val(preProcessorId);
+
+		}
+		
 	}
 	if (stringExists(postProcessorId)) {
-		$("#postProcess").val(postProcessorId);
+		if (($('#postProcess > [value='+postProcessorId+']').length > 0)) {
 
+			$("#postProcess").val(postProcessorId);
+		}
 	}
 	if (stringExists(benchProcessorId)) {
-		$("#benchProcess").val(benchProcessorId);
+		if (($('#benchProcess > [value='+benchProcessorId+']').length > 0)) {
+
+			$("#benchProcess").val(benchProcessorId);
+		}
 	}
 }
 
