@@ -9,8 +9,8 @@ $(document).ready(function(){
 	spaceId=getParameterByName('sid');
 	configId=getParameterByName("configid");
 	pairType=getParameterByName("type");
-	$('.id_100 ').attr('selected','selected');
-	$('#pairFilter option[value='+pairType+']').attr('selected','selected');
+	$('.id_100 ').prop('selected',true);
+	$('#pairFilter option[value='+pairType+']').prop('selected',true);
 
 	initUI();
 	initDataTables();

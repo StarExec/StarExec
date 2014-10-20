@@ -115,6 +115,10 @@ public class Validator {
     	return isValidPrimName(name, R.SOLVER_NAME_LEN);
     }
     
+    public static boolean isValidSettingsName(String name) {
+    	return isValidPrimName(name, R.SETTINGS_NAME_LEN);
+    }
+    
     public static boolean isValidJobName(String name) {
     	return isValidPrimName(name,R.JOB_NAME_LEN);
     }
@@ -213,6 +217,17 @@ public class Validator {
     	} catch(Exception e) {
     		return false;
     	}
+    }
+    
+    public static boolean isValidTimeout(String s) {
+    	if (!isValidInteger(s)) {
+    		return false;
+    	}
+    	int x=Integer.parseInt(s);
+    	if (x<=0) {
+    		return false;
+    	}
+    	return true;
     }
     
     /**

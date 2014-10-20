@@ -61,6 +61,7 @@ function attachFormValidation(){
 
 			form.submit();
 		},
+		ignore: "", //don't ignore hidden inputs
 		rules: {
 			name: {
 				required: true,
@@ -100,8 +101,20 @@ function attachFormValidation(){
 				required:true,
 				minlength :1
 			},
+			solver: {
+				required:true,
+				min: 1
+			},
 			benchProcess: {
 				required: true
+			},
+			postProcess: {
+				required: true
+				
+			},
+			preProcess: {
+				required: true
+				
 			}
 		},
 		messages: {
@@ -131,6 +144,10 @@ function attachFormValidation(){
 			    max: getCpuTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
+			solver: {
+				required: "choose a solver",
+				min: "choose a solver"
+			},
 			wallclockTimeout: {
 				required: "enter a timeout",			    
 			    max: getClockTimeoutErrorMessage(),
@@ -145,6 +162,12 @@ function attachFormValidation(){
 			},
 			benchProcess:  {
 				required: "choose a benchmark processor"
+			},
+			postProcess:  {
+				required: "choose a postprocessor"
+			},
+			preProcess:  {
+				required: "choose a preprocessor"
 			}
 		}
 	});
@@ -214,6 +237,7 @@ function setInputToValue(inputSelector, value) {
  */
 function populateDefaults() {
 	selectedSettingId=$("#settingProfile option:selected").attr("value");
+	
 	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
 	//first, pull out
 	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
@@ -221,20 +245,39 @@ function populateDefaults() {
 	maxMemory=$(profile).find("span.maxMemory").attr("value");
 	solverId=$(profile).find("span.solverId").attr("value");
 	solverName=$(profile).find("span.solverName").attr("value");
-	benchContents=$(profile).find("span.benchContents").attr("value");
+	//benchContents=$(profile).find("span.benchContents").attr("value");
 	
 	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
 	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
+
 	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
 	setInputToValue("#cpuTimeout",cpuTimeout);
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
 	setInputToValue("#solver",solverId);
-	setInputToValue("#benchmarkField",benchContents);
+	//setInputToValue("#benchmarkField",benchContents);
 	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
-	$("#preProcess").val(preProcessorId);
-	$("#postProcess").val(postProcessorId);
-	$("#benchProcess").val(benchProcessorId);
+	
+	if (stringExists(preProcessorId)) {
+		//only set the pre processor if one with this ID actually exists in the dropdown
+		if (($('#preProcess > [value='+preProcessorId+']').length > 0)) {
+			$("#preProcess").val(preProcessorId);
+
+		}
+		
+	}
+	if (stringExists(postProcessorId)) {
+		if (($('#postProcess > [value='+postProcessorId+']').length > 0)) {
+
+			$("#postProcess").val(postProcessorId);
+		}
+	}
+	if (stringExists(benchProcessorId)) {
+		if (($('#benchProcess > [value='+benchProcessorId+']').length > 0)) {
+
+			$("#benchProcess").val(benchProcessorId);
+		}
+	}
 }
 
 /**
@@ -245,6 +288,7 @@ function initUI() {
 	//there must be some bench processor selected, so make sure we are using one
 	$("#benchProcess").find("option").first().attr("selected","selected");
 	
+	$("#dialog-createSettingsProfile").hide();
 	
 	$('#btnBack').button({
 		icons: {
@@ -259,6 +303,33 @@ function initUI() {
 		icons: {
 			primary: "ui-icon-disk"
 		}
+	}).click(function() {
+		$("#dialog-createSettingsProfile").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'create': function() {
+					$(this).dialog("close");
+						$.post(  
+							starexecRoot+"secure/add/profile",
+							{postp: $("#postProcess").val(), prep: $("#preProcess").val(), benchp: $("#benchProcess").val(),
+								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
+								wall: $("#wallclockTimeout").val(), dep: "false", bench: "", mem: $("#maxMem").val()},
+							function(returnCode) {
+									//success
+							}
+						).error(function(xhr, textStatus, errorThrown){
+							showMessage('error',"Invalid parameters",5000);
+						});
+														
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+		
 	});
 	$("#advancedSettings").expandable(true);
 	$("#solverField").expandable(true);

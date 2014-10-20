@@ -245,14 +245,17 @@ public class CreateJob extends HttpServlet {
 			
 			
 			}else if (benchMethod.equals("runAllBenchInHierarchy")) {
+				log.debug("got request to run all in bench hierarchy");
 				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
 				
-				if (traversal.equals("depth")) {
-					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
+				if (traversalMethod.equals("depth")) {
 					log.debug("User selected depth-first traversal");
+
+					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
 				} else {
+					log.debug("users selected round robin traversal");
 					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 				}
 				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.

@@ -40,6 +40,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
@@ -52,6 +53,7 @@ import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.QueueSecurity;
+import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
@@ -1317,6 +1319,69 @@ public class RESTServices {
 	 * @author Tyler Jensen
 	 */
 	@POST
+	@Path("/edit/defaultSettings/{attr}/{id}")
+	@Produces("application/json")
+	public String editCommunityDefaultSettings(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
+		int userId=SessionUtil.getUserId(request);
+		String newValue=(String)request.getParameter("val");
+		ValidatorStatusCode status=SettingSecurity.canUpdateSettings(id,attribute,newValue, userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		try {			
+			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
+				return gson.toJson(ERROR_EDIT_VAL_ABSENT);
+			}
+			
+			boolean success = false;
+			// Go through all the cases, depending on what attribute we are changing.
+			if (attribute.equals("PostProcess")) {
+				success = Settings.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
+			} else if (attribute.equals("BenchProcess")) {
+				Settings.setDefaultSettings(id,8,Integer.parseInt(request.getParameter("val")));
+			}
+			
+			else if (attribute.equals("CpuTimeout")) {
+				success = Settings.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
+			}else if (attribute.equals("ClockTimeout")) {
+				success = Settings.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
+			} else if (attribute.equals("DependenciesEnabled")) {
+				success = Settings.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
+			} else if (attribute.equals("defaultbenchmark")) {
+				success=Settings.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
+			} else if (attribute.equals("defaultsolver")) {
+				success=Settings.setDefaultSettings(id, 7, Integer.parseInt(request.getParameter("val")));
+			} else if(attribute.equals("MaxMem")) {
+				double gigabytes=Double.parseDouble(request.getParameter("val"));
+				long bytes = Util.gigabytesToBytes(gigabytes); 
+				success=Settings.setDefaultMaxMemory(id, bytes);
+			} else if (attribute.equals("PreProcess")) {
+				success=Settings.setDefaultSettings(id, 6, Integer.parseInt(request.getParameter("val")));
+			}
+			
+			// Passed validation AND Database update successful
+			return success ? gson.toJson(new ValidatorStatusCode(true,"Community edit successful")) : gson.toJson(ERROR_DATABASE);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+		
+	}
+	
+	
+	
+	/** 
+	 * Updates information for a space in the database using a POST. Attribute and
+	 * new value are included in the path. First validates that the new value
+	 * is legal, then updates the database and session information accordingly.
+	 * 
+	 * @return 	0: successful,<br>
+	 * 			1: parameter validation failed,<br>
+	 * 			2: insufficient permissions 
+	 * @author Tyler Jensen
+	 */
+	@POST
 	@Path("/edit/space/{attr}/{id}")
 	@Produces("application/json")
 	public String editCommunityDetails(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
@@ -1343,28 +1408,6 @@ public class RESTServices {
 				String newDesc = (String)request.getParameter("val");
 				success = Spaces.updateDescription(id, newDesc);				
 				
-			} else if (attribute.equals("PostProcess")) {
-				success = Communities.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
-			} else if (attribute.equals("BenchProcess")) {
-				Communities.setDefaultSettings(id,8,Integer.parseInt(request.getParameter("val")));
-			}
-			
-			else if (attribute.equals("CpuTimeout")) {
-				success = Communities.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
-			}else if (attribute.equals("ClockTimeout")) {
-				success = Communities.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
-			} else if (attribute.equals("DependenciesEnabled")) {
-				success = Communities.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
-			} else if (attribute.equals("defaultbenchmark")) {
-				success=Communities.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
-			} else if (attribute.equals("defaultsolver")) {
-				success=Communities.setDefaultSettings(id, 7, Integer.parseInt(request.getParameter("val")));
-			} else if(attribute.equals("MaxMem")) {
-				double gigabytes=Double.parseDouble(request.getParameter("val"));
-				long bytes = Util.gigabytesToBytes(gigabytes); 
-				success=Communities.setDefaultMaxMemory(id, bytes);
-			} else if (attribute.equals("PreProcess")) {
-				success=Communities.setDefaultSettings(id, 6, Integer.parseInt(request.getParameter("val")));
 			}
 			
 			// Passed validation AND Database update successful
@@ -1476,27 +1519,7 @@ public class RESTServices {
 		
 		String answer= Processors.delete(pid) ? gson.toJson(new ValidatorStatusCode(true,"Processor deleted successfully")) : gson.toJson(ERROR_DATABASE);
 		
-		try {
-			if (Util.paramExists("cid",request) && Util.paramExists("defaultPP",request)) {
-				int cid=Integer.parseInt(request.getParameter("cid"));
-				int defaultPP=Integer.parseInt(request.getParameter("defaultPP"));
-				//The processor that was deleted was the default, so we'll set a new default 
-				if (defaultPP==pid) {
-					List<Processor> procs=Processors.getByCommunity(cid, ProcessorType.POST);
-					if (procs.size()>0) {
-						boolean success=Communities.setDefaultSettings(cid, 1, procs.get(0).getId());
-						if (success) {
-							log.debug("Default post processor was deleted, and a new default was selected");
-						} else {
-							log.warn("Default post processor was deleted, but a new default could not be selected");
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			// we couldn't set a new default PP
-			log.warn("Default post processor was deleted, but a new default could not be selected due to an error",e);
-		}
+		
 		return answer;
 	}
 	

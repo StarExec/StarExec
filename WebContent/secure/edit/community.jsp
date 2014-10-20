@@ -42,6 +42,7 @@
 		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
 		request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
 		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
+		request.setAttribute("settingId",settings.getId());
 		try {
 			Benchmark bench=Benchmarks.get(settings.getBenchId());
 			if (bench!=null) {
@@ -75,6 +76,7 @@
 <star:template title="edit ${com.name}" js="lib/jquery.dataTables.min, lib/jquery.validate.min, edit/community" css="common/table, edit/community">
 	
 	<input type="hidden" value="${com.id}" id="comId"/>
+	<input type="hidden" value="${settingId}" id="settingId"/>
 	<fieldset>
 		<legend>community details</legend>
 		<table id="detailsTbl" class="shaded">

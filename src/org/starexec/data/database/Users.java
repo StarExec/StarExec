@@ -12,6 +12,8 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.UserSecurity;
 
+import org.starexec.data.to.DefaultSettings;
+import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
@@ -49,6 +51,11 @@ public class Users {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+	
+	public static boolean createNewDefaultSettings(DefaultSettings d) {
+		d.setType(SettingType.USER);
+		return Settings.addNewSettingsProfile(d);
 	}
 	
 	/**

@@ -572,13 +572,12 @@ function initUI(){
 		createDownloadRequest("#jobOutputDownload","j_outputs");
 	});
 		
-	// Set the selected post processor to be the default one
+	//set teh two default solvers to compare
 	defaultSolver1 = $('#solverChoice1').attr('default');
-	$('#solverChoice1 option[value=' + defaultSolver1 + ']').attr('selected', 'selected');
+	$('#solverChoice1 option[value=' + defaultSolver1 + ']').prop('selected', true);
 	
-	// Set the selected post processor to be the default one
 	defaultSolver2 = $('#solverChoice2').attr('default');
-	$('#solverChoice2 option[value=' + defaultSolver2 + ']').attr('selected', 'selected');
+	$('#solverChoice2 option[value=' + defaultSolver2 + ']').prop('selected', true);
 	
 	//set all fieldsets as expandable
 	$('#solverSummaryField').expandable(false);

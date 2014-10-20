@@ -3,9 +3,36 @@ package org.starexec.data.to;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.util.Util;
 
-public class DefaultSettings {
+public class DefaultSettings extends Identifiable {
+	public enum SettingType {
+		USER(0), COMMUNITY(1);
+		
+	    private final int value;
+		private SettingType(int value) {
+			this.value = value;
+		}
+
+		public int getValue() {
+			return value;
+		}
+		
+	public static SettingType toStatusCode(int code) {
+			
+		    switch (code) {
+		    case 0:
+		    	return SettingType.USER;
+		    case 1:
+		    	return SettingType.COMMUNITY;
+		
+		}
+		return null;
+	}
+}
+
+	private Integer primId;
 	private Integer preProcessorId;
 	private Integer postProcessorId;
 	private Integer benchProcessorId;
@@ -16,7 +43,7 @@ public class DefaultSettings {
 	private long maxMemory;
 	private boolean dependenciesEnabled;
 	private String name;
-	private int tempId;
+	private SettingType type;
 	/**
 	 * Initializes a new DefaultSettings object with every field set to the system default.
 	 */
@@ -31,6 +58,8 @@ public class DefaultSettings {
 		name="settings";
 		dependenciesEnabled=false;
 		benchProcessorId=Processors.getNoTypeProcessor().getId();
+		type=null;
+		setPrimId(-1);
 	}
 	public void setPreProcessorId(int preProcessorId) {
 		this.preProcessorId = preProcessorId;
@@ -93,14 +122,10 @@ public class DefaultSettings {
 		this.name = name;
 	}
 	public String getName() {
+		
 		return name;
 	}
-	public void setTempId(int tempId) {
-		this.tempId = tempId;
-	}
-	public int getTempId() {
-		return tempId;
-	}
+
 	
 	public String getSolverName() {
 		if (solverId==null) {
@@ -123,5 +148,20 @@ public class DefaultSettings {
 		}
 		return Benchmarks.getContents(b, -1);
 		
+	}
+	public void setPrimId(Integer primId) {
+		this.primId = primId;
+	}
+	public Integer getPrimId() {
+		return primId;
+	}
+	public void setType(SettingType type) {
+		this.type = type;
+	}
+	public void setType(int type) {
+		this.type = SettingType.toStatusCode(type);
+	}
+	public SettingType getType() {
+		return type;
 	}
 }

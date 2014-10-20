@@ -67,7 +67,7 @@ function initUI(){
 			
 			$.post(
 					starexecRoot+"services/delete/processor/" + getParameterByName("id"),
-					{ name: name, description: description, cid: cid, defaultPP: defaultPPId},
+					{},
 					function(returnCode) {
 						s=parseReturnCode(returnCode);
 						if (s) {

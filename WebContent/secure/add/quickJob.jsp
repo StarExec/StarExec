@@ -9,6 +9,7 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
+		boolean isPublicUser=Users.isPublicUser(userId);
 		// Verify this user can add jobs to this space
 		Permission p=null;
 		if (spaceId>0) {
@@ -30,20 +31,20 @@
 			request.setAttribute("benchNameLen",R.BENCH_NAME_LEN);
 			int commId=-1;
 			List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
-			List<Integer> comms=Users.getCommunities(userId);
-			//TODO: Allow users to choose and also set up default settings for the entire system
-			int settingCounter=5;
+			List<Space> comms=Communities.getAll();
 			if (comms.size()>0) {
 				for (int i=0;i<comms.size();i++) {
-					DefaultSettings s=Communities.getDefaultSettings(comms.get(i));
-					s.setTempId(settingCounter);
-					settingCounter++;
+					DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
 					listOfDefaultSettings.add(s);
 
 				}
-				commId=comms.get(0);
+				commId=comms.get(0).getId();
 			}
-			
+			List<DefaultSettings> userSettings=Settings.getDefaultSettingsByUser(userId);
+			if (userSettings!=null) {
+				
+				listOfDefaultSettings.addAll(userSettings);
+			}
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
@@ -57,6 +58,7 @@
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
 			request.setAttribute("solvers",listOfSolvers);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);
+			request.setAttribute("isPublicUser",isPublicUser);
 		}
 	} catch (NumberFormatException nfe) {
 		log.error(nfe.getMessage(),nfe);
@@ -71,7 +73,7 @@
 <jsp:useBean id="now" class="java.util.Date" />
 <star:template title="run quick job" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
 	<c:forEach items="${defaultSettings}" var="setting">
-		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.tempId}">
+		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
 			<span class="cpuTimeout" value="${setting.cpuTimeout}" />
 			<span class="clockTimeout" value="${setting.wallclockTimeout}"/>
 			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"/>
@@ -81,7 +83,7 @@
 			<span class="preProcessorId" value="${setting.preProcessorId}"/>
 			<span class="postProcessorId" value="${setting.postProcessorId}"/>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"/>
-			<span class="benchContents" value="${setting.getBenchmarkContents()}"/>
+			<!--  <span class="benchContents" value="${setting.getBenchmarkContents()}"/>-->
 			
 		</span>
 	</c:forEach>
@@ -107,7 +109,7 @@
 										<option value="" />
 									</c:if>				
 									<c:forEach var="setting" items="${defaultSettings}">
-		                                <option value="${setting.tempId}">${setting.name}</option>
+		                                <option value="${setting.getId()}">${setting.name}</option>
 									</c:forEach>
 							</select>
 						</td>
@@ -129,7 +131,7 @@
 			</fieldset>
 			<fieldset id= "advancedSettings">
 				<legend>advanced settings</legend>
-				<table id="tblAdvancedConfig" class="shaed contentTbl">
+				<table id="tblAdvancedConfig" class="shaded contentTbl">
 					<thead>
 						<tr>
 							<th>attribute</th>
@@ -248,9 +250,14 @@
 			<div id="actionBar">
 				<button type="submit" class="round" id="btnDone">submit</button>			
 				<button type="button" class="round" id="btnBack">cancel</button>	
-				<button type="button" class="round" id="btnSave">save profile</button>		
+				<c:if test="${!isPublicUser}">
+					<button type="button" class="round" id="btnSave">save profile</button>		
+				</c:if>
 			</div>	
 		</fieldset>		
 	</form>		
-	
+	<div id="dialog-createSettingsProfile" title="create settings profile">
+		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
+		<p><label>name: </label><input id="settingName" type="text"/></p>			
+	</div>
 </star:template>

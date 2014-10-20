@@ -181,22 +181,22 @@ function initUI() {
 	
 	defaultPPId = $('#postProcess').attr('default');
 	if (stringExists(defaultPPId)) {
-		$('#postProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+		$('#postProcess option[value=' + defaultPPId + ']').prop('selected', true);
 	}
 	
 	//If there is only one post processor and for some reason it is not the default, set it as such
 	if ($("#postProcess").find("option").length==2) {
-		$("#postProcess").find("option").last().attr("selected","selected");
+		$("#postProcess").find("option").last().prop("selected",true);
 	}
 	
 	defaultPPId = $('#preProcess').attr('default');
 	if (stringExists(defaultPPId)) {
-		$('#preProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+		$('#preProcess option[value=' + defaultPPId + ']').prop('selected', true);
 	}
 	
 	//If there is only one pre processor and for some reason it is not the default, set it as such
 	if ($("#preProcess").find("option").length==2) {
-		$("#preProcess").find("option").last().attr("selected","selected");
+		$("#preProcess").find("option").last().prop("selected",true);
 	}
 	
 	// Set up datatables

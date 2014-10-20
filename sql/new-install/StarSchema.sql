@@ -456,8 +456,9 @@ CREATE TABLE bench_dependency (
 -- Default settings for a community space.
 -- Author: Ruoyu Zhang + Eric Burns
 
-CREATE TABLE space_default_settings (
-    space_id INT,
+CREATE TABLE default_settings (
+	id INT NOT NULL AUTO_INCREMENT, -- unique ID
+    prim_id INT, -- either a user ID or community ID depending on what the setting_type is
     post_processor INT,
     pre_processor INT,
     cpu_timeout INT DEFAULT 1,
@@ -467,13 +468,14 @@ CREATE TABLE space_default_settings (
 	default_benchmark INT DEFAULT NULL,
 	default_solver INT DEFAULT NULL,
 	bench_processor INT,
-	PRIMARY KEY (space_id),
-	CONSTRAINT space_default_settings_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	CONSTRAINT space_default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
-	CONSTRAINT space_default_settings_default_benchmark FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL,
-	CONSTRAINT space_default_settings_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
-	CONSTRAINT space_default_settings_default_solver FOREIGN KEY (default_solver) REFERENCES solvers(id) ON DELETE SET NULL,
-	CONSTRAINT space_default_settings_bench_processor FOREIGN KEY (bench_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	setting_type INT DEFAULT 1,
+	name VARCHAR(32) DEFAULT "settings",
+	PRIMARY KEY (id),
+	CONSTRAINT default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	CONSTRAINT default_settings_default_benchmark FOREIGN KEY (default_benchmark) REFERENCES benchmarks(id) ON DELETE SET NULL,
+	CONSTRAINT default_settings_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	CONSTRAINT default_settings_default_solver FOREIGN KEY (default_solver) REFERENCES solvers(id) ON DELETE SET NULL,
+	CONSTRAINT default_settings_bench_processor FOREIGN KEY (bench_processor) REFERENCES processors(id) ON DELETE SET NULL
 
 );
 

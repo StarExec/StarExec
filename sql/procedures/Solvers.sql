@@ -184,15 +184,6 @@ CREATE PROCEDURE GetSolversByOwner(IN _userId INT)
 		WHERE user_id = _userId and deleted=false AND recycled=false;
 	END //
 
--- Checks to see whether the given solver is a community default for any community
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS IsSolverACommunityDefault;
-CREATE PROCEDURE IsSolverACommunityDefault(IN _solverId INT)
-	BEGIN
-		SELECT count(*) as solverDefault
-		FROM space_default_settings
-		WHERE default_solver = _solverId;
-	END //
 -- Returns the number of public spaces a solver is in
 -- Benton McCune
 DROP PROCEDURE IF EXISTS IsSolverPublic;

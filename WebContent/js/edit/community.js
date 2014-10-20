@@ -232,19 +232,19 @@ function initUI(){
 	// Set the selected post processor to be the default one
 	defaultPPId = $('#editPostProcess').attr('default');
 	if (stringExists(defaultPPId)) {
-		$('#editPostProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+		$('#editPostProcess option[value=' + defaultPPId + ']').prop('selected', true);
 	}
 	
 	// Set the selected pre processor to be the default one
 	defaultPPId = $('#editPreProcess').attr('default');
 	if (stringExists(defaultPPId)) {
-		$('#editPreProcess option[value=' + defaultPPId + ']').attr('selected', 'selected');
+		$('#editPreProcess option[value=' + defaultPPId + ']').prop('selected', true);
 	}
 	
 	
 	defaultDepEnb=$('#editDependenciesEnabled').attr('default');
 	if (stringExists(defaultDepEnb)) {
-		$('#editDependenciesEnabled option[value=' + defaultDepEnb+']').attr('selected','selected');
+		$('#editDependenciesEnabled option[value=' + defaultDepEnb+']').prop('selected',true);
 	}
 	
 	$('#newWebsite').hide();
@@ -428,26 +428,53 @@ function saveChanges(obj, save, attr, old) {
 		// Fixes 'session expired' bug that would occur if user inputed the empty String
 		newVal = (newVal == "") ? "-1" : newVal;
 		
-		$.post(  
-				starexecRoot+"services/edit/space/" + attr + "/" + getParameterByName("cid"),
-				{val: newVal},
-			    function(returnCode){  	
-					s=parseReturnCode(returnCode);
-					if (s) {
-						// Hide the input box and replace it with the table cell
-			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
-			    		// Make the value editable again
-			    		editable(attr);
-					} else {
-						$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
-			    		// Make the value editable again
-			    		editable(attr);
-					}
-			     },  
-			     "json"  
-		).error(function(){
-			showMessage('error',"Internal error updating field",5000);
-		});
+		//these attributes are of the community itself
+		if (attr=="name" || attr=="desc") {
+			$.post(  
+					starexecRoot+"services/edit/space/" + attr + "/" + getParameterByName("cid"),
+					{val: newVal},
+				    function(returnCode){  	
+						s=parseReturnCode(returnCode);
+						if (s) {
+							// Hide the input box and replace it with the table cell
+				    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
+				    		// Make the value editable again
+				    		editable(attr);
+						} else {
+							$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+				    		// Make the value editable again
+				    		editable(attr);
+						}
+				     },  
+				     "json"  
+			).error(function(){
+				showMessage('error',"Internal error updating field",5000);
+			});
+			
+			//every other attribute is of the DefaultSettings profile the community has
+		} else {
+			$.post(  
+					starexecRoot+"services/edit/defaultSettings/" + attr + "/" + $("#settingId").attr("value"),
+					{val: newVal},
+				    function(returnCode){  	
+						s=parseReturnCode(returnCode);
+						if (s) {
+							// Hide the input box and replace it with the table cell
+				    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
+				    		// Make the value editable again
+				    		editable(attr);
+						} else {
+							$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
+				    		// Make the value editable again
+				    		editable(attr);
+						}
+				     },  
+				     "json"  
+			).error(function(){
+				showMessage('error',"Internal error updating field",5000);
+			});
+		}
+		
 	} else {
 		// Hide the input box and replace it with the table cell
 		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
