@@ -1,12 +1,20 @@
 package org.starexec.backend;
 
+import java.util.List;
+import java.util.LinkedList;
+import java.util.regex.Pattern;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
+
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
+
 import org.starexec.jobs.JobManager;
-import org.starexec.util.GridEngineUtil;
+import org.starexec.backend.GridEngineUtil;
 import org.starexec.util.Util;
+import org.starexec.constants.R;
+import org.starexec.data.to.*;
 
 
 
@@ -176,6 +184,156 @@ public class GridEngineBackend implements Backend{
     //setGridEngineId
     //getGridEngineId
     /**end taken from JobPair**/
+
+    /**
+     * @return returns a list of names of all active worker nodes
+     */
+    public String[] getWorkerNodes(){
+	// Execute the SGE command to get the node list
+	String nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
+
+	return nodeResults.split(System.getProperty("line.separator"));
+
+    }
+
+    /**
+     * @param nodeName the name of a node
+     * @return an even-sized String[] representing a details map for a given node
+     * where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
+     * 
+     */
+    public String[] getNodeDetails(String nodeName){
+
+		// Call SGE to get details for the given node
+		String results = Util.executeCommand(R.NODE_DETAILS_COMMAND + nodeName);
+
+		// Parse the output from the SGE call to get the key/value pairs for the node
+		java.util.regex.Matcher matcher = GridEngineUtil.nodeKeyValPattern.matcher(results);
+
+		List<String> detailsList = new LinkedList<String>();
+		
+		// For each match...
+		while(matcher.find()) {
+			// Split apart the key from the value
+			String[] keyVal = matcher.group().split("=");
+			
+			// Add the results to the details list
+			detailsList.add(keyVal[0]);
+			detailsList.add(keyVal[1]);
+
+
+		}
+		String [] details = detailsList.toArray(new String[detailsList.size()]);
+
+		return details;
+
+    }
+
+    /**
+     * returns a list of all active queues
+     */
+    public String[] getQueues(){
+	// Execute the SGE command to get the list of queues
+	String queuestr = Util.executeCommand(R.QUEUE_LIST_COMMAND);
+
+	return queuestr.split(System.getProperty("line.separator"));	
+    }
+
+    /**
+     * @param nodeName the name of a node
+     * @return an even-sized String[] representing a details map for a given queue
+     *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
+     */
+    public String[] getQueueDetails(String nodeName){
+	
+		// Call SGE to get details for the given node
+		String results = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + nodeName);
+
+		// Parse the output from the SGE call to get the key/value pairs for the node
+		java.util.regex.Matcher matcher = GridEngineUtil.queueKeyValPattern.matcher(results);
+
+		List<String> detailsList = new LinkedList<String>();
+		
+		// For each match...
+		while(matcher.find()) {
+			// Split apart the key from the value
+			String[] keyVal = matcher.group().split("\\s+");
+			
+			// Add the results to the details list
+			detailsList.add(keyVal[0]);
+			detailsList.add(keyVal[1]);
+
+
+		}
+		String [] details = detailsList.toArray(new String[detailsList.size()]);
+
+		return details;
+    }
+
+    /**
+     * @return an array that represents queue-node assocations: [queueName1,nodeName1,queueName1,nodeName2,queueName2,nodeName3]
+     * the queue and node names should match the names returned when calling getWorkerNodes and getQueues.
+     * queue names are found in the even-indexed positions, node name otherwise. 
+     *  a queue at index i is associated with the node at index i + 1
+     */
+    public String[] getQueueNodeAssociations(){
+	
+
+		String[] envp = new String[2];
+		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
+		envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
+		String results = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
+
+		// Parse the output from the SGE call to get the key/value pairs for the node
+		java.util.regex.Matcher matcher = GridEngineUtil.queueAssocPattern.matcher(results);
+
+		List<String> detailsList = new LinkedList<String>();
+		
+		// For each match...
+		while(matcher.find()) {
+			// Split apart the key from the value
+			String[] keyVal = matcher.group().split("@");
+			
+			// Add the results to the details list
+			detailsList.add(keyVal[0]);
+			detailsList.add(keyVal[1]);
+
+
+		}
+		String [] details = detailsList.toArray(new String[detailsList.size()]);
+
+		return details;
+
+    }
+
+    /**
+     * questionable, RESTServices
+     */
+    public boolean clearNodeErrorStates(){
+	return GridEngineUtil.clearNodeErrorStates();
+    }
+
+    /**
+     * questionable, RESTServices
+     */
+    public boolean removeQueue(int queueId){
+	return GridEngineUtil.removeQueue(queueId);
+    }
+
+   /**
+     * questionable, RESTServices
+     */
+    public boolean createPermanentQueue(QueueRequest req, boolean isNewQueue, HashMap<WorkerNode, Queue> nodesAndQueues){
+	return GridEngineUtil.createPermanentQueue(req,isNewQueue,nodesAndQueues);
+    }
+
+    /**
+     * questionable, moveNodes
+     */
+    public void moveNodes(String queueName, HashMap<WorkerNode, Queue> NQ){
+	
+	GridEngineUtil.moveNodes(queueName,NQ);
+    }
 
 
 }

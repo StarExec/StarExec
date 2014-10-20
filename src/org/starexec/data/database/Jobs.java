@@ -34,7 +34,6 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
 
 /**
@@ -3398,8 +3397,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
-			//R.BACKEND.killAll();
-			GridEngineUtil.deleteAllSGEJobs();
+			R.BACKEND.killAll();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
 			if (jobs != null) {

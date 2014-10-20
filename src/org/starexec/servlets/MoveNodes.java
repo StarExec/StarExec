@@ -20,7 +20,6 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
@@ -74,8 +73,8 @@ public class MoveNodes extends HttpServlet {
 		}
 	    }
 		
-	    //GridEngine Changes
-	    GridEngineUtil.moveNodes(queueName, NQ);
+	    //BACKEND Changes
+	    R.BACKEND.moveNodes(queueName, NQ);
 		
 	    Collection<Queue> queues = NQ.values();
 	    for (Queue q : queues) {

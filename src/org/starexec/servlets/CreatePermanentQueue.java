@@ -22,7 +22,6 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -82,11 +81,11 @@ public class CreatePermanentQueue extends HttpServlet {
 		}
 		String queue_name = (String)request.getParameter(name);
 
-		//GridEngine Changes
+		//BACKEND Changes
 		QueueRequest req = new QueueRequest();
 		req.setQueueName(queue_name + ".q");
 	
-		GridEngineUtil.createPermanentQueue(req, true, NQ);
+		R.BACKEND.createPermanentQueue(req, true, NQ);
 		
 		Collection<Queue> queues = NQ.values();
 		for (Queue q : queues) {

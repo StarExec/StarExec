@@ -33,7 +33,6 @@ import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
 import org.starexec.data.to.WorkerNode;
 
@@ -392,7 +391,7 @@ public class ResourceLoader {
 			req.setQueueName(TestUtil.getRandomQueueName());
 			req.setNodeCount(0);
 
-			GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
+			R.BACKEND.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
 			
 			
 			int queueId=Queues.getIdByName(req.getQueueName());

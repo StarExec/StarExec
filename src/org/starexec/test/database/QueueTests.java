@@ -11,7 +11,6 @@ import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.GridEngineUtil;
 
 public class QueueTests extends TestSequence {
 	Queue allQueue=null;
@@ -73,7 +72,7 @@ public class QueueTests extends TestSequence {
 	private void deleteQueueTest() {
 		Queue tempQueue=ResourceLoader.loadQueueIntoDatabase(1000,1000);
 		Assert.assertNotNull(Queues.get(tempQueue.getId()));
-		Assert.assertTrue(GridEngineUtil.removeQueue(tempQueue.getId()));
+		Assert.assertTrue(R.BACKEND.removeQueue(tempQueue.getId()));
 		Assert.assertNull(Queues.get(tempQueue.getId()));		
 	}
 	
@@ -121,7 +120,7 @@ public class QueueTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		GridEngineUtil.removeQueue(testQueue.getId());
+		R.BACKEND.removeQueue(testQueue.getId());
 		
 		
 	}

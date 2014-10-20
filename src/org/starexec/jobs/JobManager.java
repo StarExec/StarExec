@@ -297,17 +297,6 @@ public abstract class JobManager {
 							    JobPairs.setPairStatus(pair.getId(),errorCode);
 							}
 
-							/**
-							// If the submission was successful
-							if(execId >= 0) {											
-								log.info("Submission of pair "+pair.getId() + " successful.");
-								JobPairs.updateGridEngineId(pair.getId(), execId);
-							}
-							else {
-								log.warn("Error submitting pair "+pair.getId() + " to SGE.");
-								JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-							}
-							**/
 							count++;
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
