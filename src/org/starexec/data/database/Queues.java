@@ -29,6 +29,54 @@ public class Queues {
 	private static final Logger log = Logger.getLogger(Queues.class);
 
 	/**
+	 * TODO :  decouple shouldn't use SGE calls
+	 * Removes a queue from the database and calls R.BACKEND.removeQueue
+	 * @param queueId The Id of the queue to remove.
+	 * @return True on success and false otherwise
+	 */
+	public static boolean removeQueue(int queueId) {
+	    
+	    Queue q=Queues.get(queueId);
+	    boolean permanent=q.getPermanent();
+	    String queueName = q.getName();
+		
+	    //Pause jobs that are running on the queue
+	    List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+
+	    if (jobs != null) {
+		for (Job j : jobs) {
+		    Jobs.pause(j.getId());
+		}
+	    }
+
+	    //Move associated Nodes back to default queue
+	    List<WorkerNode> nodes = Queues.getNodes(queueId);
+		
+	    if (nodes != null) {
+		for (WorkerNode n : nodes) {
+		    R.BACKEND.moveNode(n.getName(),R.BACKEND.getDefaultQueueName());
+		}
+	    }
+		
+	    boolean success=true;
+		
+		
+	    /***** DELETE THE QUEUE *****/	
+	    //Database Change
+	    if (permanent) {
+		success=success && Queues.delete(queueId);
+
+	    } else {
+		success = success && Requests.DeleteReservation(queueId);
+	    }
+	    R.BACKEND.deleteQueue(queueName);
+			
+	    Cluster.loadWorkerNodes();
+	    Cluster.loadQueues();	
+	    return success;
+	}
+
+	/**
 	 * Adds a new queue to the system. This action adds the queue, 
 	 * and adds a new association to the queue for the given list of nodes
 	 * This is a multi-step process, use transactions to ensure it completes as

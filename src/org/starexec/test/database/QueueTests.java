@@ -72,7 +72,7 @@ public class QueueTests extends TestSequence {
 	private void deleteQueueTest() {
 		Queue tempQueue=ResourceLoader.loadQueueIntoDatabase(1000,1000);
 		Assert.assertNotNull(Queues.get(tempQueue.getId()));
-		Assert.assertTrue(R.BACKEND.removeQueue(tempQueue.getId()));
+		Assert.assertTrue(Queues.removeQueue(tempQueue.getId()));
 		Assert.assertNull(Queues.get(tempQueue.getId()));		
 	}
 	
@@ -120,7 +120,7 @@ public class QueueTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		R.BACKEND.removeQueue(testQueue.getId());
+		Queues.removeQueue(testQueue.getId());
 		
 		
 	}

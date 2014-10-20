@@ -65,6 +65,11 @@ public interface Backend{
     public String[] getQueues();
 
     /**
+     * @return returns the default queue name, should be an active queue
+     */
+    public String getDefaultQueueName();
+
+    /**
      * @param nodeName the name of a node
      * @return an even-sized String[] representing a details map for a given queue
      *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
@@ -86,9 +91,10 @@ public interface Backend{
     public boolean clearNodeErrorStates();
 
    /**
-     * questionable, RESTServices
+     * deletes a queue that no longer has nodes associated with it
+     * @param queueName the name of the queue to be removed
      */
-    public boolean removeQueue(int queueId);
+    public void deleteQueue(String queueName);
 
    /**
      * questionable, RESTServices
@@ -99,6 +105,13 @@ public interface Backend{
      * questionable, MoveNodes
      */
     public void moveNodes(String queueName, HashMap<WorkerNode, Queue> NQ);
+
+    /**
+     * moves the given node to the given queue
+     * @param nodeName the name of a node
+     * @param queueName the name of a queue
+     */
+    public void moveNode(String nodeName, String queueName);
 
 
 }

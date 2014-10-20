@@ -3635,8 +3635,7 @@ public class RESTServices {
 		if(!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-
-		R.BACKEND.removeQueue(queueId);
+		Queues.removeQueue(queueId);
 		return gson.toJson(new ValidatorStatusCode(true,"Reservation canceled successfully"));
 	}
 	
@@ -3680,7 +3679,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		R.BACKEND.removeQueue(queueId);
+		Queues.removeQueue(queueId);
 
 		
 		return gson.toJson(new ValidatorStatusCode(true,"Queue removed successfully"));

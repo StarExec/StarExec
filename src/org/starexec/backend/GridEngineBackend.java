@@ -239,6 +239,13 @@ public class GridEngineBackend implements Backend{
 	return queuestr.split(System.getProperty("line.separator"));	
     }
 
+   /**
+     * @return returns the default queue name, should be an active queue
+     */
+    public String getDefaultQueueName(){
+	return "all";
+    }
+
     /**
      * @param nodeName the name of a node
      * @return an even-sized String[] representing a details map for a given queue
@@ -313,11 +320,25 @@ public class GridEngineBackend implements Backend{
 	return GridEngineUtil.clearNodeErrorStates();
     }
 
+    
     /**
-     * questionable, RESTServices
+     * deletes a queue that no longer has nodes associated with it
+     * @param queueName the name of the queue to be removed
      */
-    public boolean removeQueue(int queueId){
-	return GridEngineUtil.removeQueue(queueId);
+    public void deleteQueue(String queueName){
+	String[] split = queueName.split("\\.");
+	String shortQueueName = split[0];
+
+	String[] envp = new String[1];
+	envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+
+	//DISABLE the queue: 
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
+	//DELETE the queue:
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
+			
+	//Delete the host group:
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
     }
 
    /**
@@ -333,6 +354,17 @@ public class GridEngineBackend implements Backend{
     public void moveNodes(String queueName, HashMap<WorkerNode, Queue> NQ){
 	
 	GridEngineUtil.moveNodes(queueName,NQ);
+    }
+
+    /**
+     * moves the given node to the given queue
+     * @param nodeName the name of a node
+     * @param queueName the name of a queue
+     */
+    public void moveNode(String nodeName, String queueName){
+	String[] envp = new String[1];
+	envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+	Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", envp);
     }
 
 
