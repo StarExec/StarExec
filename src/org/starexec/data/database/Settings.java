@@ -119,9 +119,31 @@ public class Settings {
 	}
 	
 	/**
-	 * Gets the DefaultSettings profile for the given user with the given name
-	 * @param userId
-	 * @param name
+	 * Deletes the DefaultSettings profile with the given ID
+	 * @param id 
+	 * @return
+	 */
+	public static DefaultSettings deleteProfile(int id) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL DeleteDefaultSettings(?)}");
+			procedure.setInt(1,id);
+			procedure.executeUpdate();
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return null; //error;
+	}
+	
+	/**
+	 * Gets the DefaultSettings profile with the given id
+	 * @param id 
 	 * @return
 	 */
 	public static DefaultSettings getProfileById(int id) {
@@ -145,6 +167,8 @@ public class Settings {
 		}
 		return null; //error;
 	}
+	
+	
 	
 	/**
 	 * Updates the maximum memory setting of the given settings object

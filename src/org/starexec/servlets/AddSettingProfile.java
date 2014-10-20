@@ -11,12 +11,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.DefaultSettings;
+import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.User;
 import org.starexec.util.Mail;
@@ -26,8 +28,8 @@ import org.starexec.util.Validator;
 
 
 /**
- * Servlet which handles requests for registration 
- * @author Todd Elvers & Tyler Jensen
+ * Servlet which handles requests to create new DefaultSettings profiles for users
+ * @author Eric Burns
  */
 @SuppressWarnings("serial")
 public class AddSettingProfile extends HttpServlet {
@@ -49,33 +51,44 @@ public class AddSettingProfile extends HttpServlet {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
+	
+	/**
+	 * Post requests should have all the attributes required for a DefaultSettings object
+	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 		
 		log.debug("got a request to create a new settings profile");
 		
 		ValidatorStatusCode status=isValidRequest(request);
-		if (!status.isSuccess()) {
+		if (!status.isSuccess()) { //if the request is malformed
 			log.debug(status.getMessage());
 			response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,status.getMessage());
 			return;
 		}
 		
 		DefaultSettings d=new DefaultSettings();
-		d.setId(SessionUtil.getUserId(request));
+		
+		//this servlet currently only handles requests for users. Community profiles are created automatically
+		d.setType(SettingType.USER);
+		d.setPrimId(SessionUtil.getUserId(request));
 		d.setName(request.getParameter(NAME));
 		
+		//all profiles must set the following attributes
 		d.setWallclockTimeout(Integer.parseInt(request.getParameter(WALLCLOCK_TIMEOUT)));
 		d.setCpuTimeout(Integer.parseInt(request.getParameter(CPU_TIMEOUT)));
 		d.setMaxMemory(Util.gigabytesToBytes(Double.parseDouble(request.getParameter(MAX_MEMORY))));
+		d.setDependenciesEnabled(Boolean.parseBoolean(request.getParameter(DEPENDENCIES)));
 		log.debug("wallclock is "+request.getParameter(WALLCLOCK_TIMEOUT));
 		
-		
+		//the next attributes do not necessarily need to be set, as they can be null
 		String postId=request.getParameter(POST_PROCESSOR);
 		String solver=request.getParameter(SOLVER);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
 		String benchId=request.getParameter(BENCH_ID);
+		
+		//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
 		if (Validator.isValidInteger(postId)) {
 			int p=Integer.parseInt(postId);
 			if (p>0) {
@@ -107,7 +120,6 @@ public class AddSettingProfile extends HttpServlet {
 				d.setBenchId(p);
 			}
 		}
-		
 		Users.createNewDefaultSettings(d);
 	}
 	
@@ -158,15 +170,28 @@ public class AddSettingProfile extends HttpServlet {
 			}
 		}
 		if (Validator.isValidInteger(benchProcId)) {
-			int p=Integer.parseInt(benchId);
+			int p=Integer.parseInt(benchProcId);
 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
 			if (!status.isSuccess() && p>0) {
 				return status;
 			}
 		}
 		if (Validator.isValidInteger(solver)) {
+			int s=Integer.parseInt(solver);
+			if (s>0) {
+				//if we actually did select a solver
+				if (!Permissions.canUserSeeSolver(s, userId)) {
+					return new ValidatorStatusCode(false, "You do not have permission to use the given solver");
+				}
+			}
 		}
 		if (Validator.isValidInteger(benchId)) {
+			int b=Integer.parseInt(benchId);
+			if (b>0) {
+				if (!Permissions.canUserSeeBench(b, userId)) {
+					return new ValidatorStatusCode(false, "You do not have permission to use the given benchmark");
+				}
+			}
 		}
 		
 		

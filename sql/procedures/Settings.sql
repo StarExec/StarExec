@@ -102,5 +102,13 @@ CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT,
 		SELECT LAST_INSERT_ID() INTO _id;
 
 	END //
+	
+-- deletes a DefaultSettings profile
+-- Author: Eric Burns
+DROP  PROCEDURE IF EXISTS DeleteDefaultSettings;
+CREATE PROCEDURE DeleteDefaultSettings(IN _id INT)
+	BEGIN
+		DELETE FROM default_settings WHERE id=_id;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file
