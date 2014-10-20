@@ -44,6 +44,9 @@ public class IntroStateTests extends TestSequence {
 			List<Space> subspaces=Spaces.getSubSpaces(s.getId(), admin.getId());
 			HashSet<String> names=new HashSet<String>();
 			for (Space sub : subspaces) {
+				if (names.contains(sub.getName())) {
+					addMessage("ERROR: space id = "+sub.getId() +" has a duplicate name in space "+s.getId());
+				}
 				Assert.assertFalse(names.contains(sub.getName()));
 				names.add(sub.getName());
 			}
