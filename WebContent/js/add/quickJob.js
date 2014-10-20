@@ -61,6 +61,7 @@ function attachFormValidation(){
 
 			form.submit();
 		},
+		ignore: "", //don't ignore hidden inputs
 		rules: {
 			name: {
 				required: true,
@@ -100,6 +101,10 @@ function attachFormValidation(){
 				required:true,
 				minlength :1
 			},
+			solver: {
+				required:true,
+				min: 1
+			},
 			benchProcess: {
 				required: true
 			},
@@ -138,6 +143,10 @@ function attachFormValidation(){
 				required: "enter a timeout",			    
 			    max: getCpuTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
+			},
+			solver: {
+				required: "choose a solver",
+				min: "choose a solver"
 			},
 			wallclockTimeout: {
 				required: "enter a timeout",			    
