@@ -77,7 +77,7 @@ function attachFormValidation(){
 		if(selectedPrim>=0){
 			createDialog("Updating default "+primType+", please wait");
 			$.post(
-					starexecRoot+"services/edit/space/" + "default"+primType + "/" + $("#cid").attr("value"),
+					starexecRoot+"services/edit/defaultSettings/" + "default"+primType + "/" + $("#settingId").attr("value"),
 					{val : selectedPrim},
 					function(returnCode) {
 						s=parseReturnCode(returnCode);

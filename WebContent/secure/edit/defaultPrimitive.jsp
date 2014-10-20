@@ -14,7 +14,7 @@ try {
 	if (type.equals("solver")  || type.equals("benchmark")) {
 		// Only allowing editing of the default benchmark if the user
 		// is a leader of the community being edited
-		
+		DefaultSettings s= Communities.getDefaultSettings(comId);
 		boolean isLeader=Permissions.get(userId,comId).isLeader();
 		boolean validUser=isLeader || Users.isAdmin(userId);
 		// The user does not have permission
@@ -22,6 +22,7 @@ try {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "only community leaders can select default "+type+"");
 		} else {
 			request.setAttribute("comId",comId);
+			request.setAttribute("settingId",s.getId());
 			request.setAttribute("type",type);
 		}
 	} else {
@@ -36,6 +37,8 @@ try {
 <star:template title="select default ${type}" css="common/delaySpinner, edit/defaultPrimitive, edit/shared, common/table" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.validate.min, edit/defaultPrimitive">
 	<span style="display:none;" id="primType" value="${type}"></span>
 	<span style="display:none;" id="cid" value="${comId}"></span>
+	<span style="display:none;" id="settingId" value="${settingId}"></span>
+	
 	<fieldset>
 	<form id="selectDefaultPrim">
 		<fieldset>
