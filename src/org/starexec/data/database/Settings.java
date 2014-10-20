@@ -181,7 +181,7 @@ public class Settings {
 		CallableStatement procedure= null;
 		try {			
 			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL SetMaximumMemorySetting(?, ?, ? )}");
+			procedure = con.prepareCall("{CALL SetMaximumMemorySetting(?, ?)}");
 			procedure.setInt(1, id);
 			procedure.setLong(2, bytes);
 			procedure.executeUpdate();
