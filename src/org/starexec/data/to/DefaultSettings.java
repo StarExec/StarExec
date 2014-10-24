@@ -138,7 +138,7 @@ public class DefaultSettings extends Identifiable {
 		return s.getName();
 	}
 	
-	public String getBenchmarkContents() {
+	public String getBenchmarkName() {
 		if (benchId==null) {
 			return "None";
 		}
@@ -146,7 +146,7 @@ public class DefaultSettings extends Identifiable {
 		if (b==null) {
 			return "None";
 		}
-		return Benchmarks.getContents(b, -1);
+		return b.getName();
 		
 	}
 	public void setPrimId(Integer primId) {

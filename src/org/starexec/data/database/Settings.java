@@ -121,9 +121,9 @@ public class Settings {
 	/**
 	 * Deletes the DefaultSettings profile with the given ID
 	 * @param id 
-	 * @return
+	 * @return True on success and false otherwise
 	 */
-	public static DefaultSettings deleteProfile(int id) {
+	public static boolean deleteProfile(int id) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
@@ -131,14 +131,14 @@ public class Settings {
 			procedure=con.prepareCall("{CALL DeleteDefaultSettings(?)}");
 			procedure.setInt(1,id);
 			procedure.executeUpdate();
-			
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return null; //error;
+		return false; //error;
 	}
 	
 	/**

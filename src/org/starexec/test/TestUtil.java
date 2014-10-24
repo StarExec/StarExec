@@ -22,7 +22,7 @@ public class TestUtil {
 	}
 	
 	public static String getRandomSolverName() {
-		return getRandomAlphaString(R.PRIM_NAME_LEN-1);
+		return getRandomAlphaString(R.SOLVER_NAME_LEN-1);
 	}
 	
 	public static String getRandomJobName() {

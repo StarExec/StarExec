@@ -23,10 +23,19 @@
 			if( (visiting_userId != userId) && !isadmin){
 				owner = false;
 			} else {
+				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsByUser(userId);
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 				request.setAttribute("sites", Websites.getAllForHTML(userId, Websites.WebsiteType.USER));
+				request.setAttribute("settings",listOfDefaultSettings);
+				
+				List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
+				List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
+				List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
+				request.setAttribute("postProcs", ListOfPostProcessors);
+				request.setAttribute("preProcs", ListOfPreProcessors);
+				request.setAttribute("benchProcs",ListOfBenchProcessors);
 			}
 			
 			request.setAttribute("owner", owner);
@@ -37,7 +46,12 @@
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 	}
 %>
-<star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
+<star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="common/defaultSettings,lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
+	<c:forEach items="${settings}" var="setting">
+		<star:settings setting="${setting}" />
+	</c:forEach>
+	
+	
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
@@ -193,7 +207,102 @@
 			</table>
 		</form>
 	</fieldset>
+	<fieldset id="settingsField">
+		<legend class="expd"><span></span>default settings</legend>
+		<select id="settingProfile">
+			<c:if test="${empty settings}">
+				<option value="" />
+			</c:if>				
+		<c:forEach var="setting" items="${settings}">
+		    <option class="settingOption" value="${setting.getId()}">${setting.name}</option>
+		</c:forEach>
+		</select>
+		<table id="settings" class ="shaded">
+			<thead>
+				<tr class="headerRow">
+					<th class="label">name</th>
+					<th>values</th>
+				</tr>
+			</thead>
+			<tbody>	
+				<tr>
+					<td>pre processor </td>
+					<td>					
+						<select class="preProcessSetting" id="editPreProcess" name="editPreProcess" default="${defaultPreProcId}">
+						<option value=-1>none</option>
+						<c:forEach var="proc" items="${preProcs}">
+								<option value="${proc.id}">${proc.name}</option>
+						</c:forEach>
+						</select>
+					</td>
+				</tr>
+				
+				<tr>
+					<td>bench processor </td>
+					<td>					
+						<select class="benchProcessSetting" id="editBenchProcess" name="editBenchProcess" default="${defaultBPId}">
+						<option value=-1>none</option>
+						<c:forEach var="proc" items="${benchProcs}">
+								<option value="${proc.id}">${proc.name}</option>
+						</c:forEach>
+						</select>
+					</td>
+				</tr>
+				
+				<tr>
+					<td>post processor </td>
+					<td>					
+						<select class="postProcessSetting" id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
+						<option value=-1>none</option>
+						<c:forEach var="proc" items="${postProcs}">
+								<option value="${proc.id}">${proc.name}</option>
+						</c:forEach>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>wallclock timeout</td>
+					<td id="editClockTimeout"><input type="text" name="wallclockTimeout" id="wallclockTimeout"/></td>
+				</tr>	
+				<tr>
+					<td>cpu timeout</td>
+					<td id="editCpuTimeout"><input type="text" name="cpuTimeout" id="cpuTimeout" /></td>
+				</tr>
+				<tr>
+					<td>maximum memory</td>
+					<td id="editMaxMem"><input type="text" name="maxMem" id="maxMem"/></td>
+				</tr>
+				<tr>
+					<td>dependencies enabled</td>
+					<td>
+						<select class="dependencySetting" id="editDependenciesEnabled" name="editDependenciesEnabled">
+							<option value="true">True</option>
+							<option value="false">False</option>
+						</select>
+					</td>
+				</tr>
+				<tr id="defaultBenchRow">
+					<td>default benchmark</td>
+					<td id="solver"><p id="solverNameField"></p> <a class="defaultBenchLink"><span class="selectPrim">select benchmark</span></a></td>
+				</tr>
+				<tr id="defaultSolverRow">
+					<td>default solver</td>
+					<td id="benchmark"><p id="benchNameField"></p> <a class="defaultSolverLink"><span class="selectPrim">select solver</span></a></td>
+				</tr>
+			</tbody>
+		</table>
+		<fieldset id="settingActions">
+			<legend>actions</legend>
+			<button id="createProfile">create new profile</button>
+			<button id="deleteProfile">delete selected profile</button>
+			
+		</fieldset>
+	</fieldset>	
 	<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+	</div>
+	<div id="dialog-createSettingsProfile" title="create settings profile">
+		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
+		<p><label>name: </label><input id="settingName" type="text"/></p>			
 	</div>
 </star:template>

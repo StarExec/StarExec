@@ -1307,6 +1307,28 @@ public class RESTServices {
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Edit successful")) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	
+	@POST
+	@Path("/delete/defaultSettings/{id}")
+	@Produces("application/json")
+	public String deleteDefaultSettings(@PathParam("id") int id, @Context HttpServletRequest request) {	
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=SettingSecurity.canModifySettings(id,userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		try {			
+			boolean success=Settings.deleteProfile(id);
+			// Passed validation AND Database update successful
+			return success ? gson.toJson(new ValidatorStatusCode(true,"Community edit successful")) : gson.toJson(ERROR_DATABASE);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+		
+	}
+	
 	/** 
 	 * Updates information for a space in the database using a POST. Attribute and
 	 * new value are included in the path. First validates that the new value

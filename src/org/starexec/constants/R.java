@@ -37,7 +37,6 @@ public class R {
     public static int BENCH_DESC_LEN=1024;
     public static int CONFIGURATION_NAME_LEN=128;
     public static int CONFIGURATION_DESC_LEN=1024;
-    public static int PRIM_NAME_LEN=64;
     public static int SOLVER_NAME_LEN=64;
     public static int WEBSITE_NAME_LEN=64;
 
@@ -62,7 +61,7 @@ public class R {
     public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
     //public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
     public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
-    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(PRIM_NAME_LEN)+"}$";
+    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
     
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,"+R.MSG_LEN+"}$";

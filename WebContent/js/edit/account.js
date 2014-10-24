@@ -70,11 +70,13 @@ function initDataTables(){
  */
 function initUI(){
 	$("#dialog-confirm-delete").hide();
+	$("#dialog-createSettingsProfile").hide();
+
 	initDataTables();
 	initButtonIcons();
 	
 	// Collapse all fieldsets on page load except for the one containing the client's information
-	$('fieldset:first').expandable(false);
+	//$('fieldset:first').expandable(false);
 	$('fieldset:not(:first)').expandable(true);
 	
 	// Setup "+ add new" & "- add new" animation
@@ -95,11 +97,59 @@ function initUI(){
 		popUp($(this).attr('enlarge'));
 	});
 	
-	// Close the modal frame if the client clicks outside of it
-	$(document).click(function(e) {
-		if (!$(e.target).parents().filter('.ui-dialog').length) {
-			$('#popDialog').dialog('close');
-		}
+	
+	$("button").button();
+	
+	$("#createProfile").click(function() {
+		
+		
+		$("#dialog-createSettingsProfile").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'create': function() {
+					$(this).dialog("close");
+						$.post(  
+							starexecRoot+"secure/add/profile",
+							{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
+								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
+								wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
+								bench: "", mem: $("#maxMem").val()},
+							function(returnCode) {
+									showMessage("success","Profile created successfully",5000);
+							}
+						).error(function(xhr, textStatus, errorThrown){
+							showMessage('error',"Invalid parameters",5000);
+						});
+														
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+		
+		
+		
+		
+		
+	});
+	
+	//delete the selected DefaultSettings profile
+	$("#deleteProfile").click(function() {
+		curSettingId=getSelectedSettingId();
+		$.post(
+				starexecRoot+"services/delete/defaultSettings/"+ curSettingId,
+				function(returnData){
+					s=parseReturnCode(returnData);
+					if (s) {
+						$(".settingOption[value='"+curSettingId+"']").remove();
+					}
+
+				},
+				"json"
+		);
 	});
 }
 

@@ -4,7 +4,7 @@ var solverTable;
 var userId;
 
 var spaceId;
-var spaceName
+var spaceName;
 $(document).ready(function(){
 	userId=$("#userId").attr("value");
 	// Hide loading images by default

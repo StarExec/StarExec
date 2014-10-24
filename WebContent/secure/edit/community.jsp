@@ -16,10 +16,7 @@
 
 		int id = Integer.parseInt((String)request.getParameter("cid"));
 		request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.SPACE));
-		String url = Util.docRoot("secure/edit/defaultPrimitive.jsp?id="+String.valueOf(id));
 		
-		request.setAttribute("defaultBenchLink", url+"&type=benchmark");
-		request.setAttribute("defaultSolverLink", url+"&type=solver");
 		Space com = Communities.getDetails(id);
 		Permission perm = SessionUtil.getPermission(request, id);
 		
@@ -29,40 +26,43 @@
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 		} else {
 			DefaultSettings settings = Communities.getDefaultSettings(id);
-
-		request.setAttribute("com", com);	
-		request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
-		request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
-		request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
-		request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
-		request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
-		request.setAttribute("defaultPPId", settings.getPostProcessorId());
-		request.setAttribute("defaultBPId", settings.getBenchProcessorId());
-
-		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
-		request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
-		request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
-		request.setAttribute("settingId",settings.getId());
-		try {
-			Benchmark bench=Benchmarks.get(settings.getBenchId());
-			if (bench!=null) {
-				request.setAttribute("defaultBenchmark", bench.getName());
-			} else {
+			String url = Util.docRoot("secure/edit/defaultPrimitive.jsp?id="+settings.getId());
+			
+			request.setAttribute("defaultBenchLink", url+"&type=benchmark");
+			request.setAttribute("defaultSolverLink", url+"&type=solver");
+			request.setAttribute("com", com);	
+			request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
+			request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
+			request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
+			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
+			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
+			request.setAttribute("defaultPPId", settings.getPostProcessorId());
+			request.setAttribute("defaultBPId", settings.getBenchProcessorId());
+	
+			request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
+			request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
+			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
+			request.setAttribute("settingId",settings.getId());
+			try {
+				Benchmark bench=Benchmarks.get(settings.getBenchId());
+				if (bench!=null) {
+					request.setAttribute("defaultBenchmark", bench.getName());
+				} else {
+					request.setAttribute("defaultBenchmark", "none specified");
+				}
+			} catch (Exception e) {
 				request.setAttribute("defaultBenchmark", "none specified");
 			}
-		} catch (Exception e) {
-			request.setAttribute("defaultBenchmark", "none specified");
-		}
-		try {
-			Solver solver = Solvers.get(settings.getSolverId());
-			if (solver!=null) {
-				request.setAttribute("defaultSolver",solver.getName());
-			} else {
+			try {
+				Solver solver = Solvers.get(settings.getSolverId());
+				if (solver!=null) {
+					request.setAttribute("defaultSolver",solver.getName());
+				} else {
+					request.setAttribute("defaultSolver","none specified");
+				}
+			} catch (Exception e) {
 				request.setAttribute("defaultSolver","none specified");
 			}
-		} catch (Exception e) {
-			request.setAttribute("defaultSolver","none specified");
-		}
 		
 		
 		
@@ -205,6 +205,7 @@
 	</fieldset>
 	<fieldset id="settingsField">
 	<legend class="expd"><span></span>default settings</legend>
+	
 	<table id="settings" class ="shaded">
 		<thead>
 			<tr class="headerRow">

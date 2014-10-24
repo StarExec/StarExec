@@ -45,12 +45,18 @@ function initUI(){
 	
 	
 	$("#cancel").click(function() {
-		window.location=href=starexecRoot+"secure/edit/community.jsp?cid="+$("#cid").attr("value");
+		navBack();
 	});
 	
 }
 
-
+function navBack() {
+	if (isSpaceSetting()) {
+		window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#primId").attr("value");
+	} else {
+		window.location = starexecRoot+'secure/edit/account.jsp?id='+$("#primId").attr("value");
+	}
+}
 
 /**
  * Returns the id of the selected primitive or -1 if there is not one.
@@ -64,6 +70,14 @@ function primSelected() {
 	input=row.find("input");
 	id=input.attr("value");
 	return id;
+}
+
+/**
+ * returns true if this is the defaultsettings profile of a space and false otherwise
+ * @returns {Boolean}
+ */
+function isSpaceSetting() {
+	return $("#settingType").attr("value")=="comm";
 }
 
 /**
@@ -82,7 +96,7 @@ function attachFormValidation(){
 					function(returnCode) {
 						s=parseReturnCode(returnCode);
 						if (s) {
-							window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#cid").attr("value");
+							navBack();
 						}
 
 					},
@@ -110,21 +124,24 @@ function unselectAll() {
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	// Extract the id of the currently selected space from the DOM
-	var idOfSelectedSpace = $('#cid').attr("value");
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + idOfSelectedSpace + "/" + primType+"s" + "/pagination",
-			aoData,
-			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage);
-				if (s) {
-					// Replace the current page with the newly received page
-					fnCallback(nextDataTablePage);
-				}
-			},  
-			"json"
-	).error(function(){
-		
-		window.location.reload(true);
-	});
+	if (isSpaceSetting()) {
+		var idOfSelectedSpace = $("#primId").attr("value");
+		// Request the next page of primitives from the server via AJAX
+		$.post(  
+				
+				sSource + idOfSelectedSpace + "/" + primType+"s" + "/pagination",
+				aoData,
+				function(nextDataTablePage){
+					s=parseReturnCode(nextDataTablePage);
+					if (s) {
+						// Replace the current page with the newly received page
+						fnCallback(nextDataTablePage);
+					}
+				},  
+				"json"
+		);
+	} else {
+		//TODO: ...
+	}
+	
 }
