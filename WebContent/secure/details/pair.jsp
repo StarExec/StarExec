@@ -15,7 +15,7 @@
 			Job j = Jobs.get(jp.getJobId());
 			
 			User u = Users.get(j.getUserId());
-			String output=GeneralSecurity.getHTMLSafeString(GridEngineUtil.getStdOut(jp,100));
+			String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp,100));
 			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
 			request.setAttribute("pair", jp);

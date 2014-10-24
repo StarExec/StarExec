@@ -16,7 +16,6 @@
 			request.setAttribute("space", Spaces.get(spaceId));
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
-			DefaultSettings settings = Communities.getDefaultSettings(spaceId);
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
@@ -26,11 +25,16 @@
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
-			request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
-			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
-			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
-			request.setAttribute("defaultPPId", settings.getPostProcessorId());
-			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
+			DefaultSettings settings = Communities.getDefaultSettings(spaceId);
+
+			if (settings!=null) {
+				request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
+				request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
+				request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
+				request.setAttribute("defaultPPId", settings.getPostProcessorId());
+				request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
+			}
+			
 			
 		}
 	} catch (NumberFormatException nfe) {

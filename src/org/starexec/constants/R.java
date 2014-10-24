@@ -172,7 +172,7 @@ public class R {
 	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for an SGE node (indicates the node is live)
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
 	
-    // SGE Cnfigurations, see GridEngineUtil
+    // SGE Configurations, see GridEngineUtil
     public static String SGE_ROOT = null; // root directory for SGE
     public static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
     public static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
