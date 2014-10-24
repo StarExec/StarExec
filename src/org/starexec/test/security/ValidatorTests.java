@@ -1,9 +1,10 @@
 package org.starexec.test.security;
 
 import org.junit.Assert;
-import org.starexec.command.R;
+import org.starexec.constants.R;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
+import org.starexec.test.TestUtil;
 import org.starexec.util.Validator;
 public class ValidatorTests extends TestSequence {
 	
@@ -14,7 +15,8 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidPrimDescription("hello world"));
 		Assert.assertTrue(Validator.isValidPrimDescription("This is a sentence, and it has some punctuation."));
 		Assert.assertTrue(Validator.isValidPrimDescription("293md03 32idiu"));		
-		
+		Assert.assertTrue(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(R.BENCH_DESC_LEN)));
+		Assert.assertFalse(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(R.BENCH_DESC_LEN+1)));
 		Assert.assertFalse(Validator.isValidPrimDescription(null));
 		Assert.assertFalse(Validator.isValidPrimDescription("\"\""));
 		Assert.assertFalse(Validator.isValidPrimDescription("<script>"));
@@ -33,16 +35,86 @@ public class ValidatorTests extends TestSequence {
 	}
 	
 	@Test
+	private void QueueNameTest() {
+		Assert.assertTrue(Validator.isValidQueueName("hello world"));
+		Assert.assertTrue(Validator.isValidQueueName("Mark"));
+		Assert.assertTrue(Validator.isValidQueueName("293md03 32idiu"));	
+		
+		Assert.assertTrue(Validator.isValidQueueName(TestUtil.getRandomAlphaString(R.QUEUE_NAME_LEN)));
+		
+		Assert.assertFalse(Validator.isValidQueueName(TestUtil.getRandomAlphaString(R.QUEUE_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidQueueName(""));
+		Assert.assertFalse(Validator.isValidQueueName(null));
+		Assert.assertFalse(Validator.isValidQueueName("\"\""));
+		Assert.assertFalse(Validator.isValidQueueName("<script>"));
+	}
+	
+	@Test
+	private void JobNameTest() {
+		Assert.assertTrue(Validator.isValidJobName("hello world"));
+		Assert.assertTrue(Validator.isValidJobName("Mark"));
+		Assert.assertTrue(Validator.isValidJobName("293md03 32idiu"));		
+		Assert.assertTrue(Validator.isValidJobName(TestUtil.getRandomAlphaString(R.JOB_NAME_LEN)));
+		
+		Assert.assertFalse(Validator.isValidJobName(TestUtil.getRandomAlphaString(R.JOB_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidJobName(""));
+		Assert.assertFalse(Validator.isValidJobName(null));
+		Assert.assertFalse(Validator.isValidJobName("\"\""));
+		Assert.assertFalse(Validator.isValidJobName("<script>"));
+	}
+	
+	@Test
+	private void ConfigurationNameTest() {
+		Assert.assertTrue(Validator.isValidConfigurationName("hello world"));
+		Assert.assertTrue(Validator.isValidConfigurationName("Mark"));
+		Assert.assertTrue(Validator.isValidConfigurationName("293md03 32idiu"));		
+		Assert.assertTrue(Validator.isValidConfigurationName(TestUtil.getRandomAlphaString(R.CONFIGURATION_NAME_LEN)));
+		Assert.assertFalse(Validator.isValidConfigurationName(TestUtil.getRandomAlphaString(R.CONFIGURATION_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidConfigurationName(""));
+		Assert.assertFalse(Validator.isValidConfigurationName(null));
+		Assert.assertFalse(Validator.isValidConfigurationName("\"\""));
+		Assert.assertFalse(Validator.isValidConfigurationName("<script>"));
+	}
+	
+	@Test
+	private void ProcessorNameTest() {
+		Assert.assertTrue(Validator.isValidProcessorName("hello world"));
+		Assert.assertTrue(Validator.isValidProcessorName("Mark"));
+		Assert.assertTrue(Validator.isValidProcessorName("293md03 32idiu"));		
+		Assert.assertTrue(Validator.isValidProcessorName(TestUtil.getRandomAlphaString(R.PROCESSOR_NAME_LEN)));
+		Assert.assertFalse(Validator.isValidProcessorName(TestUtil.getRandomAlphaString(R.PROCESSOR_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidProcessorName(""));
+		Assert.assertFalse(Validator.isValidProcessorName(null));
+		Assert.assertFalse(Validator.isValidProcessorName("\"\""));
+		Assert.assertFalse(Validator.isValidProcessorName("<script>"));
+	}
+	
+	@Test
+	private void BenchmarkNameTest() {
+		Assert.assertTrue(Validator.isValidBenchName("hello world"));
+		Assert.assertTrue(Validator.isValidBenchName("Mark"));
+		Assert.assertTrue(Validator.isValidBenchName("293md03 32idiu"));		
+		Assert.assertTrue(Validator.isValidBenchName(TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN)));
+		
+		Assert.assertFalse(Validator.isValidBenchName(TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidBenchName(""));
+		Assert.assertFalse(Validator.isValidBenchName(null));
+		Assert.assertFalse(Validator.isValidBenchName("\"\""));
+		Assert.assertFalse(Validator.isValidBenchName("<script>"));
+	}
+	
+	@Test
 	private void SolverNameRegexTest() {
 		Assert.assertTrue(Validator.isValidSolverName("hello world"));
 		Assert.assertTrue(Validator.isValidSolverName("Mark"));
 		Assert.assertTrue(Validator.isValidSolverName("293md03 32idiu"));		
-
+		Assert.assertTrue(Validator.isValidSolverName(TestUtil.getRandomAlphaString(R.SOLVER_NAME_LEN)));
+		
+		Assert.assertFalse(Validator.isValidSolverName(TestUtil.getRandomAlphaString(R.SOLVER_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidSolverName(""));
 		Assert.assertFalse(Validator.isValidSolverName(null));
 		Assert.assertFalse(Validator.isValidSolverName("\"\""));
 		Assert.assertFalse(Validator.isValidSolverName("<script>"));
-		
 	}
 	
 	@Test
