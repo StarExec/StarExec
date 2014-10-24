@@ -419,10 +419,14 @@ public class Communities {
 			if (results.next()) {
 				//if we found the community, get the default settings
 			    community = results.getInt("community");
-			    
 			    Common.safeClose(results);
 			    Common.safeClose(procedure);
 			    
+			    //this means the community was NULL, which occurs when this is called on the root space.
+			    if (community<=0) {
+			    	log.debug("no default settings profile set for space = "+id);
+			    	return null;
+			    }
 			    
 			    List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
 				
