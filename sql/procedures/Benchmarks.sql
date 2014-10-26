@@ -471,7 +471,7 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 		SELECT *
 		FROM benchmarks
 		LEFT OUTER JOIN processors AS types
-			ON bench.bench_type=types.id
+			ON benchmarks.bench_type=types.id
 		WHERE user_id = _userId and deleted=false AND recycled=false;
 	END //	
 	
@@ -528,7 +528,7 @@ CREATE PROCEDURE GetBenchmarksInSharedSpaces(IN _userId INT)
 		JOIN bench_assoc ON bench_assoc.bench_id = benchmarks.id
 		JOIN user_assoc ON user_assoc.space_id = bench_assoc.space_id
 		LEFT OUTER JOIN processors AS types
-			ON bench.bench_type=types.id
+			ON benchmarks.bench_type=types.id
 		WHERE user_assoc.user_id=_userId AND deleted=false AND recycled=false
 		GROUP BY(benchmarks.id);
 	END //
@@ -542,7 +542,7 @@ CREATE PROCEDURE GetPublicBenchmarks()
 		JOIN bench_assoc ON bench_assoc.bench_id=benchmarks.id
 		JOIN spaces ON spaces.id=bench_assoc.space_id
 		LEFT OUTER JOIN processors AS types
-			ON bench.bench_type=types.id
+			ON benchmarks.bench_type=types.id
 		WHERE public_access=1 AND deleted=false AND recycled=false
 		GROUP BY benchmarks.id;
 	END //
