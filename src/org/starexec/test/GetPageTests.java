@@ -96,7 +96,7 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
-	private void getenchAddTest(){
+	private void getBenchAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/benchmarks.jsp?sid="+space1.getId()));
 	}
 	

@@ -23,7 +23,7 @@
 			if( (visiting_userId != userId) && !isadmin){
 				owner = false;
 			} else {
-				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsByUser(userId);
+				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsOwnedByUser(userId);
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
