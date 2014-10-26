@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.Space;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -108,13 +109,36 @@ public class Settings {
 		}
 		return null; //error;
 	}
+	/**
+	 * Returns every DefaultSettings profile a user has access to, either by community
+	 * or individually
+	 * @param userId
+	 * @return
+	 */
+	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(int userId) {
+		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
+		List<Space> comms=Communities.getAll();
+		if (comms.size()>0) {
+			for (int i=0;i<comms.size();i++) {
+				DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
+				listOfDefaultSettings.add(s);
+
+			}
+		}
+		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
+		if (userSettings!=null) {
+			
+			listOfDefaultSettings.addAll(userSettings);
+		}
+		return listOfDefaultSettings;
+	}
 	
 	/**
 	 * Gets all of the defaultSettings profiles that this user has
 	 * @param userId
 	 * @return
 	 */
-	public static List<DefaultSettings> getDefaultSettingsByUser(int userId) {
+	public static List<DefaultSettings> getDefaultSettingsOwnedByUser(int userId) {
 		return getDefaultSettingsByPrimIdAndType(userId, SettingType.USER);
 	}
 	

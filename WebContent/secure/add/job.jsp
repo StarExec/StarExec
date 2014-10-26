@@ -25,17 +25,8 @@
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
-			DefaultSettings settings = Communities.getDefaultSettings(spaceId);
-
-			if (settings!=null) {
-				request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
-				request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
-				request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
-				request.setAttribute("defaultPPId", settings.getPostProcessorId());
-				request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
-			}
-			
-			
+			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+			request.setAttribute("defaultSettings",listOfDefaultSettings);			
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
@@ -45,7 +36,12 @@
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
-<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/defaultSettings, common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+	<c:forEach items="${defaultSettings}" var="setting">
+		<star:settings setting="${setting}" />
+	</c:forEach>
+	
+	
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>
 		<fieldset id="fieldStep1">
@@ -58,7 +54,19 @@
 					</tr>
 				</thead>
 				<tbody>
-					
+					<tr class="noHover" title="what default settings profile would you like to use?">
+						<td>setting profile</td>
+						<td>
+							<select id="settingProfile">
+									<c:if test="${empty defaultSettings}">
+										<option value="" />
+									</c:if>				
+									<c:forEach var="setting" items="${defaultSettings}">
+		                                <option value="${setting.getId()}">${setting.name}</option>
+									</c:forEach>
+							</select>
+						</td>
+					</tr>
 					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
 						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
@@ -70,7 +78,7 @@
 					<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 						<td class="label"><p>pre processor</p></td>
 						<td>					
-							<select id="preProcess" name="preProcess" default="${defaultPreProcId}">
+							<select class="preProcessSetting" id="preProcess" name="preProcess">
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${preProcs}">
 										<option value="${proc.id}">${proc.name} (${proc.id})</option>
@@ -81,7 +89,7 @@
 					<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
 						<td>					
-							<select id="postProcess" name="postProcess" default="${defaultPPId}">
+							<select class="postProcessSetting" id="postProcess" name="postProcess">
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${postProcs}">
 										<option value="${proc.id}">${proc.name} (${proc.id})</option>
@@ -106,19 +114,19 @@
 					<tr class="noHover" title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>wallclock timeout</p></td>
 						<td>	
-							<input type="text" name="wallclockTimeout" id="wallclockTimeout" value="${defaultClockTimeout}"/>
+							<input type="text" name="wallclockTimeout" id="wallclockTimeout"/>
 						</td>
 					</tr>
 					<tr class="noHover" title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>cpu timeout</p></td>
 						<td>	
-							<input type="text" name="cpuTimeout" id="cpuTimeout" value="${defaultCpuTimeout}"/>
+							<input type="text" name="cpuTimeout" id="cpuTimeout"/>
 						</td>
 					</tr>
 					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The minimum of this value and half the available memory on the nodes will be used.">
 						<td class="label"><p>maximum memory</p></td>
 						<td>	
-							<input type="text" name="maxMem" id="maxMem" value="${defaultMaxMem}"/>
+							<input type="text" name="maxMem" id="maxMem"/>
 						</td>
 					</tr>
 					

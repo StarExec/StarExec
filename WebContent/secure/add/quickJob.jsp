@@ -29,22 +29,8 @@
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 			request.setAttribute("benchNameLen",R.BENCH_NAME_LEN);
-			int commId=-1;
-			List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
-			List<Space> comms=Communities.getAll();
-			if (comms.size()>0) {
-				for (int i=0;i<comms.size();i++) {
-					DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
-					listOfDefaultSettings.add(s);
-
-				}
-				commId=comms.get(0).getId();
-			}
-			List<DefaultSettings> userSettings=Settings.getDefaultSettingsByUser(userId);
-			if (userSettings!=null) {
-				
-				listOfDefaultSettings.addAll(userSettings);
-			}
+			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+			
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);

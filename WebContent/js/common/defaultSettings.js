@@ -33,8 +33,8 @@ function populateDefaults() {
 	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
 	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
 	deps = $(profile).find("span.dependency").attr("value");
-	
 	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
+	
 	setInputToValue("#cpuTimeout",cpuTimeout);
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
@@ -70,7 +70,6 @@ function populateDefaults() {
 }
 
 function useSelectedBenchmark() {
-	alert("here");
 	selection=$("#benchmarkList").find("tr.row_selected");
 	//nothing is selected
 	if (selection.length==0) {

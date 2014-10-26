@@ -226,7 +226,7 @@
 			</thead>
 			<tbody>	
 				<tr>
-					<td>pre processor </td>
+					<td title="the pre processor that will be selected by default for new jobs">pre processor </td>
 					<td>					
 						<select class="preProcessSetting" id="editPreProcess" name="editPreProcess" default="${defaultPreProcId}">
 						<option value=-1>none</option>
@@ -238,7 +238,7 @@
 				</tr>
 				
 				<tr>
-					<td>bench processor </td>
+					<td title="the benchmark processor that will be selected by default for new jobs">bench processor </td>
 					<td>					
 						<select class="benchProcessSetting" id="editBenchProcess" name="editBenchProcess" default="${defaultBPId}">
 						<option value=-1>none</option>
@@ -250,7 +250,7 @@
 				</tr>
 				
 				<tr>
-					<td>post processor </td>
+					<td title="the post processor that will be selected by default for new jobs">post processor </td>
 					<td>					
 						<select class="postProcessSetting" id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
 						<option value=-1>none</option>
@@ -261,15 +261,15 @@
 					</td>
 				</tr>
 				<tr>
-					<td>wallclock timeout</td>
+					<td title="the wallclock timeout that will be selected by default for new jobs">wallclock timeout</td>
 					<td id="editClockTimeout"><input type="text" name="wallclockTimeout" id="wallclockTimeout"/></td>
 				</tr>	
 				<tr>
-					<td>cpu timeout</td>
+					<td title="the cpu timeout that will be selected by default for new jobs">cpu timeout</td>
 					<td id="editCpuTimeout"><input type="text" name="cpuTimeout" id="cpuTimeout" /></td>
 				</tr>
 				<tr>
-					<td>maximum memory</td>
+					<td title="the maximum memory that will be selected by default for new jobs">maximum memory</td>
 					<td id="editMaxMem"><input type="text" name="maxMem" id="maxMem"/></td>
 				</tr>
 				<tr>

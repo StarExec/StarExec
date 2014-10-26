@@ -28,3 +28,7 @@ ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_defau
 
 -- finally, rename the table
 RENAME TABLE space_default_settings TO default_settings;
+
+ALTER TABLE users ADD COLUMN default_settings_profile INT DEFAULT NULL;
+
+ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
