@@ -151,6 +151,90 @@ function initUI(){
 				"json"
 		);
 	});
+	$("#useSolver").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	$("#useSolver").click(function(e) {
+		useSelectedSolver();
+		e.preventDefault();
+	});
+	
+	$("#useBenchmark").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	$("#useBenchmark").click(function(e) {
+		useSelectedBenchmark();
+		e.preventDefault();
+	});
+	
+	 $("#solverList").dataTable({ 
+			"sDom"			: 'rt<"bottom"flpi><"clear">',
+			"iDisplayStart"	: 0,
+			"iDisplayLength": defaultPageSize,
+			"bServerSide"	: true,
+			"sAjaxSource"	: starexecRoot+"services/",
+			"sServerMethod" : 'POST',
+			"fnServerData"	: fnSolverPaginationHandler
+		});
+	    $("#solverList").on("mousedown", "tr",function() {
+			if ($(this).hasClass("row_selected")) {
+				$(this).removeClass("row_selected");
+			} else {
+				$("#solverList").find("tr").removeClass("row_selected");
+				$(this).addClass("row_selected");
+			}
+		});
+	    
+	    $("#benchmarkList").dataTable({ 
+			"sDom"			: 'rt<"bottom"flpi><"clear">',
+			"iDisplayStart"	: 0,
+			"iDisplayLength": defaultPageSize,
+			"bServerSide"	: true,
+			"sAjaxSource"	: starexecRoot+"services/",
+			"sServerMethod" : 'POST',
+			"fnServerData"	: fnBenchmarkPaginationHandler
+		});
+	    $("#benchmarkList").on("mousedown", "tr",function() {
+			if ($(this).hasClass("row_selected")) {
+				$(this).removeClass("row_selected");
+			} else {
+				$("#benchmarkList").find("tr").removeClass("row_selected");
+				$(this).addClass("row_selected");
+			}
+		});
+	
+	
+}
+
+function fnSolverPaginationHandler(sSource,aoData,fnCallback) {
+	fnPaginationHandler(sSource,aoData,fnCallback,"solvers");
+}
+function fnBenchmarkPaginationHandler(sSource,aoData,fnCallback) {
+	fnPaginationHandler(sSource,aoData,fnCallback,"benchmarks");
+}
+
+
+
+function fnPaginationHandler(sSource, aoData, fnCallback,prim){
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			sSource + "users/"+prim+"/pagination",
+			aoData,
+			function(nextDataTablePage){
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					
+				
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
+				}
+			},  
+			"json"
+	);
 }
 
 

@@ -140,8 +140,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				},  
 				"json"
 		);
-	} else {
-		//TODO: ...
-	}
+	} 
 	
 }

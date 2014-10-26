@@ -22,8 +22,12 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.compare.SolverComparator;
+import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.util.Util;
 
 /**
@@ -722,21 +726,58 @@ public class Solvers {
 	}
 	
 	/**
+	 * Gets every solver that shares a space with the given user
+	 * @param userId
+	 * @return The list of solvers, or null on error
+	 */
+	public static List<Solver> getSolversInSharedSpaces(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetSolversInSharedSpaces(?)}");
+			procedure.setInt(1,userId);
+			
+			results=procedure.executeQuery();
+			List<Solver> solvers=new ArrayList<Solver>();
+			while (results.next()) {
+				solvers.add(resultSetToSolver(results));
+			}
+			return solvers;
+		}catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null; //error
+	}
+	
+	/**
 	 * Retrieves a list of every solver the given user is allowed to use. Used for quick jobs.
+	 * Solvers a user can see include solvers they own, solvers in public spaces,
+	 * and solvers in spaces the user is also in
 	 * @param userId
 	 * @return
 	 */
 	public static List<Solver> getByUser(int userId) {
 		try {
-			//will stores solvers according to their IDs
+			//will stores solvers according to their IDs, used to remove duplicates
 			HashMap<Integer,Solver> uniqueSolvers=new HashMap<Integer,Solver>();
-			List<Solver> solvers=getByOwner(userId);
-			solvers.addAll(Solvers.getPublicSolvers());
-			//remove duplicates using a hash map
-			for (Solver s : solvers) {
+			for (Solver s : getByOwner(userId)) {
 				uniqueSolvers.put(s.getId(), s);
 			}
-			solvers=new ArrayList<Solver>();
+			for (Solver s : Solvers.getPublicSolvers()) {
+				uniqueSolvers.put(s.getId(), s);
+			}
+			
+			for (Solver s : Solvers.getSolversInSharedSpaces(userId)) {
+				uniqueSolvers.put(s.getId(), s);
+			}
+			
+			List<Solver> solvers=new ArrayList<Solver>();
 			for (Solver s : uniqueSolvers.values()) {
 				solvers.add(s);
 			}
@@ -768,14 +809,7 @@ public class Solvers {
 			
 			while(results.next()){
 				// Build solver object
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));
-				s.setPath(results.getString("path"));
-				s.setUploadDate(results.getTimestamp("uploaded"));
-				s.setDescription(results.getString("description"));
-				s.setDownloadable(results.getBoolean("downloadable"));
-				s.setDiskSize(results.getLong("disk_size"));
+				Solver s = resultSetToSolver(results);
 				
 				// Add solver object to list
 				solvers.add(s);
@@ -813,15 +847,7 @@ public class Solvers {
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			while(results.next()){
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));				
-				s.setUploadDate(results.getTimestamp("uploaded"));
-				s.setDescription(results.getString("description"));
-				s.setDownloadable(results.getBoolean("downloadable"));
-				s.setDiskSize(results.getLong("disk_size"));
-				s.setPath(results.getString("path"));
-				s.setUserId(results.getInt("user_id"));
+				Solver s = resultSetToSolver(results);
 				solvers.add(s);
 			}			
 						
@@ -1088,6 +1114,16 @@ public class Solvers {
 	}
 	
 	/**
+	 * Given a ResultSet currently pointing at a row containing a solver, returns the solver
+	 * @param results
+	 * @return
+	 * @throws SQLException 
+	 */
+	private static Solver resultSetToSolver(ResultSet results) throws SQLException {
+		return resultToSolver(results,"");
+	}
+	
+	/**
 	 * @return a list of all solvers that reside in a public space
 	 * @author Benton McCune
 	 */
@@ -1104,14 +1140,7 @@ public class Solvers {
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			while(results.next()){
-				Solver s = new Solver();
-				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));				
-				s.setUploadDate(results.getTimestamp("uploaded"));
-				s.setDescription(results.getString("description"));
-				s.setDownloadable(results.getBoolean("downloadable"));
-				s.setDiskSize(results.getLong("disk_size"));
-				s.setPath(results.getString("path"));
+				Solver s=resultSetToSolver(results);
 				solvers.add(s);
 			}									
 			return solvers;
@@ -2040,5 +2069,61 @@ public class Solvers {
 		}
 		
 		return false;
+	}
+	
+	
+	/**
+	 * Filters a list of solvers using the given search query. 
+	 * @param solvers The list of solvers to filter
+	 * @param searchQuery Query for the solvers. Not case sensitive
+	 * @return A subset of the given solvers where, for every solver returned, either the name
+	 * or the description includes the search query.
+	 */
+	protected static List<Solver> filterSolvers(List<Solver> solvers, String searchQuery) {
+		//no filtering is necessary if there's no query
+		if (searchQuery==null || searchQuery=="") {
+			return solvers;
+		}
+		searchQuery=searchQuery.toLowerCase();
+		List<Solver> filteredSolvers=new ArrayList<Solver>();
+		for (Solver s : filteredSolvers) {
+			try {
+				if (s.getName().toLowerCase().contains(searchQuery) || s.getDescription().toLowerCase().contains(searchQuery)) {
+					filteredSolvers.add(s);
+				}
+			} catch (Exception e) {
+				log.warn("filtering solvers had an exception for solver id= " +s.getId());
+			}	
+		}
+		
+		return filteredSolvers;
+	}
+	
+	
+	/**
+	 * Returns the Solvers needed to populate a DataTables page for a given user. Solvers include all
+	 * solvers the user can see
+	 * @param startingRecord Index of solver to start at
+	 * @param recordsPerPage Number of solvers to return. May return fewer if recordsPerPage is greater than the total number of solvers
+	 * @param isSortedASC True if sorted ascending, false otherwise
+	 * @param indexOfColumnSortedBy 
+	 * @param searchQuery Query to filter solvers by. Filter examines name and description
+	 * @param userId ID of user to get solvers for
+	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
+	 * and the total number of elements after filtering as the second element
+	 * @return
+	 */
+	public static List<Solver> getSolversForNextPageByUser(int startingRecord, int recordsPerPage, boolean isSortedASC, 
+			int indexOfColumnSortedBy, String searchQuery, int userId,int[] totals) {
+		List<Solver> solvers=Solvers.getByUser(userId);
+		
+		
+		totals[0]=solvers.size();
+		solvers=Solvers.filterSolvers(solvers, searchQuery);
+
+		totals[1]=solvers.size();
+		SolverComparator compare=new SolverComparator(indexOfColumnSortedBy);
+		return Util.handlePagination(solvers, compare, startingRecord, recordsPerPage, isSortedASC);
+
 	}
 }

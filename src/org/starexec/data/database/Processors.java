@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,6 +19,27 @@ import org.starexec.data.to.Processor.ProcessorType;
  */
 public class Processors {
 	private static final Logger log = Logger.getLogger(Processors.class);
+	
+	
+	public static Processor resultSetToProcessor(ResultSet results, String prefix) throws SQLException {
+		if (prefix==null || prefix.isEmpty()) {
+			prefix="";
+		} else {
+			prefix=prefix+".";
+		}
+		
+		Processor t = new Processor();
+		//if the ID is null, 0 is returned here
+		t.setId(results.getInt(prefix+"id"));
+		t.setCommunityId(results.getInt(prefix+"community"));
+		t.setDescription(results.getString(prefix+"description"));
+		t.setName(results.getString(prefix+"name"));
+		t.setFilePath(results.getString(prefix+"path"));
+		t.setDiskSize(results.getLong(prefix+"disk_size"));
+		t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+
+		return t;
+	}
 	
 	/**
 	 * Inserts a processor into the database
@@ -111,14 +133,8 @@ public class Processors {
 			procedure.setInt(1, processorId);
 			results = procedure.executeQuery();
 			if(results.next()){							
-				Processor t = new Processor();
-				t.setId(results.getInt("id"));
-				t.setCommunityId(results.getInt("community"));
-				t.setDescription(results.getString("description"));
-				t.setName(results.getString("name"));
-				t.setFilePath(results.getString("path"));
-				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
-				t.setDiskSize(results.getLong("disk_size"));
+				Processor t = Processors.resultSetToProcessor(results, "");
+				
 				return t;					
 			}
 		} catch (Exception e) {
@@ -170,14 +186,8 @@ public class Processors {
 			List<Processor> processors = new LinkedList<Processor>();
 			
 			while(results.next()){
-				Processor bt = new Processor();
-				bt.setId(results.getInt("id"));
-				bt.setName(results.getString("name"));
-				bt.setDescription(results.getString("description"));
-				bt.setFilePath((results.getString("path")));
-				bt.setCommunityId((results.getInt("community")));
-				bt.setType(ProcessorType.valueOf(results.getInt("processor_type")));
-				bt.setDiskSize(results.getLong("disk_size"));
+				Processor bt = Processors.resultSetToProcessor(results, "");
+
 				processors.add(bt);
 			}
 			
@@ -217,14 +227,8 @@ public class Processors {
 			List<Processor> processors = new LinkedList<Processor>();
 			
 			while(results.next()){							
-				Processor t = new Processor();
-				t.setId(results.getInt("id"));
-				t.setCommunityId(results.getInt("community"));
-				t.setDescription(results.getString("description"));
-				t.setName(results.getString("name"));
-				t.setFilePath(results.getString("path"));
-				t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
-				t.setDiskSize(results.getLong("disk_size"));
+				Processor t = Processors.resultSetToProcessor(results, "");
+
 				processors.add(t);						
 			}				
 			

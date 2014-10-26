@@ -65,9 +65,36 @@ function populateDefaults() {
 			$(".benchProcessSetting").val(benchProcessorId);
 		}
 	}
-	url = starexecRoot+"secure/edit/defaultPrimitive.jsp?id="+selectedSettingId;
+
 	
-	benchURL= url+"&type=benchmark";
-	solverURL=url+"&type=solver";
-	
+}
+
+function useSelectedBenchmark() {
+	selection=$("#benchmarkList").find("tr.row_selected");
+	//nothing is selected
+	if (selection.length==0) {
+		return;
+	}
+	name=$(selection).find("td:first").text();
+	input=selection.find("input");
+	id=input.attr("value");
+	setInputToValue("#benchmark",id);
+
+	$("#benchmarkNameField").text(name);
+
+}
+
+function useSelectedSolver() {
+	selection=$("#solverList").find("tr.row_selected");
+	//nothing is selected
+	if (selection.length==0) {
+		return;
+	}
+	name=$(selection).find("td:first").text();
+	input=selection.find("input");
+	id=input.attr("value");
+	setInputToValue("#solver",id);
+
+	$("#solverNameField").text(name);
+
 }

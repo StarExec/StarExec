@@ -17,6 +17,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -775,6 +777,35 @@ public class Util {
 	    log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}
     	return false;
+    }
+    
+    /**
+     * Given a list, a comparator, and all of the attributes needed to paginate a DataTables object,
+     * returns a sublist of the given list containing the ordered items to display
+     * @param arr List to sort
+     * @param compare Comparator object that will be used to determine the ordering of objects during sorting
+     * @param start Record to start on
+     * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
+     * @param asc True if sort is ascending, false otherwise
+     * @return
+     */
+    
+    public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records, boolean asc) {
+    	Collections.sort(arr,compare);
+
+		if (!asc) {
+			Collections.reverse(arr);
+		}
+
+		List<T> returnList=new ArrayList<T>();
+		if (start>=arr.size()) {
+			//we'll just return nothing
+		} else if (start+records>arr.size()) {
+			returnList = arr.subList(start, arr.size());
+		} else {
+			 returnList = arr.subList(start,start+records);
+		}
+		return returnList;
     }
     
 }

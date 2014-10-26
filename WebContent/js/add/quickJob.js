@@ -211,24 +211,6 @@ function attachFormValidation(){
 	});
 };
 
-function useSelectedSolver() {
-	selection=$("#solverList").find("tr.row_selected");
-	//nothing is selected
-	if (selection.length==0) {
-		return;
-	}
-	name=$(selection).find("td:first").text();
-	id=$(selection).find("td:nth-child(2)").text();
-	setInputToValue("#solver",id);
-
-	$("#solverNameField").text(name);
-
-}
-
-
-
-
-
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */
@@ -293,7 +275,11 @@ function initUI() {
     $("#solverList").dataTable({ 
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize
+		"iDisplayLength": defaultPageSize,
+		"bServerSide"	: true,
+		"sAjaxSource"	: starexecRoot+"services/",
+		"sServerMethod" : 'POST',
+		"fnServerData"	: fnPaginationHandler
 	});
     
     $("#solverList").on("mousedown", "tr",function() {
@@ -309,3 +295,21 @@ function unselectAll() {
 	$("#solverList").find("tr").removeClass("row_selected");
 }
 
+
+function fnPaginationHandler(sSource, aoData, fnCallback){
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			sSource + "users/solvers/pagination",
+			aoData,
+			function(nextDataTablePage){
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					
+				
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
+				}
+			},  
+			"json"
+	);
+}

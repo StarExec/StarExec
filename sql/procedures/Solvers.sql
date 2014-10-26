@@ -21,9 +21,11 @@ CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadab
 DROP PROCEDURE IF EXISTS GetPublicSolvers;
 CREATE PROCEDURE GetPublicSolvers()
 	BEGIN
-		SELECT DISTINCT * from solvers where deleted=false AND recycled=false AND id in 
-		(SELECT DISTINCT solver_id from solver_assoc where space_id in 
-		(SELECT id from spaces where public_access=1));
+		SELECT * from solvers
+		JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
+		JOIN spaces ON spaces.id=solver_assoc.space_id
+		where public_access=1 AND deleted=false AND recycled=false
+		GROUP BY(solvers.id);
 	END //
 
 	
@@ -390,5 +392,17 @@ CREATE PROCEDURE GetOrphanedSolverIds(IN _userId INT)
 		SELECT solvers.id FROM solvers
 		LEFT JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
 		WHERE solvers.user_id=_userId AND solver_assoc.space_id IS NULL;
+	END //
+
+-- returns every solver that shares a space with the given user
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetSolversInSharedSpaces;
+CREATE PROCEDURE GetSolversInSharedSpaces(IN _userId INT) 
+	BEGIN
+		SELECT * FROM solvers
+		JOIN solver_assoc ON solver_assoc.solver_id = solvers.id
+		JOIN user_assoc ON user_assoc.space_id = solver_assoc.space_id
+		WHERE user_assoc.user_id=_userId
+		GROUP BY(solvers.id);
 	END //
 DELIMITER ; -- This should always be at the end of this file

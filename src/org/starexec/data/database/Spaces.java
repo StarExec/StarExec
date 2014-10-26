@@ -996,7 +996,7 @@ public class Spaces {
 	 * @return A list of spaces the user has access to
 	 * @author Benton McCune
 	 */
-	public static List<Space> GetSpacesByUser(int userId) {
+	public static List<Space> getSpacesByUser(int userId) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;

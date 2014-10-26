@@ -470,6 +470,8 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
 		FROM benchmarks
+		LEFT OUTER JOIN processors AS types
+			ON bench.bench_type=types.id
 		WHERE user_id = _userId and deleted=false AND recycled=false;
 	END //	
 	
@@ -514,5 +516,34 @@ DROP PROCEDURE IF EXISTS GetDeletedBenchmarks;
 CREATE PROCEDURE GetDeletedBenchmarks()
 	BEGIN	
 		SELECT id FROM benchmarks WHERE deleted=true;
+	END //
+	
+	
+-- returns every benchmark that shares a space with the given user
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetBenchmarksInSharedSpaces;
+CREATE PROCEDURE GetBenchmarksInSharedSpaces(IN _userId INT) 
+	BEGIN
+		SELECT * FROM benchmarks
+		JOIN bench_assoc ON bench_assoc.bench_id = benchmarks.id
+		JOIN user_assoc ON user_assoc.space_id = bench_assoc.space_id
+		LEFT OUTER JOIN processors AS types
+			ON bench.bench_type=types.id
+		WHERE user_assoc.user_id=_userId AND deleted=false AND recycled=false
+		GROUP BY(benchmarks.id);
+	END //
+	
+-- Gets all solvers that reside in public spaces
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetPublicBenchmarks;
+CREATE PROCEDURE GetPublicBenchmarks()
+	BEGIN
+		SELECT * from benchmarks
+		JOIN bench_assoc ON bench_assoc.bench_id=benchmarks.id
+		JOIN spaces ON spaces.id=bench_assoc.space_id
+		LEFT OUTER JOIN processors AS types
+			ON bench.bench_type=types.id
+		WHERE public_access=1 AND deleted=false AND recycled=false
+		GROUP BY benchmarks.id;
 	END //
 DELIMITER ; -- This should always be at the end of this file

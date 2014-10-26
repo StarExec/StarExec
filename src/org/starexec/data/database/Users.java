@@ -1313,7 +1313,6 @@ public class Users {
 		
 		try {
 			List<Integer> comms=new ArrayList<Integer>();
-
 			for (Space s : Communities.getAll()) {
 				if (Users.isMemberOfCommunity(userId, s.getId())) {
 					comms.add(s.getId());

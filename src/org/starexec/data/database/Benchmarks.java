@@ -31,7 +31,10 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.compare.BenchmarkComparator;
+import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DependValidator;
 import org.starexec.util.Util;
@@ -1070,14 +1073,7 @@ public class Benchmarks {
 			if(results.next()){
 				Benchmark b = resultToBenchmark(results,"bench");
 
-				Processor t = new Processor();
-				//if the ID is null, 0 is returned here
-				t.setId(results.getInt("types.id"));
-				t.setCommunityId(results.getInt("types.community"));
-				t.setDescription(results.getString("types.description"));
-				t.setName(results.getString("types.name"));
-				t.setFilePath(results.getString("types.path"));
-				t.setDiskSize(results.getLong("types.disk_size"));
+				Processor t = Processors.resultSetToProcessor(results, "types");
 
 				b.setType(t);
 				Common.safeClose(results);
@@ -1212,6 +1208,8 @@ public class Benchmarks {
 			
 			while(results.next()){
 				Benchmark b = resultToBenchmark(results,"");
+				Processor t = Processors.resultSetToProcessor(results, "types");
+				b.setType(t);
 				// Add benchmark object to list
 				benchmarks.add(b);
 			}			
@@ -1611,13 +1609,8 @@ public class Benchmarks {
 
 			while(results.next()){
 				Benchmark b = resultToBenchmark(results,"bench"); 
-				Processor t = new Processor();
-				t.setId(results.getInt("types.id"));
-				t.setCommunityId(results.getInt("types.community"));
-				t.setDescription(results.getString("types.description"));
-				t.setName(results.getString("types.name"));
-				t.setFilePath(results.getString("types.path"));
-				t.setDiskSize(results.getLong("types.disk_size"));
+				Processor t = Processors.resultSetToProcessor(results, "types");
+
 
 				b.setType(t);
 				benchmarks.add(b);
@@ -2525,7 +2518,166 @@ public class Benchmarks {
 		}
 		return false;
 	}
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Gets every Benchmark that shares a space with the given user
+	 * @param userId
+	 * @return The list of Benchmarks, or null on error
+	 */
+	public static List<Benchmark> getBenchmarksInSharedSpaces(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetBenchmarksInSharedSpaces(?)}");
+			procedure.setInt(1,userId);
+			
+			results=procedure.executeQuery();
+			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
+			while (results.next()) {
+				Benchmark b=resultToBenchmark(results,"");
+				Processor t = Processors.resultSetToProcessor(results, "types");
+				b.setType(t);
+				Benchmarks.add(b);
+			}
+			return Benchmarks;
+		}catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null; //error
+	}
+	/**
+	 * @return a list of all Benchmarks that reside in a public space
+	 * @author Benton McCune
+	 */
+	
+	public static List<Benchmark> getPublicBenchmarks(){
+		Connection con = null;	
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetPublicBenchmarks()}");				
+			 results = procedure.executeQuery();
+			List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
+			
+			while(results.next()){
+				Benchmark s=resultToBenchmark(results,"");
+				Processor t = Processors.resultSetToProcessor(results, "types");
+				s.setType(t);
+				Benchmarks.add(s);
+			}									
+			return Benchmarks;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Retrieves a list of every Benchmark the given user is allowed to use. Used for quick jobs.
+	 * Benchmarks a user can see include Benchmarks they own, Benchmarks in public spaces,
+	 * and Benchmarks in spaces the user is also in
+	 * @param userId
+	 * @return
+	 */
+	public static List<Benchmark> getByUser(int userId) {
+		try {
+			//will stores Benchmarks according to their IDs, used to remove duplicates
+			HashMap<Integer,Benchmark> uniqueBenchmarks=new HashMap<Integer,Benchmark>();
+			for (Benchmark s : getByOwner(userId)) {
+				uniqueBenchmarks.put(s.getId(), s);
+			}
+			for (Benchmark s : Benchmarks.getPublicBenchmarks()) {
+				uniqueBenchmarks.put(s.getId(), s);
+			}
+			
+			for (Benchmark s : Benchmarks.getBenchmarksInSharedSpaces(userId)) {
+				uniqueBenchmarks.put(s.getId(), s);
+			}
+			
+			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
+			for (Benchmark s : uniqueBenchmarks.values()) {
+				Benchmarks.add(s);
+			}
+			return Benchmarks;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * Filters a list of benchmarks using the given query
+	 * @param Benchmarks The list of Benchmarks to filter
+	 * @param searchQuery Query for the Benchmarks. Not case sensitive
+	 * @return A subset of the given Benchmarks where, for every Benchmark returned, either the name
+	 * or the description includes the search query.
+	 */
+	protected static List<Benchmark> filterBenchmarks(List<Benchmark> benchmarks, String searchQuery) {
+		//no filtering is necessary if there's no query
+		if (searchQuery==null || searchQuery=="") {
+			return benchmarks;
+		}
+		searchQuery=searchQuery.toLowerCase();
+		List<Benchmark> filteredBenchmarks=new ArrayList<Benchmark>();
+		for (Benchmark b : filteredBenchmarks) {
+			try {
+				if (b.getName().toLowerCase().contains(searchQuery) || b.getDescription().toLowerCase().contains(searchQuery)) {
+					filteredBenchmarks.add(b);
+				}
+			} catch (Exception e) {
+				log.warn("filtering benchmarks had an exception for Benchmark id= " +b.getId());
+			}	
+		}
+		
+		return filteredBenchmarks;
+	}
 
+	
+	
+	
+	/**
+	 * Returns the Benchmarks needed to populate a DataTables page for a given user. Benchmarks include all
+	 * Benchmarks the user can see
+	 * @param startingRecord Index of Benchmark to start at
+	 * @param recordsPerPage Number of Benchmarks to return. May return fewer if recordsPerPage is greater than the total number of Benchmarks
+	 * @param isSortedASC True if sorted ascending, false otherwise
+	 * @param indexOfColumnSortedBy 
+	 * @param searchQuery Query to filter Benchmarks by. Filter examines name and description
+	 * @param userId ID of user to get Benchmarks for
+	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
+	 * and the total number of elements after filtering as the second element
+	 * @return
+	 */
+	public static List<Benchmark> getBenchmarksForNextPageByUser(int startingRecord, int recordsPerPage, boolean isSortedASC, 
+			int indexOfColumnSortedBy, String searchQuery, int userId,int[] totals) {
+		List<Benchmark> benchmarks=Benchmarks.getByUser(userId);
+		
+		totals[0]=benchmarks.size();
+		benchmarks=Benchmarks.filterBenchmarks(benchmarks, searchQuery);
+
+		totals[1]=benchmarks.size();
+		BenchmarkComparator compare=new BenchmarkComparator(indexOfColumnSortedBy);
+		return Util.handlePagination(benchmarks, compare, startingRecord, recordsPerPage, isSortedASC);
+
+	}
 }
 
 

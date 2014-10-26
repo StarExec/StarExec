@@ -283,11 +283,11 @@
 				</tr>
 				<tr id="defaultBenchRow">
 					<td>default benchmark</td>
-					<td id="solver"><p id="solverNameField"></p> <a class="defaultBenchLink"><span class="selectPrim">select benchmark</span></a></td>
+					<td id="benchmark"><p id="benchNameField"></p></td>
 				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>
-					<td id="benchmark"><p id="benchNameField"></p> <a class="defaultSolverLink"><span class="selectPrim">select solver</span></a></td>
+					<td id="solver"><p id="solverNameField"></p></td>
 				</tr>
 			</tbody>
 		</table>
@@ -298,6 +298,43 @@
 			
 		</fieldset>
 	</fieldset>	
+	
+	<fieldset>
+		<legend>solvers</legend>
+		<table id="solverList">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- Will be populated using AJAX -->
+			</tbody>
+			
+		</table>
+		<button id="useSolver">use selected solver</button>
+		
+	</fieldset>
+	
+	<fieldset>
+		<legend>benchmarks</legend>
+		<table id="benchmarkList">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>type</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- Will be populated using AJAX -->
+			</tbody>
+			
+		</table>
+		<button id="useBenchmark">use selected benchmark</button>
+		
+	</fieldset>
+	
 	<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>

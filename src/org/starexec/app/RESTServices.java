@@ -658,7 +658,31 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
+	@POST
+	@Path("/users/solvers/pagination")
+	@Produces("application/json")	
+	public String getSolversPaginatedByUser(@Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		log.debug("getting a datatable of all the solvers that this user can see");
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolversByUser(userId, request);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
 	
+	@POST
+	@Path("/users/benchmarks/pagination")
+	@Produces("application/json")	
+	public String getBenchmarksPaginatedByUser(@Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		log.debug("getting a datatable of all the benchmarks that this user can see");
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfBenchmarksByUser(userId, request);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
 	
 	@POST
 	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")

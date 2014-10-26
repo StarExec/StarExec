@@ -48,7 +48,6 @@
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
-			List<Solver> listOfSolvers = Solvers.getByUser(userId);
 			
 			ListOfBenchProcessors.add(Processors.getNoTypeProcessor());
 
@@ -57,7 +56,6 @@
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
-			request.setAttribute("solvers",listOfSolvers);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);
 			request.setAttribute("isPublicUser",isPublicUser);
 		}
@@ -219,17 +217,11 @@
 				<thead>
 					<tr>
 						<th>name</th>
-						<th>id</th>
+						<th>description</th>
 					</tr>
 				</thead>
 				<tbody>
-				<c:forEach var="solver" items="${solvers}">
-					<tr>
-						<td>${solver.name}</td>
-						<td>${solver.id}</td>
-					</tr>
-					
-				</c:forEach>
+					<!-- Will be populated using AJAX -->
 			</tbody>
 			</table>
 			<button id="useSolver">use selected solver</button>
