@@ -11,22 +11,7 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 		isWallclock=w;
 	}
 	
-	
-	/**
-	 * 
-	 * @param jp1
-	 * @param jp2
-	 * @param sortIndex
-	 * 1 pair 1 time
-	 * 2 pair 2 time
-	 * 3 time diff
-	 * 6 same-result column
-	 * @param ASC
-	 * @param isWallclock
-	 * @return
-	 */
 	private  int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2) {
-		int answer=0;
 		try {
 			double db1=0;
 			double db2=0;
@@ -93,7 +78,6 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	 * @author Eric Burns
 	 */ 
 	private int compareSolverComparisonStrings(SolverComparison c1, SolverComparison c2) {
-		int answer=0;
 		try {
 			String str1=null;
 			String str2=null;
@@ -108,9 +92,8 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 				str2=c2.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
 			}
 			//if str1 lexicographically follows str2, put str2 first
-			if (str1.compareTo(str2)>0) {
-				answer=1;
-			}
+			return str1.compareToIgnoreCase(str2);
+				
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first
 		}

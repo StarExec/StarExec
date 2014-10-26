@@ -20,7 +20,8 @@ public class BenchmarkComparator implements Comparator<Benchmark> {
 	@Override
 	public int compare(Benchmark o1, Benchmark o2) {
 		if (column==1) {
-			return o1.getType().getName().compareTo(o2.getType().getName());
+			
+			return o1.getType().getName().compareToIgnoreCase(o2.getType().getName());
 		} 
 		return o1.getName().compareTo(o2.getName());
 	}

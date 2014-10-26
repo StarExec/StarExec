@@ -275,7 +275,7 @@ function getStatusCode(code) {
 }
 
 function setInputToValue(inputSelector, value) {
-	$(inputSelector).attr("value",value);
+	$(inputSelector).val(value);
 }
 
 /**

@@ -79,7 +79,6 @@ public class AddSettingProfile extends HttpServlet {
 		d.setCpuTimeout(Integer.parseInt(request.getParameter(CPU_TIMEOUT)));
 		d.setMaxMemory(Util.gigabytesToBytes(Double.parseDouble(request.getParameter(MAX_MEMORY))));
 		d.setDependenciesEnabled(Boolean.parseBoolean(request.getParameter(DEPENDENCIES)));
-		log.debug("wallclock is "+request.getParameter(WALLCLOCK_TIMEOUT));
 		
 		//the next attributes do not necessarily need to be set, as they can be null
 		String postId=request.getParameter(POST_PROCESSOR);
@@ -107,9 +106,11 @@ public class AddSettingProfile extends HttpServlet {
 				d.setBenchProcessorId(p);
 			}
 		}
+		log.debug("got sent the solver "+solver);
 		if (Validator.isValidInteger(solver)) {
 			int p=Integer.parseInt(solver);
 			if (p>0) {
+				log.debug("setting the solver");
 				d.setSolverId(p);
 			}
 		}
@@ -148,6 +149,7 @@ public class AddSettingProfile extends HttpServlet {
 		
 		String postId=request.getParameter(POST_PROCESSOR);
 		String solver=request.getParameter(SOLVER);
+		log.debug("got sent the solver "+solver);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
 		String benchId=request.getParameter(BENCH_PROCESSOR);

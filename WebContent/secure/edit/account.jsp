@@ -283,7 +283,7 @@
 				</tr>
 				<tr id="defaultBenchRow">
 					<td>default benchmark</td>
-					<td id="benchmark"><p id="benchNameField"></p></td>
+					<td id="benchmark"><p id="benchmarkNameField"></p></td>
 				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>

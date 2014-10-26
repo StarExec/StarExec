@@ -98,7 +98,7 @@ CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT
 DROP PROCEDURE IF EXISTS CreateDefaultSettings;
 CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _type INT, IN _name VARCHAR(32), OUT _id INT)
 	BEGIN
-		INSERT INTO default_settings (prim_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name) VALUES (_prim_id, _pp, _cto, _clto, _dp, _db,_dm,default_solver,_benchProc, _preProc, _type,_name);
+		INSERT INTO default_settings (prim_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name) VALUES (_prim_id, _pp, _cto, _clto, _dp, _db,_dm,_defaultSolver,_benchProc, _preProc, _type,_name);
 		SELECT LAST_INSERT_ID() INTO _id;
 
 	END //

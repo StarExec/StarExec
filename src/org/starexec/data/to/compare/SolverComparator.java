@@ -20,7 +20,7 @@ public class SolverComparator implements Comparator<Solver> {
 	@Override
 	public int compare(Solver o1, Solver o2) {
 		if (column==1) {
-			return o1.getDescription().compareTo(o2.getDescription());
+			return o1.getDescription().compareToIgnoreCase(o2.getDescription());
 		} else if (column==2) {
 			return o1.getId()-o2.getId();
 		}

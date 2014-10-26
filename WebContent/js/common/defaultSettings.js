@@ -42,7 +42,7 @@ function populateDefaults() {
 	setInputToValue("#benchmark",benchId);
 	//setInputToValue("#benchmarkField",benchContents);
 	$("#solverNameField").text(solverName);
-	$("#benchNameField").text(benchName);
+	$("#benchmarkNameField").text(benchName);
 	
 	$(".dependencySetting").val(deps);
 	if (stringExists(preProcessorId)) {
@@ -70,6 +70,7 @@ function populateDefaults() {
 }
 
 function useSelectedBenchmark() {
+	alert("here");
 	selection=$("#benchmarkList").find("tr.row_selected");
 	//nothing is selected
 	if (selection.length==0) {
@@ -94,7 +95,6 @@ function useSelectedSolver() {
 	input=selection.find("input");
 	id=input.attr("value");
 	setInputToValue("#solver",id);
-
 	$("#solverNameField").text(name);
 
 }

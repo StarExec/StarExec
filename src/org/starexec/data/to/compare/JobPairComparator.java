@@ -45,7 +45,7 @@ public class JobPairComparator implements Comparator<JobPair> {
 				str2=jp2.getSolver().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
-			return str1.compareTo(str2);
+			return str1.compareToIgnoreCase(str2);
 			
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first

@@ -115,7 +115,7 @@ function initUI(){
 							{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 								wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-								bench: "", mem: $("#maxMem").val()},
+								bench: $("#benchmark").val(), mem: $("#maxMem").val()},
 							function(returnCode) {
 									showMessage("success","Profile created successfully",5000);
 							}
