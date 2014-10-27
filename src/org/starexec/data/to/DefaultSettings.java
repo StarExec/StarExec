@@ -206,7 +206,17 @@ public class DefaultSettings extends Identifiable {
 
 		log.debug(this.toString());
 		log.debug(set.toString());
-
+		log.debug(this.getId()==set.getId());
+		log.debug(Util.stringsEqual(this.getName(), set.getName()));
+		log.debug(this.getPrimId()==set.getPrimId());
+		log.debug(this.getPreProcessorId()==set.getPreProcessorId());
+		log.debug(this.getBenchProcessorId()==set.getBenchProcessorId());
+		log.debug(this.getPostProcessorId()==set.getPostProcessorId());
+		log.debug(this.getCpuTimeout()==set.getCpuTimeout());
+		log.debug(this.getWallclockTimeout()==set.getWallclockTimeout());
+		log.debug(this.getMaxMemory()==set.getMaxMemory());
+		log.debug(this.getSolverId()==set.getSolverId());
+		log.debug(this.getBenchId()==set.getBenchId());
 		return (this.getId()==set.getId() &&
 				Util.stringsEqual(this.getName(), set.getName()) &&
 				this.getPrimId()==set.getPrimId() &&
