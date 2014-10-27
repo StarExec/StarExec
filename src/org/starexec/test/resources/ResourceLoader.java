@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 
@@ -18,6 +19,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
@@ -190,6 +192,27 @@ public class ResourceLoader {
 			return null;
 		}
 		return job;
+	}
+	
+	/**
+	 * Creates a randomized DefaultSettings profile and inserts it into the database
+	 * @param userId The user that will be the owner of the new profile
+	 * @return
+	 */
+	//TODO: solver, benchmark, processors?
+	public static DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
+		Random rand=new Random();
+		DefaultSettings settings=new DefaultSettings();
+		settings.setName(TestUtil.getRandomAlphaString(R.SETTINGS_NAME_LEN-1));
+		settings.setPrimId(userId);
+		settings.setCpuTimeout(rand.nextInt(1000)+1);
+		settings.setWallclockTimeout(rand.nextInt(1000)+1);
+		settings.setMaxMemory(rand.nextInt(1000)+1);
+		int id=Users.createNewDefaultSettings(settings);
+		if (id>0) {
+			return settings;
+		}
+		return null;
 	}
 	
 	/**

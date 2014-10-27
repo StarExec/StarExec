@@ -53,7 +53,7 @@ public class Users {
 		return false;
 	}
 	
-	public static boolean createNewDefaultSettings(DefaultSettings d) {
+	public static int createNewDefaultSettings(DefaultSettings d) {
 		d.setType(SettingType.USER);
 		return Settings.addNewSettingsProfile(d);
 	}

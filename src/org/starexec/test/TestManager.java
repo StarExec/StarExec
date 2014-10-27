@@ -13,6 +13,7 @@ import org.starexec.data.database.Communities;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.BenchmarkTests;
 import org.starexec.test.database.ClusterTests;
+import org.starexec.test.database.DefaultSettingsTests;
 import org.starexec.test.database.JobPairTests;
 import org.starexec.test.database.JobTests;
 import org.starexec.test.database.PermissionsTests;
@@ -72,6 +73,7 @@ public class TestManager {
 		tests.add(new JobPairTests());
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
+		tests.add(new DefaultSettingsTests());
 	}
 	
 	public static boolean areTestsRunning() {

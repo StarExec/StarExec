@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 public class Settings {
 	private static Logger log=Logger.getLogger(Settings.class);
-	protected static boolean addNewSettingsProfile(DefaultSettings settings) {
+	protected static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
@@ -35,14 +35,14 @@ public class Settings {
 
 			// Update the job's ID so it can be used outside this method
 			settings.setId(procedure.getInt(13));
-			return true;
+			return settings.getId();
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return false;
+		return -1;
 	
 	}
 	
@@ -52,7 +52,7 @@ public class Settings {
 	 * @param results
 	 * @return
 	 */
-	public static DefaultSettings resultsToSettings(ResultSet results) {
+	protected static DefaultSettings resultsToSettings(ResultSet results) {
 		try {
 			DefaultSettings settings=new DefaultSettings();
 			settings.setId(results.getInt("id"));

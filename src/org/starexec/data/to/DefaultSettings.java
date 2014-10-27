@@ -164,4 +164,27 @@ public class DefaultSettings extends Identifiable {
 	public SettingType getType() {
 		return type;
 	}
+	
+	/**
+	 * Checks for deep equality between this object and another DefaultSettings profile
+	 */
+	@Override
+	public boolean equals(Object s) {
+		if (!(s instanceof DefaultSettings)) {
+            return false;
+		}
+		DefaultSettings set=(DefaultSettings) s;
+
+		
+		return (this.getId()==set.getId() &&
+				Util.stringsEqual(this.getName(), set.getName()) &&
+				this.getPrimId()==set.getPrimId() &&
+				this.getPreProcessorId()==set.getPreProcessorId() &&
+				this.getBenchProcessorId()==set.getBenchProcessorId() &&
+				this.getPostProcessorId()==set.getPostProcessorId() &&
+				this.getCpuTimeout()==set.getCpuTimeout() &&
+				this.getWallclockTimeout()==set.getWallclockTimeout()&&
+				this.getMaxMemory()==set.getMaxMemory());
+		
+	}
 }

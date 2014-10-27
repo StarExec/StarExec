@@ -388,7 +388,7 @@ public class Communities {
 	 * @return
 	 */
 	
-	public static boolean createNewDefaultSettings(DefaultSettings d) {
+	public static int createNewDefaultSettings(DefaultSettings d) {
 		d.setType(SettingType.COMMUNITY);
 		return Settings.addNewSettingsProfile(d);
 	}
@@ -445,8 +445,15 @@ public class Communities {
 					d.setName(name);
 					d.setPrimId(community);
 					log.debug("calling createNewDefaultSettings on community with id = "+community);
-				    createNewDefaultSettings(d);
-				    return d;
+				    int newId=createNewDefaultSettings(d);
+				    if (newId>0) {
+					    return d;
+
+				    } else {
+				    	//failed to create new profile
+				    	log.error("error creating new default settings profile");
+				    	return null;
+				    }
 				}
 			   
 			} else {
