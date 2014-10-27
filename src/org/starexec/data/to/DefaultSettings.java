@@ -175,7 +175,7 @@ public class DefaultSettings extends Identifiable {
 		}
 		DefaultSettings set=(DefaultSettings) s;
 
-		
+
 		return (this.getId()==set.getId() &&
 				Util.stringsEqual(this.getName(), set.getName()) &&
 				this.getPrimId()==set.getPrimId() &&
