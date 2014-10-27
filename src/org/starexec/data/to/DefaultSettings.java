@@ -1,5 +1,6 @@
 package org.starexec.data.to;
 
+import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
@@ -7,6 +8,7 @@ import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.util.Util;
 
 public class DefaultSettings extends Identifiable {
+	private static Logger log=Logger.getLogger(DefaultSettings.class);
 	public enum SettingType {
 		USER(0), COMMUNITY(1);
 		
@@ -165,6 +167,33 @@ public class DefaultSettings extends Identifiable {
 		return type;
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder sb=new StringBuilder();
+		sb.append(this.getId());
+		sb.append(" | ");
+		sb.append(this.getName());
+		sb.append(" | ");
+		sb.append(this.getPrimId());
+		sb.append(" | ");
+		sb.append(this.getPreProcessorId());
+		sb.append(" | ");
+		sb.append(this.getPostProcessorId());
+		sb.append(" | ");
+		sb.append(this.getBenchProcessorId());
+		sb.append(" | ");
+		sb.append(this.getSolverId());
+		sb.append(" | ");
+		sb.append(this.getBenchId());
+		sb.append(" | ");
+		sb.append(this.getCpuTimeout());
+		sb.append(" | ");
+		sb.append(this.getWallclockTimeout());
+		sb.append(" | ");
+		sb.append(this.getMaxMemory());
+		return sb.toString();
+	}
+	
 	/**
 	 * Checks for deep equality between this object and another DefaultSettings profile
 	 */
@@ -175,6 +204,8 @@ public class DefaultSettings extends Identifiable {
 		}
 		DefaultSettings set=(DefaultSettings) s;
 
+		log.debug(this.toString());
+		log.debug(set.toString());
 
 		return (this.getId()==set.getId() &&
 				Util.stringsEqual(this.getName(), set.getName()) &&
@@ -184,7 +215,9 @@ public class DefaultSettings extends Identifiable {
 				this.getPostProcessorId()==set.getPostProcessorId() &&
 				this.getCpuTimeout()==set.getCpuTimeout() &&
 				this.getWallclockTimeout()==set.getWallclockTimeout()&&
-				this.getMaxMemory()==set.getMaxMemory());
+				this.getMaxMemory()==set.getMaxMemory() &&
+				this.getSolverId()==set.getSolverId() &&
+				this.getBenchId()==set.getBenchId());
 		
 	}
 }

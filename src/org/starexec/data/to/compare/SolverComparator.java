@@ -24,7 +24,7 @@ public class SolverComparator implements Comparator<Solver> {
 		} else if (column==2) {
 			return o1.getId()-o2.getId();
 		}
-		return o1.getName().compareTo(o2.getName());
+		return o1.getName().compareToIgnoreCase(o2.getName());
 
 	}
 }
