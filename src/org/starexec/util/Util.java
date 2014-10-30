@@ -101,13 +101,13 @@ public class Util {
     }
     
     /**
-     * Checks to see if the two given strings are equal without throwing any null pointers.
+     * Checks to see if the two given objects are equal without throwing any null pointers.
      * if a and b are both null, returns true
      * @param a 
      * @param b
      * @return
      */
-    public static boolean stringsEqual(String a, String b) {
+    public static boolean objectsEqual(Object a, Object b) {
     	if (a==null && b==null) {
     		return true;
     	} else if (a==null) {

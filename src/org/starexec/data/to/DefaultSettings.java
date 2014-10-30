@@ -197,6 +197,7 @@ public class DefaultSettings extends Identifiable {
 	/**
 	 * Checks for deep equality between this object and another DefaultSettings profile
 	 */
+	
 	@Override
 	public boolean equals(Object s) {
 		if (!(s instanceof DefaultSettings)) {
@@ -208,7 +209,7 @@ public class DefaultSettings extends Identifiable {
 		log.debug(set.toString());
 		
 		log.debug(this.getId()==set.getId());
-		log.debug(Util.stringsEqual(this.getName(), set.getName()));
+		log.debug(Util.objectsEqual(this.getName(), set.getName()));
 		log.debug(this.getPrimId()==set.getPrimId());
 		log.debug(this.getPrimId());
 		log.debug(set.getPrimId());
@@ -225,16 +226,16 @@ public class DefaultSettings extends Identifiable {
 		log.debug(this.toString());
 		log.debug(set.toString());
 		return (this.getId()==set.getId() &&
-				Util.stringsEqual(this.getName(), set.getName()) &&
-				this.getPrimId()==set.getPrimId() &&
-				this.getPreProcessorId()==set.getPreProcessorId() &&
-				this.getBenchProcessorId()==set.getBenchProcessorId() &&
-				this.getPostProcessorId()==set.getPostProcessorId() &&
+				Util.objectsEqual(this.getName(), set.getName()) &&
+				Util.objectsEqual(this.getPrimId(),set.getPrimId()) &&
+				Util.objectsEqual(this.getPreProcessorId(),set.getPreProcessorId()) &&
+				Util.objectsEqual(this.getBenchProcessorId(),set.getBenchProcessorId()) &&
+				Util.objectsEqual(this.getPostProcessorId(),set.getPostProcessorId()) &&
 				this.getCpuTimeout()==set.getCpuTimeout() &&
 				this.getWallclockTimeout()==set.getWallclockTimeout()&&
 				this.getMaxMemory()==set.getMaxMemory() &&
-				this.getSolverId()==set.getSolverId() &&
-				this.getBenchId()==set.getBenchId());
+				Util.objectsEqual(this.getSolverId(),set.getSolverId()) &&
+				Util.objectsEqual(this.getBenchId(),set.getBenchId()));
 		
 	}
 }
