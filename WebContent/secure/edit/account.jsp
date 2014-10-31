@@ -283,11 +283,11 @@
 				</tr>
 				<tr id="defaultBenchRow">
 					<td>default benchmark</td>
-					<td id="benchmark"><p id="benchmarkNameField"></p></td>
+					<td id="benchmark"><p id="benchmarkNameField"></p> <span class="selectPrim clearBenchmark">clear benchmark</span></td>
 				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>
-					<td id="solver"><p id="solverNameField"></p></td>
+					<td id="solver"><p id="solverNameField"></p> <span class="selectPrim clearSolver">clear solver</span></td>
 				</tr>
 			</tbody>
 		</table>

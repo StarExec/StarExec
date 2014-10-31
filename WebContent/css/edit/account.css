@@ -137,4 +137,5 @@ input[type="text"] {
 	float:right;
 	font-size: 14px;
 	margin-top: 10px;
+	cursor:pointer;
 }

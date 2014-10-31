@@ -93,8 +93,9 @@ public interface Backend{
    /**
      * deletes a queue that no longer has nodes associated with it
      * @param queueName the name of the queue to be removed
+ * @return 
      */
-    public void deleteQueue(String queueName);
+    public boolean deleteQueue(String queueName);
 
    /**
      * questionable, RESTServices
@@ -110,8 +111,9 @@ public interface Backend{
      * moves the given node to the given queue
      * @param nodeName the name of a node
      * @param queueName the name of a queue
+     * @return 
      */
-    public void moveNode(String nodeName, String queueName);
+    public boolean moveNode(String nodeName, String queueName);
 
 
 }

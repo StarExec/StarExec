@@ -3,7 +3,13 @@ $(document).ready(function() {
 		populateDefaults();
 	});
 	populateDefaults();
-
+	
+	$(".clearSolver").click(function() {
+		clearSelectedSolver();
+	});
+	$(".clearBenchmark").click(function() {
+		clearSelectedBenchmark();
+	});
 });
 
 
@@ -67,6 +73,16 @@ function populateDefaults() {
 	}
 
 	
+}
+
+function clearSelectedSolver() {
+	setInputToValue("#solver","-1");
+	$("#solverNameField").text("None");
+}
+
+function clearSelectedBenchmark() {
+	setInputToValue("#benchmark","-1");
+	$("#benchmarkNameField").text("None");
 }
 
 function useSelectedBenchmark() {

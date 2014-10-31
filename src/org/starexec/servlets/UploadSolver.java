@@ -99,7 +99,7 @@ public class UploadSolver extends HttpServlet {
 				int configs = result[1];
 			
 				// Redirect based on success/failure
-				if(return_value != -1 && return_value != -2 && return_value != -3 && return_value!=-4 && return_value!=-5) {
+				if(return_value>=0) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
 					if (configs == -4) { //If there are no configs
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
@@ -141,7 +141,10 @@ public class UploadSolver extends HttpServlet {
 						//Other Error
 					} else if (return_value==-5) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST,"Only community leaders may upload solvers with starexec_build scripts");
-					} else {
+					} else if (return_value==-6) {
+						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Internal error when extracting solver");
+					}
+					else {
 						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
 						return;
 					}	
@@ -259,7 +262,16 @@ public class UploadSolver extends HttpServlet {
 			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
 			
 			//extracts the given archive using the sandbox user
-			ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
+			boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
+			if (!extracted) {
+				log.warn("there was an error extracting the new solver archive");
+				//this means that there was an error during extraction
+				FileUtils.deleteDirectory(tempDir);
+				FileUtils.deleteDirectory(uniqueDir);
+				FileUtils.deleteQuietly(archiveFile);
+				returnArray[0]=-6;
+				return returnArray;
+			}
 			if (containsBuildScript(tempDir)) {
 				log.debug("the uploaded solver did contain a build script");
 				if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders

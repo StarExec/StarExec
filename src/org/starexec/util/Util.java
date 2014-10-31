@@ -359,8 +359,9 @@ public class Util {
      * @param authorizedDirs
      * @param workingDirectory The working directory for the command. If null, the working directory will not be changed
      * @return
+     * @throws IOException 
      */
-    public static String executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs, File workingDirectory) {
+    public static String executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs, File workingDirectory) throws IOException {
 	Runtime r = Runtime.getRuntime();
 	//the final, empty string should be the directory to apply the command to
 	String[] chownCommand = {"sudo", "-u", "tomcat","chown", "-R", "sandbox", ""};
@@ -392,20 +393,21 @@ public class Util {
 	return result;
     }
 	
-    public static String executeCommand(String command) {
+    public static String executeCommand(String command) throws IOException {
 	String[] cmd = new String[1];
 	cmd[0] = command;
 	return executeCommand(cmd);
     }
 
-    public static String executeCommand(String command, String[] env) {
+    public static String executeCommand(String command, String[] env) throws IOException {
 	String[] cmd = new String[1];
 	cmd[0] = command;
 	return executeCommand(cmd,env,null);
     }
 
-    /** Convenience method for executeCommand() */
-    public static String executeCommand(String[] command) {
+    /** Convenience method for executeCommand() 
+     * @throws IOException */
+    public static String executeCommand(String[] command) throws IOException {
 	return executeCommand(command,null,null);
     }
 	
@@ -417,13 +419,13 @@ public class Util {
      * @param envp The environment
      * @param workingDirectory the working directory to use
      * @return A buffered reader holding the output from the command.
+     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
 	
-    public static String executeCommand(String[] command, String[] envp, File workingDirectory) {
+    public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
 	Runtime r = Runtime.getRuntime();
-		
-	//
-	try {					
+					
 	    Process p;
 	    if (command.length == 1) {
 		log.debug("Executing the following command: " + command[0]);
@@ -445,11 +447,7 @@ public class Util {
 
 	    return drainStreams(p);
 
-	} catch (Exception e) {
-	    log.warn("execute command says " + e.getMessage(), e);		
-	}
-		
-	return null;
+	
     }
 	
 
