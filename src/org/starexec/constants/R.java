@@ -70,6 +70,8 @@ public class R {
 	public static String DATE_PATTERN="[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]";
 	public static String DOUBLE_PATTERN="^\\-?((\\d+(\\.\\d*)?)|(\\.\\d+))$";
 
+	
+	public static String JOB_PAIR_PATH_DELIMITER="/";
     // Email properties
     public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
     public static int EMAIL_SMTP_PORT = 25;

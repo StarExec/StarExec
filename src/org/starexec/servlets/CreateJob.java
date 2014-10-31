@@ -270,7 +270,6 @@ public class CreateJob extends HttpServlet {
 				}
 			} else {
 				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
-
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
 				JobManager.buildJob(j, cpuLimit, runLimit,memoryLimit, benchmarkIds, configIds, space, SP);
 			}

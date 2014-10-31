@@ -736,7 +736,7 @@ public abstract class JobManager {
 						pair.setCpuTimeout(cpuTimeout);
 						pair.setWallclockTimeout(clockTimeout);
 						pair.setMaxMemory(memoryLimit);
-						pair.setPath(SP.get(spaceId));
+						pair.setPath(SP.get(s.getId()));
 						pair.setSpace(Spaces.get(s.getId()));
 						curPairs.add(pair);
 						

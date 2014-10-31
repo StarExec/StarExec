@@ -54,7 +54,7 @@ public class Jobs {
 		if (path==null || path=="") {
 			return new String[] {"job space"};
 		}
-		return path.split("/");
+		return path.split(R.JOB_PAIR_PATH_DELIMITER);
 	}
 	
 	
@@ -116,7 +116,7 @@ public class Jobs {
 				StringBuilder curPathBuilder=new StringBuilder();
 				for (int i=0;i<spaces.length;i++) {
 					String name=spaces[i];
-					curPathBuilder.append("/");
+					curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
 					curPathBuilder.append(name);
 					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
 						topLevel=curPathBuilder.toString(); 
@@ -186,7 +186,6 @@ public class Jobs {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
-			//todo: creating these job spaces needs to be a function
 			// maps depth to name to job space id for job spaces
 			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
 		
@@ -3826,12 +3825,12 @@ public class Jobs {
 				if (pathString==null) {
 					pathString="job space";
 				}
-				String[] path=pathString.split("/");
+				String[] path=pathString.split(R.JOB_PAIR_PATH_DELIMITER);
 				String key="";
 				for (int index=0;index<path.length; index++) {
 					
 					String spaceName=path[index];
-					key=key+"/"+spaceName;
+					key=key+R.JOB_PAIR_PATH_DELIMITER+spaceName;
 					if (namesToIds.containsKey(key)) {
 						if (index==(path.length-1)) {
 							jp.setJobSpaceId(namesToIds.get(key));
@@ -3849,7 +3848,7 @@ public class Jobs {
 						if (index==(path.length-1)) {
 							jp.setJobSpaceId(newJobSpaceId);
 						}
-						String parentKey=key.substring(0,key.lastIndexOf("/"));
+						String parentKey=key.substring(0,key.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
 						if (namesToIds.containsKey(parentKey)) {
 							Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
 						}
