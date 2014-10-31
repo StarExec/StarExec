@@ -14,7 +14,8 @@ CREATE TABLE users (
 	default_page_size INT NOT NULL DEFAULT 10,
 	default_settings_profile INT DEFAULT NULL,
 	PRIMARY KEY (id),
-	CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES (default_settings) ON DELETE SET NULL,
+	-- the following foreign key is used, but it is added at the end because you can't declare a foreign key before declaring the table
+	-- CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL,
 	UNIQUE KEY (email)
 );
 
@@ -241,11 +242,11 @@ CREATE TABLE job_pairs (
 	job_id INT NOT NULL,
 	sge_id INT,
 	bench_id INT,
-	bench_name VARCHAR(256),
+	bench_name VARCHAR(255),
 	config_id INT,	
 	solver_id INT,
-	config_name VARCHAR(256),
-	solver_name VARCHAR(256),
+	config_name VARCHAR(255),
+	solver_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
 	cpuTimeout INT,
@@ -577,4 +578,6 @@ CREATE TABLE system_flags (
 	paused BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (integrity_keeper)
 );
+
+ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 

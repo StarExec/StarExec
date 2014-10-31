@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -673,14 +674,19 @@ public abstract class JobManager {
 			int index=0;
 			while (spaceToPairs.size()>0) {
 				Set<Integer> keys=spaceToPairs.keySet();
+				Set<Integer> keysToRemove=new HashSet<Integer>();
 				for (Integer spaceId : keys) {
 					//if there is at least one pair left in this space
 					if (spaceToPairs.get(spaceId).size()>index) {
+						log.debug("adding a round robin job pair");
 						j.addJobPair(spaceToPairs.get(spaceId).get(index));
 					} else {
 						//otherwise, the space is done, and we should remove it from the hashmap of spaces
-						keys.remove(spaceId);
+						keysToRemove.add(spaceId);
 					}
+				}
+				for (Integer i : keysToRemove) {
+					keys.remove(i);
 				}
 				index++;
 			}

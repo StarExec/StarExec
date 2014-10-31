@@ -228,6 +228,7 @@ public class CreateJob extends HttpServlet {
 				
 				//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
 			} else {
+				log.debug("adding pairs round robin");
 				JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 				
 			}

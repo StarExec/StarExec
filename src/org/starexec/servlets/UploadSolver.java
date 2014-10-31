@@ -269,7 +269,7 @@ public class UploadSolver extends HttpServlet {
 					return returnArray;
 				}
 				
-				//change the owner of the sandboxed solver directory to sandbox
+				//give sandbox full permissions over the solver directory
 				String[] chmod=new String[7];
 				chmod[0]="sudo";
 				chmod[1]="-u";
@@ -282,17 +282,7 @@ public class UploadSolver extends HttpServlet {
 					Util.executeCommand(chmod);
 				}
 				
-				//debugging command
-				String[] lsCommand=new String[5];
-				lsCommand[0]="sudo";
-				lsCommand[1]="-u";
-				lsCommand[2]="sandbox";
-				lsCommand[3]="ls";
-				lsCommand[4]="-l";
-				
-				
-				String lsstr=Util.executeCommand(lsCommand,null,tempDir);
-				log.debug(lsstr);
+			
 
 				//run the build script as sandbox
 				String[] command=new String[4];
