@@ -263,9 +263,10 @@ public class UploadSolver extends HttpServlet {
 			
 			//extracts the given archive using the sandbox user
 			boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
-			if (!extracted) {
+			
+			//if there was an extraction error or if the temp directory is still empty.
+			if (!extracted || tempDir.listFiles().length==0) {
 				log.warn("there was an error extracting the new solver archive");
-				//this means that there was an error during extraction
 				FileUtils.deleteDirectory(tempDir);
 				FileUtils.deleteDirectory(uniqueDir);
 				FileUtils.deleteQuietly(archiveFile);

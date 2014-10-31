@@ -3809,7 +3809,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("restarting...");
-		Util.executeCommand("sudo /sbin/service tomcat7 restart");
+		Util.executeCommand("sudo -u tomcat /sbin/service tomcat7 restart");
 		log.debug("restarted");
 		return gson.toJson(new ValidatorStatusCode(true,"Starexec restarted successfully"));
 	}
