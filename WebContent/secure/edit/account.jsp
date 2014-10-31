@@ -293,6 +293,7 @@
 		</table>
 		<fieldset id="settingActions">
 			<legend>actions</legend>
+			<button id="saveProfile">save profile changes</button>
 			<button id="createProfile">create new profile</button>
 			<button id="deleteProfile">delete selected profile</button>
 			

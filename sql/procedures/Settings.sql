@@ -103,6 +103,27 @@ CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT,
 
 	END //
 	
+	
+-- Insert a default setting of a space given by id when it's initiated.
+-- Author: Ruoyu Zhang
+DROP PROCEDURE IF EXISTS UpdateDefaultSettings;
+CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _id INT)
+	BEGIN
+		UPDATE default_settings SET
+		post_processor = _pp,
+		cpu_timeout=_cto,
+		clock_timeout=_clto,
+		dependencies_enabled=_dp,
+		default_benchmark=_db,
+		maximum_memory=_dm,
+		default_solver=_defaultSolver,
+		bench_processor=_benchProc,
+		pre_processor=_preProc
+		WHERE id=_id;
+
+	END //
+	
+	
 -- deletes a DefaultSettings profile
 -- Author: Eric Burns
 DROP  PROCEDURE IF EXISTS DeleteDefaultSettings;

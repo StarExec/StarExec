@@ -47,6 +47,41 @@ public class Settings {
 	}
 	
 	/**
+	 * Given a DefaultSettings object with all of its fields set, including id,
+	 * updates the default settings profile in the database with all of the new fields.
+	 * Does not update name, prim id, or type, which are immutable
+	 * @param settings
+	 * @return
+	 */
+	public static boolean updateDefaultSettings(DefaultSettings settings) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			procedure.setObject(1, settings.getPostProcessorId());
+			procedure.setInt(2, settings.getCpuTimeout());
+			procedure.setInt(3, settings.getWallclockTimeout());
+			procedure.setBoolean(4, settings.isDependenciesEnabled());
+			procedure.setObject(5, settings.getBenchId());
+			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+			procedure.setObject(7,settings.getSolverId());
+			procedure.setObject(8, settings.getBenchProcessorId());
+			procedure.setObject(9,settings.getPreProcessorId());
+			procedure.setInt(10,settings.getId());
+			procedure.executeUpdate();			
+
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Given an open ResultSet currently pointing to a row containing a DefaultSettings object,
 	 * returns the object
 	 * @param results

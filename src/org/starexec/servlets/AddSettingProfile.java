@@ -16,6 +16,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ProcessorSecurity;
+import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
@@ -36,16 +37,17 @@ public class AddSettingProfile extends HttpServlet {
 	private static final Logger log = Logger.getLogger(AddSettingProfile.class);	
 
 	// Param strings for processing
-	public static String POST_PROCESSOR = "postp";
-	public static String PRE_PROCESSOR ="prep";
-	public static String BENCH_PROCESSOR ="benchp";
-	public static String SOLVER="solver";
-	public static String NAME="name";
-	public static String CPU_TIMEOUT="cpu";
-	public static String WALLCLOCK_TIMEOUT="wall";
-	public static String DEPENDENCIES="dep";
-	public static String BENCH_ID="bench";
-	public static String MAX_MEMORY="mem";
+	private static String POST_PROCESSOR = "postp";
+	private static String PRE_PROCESSOR ="prep";
+	private static String BENCH_PROCESSOR ="benchp";
+	private static String SOLVER="solver";
+	private static String NAME="name";
+	private static String CPU_TIMEOUT="cpu";
+	private static String WALLCLOCK_TIMEOUT="wall";
+	private static String DEPENDENCIES="dep";
+	private static String BENCH_ID="bench";
+	private static String MAX_MEMORY="mem";
+	private static String SETTING_ID= "settingId"; //this is set if we are doing an update only
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -72,7 +74,7 @@ public class AddSettingProfile extends HttpServlet {
 		//this servlet currently only handles requests for users. Community profiles are created automatically
 		d.setType(SettingType.USER);
 		d.setPrimId(SessionUtil.getUserId(request));
-		d.setName(request.getParameter(NAME));
+
 		
 		//all profiles must set the following attributes
 		d.setWallclockTimeout(Integer.parseInt(request.getParameter(WALLCLOCK_TIMEOUT)));
@@ -121,16 +123,26 @@ public class AddSettingProfile extends HttpServlet {
 				d.setBenchId(p);
 			}
 		}
-		Users.createNewDefaultSettings(d);
+		boolean success=true;
+		//if we are doing an update
+		if (Util.paramExists(SETTING_ID,request)) {
+			d.setId(Integer.parseInt(request.getParameter(SETTING_ID)));
+			success=Settings.updateDefaultSettings(d);
+		} else {
+			d.setName(request.getParameter(NAME));
+			//otherwise, we are creating a new profile
+			success=(Users.createNewDefaultSettings(d)>0);
+
+		}
+		if (!success) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (Users.isPublicUser(userId)) {
 			return new ValidatorStatusCode(false, "Only registered users can take this action");
-		}
-		if (!Validator.isValidSettingsName(request.getParameter(NAME))) {
-			return new ValidatorStatusCode(false, "Invalid name");
 		}
 		
 		if (!Validator.isValidBool(request.getParameter(DEPENDENCIES))) {
@@ -194,6 +206,23 @@ public class AddSettingProfile extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to use the given benchmark");
 				}
 			}
+		}
+		
+		//if a setting ID exists, this is an update. Otherwise, it is a new profile
+		if (Util.paramExists(SETTING_ID, request)) {
+			if (!Validator.isValidInteger(request.getParameter(SETTING_ID))) {
+				return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
+			}
+			int settingId=Integer.parseInt(request.getParameter(SETTING_ID));
+			ValidatorStatusCode status=SettingSecurity.canModifySettings(settingId, userId);
+			if (!status.isSuccess()) {
+				return status;
+			}
+		} else {
+			if (!Validator.isValidSettingsName(request.getParameter(NAME))) {
+				return new ValidatorStatusCode(false, "Invalid name");
+			}
+			
 		}
 		
 		

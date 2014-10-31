@@ -40,7 +40,6 @@ public class SettingSecurity {
 	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	
-	//TODO: Consider how to handle where to use the Validator class
 	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) {
 		
 				

@@ -100,6 +100,22 @@ function initUI(){
 	
 	$("button").button();
 	
+	
+	$("#saveProfile").click(function() {
+		$.post(  
+				starexecRoot+"secure/add/profile",
+				{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
+					solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
+					wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
+					bench: $("#benchmark").val(), mem: $("#maxMem").val(), settingId : $("#settingProfile").val()},
+				function(returnCode) {
+						showMessage("success","Profile settings updated successfully",5000);
+				}
+			).error(function(xhr, textStatus, errorThrown){
+				showMessage('error',"Invalid parameters",5000);
+			});
+	});
+	
 	$("#createProfile").click(function() {
 		
 		
