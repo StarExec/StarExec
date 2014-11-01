@@ -782,6 +782,7 @@ public class Util {
 		return returnList;
     }
     
+    
     /**
      * Recursively grants full permission to the owner of everything in the given
      * directory. The top level directory is not affected, only everything inside
@@ -810,6 +811,33 @@ public class Util {
 			chmod[6]=f.getAbsolutePath();
 			Util.executeCommand(chmod);
 		}
+    }
+    
+    /**
+     * Copies all of the given files to a single, newly created sandbox directory
+     * and returns the sandbox directory. The sandbox user will be the owner and
+     * have full permissions over everthing in the sandbox directory
+     * @param files
+     * @return
+     * @throws IOException
+     */
+    public static File copyFilesToNewSandbox(List<File> files) throws IOException {
+    	File sandbox=getRandomSandboxDirectory();
+    	String[] cpCmd=new String[7];
+    	cpCmd[0]="sudo";
+    	cpCmd[1]="-u";
+    	cpCmd[2]="sandbox";
+    	cpCmd[3]="cp";
+    	cpCmd[4]="-r";
+    	
+    	cpCmd[6]=sandbox.getAbsolutePath();
+    	for (File f : files) {
+    		cpCmd[5]=f.getAbsolutePath();
+    		Util.executeCommand(cpCmd);
+    	}
+    	sandboxChmodDirectory(sandbox,false);
+    	
+    	return sandbox;
     }
     
     /**

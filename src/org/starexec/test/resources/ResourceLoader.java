@@ -303,6 +303,10 @@ public class ResourceLoader {
 		return null;
 
 	}
+	
+	public static Solver loadSolverIntoDatabase(int parentSpaceId, int userId) {
+		return loadSolverIntoDatabase("CVC4.zip",parentSpaceId, userId);
+	}
 	/**
 	 * Loads a solver into the database
 	 * @param archiveName The name of the archive containing the solver in the Resource directory
