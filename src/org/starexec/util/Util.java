@@ -833,20 +833,20 @@ public class Util {
     		cpCmd[2]=f.getAbsolutePath();
     		Util.executeCommand(cpCmd);
     	}
-    	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
-    	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
 
     	//next, copy the files over so they are owned by sandbox
     	String[] sudoCpCmd=new String[7];
     	sudoCpCmd[0]="sudo";
     	sudoCpCmd[1]="-u";
     	sudoCpCmd[2]="sandbox";
-    	cpCmd[3]="cp";
-    	cpCmd[4]="-r";
-    	cpCmd[6]=sandbox2.getAbsolutePath();
+    	sudoCpCmd[3]="cp";
+    	sudoCpCmd[4]="-r";
+    	sudoCpCmd[6]=sandbox2.getAbsolutePath();
     	for (File f : sandbox.listFiles()) {
-    		cpCmd[5]=f.getAbsolutePath();
-    		Util.executeCommand(cpCmd);
+    		sudoCpCmd[5]=f.getAbsolutePath();
+    		Util.executeCommand(sudoCpCmd);
     	}
     	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
     	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
