@@ -183,12 +183,7 @@ public class UploadSolver extends HttpServlet {
 			returnArray[0] = 0;
 			returnArray[1] = 0;
 			
-			//first, we upload the solver to the head node sandbox directory
-			String randomDirectory=TestUtil.getRandomAlphaString(64);
-			File sandboxDirectory=Util.getSandboxDirectory();
-			File tempDir=new File(sandboxDirectory,randomDirectory);
-			                        
-			tempDir.mkdirs();
+			File sandboxDir=Util.getRandomSandboxDirectory();
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
 			FileItem item=null;
 			String name=null;
@@ -256,27 +251,27 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			//move the archive to the sandbox
-			FileUtils.copyFileToDirectory(archiveFile, tempDir);
+			FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
 			archiveFile.delete();
-			archiveFile=new File(tempDir,archiveFile.getName());
+			archiveFile=new File(sandboxDir,archiveFile.getName());
 			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
 			
 			//extracts the given archive using the sandbox user
-			boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),tempDir.getAbsolutePath());
+			boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),sandboxDir.getAbsolutePath());
 			
 			//if there was an extraction error or if the temp directory is still empty.
-			if (!extracted || tempDir.listFiles().length==0) {
+			if (!extracted || sandboxDir.listFiles().length==0) {
 				log.warn("there was an error extracting the new solver archive");
-				FileUtils.deleteDirectory(tempDir);
+				FileUtils.deleteDirectory(sandboxDir);
 				FileUtils.deleteDirectory(uniqueDir);
 				FileUtils.deleteQuietly(archiveFile);
 				returnArray[0]=-6;
 				return returnArray;
 			}
-			if (containsBuildScript(tempDir)) {
+			if (containsBuildScript(sandboxDir)) {
 				log.debug("the uploaded solver did contain a build script");
 				if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
-					FileUtils.deleteDirectory(tempDir);
+					FileUtils.deleteDirectory(sandboxDir);
 					FileUtils.deleteDirectory(uniqueDir);
 					returnArray[0]=-5;                   //fail due to invalid permissions
 					return returnArray;
@@ -290,10 +285,11 @@ public class UploadSolver extends HttpServlet {
 				chmod[3]="chmod";
 				chmod[4]="-R";
 				chmod[5]="u+rwx";	
-				for (File f : tempDir.listFiles()) {
-					chmod[6]=f.getAbsolutePath();
-					Util.executeCommand(chmod);
-				}
+				chmod[6]=sandboxDir.getAbsolutePath();
+				//for (File f : sandboxDir.listFiles()) {
+				//	chmod[6]=f.getAbsolutePath();
+				//	Util.executeCommand(chmod);
+				//}
 				
 			
 
@@ -304,7 +300,7 @@ public class UploadSolver extends HttpServlet {
 				command[2]="sandbox";
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
 				
-				buildstr=Util.executeCommand(command, null,tempDir);
+				buildstr=Util.executeCommand(command, null,sandboxDir);
 				build=true;
 				log.debug("got back the output "+buildstr);
 			}
@@ -316,11 +312,12 @@ public class UploadSolver extends HttpServlet {
 			chmodCommand[3]="chmod";
 			chmodCommand[4]="-R";
 			chmodCommand[5]="g+rwx";	
-			for (File f : tempDir.listFiles()) {
-				chmodCommand[6]=f.getAbsolutePath();
-				Util.executeCommand(chmodCommand);
-			}
-			for (File f : tempDir.listFiles()) {
+			chmodCommand[6]=sandboxDir.getAbsolutePath();
+			//for (File f : sandboxDir.listFiles()) {
+			//	chmodCommand[6]=f.getAbsolutePath();
+			//	Util.executeCommand(chmodCommand);
+			//}
+			for (File f : sandboxDir.listFiles()) {
 				if (f.isDirectory()) {
 					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
 				} else {
@@ -329,9 +326,9 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			try {
-			    FileUtils.deleteDirectory(tempDir);
+			    FileUtils.deleteDirectory(sandboxDir);
 			} catch (Exception e) {
-				log.error("unable to delete temporary directory at "+tempDir.getAbsolutePath());
+				log.error("unable to delete temporary directory at "+sandboxDir.getAbsolutePath());
 				log.error(e.getMessage(),e);
 			}
 			

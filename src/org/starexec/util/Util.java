@@ -54,6 +54,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.JobPair;
+import org.starexec.test.TestUtil;
 
 public class Util {	
     private static final Logger log = Logger.getLogger(Util.class);
@@ -821,6 +822,21 @@ public class Util {
 			 returnList = arr.subList(start,start+records);
 		}
 		return returnList;
+    }
+    
+    /**
+     * Creates and returns a unique, empty directory immediately inside
+     * of the sandbox directory on the head node
+     * @return
+     */
+    public static File getRandomSandboxDirectory() {
+		File sandboxDirectory=Util.getSandboxDirectory();
+		String randomDirectory=TestUtil.getRandomAlphaString(64);
+
+		File sandboxDir=new File(sandboxDirectory,randomDirectory);
+		                        
+		sandboxDir.mkdirs();
+		return sandboxDir;
     }
     
 }
