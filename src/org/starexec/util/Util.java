@@ -203,7 +203,7 @@ public class Util {
      * @author Eric Burns
      */
     public static File getSandboxDirectory() {
-	return new File(R.SANDBOX_DIRECTORY);
+    	return new File(R.SANDBOX_DIRECTORY);
     }
 	
     /**
@@ -823,18 +823,35 @@ public class Util {
      */
     public static File copyFilesToNewSandbox(List<File> files) throws IOException {
     	File sandbox=getRandomSandboxDirectory();
-    	String[] cpCmd=new String[7];
-    	cpCmd[0]="sudo";
-    	cpCmd[1]="-u";
-    	cpCmd[2]="sandbox";
+    	File sandbox2=getRandomSandboxDirectory();
+    	String[] cpCmd=new String[4];
+    	cpCmd[0]="cp";
+    	cpCmd[1]="-r";
+    	String tempPostfix=TestUtil.getRandomAlphaString(30);
+    	cpCmd[3]=sandbox.getAbsolutePath();
+    	for (File f : files) {
+    		cpCmd[2]=f.getAbsolutePath();
+    		Util.executeCommand(cpCmd);
+    	}
+    	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
+
+    	//next, copy the files over so they are owned by sandbox
+    	String[] sudoCpCmd=new String[7];
+    	sudoCpCmd[0]="sudo";
+    	sudoCpCmd[1]="-u";
+    	sudoCpCmd[2]="sandbox";
     	cpCmd[3]="cp";
     	cpCmd[4]="-r";
-    	
-    	cpCmd[6]=sandbox.getAbsolutePath();
-    	for (File f : files) {
+    	cpCmd[6]=sandbox2.getAbsolutePath();
+    	for (File f : sandbox.listFiles()) {
     		cpCmd[5]=f.getAbsolutePath();
     		Util.executeCommand(cpCmd);
     	}
+    	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
+
+    	
     	sandboxChmodDirectory(sandbox,false);
     	
     	return sandbox;
@@ -848,7 +865,7 @@ public class Util {
     public static File getRandomSandboxDirectory() {
 		File sandboxDirectory=Util.getSandboxDirectory();
 		String randomDirectory=TestUtil.getRandomAlphaString(64);
-
+		
 		File sandboxDir=new File(sandboxDirectory,randomDirectory);
 		                        
 		sandboxDir.mkdirs();
