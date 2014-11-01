@@ -852,9 +852,9 @@ public class Util {
     	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
 
     	
-    	sandboxChmodDirectory(sandbox,false);
+    	sandboxChmodDirectory(sandbox2,false);
     	
-    	return sandbox;
+    	return sandbox2;
     }
     
     /**
