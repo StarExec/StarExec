@@ -285,11 +285,10 @@ public class UploadSolver extends HttpServlet {
 				chmod[3]="chmod";
 				chmod[4]="-R";
 				chmod[5]="u+rwx";	
-				chmod[6]=sandboxDir.getAbsolutePath();
-				//for (File f : sandboxDir.listFiles()) {
-				//	chmod[6]=f.getAbsolutePath();
-				//	Util.executeCommand(chmod);
-				//}
+				for (File f : sandboxDir.listFiles()) {
+					chmod[6]=f.getAbsolutePath();
+					Util.executeCommand(chmod);
+				}
 				
 			
 
@@ -312,11 +311,10 @@ public class UploadSolver extends HttpServlet {
 			chmodCommand[3]="chmod";
 			chmodCommand[4]="-R";
 			chmodCommand[5]="g+rwx";	
-			chmodCommand[6]=sandboxDir.getAbsolutePath();
-			//for (File f : sandboxDir.listFiles()) {
-			//	chmodCommand[6]=f.getAbsolutePath();
-			//	Util.executeCommand(chmodCommand);
-			//}
+			for (File f : sandboxDir.listFiles()) {
+				chmodCommand[6]=f.getAbsolutePath();
+				Util.executeCommand(chmodCommand);
+			}
 			for (File f : sandboxDir.listFiles()) {
 				if (f.isDirectory()) {
 					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
