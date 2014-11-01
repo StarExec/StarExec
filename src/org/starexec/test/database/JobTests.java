@@ -1,7 +1,10 @@
 package org.starexec.test.database;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
@@ -12,11 +15,13 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.jobs.JobManager;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
@@ -183,6 +188,78 @@ public class JobTests extends TestSequence {
 	private void CountIncompletePairsTest() {
 		int count=Jobs.countIncompletePairs(job.getId());
 		Assert.assertTrue(count>=0);
+	}
+	
+	private HashMap<Integer, List<JobPair>> getPairSetup() {
+		HashMap<Integer,List<JobPair>> spacesToPairs=new HashMap<Integer,List<JobPair>>();
+		Random rand=new Random();
+		int index=0;
+		for (int curSpace=1;curSpace<rand.nextInt(60)+50; curSpace++) {
+			List<JobPair> pairs=new ArrayList<JobPair>();
+			for (int curJobPair=0;curJobPair<rand.nextInt(7);curJobPair++) {
+				index++;
+				JobPair jp=new JobPair();
+				jp.setId(index);
+				jp.setJobSpaceId(curSpace);
+				pairs.add(jp);
+			}
+			spacesToPairs.put(curSpace, pairs);
+		}
+		return spacesToPairs;
+	}
+	
+	private int getTotalSize(HashMap<Integer,List<JobPair>> pairs) {
+		int sum=0;
+		for (Integer i : pairs.keySet()) {
+			sum+=pairs.get(i).size();
+		}
+		return sum;
+	}
+	
+	@Test
+	private void depthFirstAddTest() {
+		Job j=new Job();
+		HashMap<Integer,List<JobPair>> spacesToPairs = getPairSetup();
+		int size=getTotalSize(spacesToPairs);
+		JobManager.addJobPairsDepthFirst(j, spacesToPairs);
+		Assert.assertEquals(size, j.getJobPairs().size()); // every job pair should be present
+		int spaceId=-1;
+		int counter=0;
+		for (JobPair jp : j) {
+			if (jp.getJobSpaceId()!=spaceId) {
+				//if we are changing to a new space
+				if (spaceId>=0) {
+					Assert.assertEquals(spacesToPairs.get(spaceId).size(),counter); // we should see all the pairs in this space
+																					//before seeing any other spaces
+				}
+				spaceId=jp.getJobSpaceId();
+				counter=1;
+				
+			} else {
+				counter++;
+			}
+		}
+	}
+	
+	@Test
+	private void roundRobinAddTest() {
+		Job j=new Job();
+		HashMap<Integer,List<JobPair>> spacesToPairs = getPairSetup();
+		int size=getTotalSize(spacesToPairs);
+		JobManager.addJobPairsRoundRobin(j, spacesToPairs);
+		Assert.assertEquals(size, j.getJobPairs().size()); //every job pair should be present
+		HashMap<Integer,Integer> spacesToCounts=new HashMap<Integer,Integer>();
+		int max=0;
+		for (JobPair jp : j) {
+			int space=jp.getJobSpaceId();
+			//System.out.println(space);
+			if (!spacesToCounts.containsKey(space)) {
+				spacesToCounts.put(space, 0);
+			}
+			Assert.assertFalse(Math.abs(spacesToCounts.get(space)-max)>1);
+			spacesToCounts.put(space, spacesToCounts.get(space)+1);
+			max=Math.max(max, spacesToCounts.get(space));
+		}
 	}
 	
 	@Test

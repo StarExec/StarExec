@@ -773,22 +773,4 @@ public abstract class JobManager {
 		return clone;
 	}
 
-
-	public static void addJobPairsRobinSelected(Job j, int userId, int cpuLimit, int runLimit,long memoryLimit, int space_id, Benchmark benchmark, List<Solver> solvers, HashMap<Integer, String> SP) {
-		log.debug("Attempting to add job-pairs in round-robin traversal on selected solvers");
-
-
-		for(Solver solver : solvers) {
-			JobPair pair = new JobPair();
-			pair.setBench(benchmark);
-			pair.setSolver(solver);				
-			pair.setCpuTimeout(cpuLimit);
-			pair.setWallclockTimeout(runLimit);
-			pair.setSpace(Spaces.get(space_id));
-			pair.setPath(SP.get(space_id));
-			pair.setMaxMemory(memoryLimit);
-			j.addJobPair(pair);
-			
-		}
-	}
 }
