@@ -278,17 +278,8 @@ public class UploadSolver extends HttpServlet {
 				}
 				
 				//give sandbox full permissions over the solver directory
-				String[] chmod=new String[7];
-				chmod[0]="sudo";
-				chmod[1]="-u";
-				chmod[2]="sandbox";
-				chmod[3]="chmod";
-				chmod[4]="-R";
-				chmod[5]="u+rwx";	
-				for (File f : sandboxDir.listFiles()) {
-					chmod[6]=f.getAbsolutePath();
-					Util.executeCommand(chmod);
-				}
+				Util.sandboxChmodDirectory(sandboxDir, false);
+				
 				
 			
 
@@ -304,17 +295,8 @@ public class UploadSolver extends HttpServlet {
 				log.debug("got back the output "+buildstr);
 			}
 			
-			String[] chmodCommand=new String[7];
-			chmodCommand[0]="sudo";
-			chmodCommand[1]="-u";
-			chmodCommand[2]="sandbox";
-			chmodCommand[3]="chmod";
-			chmodCommand[4]="-R";
-			chmodCommand[5]="g+rwx";	
-			for (File f : sandboxDir.listFiles()) {
-				chmodCommand[6]=f.getAbsolutePath();
-				Util.executeCommand(chmodCommand);
-			}
+			Util.sandboxChmodDirectory(sandboxDir, true);
+
 			for (File f : sandboxDir.listFiles()) {
 				if (f.isDirectory()) {
 					FileUtils.copyDirectoryToDirectory(f, uniqueDir);

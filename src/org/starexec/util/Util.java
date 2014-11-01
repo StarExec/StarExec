@@ -352,64 +352,22 @@ public class Util {
 		return form;
     }
 	
-	
-    /**
-     * 
-     * @param c
-     * @param envp
-     * @param authorizedDirs
-     * @param workingDirectory The working directory for the command. If null, the working directory will not be changed
-     * @return
-     * @throws IOException 
-     */
-    public static String executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs, File workingDirectory) throws IOException {
-	Runtime r = Runtime.getRuntime();
-	//the final, empty string should be the directory to apply the command to
-	String[] chownCommand = {"sudo", "-u", "tomcat","chown", "-R", "sandbox", ""};
-		
-	//first, give the sandbox user ownership of every given directory
-	for (File f : authorizedDirs) {
-	    chownCommand[6]=f.getAbsolutePath();
-	    Util.executeCommand(chownCommand,envp,null);
-	}
-		
-		
-	String[] command=new String[c.length+3];
-	command[0]="sudo";
-	command[1]="-u";
-	command[2]="sandbox";
-	for (int index=3;index<command.length;index++) {
-	    command[index]=c[index-3];
-	}
-		
-	String result = executeCommand(command,envp,workingDirectory);
-
-	//give back ownership of everything to tomcat
-	chownCommand =new String[] {"sudo", "-u", "tomcat","chown", "-R", "tomcat", ""};
-	
-	for (File f : authorizedDirs) {
-	    chownCommand[6]=f.getAbsolutePath();
-	    Util.executeCommand(chownCommand,envp,null);
-	}
-	return result;
-    }
-	
     public static String executeCommand(String command) throws IOException {
-	String[] cmd = new String[1];
-	cmd[0] = command;
-	return executeCommand(cmd);
+		String[] cmd = new String[1];
+		cmd[0] = command;
+		return executeCommand(cmd);
     }
 
     public static String executeCommand(String command, String[] env) throws IOException {
-	String[] cmd = new String[1];
-	cmd[0] = command;
-	return executeCommand(cmd,env,null);
+		String[] cmd = new String[1];
+		cmd[0] = command;
+		return executeCommand(cmd,env,null);
     }
 
     /** Convenience method for executeCommand() 
      * @throws IOException */
     public static String executeCommand(String[] command) throws IOException {
-	return executeCommand(command,null,null);
+    	return executeCommand(command,null,null);
     }
 	
     /**
@@ -425,7 +383,7 @@ public class Util {
      */
 	
     public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
-	Runtime r = Runtime.getRuntime();
+    	Runtime r = Runtime.getRuntime();
 					
 	    Process p;
 	    if (command.length == 1) {
@@ -509,23 +467,23 @@ public class Util {
      * @return The string value that is the result of appending all lines within the buffer.
      */
     public static String bufferToString(BufferedReader reader) {
-	try {
-	    StringBuilder sb = new StringBuilder();
+		try {
+		    StringBuilder sb = new StringBuilder();
+				
+		    String line;		
+		    while((line = reader.readLine()) != null) {
+			sb.append(line + Util.getLineSeparator());
+		    }
+				
+		    return sb.toString();
+		} catch (Exception e) {
+		    log.warn(e.getMessage(), e);
+		} finally {
+		    // Try to safely close the reader
+		    try { reader.close(); } catch (Exception e) {}
+		}
 			
-	    String line;		
-	    while((line = reader.readLine()) != null) {
-		sb.append(line + Util.getLineSeparator());
-	    }
-			
-	    return sb.toString();
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	} finally {
-	    // Try to safely close the reader
-	    try { reader.close(); } catch (Exception e) {}
-	}
-		
-	return null;
+		return null;
     }
 
     /**
@@ -822,6 +780,36 @@ public class Util {
 			 returnList = arr.subList(start,start+records);
 		}
 		return returnList;
+    }
+    
+    /**
+     * Recursively grants full permission to the owner of everything in the given
+     * directory. The top level directory is not affected, only everything inside
+     * @param dir
+     * @param group If true, does chmod g+rwx. If false, does chmod u+rwx. The former is used
+     * to give Tomcat permission to work with files owned by Sandbox, and the latter is used
+     * to allow Sandbox to access its own files.
+     * @throws IOException
+     */
+    public static void sandboxChmodDirectory(File dir,boolean group) throws IOException {
+    	//give sandbox full permissions over the solver directory
+		String[] chmod=new String[7];
+		chmod[0]="sudo";
+		chmod[1]="-u";
+		chmod[2]="sandbox";
+		chmod[3]="chmod";
+		chmod[4]="-R";
+		if (group) {
+			chmod[5]="g+rwx";	
+
+		} else {
+			chmod[5]="u+rwx";	
+
+		}
+		for (File f : dir.listFiles()) {
+			chmod[6]=f.getAbsolutePath();
+			Util.executeCommand(chmod);
+		}
     }
     
     /**
