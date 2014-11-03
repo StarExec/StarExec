@@ -1,5 +1,6 @@
 package org.starexec.data.to;
 
+import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
@@ -7,6 +8,7 @@ import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.util.Util;
 
 public class DefaultSettings extends Identifiable {
+	private static Logger log=Logger.getLogger(DefaultSettings.class);
 	public enum SettingType {
 		USER(0), COMMUNITY(1);
 		
@@ -138,7 +140,7 @@ public class DefaultSettings extends Identifiable {
 		return s.getName();
 	}
 	
-	public String getBenchmarkContents() {
+	public String getBenchmarkName() {
 		if (benchId==null) {
 			return "None";
 		}
@@ -146,7 +148,7 @@ public class DefaultSettings extends Identifiable {
 		if (b==null) {
 			return "None";
 		}
-		return Benchmarks.getContents(b, -1);
+		return b.getName();
 		
 	}
 	public void setPrimId(Integer primId) {
@@ -163,5 +165,77 @@ public class DefaultSettings extends Identifiable {
 	}
 	public SettingType getType() {
 		return type;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb=new StringBuilder();
+		sb.append(this.getId());
+		sb.append(" | ");
+		sb.append(this.getName());
+		sb.append(" | ");
+		sb.append(this.getPrimId());
+		sb.append(" | ");
+		sb.append(this.getPreProcessorId());
+		sb.append(" | ");
+		sb.append(this.getPostProcessorId());
+		sb.append(" | ");
+		sb.append(this.getBenchProcessorId());
+		sb.append(" | ");
+		sb.append(this.getSolverId());
+		sb.append(" | ");
+		sb.append(this.getBenchId());
+		sb.append(" | ");
+		sb.append(this.getCpuTimeout());
+		sb.append(" | ");
+		sb.append(this.getWallclockTimeout());
+		sb.append(" | ");
+		sb.append(this.getMaxMemory());
+		return sb.toString();
+	}
+	
+	/**
+	 * Checks for deep equality between this object and another DefaultSettings profile
+	 */
+	
+	@Override
+	public boolean equals(Object s) {
+		if (!(s instanceof DefaultSettings)) {
+            return false;
+		}
+		DefaultSettings set=(DefaultSettings) s;
+
+		log.debug(this.toString());
+		log.debug(set.toString());
+		
+		log.debug(this.getId()==set.getId());
+		log.debug(Util.objectsEqual(this.getName(), set.getName()));
+		log.debug(this.getPrimId()==set.getPrimId());
+		log.debug(this.getPrimId());
+		log.debug(set.getPrimId());
+		log.debug(this.getPreProcessorId()==set.getPreProcessorId());
+		log.debug(this.getBenchProcessorId()==set.getBenchProcessorId());
+		log.debug(this.getPostProcessorId()==set.getPostProcessorId());
+		log.debug(this.getCpuTimeout()==set.getCpuTimeout());
+		log.debug(this.getWallclockTimeout()==set.getWallclockTimeout());
+		log.debug(this.getMaxMemory()==set.getMaxMemory());
+		log.debug(this.getSolverId()==set.getSolverId());
+		log.debug(this.getBenchId()==set.getBenchId());
+		
+		
+		log.debug(this.toString());
+		log.debug(set.toString());
+		return (this.getId()==set.getId() &&
+				Util.objectsEqual(this.getName(), set.getName()) &&
+				Util.objectsEqual(this.getPrimId(),set.getPrimId()) &&
+				Util.objectsEqual(this.getPreProcessorId(),set.getPreProcessorId()) &&
+				Util.objectsEqual(this.getBenchProcessorId(),set.getBenchProcessorId()) &&
+				Util.objectsEqual(this.getPostProcessorId(),set.getPostProcessorId()) &&
+				this.getCpuTimeout()==set.getCpuTimeout() &&
+				this.getWallclockTimeout()==set.getWallclockTimeout()&&
+				this.getMaxMemory()==set.getMaxMemory() &&
+				Util.objectsEqual(this.getSolverId(),set.getSolverId()) &&
+				Util.objectsEqual(this.getBenchId(),set.getBenchId()));
+		
 	}
 }

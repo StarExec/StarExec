@@ -11,18 +11,9 @@ import org.starexec.data.to.Space;
 import org.starexec.util.Validator;
 
 public class SettingSecurity {
-	/**
-	 * Checks whether a user can update the default settings (default timeouts, max-memory, etc.) of a 
-	 * community.
-	 * @param id the ID of the DefaultSettings object
-	 * @param attribute The name of the setting being changed
-	 * @param newValue The new value that would be given to the setting
-	 * @param userId The ID of the user making the request
-	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
 	
-	//TODO: Consider how to handle where to use the Validator class
-	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) {
+	
+	public static ValidatorStatusCode canModifySettings(int id, int userId) {
 		DefaultSettings d=Settings.getProfileById(id);
 		if (d==null) {
 			return new ValidatorStatusCode(false, "The given setting profile could not be found");
@@ -37,6 +28,20 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "Only leaders can update default settings in a space");
 			}
 		}
+		return new ValidatorStatusCode(true);
+	}
+	/**
+	 * Checks whether a user can update the default settings (default timeouts, max-memory, etc.) of a 
+	 * community.
+	 * @param id the ID of the DefaultSettings object
+	 * @param attribute The name of the setting being changed
+	 * @param newValue The new value that would be given to the setting
+	 * @param userId The ID of the user making the request
+	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 */
+	
+	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) {
+		
 				
 		if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
 			if (! Validator.isValidInteger(newValue)) {
@@ -57,6 +62,6 @@ public class SettingSecurity {
 			}
 		}
 		
-		return new ValidatorStatusCode(true);
+		return canModifySettings(id,userId);
 	}
 }

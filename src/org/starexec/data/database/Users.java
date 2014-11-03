@@ -53,7 +53,7 @@ public class Users {
 		return false;
 	}
 	
-	public static boolean createNewDefaultSettings(DefaultSettings d) {
+	public static int createNewDefaultSettings(DefaultSettings d) {
 		d.setType(SettingType.USER);
 		return Settings.addNewSettingsProfile(d);
 	}
@@ -1313,7 +1313,6 @@ public class Users {
 		
 		try {
 			List<Integer> comms=new ArrayList<Integer>();
-
 			for (Space s : Communities.getAll()) {
 				if (Users.isMemberOfCommunity(userId, s.getId())) {
 					comms.add(s.getId());

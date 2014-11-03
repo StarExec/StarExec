@@ -37,7 +37,6 @@ public class R {
     public static int BENCH_DESC_LEN=1024;
     public static int CONFIGURATION_NAME_LEN=128;
     public static int CONFIGURATION_DESC_LEN=1024;
-    public static int PRIM_NAME_LEN=64;
     public static int SOLVER_NAME_LEN=64;
     public static int WEBSITE_NAME_LEN=64;
 
@@ -62,7 +61,7 @@ public class R {
     public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
     //public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
     public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
-    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(PRIM_NAME_LEN)+"}$";
+    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]+$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
     
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,"+R.MSG_LEN+"}$";
@@ -71,6 +70,8 @@ public class R {
 	public static String DATE_PATTERN="[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]";
 	public static String DOUBLE_PATTERN="^\\-?((\\d+(\\.\\d*)?)|(\\.\\d+))$";
 
+	
+	public static String JOB_PAIR_PATH_DELIMITER="/";
     // Email properties
     public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
     public static int EMAIL_SMTP_PORT = 25;
@@ -173,7 +174,7 @@ public class R {
 	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for an SGE node (indicates the node is live)
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
 	
-    // SGE Cnfigurations, see GridEngineUtil
+    // SGE Configurations, see GridEngineUtil
     public static String SGE_ROOT = null; // root directory for SGE
     public static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
     public static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue

@@ -25,6 +25,128 @@ import org.starexec.data.to.WorkerNode;
 public class Cluster {
 	private static final Logger log = Logger.getLogger(Cluster.class);	
 	
+	/**
+	 * Gets the worker nodes from BACKEND and adds them to the database if they don't already exist. This must be done
+	 * BEFORE queues have been loaded as the queues will make associations to the nodes.
+	 */
+	public static synchronized void loadWorkerNodes() {
+
+		log.info("Loading worker nodes into the db");
+		try {			
+
+			// Set all nodes as inactive (we will update them to active as we see them)
+			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
+			
+			String[] lines = R.BACKEND.getWorkerNodes();
+			for (int i = 0; i < lines.length; i++) {
+				String name = lines[i];
+				log.debug("Updating info for node "+name);
+				// In the database, update the attributes for the node
+				Cluster.updateNode(name,  Cluster.getNodeDetails(name));				
+				// Set the node as active (because we just saw it!)
+				Cluster.setNodeStatus(name, R.NODE_STATUS_ACTIVE);
+			}
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+		log.info("Completed loading info for worker nodes into db");
+	}
+
+	/**
+	 * Calls BACKEND to get details about the given node. 
+	 * @param name The name of the node to get details about
+	 * @param name The name of the node to get details about
+	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
+	 */
+	public static HashMap<String, String> getNodeDetails(String name) {
+	    String[] map = R.BACKEND.getNodeDetails(name);
+	    HashMap<String, String> details = new HashMap<String, String>();
+	    
+	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
+	    for(int i = 0; i < (map.length/2)*2; i=i+2){
+		details.put(map[i],map[i+1]);
+	    }
+	    return details;
+	}
+
+
+	/**
+	 * Gets the queue list from BACKEND and adds them to the database if they don't already exist. This must
+	 * be done AFTER nodes are loaded as the queues will make associations to the nodes. This also loads
+	 * attributes for the queue as well as its current usage.
+	 */
+	public static synchronized void loadQueues() {
+		Cluster.loadQueueDetails();
+	}
+
+	/**
+	 * Loads the list of active queues on the system, loads their attributes into the database
+	 * as well as their associations to worker nodes that belong to each queue.
+	 */
+	private static void loadQueueDetails() {
+		log.info("Loading queue details into the db");
+		try {			
+
+			// Set all queues as inactive (we will set them as active when we see them)
+			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
+
+			String[] queueNames = R.BACKEND.getQueues();
+
+			for (int i = 0; i < queueNames.length; i++) {
+			    String name = queueNames[i];
+
+			    log.debug("Loading details for queue "+name);
+
+			    // In the database, update the attributes for the queue
+			    Queues.update(name,  Cluster.getQueueDetails(name));
+
+			    // Set the queue as active since we just saw it
+			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
+			}
+			//Adds all the associations to the db
+			Cluster.setQueueAssociationsInDb();
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		} 
+		log.info("Completed loading the queue details into the db");
+	}
+
+	/**
+	 * Calls BACKEND to get details about the given queue. 
+	 * @param name The name of the queue to get details about
+	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
+	 */
+	public static HashMap<String, String> getQueueDetails(String name) {
+
+	    String[] map = R.BACKEND.getQueueDetails(name);
+	    HashMap<String, String> details = new HashMap<String, String>();
+	    
+	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
+	    for(int i = 0; i < (map.length/2)*2; i=i+2){
+		details.put(map[i],map[i+1]);
+	    }
+	    return details;
+
+	}
+
+	/**
+	 * Extracts queue-node association from BACKEND and puts it into the db.
+	 * @return true if successful
+	 * @author Benton McCune
+	 */
+	public static Boolean setQueueAssociationsInDb() {
+	    Queues.clearQueueAssociations();
+	    String[] assoc = R.BACKEND.getQueueNodeAssociations();
+	    
+	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
+	    for(int i = 0; i < (assoc.length/2)*2; i=i+2){
+		Queues.associate(assoc[i], assoc[i+1]);
+	    }
+	    return true;
+	    
+	}
+
+
 	public static void associateNodes(int queueId, List<Integer> nodeIds) {
 		log.debug("Calling AssociateQueue");
 		Connection con = null;

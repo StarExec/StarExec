@@ -996,7 +996,7 @@ public class Spaces {
 	 * @return A list of spaces the user has access to
 	 * @author Benton McCune
 	 */
-	public static List<Space> GetSpacesByUser(int userId) {
+	public static List<Space> getSpacesByUser(int userId) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -2164,7 +2164,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			int parentId=Spaces.getParentSpace(s.getId());
 			if (paths.containsKey(parentId)){
-				paths.put(s.getId(), paths.get(parentId)+File.separator+s.getName());
+				paths.put(s.getId(), paths.get(parentId)+R.JOB_PAIR_PATH_DELIMITER+s.getName());
 				log.debug("added the following space to the space paths ="+ +s.getId());
 			} else {
 				//we'll keep searching until we get to something in the paths
@@ -2177,7 +2177,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 						StringBuilder path=new StringBuilder();
 						path.append(paths.get(parentId));
 						while (!names.isEmpty()) {
-							path.append(File.separator);
+							path.append(R.JOB_PAIR_PATH_DELIMITER);
 							path.append(names.pop());
 						}
 						paths.put(s.getId(), path.toString());
@@ -2193,29 +2193,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		return paths;
 	}
 
-	/**
-	 * Given a list of spaces, creates a HashMap to map spaceId to path
-	 * @param userId the id of the user creating the job
-	 * @param spaces the list of spaces to add job pairs from
-	 * @param SP the hashmap the contains the mappings of id's to paths
-	 * 
-	 * @author Wyatt Kaiser
-	 
-		
-		public static void spacePathCreate(int userId, List<Space> spaces, HashMap<Integer, String> SP) {
-			Iterator<Space> iter = spaces.iterator();
-					
-			while (iter.hasNext()) {
-				Space s = iter.next();
-				if (!Users.isMemberOfSpace(userId, s.getId())) {
-					iter.remove();
-					log.debug("removed space");
-				}
-				log.debug("iter.next = " + s + ", " + s.getName());
-				int parent = getParentSpace(s.getId());
-				SP.put(s.getId(), SP.get(parent) + File.separator + s.getName());
-			}
-		}*/
+	
 
 	protected static List<Integer> traverse(Space space, int parentId, int userId, int statusId) throws Exception {
 		// Add the new space to the database and get it's ID		

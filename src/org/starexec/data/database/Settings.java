@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.Space;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 public class Settings {
 	private static Logger log=Logger.getLogger(Settings.class);
-	protected static boolean addNewSettingsProfile(DefaultSettings settings) {
+	protected static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
@@ -34,6 +35,42 @@ public class Settings {
 
 			// Update the job's ID so it can be used outside this method
 			settings.setId(procedure.getInt(13));
+			return settings.getId();
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return -1;
+	
+	}
+	
+	/**
+	 * Given a DefaultSettings object with all of its fields set, including id,
+	 * updates the default settings profile in the database with all of the new fields.
+	 * Does not update name, prim id, or type, which are immutable
+	 * @param settings
+	 * @return
+	 */
+	public static boolean updateDefaultSettings(DefaultSettings settings) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			procedure.setObject(1, settings.getPostProcessorId());
+			procedure.setInt(2, settings.getCpuTimeout());
+			procedure.setInt(3, settings.getWallclockTimeout());
+			procedure.setBoolean(4, settings.isDependenciesEnabled());
+			procedure.setObject(5, settings.getBenchId());
+			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+			procedure.setObject(7,settings.getSolverId());
+			procedure.setObject(8, settings.getBenchProcessorId());
+			procedure.setObject(9,settings.getPreProcessorId());
+			procedure.setInt(10,settings.getId());
+			procedure.executeUpdate();			
+
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -42,7 +79,6 @@ public class Settings {
 			Common.safeClose(procedure);
 		}
 		return false;
-	
 	}
 	
 	/**
@@ -51,7 +87,7 @@ public class Settings {
 	 * @param results
 	 * @return
 	 */
-	public static DefaultSettings resultsToSettings(ResultSet results) {
+	protected static DefaultSettings resultsToSettings(ResultSet results) {
 		try {
 			DefaultSettings settings=new DefaultSettings();
 			settings.setId(results.getInt("id"));
@@ -108,22 +144,45 @@ public class Settings {
 		}
 		return null; //error;
 	}
+	/**
+	 * Returns every DefaultSettings profile a user has access to, either by community
+	 * or individually
+	 * @param userId
+	 * @return
+	 */
+	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(int userId) {
+		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
+		List<Space> comms=Communities.getAll();
+		if (comms.size()>0) {
+			for (int i=0;i<comms.size();i++) {
+				DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
+				listOfDefaultSettings.add(s);
+
+			}
+		}
+		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
+		if (userSettings!=null) {
+			
+			listOfDefaultSettings.addAll(userSettings);
+		}
+		return listOfDefaultSettings;
+	}
 	
 	/**
 	 * Gets all of the defaultSettings profiles that this user has
 	 * @param userId
 	 * @return
 	 */
-	public static List<DefaultSettings> getDefaultSettingsByUser(int userId) {
+	public static List<DefaultSettings> getDefaultSettingsOwnedByUser(int userId) {
 		return getDefaultSettingsByPrimIdAndType(userId, SettingType.USER);
 	}
 	
 	/**
 	 * Deletes the DefaultSettings profile with the given ID
 	 * @param id 
-	 * @return
+	 * @return True on success and false otherwise
 	 */
-	public static DefaultSettings deleteProfile(int id) {
+	public static boolean deleteProfile(int id) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
@@ -131,14 +190,14 @@ public class Settings {
 			procedure=con.prepareCall("{CALL DeleteDefaultSettings(?)}");
 			procedure.setInt(1,id);
 			procedure.executeUpdate();
-			
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return null; //error;
+		return false; //error;
 	}
 	
 	/**

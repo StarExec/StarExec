@@ -17,6 +17,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cache;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -50,10 +53,71 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.JobPair;
+import org.starexec.test.TestUtil;
 
 public class Util {	
     private static final Logger log = Logger.getLogger(Util.class);
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
+
+
+    /**
+     * Finds the standard output of a job pair and returns it as a string. Null
+     * is returned if the output doesn't exist or cannot be found
+     * @param limit The max number of characters to return
+     * @param pair The pair to get output for
+     * @return All console output from a job pair run for the given pair
+     */
+    public static String getStdOut(JobPair pair, int limit) {
+    	pair = JobPairs.getPairDetailed(pair.getId());
+    	return Util.getStdOut(pair.getId(),limit);
+    }
+
+    /**
+     * Finds the standard output of a job pair and returns it as a string. Null
+     * is returned if the output doesn't exist or cannot be found
+     * @param jobId The id of the job the pair is apart of
+     * @param pairId The pair to get output for
+     * @param limit The maximum number of lines to return
+     * @param path The path to the job pair file
+     * @return All console output from a job pair run for the given pair
+     */
+    public static String getStdOut(int pairId,int limit) {		
+    	File stdoutFile = Util.getStdOutFile(pairId);		
+    	return Util.readFileLimited(stdoutFile, limit);
+    }
+
+    /**
+     * Finds the standard output of a job pair and returns its file.
+     * @param jobId The id of the job the pair is apart of
+     * @param pairId The pair to get output for
+     * @param path The space path to the job pair file
+     * @return All console output from a job pair run for the given pair
+     */
+    public static File getStdOutFile(int pairId) {	
+    	String stdoutPath=JobPairs.getFilePath(pairId);
+    	log.info("The stdoutPath is: " + stdoutPath);
+
+    	return (new File(stdoutPath));	
+    }
+    
+    /**
+     * Checks to see if the two given objects are equal without throwing any null pointers.
+     * if a and b are both null, returns true
+     * @param a 
+     * @param b
+     * @return
+     */
+    public static boolean objectsEqual(Object a, Object b) {
+    	if (a==null && b==null) {
+    		return true;
+    	} else if (a==null) {
+    		return false;
+    	} else {
+    		return a.equals(b);
+    	}
+    	
+    }
 	
     /**
      * Gives back a String that is the contents of the first n lines of the file where n always less
@@ -139,7 +203,7 @@ public class Util {
      * @author Eric Burns
      */
     public static File getSandboxDirectory() {
-	return new File(R.SANDBOX_DIRECTORY);
+    	return new File(R.SANDBOX_DIRECTORY);
     }
 	
     /**
@@ -288,62 +352,22 @@ public class Util {
 		return form;
     }
 	
-	
-    /**
-     * 
-     * @param c
-     * @param envp
-     * @param authorizedDirs
-     * @param workingDirectory The working directory for the command. If null, the working directory will not be changed
-     * @return
-     */
-    public static String executeSandboxedCommand(String[] c, String[] envp, List<File> authorizedDirs, File workingDirectory) {
-	Runtime r = Runtime.getRuntime();
-	//the final, empty string should be the directory to apply the command to
-	String[] chownCommand = {"sudo", "-u", "tomcat","chown", "-R", "sandbox", ""};
-		
-	//first, give the sandbox user ownership of every given directory
-	for (File f : authorizedDirs) {
-	    chownCommand[6]=f.getAbsolutePath();
-	    Util.executeCommand(chownCommand,envp,null);
-	}
-		
-		
-	String[] command=new String[c.length+3];
-	command[0]="sudo";
-	command[1]="-u";
-	command[2]="sandbox";
-	for (int index=3;index<command.length;index++) {
-	    command[index]=c[index-3];
-	}
-		
-	String result = executeCommand(command,envp,workingDirectory);
-
-	//give back ownership of everything to tomcat
-	chownCommand =new String[] {"sudo", "-u", "tomcat","chown", "-R", "tomcat", ""};
-	
-	for (File f : authorizedDirs) {
-	    chownCommand[6]=f.getAbsolutePath();
-	    Util.executeCommand(chownCommand,envp,null);
-	}
-	return result;
-    }
-	
-    public static String executeCommand(String command) {
-	String[] cmd = new String[1];
-	cmd[0] = command;
-	return executeCommand(cmd);
+    public static String executeCommand(String command) throws IOException {
+		String[] cmd = new String[1];
+		cmd[0] = command;
+		return executeCommand(cmd);
     }
 
-    public static String executeCommand(String command, String[] env) {
-	String[] cmd = new String[1];
-	cmd[0] = command;
-	return executeCommand(cmd,env,null);
+    public static String executeCommand(String command, String[] env) throws IOException {
+		String[] cmd = new String[1];
+		cmd[0] = command;
+		return executeCommand(cmd,env,null);
     }
 
-    /** Convenience method for executeCommand() */
-    public static String executeCommand(String[] command) {
-	return executeCommand(command,null,null);
+    /** Convenience method for executeCommand() 
+     * @throws IOException */
+    public static String executeCommand(String[] command) throws IOException {
+    	return executeCommand(command,null,null);
     }
 	
     /**
@@ -354,13 +378,13 @@ public class Util {
      * @param envp The environment
      * @param workingDirectory the working directory to use
      * @return A buffered reader holding the output from the command.
+     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
 	
-    public static String executeCommand(String[] command, String[] envp, File workingDirectory) {
-	Runtime r = Runtime.getRuntime();
-		
-	//
-	try {					
+    public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
+    	Runtime r = Runtime.getRuntime();
+					
 	    Process p;
 	    if (command.length == 1) {
 		log.debug("Executing the following command: " + command[0]);
@@ -382,11 +406,7 @@ public class Util {
 
 	    return drainStreams(p);
 
-	} catch (Exception e) {
-	    log.warn("execute command says " + e.getMessage(), e);		
-	}
-		
-	return null;
+	
     }
 	
 
@@ -447,23 +467,23 @@ public class Util {
      * @return The string value that is the result of appending all lines within the buffer.
      */
     public static String bufferToString(BufferedReader reader) {
-	try {
-	    StringBuilder sb = new StringBuilder();
+		try {
+		    StringBuilder sb = new StringBuilder();
+				
+		    String line;		
+		    while((line = reader.readLine()) != null) {
+			sb.append(line + Util.getLineSeparator());
+		    }
+				
+		    return sb.toString();
+		} catch (Exception e) {
+		    log.warn(e.getMessage(), e);
+		} finally {
+		    // Try to safely close the reader
+		    try { reader.close(); } catch (Exception e) {}
+		}
 			
-	    String line;		
-	    while((line = reader.readLine()) != null) {
-		sb.append(line + Util.getLineSeparator());
-	    }
-			
-	    return sb.toString();
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	} finally {
-	    // Try to safely close the reader
-	    try { reader.close(); } catch (Exception e) {}
-	}
-		
-	return null;
+		return null;
     }
 
     /**
@@ -731,6 +751,125 @@ public class Util {
 	    log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}
     	return false;
+    }
+    
+    /**
+     * Given a list, a comparator, and all of the attributes needed to paginate a DataTables object,
+     * returns a sublist of the given list containing the ordered items to display
+     * @param arr List to sort
+     * @param compare Comparator object that will be used to determine the ordering of objects during sorting
+     * @param start Record to start on
+     * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
+     * @param asc True if sort is ascending, false otherwise
+     * @return
+     */
+    
+    public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records, boolean asc) {
+    	Collections.sort(arr,compare);
+
+		if (!asc) {
+			Collections.reverse(arr);
+		}
+
+		List<T> returnList=new ArrayList<T>();
+		if (start>=arr.size()) {
+			//we'll just return nothing
+		} else if (start+records>arr.size()) {
+			returnList = arr.subList(start, arr.size());
+		} else {
+			 returnList = arr.subList(start,start+records);
+		}
+		return returnList;
+    }
+    
+    
+    /**
+     * Recursively grants full permission to the owner of everything in the given
+     * directory. The top level directory is not affected, only everything inside
+     * @param dir
+     * @param group If true, does chmod g+rwx. If false, does chmod u+rwx. The former is used
+     * to give Tomcat permission to work with files owned by Sandbox, and the latter is used
+     * to allow Sandbox to access its own files.
+     * @throws IOException
+     */
+    public static void sandboxChmodDirectory(File dir,boolean group) throws IOException {
+    	//give sandbox full permissions over the solver directory
+		String[] chmod=new String[7];
+		chmod[0]="sudo";
+		chmod[1]="-u";
+		chmod[2]="sandbox";
+		chmod[3]="chmod";
+		chmod[4]="-R";
+		if (group) {
+			chmod[5]="g+rwx";	
+
+		} else {
+			chmod[5]="u+rwx";	
+
+		}
+		for (File f : dir.listFiles()) {
+			chmod[6]=f.getAbsolutePath();
+			Util.executeCommand(chmod);
+		}
+    }
+    
+    /**
+     * Copies all of the given files to a single, newly created sandbox directory
+     * and returns the sandbox directory. The sandbox user will be the owner and
+     * have full permissions over everthing in the sandbox directory
+     * @param files
+     * @return
+     * @throws IOException
+     */
+    public static File copyFilesToNewSandbox(List<File> files) throws IOException {
+    	File sandbox=getRandomSandboxDirectory();
+    	File sandbox2=getRandomSandboxDirectory();
+    	String[] cpCmd=new String[4];
+    	cpCmd[0]="cp";
+    	cpCmd[1]="-r";
+    	String tempPostfix=TestUtil.getRandomAlphaString(30);
+    	cpCmd[3]=sandbox.getAbsolutePath();
+    	for (File f : files) {
+    		cpCmd[2]=f.getAbsolutePath();
+    		Util.executeCommand(cpCmd);
+    	}
+    	log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
+
+    	//next, copy the files over so they are owned by sandbox
+    	String[] sudoCpCmd=new String[7];
+    	sudoCpCmd[0]="sudo";
+    	sudoCpCmd[1]="-u";
+    	sudoCpCmd[2]="sandbox";
+    	sudoCpCmd[3]="cp";
+    	sudoCpCmd[4]="-r";
+    	sudoCpCmd[6]=sandbox2.getAbsolutePath();
+    	for (File f : sandbox.listFiles()) {
+    		sudoCpCmd[5]=f.getAbsolutePath();
+    		Util.executeCommand(sudoCpCmd);
+    	}
+    	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
+
+    	
+    	sandboxChmodDirectory(sandbox2,false);
+    	
+    	return sandbox2;
+    }
+    
+    /**
+     * Creates and returns a unique, empty directory immediately inside
+     * of the sandbox directory on the head node
+     * @return
+     */
+    public static File getRandomSandboxDirectory() {
+		File sandboxDirectory=Util.getSandboxDirectory();
+		String randomDirectory=TestUtil.getRandomAlphaString(64);
+		
+		File sandboxDir=new File(sandboxDirectory,randomDirectory);
+		                        
+		sandboxDir.mkdirs();
+		return sandboxDir;
     }
     
 }

@@ -11,7 +11,7 @@
 		int userId = SessionUtil.getUserId(request);
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
-		userSpaces = Spaces.GetSpacesByUser(userId);
+		userSpaces = Spaces.getSpacesByUser(userId);
 
 		postProcs.add(Processors.getNoTypeProcessor());
 

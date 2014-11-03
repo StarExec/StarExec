@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -297,17 +298,6 @@ public abstract class JobManager {
 							    JobPairs.setPairStatus(pair.getId(),errorCode);
 							}
 
-							/**
-							// If the submission was successful
-							if(execId >= 0) {											
-								log.info("Submission of pair "+pair.getId() + " successful.");
-								JobPairs.updateGridEngineId(pair.getId(), execId);
-							}
-							else {
-								log.warn("Error submitting pair "+pair.getId() + " to SGE.");
-								JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-							}
-							**/
 							count++;
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
@@ -684,14 +674,19 @@ public abstract class JobManager {
 			int index=0;
 			while (spaceToPairs.size()>0) {
 				Set<Integer> keys=spaceToPairs.keySet();
+				Set<Integer> keysToRemove=new HashSet<Integer>();
 				for (Integer spaceId : keys) {
 					//if there is at least one pair left in this space
 					if (spaceToPairs.get(spaceId).size()>index) {
+						log.debug("adding a round robin job pair");
 						j.addJobPair(spaceToPairs.get(spaceId).get(index));
 					} else {
 						//otherwise, the space is done, and we should remove it from the hashmap of spaces
-						keys.remove(spaceId);
+						keysToRemove.add(spaceId);
 					}
+				}
+				for (Integer i : keysToRemove) {
+					keys.remove(i);
 				}
 				index++;
 			}
@@ -741,7 +736,7 @@ public abstract class JobManager {
 						pair.setCpuTimeout(cpuTimeout);
 						pair.setWallclockTimeout(clockTimeout);
 						pair.setMaxMemory(memoryLimit);
-						pair.setPath(SP.get(spaceId));
+						pair.setPath(SP.get(s.getId()));
 						pair.setSpace(Spaces.get(s.getId()));
 						curPairs.add(pair);
 						
@@ -778,22 +773,4 @@ public abstract class JobManager {
 		return clone;
 	}
 
-
-	public static void addJobPairsRobinSelected(Job j, int userId, int cpuLimit, int runLimit,long memoryLimit, int space_id, Benchmark benchmark, List<Solver> solvers, HashMap<Integer, String> SP) {
-		log.debug("Attempting to add job-pairs in round-robin traversal on selected solvers");
-
-
-		for(Solver solver : solvers) {
-			JobPair pair = new JobPair();
-			pair.setBench(benchmark);
-			pair.setSolver(solver);				
-			pair.setCpuTimeout(cpuLimit);
-			pair.setWallclockTimeout(runLimit);
-			pair.setSpace(Spaces.get(space_id));
-			pair.setPath(SP.get(space_id));
-			pair.setMaxMemory(memoryLimit);
-			j.addJobPair(pair);
-			
-		}
-	}
 }

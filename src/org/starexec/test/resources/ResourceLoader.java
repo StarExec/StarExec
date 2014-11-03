@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 
@@ -18,6 +19,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
@@ -33,7 +35,6 @@ import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Util;
 import org.starexec.data.to.WorkerNode;
 
@@ -194,6 +195,31 @@ public class ResourceLoader {
 	}
 	
 	/**
+	 * Creates a randomized DefaultSettings profile and inserts it into the database
+	 * @param userId The user that will be the owner of the new profile
+	 * @return
+	 */
+	//TODO: solver, benchmark, processors?
+	public static DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
+		Random rand=new Random();
+		DefaultSettings settings=new DefaultSettings();
+		settings.setName(TestUtil.getRandomAlphaString(R.SETTINGS_NAME_LEN-1));
+		settings.setPrimId(userId);
+		settings.setCpuTimeout(rand.nextInt(1000)+1);
+		settings.setWallclockTimeout(rand.nextInt(1000)+1);
+		settings.setMaxMemory(rand.nextInt(1000)+1);
+		int id=Users.createNewDefaultSettings(settings);
+		if (id>0) {
+			settings.setBenchId(0);
+			settings.setSolverId(0);
+			settings.setPreProcessorId(0);
+			settings.setPostProcessorId(0);
+			return settings;
+		}
+		return null;
+	}
+	
+	/**
 	 * Loads a configuration for a solver into the database
 	 * @param fileName The name of the file in the resource directory
 	 * @param solverId The ID of the solver to give the configuration to
@@ -276,6 +302,10 @@ public class ResourceLoader {
 		}
 		return null;
 
+	}
+	
+	public static Solver loadSolverIntoDatabase(int parentSpaceId, int userId) {
+		return loadSolverIntoDatabase("CVC4.zip",parentSpaceId, userId);
 	}
 	/**
 	 * Loads a solver into the database
@@ -392,7 +422,7 @@ public class ResourceLoader {
 			req.setQueueName(TestUtil.getRandomQueueName());
 			req.setNodeCount(0);
 
-			GridEngineUtil.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
+			R.BACKEND.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
 			
 			
 			int queueId=Queues.getIdByName(req.getQueueName());

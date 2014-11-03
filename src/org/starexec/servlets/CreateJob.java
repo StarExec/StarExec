@@ -228,6 +228,7 @@ public class CreateJob extends HttpServlet {
 				
 				//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
 			} else {
+				log.debug("adding pairs round robin");
 				JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 				
 			}
@@ -269,7 +270,6 @@ public class CreateJob extends HttpServlet {
 				}
 			} else {
 				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
-
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
 				JobManager.buildJob(j, cpuLimit, runLimit,memoryLimit, benchmarkIds, configIds, space, SP);
 			}

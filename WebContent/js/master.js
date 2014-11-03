@@ -274,6 +274,10 @@ function getStatusCode(code) {
 	return parseInt(sc);
 }
 
+function setInputToValue(inputSelector, value) {
+	$(inputSelector).val(value);
+}
+
 /**
  * Reads a status code encoded as a json object, prints its message if it has one, and returns 
  * true or false depending on whether it was a success status.

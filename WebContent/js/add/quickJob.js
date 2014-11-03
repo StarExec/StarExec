@@ -8,9 +8,6 @@ $(document).ready(function(){
 	attachFormValidation();
 	
 	$('#radioNoPause').attr('checked','checked');
-	populateDefaults();
-	
-	
 
 });
 
@@ -214,72 +211,6 @@ function attachFormValidation(){
 	});
 };
 
-function useSelectedSolver() {
-	selection=$("#solverList").find("tr.row_selected");
-	//nothing is selected
-	if (selection.length==0) {
-		return;
-	}
-	name=$(selection).find("td:first").text();
-	id=$(selection).find("td:nth-child(2)").text();
-	setInputToValue("#solver",id);
-
-	$("#solver").siblings("p").children("#solverNameSpan").text(name);
-
-}
-
-function setInputToValue(inputSelector, value) {
-	$(inputSelector).attr("value",value);
-}
-
-/**
- * Sets all of the fields that have defaults according to the currently selected default setting
- */
-function populateDefaults() {
-	selectedSettingId=$("#settingProfile option:selected").attr("value");
-	
-	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
-	//first, pull out
-	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
-	clockTimeout=$(profile).find("span.clockTimeout").attr("value");
-	maxMemory=$(profile).find("span.maxMemory").attr("value");
-	solverId=$(profile).find("span.solverId").attr("value");
-	solverName=$(profile).find("span.solverName").attr("value");
-	//benchContents=$(profile).find("span.benchContents").attr("value");
-	
-	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
-	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
-
-	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
-	setInputToValue("#cpuTimeout",cpuTimeout);
-	setInputToValue("#wallclockTimeout",clockTimeout);
-	setInputToValue("#maxMem",maxMemory);
-	setInputToValue("#solver",solverId);
-	//setInputToValue("#benchmarkField",benchContents);
-	$("#solver").siblings("p").children("#solverNameSpan").text(solverName);
-	
-	if (stringExists(preProcessorId)) {
-		//only set the pre processor if one with this ID actually exists in the dropdown
-		if (($('#preProcess > [value='+preProcessorId+']').length > 0)) {
-			$("#preProcess").val(preProcessorId);
-
-		}
-		
-	}
-	if (stringExists(postProcessorId)) {
-		if (($('#postProcess > [value='+postProcessorId+']').length > 0)) {
-
-			$("#postProcess").val(postProcessorId);
-		}
-	}
-	if (stringExists(benchProcessorId)) {
-		if (($('#benchProcess > [value='+benchProcessorId+']').length > 0)) {
-
-			$("#benchProcess").val(benchProcessorId);
-		}
-	}
-}
-
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */
@@ -339,14 +270,16 @@ function initUI() {
 		}
     });
     
-    $("#settingProfile").change(function() {
-		populateDefaults();
-	});
+    
 
     $("#solverList").dataTable({ 
 		"sDom"			: 'rt<"bottom"flpi><"clear">',
 		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize
+		"iDisplayLength": defaultPageSize,
+		"bServerSide"	: true,
+		"sAjaxSource"	: starexecRoot+"services/",
+		"sServerMethod" : 'POST',
+		"fnServerData"	: fnPaginationHandler
 	});
     
     $("#solverList").on("mousedown", "tr",function() {
@@ -362,3 +295,21 @@ function unselectAll() {
 	$("#solverList").find("tr").removeClass("row_selected");
 }
 
+
+function fnPaginationHandler(sSource, aoData, fnCallback){
+	// Request the next page of primitives from the server via AJAX
+	$.post(  
+			sSource + "users/solvers/pagination",
+			aoData,
+			function(nextDataTablePage){
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					
+				
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
+				}
+			},  
+			"json"
+	);
+}

@@ -132,3 +132,10 @@ input[type="text"] {
 	margin-top: -6px;
 	width: 107px;
 }
+
+.selectPrim {
+	float:right;
+	font-size: 14px;
+	margin-top: 10px;
+	cursor:pointer;
+}

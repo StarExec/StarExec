@@ -1,14 +1,28 @@
 package org.starexec.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
+import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 import org.junit.Assert;
 
 import com.mysql.jdbc.StringUtils;
 public class UtilTests extends TestSequence{
 	
+	User u=null;
+	Space s=null;
+	Solver s1=null;
+	Solver s2=null;
 	@Test
 	private void BytesToGigabytesTest() {
 		Assert.assertEquals(1, Util.bytesToGigabytes(1073741824),.005);
@@ -93,9 +107,21 @@ public class UtilTests extends TestSequence{
 		Assert.assertEquals(1, Util.bytesToMegabytes(1048576));
 		Assert.assertEquals(1, Util.bytesToMegabytes(1048577));
 		Assert.assertEquals(3, Util.bytesToMegabytes(4048576));
-
+		
 		Assert.assertEquals(0, Util.bytesToMegabytes(3));
 	}
+	
+	@Test 
+	private void copyToSandboxTest() throws IOException {
+		List<File> files=new ArrayList<File>();
+		files.add(new File(s1.getPath()));
+		files.add(new File(s2.getPath()));
+		
+		File sandbox=Util.copyFilesToNewSandbox(files);
+		Assert.assertEquals(files.size(),sandbox.listFiles().length);
+	}
+	
+	
 	
 	
 	@Override
@@ -105,12 +131,20 @@ public class UtilTests extends TestSequence{
 
 	@Override
 	protected void setup() throws Exception {
-		
+		Space test=Communities.getTestCommunity();
+		u=ResourceLoader.loadUserIntoDatabase();
+		s=ResourceLoader.loadSpaceIntoDatabase(u.getId(), test.getId());
+		s1=ResourceLoader.loadSolverIntoDatabase(s.getId(), u.getId());
+		s2=ResourceLoader.loadSolverIntoDatabase(s.getId(), u.getId());
+
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		
+		Assert.assertTrue(Solvers.deleteAndRemoveSolver(s1.getId()));
+		Assert.assertTrue(Solvers.deleteAndRemoveSolver(s2.getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(s.getId(), u.getId()));
+		Assert.assertTrue(Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId()));
 	}
 
 }

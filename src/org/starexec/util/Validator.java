@@ -146,7 +146,6 @@ public class Validator {
      * @return true iff name isn't null, is between 1 and PRIM_NAME_LEN characters and
      * contains only letters, numbers and dashes
      */
-    //TODO: We need to break this down into the individual primitives
     private static boolean isValidPrimName(String name, int maxLength){   
     	return name!=null && patternPrimName.matcher(name).matches() && name.length()<=maxLength;    	
     }

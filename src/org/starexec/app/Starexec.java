@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Jobs;
@@ -21,7 +22,6 @@ import org.starexec.jobs.ProcessingManager;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestManager;
 import org.starexec.util.ConfigUtil;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -56,12 +56,6 @@ public class Starexec implements ServletContextListener {
 		    Util.shutdownThreadPool();
 
 		    R.BACKEND.destroyIf();
-		    /**	
-		    if (!session.toString().contains("drmaa")) {
-			log.debug("Shutting down the session..." + session);
-			GridEngineUtil.destroySession(session);
-		    }
-		    **/
 		    // Wait for the task scheduler to finish
 		    taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
 		    taskScheduler.shutdownNow();
@@ -133,8 +127,11 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("updateClusterTask (periodic)");
-			    GridEngineUtil.loadWorkerNodes();
-			    GridEngineUtil.loadQueues();
+
+			    //TODO : These methods do both grid engine and database tasks, decouple
+			    Cluster.loadWorkerNodes();
+			    Cluster.loadQueues();
+
 			}
 		};	
 		
@@ -215,7 +212,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 				log.info("checkQueueReservationsTask (periodic)");
-				GridEngineUtil.checkQueueReservations();
+				//Not currently doing anything
 			}
 		};
 		

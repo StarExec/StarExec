@@ -388,7 +388,7 @@ public class Communities {
 	 * @return
 	 */
 	
-	public static boolean createNewDefaultSettings(DefaultSettings d) {
+	public static int createNewDefaultSettings(DefaultSettings d) {
 		d.setType(SettingType.COMMUNITY);
 		return Settings.addNewSettingsProfile(d);
 	}
@@ -419,10 +419,14 @@ public class Communities {
 			if (results.next()) {
 				//if we found the community, get the default settings
 			    community = results.getInt("community");
-			    
 			    Common.safeClose(results);
 			    Common.safeClose(procedure);
 			    
+			    //this means the community was NULL, which occurs when this is called on the root space.
+			    if (community<=0) {
+			    	log.debug("no default settings profile set for space = "+id);
+			    	return null;
+			    }
 			    
 			    List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
 				
@@ -441,8 +445,15 @@ public class Communities {
 					d.setName(name);
 					d.setPrimId(community);
 					log.debug("calling createNewDefaultSettings on community with id = "+community);
-				    createNewDefaultSettings(d);
-				    return d;
+				    int newId=createNewDefaultSettings(d);
+				    if (newId>0) {
+					    return d;
+
+				    } else {
+				    	//failed to create new profile
+				    	log.error("error creating new default settings profile");
+				    	return null;
+				    }
 				}
 			   
 			} else {

@@ -13,10 +13,12 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -42,6 +44,7 @@ public class GetPageTests extends TestSequence {
 	Processor proc=null;
 	
 	User user=null;
+	DefaultSettings settings=null;
 	User admin=null;
 	Space testCommunity=null;	
 	Queue q=null;
@@ -96,7 +99,7 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
-	private void getenchAddTest(){
+	private void getBenchAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/benchmarks.jsp?sid="+space1.getId()));
 	}
 	
@@ -152,6 +155,11 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
+	private void getQuickJobAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/quickJob.jsp?sid="+space1.getId()));
+	}
+	
+	@Test
 	private void getRecycleBinTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/recycleBin.jsp"));
 	}
@@ -164,6 +172,17 @@ public class GetPageTests extends TestSequence {
 	@Test
 	private void getUserEditTest(){
 		Assert.assertTrue(con.canGetPage("secure/edit/account.jsp?id="+user.getId()));
+	}
+	
+	@Test
+	private void getDefaultPrimTest() {
+		Assert.assertTrue(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=solver&id="+settings.getId()));
+		Assert.assertTrue(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=benchmark&id="+settings.getId()));
+		
+		Assert.assertFalse(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=wrong&id="+settings.getId()));
+		Assert.assertFalse(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=benchmark&id=-1"));
+
+
 	}
 	
 	@Test
@@ -255,6 +274,8 @@ public class GetPageTests extends TestSequence {
 
 	}
 	
+	
+	
 	@Test
 	private void getAdminUserTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/user.jsp"));
@@ -280,8 +301,8 @@ public class GetPageTests extends TestSequence {
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 
-		int status = con.login();
-		Assert.assertEquals(0,status);
+		int stat = con.login();
+		Assert.assertEquals(0,stat);
 		
 		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
@@ -298,7 +319,7 @@ public class GetPageTests extends TestSequence {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
 		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
-
+		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
 		Assert.assertNotNull(benchmarkIds);
 
 		
@@ -317,6 +338,7 @@ public class GetPageTests extends TestSequence {
 		}
 		
 		Jobs.deleteAndRemove(job.getId());
+		Settings.deleteProfile(settings.getId());
 	}
 	
 

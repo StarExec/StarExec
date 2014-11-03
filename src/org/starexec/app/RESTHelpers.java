@@ -779,6 +779,127 @@ public class RESTHelpers {
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,totalPairsAfterQuery,attrMap.get(SYNC_VALUE),true,wallclock);
 	}
 	
+	
+	/**
+	 * Gets the next page of Benchmarks that the given use can see. This includes Benchmarks the user owns,
+	 * Benchmarks in public spaces, and Benchmarks in spaces the user is also in.
+	 * @param userId
+	 * @param request
+	 * @return
+	 */
+	public static JsonObject getNextDataTablesPageOfBenchmarksByUser(int userId, HttpServletRequest request) {
+		log.debug("called getNextDataTablesPageOfBenchmarksByUser");
+		try {
+			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
+					Primitive.BENCHMARK, request);
+			if (null == attrMap) {
+				return null;
+			}
+
+			List<Benchmark> BenchmarksToDisplay = new LinkedList<Benchmark>();
+
+			int totalComparisons;
+			// Retrieves the relevant Job objects to use in constructing the JSON to
+			// send to the client
+			int[] totals = new int[2];
+			BenchmarksToDisplay = Benchmarks.getBenchmarksForNextPageByUser(
+							attrMap.get(STARTING_RECORD), // Record to start at
+							attrMap.get(RECORDS_PER_PAGE), // Number of records to
+															// return
+							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																				// direction
+																				// (true
+																				// for
+																				// ASC)
+							attrMap.get(SORT_COLUMN), // Column sorted on
+							request.getParameter(SEARCH_QUERY), // Search query
+							userId, totals);
+			
+			totalComparisons = totals[0];
+
+			/**
+	    	* Used to display the 'total entries' information at the bottom of the DataTable;
+	    	* also indirectly controls whether or not the pagination buttons are toggle-able
+	    	*/
+	    
+	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+	    	
+		   return convertBenchmarksToJsonObject(BenchmarksToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Gets the next page of solvers that the given use can see. This includes solvers the user owns,
+	 * solvers in public spaces, and solvers in spaces the user is also in.
+	 * @param userId
+	 * @param request
+	 * @return
+	 */
+	public static JsonObject getNextDataTablesPageOfSolversByUser(int userId, HttpServletRequest request) {
+		
+		try {
+			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
+					Primitive.SOLVER, request);
+			if (null == attrMap) {
+				return null;
+			}
+
+			List<Solver> solversToDisplay = new LinkedList<Solver>();
+
+			int totalComparisons;
+			// Retrieves the relevant Job objects to use in constructing the JSON to
+			// send to the client
+			int[] totals = new int[2];
+			solversToDisplay = Solvers.getSolversForNextPageByUser(
+							attrMap.get(STARTING_RECORD), // Record to start at
+							attrMap.get(RECORDS_PER_PAGE), // Number of records to
+															// return
+							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
+																				// direction
+																				// (true
+																				// for
+																				// ASC)
+							attrMap.get(SORT_COLUMN), // Column sorted on
+							request.getParameter(SEARCH_QUERY), // Search query
+							userId, totals);
+			
+			totalComparisons = totals[0];
+
+			/**
+	    	* Used to display the 'total entries' information at the bottom of the DataTable;
+	    	* also indirectly controls whether or not the pagination buttons are toggle-able
+	    	*/
+	    
+	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+	    	
+		   return convertSolversToJsonObject(solversToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		
+		return null;
+	}
+	
+	
+	/**
+	 * Returns the next page of SolverComparison objects needed for a DataTables page in a job space
+	 * @param jobId
+	 * @param jobSpaceId
+	 * @param configId1
+	 * @param configId2
+	 * @param request
+	 * @param wallclock
+	 * @return
+	 */
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
 			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock) {
 		
@@ -2191,7 +2312,6 @@ public class RESTHelpers {
 			RESTHelpers.addImg(sb);
 			sb.append(hiddenBenchId);
 			String benchLink = sb.toString();
-
 			// Create the benchmark type tag
 			sb = new StringBuilder();
 			sb.append("<span title=\"");

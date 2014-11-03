@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -34,7 +36,8 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.GridEngineUtil;
+import org.starexec.data.to.compare.JobPairComparator;
+import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.util.Util;
 
 /**
@@ -51,7 +54,7 @@ public class Jobs {
 		if (path==null || path=="") {
 			return new String[] {"job space"};
 		}
-		return path.split("/");
+		return path.split(R.JOB_PAIR_PATH_DELIMITER);
 	}
 	
 	
@@ -113,7 +116,7 @@ public class Jobs {
 				StringBuilder curPathBuilder=new StringBuilder();
 				for (int i=0;i<spaces.length;i++) {
 					String name=spaces[i];
-					curPathBuilder.append("/");
+					curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
 					curPathBuilder.append(name);
 					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
 						topLevel=curPathBuilder.toString(); 
@@ -183,7 +186,6 @@ public class Jobs {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
-			//todo: creating these job spaces needs to be a function
 			// maps depth to name to job space id for job spaces
 			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
 		
@@ -1374,22 +1376,12 @@ public class Jobs {
 		}
 		
 		totals[0]=comparisons.size();
-		List<SolverComparison> returnList=new ArrayList<SolverComparison>();
 		comparisons=JobPairs.filterComparisons(comparisons, searchQuery);
 
 		totals[1]=comparisons.size();
-		comparisons=JobPairs.mergeSortSolverComparisons(comparisons, indexOfColumnSortedBy, isSortedASC,wallclock);
+		SolverComparisonComparator compare=new SolverComparisonComparator(indexOfColumnSortedBy,wallclock);
+		return Util.handlePagination(comparisons, compare, startingRecord, recordsPerPage, isSortedASC);
 
-		if (startingRecord>=comparisons.size()) {
-			//we'll just return nothing
-		} else if (startingRecord+recordsPerPage>comparisons.size()) {
-			returnList = comparisons.subList(startingRecord, comparisons.size());
-		} else {
-			 returnList = comparisons.subList(startingRecord,startingRecord+recordsPerPage);
-		}
-
-		log.debug("the size of the return list is "+returnList.size());
-		return returnList;
 	}
 	
 	
@@ -1419,25 +1411,15 @@ public class Jobs {
 		log.debug("getting all the pairs by config in job space took "+(System.currentTimeMillis()-a));
 		pairs=JobPairs.filterPairsByType(pairs, type);
 		totals[0]=pairs.size();
-		List<JobPair> returnList=new ArrayList<JobPair>();
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
 		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
 
 		totals[1]=pairs.size();
-		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC,wallclock);
-		log.debug("sorting pairs took "+(System.currentTimeMillis()-a));
-
-		if (startingRecord>=pairs.size()) {
-			//we'll just return nothing
-		} else if (startingRecord+recordsPerPage>pairs.size()) {
-			returnList = pairs.subList(startingRecord, pairs.size());
-		} else {
-			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
+		if (!wallclock && indexOfColumnSortedBy==4) {
+			indexOfColumnSortedBy=8;
 		}
-		log.debug("getting the correct subset of pairs took "+(System.currentTimeMillis()-a));
-
-		log.debug("the size of the return list is "+returnList.size());
-		return returnList;
+		JobPairComparator compare=new JobPairComparator(indexOfColumnSortedBy);
+		return Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
 	}
 	
 	/**
@@ -1521,20 +1503,11 @@ public class Jobs {
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
 		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
 		totals[1]=pairs.size();
-		pairs=JobPairs.mergeSortJobPairs(pairs, indexOfColumnSortedBy, isSortedASC, wallclock);
-		log.debug("sorting pairs took "+(System.currentTimeMillis()-a));
-
-		List<JobPair> returnList=new ArrayList<JobPair>();
-		if (startingRecord>=pairs.size()) {
-			//we'll just return nothing
-		} else if (startingRecord+recordsPerPage>pairs.size()) {
-			returnList = pairs.subList(startingRecord, pairs.size());
-		} else {
-			 returnList = pairs.subList(startingRecord,startingRecord+recordsPerPage);
+		if (!wallclock && indexOfColumnSortedBy==4) {
+			indexOfColumnSortedBy=8;
 		}
-		log.debug("returning pairs took "+(System.currentTimeMillis()-a));
-
-		return returnList;
+		Comparator<JobPair> compare=new JobPairComparator(indexOfColumnSortedBy);
+		return Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
 	}
 	
 	/**
@@ -3398,8 +3371,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
-			//R.BACKEND.killAll();
-			GridEngineUtil.deleteAllSGEJobs();
+			R.BACKEND.killAll();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
 			if (jobs != null) {
@@ -3853,12 +3825,12 @@ public class Jobs {
 				if (pathString==null) {
 					pathString="job space";
 				}
-				String[] path=pathString.split("/");
+				String[] path=pathString.split(R.JOB_PAIR_PATH_DELIMITER);
 				String key="";
 				for (int index=0;index<path.length; index++) {
 					
 					String spaceName=path[index];
-					key=key+"/"+spaceName;
+					key=key+R.JOB_PAIR_PATH_DELIMITER+spaceName;
 					if (namesToIds.containsKey(key)) {
 						if (index==(path.length-1)) {
 							jp.setJobSpaceId(namesToIds.get(key));
@@ -3876,7 +3848,7 @@ public class Jobs {
 						if (index==(path.length-1)) {
 							jp.setJobSpaceId(newJobSpaceId);
 						}
-						String parentKey=key.substring(0,key.lastIndexOf("/"));
+						String parentKey=key.substring(0,key.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
 						if (namesToIds.containsKey(parentKey)) {
 							Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
 						}

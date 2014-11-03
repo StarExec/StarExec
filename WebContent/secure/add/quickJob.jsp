@@ -29,26 +29,12 @@
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 			request.setAttribute("benchNameLen",R.BENCH_NAME_LEN);
-			int commId=-1;
-			List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
-			List<Space> comms=Communities.getAll();
-			if (comms.size()>0) {
-				for (int i=0;i<comms.size();i++) {
-					DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
-					listOfDefaultSettings.add(s);
-
-				}
-				commId=comms.get(0).getId();
-			}
-			List<DefaultSettings> userSettings=Settings.getDefaultSettingsByUser(userId);
-			if (userSettings!=null) {
-				
-				listOfDefaultSettings.addAll(userSettings);
-			}
+			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+			
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 			List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
-			List<Solver> listOfSolvers = Solvers.getByUser(userId);
+			
 			ListOfBenchProcessors.add(Processors.getNoTypeProcessor());
 
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
@@ -56,7 +42,6 @@
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
-			request.setAttribute("solvers",listOfSolvers);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);
 			request.setAttribute("isPublicUser",isPublicUser);
 		}
@@ -71,21 +56,9 @@
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
-<star:template title="run quick job" css="common/delaySpinner, common/table, add/quickJob" js="common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+<star:template title="run quick job" css="common/delaySpinner, common/table, add/quickJob" js="common/defaultSettings, common/delaySpinner, lib/jquery.validate.min, add/quickJob, lib/jquery.dataTables.min, lib/jquery.qtip.min">
 	<c:forEach items="${defaultSettings}" var="setting">
-		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
-			<span class="cpuTimeout" value="${setting.cpuTimeout}" />
-			<span class="clockTimeout" value="${setting.wallclockTimeout}"/>
-			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"/>
-			<span class="solverId" value="${setting.solverId}"/>
-			<span class="solverName" value="${setting.getSolverName()}"/>
-			
-			<span class="preProcessorId" value="${setting.preProcessorId}"/>
-			<span class="postProcessorId" value="${setting.postProcessorId}"/>
-			<span class="benchProcessorId" value="${setting.benchProcessorId}"/>
-			<!--  <span class="benchContents" value="${setting.getBenchmarkContents()}"/>-->
-			
-		</span>
+		<star:settings setting="${setting}" />
 	</c:forEach>
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="runChoice" value="quickJob" />
@@ -120,7 +93,7 @@
 					</tr>
 					<tr class="noHover" title="what solver would you like to run during this job?">
 						<td class="label"><p>solver</p></td>
-						<td><input id="solver" type="hidden" name="solver"/><p><span id="solverNameSpan"></span></td>
+						<td><input id="solver" type="hidden" name="solver"/><p id="solverNameField"></p></td>
 					</tr>
 					<tr class="noHover" title="what benchmark would you like to use?">
 						<td>benchmark selection</td>
@@ -150,7 +123,7 @@
 						<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 							<td class="label"><p>pre processor</p></td>
 							<td>					
-								<select id="preProcess" name="preProcess"">
+								<select class="preProcessSetting" id="preProcess" name="preProcess"">
 									<option value="-1" selected="selected">none</option>
 									<c:forEach var="proc" items="${preProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>
@@ -161,7 +134,7 @@
 						<tr class="noHover" title="do you want to extract any attributes from your benchmark?">
 							<td class="label"><p>bench processor</p></td>
 							<td>					
-								<select id="benchProcess" name="benchProcess" >
+								<select class="benchProcessSetting" id="benchProcess" name="benchProcess" >
 									<c:forEach var="proc" items="${benchProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>
 									</c:forEach>
@@ -172,7 +145,7 @@
 						<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
 							<td class="label"><p>post processor</p></td>
 							<td>					
-								<select id="postProcess" name="postProcess">
+								<select class="postProcessSetting" id="postProcess" name="postProcess">
 									<option value="-1" selected="selected">none</option>
 									<c:forEach var="proc" items="${postProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>
@@ -230,17 +203,11 @@
 				<thead>
 					<tr>
 						<th>name</th>
-						<th>id</th>
+						<th>description</th>
 					</tr>
 				</thead>
 				<tbody>
-				<c:forEach var="solver" items="${solvers}">
-					<tr>
-						<td>${solver.name}</td>
-						<td>${solver.id}</td>
-					</tr>
-					
-				</c:forEach>
+					<!-- Will be populated using AJAX -->
 			</tbody>
 			</table>
 			<button id="useSolver">use selected solver</button>

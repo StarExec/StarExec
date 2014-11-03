@@ -65,7 +65,6 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.test.TestManager;
 import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
-import org.starexec.util.GridEngineUtil;
 import org.starexec.util.Hash;
 import org.starexec.util.LoggingManager;
 import org.starexec.util.Mail;
@@ -308,7 +307,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			gson.toJson(status);
 		}
-		return GridEngineUtil.clearNodeErrorStates() ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
+		return R.BACKEND.clearNodeErrorStates() ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
 	}
 	
 	/**
@@ -499,7 +498,7 @@ public class RESTServices {
 		if(jp != null) {			
 			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 				Jobs.get(jp.getJobId());			
-				String stdout = GridEngineUtil.getStdOut(jp, limit);
+				String stdout = Util.getStdOut(jp, limit);
 				if(!Util.isNullOrEmpty(stdout)) {
 					return stdout;
 				}				
@@ -659,7 +658,31 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
+	@POST
+	@Path("/users/solvers/pagination")
+	@Produces("application/json")	
+	public String getSolversPaginatedByUser(@Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		log.debug("getting a datatable of all the solvers that this user can see");
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolversByUser(userId, request);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
 	
+	@POST
+	@Path("/users/benchmarks/pagination")
+	@Produces("application/json")	
+	public String getBenchmarksPaginatedByUser(@Context HttpServletRequest request) {			
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		
+		log.debug("getting a datatable of all the benchmarks that this user can see");
+		// Query for the next page of job pairs and return them to the user
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfBenchmarksByUser(userId, request);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
 	
 	@POST
 	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
@@ -1306,6 +1329,28 @@ public class RESTServices {
 
 		// Passed validation AND Database update successful
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Edit successful")) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	
+	@POST
+	@Path("/delete/defaultSettings/{id}")
+	@Produces("application/json")
+	public String deleteDefaultSettings(@PathParam("id") int id, @Context HttpServletRequest request) {	
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=SettingSecurity.canModifySettings(id,userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		try {			
+			boolean success=Settings.deleteProfile(id);
+			// Passed validation AND Database update successful
+			return success ? gson.toJson(new ValidatorStatusCode(true,"Community edit successful")) : gson.toJson(ERROR_DATABASE);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+		
 	}
 	
 	/** 
@@ -3636,8 +3681,7 @@ public class RESTServices {
 		if(!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-
-		GridEngineUtil.removeQueue(queueId);
+		Queues.removeQueue(queueId);
 		return gson.toJson(new ValidatorStatusCode(true,"Reservation canceled successfully"));
 	}
 	
@@ -3681,7 +3725,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		GridEngineUtil.removeQueue(queueId);
+		Queues.removeQueue(queueId);
 
 		
 		return gson.toJson(new ValidatorStatusCode(true,"Queue removed successfully"));
@@ -3765,7 +3809,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("restarting...");
-		Util.executeCommand("sudo /sbin/service tomcat7 restart");
+		Util.executeCommand("sudo -u tomcat /sbin/service tomcat7 restart");
 		log.debug("restarted");
 		return gson.toJson(new ValidatorStatusCode(true,"Starexec restarted successfully"));
 	}
@@ -3926,9 +3970,9 @@ public class RESTServices {
 		QueueRequest req = Requests.getRequestForReservation(queue_id);
 		Queue q = Queues.get(queue_id);
 		boolean success = true;
-		//Make GridEngine changes
+		//Make BACKEND changes
 		if (!q.getStatus().equals("ACTIVE")) {
-			success = GridEngineUtil.createPermanentQueue(req, true, null);
+			success = R.BACKEND.createPermanentQueue(req, true, null);
 		}
 		
 		//Make database changes
