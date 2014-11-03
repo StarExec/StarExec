@@ -656,7 +656,7 @@ public class Benchmarks {
 				files.add(new File(p.getFilePath()));
 				files.add(new File(b.getPath()));
 				File sandbox=Util.copyFilesToNewSandbox(files);
-				String benchPath=new File(sandbox,b.getName()).getAbsolutePath();
+				String benchPath=new File(sandbox,new File(b.getPath()).getName()).getAbsolutePath();
 				File working=new File(sandbox,new File(p.getFilePath()).getName());
 				// Run the processor on the benchmark file
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");

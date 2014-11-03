@@ -173,20 +173,32 @@ public class JobPairs {
 	 * @param processorId The ID of the processor in question
 	 * @return The properties on success, or null otherwise
 	 */
-	//TODO: Sandbox this
 	private static Properties runPostProcessorOnPair(int pairId, int processorId) {
 		try {
+			JobPair pair=JobPairs.getPairDetailed(pairId);
+			File output=new File(JobPairs.getFilePath(pair));
 			Processor p=Processors.get(processorId);
 			// Run the processor on the benchmark file
+			List<File> files=new ArrayList<File>();
+			files.add(new File(p.getFilePath()));
+			files.add(new File(pair.getBench().getPath()));
+			files.add(output);
+			File sandbox=Util.copyFilesToNewSandbox(files);
+			String benchPath=new File(sandbox,new File(pair.getBench().getPath()).getName()).getAbsolutePath();
+			String outputPath=new File(sandbox,output.getName()).getAbsolutePath();
+			File working=new File(sandbox,new File(p.getFilePath()).getName());
+			
+			
+			
 			String [] procCmd = new String[3];
 			procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 			
-			JobPair pair=JobPairs.getPairDetailed(pairId);
-			procCmd[1] = JobPairs.getFilePath(pair);
+			procCmd[1] = outputPath;
 			
-			procCmd[2] = pair.getBench().getPath();
-			String propstr = Util.executeCommand(procCmd, null, new File(p.getFilePath()));
-			
+			procCmd[2] = benchPath;
+			String propstr = Util.executeSandboxCommand(procCmd, null, working);
+			FileUtils.deleteQuietly(sandbox);
+
 			// Load results into a properties file
 			Properties prop = new Properties();
 			prop.load(new StringReader(propstr));
