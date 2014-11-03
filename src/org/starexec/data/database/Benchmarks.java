@@ -664,7 +664,7 @@ public class Benchmarks {
 				
 				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
 				procCmd[1] = benchPath;
-				String propstr = Util.executeCommand(procCmd,null,working);
+				String propstr = Util.executeSandboxCommand(procCmd,null,working);
 				FileUtils.deleteQuietly(sandbox);
 				// Load results into a properties file
 				Properties prop = new Properties();
