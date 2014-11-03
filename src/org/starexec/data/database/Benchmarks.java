@@ -646,21 +646,26 @@ public class Benchmarks {
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation is successful and false otherwise
 	 */
-	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
 		for(Benchmark b : benchmarks) {
 			try {
+				List<File> files=new ArrayList<File>();
+				files.add(new File(p.getFilePath()));
+				files.add(new File(b.getPath()));
+				File sandbox=Util.copyFilesToNewSandbox(files);
+				String benchPath=new File(sandbox,b.getName()).getAbsolutePath();
+				File working=new File(sandbox,new File(p.getFilePath()).getName());
 				// Run the processor on the benchmark file
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
 				
 				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
-				procCmd[1] = b.getPath();
-				String propstr = Util.executeCommand(procCmd,null,new File(p.getFilePath()));
-
+				procCmd[1] = benchPath;
+				String propstr = Util.executeCommand(procCmd,null,working);
+				FileUtils.deleteQuietly(sandbox);
 				// Load results into a properties file
 				Properties prop = new Properties();
 				prop.load(new StringReader(propstr));							

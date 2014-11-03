@@ -369,6 +369,21 @@ public class Util {
     public static String executeCommand(String[] command) throws IOException {
     	return executeCommand(command,null,null);
     }
+    
+    public static String executeSandboxCommand(String[] command) throws IOException {
+    	return executeSandboxCommand(command,null,null);
+    }
+    
+    public static String executeSandboxCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
+    	String[] newCommand=new String[command.length+3];
+    	newCommand[0]="sudo";
+    	newCommand[1]="-u";
+    	newCommand[2]="sandbox";
+    	for (int i=0;i<command.length;i++) {
+    		newCommand[i+3]=command[i];
+    	}
+    	return  executeCommand(newCommand,envp,workingDirectory);
+    }
 	
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
@@ -827,7 +842,6 @@ public class Util {
     	String[] cpCmd=new String[4];
     	cpCmd[0]="cp";
     	cpCmd[1]="-r";
-    	String tempPostfix=TestUtil.getRandomAlphaString(30);
     	cpCmd[3]=sandbox.getAbsolutePath();
     	for (File f : files) {
     		cpCmd[2]=f.getAbsolutePath();
@@ -837,23 +851,21 @@ public class Util {
     	log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
 
     	//next, copy the files over so they are owned by sandbox
-    	String[] sudoCpCmd=new String[7];
-    	sudoCpCmd[0]="sudo";
-    	sudoCpCmd[1]="-u";
-    	sudoCpCmd[2]="sandbox";
-    	sudoCpCmd[3]="cp";
-    	sudoCpCmd[4]="-r";
-    	sudoCpCmd[6]=sandbox2.getAbsolutePath();
+    	String[] sudoCpCmd=new String[4];
+    	
+    	sudoCpCmd[0]="cp";
+    	sudoCpCmd[1]="-r";
+    	sudoCpCmd[3]=sandbox2.getAbsolutePath();
     	for (File f : sandbox.listFiles()) {
-    		sudoCpCmd[5]=f.getAbsolutePath();
-    		Util.executeCommand(sudoCpCmd);
+    		sudoCpCmd[2]=f.getAbsolutePath();
+    		Util.executeSandboxCommand(sudoCpCmd);
     	}
     	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
     	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
 
     	
     	sandboxChmodDirectory(sandbox2,false);
-    	
+    	FileUtils.deleteQuietly(sandbox);
     	return sandbox2;
     }
     
