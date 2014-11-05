@@ -397,19 +397,18 @@ public class Benchmarks {
 			Properties attrs = benchmark.getAttributes();
 			log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
 			// Setup normal information for the benchmark
-			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, benchmark.getName());		
 			procedure.setString(2, benchmark.getPath());
 			procedure.setBoolean(3, benchmark.isDownloadable());
 			procedure.setInt(4, benchmark.getUserId());			
 			procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
-			procedure.setInt(6, spaceId);
-			procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			procedure.setLong(6, FileUtils.sizeOf(new File(benchmark.getPath())));
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 
 			// Execute procedure and get back the benchmark's id
 			procedure.executeUpdate();		
-			benchmark.setId(procedure.getInt(8));
+			benchmark.setId(procedure.getInt(7));
 
 			// If the benchmark is valid according to its processor...
 

@@ -214,10 +214,11 @@ public class CreateJob extends HttpServlet {
 			for (Space s : spaces) {
 			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, cpuLimit, runLimit, memoryLimit, 
 								  s.getId(), SP.get(s.getId()));
-			    if (pairs == null) {
-			    	error="unable to get any job pairs for the space ID = "+s.getId();
-					break;
-			    }
+			    //seemingly unnecessary code below, as the function above never returns null
+			    //if (pairs == null) {
+			    //	error="unable to get any job pairs for the space ID = "+s.getId();
+				//	break;
+			    //}
 			    spaceToPairs.put(s.getId(), pairs);
 			}
 			log.debug("added all the job pairs from every space");
