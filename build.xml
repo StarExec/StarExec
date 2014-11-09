@@ -70,15 +70,15 @@
 		    </manifest>
 		    <zipfileset src="${starcomlib}/jar-in-jar-loader.zip"/>
 		    <fileset dir="${starcom-comp}"/>
-		    <zipfileset dir="${starcomlib}" includes="commons-codec-1.6.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="commons-logging-1.1.1.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="commons-codec-1.9.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="commons-logging-1.1.3.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="fluent-hc-4.2.5.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpclient-4.2.5.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpclient-4.3.4.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="httpclient-cache-4.2.5.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpcore-4.2.4.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpmime-4.2.5.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpcore-4.3.2.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="httpmime-4.3.4.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="gson-1.6.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="gson-2.3.jar"/>
 		</jar>
 	</target>
 		

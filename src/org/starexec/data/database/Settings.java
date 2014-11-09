@@ -186,6 +186,9 @@ public class Settings {
 	public static boolean canUserSeeSolverInSettings(int userId, int solverId) {
 		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
 		for (DefaultSettings s : settings) {
+			if (s.getSolverId()==null) {
+				continue;
+			}
 			if (s.getSolverId()==solverId) {
 				return true;
 			}
@@ -202,6 +205,9 @@ public class Settings {
 	public static boolean canUserSeeBenchmarkInSettings(int userId, int benchId) {
 		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
 		for (DefaultSettings s : settings) {
+			if (s.getBenchId()==null) {
+				continue;
+			}
 			if (s.getBenchId()==benchId) {
 				return true;
 			}

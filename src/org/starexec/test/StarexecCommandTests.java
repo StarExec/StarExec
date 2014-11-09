@@ -246,7 +246,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void uploadBenchmarks() throws Exception {
 		
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
-		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
+		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		addMessage("upload ID = "+ result);
 		
@@ -270,7 +270,7 @@ public class StarexecCommandTests extends TestSequence {
 		//we are putting the benchmarks in a new space to avoid name collisions
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 	
-		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
+		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		waitForUpload(result, 60);
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
@@ -278,6 +278,7 @@ public class StarexecCommandTests extends TestSequence {
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
+		
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
 
 	}
