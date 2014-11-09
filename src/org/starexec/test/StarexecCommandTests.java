@@ -683,10 +683,6 @@ public class StarexecCommandTests extends TestSequence {
 		user=Users.getTestUser();
 		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
-		
-		//this prevents the apache http libraries from logging things. Their logs are very prolific
-		//and drown out ours
-		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		int status = con.login();

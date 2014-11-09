@@ -32,6 +32,7 @@ import org.starexec.test.security.SolverSecurityTests;
 import org.starexec.test.security.SpaceSecurityTests;
 import org.starexec.test.security.UserSecurityTests;
 import org.starexec.test.security.ValidatorTests;
+import org.starexec.test.web.LoginTests;
 import org.starexec.util.Util;
 
 /**
@@ -74,6 +75,7 @@ public class TestManager {
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
 		tests.add(new DefaultSettingsTests());
+		tests.add(new LoginTests());
 	}
 	
 	public static boolean areTestsRunning() {

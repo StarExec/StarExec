@@ -86,8 +86,21 @@ public abstract class TestSequence {
 	}
 	/**
 	 * Returns the name of this test sequence
+	 * @return the name
 	 */
 	abstract protected String getTestName();
+	
+	
+	/**
+	 * Turns off logging in some 3rd part libraries used by testing. 3rd party logs 
+	 * tend to be extremely verbose and drown out our logging
+	 */
+	private void turnOffExternalLogging() {
+		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.gargoylesoftware.htmlscript").setLevel(org.apache.log4j.Level.OFF);
+	}
 	
 	/**
 	 * This function is called before the tests belonging to this sequence are run.
@@ -103,6 +116,7 @@ public abstract class TestSequence {
 			r.addMessage("test running");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 		}
+		turnOffExternalLogging(); 
 		try {
 			List<Method> tests=getTests();
 			for (Method m : tests) {
@@ -118,6 +132,7 @@ public abstract class TestSequence {
 					testsPassed++;
 					
 				} catch (Throwable e) {
+					e.printStackTrace();
 					t.setTime(System.currentTimeMillis()-a);
 					e=e.getCause();
 					testsFailed++;
