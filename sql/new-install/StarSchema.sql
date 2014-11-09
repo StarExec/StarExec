@@ -105,10 +105,6 @@ CREATE TABLE processors (
 	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
--- The default 'no type' benchmark processor
-INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES 
-('no_type', 'this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type.', '/home/starexec/processor_scripts', 1, 3, 145);
-
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
 	id INT NOT NULL AUTO_INCREMENT,
