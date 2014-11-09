@@ -105,6 +105,7 @@ CREATE TABLE processors (
 	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
+
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
 	id INT NOT NULL AUTO_INCREMENT,
