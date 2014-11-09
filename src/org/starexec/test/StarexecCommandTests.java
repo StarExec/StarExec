@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.apache.tomcat.jni.Time;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
@@ -239,7 +238,11 @@ public class StarexecCommandTests extends TestSequence {
 			if (stat.isEverythingComplete()) {
 				break;
 			}
-			Time.sleep(1000);
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
 		}
 	}
 	
@@ -273,6 +276,8 @@ public class StarexecCommandTests extends TestSequence {
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		waitForUpload(result, 60);
+		Assert.assertTrue(Uploads.get(result).isEverythingComplete());
+
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 		for (Benchmark b : t.getBenchmarks()) {
