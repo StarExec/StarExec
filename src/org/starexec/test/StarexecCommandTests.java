@@ -234,8 +234,9 @@ public class StarexecCommandTests extends TestSequence {
 	private void waitForUpload(int uploadId, int maxSeconds) {
 		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
 		for (int x=0;x<maxSeconds;x++) {
-			UploadStatus status= Uploads.get(uploadId);
-			if (status.isEverythingComplete()) {
+			UploadStatus stat= Uploads.get(uploadId);
+			log.debug("upload Id = "+uploadId+" is finished = "+stat.isEverythingComplete());
+			if (stat.isEverythingComplete()) {
 				break;
 			}
 			Time.sleep(1000);
@@ -251,9 +252,8 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("upload ID = "+ result);
 		
 		waitForUpload(result,60);
-		UploadStatus status= Uploads.get(result);
-
-		addMessage(String.valueOf(status.isEverythingComplete()));
+		UploadStatus stat= Uploads.get(result);
+		Assert.assertTrue(stat.isEverythingComplete());
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
 		Assert.assertTrue(t.getBenchmarks().size()>0);
