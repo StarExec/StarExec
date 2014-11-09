@@ -28,7 +28,10 @@ public class LoginTests extends TestSequence {
 		// Create a new instance of the html unit driver
         // Notice that the remainder of the code relies on the interface, 
         // not the implementation.
-        WebDriver driver = new FirefoxDriver();
+		//WebDriver driver=new FirefoxDriver();
+
+        HtmlUnitDriver driver = new HtmlUnitDriver(false);
+       
         driver.get(Util.url("secure/index.jsp"));
         System.out.println(driver.getCurrentUrl());
         WebElement userName=driver.findElement(By.name("j_username"));
@@ -48,7 +51,8 @@ public class LoginTests extends TestSequence {
 		// Create a new instance of the html unit driver
         // Notice that the remainder of the code relies on the interface, 
         // not the implementation.
-        WebDriver driver = new FirefoxDriver();
+		//WebDriver driver=new FirefoxDriver();
+        HtmlUnitDriver driver = new HtmlUnitDriver(false);
         
         driver.get(Util.url("secure/index.jsp"));
         System.out.println(driver.getCurrentUrl());
