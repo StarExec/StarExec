@@ -30,7 +30,7 @@ public class LoginTests extends TestSequence {
         // not the implementation.
 		//WebDriver driver=new FirefoxDriver();
 
-        HtmlUnitDriver driver = new HtmlUnitDriver(false);
+        HtmlUnitDriver driver = new HtmlUnitDriver(true);
        
         driver.get(Util.url("secure/index.jsp"));
         System.out.println(driver.getCurrentUrl());
@@ -52,7 +52,7 @@ public class LoginTests extends TestSequence {
         // Notice that the remainder of the code relies on the interface, 
         // not the implementation.
 		//WebDriver driver=new FirefoxDriver();
-        HtmlUnitDriver driver = new HtmlUnitDriver(false);
+        HtmlUnitDriver driver = new HtmlUnitDriver(true);
         
         driver.get(Util.url("secure/index.jsp"));
         System.out.println(driver.getCurrentUrl());

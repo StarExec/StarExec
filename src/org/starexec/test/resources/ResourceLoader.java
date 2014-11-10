@@ -10,6 +10,11 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
@@ -438,5 +443,24 @@ public class ResourceLoader {
 		return null;
 		
 	}
-	
+	/**
+	 * Returns a WebDriver for selenium testing. The driver we be logged into the website 
+	 * upon return
+	 * @param email The email address of the user to log in
+	 * @param password The password of the user to log in
+	 * @return
+	 */
+	public static WebDriver getWebDriver(String email, String password) {
+			WebDriver driver=new FirefoxDriver();
+		    //WebDriver driver = new HtmlUnitDriver(true);
+	       
+	        driver.get(Util.url("secure/index.jsp"));
+	        WebElement userName=driver.findElement(By.name("j_username"));
+	        userName.sendKeys(email);
+	        driver.findElement(By.name("j_password")).sendKeys(password);
+	        
+	        userName.submit();
+	        
+	       return driver;
+	}
 }

@@ -58,11 +58,13 @@ public abstract class TestSequence {
 	 * @return
 	 */
 	protected final boolean execute() {
+		
 		try {
-		testsPassed=0;
-		testsFailed=0;
-		clearResults();
-		status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
+			testsPassed=0;
+			testsFailed=0;
+			clearResults();
+			status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
+			turnOffExternalLogging(); 
 			setup();
 			runTests();
 			teardown();
@@ -96,10 +98,45 @@ public abstract class TestSequence {
 	 * tend to be extremely verbose and drown out our logging
 	 */
 	private void turnOffExternalLogging() {
+		Logger.getLogger("java_cup.runtime").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("trax").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("selenium.webdriver").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.openqa").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.eclipse").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.jboss").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.apache").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.hamcrest").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.cyberneko").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.testng").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("org.w3c").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("bsh").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("net.sf").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("org.apache.http.wire").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.apache.http.impl.conn.Wire").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(org.apache.log4j.Level.OFF);
+
 		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 		Logger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.gargoylesoftware.htmlscript").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("com.google").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.opera").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.thoughtworks").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.steadystate").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.beust").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("com.sun").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("com.keypoint").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("org.jfree").setLevel(org.apache.log4j.Level.OFF);
+
+		Logger.getLogger("netscape.javascript").setLevel(org.apache.log4j.Level.OFF);
+		Logger.getLogger("net.sourceforge").setLevel(org.apache.log4j.Level.OFF);
+		
+		Logger.getLogger("com.gargoylesoftware").setLevel(org.apache.log4j.Level.OFF);
 	}
 	
 	/**
@@ -116,7 +153,7 @@ public abstract class TestSequence {
 			r.addMessage("test running");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 		}
-		turnOffExternalLogging(); 
+		
 		try {
 			List<Method> tests=getTests();
 			for (Method m : tests) {

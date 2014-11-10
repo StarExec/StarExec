@@ -344,6 +344,7 @@
     <auth-constraint>
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
+	  <role-name>test</role-name>
     </auth-constraint>			
   </security-constraint>
   
