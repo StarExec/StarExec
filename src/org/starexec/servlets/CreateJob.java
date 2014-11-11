@@ -130,7 +130,7 @@ public class CreateJob extends HttpServlet {
 		Job j = JobManager.setupJob(
 				userId,
 				s.getName(), 
-				"",
+				"test job for new solver "+s.getName()+" "+"("+s.getId()+")",
 				settings.getPreProcessorId(),
 				settings.getPostProcessorId(), 
 				1, //TODO queue?

@@ -297,21 +297,12 @@ public class JobSecurity {
 	/**
 	 * Checks to see whether a job can be run with community default settings in the given space
 	 * @param userId ID of the user creating the job
-	 * @param solverId ID of the solver being used
 	 * @param sId Id of the space to put the job in
-	 * @param name Name of the new job
-	 * @param desc Description for the new job
 	 * @return
 	 */
-	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int solverId, int sId, String name, String desc) {
+	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId) {
 			
-			if (!Permissions.canUserSeeSolver(solverId, userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to use the given solver");
-			}
-			List<Configuration> configs=Solvers.getConfigsForSolver(solverId);
-			if (configs.size()==0) {
-				return new ValidatorStatusCode(false, "The given solver has no configurations");
-			}
+			
 			if (!Users.isMemberOfCommunity(userId, Spaces.getCommunityOfSpace(sId))) {
 				return new ValidatorStatusCode(false, "You are not a member of the community in which you are trying to create a job");
 			}
@@ -321,13 +312,7 @@ public class JobSecurity {
 			if (Benchmarks.get(settings.getBenchId())==null) {
 				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 			}
-			if (!Validator.isValidJobName(name)) {
-				return new ValidatorStatusCode(false, "The given name is not valid-- please refer to the help files to see the proper format");
-			}
-			if (!Validator.isValidPrimDescription(desc)) {
-				return new ValidatorStatusCode(false, "The given description is not valid-- please refer to the help files to see the proper format");
-
-			}
+			
 			return new ValidatorStatusCode(true);
 	}
 }
