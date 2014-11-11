@@ -335,9 +335,9 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getAdminTestingTest() {
-		adminDriver.get(Util.url("secure/admin/test.jsp"));
+		adminDriver.get(Util.url("secure/admin/testing.jsp"));
 		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/test.jsp"));
+		driver.get(Util.url("secure/admin/testing.jsp"));
 		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
 		
 
