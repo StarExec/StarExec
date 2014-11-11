@@ -19,7 +19,13 @@
     
     <complexType name="Space">
     	<sequence>
-	        <element name="SpaceAttributes" type="tns:SpaceAttributes" minOccurs="0" maxOccurs="1"></element>
+	        <element name="SpaceAttributes"
+			 type="tns:SpaceAttributes" minOccurs="0"
+			 maxOccurs="1"></element>
+		
+		<element name = "Update" type = "tns:Update" minOccurs
+			 = "0" maxOccurs = "unbounded">
+		</element>
     		<element name="Benchmark" type="tns:Benchmark" minOccurs="0"
     			maxOccurs="unbounded">
     		</element>
@@ -67,6 +73,13 @@
     </complexType>
 <!-- end space attributes type definitions -->
 
+    <complexType name = "Update">
+      <element name = "Text" type = "string" minOccurs = "1" maxOccurs
+	       = "1"/>
+      <attribute name = "id" type = "int" />
+      <attribute name = "name" type = "string" />
+      <attribute name = "pid" type = "int" />
+    </complexType>
     <complexType name="Benchmark">
         <sequence>
   	  <element name="Attribute" type="tns:Attribute" minOccurs="0" maxOccurs="unbounded">

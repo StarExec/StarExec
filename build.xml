@@ -196,42 +196,38 @@
 				replace="login addr=https://${server-name}/${appname}/"  flags="g" byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
-		<!-- Update the schema to use the currect server and app -->
-		<delete file="WebContent/public/batchSpaceSchema.xsd" />
+		<!-- Update the schemas to use the currect server and app -->
+		<delete>
+		   <fileset dir= "WebContent/public">
+		      <include name="**/*.xsd"/>
+		      <include name="**/*.xml"/>
+		   </fileset>
+		</delete>
+		
 		<copy todir="WebContent/public/">
-			<fileset dir="batch-space-schema">
-				<include name="batchSpaceSchema.xsd" />
+			<fileset dir="schemas">
+				<include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
 			</fileset>
 		</copy>
-		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false" />
-		<replaceregexp file="WebContent/public/batchSpaceSchema.xsd" match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false" />
 
-		<copy todir="starexec_res/batch/">
-			<fileset dir ="WebContent/public/">
-				<include name="batchSpaceSchema.xsd"/>
-			</fileset>
-		</copy>
+		<replaceregexp  match="www.starexec.org/starexec/" 
+				replace="${server-name}/${appname}/" byline="false">
+		   <fileset dir="WebContent/public">
+		                <include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
+		   </fileset>
+		</replaceregexp>
+                
+
+
+
+
 
 		<!-- Update the job schema to use the current server and app -->
-		<delete file="WebContent/public/batchJobSchema.xsd" />
-		<delete file="WebContent/public/ExampleJob.xml" />
-		<copy todir="WebContent/public/">
-			<fileset dir="batch-job-schema">
-				<include name="batchJobSchema.xsd" />
-				<include name="ExampleJob.xml" />
-			</fileset>
-		</copy>
-		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false" />
-		<replaceregexp file="WebContent/public/batchJobSchema.xsd" match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false" />
-		<replaceregexp file="WebContent/public/ExampleJob.xml" match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false" />
-		<replaceregexp file="WebContent/public/ExampleJob.xml" match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false" />
-
+	
+	
+		
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
