@@ -85,8 +85,8 @@
 						<td title="After uploading this solver, a job will immediately be created in which this solver
 						is run against the default benchmark for this community, using community default settings.">run test job</td>
 						<td>
-							<input name="runTestJob" type="radio" value="true" checked="checked" /><label>yes</label>
-							<input name="runTestJob" type="radio" value="false" /><label>no</label>		
+							<input name="runTestJob" type="radio" value="true" /><label>yes</label>
+							<input name="runTestJob" type="radio" value="false" checked="checked" /><label>no</label>		
 						</td>
 					</tr>
 					<tr>

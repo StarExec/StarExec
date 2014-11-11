@@ -16,6 +16,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.JobStatus.JobStatusCode;
@@ -302,9 +303,9 @@ public class JobSecurity {
 	 */
 	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId) {
 			
-			
-			if (!Users.isMemberOfCommunity(userId, Spaces.getCommunityOfSpace(sId))) {
-				return new ValidatorStatusCode(false, "You are not a member of the community in which you are trying to create a job");
+			ValidatorStatusCode status = JobSecurity.canUserCreateJobInSpace(userId,sId);
+			if (!status.isSuccess()) {
+				return status;
 			}
 			DefaultSettings settings=Communities.getDefaultSettings(sId);
 			
@@ -314,5 +315,16 @@ public class JobSecurity {
 			}
 			
 			return new ValidatorStatusCode(true);
+	}
+	
+	
+	public static ValidatorStatusCode canUserCreateJobInSpace(int userId, int sId) {
+		Permission p=Permissions.get(userId, sId);
+		
+		if (p==null || !p.canAddJob()) {
+			return new ValidatorStatusCode(false, "You do not have permission to create a job in this space");
+		}
+		
+		return new ValidatorStatusCode(true);
 	}
 }
