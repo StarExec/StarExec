@@ -303,16 +303,6 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@Test
-	private void getAdminNodesTest() {
-		adminDriver.get(Util.url("secure/admin/nodes.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/nodes.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
-
-	}
-	
-	@Test
 	private void getAdminPermanentQueueTest() {
 		adminDriver.get(Util.url("secure/admin/permanentQueue.jsp"));
 		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
