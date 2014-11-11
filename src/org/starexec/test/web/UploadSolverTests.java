@@ -1,5 +1,7 @@
 package org.starexec.test.web;
 
+
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -20,6 +22,37 @@ public class UploadSolverTests extends TestSequence {
 	Space s=null;
 	String solverFilePath=null;
 	
+	
+	//makes sure we do not navigate away from the page until javascript validation is passing
+	@Test
+	private void validationTest() {
+		driver.get(Util.url("secure/add/solver.jsp?sid="+s.getId()));
+		String url=driver.getCurrentUrl();
+		WebElement solverName=driver.findElement(By.name("sn"));
+        WebElement solverDesc=driver.findElement(By.id("description"));
+        WebElement textRadio=driver.findElement(By.id("radioText"));
+        textRadio.click();
+        
+        WebElement localRadio=driver.findElement(By.id("radioLocal"));
+        localRadio.click();
+        WebElement solverFile=driver.findElement(By.id("fileLoc"));
+        
+        solverName.submit(); //should fail because we haven't entered anything into the text fields
+        Assert.assertTrue(driver.getCurrentUrl().equals(url));
+        solverName.sendKeys("test");
+        solverName.submit();
+        Assert.assertTrue(driver.getCurrentUrl().equals(url));
+        solverFile.sendKeys("badpath");
+        solverName.submit();
+        Assert.assertTrue(driver.getCurrentUrl().equals(url));
+        solverFile.sendKeys(solverFilePath);
+        solverName.clear();
+        solverName.submit();
+        Assert.assertTrue(driver.getCurrentUrl().equals(url));
+        solverDesc.sendKeys("anything");
+        solverName.submit();
+        Assert.assertTrue(driver.getCurrentUrl().equals(url));
+	}
 	@Test
 	private void uploadSolverTest() {
 		driver.get(Util.url("secure/add/solver.jsp?sid="+s.getId()));
@@ -38,6 +71,8 @@ public class UploadSolverTests extends TestSequence {
         solverFile.sendKeys(solverFilePath);
         
         solverName.submit();
+        Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+        Assert.assertTrue(driver.getCurrentUrl().contains("details/solver.jsp"));
 
 	}
 	@Override
@@ -57,7 +92,7 @@ public class UploadSolverTests extends TestSequence {
 	protected void teardown() throws Exception {
 		Spaces.removeSubspaces(s.getId(), u.getId());
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
-		//driver.quit();
+		driver.quit();
 		
 	}
 	
