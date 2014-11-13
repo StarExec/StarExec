@@ -133,7 +133,7 @@ public class CreateJob extends HttpServlet {
 				"test job for new solver "+s.getName()+" "+"("+s.getId()+")",
 				settings.getPreProcessorId(),
 				settings.getPostProcessorId(), 
-				1, //TODO queue?
+				Queues.getTestQueue(),
 				0);
 		
 		buildQuickJob(j, settings.getCpuTimeout(), settings.getWallclockTimeout(), settings.getMaxMemory(), solverId, settings.getBenchId(), spaceId);

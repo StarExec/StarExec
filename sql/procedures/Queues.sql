@@ -206,5 +206,20 @@ CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
 				(global_access = true)							-- or it is a global permanent queue
 				);				 
 	END //
+
+	
+-- Sets the test queue in the database to a new value
+DROP PROCEDURE IF EXISTS SetTestQueue;
+CREATE PROCEDURE SetTestQueue(IN _qid INT)
+	BEGIN
+		UPDATE system_flags SET test_queue=_qid;
+	END //
+-- Gets the ID of the queue for running test jobs on solver uploads
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS GetTestQueue;
+CREATE PROCEDURE GetTestQueue()
+	BEGIN
+		SELECT test_queue FROM system_flags;
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file

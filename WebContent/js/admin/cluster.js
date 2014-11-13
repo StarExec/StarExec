@@ -129,6 +129,12 @@ function initUI(id){
 		}
 	});
 	
+	$("#makeTest").button({
+		icons: {
+			primary: "ui-icon-clipboard"
+		}
+	});
+	
 	$("#makeGlobal").button({
 		icons: {
 			primary: "ui-icon-unlocked"
@@ -216,6 +222,19 @@ function initUI(id){
 		});
 	});	
 	
+	
+	$("#makeTest").click(function(){
+		$.post(
+			starexecRoot+"services/test/queue/" + curQueueId,
+			function(returnCode) {
+				s=parseReturnCode(returnCode);
+								
+			},
+		"json"
+		);
+			
+	});	
+	
 	$("#makeGlobal").click(function(){
 		$('#dialog-confirm-remove-txt').text('are you sure you want to give global access to this queue?');
 		
@@ -291,13 +310,18 @@ function updateActionId(id, type, permanent, global) {
 		$("#moveNodes").hide();
 		$("#CommunityAssoc").hide();
 		$("#makeGlobal").hide();
+		$("#makeTest").hide();
+
 		$("#removeGlobal").hide();
 		$("#editQueue").hide();
+		
 	} else {
 		$("#editQueue").show();
 	}
 	
 	if (type == "active_queue" || type=="inactive_queue") {
+		$("#makeTest").show();
+
 		if (id == defaultQueueId) {
 			$("#removeQueue").hide();
 			$("#makePermanent").hide();

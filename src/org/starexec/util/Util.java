@@ -831,7 +831,7 @@ public class Util {
     /**
      * Copies all of the given files to a single, newly created sandbox directory
      * and returns the sandbox directory. The sandbox user will be the owner and
-     * have full permissions over everthing in the sandbox directory
+     * have full permissions over everthing in the sandbox directory. 
      * @param files
      * @return
      * @throws IOException

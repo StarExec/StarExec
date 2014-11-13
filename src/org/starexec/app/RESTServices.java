@@ -171,7 +171,7 @@ public class RESTServices {
 	//TODO: This needs to be refactored
 	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserSeeRequests(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -3635,7 +3635,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllPendingQueueReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserSeeRequests(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}	
@@ -3652,7 +3652,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getAllHistoricReservations(@Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserSeeRequests(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		
@@ -3677,7 +3677,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserCancelRequest(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if(!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -3721,7 +3721,7 @@ public class RESTServices {
 	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
 		log.debug("starting removeQueue");
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserRemoveQueue(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -3819,7 +3819,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String cancelQueueRequest(@PathParam("id") int id, @Context HttpServletRequest request) throws IOException {
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserCancelRequest(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -3953,6 +3953,26 @@ public class RESTServices {
 		//return success ? gson.toJson(new ValidatorStatusCode(true,"Nodes updated successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	
+	/**
+	 * Will make the given queue the new test queue
+	 * 
+	 * @author Wyatt Kaiser
+	 */
+	@POST
+	@Path("/test/queue/{queueId}")
+	@Produces("application/json")
+	public String setTestQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		boolean success = Queues.setTestQueue(queueId);
+		
+		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue set as test queue")) : gson.toJson(ERROR_DATABASE);
+	}
+	
 	/**
 	 * Will update a queue making it permanent
 	 * 
@@ -3963,7 +3983,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserMakeQueuePermanent(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -4128,7 +4148,7 @@ public class RESTServices {
 	public String makeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
 		int userId = SessionUtil.getUserId(request);
 		
-		ValidatorStatusCode status=QueueSecurity.canUserMakeQueueGlobal(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		
 		
 		if (!status.isSuccess()) {
@@ -4144,7 +4164,7 @@ public class RESTServices {
 	public String removeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
 		int userId = SessionUtil.getUserId(request);
 		
-		ValidatorStatusCode status=QueueSecurity.canUserRemoveQueueGlobal(userId);
+		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		
 		
 		if (!status.isSuccess()) {

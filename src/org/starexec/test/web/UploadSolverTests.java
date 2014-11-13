@@ -5,6 +5,10 @@ import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.safari.SafariDriver;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -16,6 +20,8 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
+import com.opera.core.systems.OperaDriver;
+
 public class UploadSolverTests extends TestSequence {
 	WebDriver driver=null;
 	User u=null;
@@ -26,6 +32,7 @@ public class UploadSolverTests extends TestSequence {
 	//makes sure we do not navigate away from the page until javascript validation is passing
 	@Test
 	private void validationTest() {
+		
 		driver.get(Util.url("secure/add/solver.jsp?sid="+s.getId()));
 		String url=driver.getCurrentUrl();
 		WebElement solverName=driver.findElement(By.name("sn"));
@@ -72,6 +79,7 @@ public class UploadSolverTests extends TestSequence {
         
         solverName.submit();
         Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+        
         Assert.assertTrue(driver.getCurrentUrl().contains("details/solver.jsp"));
 
 	}

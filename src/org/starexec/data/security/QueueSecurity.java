@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.util.Validator;
 
 public class QueueSecurity {
@@ -36,19 +37,7 @@ public class QueueSecurity {
 		
 		return new ValidatorStatusCode(true);
 	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to make a queue permanent
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
-	 */
-	
-	public static ValidatorStatusCode canUserMakeQueuePermanent(int userId) {
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
+
 	
 	/**
 	 * Ensures a user has the appropriate permissions to edit an existing queue with the given
@@ -94,69 +83,25 @@ public class QueueSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks to see whether the given user is allowed to view current queue requests
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
-	 */
-	
-	public static ValidatorStatusCode canUserSeeRequests(int userId) {
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+	public static ValidatorStatusCode canUserSetTestQueue(int userId, int queueId) {
+		ValidatorStatusCode status=canUserModifyQueues(userId);
+		if (!status.isSuccess()) {
+			return status;
 		}
-		return new ValidatorStatusCode(true);
-	}
-	/**
-	 * Checks to see whether the given user is allowed to cancel a queue request
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
-	 */
-	
-	public static ValidatorStatusCode canUserCancelRequest(int userId) {
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+		List<WorkerNode> nodes = Queues.getNodes(queueId);
+		if (nodes==null || nodes.size()==0) {
+			return new ValidatorStatusCode(false, "The test queue should have some nodes");
 		}
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks to see whether the given user is allowed to remove a queue
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
-	 */
-	
-	
-	public static ValidatorStatusCode canUserRemoveQueue(int userId) {
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to give a permanent queue global access
-	 * @param userId the ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserMakeQueueGlobal(int userId) {
+	public static ValidatorStatusCode canUserModifyQueues(int userId) {
 		if (!Users.isAdmin(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
 	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to remove global access from a permanent queue
-	 * @param userId the ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserRemoveQueueGlobal(int userId) {
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
+
 	public static ValidatorStatusCode canGetJsonQueue(int queueId, int userId) {
 		
 		List<Queue> queues=Queues.getQueuesForUser(userId);
