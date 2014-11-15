@@ -10,7 +10,20 @@ $(document).ready(function(){
 	$("#default").show();	
 	$("#fileLoc2").hide();
 	$("#description").hide();
+	$(".testJobRadio").change(function() {
+		handleTestJobVisibility();
+	});
+	handleTestJobVisibility();
 });
+
+function handleTestJobVisibility() {
+	if ($("#noTestJob").prop("checked")) {
+		$("#settingRow").hide();
+	} else {
+		$("#settingRow").show();
+
+	}
+}
 
 /**
  * Initializes user-interface 

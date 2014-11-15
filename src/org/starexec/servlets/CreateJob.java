@@ -21,6 +21,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.security.ValidatorStatusCode;
@@ -120,13 +121,15 @@ public class CreateJob extends HttpServlet {
 	}
 	/**
 	 * Tests a solver using default info for the space it is being uploaded in
-	 * @param solverId
-	 * @param spaceId
+	 * @param solverId ID of the solver ot put the job in.
+	 * @param spaceId Id of the space to put the job in
+	 * @param userId Id of the user that will make this job
+	 * @param settingsId ID of the default settings profile to use for the job
 	 * @return The ID of the job that was newly created, or -1 on error
 	 */
-	public static int buildSolverTestJob(int solverId, int spaceId, int userId) {
+	public static int buildSolverTestJob(int solverId, int spaceId, int userId, int settingsId) {
 		Solver s=Solvers.get(solverId);
-		DefaultSettings settings=Communities.getDefaultSettings(spaceId);
+		DefaultSettings settings=Settings.getProfileById(settingsId);
 		Job j = JobManager.setupJob(
 				userId,
 				s.getName(), 

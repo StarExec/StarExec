@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -35,6 +36,7 @@ import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
@@ -68,6 +70,7 @@ public class UploadSolver extends HttpServlet {
     private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
     private static final String RUN_TEST_JOB="runTestJob";
+    private static final String SETTING_ID="setting";
         
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -107,7 +110,17 @@ public class UploadSolver extends HttpServlet {
 						if (runTestJob) {
 							log.debug("attempting to run test job");
 							
-							int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId);
+							int settingsId=Communities.getDefaultSettings(spaceId).getId();
+							//if the user gave a setting ID, then they need to have permission to use that profile
+							// otherwise, the community default is used
+							if (form.containsKey(SETTING_ID)) {
+								settingsId=Integer.parseInt((String)form.get(SETTING_ID));
+							}
+							
+							
+							
+							
+							int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId,settingsId);
 							if (jobId>0) {
 							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
 							} else {
@@ -446,11 +459,27 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "The 'run test job' attribute needs to be a valid boolean");
 			}
 			Boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
+			
+			//if the user wants to run a test job, there is some additional validation to do
 			if (runTestJob) {
-				ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId);
+				int settingsId=Communities.getDefaultSettings(spaceId).getId();
+				//if the user gave a setting ID, then they need to have permission to use that profile
+				// otherwise, the community default is used
+				if (form.containsKey(SETTING_ID)) {
+					if (!Validator.isValidInteger((String)form.get(SETTING_ID))) {
+						return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
+					}
+					settingsId=Integer.parseInt((String)form.get(SETTING_ID));
+				}
+				
+				
+				// user must have permission to run a job in the given space
+				ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId,settingsId);
 				if (!testJobStatus.isSuccess()) {
 					return testJobStatus;
 				}
+				
+				
 			}
 			
 			

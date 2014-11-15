@@ -9,6 +9,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -301,13 +302,13 @@ public class JobSecurity {
 	 * @param sId Id of the space to put the job in
 	 * @return
 	 */
-	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId) {
+	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId,int statusId) {
 			
 			ValidatorStatusCode status = JobSecurity.canUserCreateJobInSpace(userId,sId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-			DefaultSettings settings=Communities.getDefaultSettings(sId);
+			DefaultSettings settings=Settings.getProfileById(statusId);
 			
 			
 			if (Benchmarks.get(settings.getBenchId())==null) {

@@ -40,8 +40,8 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
@@ -177,24 +177,24 @@ public class Connection {
 		lastError="";
 	}
 
-	protected void setBaseURL(String baseURL) {
-		this.baseURL = baseURL;
+	protected void setBaseURL(String baseURL1) {
+		this.baseURL = baseURL1;
 	}
 
 	protected String getBaseURL() {
 		return baseURL;
 	}
 
-	protected void setSessionID(String sessionID) {
-		this.sessionID = sessionID;
+	protected void setSessionID(String sessionID1) {
+		this.sessionID = sessionID1;
 	}
 
 	protected String getSessionID() {
 		return sessionID;
 	}
 
-	protected void setUsername(String username) {
-		this.username = username;
+	protected void setUsername(String username1) {
+		this.username = username1;
 	}
 	/**
 	 * Gets the username that is being used on this connection
@@ -204,8 +204,8 @@ public class Connection {
 		return username;
 	}
 
-	protected void setPassword(String password) {
-		this.password = password;
+	protected void setPassword(String password1) {
+		this.password = password1;
 	}
 	/**
 	 * Gets the password that is being used on this connection
@@ -294,34 +294,34 @@ public class Connection {
 		try {
 			
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADBENCHMARKS);
-			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("space", new StringBody(spaceID.toString(), utf8));
-			entity.addPart("localOrURL",new StringBody(upMethod,utf8));
+			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+			entity.addTextBody("space",spaceID.toString());
+			entity.addTextBody("localOrURL",upMethod);
 			
 			//it is ok to set URL even if we don't need it
-			entity.addPart("url",new StringBody(url,utf8));
+			entity.addTextBody("url",url);
 			
-			entity.addPart("download", new StringBody(downloadable.toString(), utf8));
-			entity.addPart("benchType",new StringBody(type.toString(),utf8));
+			entity.addTextBody("download",downloadable.toString());
+			entity.addTextBody("benchType",type.toString());
+			entity.addTextBody("dependency",dependency.toString());
 			
-				entity.addPart("dependency",new StringBody(dependency.toString(),utf8));
-				entity.addPart("linked",new StringBody(linked.toString(),utf8));
+			entity.addTextBody("linked",linked.toString());
 			if (depRoot==null) {
-				entity.addPart("depRoot",new StringBody("-1",utf8));
+				entity.addTextBody("depRoot","-1");
 			} else {
-				entity.addPart("depRoot",new StringBody(depRoot.toString(),utf8));
+				entity.addTextBody("depRoot",depRoot.toString());
 			}
 			if (hierarchy) {
-				entity.addPart("upMethod", new StringBody("convert",utf8));
+				entity.addTextBody("upMethod", "convert");
 			} else {
-				entity.addPart("upMethod", new StringBody("dump",utf8));
+				entity.addTextBody("upMethod","dump");
 			}
 			
 			for (String x : p.getOnPermissions()) {
-				entity.addPart(x,new StringBody("true",utf8));
+				entity.addTextBody(x,"true");
 			}
 			for (String x : p.getOffPermissions()) {
-				entity.addPart(x,new StringBody("false",utf8));
+				entity.addTextBody(x,"false");
 			}
 		
 			//only include the archive file if we need it
@@ -330,7 +330,7 @@ public class Connection {
 				entity.addPart("benchFile", fileBody);
 			}
 			
-			post.setEntity(entity);
+			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);
 			
 			HttpResponse response=client.execute(post);
@@ -370,15 +370,15 @@ public class Connection {
 				desc="";
 			}
 			
-			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("solverId",new StringBody(solverID.toString(),utf8));
-			entity.addPart("uploadConfigDesc",new StringBody(desc,utf8));
-			entity.addPart("uploadConfigName",new StringBody(name,utf8));
+			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+			entity.addTextBody("solverId",solverID.toString());
+			entity.addTextBody("uploadConfigDesc",desc);
+			entity.addTextBody("uploadConfigName",name);
 			
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("file", fileBody);
 			post=(HttpPost) setHeaders(post);
-			post.setEntity(entity);
+			post.setEntity(entity.build());
 			
 			HttpResponse response=client.execute(post);
 			
@@ -413,16 +413,16 @@ public class Connection {
 
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADPROCESSOR);
-			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("action",new StringBody("add",utf8));
-			entity.addPart("type",new StringBody(type,utf8));
-			entity.addPart("name", new StringBody(name, utf8));
-			entity.addPart("desc", new StringBody(desc, utf8));
-			entity.addPart("com",new StringBody(communityID.toString(),utf8));
+			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+			entity.addTextBody("action","add");
+			entity.addTextBody("type",type);
+			entity.addTextBody("name", name);
+			entity.addTextBody("desc",desc);
+			entity.addTextBody("com",communityID.toString());
 			FileBody fileBody = new FileBody(f);
 			entity.addPart("file", fileBody);
 			
-			post.setEntity(entity);
+			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);
 			
 			HttpResponse response=client.execute(post);
@@ -494,6 +494,7 @@ public class Connection {
 	 * @param isJobUpload true if job xml upload, false otherwise
 	 * @return The ids of the newly created jobs. On failure, a size 1 list with a negative error code
 	 * @author Julio Cervantes
+	 * @param isJobXML True if this is a job XML and false if it is a space XML
 	 */
     public List<Integer> uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
 	    List<Integer> ids=new ArrayList<Integer>();
@@ -505,13 +506,13 @@ public class Connection {
 			HttpPost post=new HttpPost(baseURL+ext);
 			post=(HttpPost) setHeaders(post);
 			
-			MultipartEntity entity = new MultipartEntity();
-			entity.addPart("space",new StringBody(spaceID.toString(),utf8));
+			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+			entity.addTextBody("space",spaceID.toString());
 			File f=new File(filePath);
 			FileBody fileBody = new FileBody(f);
 			entity.addPart("f", fileBody);
 			
-			post.setEntity(entity);
+			post.setEntity(entity.build());
 			
 			HttpResponse response=client.execute(post);
 
@@ -550,10 +551,11 @@ public class Connection {
 	 * @param filePath the path to the solver archive to upload
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
 	 * @param runTestJob Whether to run a test job after uploading this solver
+	 * @param settingId The ID of the settings profile to be used if a test job is created
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	public int uploadSolver(String name,String desc,Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob) {
-		return uploadSolver(name,desc,"text",spaceID,filePath,downloadable,runTestJob);
+	public int uploadSolver(String name,String desc,Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob,Integer settingId) {
+		return uploadSolver(name,desc,"text",spaceID,filePath,downloadable,runTestJob,settingId);
 	}
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
@@ -562,10 +564,57 @@ public class Connection {
 	 * @param filePath the path to the solver archive to upload
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
 	 * @param runTestJob Whether to run a test job after uploading this solver
+	 * @param settingId The ID of a settings profile to use if a test job is created
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	public int uploadSolver(String name,Integer spaceID,String filePath,Boolean downloadable,Boolean runTestJob) {
-		return uploadSolver(name,"","upload",spaceID,filePath,downloadable,runTestJob);
+	public int uploadSolver(String name,Integer spaceID,String filePath,Boolean downloadable,Boolean runTestJob,Integer settingId) {
+		return uploadSolver(name,"","upload",spaceID,filePath,downloadable,runTestJob,settingId);
+	}
+	
+	
+	private int uploadSolver(MultipartEntityBuilder entity,HttpPost post,String name,String desc,String descMethod,
+		
+			Integer spaceID,Boolean downloadable,Boolean runTestJob,Integer settingId ) {
+		
+		try {
+			//Only  include the description file if we need it
+			if (descMethod.equals("file")) {
+				FileBody descFileBody=new FileBody(new File(desc));
+				entity.addPart("d",descFileBody);
+			}
+			
+			entity.addTextBody("sn",name);
+			if (descMethod.equals("text")) {
+				entity.addTextBody("desc",desc);
+			} else {
+				entity.addTextBody("desc","");
+			}
+			entity.addTextBody("space",spaceID.toString());
+			entity.addTextBody("upMethod","local");
+			entity.addTextBody("url","");
+			entity.addTextBody("descMethod", descMethod);
+			entity.addTextBody("dlable", downloadable.toString());
+			entity.addTextBody("runTestJob",runTestJob.toString());
+			if (settingId!=null) {
+				entity.addTextBody("setting", settingId.toString());
+	
+			}
+			post.setEntity(entity.build());
+			post=(HttpPost) setHeaders(post);		
+			HttpResponse response=client.execute(post);			
+			setSessionIDIfExists(response.getAllHeaders());			
+			response.getEntity().getContent().close();
+			int newID=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			//if the request was not successful
+			if (newID<=0) {
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				return Status.ERROR_SERVER;
+			}
+			return newID;
+		} catch (Exception e) {	
+			return Status.ERROR_INTERNAL;
+		}	
+		
 	}
 	
 	/**
@@ -578,51 +627,17 @@ public class Connection {
 	 * @param filePath The path to the solver archive to upload.
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
 	 * @param runTestJob Whether to run a test job after uploading this solver
+	 * @param settingId The ID of the default settings profile that should be used for a test job for this job
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable, Boolean runTestJob) {
+	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable, Boolean runTestJob,Integer settingId) {
 		try {
 			
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
-			MultipartEntity entity = new MultipartEntity();
-			//Only  include the description file if we need it
-			if (descMethod.equals("file")) {
-				FileBody descFileBody=new FileBody(new File(desc));
-				entity.addPart("d",descFileBody);
-			}
-			entity.addPart("sn", new StringBody(name, utf8));
-			if (descMethod.equals("text")) {
-				entity.addPart("desc", new StringBody(desc, utf8));
-			} else {
-				entity.addPart("desc", new StringBody("", utf8));
-			}
-			
-			entity.addPart("space", new StringBody(spaceID.toString(), utf8));
-			entity.addPart("upMethod",new StringBody("local",utf8));
-			entity.addPart("url",new StringBody("",utf8));
-			entity.addPart("descMethod", new StringBody(descMethod,utf8));
-			entity.addPart("dlable", new StringBody(downloadable.toString(), utf8));
-			entity.addPart("runTestJob",new StringBody(runTestJob.toString(),utf8));
-			
-			
+			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("f", fileBody);
-
-			post.setEntity(entity);
-			post=(HttpPost) setHeaders(post);
-			
-			HttpResponse response=client.execute(post);
-			
-			setSessionIDIfExists(response.getAllHeaders());
-			
-			response.getEntity().getContent().close();
-			int newID=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
-			//if the request was not successful
-			if (newID<=0) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
-				return Status.ERROR_SERVER;
-			}
-			return newID;
+			return uploadSolver(entity,post,name,desc,descMethod,spaceID,downloadable,runTestJob,settingId);
 		} catch (Exception e) {	
 			return Status.ERROR_INTERNAL;
 		}	
@@ -637,42 +652,15 @@ public class Connection {
 	 * @param url The direct URL to the solver
 	 * @param downloadable Whether the solver should be downloadable or not
 	 * @param runTestJob Whether to run a test job for this solver after uploading it
+	 * @param settingId The ID of the settings profile that will be used if we want to run a test job
 	 * @return The positive ID for the solver or a negative error code
 	 */
-	//TODO: This needs to be merged with the uploadSolver function
-	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob) {
+	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob, Integer settingId) {
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
-			MultipartEntity entity = new MultipartEntity();
-			if (descMethod.equals("file")) {
-				FileBody descFileBody=new FileBody(new File(desc));
-				desc="";
-				entity.addPart("d",descFileBody);
-			}
-			entity.addPart("sn", new StringBody(name, utf8));
-			if (descMethod.equals("text")) {
-				entity.addPart("desc", new StringBody(desc, utf8));
-			} else {
-				entity.addPart("desc", new StringBody("", utf8));
-			}
-			entity.addPart("space", new StringBody(spaceID.toString(), utf8));
-			entity.addPart("upMethod",new StringBody("URL",utf8));
-			entity.addPart("descMethod", new StringBody(descMethod,utf8));
-			entity.addPart("dlable", new StringBody(downloadable.toString(), utf8));
-			entity.addPart("runTestJob", new StringBody(runTestJob.toString(), utf8));
-
-			entity.addPart("url",new StringBody(url,utf8));
-
-			post.setEntity(entity);
-			post=(HttpPost) setHeaders(post);
-			
-			HttpResponse response=client.execute(post);
-			
-			setSessionIDIfExists(response.getAllHeaders());
-			
-			response.getEntity().getContent().close();
-			int newID=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
-			return newID;
+			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
+			entity.addTextBody("url",url);
+			return uploadSolver(entity,post,name,desc,descMethod,spaceID,downloadable,runTestJob,settingId);
 		} catch (Exception e) {	
 			return Status.ERROR_INTERNAL;
 		}	
@@ -686,10 +674,11 @@ public class Connection {
 	 * @param url The URL of the archived solver to upload
 	 * @param downloadable True if the solver should be downloadable by other users, and false otherwise
 	 * @param runTestJob Whether to run a test job for this solver after uploading it
+	 * @param settingId The ID of the settings profile that will be used if we want to run a test job
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	public int uploadSolverFromURL(String name,String desc,Integer spaceID, String url, Boolean downloadable, Boolean runTestJob) {
-		return uploadSolverFromURL(name,desc,"text",spaceID,url,downloadable, runTestJob);
+	public int uploadSolverFromURL(String name,String desc,Integer spaceID, String url, Boolean downloadable, Boolean runTestJob,Integer settingId) {
+		return uploadSolverFromURL(name,desc,"text",spaceID,url,downloadable, runTestJob,settingId);
 	}
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken from the archive being uploaded
@@ -700,8 +689,8 @@ public class Connection {
 	 * @param runTestJob Whether to run a test job for this solver after uploading it
 	 * @return The ID of the new solver, which must be positive, or a negative error code
 	 */
-	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable, Boolean runTestJob) {
-		return uploadSolverFromURL(name,"","upload",spaceID,url,downloadable, runTestJob);
+	public int uploadSolverFromURL(String name,Integer spaceID,String url,Boolean downloadable, Boolean runTestJob, Integer settingId) {
+		return uploadSolverFromURL(name,"","upload",spaceID,url,downloadable, runTestJob,settingId);
 	}
 	
 	
@@ -1599,14 +1588,7 @@ public class Connection {
 		    urlParameters.add(new BasicNameValuePair("limit","-1"));
 		}
 		post.setEntity(new UrlEncodedFormEntity(urlParameters));
-	    /**		
-	    MultipartEntity entity = new MultipartEntity();
-	    entity.addPart("solverid",new StringBody(solverID.toString(),utf8));
-			
-			
-	    post.setEntity(entity);
-	    **/
-		
+	   
 	    HttpResponse response=client.execute(post);
 			
 	    setSessionIDIfExists(response.getAllHeaders());
