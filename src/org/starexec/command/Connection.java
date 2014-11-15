@@ -591,7 +591,7 @@ public class Connection {
 			}
 			entity.addTextBody("space",spaceID.toString());
 			entity.addTextBody("upMethod","local");
-			entity.addTextBody("url","");
+			
 			entity.addTextBody("descMethod", descMethod);
 			entity.addTextBody("dlable", downloadable.toString());
 			entity.addTextBody("runTestJob",runTestJob.toString());
@@ -637,6 +637,7 @@ public class Connection {
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("f", fileBody);
+			entity.addTextBody("url","");
 			return uploadSolver(entity,post,name,desc,descMethod,spaceID,downloadable,runTestJob,settingId);
 		} catch (Exception e) {	
 			return Status.ERROR_INTERNAL;

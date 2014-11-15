@@ -58,39 +58,29 @@ public class Communities {
 
 
     public static boolean commAssocExpired(){
-
-	/**
-	try{
-	    dropCommunityAssoc();
-	}
-	catch (Exception e){			
-
-	}
-	**/
-
-	long timeNow = System.currentTimeMillis();
-
-	if(R.COMM_ASSOC_LAST_UPDATE == null){
-
-	    return true;
-	}
-
+		long timeNow = System.currentTimeMillis();
 	
-	Long timeElapsed = timeNow - R.COMM_ASSOC_LAST_UPDATE;
-
-	log.info("timeElapsed since last comm_assoc update: " + timeElapsed);
-	if(timeElapsed > R.COMM_ASSOC_UPDATE_PERIOD){
-	    
-	    return true;
-	}
+		if(R.COMM_ASSOC_LAST_UPDATE == null){
 	
-	log.info("not yet expired");
-	return false;
+		    return true;
+		}
+	
+		
+		Long timeElapsed = timeNow - R.COMM_ASSOC_LAST_UPDATE;
+	
+		log.info("timeElapsed since last comm_assoc update: " + timeElapsed);
+		if(timeElapsed > R.COMM_ASSOC_UPDATE_PERIOD){
+		    
+		    return true;
+		}
+		
+		log.info("not yet expired");
+		return false;
 
     }
 
     public static void dropCommunityAssoc(){
-	        Connection con = null;			
+	    Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 		    con = Common.getConnection();
@@ -108,7 +98,7 @@ public class Communities {
     }
     public static void updateCommunityAssoc(){
 
-	        Connection con = null;			
+	    Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
@@ -120,7 +110,7 @@ public class Communities {
 
 			results = procedure.executeQuery();
 			while(results.next()){
-			    
+			    //TODO: What goes in this block?
 			}
 		    
 		    
@@ -137,19 +127,20 @@ public class Communities {
 
     /**
      *Helper function for updateCommunityMapIf
+     * @return A HashMap mapping keys for primitives to 0
      *
      **/
     public static HashMap<String,Long> initializeCommInfo(){
-	HashMap<String,Long> stats = new HashMap<String, Long>();
-
-	stats.put("users",new Long(0));
-	stats.put("jobs",new Long(0));
-	stats.put("benchmarks",new Long(0));
-	stats.put("solvers",new Long(0));
-	stats.put("job_pairs", new Long(0));
-	stats.put("disk_usage",new Long(0));
-
-	return stats;
+		HashMap<String,Long> stats = new HashMap<String, Long>();
+	
+		stats.put("users",new Long(0));
+		stats.put("jobs",new Long(0));
+		stats.put("benchmarks",new Long(0));
+		stats.put("solvers",new Long(0));
+		stats.put("job_pairs", new Long(0));
+		stats.put("disk_usage",new Long(0));
+	
+		return stats;
 
     }
 
@@ -158,199 +149,122 @@ public class Communities {
      * @author Julio Cervantes
      **/
     public synchronized static void updateCommunityMapIf(){
-	        Connection con = null;			
+	    Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 		    if(commAssocExpired()){
+				List<Space> communities = Communities.getAll();
+		    
+	
+				HashMap<Integer,HashMap<String,Long>> commInfo = new HashMap<Integer,HashMap<String,Long>>();
 
-			
-			List<Space> communities = Communities.getAll();
-	    
-
-			HashMap<Integer,HashMap<String,Long>> commInfo = new HashMap<Integer,HashMap<String,Long>>();
-
-			for(Space c : communities){
-			    commInfo.put(c.getId(),initializeCommInfo());
-			}
+				for(Space c : communities){
+				    commInfo.put(c.getId(),initializeCommInfo());
+				}
 
 		        updateCommunityAssoc();
 
-			Integer commId;
-			Long infoCount, infoExtra;
+				Integer commId;
+				Long infoCount, infoExtra;
 			
 			
 			
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL GetCommunityStatsUsers()}");
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-			    
-			    commId = results.getInt("comm_id");
-			    infoCount = results.getLong("userCount");
-
-			    commInfo.get(commId).put("users",infoCount);
+				con = Common.getConnection();
+	
+				procedure = con.prepareCall("{CALL GetCommunityStatsUsers()}");
+				results = procedure.executeQuery();
 				
-			    log.info("commId: " + commId + " | userCount: " + infoCount);
-			}
-
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
+				while(results.next()){
+				    
+				    commId = results.getInt("comm_id");
+				    infoCount = results.getLong("userCount");
+	
+				    commInfo.get(commId).put("users",infoCount);
+					
+				    log.info("commId: " + commId + " | userCount: " + infoCount);
+				}
+	
+				Common.safeClose(con);
+				Common.safeClose(results);
+				Common.safeClose(procedure);
 			
 
 			
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL GetCommunityStatsSolvers()}");
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-
-			    commId = results.getInt("comm_id");
-			    infoCount = results.getLong("solverCount");
-			    infoExtra = results.getLong("solverDiskUsage");
-
-			    commInfo.get(commId).put("solvers",infoCount);
-			    commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
-
-			    log.info("commId: " + commId + " | solverCount: " + infoCount + " | solverDisk: " + infoExtra);
-			    
-			}
-
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-
-			
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL GetCommunityStatsBenches()}");
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-
-			    commId = results.getInt("comm_id");
-			    infoCount = results.getLong("benchCount");
-			    infoExtra = results.getLong("benchDiskUsage");
-
-			    commInfo.get(commId).put("benchmarks",infoCount);
-			    commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
+				con = Common.getConnection();
+	
+				procedure = con.prepareCall("{CALL GetCommunityStatsSolvers()}");
+				results = procedure.executeQuery();
 				
-				
-			    log.info("commId: " + commId + " | benchCount: " + infoCount + " | benchDisk: " + infoExtra);
-			    
-			}
-
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-			
-
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL GetCommunityStatsJobs()}");
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-
-			    commId = results.getInt("comm_id");
-			    infoCount = results.getLong("jobCount");
-			    infoExtra = results.getLong("jobPairCount");
-
-			    commInfo.get(commId).put("jobs",infoCount);
-			    commInfo.get(commId).put("job_pairs",infoExtra);
-				
-			    log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
-			    
-			}
-
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-
-			/**
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-			
-			**/
-
-			/**
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetCommunityStatsOverview()}");
-
-			results = procedure.executeQuery();
-			Integer infoType, commId;
-			Long infoCount, infoExtra;
-			
-
-			//infoType := {1 : user , 2 : solver, 3 : benchmark, 4 : job/jobpairs}
-			//commId := community id that info belongs to
-			//infoCount := a count of the info, whether num users, num solvers, num...
-			//infoExtra := either a count of jobpairs or the amount of disk space used or null
-			while(results.next()){
-
-			    infoType = results.getInt("infoType");
-			    
-			    if(infoType.equals(1)){
-
-				commId = results.getInt("commId");
-				infoCount = results.getLong("infoCount");
-
-				commInfo.get(commId).put("users",infoCount);
-				
-				log.info("commId: " + commId + " | userCount: " + infoCount);
-			    }
-			    else if(infoType.equals(2)){
-
-				commId = results.getInt("commId");
-				infoCount = results.getLong("infoCount");
-				infoExtra = results.getLong("infoExtra");
-
-				commInfo.get(commId).put("solvers",infoCount);
-				commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
-
-				log.info("commId: " + commId + " | solverCount: " + infoCount + " | solverDisk: " + infoExtra);
-			    }
-			    else if(infoType.equals(3)){
-
-				commId = results.getInt("commId");
-				infoCount = results.getLong("infoCount");
-				infoExtra = results.getLong("infoExtra");
-
-				commInfo.get(commId).put("benchmarks",infoCount);
-				commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
-				
-				
-				log.info("commId: " + commId + " | benchCount: " + infoCount + " | benchDisk: " + infoExtra);
-				
-			    }
-  			    else{
-
-				commId = results.getInt("commId");
-				infoCount = results.getLong("infoCount");
-				infoExtra = results.getLong("infoExtra");
-
-				commInfo.get(commId).put("jobs",infoCount);
-				commInfo.get(commId).put("job_pairs",infoExtra);
-				
-				log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
-				
-			    }
+				while(results.next()){
+	
+				    commId = results.getInt("comm_id");
+				    infoCount = results.getLong("solverCount");
+				    infoExtra = results.getLong("solverDiskUsage");
+	
+				    commInfo.get(commId).put("solvers",infoCount);
+				    commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
+	
+				    log.info("commId: " + commId + " | solverCount: " + infoCount + " | solverDisk: " + infoExtra);
+				    
+				}
+	
+				Common.safeClose(con);
+				Common.safeClose(results);
+				Common.safeClose(procedure);
 
 				
-							
-			}
-			**/
+				con = Common.getConnection();
+	
+				procedure = con.prepareCall("{CALL GetCommunityStatsBenches()}");
+				results = procedure.executeQuery();
+				
+				while(results.next()){
+	
+				    commId = results.getInt("comm_id");
+				    infoCount = results.getLong("benchCount");
+				    infoExtra = results.getLong("benchDiskUsage");
+	
+				    commInfo.get(commId).put("benchmarks",infoCount);
+				    commInfo.get(commId).put("disk_usage",commInfo.get(commId).get("disk_usage") + infoExtra);
+					
+					
+				    log.info("commId: " + commId + " | benchCount: " + infoCount + " | benchDisk: " + infoExtra);
+				    
+				}
+	
+				Common.safeClose(con);
+				Common.safeClose(results);
+				Common.safeClose(procedure);
 			
-			
-			dropCommunityAssoc();
-
-			R.COMM_INFO_MAP = commInfo;
-			R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
+	
+				con = Common.getConnection();
+	
+				procedure = con.prepareCall("{CALL GetCommunityStatsJobs()}");
+				results = procedure.executeQuery();
+				
+				while(results.next()){
+	
+				    commId = results.getInt("comm_id");
+				    infoCount = results.getLong("jobCount");
+				    infoExtra = results.getLong("jobPairCount");
+	
+				    commInfo.get(commId).put("jobs",infoCount);
+				    commInfo.get(commId).put("job_pairs",infoExtra);
+					
+				    log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
+				    
+				}
+	
+				Common.safeClose(con);
+				Common.safeClose(results);
+				Common.safeClose(procedure);
+	
+				
+				dropCommunityAssoc();
+	
+				R.COMM_INFO_MAP = commInfo;
+				R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
 			 }
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);

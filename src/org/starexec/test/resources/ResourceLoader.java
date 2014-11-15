@@ -451,7 +451,6 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static WebDriver getWebDriver(String email, String password) {
-			//WebDriver driver=new FirefoxDriver();
 		    WebDriver driver = new HtmlUnitDriver(true);
 	       
 	        driver.get(Util.url("secure/index.jsp"));
