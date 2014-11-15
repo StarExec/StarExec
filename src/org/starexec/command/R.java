@@ -213,7 +213,6 @@ public class R {
 	
 	
 	//Param names expected at the command line
-	public static String PARAM_TEST="test";
 	public static String PARAM_NAME="n";
 	public static String PARAM_DESC="d";
 	public static String PARAM_DESCRIPTION_FILE="df";
