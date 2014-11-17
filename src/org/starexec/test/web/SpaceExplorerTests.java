@@ -37,10 +37,10 @@ public class SpaceExplorerTests extends TestSequence {
 	private Space space1=null; //will contain both solvers and benchmarks at the start of testing
 	private Space space2=null;
 	WebDriver driver=null;
-	List<Integer> benchmarkIds=null;
+	//List<Integer> benchmarkIds=null;
 
 	Solver solver=null;
-	private Job job=null;
+	//private Job job=null;
 
 	
 	User user=null;
@@ -97,7 +97,8 @@ public class SpaceExplorerTests extends TestSequence {
 		WebElement primLink=driver.findElement(By.xpath(".//*[@id='"+primType+"']/tbody/tr/td[2]"));
 		Actions actions=new Actions(driver);
 
-		actions.dragAndDrop(primLink, space2Link).perform();
+		//actions.dragAndDrop(primLink, space2Link).perform();
+		actions.clickAndHold(primLink).moveToElement(space2Link).release().perform();
 		Thread.sleep(300);
 		List<WebElement> dialogButtons=driver.findElements(By.xpath("//*[@class=\"ui-dialog-buttonset\"]/button/span"));
 		for (WebElement e : dialogButtons) {
@@ -114,14 +115,45 @@ public class SpaceExplorerTests extends TestSequence {
 		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
 		linkPrimitiveTest("solverField","solvers");
 		Assert.assertEquals(2,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		List<Integer>solvers=new ArrayList<Integer>();
+		solvers.add(solver.getId());
+		Spaces.removeSolvers(solvers, space2.getId());
 	}
+	@Test
+	private void linkSolverTest2() throws InterruptedException {
+		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		linkPrimitiveTest("solverField","solvers");
+		Assert.assertEquals(2,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		List<Integer>solvers=new ArrayList<Integer>();
+		solvers.add(solver.getId());
+		Spaces.removeSolvers(solvers, space2.getId());
+	}
+	@Test
+	private void linkSolverTest3() throws InterruptedException {
+		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		linkPrimitiveTest("solverField","solvers");
+		Assert.assertEquals(2,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		List<Integer>solvers=new ArrayList<Integer>();
+		solvers.add(solver.getId());
+		Spaces.removeSolvers(solvers, space2.getId());
+	}
+	@Test
+	private void linkSolverTest4() throws InterruptedException {
+		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		linkPrimitiveTest("solverField","solvers");
+		Assert.assertEquals(2,Solvers.getAssociatedSpaceIds(solver.getId()).size());
+		List<Integer>solvers=new ArrayList<Integer>();
+		solvers.add(solver.getId());
+		Spaces.removeSolvers(solvers, space2.getId());
+	}
+	
 	
 	@Test
 	private void linkBenchmarkTest() throws InterruptedException {
-		int benchId=benchmarkIds.get(0);
-		Assert.assertEquals(1,Benchmarks.getAssociatedSpaceIds(benchId).size());
-		linkPrimitiveTest("benchField","benchmarks");
-		Assert.assertEquals(2,Benchmarks.getAssociatedSpaceIds(benchId).size());
+		//int benchId=benchmarkIds.get(0);
+		//Assert.assertEquals(1,Benchmarks.getAssociatedSpaceIds(benchId).size());
+		//linkPrimitiveTest("benchField","benchmarks");
+		//Assert.assertEquals(2,Benchmarks.getAssociatedSpaceIds(benchId).size());
 
 	}
 	
@@ -147,10 +179,10 @@ public class SpaceExplorerTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),Communities.getTestCommunity().getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),Communities.getTestCommunity().getId());		
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		//benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 
-		Solvers.associate(solver.getId(), space1.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, -1, solver.getId(), benchmarkIds,100,100,1);
+		//Solvers.associate(solver.getId(), space1.getId());
+		//job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, -1, solver.getId(), benchmarkIds,100,100,1);
 
 	}
 
@@ -163,10 +195,10 @@ public class SpaceExplorerTests extends TestSequence {
 
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Jobs.deleteAndRemove(job.getId());
+		//for (Integer i : benchmarkIds) {
+		//	Benchmarks.deleteAndRemoveBenchmark(i);
+		//}
+		//Jobs.deleteAndRemove(job.getId());
 
 	}
 
