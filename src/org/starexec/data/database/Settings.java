@@ -178,6 +178,44 @@ public class Settings {
 	}
 	
 	/**
+	 * Checks whether the given user has access to the given solver through a settings profile
+	 * @param userId
+	 * @param solverId
+	 * @return
+	 */
+	public static boolean canUserSeeSolverInSettings(int userId, int solverId) {
+		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+		for (DefaultSettings s : settings) {
+			if (s.getSolverId()==null) {
+				continue;
+			}
+			if (s.getSolverId()==solverId) {
+				return true;
+			}
+		}
+		return false;
+	} 
+	
+	/**
+	 * Checks whether the given user has access to the given benchmark through a settings profile
+	 * @param userId
+	 * @param benchId
+	 * @return
+	 */
+	public static boolean canUserSeeBenchmarkInSettings(int userId, int benchId) {
+		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+		for (DefaultSettings s : settings) {
+			if (s.getBenchId()==null) {
+				continue;
+			}
+			if (s.getBenchId()==benchId) {
+				return true;
+			}
+		}
+		return false;
+	} 
+	
+	/**
 	 * Deletes the DefaultSettings profile with the given ID
 	 * @param id 
 	 * @return True on success and false otherwise

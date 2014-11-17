@@ -8,6 +8,7 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		DefaultSettings settings = Communities.getDefaultSettings(spaceId);
+		
 		int userId = SessionUtil.getUserId(request);
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
@@ -29,6 +30,7 @@
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 				"The parent space id was not in the correct format");
 	} catch (Exception e) {
+		e.printStackTrace();
 		response.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"You do not have permission to upload benchmarks to this space or the space does not exist");

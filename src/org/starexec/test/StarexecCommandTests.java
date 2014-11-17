@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.apache.tomcat.jni.Time;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
@@ -202,7 +201,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void uploadSolver() throws Exception {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
-		int result=con.uploadSolver(name, space1.getId(), solverFile.getAbsolutePath(), true,false);
+		int result=con.uploadSolver(name, space1.getId(), solverFile.getAbsolutePath(), true,false,null);
 		if (result>0) {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
@@ -219,7 +218,7 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
 		
-		int result=con.uploadSolverFromURL(name, space1.getId(), solverURL, true,false);
+		int result=con.uploadSolverFromURL(name, space1.getId(), solverURL, true,false,null);
 		if (result>0) {
 			addMessage("solver seems to have been added successfully -- testing database recall");
 			Solver testSolver=Solvers.get(result);
@@ -234,11 +233,16 @@ public class StarexecCommandTests extends TestSequence {
 	private void waitForUpload(int uploadId, int maxSeconds) {
 		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
 		for (int x=0;x<maxSeconds;x++) {
-			UploadStatus status= Uploads.get(uploadId);
-			if (status.isEverythingComplete()) {
+			UploadStatus stat= Uploads.get(uploadId);
+			log.debug("upload Id = "+uploadId+" is finished = "+stat.isEverythingComplete());
+			if (stat.isEverythingComplete()) {
 				break;
 			}
-			Time.sleep(1000);
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
 		}
 	}
 	
@@ -246,14 +250,13 @@ public class StarexecCommandTests extends TestSequence {
 	private void uploadBenchmarks() throws Exception {
 		
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
-		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
+		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		addMessage("upload ID = "+ result);
 		
 		waitForUpload(result,60);
-		UploadStatus status= Uploads.get(result);
-
-		addMessage(String.valueOf(status.isEverythingComplete()));
+		UploadStatus stat= Uploads.get(result);
+		Assert.assertTrue(stat.isEverythingComplete());
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
 		Assert.assertTrue(t.getBenchmarks().size()>0);
@@ -270,14 +273,17 @@ public class StarexecCommandTests extends TestSequence {
 		//we are putting the benchmarks in a new space to avoid name collisions
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 	
-		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), 1, tempSpace.getId(), false);
+		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		waitForUpload(result, 60);
+		Assert.assertTrue(Uploads.get(result).isEverythingComplete());
+
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
+		
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
 
 	}
@@ -683,10 +689,6 @@ public class StarexecCommandTests extends TestSequence {
 		user=Users.getTestUser();
 		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
-		
-		//this prevents the apache http libraries from logging things. Their logs are very prolific
-		//and drown out ours
-		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		int status = con.login();

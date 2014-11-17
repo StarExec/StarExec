@@ -478,9 +478,11 @@ class CommandParser {
 	 * Run commands given in a file in succession
 	 * @param filePath The path to a file containing a list of commands
 	 * @param verbose Indicates whether to print status
+	 * @param test
+	 * @return 
 	 * @author Eric Burns
 	 */
-	protected int runFile(String filePath, boolean verbose,boolean test) {
+	protected int runFile(String filePath, boolean verbose) {
 		
 		try {
 			BufferedReader br=new BufferedReader(new FileReader(filePath));
@@ -491,7 +493,7 @@ class CommandParser {
 					System.out.println("Processing Command: "+line);
 				}
 				status=parseCommand(line);
-				if (verbose || test) {
+				if (verbose) {
 				    MessagePrinter.printStatusMessage(status,this);	
 				    MessagePrinter.printWarningMessages();
 				}
@@ -590,7 +592,7 @@ class CommandParser {
 			if (valid<0) {
 				return valid;
 			}
-			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE),commandParams.containsKey(R.PARAM_TEST));
+			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
 			
 		} else if (c.equals(R.COMMAND_IGNOREIDS)) {
 			returnIDsOnUpload=false;

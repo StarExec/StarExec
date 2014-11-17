@@ -827,10 +827,14 @@ class ArgumentParser {
 		if (commandParams.containsKey(R.PARAM_RUN)) {
 			runTestJob=true;
 		}
+		Integer settingId=null;
+		if (commandParams.containsKey(R.PARAM_SETTING)) {
+			settingId=Integer.parseInt(R.PARAM_SETTING);
+		}
 		if (upMethod.equals("local")) {
-			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable,runTestJob);
+			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable,runTestJob,settingId);
 		} else {
-			return con.uploadSolverFromURL(name, desc,descMethod, Integer.parseInt(space), url, downloadable,runTestJob);
+			return con.uploadSolverFromURL(name, desc,descMethod, Integer.parseInt(space), url, downloadable,runTestJob,settingId);
 		}
 		
 	}

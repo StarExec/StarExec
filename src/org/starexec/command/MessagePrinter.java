@@ -8,6 +8,7 @@ public class MessagePrinter {
 	 * Given an status code defined in R, prints the message that corresponds to that status code.
 	 * @param statusCode An integer status code.
 	 * @author Eric Burns
+	 * @param parser The Parser object that will contain any error messages from recent commands
 	 */
 	protected static void printStatusMessage(int statusCode, CommandParser parser) {
 		

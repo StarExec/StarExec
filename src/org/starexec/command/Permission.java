@@ -49,10 +49,10 @@ public class Permission {
 		return addSolver;
 	}
 	/**
-	 * @param addSolver the add solver permission to set
+	 * @param addSolver1 the add solver permission to set
 	 */
-	public void setAddSolver(boolean addSolver) {
-		this.addSolver = addSolver;
+	public void setAddSolver(boolean addSolver1) {
+		this.addSolver = addSolver1;
 	}
 	/**
 	 * @return if the user has the the add benchmark permission
@@ -61,10 +61,10 @@ public class Permission {
 		return addBenchmark;
 	}
 	/**
-	 * @param addBenchmark the add benchmark permission to set
+	 * @param addBenchmark1 the add benchmark permission to set
 	 */
-	public void setAddBenchmark(boolean addBenchmark) {
-		this.addBenchmark = addBenchmark;
+	public void setAddBenchmark(boolean addBenchmark1) {
+		this.addBenchmark = addBenchmark1;
 	}
 	/**
 	 * @return if the user has the the add user permission
@@ -73,10 +73,10 @@ public class Permission {
 		return addUser;
 	}
 	/**
-	 * @param addUser the add user permission to set
+	 * @param addUser1 the add user permission to set
 	 */
-	public void setAddUser(boolean addUser) {
-		this.addUser = addUser;
+	public void setAddUser(boolean addUser1) {
+		this.addUser = addUser1;
 	}
 	/**
 	 * @return if the user has the the add space permission
@@ -85,10 +85,10 @@ public class Permission {
 		return addSpace;
 	}
 	/**
-	 * @param addSpace the add space permission to set
+	 * @param addSpace1 the add space permission to set
 	 */
-	public void setAddSpace(boolean addSpace) {
-		this.addSpace = addSpace;
+	public void setAddSpace(boolean addSpace1) {
+		this.addSpace = addSpace1;
 	}
 	/**
 	 * @return if the user has the the remove solver permission
@@ -97,10 +97,10 @@ public class Permission {
 		return removeSolver;
 	}
 	/**
-	 * @param removeSolver the remove solver permission to set
+	 * @param removeSolver1 the remove solver permission to set
 	 */
-	public void setRemoveSolver(boolean removeSolver) {
-		this.removeSolver = removeSolver;
+	public void setRemoveSolver(boolean removeSolver1) {
+		this.removeSolver = removeSolver1;
 	}
 	/**
 	 * @return if the user has the the remove benchmark permission
@@ -109,10 +109,10 @@ public class Permission {
 		return removeBench;
 	}
 	/**
-	 * @param removeBench the remove benchmark permission to set
+	 * @param removeBench1 the remove benchmark permission to set
 	 */
-	public void setRemoveBench(boolean removeBench) {
-		this.removeBench = removeBench;
+	public void setRemoveBench(boolean removeBench1) {
+		this.removeBench = removeBench1;
 	}
 	/**
 	 * @return if the user has the the remove user permission
@@ -121,10 +121,10 @@ public class Permission {
 		return removeUser;
 	}
 	/**
-	 * @param removeUser the remove user permission to set
+	 * @param removeUser1 the remove user permission to set
 	 */
-	public void setRemoveUser(boolean removeUser) {
-		this.removeUser = removeUser;
+	public void setRemoveUser(boolean removeUser1) {
+		this.removeUser = removeUser1;
 	}
 	/**
 	 * @return if the user has the the remove space permission
@@ -133,10 +133,10 @@ public class Permission {
 		return removeSpace;
 	}
 	/**
-	 * @param removeSpace the remove space permission to set
+	 * @param removeSpace1 the remove space permission to set
 	 */
-	public void setRemoveSpace(boolean removeSpace) {
-		this.removeSpace = removeSpace;
+	public void setRemoveSpace(boolean removeSpace1) {
+		this.removeSpace = removeSpace1;
 	}	
 
 	/**
@@ -147,10 +147,10 @@ public class Permission {
 	}
 
 	/**
-	 * @param addJob the add job permission to set
+	 * @param addJob1 the add job permission to set
 	 */
-	public void setAddJob(boolean addJob) {
-		this.addJob = addJob;
+	public void setAddJob(boolean addJob1) {
+		this.addJob = addJob1;
 	}
 
 	/**
@@ -161,10 +161,10 @@ public class Permission {
 	}
 
 	/**
-	 * @param removeJob the remove job permission to set
+	 * @param removeJob1 the remove job permission to set
 	 */
-	public void setRemoveJob(boolean removeJob) {
-		this.removeJob = removeJob;
+	public void setRemoveJob(boolean removeJob1) {
+		this.removeJob = removeJob1;
 	}	
 	
 	protected void setPermissionOn(String perm) {

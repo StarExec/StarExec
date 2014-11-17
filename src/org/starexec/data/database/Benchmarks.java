@@ -397,19 +397,18 @@ public class Benchmarks {
 			Properties attrs = benchmark.getAttributes();
 			log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
 			// Setup normal information for the benchmark
-			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, benchmark.getName());		
 			procedure.setString(2, benchmark.getPath());
 			procedure.setBoolean(3, benchmark.isDownloadable());
 			procedure.setInt(4, benchmark.getUserId());			
 			procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
-			procedure.setInt(6, spaceId);
-			procedure.setLong(7, FileUtils.sizeOf(new File(benchmark.getPath())));
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			procedure.setLong(6, FileUtils.sizeOf(new File(benchmark.getPath())));
+			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 
 			// Execute procedure and get back the benchmark's id
 			procedure.executeUpdate();		
-			benchmark.setId(procedure.getInt(8));
+			benchmark.setId(procedure.getInt(7));
 
 			// If the benchmark is valid according to its processor...
 
@@ -646,21 +645,26 @@ public class Benchmarks {
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation is successful and false otherwise
 	 */
-	//TODO: Sandbox this
 	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
 		for(Benchmark b : benchmarks) {
 			try {
+				List<File> files=new ArrayList<File>();
+				files.add(new File(p.getFilePath()));
+				files.add(new File(b.getPath()));
+				File sandbox=Util.copyFilesToNewSandbox(files);
+				String benchPath=new File(sandbox,new File(b.getPath()).getName()).getAbsolutePath();
+				File working=new File(sandbox,new File(p.getFilePath()).getName());
 				// Run the processor on the benchmark file
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
 				
 				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
-				procCmd[1] = b.getPath();
-				String propstr = Util.executeCommand(procCmd,null,new File(p.getFilePath()));
-
+				procCmd[1] = benchPath;
+				String propstr = Util.executeSandboxCommand(procCmd,null,working);
+				FileUtils.deleteQuietly(sandbox);
 				// Load results into a properties file
 				Properties prop = new Properties();
 				prop.load(new StringReader(propstr));							

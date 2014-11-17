@@ -59,7 +59,11 @@ function openSpace(curSp,childId) {
 }
 function getSpaceChain(selector) {
 	chain=new Array();
-	spaces=$(selector).attr("value").split(",");
+	spaceString=$(selector).attr("value");
+	if (spaceString.length==0) {
+		return spaceString;
+	}
+	spaces=spaceString.split(",");
 	index=0;
 	for (i=0;i<spaces.length;i++) {
 		if (spaces[i].trim().length>0) {

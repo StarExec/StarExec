@@ -43,7 +43,7 @@ public class Validator {
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
         private static String[] allowedCopyHierParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
-	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE,R.PARAM_TEST};
+	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
 	private static String[] allowedPauseOrResumeParams=new String[]{R.PARAM_ID};
 	private static String[] allowedRerunParams=new String[]{R.PARAM_ID};
@@ -53,7 +53,7 @@ public class Validator {
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
 		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED, R.PARAM_SEED};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
-		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE, R.PARAM_RUN};
+		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE, R.PARAM_RUN, R.PARAM_SETTING};
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
 		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
@@ -107,7 +107,7 @@ public class Validator {
 	
 	public static boolean isValidInteger(String str) {
 		try {
-			long check=Long.parseLong(str);
+			Long.parseLong(str);
 			return true;
 		} catch(Exception e) {
 			return false;
@@ -261,11 +261,11 @@ public class Validator {
     
     
 	/**
-	 * @param urlParams-- A HashMap containing key/value pairs that will be encoded into the download URL
-	 * @param A HashMap containing key/value pairs the user entered into the command line
-	 * 
-	 * @return 0 if the request is valid, and a negative error code if it is not
-	 * @author Eric Burns
+	 * Checks to see if the parameters given by the user comprise a valid download request
+	 * @param commandParams Params given by the user
+	 * @param type The type of the download ("solver", "benchmark", or so on)
+	 * @param since If the download type is new job output, since is the completion ID to retrieve results after
+	 * @return
 	 */
 	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type,Integer since) {
 		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
@@ -319,6 +319,7 @@ public class Validator {
 	 * @param commandParams A HashMap mapping String keys to String values
 	 * @return 0  if the upload request has all the basic requirements, and a negative error code otherwise.
 	 * @author Eric Burns
+	 * @param archiveRequired If true, file given by user must be a valid archive type (zip,tar, tgz)
 	 */
 	private static int isValidUploadRequest(HashMap<String,String> commandParams, boolean archiveRequired) {
 		
@@ -388,6 +389,8 @@ public class Validator {
 	 * Validates an upload in the same way as isValidUploadRequest, except that it ensures that only files
 	 * and not URLs are allowed
 	 * @param commandParams The key value pairs given by the user at the command line
+	 * @param archiveRequired If true, file given by user must be a valid archive type (zip,tar, tgz)
+
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 * @author Eric Burns
 	 */
@@ -498,6 +501,7 @@ public class Validator {
 	
 	/**
 	 * Validates a request to list the primitives in a space
+	 * @param urlParams Additional parameters to include in the URL that will be sent to the server (includes type)
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
@@ -770,11 +774,11 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (newVal.equals("firstname")|| newVal.equals("lastname")) {
+		if (setting.equals("firstname")|| setting.equals("lastname")) {
 			if(!isValidPrimName(newVal)){
 				return Status.ERROR_BAD_NAME;
 			}
-		} else if (newVal.equals("institution")) {
+		} else if (setting.equals("institution")) {
 			if (!isValidInstitution(newVal)) {
 				return Status.ERROR_BAD_INSTITUTION;
 			}

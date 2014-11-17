@@ -5,7 +5,6 @@ package org.starexec.command;
  */
 
 import java.util.HashMap;
-import java.util.List;
 
 
 import org.apache.http.Header;
@@ -17,8 +16,8 @@ public class HTMLParser {
 	/**
 	 * This method encodes a given set of parameters into the given URL to be
 	 * used in HTTP Get requests
-	 * @param u-- The initial URL to be built upon
-	 * @param params-- a list of name/value pairs to be encoded into the URL
+	 * @param u The initial URL to be built upon
+	 * @param params a list of name/value pairs to be encoded into the URL
 	 * @return A new URL with the base u and the parameters in params encoded
 	 * @author Eric Burns
 	 */
@@ -176,7 +175,7 @@ public class HTMLParser {
 	/**
 	 * Given the headers of an HttpResponse and the name of a cookie,
 	 * check to see if that cookie was set and return its value if so
-	 * @param headers-- An array of HTTP headers 
+	 * @param headers An array of HTTP headers 
 	 * @param cookieName the name of a cookie
 	 * @return The value of the given cookie, or null if it was not present
 	 * @author Eric Burns

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -15,6 +15,9 @@
 		if(!p.canAddSolver()) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add solvers here");
 		}
+		List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+		request.setAttribute("defaultSettings",listOfDefaultSettings);			
+
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The parent space id was not in the correct format");
 	} catch (Exception e) {
@@ -81,18 +84,29 @@
 						</td>
 					</tr>
 					
-					<!-- TODO: Renable <tr>
+					<tr>
 						<td title="After uploading this solver, a job will immediately be created in which this solver
 						is run against the default benchmark for this community, using community default settings.">run test job</td>
 						<td>
-							<input name="runTestJob" type="radio" value="true" checked="checked" /><label>yes</label>
-							<input name="runTestJob" type="radio" value="false" /><label>no</label>		
+							<input id="useTestJob" class="testJobRadio" name="runTestJob" type="radio" value="true" /><label>yes</label>
+							<input id="noTestJob" class="testJobRadio" name="runTestJob" name="runTestJob" type="radio" value="false" checked="checked" /><label>no</label>		
 						</td>
-					</tr>-->
+					</tr>
+					<tr id="settingRow" class="noHover" title="what default settings profile would you like to use?">
+						<td>setting profile</td>
+						<td>
+							<select name="setting" id="settingProfile">	
+									<c:forEach var="setting" items="${defaultSettings}">
+		                                <option value="${setting.getId()}">${setting.name}</option>
+									</c:forEach>
+							</select>
+						</td>
+					</tr>
 					<tr>
 						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
 						<td colspan="1"><button id="btnUpload" type="submit">upload</button></td>
 					</tr>
+					
 				</tbody>
 			</table>																	
 		</fieldset>

@@ -52,7 +52,7 @@ class JsonHandler {
 	/**
 	 * Gets back a status message from a ValidatorStatusCode sent back from the server
 	 * object attached
-	 * @param response
+	 * @param obj The json ValidatorStatusCode object to get the string message from
 	 * @return The string message, or null if there is no ValidatorStatusCode
 	 */
 	
@@ -68,7 +68,7 @@ class JsonHandler {
 	/**
 	 * Gets back whether a request is successful from a response that has a JSON ValidatorStatusCode
 	 * object attached
-	 * @param response
+	 * @param obj The json ValidatorStatusCode object to get the boolean success value from
 	 * @return Whether the request was successful, or null if there is no ValidatorStatusCode
 	 */
 	

@@ -3,7 +3,7 @@ $(document).ready(function(){
 	
 	initDataTables();
 	
-	$('#jobs tbody tr').live('click', function () {
+	$('#jobs tbody').on('click', "tr", function () {
 		   $(this).toggleClass( 'row_selected' );
 		} );
 	

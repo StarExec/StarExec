@@ -2,6 +2,9 @@ package org.starexec.test;
 
 import java.util.Random;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.starexec.constants.R;
 public class TestUtil {
 	private static String[] letters={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
@@ -33,6 +36,11 @@ public class TestUtil {
 		return getRandomAlphaString(R.USER_FIRST_LEN-1);
 	}
 	
+	/**
+	 * Gets a random string of lowercase letters of the given size
+	 * @param length
+	 * @return
+	 */
 	public static String getRandomAlphaString(int length) {
 		String name="";
 		while (length>0) {
@@ -51,6 +59,15 @@ public class TestUtil {
 			sb.append(te.toString()+"\n");
 		}
 		return sb.toString();
+	}
+	
+	/**
+	 * Given a webdriver on a page, check if that page is one of our red error pages
+	 * @param driver
+	 * @return True if the driver is on an error page and false otherwise
+	 */
+	public static boolean isOnErrorPage(WebDriver driver) {
+		return driver.findElements(By.className("starexecErrorPage")).size()!=0;
 	}
 	
 	

@@ -118,7 +118,11 @@ public class UtilTests extends TestSequence{
 		files.add(new File(s2.getPath()));
 		
 		File sandbox=Util.copyFilesToNewSandbox(files);
-		Assert.assertEquals(files.size(),sandbox.listFiles().length);
+		Assert.assertTrue(sandbox.exists());
+		for (File f : files) {
+			File sandboxFile=new File(sandbox,f.getName());
+			Assert.assertTrue(f.exists());
+		}
 	}
 	
 	

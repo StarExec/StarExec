@@ -540,9 +540,7 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 DROP PROCEDURE IF EXISTS PauseAll;
 CREATE PROCEDURE PauseAll()
 	BEGIN
-		INSERT INTO system_flags (integrity_keeper, paused)
-		VALUES ('', true)
-		ON DUPLICATE KEY UPDATE paused = true;
+		UPDATE system_flags SET paused = true;
 	END //
 	
 -- Sets the "paused" property of a job to false
@@ -564,9 +562,7 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 DROP PROCEDURE IF EXISTS ResumeAll;
 CREATE PROCEDURE ResumeAll()
 	BEGIN
-		INSERT INTO system_flags (integrity_keeper, paused)
-		VALUES ('', false)
-		ON DUPLICATE KEY UPDATE paused = false;
+		UPDATE system_flags SET paused = false;
 	END //
 	
 -- Sets the "killed" property of a job to true

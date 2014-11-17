@@ -7,31 +7,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
-import org.jfree.util.Log;
-import org.starexec.constants.R;
-import org.starexec.data.database.Communities;
+
+
+import org.starexec.test.database.*;
+import org.starexec.test.security.*;
+import org.starexec.test.web.*;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.BenchmarkTests;
-import org.starexec.test.database.ClusterTests;
-import org.starexec.test.database.DefaultSettingsTests;
-import org.starexec.test.database.JobPairTests;
-import org.starexec.test.database.JobTests;
-import org.starexec.test.database.PermissionsTests;
-import org.starexec.test.database.ProcessorTests;
-import org.starexec.test.database.QueueTests;
-import org.starexec.test.database.SolverTests;
-import org.starexec.test.database.SpaceTests;
-import org.starexec.test.database.UserTests;
-import org.starexec.test.database.WebsiteTests;
-import org.starexec.test.security.BenchmarkSecurityTests;
-import org.starexec.test.security.CacheSecurityTests;
-import org.starexec.test.security.GeneralSecurityTests;
-import org.starexec.test.security.JobSecurityTests;
-import org.starexec.test.security.QueueSecurityTests;
-import org.starexec.test.security.SolverSecurityTests;
-import org.starexec.test.security.SpaceSecurityTests;
-import org.starexec.test.security.UserSecurityTests;
-import org.starexec.test.security.ValidatorTests;
+
+
 import org.starexec.util.Util;
 
 /**
@@ -74,6 +58,10 @@ public class TestManager {
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
 		tests.add(new DefaultSettingsTests());
+		tests.add(new LoginTests());
+		tests.add(new UploadSolverTests());
+		tests.add(new UploadBenchmarksTests());
+		tests.add(new SpaceExplorerTests());
 	}
 	
 	public static boolean areTestsRunning() {

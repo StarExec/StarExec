@@ -2,7 +2,6 @@ package org.starexec.command;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.List;
 
 public class Shell {
 	
@@ -50,7 +49,7 @@ public class Shell {
 		System.out.println("Last update = "+R.VERSION);
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
-			int status=shell.parser.runFile(args[0], false,false);
+			shell.parser.runFile(args[0], false);
 		} else {
 			shell.runShell();
 		}

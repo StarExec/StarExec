@@ -105,9 +105,6 @@ CREATE TABLE processors (
 	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
--- The default 'no type' benchmark processor
-INSERT INTO processors (name, description, path, community, processor_type, disk_size) VALUES 
-('no_type', 'this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type.', '/home/starexec/processor_scripts', 1, 3, 145);
 
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
@@ -576,7 +573,9 @@ CREATE TABLE file_cache (
 CREATE TABLE system_flags (
 	integrity_keeper ENUM('') NOT NULL,
 	paused BOOLEAN DEFAULT FALSE,
-	PRIMARY KEY (integrity_keeper)
+	test_queue INT,
+	PRIMARY KEY (integrity_keeper),
+	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;

@@ -30,7 +30,7 @@
 
 <star:template title="http ${pageContext.errorData.statusCode} - ${errorDesc}" css="error">		
 	<p><c:out value="${requestScope['javax.servlet.error.message']}"/></p>
-	<div id="actions">
+	<div id="actions" class="starexecErrorPage">
 		<a href="#" onclick="history.go(-1);return false;">try again</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:${contactEmail}?subject=[Starexec] Error Report">report error</a>
 	</div>		
 </star:template>

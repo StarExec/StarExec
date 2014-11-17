@@ -9,6 +9,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -16,6 +17,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.JobStatus.JobStatusCode;
@@ -297,37 +299,33 @@ public class JobSecurity {
 	/**
 	 * Checks to see whether a job can be run with community default settings in the given space
 	 * @param userId ID of the user creating the job
-	 * @param solverId ID of the solver being used
 	 * @param sId Id of the space to put the job in
-	 * @param name Name of the new job
-	 * @param desc Description for the new job
 	 * @return
 	 */
-	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int solverId, int sId, String name, String desc) {
+	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId,int statusId) {
 			
-			if (!Permissions.canUserSeeSolver(solverId, userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to use the given solver");
+			ValidatorStatusCode status = JobSecurity.canUserCreateJobInSpace(userId,sId);
+			if (!status.isSuccess()) {
+				return status;
 			}
-			List<Configuration> configs=Solvers.getConfigsForSolver(solverId);
-			if (configs.size()==0) {
-				return new ValidatorStatusCode(false, "The given solver has no configurations");
-			}
-			if (!Users.isMemberOfCommunity(userId, Spaces.getCommunityOfSpace(sId))) {
-				return new ValidatorStatusCode(false, "You are not a member of the community in which you are trying to create a job");
-			}
-			DefaultSettings settings=Communities.getDefaultSettings(sId);
+			DefaultSettings settings=Settings.getProfileById(statusId);
 			
 			
 			if (Benchmarks.get(settings.getBenchId())==null) {
 				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 			}
-			if (!Validator.isValidJobName(name)) {
-				return new ValidatorStatusCode(false, "The given name is not valid-- please refer to the help files to see the proper format");
-			}
-			if (!Validator.isValidPrimDescription(desc)) {
-				return new ValidatorStatusCode(false, "The given description is not valid-- please refer to the help files to see the proper format");
-
-			}
+			
 			return new ValidatorStatusCode(true);
+	}
+	
+	
+	public static ValidatorStatusCode canUserCreateJobInSpace(int userId, int sId) {
+		Permission p=Permissions.get(userId, sId);
+		
+		if (p==null || !p.canAddJob()) {
+			return new ValidatorStatusCode(false, "You do not have permission to create a job in this space");
+		}
+		
+		return new ValidatorStatusCode(true);
 	}
 }

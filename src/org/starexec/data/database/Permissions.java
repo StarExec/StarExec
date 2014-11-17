@@ -68,6 +68,9 @@ public class Permissions {
 		if (Users.isAdmin(userId)) {
 			return true;
 		}
+		if (Settings.canUserSeeBenchmarkInSettings(userId, benchId)) {
+			return true;
+		}
 
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -200,6 +203,9 @@ public class Permissions {
 			return true;
 		}
 		if (Users.isAdmin(userId)) {
+			return true;
+		}
+		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
 			return true;
 		}
 

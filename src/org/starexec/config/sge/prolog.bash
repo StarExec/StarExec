@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # /////////////////////////////////////////////
@@ -53,7 +52,7 @@ do
   BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
   LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
   INDEX=$((INDEX + 1))
-done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" #TODO: this does not look correct. 
 fi
 
 return $?
@@ -121,16 +120,19 @@ function copyDependencies {
 	fi
 	
 	
-	# TODO: Does pre-processing need to be done on dependencies as well?
 	log "copying benchmark dependencies to execution host..."
 	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
 	do
-		#log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
+		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
 		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+		
 			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+			
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		fi
 		

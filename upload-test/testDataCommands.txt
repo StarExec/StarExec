@@ -1,4 +1,7 @@
 returnids
+login addr=https://stardev.cs.uiowa.edu/appname/ u=admin@uiowa.edu p=Starexec4ever
+pushbenchproc id=1 f=no-type.zip d=this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type n=no_type
+logout
 login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
 pushbenchproc id=2 f=smt2-validator.zip n=smt2orig
 pushbenchproc id=2 f=smt2nonincremental.zip n=smt2nonincremental

@@ -1377,5 +1377,58 @@ public class Queues {
 		}
 		return false;
 	}
+	
+	
+	public static boolean setTestQueue(int queueId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetTestQueue(?)}");
+			procedure.setInt(1,queueId);
+			procedure.executeUpdate();
+			
+			return true;
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the queue that should be used for running test jobs. If no such queue
+	 * is currently set, it will be set to all.q before returning. This is to ensure
+	 * a test queue is always set
+	 * @return
+	 */
+	public static int getTestQueue() {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetTestQueue()}");
+			results=procedure.executeQuery();
+			if (results.next()) {
+				int id= results.getInt("test_queue");
+				if (id<=0) {
+					Queues.setTestQueue(R.DEFAULT_QUEUE_ID);
+					return R.DEFAULT_QUEUE_ID;
+				}
+				return id;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+	}
 
 }

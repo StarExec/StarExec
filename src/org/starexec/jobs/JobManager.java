@@ -609,10 +609,13 @@ public abstract class JobManager {
 	 */
 	public static List<JobPair> addJobPairsFromSpace(int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, String path) {
 		Space space = Spaces.get(spaceId);
+		log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		// Get the benchmarks and solvers from this space
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+		log.debug("found this many benchmarks in the space = "+benchmarks.size());
 		List<Solver> solvers = Solvers.getBySpace(spaceId);
+		
 		List<Configuration> configs;
 		JobPair pair;
 		for (Benchmark b : benchmarks) {
@@ -620,7 +623,9 @@ public abstract class JobManager {
 				// Get the configurations for the current solver
 				configs = Solvers.getConfigsForSolver(s.getId());
 				if (configs.size() == 0) {
-					return null;
+					continue;
+					//we shouldn't be failing on this-- we should just continue on with the other solvers
+					//return null;
 				}
 				   
 				for (Configuration c : configs) {

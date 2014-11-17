@@ -36,6 +36,10 @@
     <location>/public/messages/error.jsp</location> 
   </error-page>
   <error-page> 
+    <error-code>406</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
+  <error-page> 
     <error-code>500</error-code> 
     <location>/public/messages/error.jsp</location> 
   </error-page>  
@@ -344,6 +348,7 @@
     <auth-constraint>
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
+	  <role-name>test</role-name>
     </auth-constraint>			
   </security-constraint>
   

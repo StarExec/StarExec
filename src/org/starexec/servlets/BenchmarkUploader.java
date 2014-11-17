@@ -191,6 +191,8 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			if (fileSize>allowedBytes-usedBytes) {
 				archiveFile.delete();
+				Uploads.setErrorMessage(statusId,"The benchmark upload is too large to fit in your disk quota. The uncompressed" +
+						" size of the archive is approximately "+fileSize+" bytes, but you have only "+(allowedBytes-usedBytes)+" bytes remaining.");
 				throw new Exception("File too large to fit in user's disk quota");
 			}		
 

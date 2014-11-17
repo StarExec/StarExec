@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -35,6 +36,7 @@ import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
@@ -67,8 +69,8 @@ public class UploadSolver extends HttpServlet {
     private static final String UPLOAD_METHOD="upMethod";
     private static final String DESC_METHOD = "descMethod";
     private static final String FILE_URL="url";
-    //TODO: Enable
-    //private static final String RUN_TEST_JOB="runTestJob";
+    private static final String RUN_TEST_JOB="runTestJob";
+    private static final String SETTING_ID="setting";
         
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -87,8 +89,8 @@ public class UploadSolver extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,status.getMessage());
 					return;
 				}
-				//TODO: Re enable
-				boolean runTestJob=false;//Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
+				
+				boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
 				
 				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 				// Parse the request as a solver
@@ -101,26 +103,30 @@ public class UploadSolver extends HttpServlet {
 				// Redirect based on success/failure
 				if(return_value>=0) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
-					if (configs == -4) { //If there are no configs
+					if (configs == -4) { //If there are no configs. We do not attempt to run a test job in this case
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
 						if (runTestJob) {
 							log.debug("attempting to run test job");
 							
-							ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, return_value, spaceId, "test", "");
-							if (testJobStatus.isSuccess()) {
-								int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId);
-								if (jobId>0) {
-								    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
-
-								} else {
-								    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job"));
-								}
-							} else {
-							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Could not create test job because:"+status.getMessage()+" "));
-							    
+							int settingsId=Communities.getDefaultSettings(spaceId).getId();
+							//if the user gave a setting ID, then they need to have permission to use that profile
+							// otherwise, the community default is used
+							if (form.containsKey(SETTING_ID)) {
+								settingsId=Integer.parseInt((String)form.get(SETTING_ID));
 							}
+							
+							
+							
+							
+							int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId,settingsId);
+							if (jobId>0) {
+							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
+							} else {
+							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job-- solver uploaded correctly"));
+							}
+							
 							
 						} else {
 						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
@@ -390,6 +396,7 @@ public class UploadSolver extends HttpServlet {
 	 */
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form, HttpServletRequest request) {
 		try {
+			int userId=SessionUtil.getUserId(request);
 			if (!form.containsKey(UPLOAD_METHOD) ||
 					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
 					!form.containsKey(DESC_METHOD) ||
@@ -405,9 +412,7 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
 			
-			//if (!Validator.isValidBool((String)form.get(RUN_TEST_JOB))) {
-			//	return new ValidatorStatusCode(false, "The 'run test job' attribute needs to be a valid boolean");
-			//}
+			
 			
 			if(!Validator.isValidSolverName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
 				
@@ -448,6 +453,33 @@ public class UploadSolver extends HttpServlet {
 			int spaceId=Integer.parseInt((String)form.get("space"));
 			if (!SessionUtil.getPermission(request, spaceId).canAddSolver()) {
 				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");
+			}
+			
+			if (!Validator.isValidBool((String)form.get(RUN_TEST_JOB))) {
+				return new ValidatorStatusCode(false, "The 'run test job' attribute needs to be a valid boolean");
+			}
+			Boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
+			
+			//if the user wants to run a test job, there is some additional validation to do
+			if (runTestJob) {
+				int settingsId=Communities.getDefaultSettings(spaceId).getId();
+				//if the user gave a setting ID, then they need to have permission to use that profile
+				// otherwise, the community default is used
+				if (form.containsKey(SETTING_ID)) {
+					if (!Validator.isValidInteger((String)form.get(SETTING_ID))) {
+						return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
+					}
+					settingsId=Integer.parseInt((String)form.get(SETTING_ID));
+				}
+				
+				
+				// user must have permission to run a job in the given space
+				ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId,settingsId);
+				if (!testJobStatus.isSuccess()) {
+					return testJobStatus;
+				}
+				
+				
 			}
 			
 			
