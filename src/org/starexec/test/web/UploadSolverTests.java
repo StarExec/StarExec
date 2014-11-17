@@ -60,15 +60,16 @@ public class UploadSolverTests extends TestSequence {
         solverName.submit();
         Assert.assertTrue(driver.getCurrentUrl().equals(url));
 	}
+	//makes sure we can upload a solver correctly
 	@Test
-	private void uploadSolverTest() {
+	private void uploadSolverTest() throws InterruptedException {
 		driver.get(Util.url("secure/add/solver.jsp?sid="+s.getId()));
 		
         WebElement solverName=driver.findElement(By.name("sn"));
         WebElement solverDesc=driver.findElement(By.id("description"));
         WebElement textRadio=driver.findElement(By.id("radioText"));
         textRadio.click();
-        
+		Thread.sleep(2000); //need to wait for the description input to become visible
         WebElement localRadio=driver.findElement(By.id("radioLocal"));
         localRadio.click();
         WebElement solverFile=driver.findElement(By.id("fileLoc"));
@@ -79,7 +80,7 @@ public class UploadSolverTests extends TestSequence {
         
         solverName.submit();
         Assert.assertFalse(TestUtil.isOnErrorPage(driver));
-        
+        //we should have been redirected to the solver details page
         Assert.assertTrue(driver.getCurrentUrl().contains("details/solver.jsp"));
 
 	}
@@ -98,9 +99,9 @@ public class UploadSolverTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
+		driver.quit();
 		Spaces.removeSubspaces(s.getId(), u.getId());
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
-		driver.quit();
 		
 	}
 	

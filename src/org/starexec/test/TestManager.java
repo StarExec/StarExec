@@ -60,6 +60,8 @@ public class TestManager {
 		tests.add(new DefaultSettingsTests());
 		tests.add(new LoginTests());
 		tests.add(new UploadSolverTests());
+		tests.add(new UploadBenchmarksTests());
+		tests.add(new SpaceExplorerTests());
 	}
 	
 	public static boolean areTestsRunning() {

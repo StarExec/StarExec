@@ -320,8 +320,10 @@ public class Communities {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
-		
-		
+		//if the current space is the root, we just want to return the default profile
+		if (id==1) {
+			return new DefaultSettings();
+		}
 		try {			
 			//first, find the ID of the community this space is a part of
 			con = Common.getConnection();

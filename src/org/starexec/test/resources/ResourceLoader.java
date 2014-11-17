@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 
 import org.apache.commons.io.FileUtils;
@@ -123,6 +124,14 @@ public class ResourceLoader {
 		return null;
 		
 	}
+	
+	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
+			int cpuTimeout, int wallclockTimeout, int memory) {
+		List<Integer> solvers=new ArrayList<Integer>();
+		solvers.add(solverId);
+		return loadJobIntoDatabase(spaceId,userId,preProcessorId,postProcessorId,solvers,benchmarkIds,cpuTimeout,wallclockTimeout,memory);
+	}
+	
 	
 	/**
 	 * This will load a job with the given solvers and benchmarks into the database, after which it should
@@ -450,16 +459,29 @@ public class ResourceLoader {
 	 * @param password The password of the user to log in
 	 * @return
 	 */
-	public static WebDriver getWebDriver(String email, String password) {
-		    WebDriver driver = new HtmlUnitDriver(true);
+	public static WebDriver getWebDriver(String email, String password, boolean visible) {
+		WebDriver driver=null;
+		if (visible) {
+		    driver = new FirefoxDriver();
+
+		} else {
+		    driver = new HtmlUnitDriver(true);
+		}
 	       
 	        driver.get(Util.url("secure/index.jsp"));
 	        WebElement userName=driver.findElement(By.name("j_username"));
 	        userName.sendKeys(email);
 	        driver.findElement(By.name("j_password")).sendKeys(password);
-	        
+	        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
 	        userName.submit();
 	        
 	       return driver;
 	}
+	
+	public static WebDriver getFirefoxDriver(String email, String password) {
+	   return getWebDriver(email,password,true);
+	}
+	public static WebDriver getWebDriver(String email, String password) {
+		   return getWebDriver(email,password,false);
+		}
 }

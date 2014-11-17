@@ -189,6 +189,19 @@ public class Solvers {
 	}
 	
 	/**
+	 * Adds an association between the given solver id and the given space
+	 * @param solverId the id of the solver we are associating to the space
+	 * @param spaceId the ID of the space we are making the association to
+	 * @return True if the operation was a success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean associate(int solverId, int spaceId) {
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solverId);
+		return associate(solverIds,spaceId);
+	}
+	
+	/**
 	 * Adds an association between all the given solver ids and the given space
 	 * @param solverIds the ids of the solvers we are associating to the space
 	 * @param spaceId the ID of the space we are making the association to

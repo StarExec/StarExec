@@ -6,7 +6,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -33,15 +36,24 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
+/**
+ * This class contains tests that simply visit web pages can click around on them,
+ * searching for any javascript errors and also any JSP errors that prevent
+ * pages from loading
+ * @author Eric Burns
+ *
+ */
 
 public class GetPageTests extends TestSequence {
 	
 	private Space space1=null; //will contain both solvers and benchmarks
 	private Job job=null;
+	
 	File solverFile=null;
 	File downloadDir=null;
 
 	WebDriver driver=null;
+	Actions driverActions;
 	WebDriver adminDriver=null;
 	
 	Solver solver=null;
@@ -55,9 +67,20 @@ public class GetPageTests extends TestSequence {
 	Space testCommunity=null;	
 	Queue q=null;
 	@Test
-	private void getSpaceExplorerTest(){
+	private void getSpaceExplorerTest() throws InterruptedException{
 		driver.get(Util.url("secure/explore/spaces.jsp"));
 		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		WebElement treeIcon=driver.findElements(By.className("jstree-icon")).get(0);
+		treeIcon.click();
+		treeIcon.click();
+		treeIcon.click();
+		WebElement jobField=driver.findElement(By.id("jobExpd"));
+		jobField.click();
+		Thread.sleep(500); //wait for the field to open
+		WebElement tableHeader=driver.findElement(By.id("jobNameHead"));
+		tableHeader.click();
+		tableHeader.click();
+		
 	}
 	
 	@Test
@@ -370,6 +393,7 @@ public class GetPageTests extends TestSequence {
 		
 
 		driver=ResourceLoader.getWebDriver(user.getEmail(), R.TEST_USER_PASSWORD);
+		driverActions=new Actions(driver);
 		adminDriver=ResourceLoader.getWebDriver(admin.getEmail(), R.TEST_USER_PASSWORD);
 
 	
