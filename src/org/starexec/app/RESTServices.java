@@ -995,7 +995,9 @@ public class RESTServices {
 	@POST
 	@Path("/space/{id}/{primType}/pagination/")
 	@Produces("application/json")	
-	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {			
+	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {	
+		log.debug("got a request to getPrimitiveDetailsPaginated!");
+		
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
