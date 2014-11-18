@@ -82,7 +82,12 @@ public class Common {
 		} catch (Exception e) {
 			// Ignore any errors
 		}
-	}							
+	}		
+	
+	public static void logConnectionsOpen() {
+		log.debug("connection counts  = "+dataPool.getIdle()+" "+dataPool.getActive());
+		log.debug((connectionsOpened-connectionsClosed));
+	}
 	
 	/**
 	 * Ends a transaction by committing any changes and re-enabling auto-commit
