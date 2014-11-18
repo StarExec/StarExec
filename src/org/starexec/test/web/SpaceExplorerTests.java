@@ -37,10 +37,10 @@ public class SpaceExplorerTests extends TestSequence {
 	private Space space1=null; //will contain both solvers and benchmarks at the start of testing
 	private Space space2=null;
 	WebDriver driver=null;
-	//List<Integer> benchmarkIds=null;
+	List<Integer> benchmarkIds=null;
 
 	Solver solver=null;
-	//private Job job=null;
+	private Job job=null;
 
 	
 	User user=null;
@@ -179,26 +179,26 @@ public class SpaceExplorerTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),Communities.getTestCommunity().getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),Communities.getTestCommunity().getId());		
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		//benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 
-		//Solvers.associate(solver.getId(), space1.getId());
-		//job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, -1, solver.getId(), benchmarkIds,100,100,1);
+		Solvers.associate(solver.getId(), space1.getId());
+		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, -1, solver.getId(), benchmarkIds,100,100,1);
 
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		//driver.quit();
+		driver.quit();
 
 		Spaces.removeSubspaces(space1.getId(), user.getId());
 		Spaces.removeSubspaces(space2.getId(), user.getId());
 
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		
-		//for (Integer i : benchmarkIds) {
-		//	Benchmarks.deleteAndRemoveBenchmark(i);
-		//}
-		//Jobs.deleteAndRemove(job.getId());
+		for (Integer i : benchmarkIds) {
+			Benchmarks.deleteAndRemoveBenchmark(i);
+		}
+		Jobs.deleteAndRemove(job.getId());
 
 	}
 

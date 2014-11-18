@@ -14,6 +14,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 
 import com.mysql.jdbc.StringUtils;
@@ -123,6 +124,7 @@ public class UtilTests extends TestSequence{
 			File sandboxFile=new File(sandbox,f.getName());
 			Assert.assertTrue(f.exists());
 		}
+		FileUtils.deleteQuietly(sandbox);
 	}
 	
 	

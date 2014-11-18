@@ -3970,6 +3970,9 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			Job j=Jobs.get(jobId);
+			if (j==null) {
+				return false; //could not find the job
+			}
 			List<Space> jobSpaces=Spaces.getSubSpacesForJob(j.getPrimarySpace(), true);
 			jobSpaces.add(Spaces.getJobSpace(j.getPrimarySpace()));
 			

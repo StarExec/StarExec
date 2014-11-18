@@ -1209,7 +1209,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 		for (String testName : testNames) {
-			TestManager.executeTest(testName);
+			TestManager.executeTests(testNames);
 		}
 			
 		return gson.toJson(new ValidatorStatusCode(true,"Testing started successfully"));
