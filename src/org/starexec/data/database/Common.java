@@ -244,7 +244,7 @@ public class Common {
 	 */
 	protected static void safeClose(ResultSet r) {
 		try {
-			if(r != null) {
+			if(r != null && !r.isClosed()) {
 				r.close();
 			}
 		} catch (Exception e){
