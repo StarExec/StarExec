@@ -108,9 +108,9 @@ public class Common {
 	protected synchronized static Connection getConnection() throws SQLException {	
 		connectionsOpened++;
 		log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
-		String methodName1=Thread.currentThread().getStackTrace()[2].getMethodName();
-		String methodName2=Thread.currentThread().getStackTrace()[2].getMethodName();
-		log.info("stack trace info for the open connection is "+methodName1+ " "+methodName2);
+		StackTraceElement m1=Thread.currentThread().getStackTrace()[1];
+		StackTraceElement m2=Thread.currentThread().getStackTrace()[2];
+		log.info("stack trace info for the open connection is "+m1.getClassName()+"."+m1.getMethodName()+ " "+m2.getClassName()+"."+m2.getMethodName());
 		
 		return dataPool.getConnection();
 	}
@@ -229,10 +229,7 @@ public class Common {
 	protected static synchronized void safeClose(PreparedStatement p) {
 		try {
 			if(p != null && !p.isClosed()) {
-				p.close();
-				
-				connectionsClosed++;
-				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
+				p.close();				
 			}
 		} catch (Exception e){
 			// Do nothing
