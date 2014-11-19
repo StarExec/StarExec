@@ -2649,7 +2649,9 @@ public class Jobs {
 		} catch (Exception e ) {
 			log.error(e.getMessage(),e);
 		} finally {
+			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
