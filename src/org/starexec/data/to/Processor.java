@@ -20,7 +20,8 @@ public class Processor extends Identifiable {
 		DEFAULT(0), 
 		PRE(1), 
 		POST(2), 
-		BENCH(3);
+		BENCH(3),
+		UPDATE(4);
 		
 		private int val;
 		
@@ -40,6 +41,8 @@ public class Processor extends Identifiable {
 					return POST;
 				case 3:
 					return BENCH;
+			        case 4:
+				        return UPDATE;
 				default:
 					return DEFAULT;				
 			}
