@@ -105,14 +105,20 @@ public class Common {
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */
-	protected synchronized static Connection getConnection() throws SQLException {	
-		connectionsOpened++;
-		log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
-		//StackTraceElement m1=Thread.currentThread().getStackTrace()[1];
-		//StackTraceElement m2=Thread.currentThread().getStackTrace()[2];
-		//log.info("stack trace info for the open connection is "+m1.getClassName()+"."+m1.getMethodName()+ " "+m2.getClassName()+"."+m2.getMethodName());
+	protected synchronized static Connection getConnection() throws SQLException {
+		try {
+			connectionsOpened++;
+			log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
+			//StackTraceElement m1=Thread.currentThread().getStackTrace()[1];
+			//StackTraceElement m2=Thread.currentThread().getStackTrace()[2];
+			//log.info("stack trace info for the open connection is "+m1.getClassName()+"."+m1.getMethodName()+ " "+m2.getClassName()+"."+m2.getMethodName());
+			
+			return dataPool.getConnection();
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
 		
-		return dataPool.getConnection();
 	}
 	
 	/**

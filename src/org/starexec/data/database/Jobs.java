@@ -914,7 +914,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
+	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId){	
 		log.debug("getEnqueuePairs2 beginning...");
 		CallableStatement procedure = null;
 		ResultSet results = null;
