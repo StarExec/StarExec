@@ -425,15 +425,23 @@ public class Util {
     }
 	
 
-    protected static String drainInputStream(InputStream s) {
+    /** 
+     * drains the given InputStream, adding each line read to the given StringBuffer.
+     * @param sb the StringBuffer to which to append lines 
+     * @param s the InputStream to drain
+     * @return true iff we read a string 
+     */
+    protected static boolean drainInputStream(StringBuffer sb,InputStream s) {
 		InputStreamReader ins = new InputStreamReader(s);
 		BufferedReader reader = new BufferedReader(ins);		
 	
+		boolean readsomething = false;
 		String line = null;
-		StringBuilder sb = new StringBuilder();
 		try {
-		    while ((line = reader.readLine()) != null)
+		    while ((line = reader.readLine()) != null) {
+			readsomething = true;
 			sb.append(line + System.getProperty("line.separator"));
+		    }
 		    reader.close();
 		}
 		catch (IOException e) {
@@ -447,7 +455,7 @@ public class Util {
 			log.warn("Caught exception closing reader while draining streams.");
 		    }
 		}
-		return sb.toString();
+		return readsomething;
     }
 
 
@@ -458,20 +466,21 @@ public class Util {
 	   them in parallel.  Otherwise, draining one can block
 	   and prevent the other from making progress as well (since
 	   the process cannot advance in that case). */
+	final StringBuffer b = new StringBuffer();
 	threadPool.execute(new Runnable() {
 		@Override
 		    public void run() {
 		    try {
-			String es = drainInputStream(p.getErrorStream());
-			if (es.length() > 0)
-			    log.error("stderr from process follows:\n"+es);
+			if (drainInputStream(b,p.getErrorStream()))
+			    log.error("The process produced stderr output.");
 		    }
 		    catch(Exception e) {
 			log.error("Error draining stderr from process: "+e.toString());
 		    }
 		}
 	    });
-	return drainInputStream(p.getInputStream());
+	drainInputStream(b,p.getInputStream());
+	return b.toString();
     }
 
 	
