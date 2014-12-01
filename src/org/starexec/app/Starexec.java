@@ -245,6 +245,7 @@ public class Starexec implements ServletContextListener {
 		    
 		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
+		//TestManager.executeAllTestSequences();
 	}
 	
 }

@@ -193,7 +193,6 @@ public class Jobs {
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(topLevel);
 			
-			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
 			
 			//put the job in the space it was created in, assuming a space was selected

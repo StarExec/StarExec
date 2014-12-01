@@ -82,8 +82,8 @@ public class BatchUtil {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
 		
-		File file = new File(R.STAREXEC_ROOT, space.getName() +".xml");
-		
+		File file = new File(R.STAREXEC_ROOT, (space.getName().replaceAll("\\s+", "")) +".xml");
+		log.debug(file.getAbsolutePath());
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
 		
