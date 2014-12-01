@@ -74,8 +74,10 @@
 <!-- end space attributes type definitions -->
 
     <complexType name = "Update">
+      <all>
       <element name = "Text" type = "string" minOccurs = "0" maxOccurs
 	       = "1"/>
+      </all>
       <attribute name = "id" type = "int" />
       <attribute name = "name" type = "string" use = "optional" />
       <attribute name = "pid" type = "int" />
