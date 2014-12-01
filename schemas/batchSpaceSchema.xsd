@@ -74,12 +74,15 @@
 <!-- end space attributes type definitions -->
 
     <complexType name = "Update">
-      <element name = "Text" type = "string" minOccurs = "1" maxOccurs
+      <all>
+      <element name = "Text" type = "string" minOccurs = "0" maxOccurs
 	       = "1"/>
+      </all>
       <attribute name = "id" type = "int" />
-      <attribute name = "name" type = "string" />
+      <attribute name = "name" type = "string" use = "optional" />
       <attribute name = "pid" type = "int" />
     </complexType>
+
     <complexType name="Benchmark">
         <sequence>
   	  <element name="Attribute" type="tns:Attribute" minOccurs="0" maxOccurs="unbounded">

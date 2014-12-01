@@ -53,15 +53,15 @@ public class TestManager {
 		tests.add(new BenchmarkTests());
 		tests.add(new ProcessorTests());
 		tests.add(new JobTests());
-		tests.add(new GetPageTests());
+		//tests.add(new GetPageTests());
 		tests.add(new JobPairTests());
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
 		tests.add(new DefaultSettingsTests());
-		tests.add(new LoginTests());
-		tests.add(new UploadSolverTests());
-		tests.add(new UploadBenchmarksTests());
-		tests.add(new SpaceExplorerTests());
+		//tests.add(new LoginTests());
+		//tests.add(new UploadSolverTests());
+		//tests.add(new UploadBenchmarksTests());
+		//tests.add(new SpaceExplorerTests());
 	}
 	
 	public static boolean areTestsRunning() {
@@ -118,7 +118,7 @@ public class TestManager {
 	 * @param testName The name of the test that should be run
 	 * @return True if the test could be found, false otherwise
 	 */
-	public static boolean executeTest(String testName) {
+	public static boolean executeTests(String[] testNames) {
 		if (Util.isProduction()) {
 			return false; //right now, don't run anything on production
 		}
@@ -126,18 +126,23 @@ public class TestManager {
 		if (!isRunning.compareAndSet(false, true)) {
 			return false;
 		}
-		final String t=testName;
+		
+		final String[] t=testNames;
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
 				
-				
-				TestSequence test = getTestSequence(t);
-				test.clearResults();
-
-				executeTest(test);
+				for (String s : t) {
+					TestSequence test = getTestSequence(s);
+					if (test!=null) {
+						test.clearResults();
+						
+						executeTest(test);
+					}
+					
+				}
 				isRunning.set(false);
 			}
 		});	

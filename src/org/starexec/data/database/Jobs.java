@@ -193,7 +193,6 @@ public class Jobs {
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(topLevel);
 			
-			//TODO: Everything below this line can probably be made into its own function
 			Jobs.addJob(con, job);
 			
 			//put the job in the space it was created in, assuming a space was selected
@@ -914,7 +913,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws Exception {	
+	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId){	
 		log.debug("getEnqueuePairs2 beginning...");
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -2624,7 +2623,9 @@ public class Jobs {
 		} catch (Exception e ) {
 			log.error(e.getMessage(),e);
 		} finally {
+			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -2649,7 +2650,9 @@ public class Jobs {
 		} catch (Exception e ) {
 			log.error(e.getMessage(),e);
 		} finally {
+			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -3956,6 +3959,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -3970,6 +3974,9 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			Job j=Jobs.get(jobId);
+			if (j==null) {
+				return false; //could not find the job
+			}
 			List<Space> jobSpaces=Spaces.getSubSpacesForJob(j.getPrimarySpace(), true);
 			jobSpaces.add(Spaces.getJobSpace(j.getPrimarySpace()));
 			

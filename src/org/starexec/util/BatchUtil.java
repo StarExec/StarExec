@@ -34,6 +34,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.Update;
 import org.starexec.util.DOMHelper;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -81,8 +82,8 @@ public class BatchUtil {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
 		
-		File file = new File(R.STAREXEC_ROOT, space.getName() +".xml");
-		
+		File file = new File(R.STAREXEC_ROOT, (space.getName().replaceAll("\\s+", "")) +".xml");
+		log.debug(file.getAbsolutePath());
 		StreamResult result = new StreamResult(file);
 		transformer.transform(source, result);
 		
@@ -375,8 +376,8 @@ public class BatchUtil {
 		}
 		
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-        Document doc = docBuilder.parse(file);
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		Document doc = docBuilder.parse(file);
 		Element spacesElement = doc.getDocumentElement();
 		NodeList listOfRootSpaceElements = spacesElement.getChildNodes();
 		
@@ -388,6 +389,8 @@ public class BatchUtil {
 		log.info("# of Solvers = " + listOfSolvers.getLength());
         NodeList listOfBenchmarks = doc.getElementsByTagName("Benchmark");
 		log.info("# of Benchmarks = " + listOfBenchmarks.getLength());
+	NodeList listOfUpdates = doc.getElementsByTagName("Update");
+	        log.info("# of Updates = " + listOfUpdates.getLength());
 		
 		//Make sure spaces all have names
 		for (int i = 0; i < listOfSpaces.getLength(); i++){
@@ -434,7 +437,36 @@ public class BatchUtil {
 				log.warn("solver Node should be an element, but isn't");
 			}
 		}
-		//Verify user has access to benchmarks
+		//Verify user has access to benchmarks and update benchmarks.
+		if(!verifyBenchmarks(listOfBenchmarks, userId)) return null;
+		if(!verifyBenchmarks(listOfUpdates,userId)) return null;
+
+		//Create Space Hierarchies as children of parent space	
+		this.spaceCreationSuccess = true;
+		for (int i = 0; i < listOfRootSpaceElements.getLength(); i++){
+			Node spaceNode = listOfRootSpaceElements.item(i);
+			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
+				Element spaceElement = (Element)spaceNode;
+				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId);
+				spaceIds.add(spaceId);
+				
+				spaceCreationSuccess = spaceCreationSuccess && (spaceId!=-1);
+			} 
+		}
+		return spaceIds;
+	}
+    
+    /**
+	 * Verifies that a user can look at all of the benchmarks.
+	 * @author Ryan McCleeary
+	 * @param listOfBenchmarks node list that contains all of the benchmarks in question. 
+	 * @param parentId id of parent space
+	 * @param userId id of user making request
+	 * 
+	 */
+    private boolean verifyBenchmarks(NodeList listOfBenchmarks,int userId)
+    {
+	String name = "";
 		for (int i = 0; i < listOfBenchmarks.getLength(); i++){
 			Node benchmarkNode = listOfBenchmarks.item(i);
 			if (benchmarkNode.getNodeType() == Node.ELEMENT_NODE){
@@ -446,27 +478,15 @@ public class BatchUtil {
 				
 				if (!canSee){
 					errorMessage = "You do not have access to a benchmark with id = " + id;
-					return null;
+					return false;
 				}
 			}
 			else{
 				log.warn("benchmark Node should be an element, but isn't");
 			}
 		}
-		//Create Space Hierarchies as children of parent space	
-		this.spaceCreationSuccess = true;
-		for (int i = 0; i < listOfRootSpaceElements.getLength(); i++){
-			Node spaceNode = listOfRootSpaceElements.item(i);
-			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
-				Element spaceElement = (Element)spaceNode;
-				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId);
-				spaceIds.add(spaceId);
-				
-				spaceCreationSuccess = spaceCreationSuccess && (spaceId!=-1);
-			}
-		}
-		return spaceIds;
-	}
+		return true;
+    }
 	
 
 	
@@ -644,6 +664,7 @@ public class BatchUtil {
 		
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();
+		List<Update> updates = new ArrayList<Update>();
 		NodeList childList = spaceElement.getChildNodes();
 		int id=0;
 		for (int i = 0; i < childList.getLength(); i++){
@@ -666,6 +687,12 @@ public class BatchUtil {
 				else if (elementType.equals("Space")){
 					createSpaceFromElement(childElement, spaceId, userId);
 				}
+				else if(elementType.equals("Update")){
+				    int bid = Integer.parseInt(childElement.getAttribute("id"));
+				    int pid = Integer.parseInt(childElement.getAttribute("pid"));
+				    Update u = new Update(bid,pid);
+				    updates.add(u);
+				}
 
 			}
 			else{
@@ -678,7 +705,11 @@ public class BatchUtil {
 		}
 		if (!solvers.isEmpty()){
 			Solvers.associate(solvers, spaceId);
-		}	
+		}
+		if (!updates.isEmpty())
+		{
+		    //To do (create updates the updates here)
+		}
 		return spaceId;
 	}
 	/**

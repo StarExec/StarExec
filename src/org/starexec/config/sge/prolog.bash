@@ -52,7 +52,7 @@ do
   BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
   LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
   INDEX=$((INDEX + 1))
-done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" #TODO: this does not look correct. 
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" 
 fi
 
 return $?
@@ -164,7 +164,6 @@ function verifyWorkspace {
 
 	return $?
 }
-#TODO: syntax check this
 function sandboxWorkspace {
 
 	if [[ $WORKING_DIR == *sandbox2* ]] 
@@ -202,8 +201,6 @@ echo ""
 
 
 initSandbox "$JOB_ID"
-
-#todo: how exactly do we return an error correctly?
 
 if ! isInteger $SANDBOX ; then
 	sendStatus $ERROR_RUNSCRIPT

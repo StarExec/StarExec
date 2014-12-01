@@ -27,7 +27,6 @@ import org.starexec.util.Validator;
  * @author Todd Elvers
  */
 
-//TODO: Secure
 @SuppressWarnings("serial")
 public class PasswordReset extends HttpServlet {
 	private static final Logger log = Logger.getLogger(PasswordReset.class);
@@ -55,11 +54,12 @@ public class PasswordReset extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
 		}
 	}
-
+	
+	
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
 		// Ensure the parameters are well formed
-		ValidatorStatusCode status=isRequestValid(request);
+		ValidatorStatusCode status=isPostRequestValid(request);
 		if(status.isSuccess()){
 			
 			// Check if the provided credentials match any in the database
@@ -99,7 +99,7 @@ public class PasswordReset extends HttpServlet {
 	 * @return true iff the first name, last name, and email address in the 
 	 * password reset request exist and are valid
 	 */
-	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
+	private static ValidatorStatusCode isPostRequestValid(HttpServletRequest request) {
 		try {
 			
 			// Ensure the parameters are valid values

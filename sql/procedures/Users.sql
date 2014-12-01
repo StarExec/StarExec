@@ -464,6 +464,7 @@ CREATE PROCEDURE IsMemberOfCommunity(IN _userId INT, IN communityId INT)
 DROP PROCEDURE IF EXISTS DeleteUser;
 CREATE PROCEDURE DeleteUser(IN _userId INT)
 	BEGIN
+		DELETE FROM logins WHERE user_id=_userId;
 		DELETE FROM users WHERE id=_userId;
 	END //
 	

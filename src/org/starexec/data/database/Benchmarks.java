@@ -377,7 +377,6 @@ public class Benchmarks {
 	 *   Add a benchmark with dependencies.  The dependencies are already validated.
 	 * 
 	 * @param benchmark  the benchmark to be added
-	 * @param spaceId   the space the bench is being added to
 	 * @param dataStruct  the datastructure that holds the validated dependency information
 	 * @param benchIndex  the location of this benchmarks dependency info in the datastruct
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
@@ -385,7 +384,7 @@ public class Benchmarks {
 	 * @throws Exception
 	 * @author Benton McCune
 	 */
-    protected static Benchmark addBenchWDepend(Benchmark benchmark, int spaceId, DependValidator dataStruct, Integer benchIndex, 
+    protected static Benchmark addBenchWDepend(Benchmark benchmark, DependValidator dataStruct, Integer benchIndex, 
 					       int statusId) throws Exception {				
 		Connection con = null;
 		CallableStatement procedure=null;
@@ -395,7 +394,6 @@ public class Benchmarks {
 			Common.beginTransaction(con);
 
 			Properties attrs = benchmark.getAttributes();
-			log.info("adding benchmark " + benchmark.getName() + "to space " + spaceId);
 			// Setup normal information for the benchmark
 			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, benchmark.getName());		
@@ -462,20 +460,20 @@ public class Benchmarks {
 		return benchmarkIds;
 	}
 
-	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, int spaceId, DependValidator dataStruct, 
+	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, DependValidator dataStruct, 
 						       Integer statusId) throws Exception {		
-		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to database ");
 
 		Benchmark b = new Benchmark();
 		for(int i = 0; i < benchmarks.size(); i++) {
 			b = benchmarks.get(i);
-			b = Benchmarks.addBenchWDepend(b, spaceId, dataStruct, i, statusId);
+			b = Benchmarks.addBenchWDepend(b, dataStruct, i, statusId);
 			if(b == null) {
-				throw new Exception(String.format("Failed to add benchmark to space [%d]", spaceId));
+				throw new Exception("Failed to add benchmark to database");
 			}
 			Uploads.incrementCompletedBenchmarks(statusId);
 		}
-		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
+		log.info(String.format("[%d] new benchmarks added to database", benchmarks.size()));
 		return benchmarks;	
 	}
 
@@ -518,18 +516,18 @@ public class Benchmarks {
 				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
 				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
-				List<Benchmark> benches=Benchmarks.addReturnList(benchmarks, spaceId, dataStruct, statusId);
+				List<Benchmark> benches=Benchmarks.addReturnList(benchmarks, dataStruct, statusId);
 				List<Integer> ids=new ArrayList<Integer>();
 				for (Benchmark b : benches) {
+					
 					ids.add(b.getId());
 				}
+				Benchmarks.associate(ids, spaceId); //add the benchmarks to the space
 				return ids;
 			} catch (Exception e){			
 				
 				
-			} finally {
-				
-			}
+			} 
 		}
 		else
 		{

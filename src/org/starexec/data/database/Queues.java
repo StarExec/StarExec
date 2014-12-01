@@ -29,7 +29,6 @@ public class Queues {
 	private static final Logger log = Logger.getLogger(Queues.class);
 
 	/**
-	 * TODO :  decouple shouldn't use SGE calls
 	 * Removes a queue from the database and calls R.BACKEND.removeQueue
 	 * @param queueId The Id of the queue to remove.
 	 * @return True on success and false otherwise

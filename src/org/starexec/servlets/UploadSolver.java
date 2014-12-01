@@ -117,14 +117,11 @@ public class UploadSolver extends HttpServlet {
 								settingsId=Integer.parseInt((String)form.get(SETTING_ID));
 							}
 							
-							
-							
-							
 							int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId,settingsId);
 							if (jobId>0) {
-							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
+								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id="+jobId));
 							} else {
-							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job-- solver uploaded correctly"));
+							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job-- solver uploaded successfully"));
 							}
 							
 							

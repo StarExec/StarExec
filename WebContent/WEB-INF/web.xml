@@ -39,6 +39,10 @@
     <error-code>406</error-code> 
     <location>/public/messages/error.jsp</location> 
   </error-page>
+   <error-page> 
+    <error-code>408</error-code> 
+    <location>/public/messages/error.jsp</location> 
+  </error-page>
   <error-page> 
     <error-code>500</error-code> 
     <location>/public/messages/error.jsp</location> 

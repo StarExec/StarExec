@@ -19,6 +19,7 @@ import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Common;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
@@ -64,7 +65,7 @@ public abstract class JobManager {
     	    	log.info("Not adding more job pairs to any queues, as the system is paused");
     	    	return false;
     	}
-
+	    Common.logConnectionsOpen();
 	    log.debug("about to get all queues");
 	    
 	    List<Queue> queues = Queues.getAll();

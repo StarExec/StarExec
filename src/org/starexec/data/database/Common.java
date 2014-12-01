@@ -82,7 +82,12 @@ public class Common {
 		} catch (Exception e) {
 			// Ignore any errors
 		}
-	}							
+	}		
+	
+	public static void logConnectionsOpen() {
+		log.debug("connection counts  = "+dataPool.getIdle()+" "+dataPool.getActive());
+		log.debug((connectionsOpened-connectionsClosed));
+	}
 	
 	/**
 	 * Ends a transaction by committing any changes and re-enabling auto-commit
@@ -100,14 +105,20 @@ public class Common {
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */
-	protected synchronized static Connection getConnection() throws SQLException {	
-		connectionsOpened++;
-		//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
-		//String methodName1=Thread.currentThread().getStackTrace()[2].getMethodName();
-		//String methodName2=Thread.currentThread().getStackTrace()[2].getMethodName();
-		//log.info("stack trace info for the open connection is "+methodName1+ " "+methodName2);
+	protected synchronized static Connection getConnection() throws SQLException {
+		try {
+			connectionsOpened++;
+			//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
+			//StackTraceElement m1=Thread.currentThread().getStackTrace()[1];
+			//StackTraceElement m2=Thread.currentThread().getStackTrace()[2];
+			//log.info("stack trace info for the open connection is "+m1.getClassName()+"."+m1.getMethodName()+ " "+m2.getClassName()+"."+m2.getMethodName());
+			
+			return dataPool.getConnection();
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
 		
-		return dataPool.getConnection();
 	}
 	
 	/**
@@ -224,10 +235,7 @@ public class Common {
 	protected static synchronized void safeClose(PreparedStatement p) {
 		try {
 			if(p != null && !p.isClosed()) {
-				p.close();
-				
-				connectionsClosed++;
-				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
+				p.close();				
 			}
 		} catch (Exception e){
 			// Do nothing
@@ -242,7 +250,7 @@ public class Common {
 	 */
 	protected static void safeClose(ResultSet r) {
 		try {
-			if(r != null) {
+			if(r != null && !r.isClosed()) {
 				r.close();
 			}
 		} catch (Exception e){
