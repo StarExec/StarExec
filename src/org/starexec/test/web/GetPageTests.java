@@ -392,9 +392,9 @@ public class GetPageTests extends TestSequence {
 		
 		
 
-		driver=ResourceLoader.getWebDriver(user.getEmail(), R.TEST_USER_PASSWORD);
+		driver=ResourceLoader.getFirefoxDriver(user.getEmail(), R.TEST_USER_PASSWORD);
 		driverActions=new Actions(driver);
-		adminDriver=ResourceLoader.getWebDriver(admin.getEmail(), R.TEST_USER_PASSWORD);
+		adminDriver=ResourceLoader.getFirefoxDriver(admin.getEmail(), R.TEST_USER_PASSWORD);
 
 	
 		
@@ -433,6 +433,7 @@ public class GetPageTests extends TestSequence {
 		
 		Jobs.deleteAndRemove(job.getId());
 		Settings.deleteProfile(settings.getId());
+		
 		driver.quit();
 		adminDriver.quit();
 	}
