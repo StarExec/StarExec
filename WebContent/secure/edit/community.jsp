@@ -34,6 +34,7 @@
 			request.setAttribute("bench_proc", Processors.getByCommunity(id, ProcessorType.BENCH));
 			request.setAttribute("pre_proc", Processors.getByCommunity(id, ProcessorType.PRE));
 			request.setAttribute("post_proc", Processors.getByCommunity(id, ProcessorType.POST));
+                        request.setAttribute("update_proc", Processors.getByCommunity(id, ProcessorType.UPDATE));
 			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
 			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
 			request.setAttribute("defaultPPId", settings.getPostProcessorId());
@@ -250,6 +251,17 @@
 				</td>
 			</tr>
 			<tr>
+				<td>update processor </td>
+				<td>					
+					<select id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
+					<option value=-1>none</option>
+					<c:forEach var="proc" items="${update_proc}">
+							<option value="${proc.id}">${proc.name}</option>
+					</c:forEach>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td>wallclock timeout</td>
 				<td id="editClockTimeout">${defaultClockTimeout}</td>
 			</tr>	
@@ -326,7 +338,7 @@
 			</table>
 		</form>
 	</fieldset>
-	<fieldset id="processorField">
+	<fieldset id="postProcessorField">
 		<legend>post processors</legend>
 			<table id="postProcessorTbl" class="shaded">
 				<thead>
@@ -366,6 +378,50 @@
 				</tr>
 				<tr>
 					<td colspan="2"><button id="addPostProcessor" type="submit">add</button></td>				
+				</tr>			 			 			
+			</table>
+		</form>
+	</fieldset>
+	<fieldset id="updateProcessorField">
+		<legend>update processors</legend>
+			<table id="updateProcessorTbl" class="shaded">
+				<thead>
+					<tr class="headerRow">
+						<th id="procName" length="${processorNameLen}">name</th>				
+						<th id="procDesc" length="${processorDescLen}">description</th>
+						<th>file name</th>
+					</tr>								
+				</thead>
+				<tbody>
+					<c:forEach var="proc" items="${update_proc}">
+						<tr id="proc_${proc.id}">
+							<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/>  </a></td>
+							<td>${proc.description}</td>
+							<td>${proc.fileName}</td>
+						</tr>
+					</c:forEach>					
+				</tbody>
+			</table>
+		<span id="toggleUpdateProcessor" class="caption">+ add new</span>
+		<form id="addUpdateProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
+			<input type="hidden" name="com" value="${com.id}"/>
+			<input type="hidden" name="action" value="add"/>
+			<input type="hidden" name="type" value="post"/>
+			<table id="newUpdateProcessTbl">			
+				<tr>
+					<td><label for="processorName">name</label></td>
+					<td><input name="name" type="text" id="processorName"/></td>
+				</tr>
+				<tr>
+					<td><label for="processorDesc">description</label></td>
+					<td><textarea name="desc" id="processorDesc"></textarea></td>
+				</tr>
+				<tr>
+					<td><label for="processorFile">processor</label></td>
+					<td><input name="file" type="file" id="processorFile"/></td>
+				</tr>
+				<tr>
+					<td colspan="2"><button id="addUpdateProcessor" type="submit">add</button></td>				
 				</tr>			 			 			
 			</table>
 		</form>

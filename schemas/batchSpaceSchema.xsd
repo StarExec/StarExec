@@ -78,9 +78,10 @@
       <element name = "Text" type = "string" minOccurs = "0" maxOccurs
 	       = "1"/>
       </all>
-      <attribute name = "id" type = "int" />
+      <attribute name = "id" type = "int" /> <!--benchmark being updated id-->
       <attribute name = "name" type = "string" use = "optional" />
-      <attribute name = "pid" type = "int" />
+      <attribute name = "pid" type = "int" /> <!-- update processor id-->
+      <attribute name = "bid" type = "int" /> <!-- benchmark processor id-->
     </complexType>
 
     <complexType name="Benchmark">

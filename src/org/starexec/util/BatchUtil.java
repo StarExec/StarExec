@@ -34,8 +34,8 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.data.to.Update;
 import org.starexec.util.DOMHelper;
+import org.starexec.util.Util;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -688,9 +688,11 @@ public class BatchUtil {
 					createSpaceFromElement(childElement, spaceId, userId);
 				}
 				else if(elementType.equals("Update")){
-				    int bid = Integer.parseInt(childElement.getAttribute("id"));
-				    int pid = Integer.parseInt(childElement.getAttribute("pid"));
-				    Update u = new Update(bid,pid);
+				    
+				    Update u = new Update();
+				    u.id = Integer.parseInt(childElement.getAttribute("id"));
+				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
+				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
 				    updates.add(u);
 				}
 
@@ -708,10 +710,15 @@ public class BatchUtil {
 		}
 		if (!updates.isEmpty())
 		{
-		    //To do (create updates the updates here)
+		    addUpdates(updates,spaceId);
 		}
 		return spaceId;
 	}
+
+        private void addUpdates(List<Update> updates, int spaceID)
+        {
+	    return;
+        }
 	/**
 	 * @return doc the document object
 	 */
@@ -748,8 +755,16 @@ public class BatchUtil {
 	public void setSpaceCreationSuccess(Boolean spaceCreationSuccess) {
 		this.spaceCreationSuccess = spaceCreationSuccess;
 	}
-
-
+    
+    /**
+       Basic struct class to store all the id's needed for an update.
+     */
+    private class Update {
+	public int id;
+	public int pid;
+	public int bid;
+	//public string text;
+    }
 	
 	
 }
