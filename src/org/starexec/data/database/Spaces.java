@@ -2218,13 +2218,14 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			// Finally, add the benchmarks in the space to the database
 			//not really using connection parameter right now due to problems
 			ids.addAll(Benchmarks.add(space.getBenchmarks(), spaceId, statusId));
-			Uploads.incrementCompletedSpaces(statusId);		
+			//TODO: Consider refactoring this to reduce the number of calls that get made
+			Uploads.incrementCompletedSpaces(statusId,1);		
 			return ids;
 		}
 		catch (Exception e){			
 			log.error("traverse says " + e.getMessage(), e);
 			String message = "Major Error encountered traversing spaces";
-			Uploads.setErrorMessage(statusId, message);
+			Uploads.setBenchmarkErrorMessage(statusId, message);
 			return null;//need to pass up
 		} finally {
 			Common.safeClose(con);
@@ -2258,7 +2259,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			}			
 			// Finally, add the benchmarks in the space to the database
 			ids.addAll(Benchmarks.addWithDeps(space.getBenchmarks(), spaceId, con, depRootSpaceId, linked, userId, statusId));
-			Uploads.incrementCompletedSpaces(statusId);
+			Uploads.incrementCompletedSpaces(statusId,1);
 			return ids;
 		}
 		catch (Exception e){			

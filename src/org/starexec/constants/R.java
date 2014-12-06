@@ -49,6 +49,9 @@ public class R {
     public static int PROCESSOR_DESC_LEN=1024;
     public static int QUEUE_NAME_LEN=64;
     
+    //the number of increments we should accumulate in an upload status field before actually committing to the database
+    public static int UPLOAD_STATUS_UPDATE_THRESHOLD=100;
+    
     // Maximum job pair settings
     public static int MAXIMUM_JOB_PAIRS=Integer.MAX_VALUE; // no restriction for now
     public static int MAXIMUM_SOLVER_CONFIG_PAIRS=5;

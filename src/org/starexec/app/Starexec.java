@@ -21,6 +21,7 @@ import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestManager;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
@@ -245,6 +246,12 @@ public class Starexec implements ServletContextListener {
 		    
 		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
+		File badFile=new File("C:/users/eric/desktop/testtwo_XML.zip");
+		System.out.println(badFile.exists());
+		System.out.println(ArchiveUtil.isValidZip(badFile));
+		File goodFile=new File("C:/users/eric/desktop/sonarqube-4.5.1.zip");
+		System.out.println(goodFile.exists());
+		System.out.println(ArchiveUtil.isValidZip(goodFile));
 		//TestManager.executeAllTestSequences();
 	}
 	

@@ -23,8 +23,7 @@
 			 type="tns:SpaceAttributes" minOccurs="0"
 			 maxOccurs="1"></element>
 		
-		<element name = "Update" type = "tns:Update" minOccurs
-			 = "0" maxOccurs = "unbounded">
+		<element name = "Update" type = "tns:Update" minOccurs = "0" maxOccurs = "unbounded">
 		</element>
     		<element name="Benchmark" type="tns:Benchmark" minOccurs="0"
     			maxOccurs="unbounded">

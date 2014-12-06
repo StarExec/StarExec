@@ -145,7 +145,7 @@ public class Benchmarks {
      */
     protected static boolean addAttributeSetToDbIfValid(Connection con, Properties attrs, Benchmark benchmark, Integer statusId) {
 		if(!Benchmarks.isBenchValid(attrs)) {
-		    Uploads.setErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
+		    Uploads.setBenchmarkErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
 						       +benchmark.getName()+" (starexec-valid was not true)."));
 		    return false;
 		}
@@ -162,7 +162,7 @@ public class Benchmarks {
 			      + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
 		    
 		    if (!Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue())) {
-		    	Uploads.setErrorMessage(statusId, "Problem adding the following attribute-value pair to the db, for benchmark "
+		    	Uploads.setBenchmarkErrorMessage(statusId, "Problem adding the following attribute-value pair to the db, for benchmark "
 						+benchmark.getId()+": "+(String)keyVal.getKey() + ", " + (String)keyVal.getValue());
 			
 		    	return false;
@@ -443,19 +443,29 @@ public class Benchmarks {
 	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws Exception {		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
+		int incrementCounter=0;
 		for(Benchmark b : benchmarks) {
 		    int id=Benchmarks.add(b, spaceId,statusId);
 			if(id<0) {
 				String message = ("failed to add bench " + b.getName());
-				Uploads.setErrorMessage(statusId, message);
+				Uploads.setBenchmarkErrorMessage(statusId, message);
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
 				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
 			}
 			else{
-				Uploads.incrementCompletedBenchmarks(statusId);
 				benchmarkIds.add(id);
+
+				incrementCounter++;
+				if (incrementCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
+					incrementCounter=0;
+				}
+				
 			}
 		}	
+		if (incrementCounter>0) {
+			Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
+		}
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 		return benchmarkIds;
 	}
@@ -465,13 +475,21 @@ public class Benchmarks {
 		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to database ");
 
 		Benchmark b = new Benchmark();
+		int incrementCounter=0;
 		for(int i = 0; i < benchmarks.size(); i++) {
 			b = benchmarks.get(i);
 			b = Benchmarks.addBenchWDepend(b, dataStruct, i, statusId);
 			if(b == null) {
 				throw new Exception("Failed to add benchmark to database");
 			}
-			Uploads.incrementCompletedBenchmarks(statusId);
+			incrementCounter++;
+			if (incrementCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+				Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
+				incrementCounter=0;
+			}
+		}
+		if (incrementCounter>0) {
+			Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
 		}
 		log.info(String.format("[%d] new benchmarks added to database", benchmarks.size()));
 		return benchmarks;	
@@ -647,6 +665,8 @@ public class Benchmarks {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
+		int validatedCounter=0; //stores the number of benchmarks that have been validated since the last update
+		int failedCounter=0; //stores the TOTAL number of benchmarks that failed 
 		for(Benchmark b : benchmarks) {
 			try {
 				List<File> files=new ArrayList<File>();
@@ -672,21 +692,26 @@ public class Benchmarks {
 				b.setAttributes(prop);
 				count--;
 				if (Benchmarks.isBenchValid(prop)){
-					Uploads.incrementValidatedBenchmarks(statusId);
+					validatedCounter++;
+					if (validatedCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+						Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
+						validatedCounter=0;
+					}
 				}
 				else{
-					Uploads.incrementFailedBenchmarks(statusId);
-					Integer numFailedBenches = Uploads.get(statusId).getFailedBenchmarks();
-					if (numFailedBenches < R.MAX_FAILED_VALIDATIONS){
+					failedCounter++;
+					//TODO: Should we bin these like the other increments?
+					Uploads.incrementFailedBenchmarks(statusId,1);
+					if (failedCounter < R.MAX_FAILED_VALIDATIONS){
 						Uploads.addFailedBenchmark(statusId,b.getName());
 						String message = b.getName() + " failed validation";
 						log.warn(message);
-						Uploads.setErrorMessage(statusId, message);	
+						Uploads.setBenchmarkErrorMessage(statusId, message);	
 					}
 					else{
 						String message = "Major Benchmark Validation Errors - examine your validator";
 						log.warn(message + ", status id = " + statusId);
-						Uploads.setErrorMessage(statusId, message);	
+						Uploads.setBenchmarkErrorMessage(statusId, message);	
 					}
 				}
 				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
@@ -694,6 +719,9 @@ public class Benchmarks {
 				log.warn(e.getMessage(), e);
 				return false;
 			} 
+		}
+		if (validatedCounter>0) {
+			Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
 		}
 		return true;
 	}
@@ -971,14 +999,19 @@ public class Benchmarks {
 			}
 		}
 		space.setDescription(strUnzipped);
-
+		int benchCounter=0;
+		int spaceCounter=0;
 		for(File f : directory.listFiles()) {
 			// If it's a sub-directory			
 			if(f.isDirectory()) {
 				// Recursively extract spaces/benchmarks from that directory
 				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, 
 						userId, downloadable, perm, statusId));
-				Uploads.incrementTotalSpaces(statusId);//for upload status page
+				spaceCounter++;
+				if (spaceCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD/20) {
+					Uploads.incrementTotalSpaces(statusId,spaceCounter);//for upload status page
+					spaceCounter=0;
+				}
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 
 				if (Validator.isValidBenchName(f.getName())) {
@@ -991,20 +1024,28 @@ public class Benchmarks {
 					b.setType(t);
 					b.setUserId(userId);
 					b.setDownloadable(downloadable);
-
-					Uploads.incrementTotalBenchmarks(statusId);//for upload status page
+					benchCounter++;
+					if (benchCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+						Uploads.incrementTotalBenchmarks(statusId,benchCounter);//for upload status page
+						benchCounter=0;
+					}
 					
 
 					space.addBenchmark(b);
 				} else {
 				    String msg = "\""+f.getName() + "\" is not accepted as a legal benchmark name.";
-				    Uploads.setErrorMessage(statusId, msg);
+				    Uploads.setBenchmarkErrorMessage(statusId, msg);
 				    throw new Exception(msg);
 				}
 
 			}
 		}
-
+		if (benchCounter>0) {
+			Uploads.incrementTotalBenchmarks(statusId,benchCounter);//for upload status page
+		}
+		if (spaceCounter>0) {
+			Uploads.incrementTotalSpaces(statusId,spaceCounter);//for upload status page
+		}
 		return space;
 	}
 
@@ -2336,8 +2377,8 @@ public class Benchmarks {
      * @return The ID of an UploadStatus object for tracking progress of this request
      */
     public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs) {
-		Integer statusId = Uploads.createUploadStatus(spaceId, userId);
-		Uploads.fileUploadComplete(statusId);
+		Integer statusId = Uploads.createBenchmarkUploadStatus(spaceId, userId);
+		Uploads.benchmarkFileUploadComplete(statusId);
 		Uploads.fileExtractComplete(statusId);
 		Uploads.processingBegun(statusId);
 		final int s = spaceId;
@@ -2355,7 +2396,7 @@ public class Benchmarks {
 			public void run(){
 				try {
 				    process(s,proc,h,u,c,st,l);
-				    Uploads.everythingComplete(st);
+				    Uploads.benchmarkEverythingComplete(st);
 				} catch (Exception e) {
 					
 				}
@@ -2401,6 +2442,7 @@ public class Benchmarks {
 				log.error("there was an error running the processor on each benchmark");
 				return false;
 			}
+			int incrementCounter=0;
 			for (Benchmark b : benchmarks) {
 			    //only work on the benchmarks the given user owns if they are not a community leader
 			    if (!isCommunityLeader && b.getUserId()!=userId) {
@@ -2418,7 +2460,14 @@ public class Benchmarks {
 			    //updates the type of the benchmark with the new processor
 			    Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), b.isDownloadable(), p.getId());
 			    
-			    Uploads.incrementCompletedBenchmarks(statusId);
+			    incrementCounter++;
+				if (incrementCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
+					incrementCounter=0;
+				}
+			}
+			if (incrementCounter>0) {
+				Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
 			}
 			success=true;
 			if (hierarchy) {

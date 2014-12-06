@@ -223,7 +223,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getBenchmarkUploadDescription(@PathParam("statusId") int statusId, @Context HttpServletRequest request) {
 		int userId =SessionUtil.getUserId(request);
-		if (!Permissions.canUserSeeStatus(statusId, userId)) {
+		if (!Permissions.canUserSeeBenchmarkStatus(statusId, userId)) {
 			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to view this upload"));
 		}
 		return gson.toJson(new ValidatorStatusCode(true,Uploads.getUploadStatusSummary(statusId)));

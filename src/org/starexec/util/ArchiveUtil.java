@@ -37,6 +37,28 @@ public class ArchiveUtil {
 	private static final Logger log = Logger.getLogger(ArchiveUtil.class);
 
 	/**
+	 *Checks to see if the given zip file is valid
+	 */
+	 public static boolean isValidZip(File file) {
+		    ZipFile zipfile = null;
+		    try {
+		        zipfile = new ZipFile(file);
+		        return true;
+		    } catch (Exception e) {
+		        return false;
+		    } finally {
+		        try {
+		            if (zipfile != null) {
+		                zipfile.close();
+		                zipfile = null;
+		            }
+		        } catch (IOException e) {
+		        }
+		    }
+		}
+	
+	
+	/**
 	 * Gets the uncompressed size of an archive
 	 * @param filePath The path to the file to get the size of 
 	 * @return The size of the uncompressed archive, in bytes

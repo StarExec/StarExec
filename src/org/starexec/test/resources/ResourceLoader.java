@@ -306,7 +306,7 @@ public class ResourceLoader {
 			//make a copy of the archive, because the benchmark extraction function will delete the archive
 			File archiveCopy=new File(getDownloadDirectory(),UUID.randomUUID()+archive.getName());
 			FileUtils.copyFile(archive, archiveCopy);
-			Integer statusId = Uploads.createUploadStatus(parentSpaceId, userId);
+			Integer statusId = Uploads.createBenchmarkUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
 			List<Integer> ids=BenchmarkUploader.addBechmarksFromArchive(archiveCopy, userId, parentSpaceId, 1, false, p, 
 					"dump", statusId, false, false, null);

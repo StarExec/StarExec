@@ -28,6 +28,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
@@ -100,19 +101,19 @@ public class BatchUtil {
      *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
      */	
     public Element generateSpacesXML(Space space, int userId, boolean includeAttributes){		
-	log.debug("Generating Space XML for space " + space.getId());
-	Element spacesElement=null;
-
-	spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
-	spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-		
-	spacesElement.setAttribute("xsi:schemaLocation", 
-					   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
-		
-	Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes);
-	spacesElement.appendChild(rootSpaceElement);
-		
-	return spacesElement;
+		log.debug("Generating Space XML for space " + space.getId());
+		Element spacesElement=null;
+	
+		spacesElement = doc.createElementNS(Util.url("public/batchSpaceSchema.xsd"), "tns:Spaces");
+		spacesElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+			
+		spacesElement.setAttribute("xsi:schemaLocation", 
+						   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
+			
+		Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes);
+		spacesElement.appendChild(rootSpaceElement);
+			
+		return spacesElement;
     }
 	
 	/**
@@ -335,7 +336,8 @@ public class BatchUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			String schemaLoc = R.STAREXEC_ROOT + "/" + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
+			String schemaLoc = R.STAREXEC_ROOT + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
+			System.out.println("THIS IS THE SCHEMA LOCATION "+schemaLoc);
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -368,7 +370,7 @@ public class BatchUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public List<Integer> createSpacesFromFile(File file, int userId, int parentSpaceId) throws SAXException, ParserConfigurationException, IOException{
+	public List<Integer> createSpacesFromFile(File file, int userId, int parentSpaceId,Integer statusId) throws SAXException, ParserConfigurationException, IOException{
 		List<Integer> spaceIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
 			log.warn("File from User " + userId + " is not Schema valid.");
@@ -384,12 +386,19 @@ public class BatchUtil {
 		String name = "";//name variable to check
         //Check Benchmarks and Solvers
         NodeList listOfSpaces = doc.getElementsByTagName("Space");
+        Uploads.setXMLTotalSpaces(statusId, listOfSpaces.getLength());
 		log.info("# of Spaces = " + listOfSpaces.getLength());
         NodeList listOfSolvers = doc.getElementsByTagName("Solver");
+        Uploads.setXMLTotalSolvers(statusId, listOfSolvers.getLength());
+
 		log.info("# of Solvers = " + listOfSolvers.getLength());
         NodeList listOfBenchmarks = doc.getElementsByTagName("Benchmark");
+        Uploads.setXMLTotalBenchmarks(statusId, listOfBenchmarks.getLength());
+
 		log.info("# of Benchmarks = " + listOfBenchmarks.getLength());
 	NodeList listOfUpdates = doc.getElementsByTagName("Update");
+    Uploads.setXMLTotalUpdates(statusId, listOfUpdates.getLength());
+
 	        log.info("# of Updates = " + listOfUpdates.getLength());
 		
 		//Make sure spaces all have names
@@ -398,15 +407,8 @@ public class BatchUtil {
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
 				name = spaceElement.getAttribute("name");
-				if (name == null) {
-					log.debug("Name not found");
-					errorMessage = "Space elements must include a 'name' attribute.";
-					return null;
-				}
-				log.debug("Space Name = " + name);
-				if (name.length()<1){
-					log.debug("Name was not long enough");
-					errorMessage = name + "is not a valid name.  It must have at least one character.";
+				if (!org.starexec.util.Validator.isValidSpaceName(name)) {
+					errorMessage="Space element(s) contain invalid names";
 					return null;
 				}
 				
@@ -443,15 +445,23 @@ public class BatchUtil {
 
 		//Create Space Hierarchies as children of parent space	
 		this.spaceCreationSuccess = true;
+		int spaceCounter=0;
 		for (int i = 0; i < listOfRootSpaceElements.getLength(); i++){
 			Node spaceNode = listOfRootSpaceElements.item(i);
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
-				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId);
+				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId,statusId);
 				spaceIds.add(spaceId);
-				
+				spaceCounter++;
+				if (spaceCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD/20) {
+					Uploads.incrementXMLCompletedSpaces(statusId, 1);
+					spaceCounter=0;
+				}
 				spaceCreationSuccess = spaceCreationSuccess && (spaceId!=-1);
 			} 
+		}
+		if (spaceCounter>0) {
+			Uploads.incrementXMLCompletedSpaces(statusId, spaceCounter);
 		}
 		return spaceIds;
 	}
@@ -501,7 +511,7 @@ public class BatchUtil {
 	 * @return Integer the id of the new space or -1 on error
 	 * @return
 	 */
-	public Integer createSpaceFromElement(Element spaceElement, int parentId, int userId){
+	public Integer createSpaceFromElement(Element spaceElement, int parentId, int userId, Integer statusId){
 		Space space = new Space();
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
@@ -667,6 +677,13 @@ public class BatchUtil {
 		List<Update> updates = new ArrayList<Update>();
 		NodeList childList = spaceElement.getChildNodes();
 		int id=0;
+		
+		//these counters are counting the number of primitives that have been completed since the last time
+		// we updated the uploadstatus object
+		int solverCounter=0;
+		int benchCounter=0;
+		int updateCounter=0;
+		
 		for (int i = 0; i < childList.getLength(); i++){
 			Node childNode = childList.item(i);
 			
@@ -677,15 +694,17 @@ public class BatchUtil {
 				if (elementType.equals("Benchmark")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
 					benchmarks.add(id);
-					
+					benchCounter++;
 				}
 				else if (elementType.equals("Solver")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
 					solvers.add(id);
+					solverCounter++;
 					
 				}
 				else if (elementType.equals("Space")){
-					createSpaceFromElement(childElement, spaceId, userId);
+					createSpaceFromElement(childElement, spaceId, userId,statusId);
+					Uploads.incrementXMLCompletedSpaces(statusId, 1);
 				}
 				else if(elementType.equals("Update")){
 				    
@@ -694,13 +713,34 @@ public class BatchUtil {
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
 				    updates.add(u);
+				    updateCounter++;
 				}
-
+				if (solverCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					Uploads.incrementXMLCompletedSolvers(statusId, solverCounter);
+					solverCounter=0;
+				}
+				if (updateCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					Uploads.incrementXMLCompletedUpdates(statusId, updateCounter);
+					updateCounter=0;
+				}
+				if (benchCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					Uploads.incrementXMLCompletedBenchmarks(statusId, benchCounter);
+					benchCounter=0;
+				}
 			}
 			else{
 				//do nothing, as it's probably just whitespace
 				//log.warn("Space " + spaceId + " has a node that should be an element, but isn't");
 			}
+		}
+		if (solverCounter>0) {
+			Uploads.incrementXMLCompletedSolvers(statusId, solverCounter);
+		}
+		if (updateCounter>0) {
+			Uploads.incrementXMLCompletedUpdates(statusId, updateCounter);
+		}
+		if (benchCounter>0) {
+			Uploads.incrementXMLCompletedBenchmarks(statusId, benchCounter);
 		}
 		if (!benchmarks.isEmpty()){
 			Benchmarks.associate(benchmarks, spaceId);

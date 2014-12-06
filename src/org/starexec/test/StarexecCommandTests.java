@@ -26,7 +26,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.UploadStatus;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -233,7 +233,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void waitForUpload(int uploadId, int maxSeconds) {
 		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
 		for (int x=0;x<maxSeconds;x++) {
-			UploadStatus stat= Uploads.get(uploadId);
+			BenchmarkUploadStatus stat= Uploads.getBenchmarkStatus(uploadId);
 			log.debug("upload Id = "+uploadId+" is finished = "+stat.isEverythingComplete());
 			if (stat.isEverythingComplete()) {
 				break;
@@ -255,7 +255,7 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("upload ID = "+ result);
 		
 		waitForUpload(result,60);
-		UploadStatus stat= Uploads.get(result);
+		BenchmarkUploadStatus stat= Uploads.getBenchmarkStatus(result);
 		Assert.assertTrue(stat.isEverythingComplete());
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
@@ -276,7 +276,7 @@ public class StarexecCommandTests extends TestSequence {
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		waitForUpload(result, 60);
-		Assert.assertTrue(Uploads.get(result).isEverythingComplete());
+		Assert.assertTrue(Uploads.getBenchmarkStatus(result).isEverythingComplete());
 
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
@@ -695,7 +695,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,status);
 		
 		//space1 will contain solvers and benchmarks
-		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
+		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId(), "name with spaces");
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());	
 		
 		Users.associate(user2.getId(), space1.getId());
@@ -709,17 +709,17 @@ public class StarexecCommandTests extends TestSequence {
 		
 		
 		downloadDir=ResourceLoader.getDownloadDirectory();
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
-		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
-		Assert.assertNotNull(solver);
+		//solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
+		//config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		//proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
+		//Assert.assertNotNull(solver);
 
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
-		List<Integer> solverIds=new ArrayList<Integer>();
-		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
+		//benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		//List<Integer> solverIds=new ArrayList<Integer>();
+		//solverIds.add(solver.getId());
+		//job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 
-		Assert.assertNotNull(benchmarkIds);
+		//Assert.assertNotNull(benchmarkIds);
 		
 		
 		solverURL=Util.url("public/resources/CVC4.zip");
