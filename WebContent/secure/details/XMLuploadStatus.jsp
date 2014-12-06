@@ -11,10 +11,8 @@
 		int statusId = Integer.parseInt(request.getParameter("id"));
 
 		SpaceXMLUploadStatus s = null;
-		List<String> bS = null;
 		if (Permissions.canUserSeeSpaceXMLStatus(statusId, userId)) {
 			s = Uploads.getSpaceXMLStatus(statusId);
-			bS = Uploads.getFailedBenches(statusId);
 		}
 
 		if (s != null) {
@@ -23,13 +21,9 @@
 				response.setIntHeader("Refresh", 10);
 			}
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,"Upload Status does not exist or is restricted");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND,"XML Upload Status does not exist or is restricted");
 		}
-		if (bS != null) {
-			request.setAttribute("badBenches", bS);
-		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,"Upload Status does not exist or is restricted");
-		}
+		
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,e.getMessage());
 	}
@@ -99,26 +93,6 @@
 			</tbody>
 		</table>
 	</fieldset>
-	<c:if test="${not empty badBenches}">
-		<fieldset>
-			<legend>failed benchmarks</legend>
-			<table class="shaded">
-				<thead>
-					<tr>
-						<th>name</th>
-					</tr>
-				</thead>
-				<tbody>
-					<c:forEach var="bench" items="${badBenches}">
-						<tr>
-							<td>${bench}</td>
-						</tr>
-					</c:forEach>
-				</tbody>
-			</table>
-		</fieldset>
-	</c:if>
-
 	<a id="returnLink" href="/${starexecRoot}/secure/explore/spaces.jsp">back</a>
 
 </star:template>
