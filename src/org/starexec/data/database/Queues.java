@@ -53,7 +53,7 @@ public class Queues {
 		
 	    if (nodes != null) {
 		for (WorkerNode n : nodes) {
-		    R.BACKEND.moveNode(n.getName(),R.BACKEND.getDefaultQueueName());
+		    R.BACKEND.moveNode(R.SGE_ROOT,n.getName(),R.BACKEND.getDefaultQueueName(R.SGE_ROOT));
 		}
 	    }
 		
@@ -68,12 +68,36 @@ public class Queues {
 	    } else {
 		success = success && Requests.DeleteReservation(queueId);
 	    }
-	    R.BACKEND.deleteQueue(queueName);
+	    R.BACKEND.deleteQueue(R.SGE_ROOT,queueName);
 			
 	    Cluster.loadWorkerNodes();
 	    Cluster.loadQueues();	
 	    return success;
 	}
+
+    /** 
+     *Will pause jobs associated with this queue if queue only has one worker node, used by MoveNodes
+     *@param queue the Queue object whose jobs might be paused
+     **/
+    public static void pauseJobsIfOneWorker(Queue queue){
+	//if this is going to make the queue empty...... need to pause all jobs first
+	if(queue != null){
+	    List<WorkerNode> workers = Cluster.getNodesForQueue(queue.getId());
+		    
+	    if (workers != null) {
+		if (workers.size() == 1 ) {
+		    log.info("checking for jobs running on queue "+queue.getName()+", since this is the last node in the queue.");
+		    List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
+		    if (jobs != null) {
+			for (Job j : jobs) {
+			    Jobs.pause(j.getId());
+			}
+		    }
+		}
+	    }
+	}
+		    
+    }
 
 	/**
 	 * Adds a new queue to the system. This action adds the queue, 

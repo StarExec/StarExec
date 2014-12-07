@@ -153,8 +153,8 @@
 	<configuration name="stardev_jccervantes" inherit="stardev">
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
-                <property key="MYSQL_DATABASE" value="starexec_jccervantes" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_jccervantes?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_DATABASE" value="starexec_jccervantes_temp" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_jccervantes_temp?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_jccervantes"/>

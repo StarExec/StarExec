@@ -15,18 +15,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.starexec.constants.R;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.util.Util;
+
+import org.starexec.backend.GridEngineBackend;
+
 
 /**
  * Contains methods for interacting with the sun grid engine. This class is NOT operating system independent
@@ -37,9 +28,9 @@ public class GridEngineUtil {
 	private static final Logger log = Logger.getLogger(GridEngineUtil.class);
 
 	// The regex patterns used to parse SGE output
-	protected static Pattern nodeKeyValPattern;
-	protected static Pattern queueKeyValPattern;
-	protected static Pattern queueAssocPattern;
+	public static Pattern nodeKeyValPattern;
+	public static Pattern queueKeyValPattern;
+	public static Pattern queueAssocPattern;
 
 	@SuppressWarnings("unused")
 	private static String testString = "queuename                      qtype resv/used/tot. load_avg arch          states\r\n" + 
@@ -62,9 +53,9 @@ public class GridEngineUtil {
 
 	static {
 		// Compile the SGE output parsing patterns when this class is loaded
-		nodeKeyValPattern = Pattern.compile(R.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-		queueKeyValPattern = Pattern.compile(R.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-		queueAssocPattern = Pattern.compile(R.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
+		nodeKeyValPattern = Pattern.compile(GridEngineR.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+		queueKeyValPattern = Pattern.compile(GridEngineR.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+		queueAssocPattern = Pattern.compile(GridEngineR.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
 
 	}
 
@@ -94,518 +85,60 @@ public class GridEngineUtil {
 		catch (Exception e) {
 			log.error("Problem destroying session: "+e,e);
 		}
-	}
-
-	/**
-	 * Gets the queue list from SGE and adds them to the database if they don't already exist. This must
-	 * be done AFTER nodes are loaded as the queues will make associations to the nodes. This also loads
-	 * attributes for the queue as well as its current usage.
-	 */
-	public static synchronized void loadQueues() {
-		GridEngineUtil.loadQueueDetails();
-	}
-
-	/**
-	 * Loads the list of active queues on the system, loads their attributes into the database
-	 * as well as their associations to worker nodes that belong to each queue.
-	 */
-	private static void loadQueueDetails() {
-		log.info("Loading queue details into the db");
-		try {			
-			// Execute the SGE command to get the list of queues
-			String queuestr = Util.executeCommand(R.QUEUE_LIST_COMMAND);
-
-			// Set all queues as inactive (we will set them as active when we see them)
-			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
-
-			// Read the queue names one at a time
-			String[] lines = queuestr.split(System.getProperty("line.separator"));		
-			for (int i = 0; i < lines.length; i++) {
-			    String name = lines[i];
-
-			    log.debug("Loading details for queue "+name);
-
-			    // In the database, update the attributes for the queue
-			    Queues.update(name,  GridEngineUtil.getQueueDetails(name));
-
-			    // Set the queue as active since we just saw it
-			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
-			}
-			//Adds all the associations to the db
-			GridEngineUtil.setQueueAssociationsInDb();
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
-		} 
-		log.info("Completed loading the queue details into the db");
-	}
-
-	/**
-	 * Extracts queue-node association from SGE and puts it into the db.
-	 * @return true if successful and false otherwise
-	 * @author Benton McCune
-	 */
-	public static Boolean setQueueAssociationsInDb() {
-		try {
-			log.info("Updating the DB with associations between SGE queues to compute nodes.");
-
-			String[] envp = new String[2];
-			envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
-			envp[1] = "SGE_ROOT="+R.SGE_ROOT; // it seems we need to set this explicitly if we change the environment.
-			String results = Util.executeCommand(R.QUEUE_STATS_COMMAND,envp);
-
-			// Parse the output from the SGE call to get the child worker nodes
-			java.util.regex.Matcher matcher = queueAssocPattern.matcher(results);
-
-			String[] capture;  // string array to store a queue and its associated node
-			//Remove all association info from db so stale data isn't displayed
-			Queues.clearQueueAssociations();
-			// For each match...
-			while(matcher.find()) {
-				// Parse out the queue and node names from the regex parser and add it to the return list			
-				capture = matcher.group().split("@");
-				log.debug("queue = " + capture[0]);
-				log.debug("node = " + capture[1]);
-				Queues.associate(capture[0], capture[1]);
-			}
-
-			log.info("Completed updating the DB with associations between SGE queues to compute nodes.");
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-		
-	}
-
-	/**
-	 * Calls SGE to get details about the given queue. 
-	 * @param name The name of the queue to get details about
-	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
-	 */
-	public static HashMap<String, String> getQueueDetails(String name) {
-		try {
-			// Make the results hashmap that will be returned		
-			HashMap<String, String> details = new HashMap<String, String>();
-
-			// Call SGE to get details for the given node
-			String results = Util.executeCommand(R.QUEUE_DETAILS_COMMAND + name);
-
-			// Parse the output from the SGE call to get the key/value pairs for the node
-			java.util.regex.Matcher matcher = queueKeyValPattern.matcher(results);
-
-			// For each match...
-			while(matcher.find()) {
-				// Split apart the key from the value
-				String[] keyVal = matcher.group().split("\\s+");
-
-				// Add the results to the details hashmap
-				details.put(keyVal[0], keyVal[1]);
-			}
-
-			return details;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return null;
-		
-	}	
-
-	/**
-	 * Gets the worker nodes from SGE and adds them to the database if they don't already exist. This must be done
-	 * BEFORE queues have been loaded as the queues will make associations to the nodes.
-	 */
-	public static synchronized void loadWorkerNodes() {
-
-		log.info("Loading worker nodes into the db");
-		try {			
-			// Execute the SGE command to get the node list
-			String nodeResults = Util.executeCommand(R.NODE_LIST_COMMAND);
-
-			// Set all nodes as inactive (we will update them to active as we see them)
-			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
-
-			// Read the nodes one at a time
-			String[] lines = nodeResults.split(System.getProperty("line.separator"));		
-			for (int i = 0; i < lines.length; i++) {
-				String name = lines[i];
-				log.debug("Updating info for node "+name);
-				// In the database, update the attributes for the node
-				Cluster.updateNode(name,  GridEngineUtil.getNodeDetails(name));				
-				// Set the node as active (because we just saw it!)
-				Cluster.setNodeStatus(name, R.NODE_STATUS_ACTIVE);
-			}
-		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
-		}
-		log.info("Completed loading info for worker nodes into db");
-	}
-
-	/**
-	 * Calls SGE to get details about the given node. 
-	 * @param name The name of the node to get details about
-	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
-	 */
-	public static HashMap<String, String> getNodeDetails(String name) {
-		try {
-			// Make the results hashmap that will be returned		
-			HashMap<String, String> details = new HashMap<String, String>();
-
-			// Call SGE to get details for the given node
-			String results = Util.executeCommand(R.NODE_DETAILS_COMMAND + name);
-
-			// Parse the output from the SGE call to get the key/value pairs for the node
-			java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(results);
-
-			// For each match...
-			while(matcher.find()) {
-				// Split apart the key from the value
-				String[] keyVal = matcher.group().split("=");
-
-				// Add the results to the details hashmap
-				details.put(keyVal[0], keyVal[1]);
-			}
-
-			return details;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return null;
-		
-	}	
+	}		
 
 
-  
-
-
-    
-    /**
-     * Cancels/Ends a reservation
-     */
-    public static void checkQueueReservations() {
-		SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-
-    	java.util.Date today = new java.util.Date();
-		List<QueueRequest> queueReservations = Requests.getAllQueueReservations();
-		if (queueReservations == null) 
-		    log.info("No reservations found.");
-		else {
-			//first, end all the reservations that need to be ended and take back nodes that reservations are done with
-			for (QueueRequest req : queueReservations) {
-
-		        Calendar cal = Calendar.getInstance();
-		        cal.setTime(today);
-		        cal.add(Calendar.DATE, -1);
-		        java.util.Date yesterday = cal.getTime();
-				/**
-				 * If the reservation end_date was 'yesterday' -- makes end_date inclusive
-				 */
-				boolean end_was_yesterday = fmt.format(req.getEndDate()).equals(fmt.format(yesterday));
-				int queueId = Queues.getIdByName(req.getQueueName());
-
-				if (end_was_yesterday) {
-				    log.info("Reservation has ended for queue "+req.getQueueName()+".");
-				    removeQueue(queueId);
-				}
-				
-				int nodeCount = Queues.getNodeCountOnDate(req.getId(), today);
-				List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
-				int actualNodeCount = actualNodes.size();
-				String queueName = Queues.getNameById(queueId);
-				String[] split = queueName.split("\\.");
-				String shortQueueName = split[0];
-				
-				//When the node count is decreasing for this reservation on this day
-				//Need to move a certain number of nodes back to all.q
-				transferOverflowNodes(shortQueueName, nodeCount, actualNodeCount, actualNodes);
-				
-			}
-			
-			
-			
-			//next, start up the new reservations and add nodes where they need to be
-		    for (QueueRequest req : queueReservations) {
-			log.info("Checking reservation for queue "+req.getQueueName());
-
-			/**
-			 * if today is when the reservation is starting
-			 */
-			boolean start_is_today = (fmt.format(req.getStartDate())).equals(fmt.format(today));
-			if (start_is_today) {
-			    log.info("Reservation begins today for queue "+req.getQueueName()+".");
-			    startReservation(req);
-			}
-				
-			int queueId = Queues.getIdByName(req.getQueueName());
-			int nodeCount = Queues.getNodeCountOnDate(req.getId(), today);
-			List<WorkerNode> actualNodes = Cluster.getNodesForQueue(queueId);
-			int actualNodeCount = actualNodes.size();
-			String queueName = Queues.getNameById(queueId);
-			String[] split = queueName.split("\\.");
-			String shortQueueName = split[0];
-
-
-			/**The Following code is for when the node count is changing throughout the reservation**/
-
-				
-			//When the node count is increasing for this reservation on this day
-			//Need to move a certain number of nodes from all.q to this queue
-			transferUnderflowNodes(shortQueueName, nodeCount, actualNodeCount);
-				
-		    }
-		    GridEngineUtil.loadWorkerNodes();
-		    GridEngineUtil.loadQueues();
-
-		}
-		log.info("Completed checking queue reservation.");
-    }
-	/**
-	 * 
-	 * @param queueName
-	 * @param nodeCount
-	 * @param actualNodeCount
-	 */
-	private static boolean transferOverflowNodes(String queueName, int nodeCount, int actualNodeCount, List<WorkerNode> actualNodes) {
-		
-		try {
-			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			
-			if (actualNodeCount > nodeCount) {
-				List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
-				
-				for (int i = 0; i < (actualNodeCount - nodeCount); i++) {
-					WorkerNode n = actualNodes.get(i);
-					transferNodes.add(n);
-				}	
-				
-				for (WorkerNode n : transferNodes) {
-					//add it to @allhosts
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
-					
-					//remove it from @<queueName>hosts
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
-				}
-			}
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-			
-	}
-	/**
-	 * 
-	 * @param queueName
-	 * @param nodeCount
-	 */
-	private static boolean transferUnderflowNodes(String queueName, int nodeCount, int actualNodeCount) {
-		try {
-			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			List<WorkerNode> AllQueueNodes = Queues.getNodes(1);
-
-			if (actualNodeCount < nodeCount) {
-				
-				List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();
-				for (int i = 0; i < (nodeCount - actualNodeCount); i++) {
-					transferNodes.add(AllQueueNodes.get(i));
-				}	
-				
-				for (WorkerNode n : transferNodes) {
-					//add it to @<queueName>hosts
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + queueName + "hosts", envp);
-					
-					//Remove it from allhosts
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
-				}
-			}	
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-			
-	}
-
-  
 	
-	public static boolean startReservation (QueueRequest req) {
-		try {
-			log.debug("begin startReservation");
-			String queueName = req.getQueueName();
-			String[] split = queueName.split("\\.");
-			String shortQueueName = split[0];
-			int queueId = Queues.getIdByName(queueName);
-			Queue q = Queues.get(queueId);
-			if (!q.getStatus().equals("ACTIVE")) {
-				
-				//Get the nodes we are going to transfer
-				List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
-				List<WorkerNode> nodes = Queues.getNodes(1);
-				StringBuilder sb = new StringBuilder();
-				for (int i = 0; i < req.getNodeCount(); i++) {
-					transferNodes.add(nodes.get(i));
-					String fullName = nodes.get(i).getName();
-					String[] split2 = fullName.split("\\.");
-					String shortName = split2[0];
-					sb.append(shortName);
-					sb.append(" ");
-				}
-				String hostList = sb.toString();
-				
-				/***** CREATE A QUEUE *****/
-				// Create newHost.hgrp [COMPLETE]
-				String newHost;
-				try {
-					newHost = "group_name @" + shortQueueName + "hosts" +
-							  "\nhostlist " + hostList;
-					File f = new File("/tmp/newHost30.hgrp");
-					FileUtils.writeStringToFile(f, newHost);
-					f.setReadable(true, false);
-					f.setWritable(true, false);
-
-				} catch (IOException e) {
-					log.error(e.getMessage(),e);
-				}
-				
-
-				//Add the host [COMPLETE]
-				String[] envp = new String[1];
-				envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-				log.debug("envp[0] = " + envp[0]);
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
-				
-				
-				
-				// Create newQueue.q [COMPLETE]
-				String newQueue;
-				try {
-					newQueue = "qname                   " + queueName + 
-								"\nhostlist             @" + shortQueueName + "hosts" + 
-								"\nseq_no                0" +
-								"\nload_thresholds       np_load_avg=1.75" +
-								"\nsuspend_thresholds    NONE" +
-								"\nnsuspend              1" +  // nsuspend is the correct name
-								"\nsuspend_interval      00:05:00" +
-								"\npriority              0" +
-								"\nmin_cpu_interval      00:05:00" +
-								"\nprocessors            UNDEFINED" +
-								"\nqtype                 BATCH INTERACTIVE" +
-								"\nckpt_list             NONE" +
-								"\npe_list               make" +
-								"\nrerun                 FALSE" +
-								"\nslots                 2" +
-								"\ntmpdir                /tmp" +
-								"\nshell                 /bin/csh" +
-								"\nprolog                NONE" +
-								"\nepilog                NONE" +
-								"\nshell_start_mode      posix_compliant" +
-								"\nstarter_method        NONE" +
-								"\nsuspend_method        NONE" +
-								"\nresume_method         NONE" +
-								"\nterminate_method      NONE" +
-								"\nnotify                00:00:60"+
-								"\nowner_list            NONE"+
-								"\nuser_lists            NONE"+
-								"\nxuser_lists           NONE"+
-								"\nsubordinate_list      NONE"+
-								"\ncomplex_values        NONE"+
-								"\nprojects              NONE"+
-								"\nxprojects             NONE"+
-								"\ncalendar              NONE"+
-								"\ninitial_state         default"+
-								"\ns_rt                  INFINITY"+
-								"\nh_rt                  INFINITY"+
-								"\ns_cpu                 INFINITY"+
-								"\nh_cpu                 INFINITY"+
-								"\ns_fsize               INFINITY"+
-								"\nh_fsize               INFINITY"+
-								"\ns_data                INFINITY"+
-								"\nh_data                INFINITY"+
-								"\ns_stack               INFINITY"+
-								"\nh_stack               INFINITY"+
-								"\ns_core                INFINITY"+
-								"\nh_core                INFINITY"+
-								"\ns_rss                 INFINITY"+
-								"\nh_rss                 INFINITY"+
-								"\ns_vmem                INFINITY"+
-								"\nh_vmem                INFINITY";
-					
-					File f = new File("/tmp/newQueue30.q");
-					FileUtils.writeStringToFile(f, newQueue);
-					f.setReadable(true, false);
-					f.setWritable(true, false);
-					
-				} catch (IOException e) {
-					log.error(e.getMessage(),e);
-				}
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
-						
-				//Transfer nodes out of @allhosts
-				for (WorkerNode n : transferNodes) {
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
-				}
-			    GridEngineUtil.loadWorkerNodes();
-			    GridEngineUtil.loadQueues();
-			}
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-		
-	}
-	
-	
-	public static boolean createPermanentQueue(QueueRequest req, boolean isNewQueue, HashMap<WorkerNode, Queue> nodesAndQueues) {
+    public static boolean createPermanentQueue(boolean isNewQueue,String BACKEND_ROOT,String queueName, String[] nodeNames,String[] queueNames){
 		try {
 			log.debug("begin createPermanentQueue");
-			String queueName = req.getQueueName();
 			String[] split = queueName.split("\\.");
 			String shortQueueName = split[0];
-
-			List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
+	
 			StringBuilder sb = new StringBuilder();
 			
 			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+			envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 	
 			
 			if (isNewQueue) {
 				//This is being called from "Create new permanent queue"
-				Set<WorkerNode> nodes = nodesAndQueues.keySet();
-				if (nodes != null) {
-					for (WorkerNode n : nodes) {
-						transferNodes.add(n);
-						String fullName = n.getName();
+				if (nodeNames != null) {
+				    for (int i=0;i<nodeNames.length;i++) {
+						String fullName = nodeNames[i];
 						String[] split2 = fullName.split("\\.");
 						String shortName = split2[0];
 						sb.append(shortName);
 						sb.append(" ");
 						
-						Queue queue = nodesAndQueues.get(n);
-						String name = queue.getName();
-						String[] split3 = name.split("\\.");
-						String shortQName = split3[0];
-						Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
+
+						String sourceQueueName = queueNames[i];
+						//if node is not orphaned
+						if(sourceQueueName != null){
+						    String[] split3 = sourceQueueName.split("\\.");
+						    String shortQName = split3[0];
+						    log.debug("About to execute sudo command 1");
+						    BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @" + shortQName + "hosts", envp);
+						}
 					}
 				}
 				
 			} else {
-				//This is being called from "Make existing queue permanent"
+			    //This is being called from "Make existing queue permanent"
 				
-				//Get the nodes we are going to transfer
-				List<WorkerNode> nodes = Queues.getNodes(1);
-				for (int i = 0; i < req.getNodeCount(); i++) {
-					transferNodes.add(nodes.get(i));
-					String fullName = nodes.get(i).getName();
-					String[] split2 = fullName.split("\\.");
-					String shortName = split2[0];
-					sb.append(shortName);
-					sb.append(" ");
+			    //TODO : What's this supposed to do?  Doesn't seem to be doing what it should
+			    //Get the nodes we are going to transfer
+			    //List<WorkerNode> nodes = Queues.getNodes(1);
+			    for (int i = 0; i < nodeNames.length; i++) {
+				String fullName = nodeNames[i];
+				String[] split2 = fullName.split("\\.");
+				String shortName = split2[0];
+				sb.append(shortName);
+				sb.append(" ");
 					
-					// Transfer nodes out of @allhosts
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodes.get(i).getName() + " @allhosts", envp);
+				// Transfer nodes out of @allhosts
+				log.debug("About to execute sudo command 2");
+					BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @allhosts", envp);
 				}
 			}
 			
@@ -626,7 +159,8 @@ public class GridEngineUtil {
 
 		//Add the host
 
-		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
+			log.debug("About to execute sudo command 3");
+		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
 		
 			
 			
@@ -689,13 +223,13 @@ public class GridEngineUtil {
 			f2.setReadable(true, false);
 			f2.setWritable(true, false);
 				
-		
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
+			log.debug("About to execute sudo command 4");
+			BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 		
 			
 	
-		    GridEngineUtil.loadWorkerNodes();
-		    GridEngineUtil.loadQueues();
+
+		    log.debug("created permanent queue successfully");
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -704,79 +238,16 @@ public class GridEngineUtil {
 
 	}
 	
-	/**
-	 * Removes a queue from grid engine and the database
-	 * @param queueId The Id of the queue to remove.
-	 * @param permanent
-	 * @return True on success and false otherwise
-	 */
-	public static boolean removeQueue(int queueId) {
-		try {
-			Queue q=Queues.get(queueId);
-			boolean permanent=q.getPermanent();
-			String queueName = q.getName();
-			String[] split = queueName.split("\\.");
-			String shortQueueName = split[0];
-			
-			//Pause jobs that are running on the queue
-			List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
-
-			if (jobs != null) {
-				for (Job j : jobs) {
-					Jobs.pause(j.getId());
-				}
-			}
-
-			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			//Move associated Nodes back to default queue
-			List<WorkerNode> nodes = Queues.getNodes(queueId);
-			
-			if (nodes != null) {
-				for (WorkerNode n : nodes) {
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @allhosts", envp);
-				}
-			}
-			
-			boolean success=true;
-			
-			
-			/***** DELETE THE QUEUE *****/	
-				//Database Change
-			if (permanent) {
-				success=success && Queues.delete(queueId);
-
-			} else {
-				success = success && Requests.DeleteReservation(queueId);
-			}
-				
-				//DISABLE the queue: 
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
-				//DELETE the queue:
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
-				
-				//Delete the host group:
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
-				
-			    GridEngineUtil.loadWorkerNodes();
-			    GridEngineUtil.loadQueues();	
-			    return success;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-		
-	}
 	
 	/**
 	 * Clears off every currently running SGE job from every queue
 	 * @return
 	 */
-	public static boolean deleteAllSGEJobs() {
+	public static boolean deleteAllSGEJobs(String BACKEND_ROOT) {
 		String[] envp = new String[1];
-		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 		try {
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
+			BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -788,13 +259,14 @@ public class GridEngineUtil {
 	 * Clears the error states from every node associated with every queue
 	 * @return True on success and false otherwise
 	 */
-	public static boolean clearNodeErrorStates() {
+    public static boolean clearNodeErrorStates(String BACKEND_ROOT,String[] allQueueNames) {
 		try {
 			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+R.SGE_ROOT;
-			for (Queue q : Queues.getAll()) {
+			envp[0] = "SGE_ROOT="+BACKEND_ROOT;
+
+			for(int i=0;i<allQueueNames.length;i++) {
 				
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+q.getName(),envp);
+				BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],envp);
 			}
 			return true;
 		} catch (Exception e) {
@@ -804,13 +276,14 @@ public class GridEngineUtil {
 	}
 	
 	/**
+	 * pure SGE, move
 	 * Runs qstat -f and returns the result
 	 * @return The qstat output, or null if there was an error
 	 */
 	public static String getQstatOutput() {
 		try {
 			
-			return Util.executeCommand("qstat -f");
+			return BackendUtil.executeCommand("qstat -f");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -820,73 +293,59 @@ public class GridEngineUtil {
 	
 	/**
 	 * Moves the given set of nodes into the given queue
+	 * @param BACKEND_ROOT the location to the backend root, if sge found at R.SGE_ROOT
 	 * @param queueName The name of the queue we are moving nodes to
-	 * @param NQ A map of nodes to queues, where the nodes are the ones that will be moved and the queues
-	 * are the ones that currently own each node
+	 * @param nodeNames the nodes to be moved into <queueName>
+	 * @param sourceQueueNames the names of the source queues, currently own their corresponding node
 	 */
 
-    public static boolean moveNodes(String queueName, HashMap<WorkerNode, Queue> NQ) {
+    public static boolean moveNodes(String BACKEND_ROOT,String queueName, String[] nodeNames, String[] sourceQueueNames) {
     	try {
     		log.info("moveNodes begins, for queue "+queueName);
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
-    		List<WorkerNode> transferNodes = new ArrayList<WorkerNode>();	
     		StringBuilder sb = new StringBuilder();
     			
     		String[] envp = new String[1];
-    		envp[0] = "SGE_ROOT="+R.SGE_ROOT;
+    		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 
-    		Set<WorkerNode> nodes = NQ.keySet();
-    		if (nodes == null)
+    		if ((nodeNames == null) || (nodeNames.length == 0))
     			log.warn("No nodes to move");
     		else {
-    		    for (WorkerNode n : nodes) {
-    			transferNodes.add(n);
-    			String fullName = n.getName();
-    			String[] split2 = fullName.split("\\.");
+    		    for(int i=0;i<nodeNames.length;i++){
+    			//String fullName = n.getName();
+			String nodeFullName = nodeNames[i];
+    			String[] split2 = nodeFullName.split("\\.");
     			String shortName = split2[0];
     			sb.append(shortName);
     			sb.append(" ");
     					
-    			log.debug("moving node "+fullName);
+    			log.debug("moving node "+nodeFullName);
 
-    			//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
-    			Queue queue = NQ.get(n);
-    			
-    			if (queue != null) {
-    			    // orphaned nodes could have null queues
-    					
-    			    //if this is going to make the queue empty...... need to pause all jobs first
-    			    List<WorkerNode> workers = Cluster.getNodesForQueue(queue.getId());
-    			    if (workers != null) {
-    				if (workers.size() == 1 ) {
-    				    log.info("checking for jobs running on queue "+queueName+", since this is the last node in the queue.");
-    				    List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
-    				    if (jobs != null) {
-    					for (Job j : jobs) {
-    					    Jobs.pause(j.getId());
-    					}
-    				    }
-    				}
-    			    }
-    			    
-    			    String name = queue.getName();
-    			    String[] split3 = name.split("\\.");
-    			    String shortQName = split3[0];
-    			    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + n.getName() + " @" + shortQName + "hosts", envp);
-    			}
-    			log.debug("adding node with name = "+n.getName() +" to queue = "+shortQueueName);
-    			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + n.getName() + " @" + shortQueueName + "hosts", envp);
-    		    }
-    		}
-    		GridEngineUtil.loadWorkerNodes();
-    		GridEngineUtil.loadQueues();
-    		log.debug("Move nodes ending.");
-    		return true;
+
+		//remove the association with this node and the queue it is currently associated with and add it to the permanent queue
+
+		
+		if (sourceQueueNames[i] != null) {
+		    // orphaned nodes could have null queues
+		    
+		    String name = sourceQueueNames[i];
+		    String[] split3 = name.split("\\.");
+		    String shortQName = split3[0];
+		    BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeFullName + " @" + shortQName + "hosts", envp);
+		}
+		log.debug("adding node with name = "+nodeFullName +" to queue = "+shortQueueName);
+		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + nodeFullName + " @" + shortQueueName + "hosts", envp);
+	    }
+	}
+
+	log.debug("Move nodes ending.");
+    	return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
     	return false;
 	
+
     }
 }
