@@ -709,17 +709,17 @@ public class StarexecCommandTests extends TestSequence {
 		
 		
 		downloadDir=ResourceLoader.getDownloadDirectory();
-		//solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		//config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
-		//proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
-		//Assert.assertNotNull(solver);
+		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
+		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
+		Assert.assertNotNull(solver);
 
-		//benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
-		//List<Integer> solverIds=new ArrayList<Integer>();
-		//solverIds.add(solver.getId());
-		//job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
+		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 
-		//Assert.assertNotNull(benchmarkIds);
+		Assert.assertNotNull(benchmarkIds);
 		
 		
 		solverURL=Util.url("public/resources/CVC4.zip");
