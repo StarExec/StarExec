@@ -95,7 +95,7 @@ DROP PROCEDURE IF EXISTS IncrementTotalBenchmarks;
 CREATE PROCEDURE IncrementTotalBenchmarks(IN _id INT, _num INT)
 	BEGIN
 		UPDATE benchmark_uploads
-		SET total_benchmarks = total_benchmarks + 1
+		SET total_benchmarks = total_benchmarks + _num
 		WHERE id = _id;
 	END //
 
