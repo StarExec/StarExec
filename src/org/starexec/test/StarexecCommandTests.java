@@ -61,7 +61,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void CreateJobTest() {
 		String jobName=TestUtil.getRandomJobName();
-		int qid=Queues.getAll().get(0).getId();
+		int qid=Queues.getAllQ().getId();
 		int jobId=con.createJob(space1.getId(), jobName, "", proc.getId(), -1, qid, 1, 1, true,1.0,false,0L);
 		Assert.assertTrue(jobId>0);
 		Job job=Jobs.get(jobId);

@@ -287,7 +287,7 @@ public class Uploads {
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetUploadStatusById(?)}");
+			procedure = con.prepareCall("{CALL GetXMLUploadStatusById(?)}");
 			procedure.setInt(1, statusId);					
 			results = procedure.executeQuery();		
 			
@@ -337,7 +337,7 @@ public class Uploads {
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetUploadStatusById(?)}");
+			procedure = con.prepareCall("{CALL GetBenchmarkUploadStatusById(?)}");
 			procedure.setInt(1, statusId);					
 			results = procedure.executeQuery();		
 			

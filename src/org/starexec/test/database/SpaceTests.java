@@ -195,15 +195,7 @@ public class SpaceTests extends TestSequence {
 		}
 		
 	}
-	@Test
-	private void updateDefaultMemoryLimitTest() {
-		int settingId=Communities.getDefaultSettings(community.getId()).getId();
-
-		long memory=Communities.getDefaultMaxMemory(community.getId());
-		Assert.assertTrue(Settings.setDefaultMaxMemory(settingId, memory+1));
-		Assert.assertEquals(memory+1, Communities.getDefaultMaxMemory(community.getId()));
-		Assert.assertTrue(Settings.setDefaultMaxMemory(settingId, memory));
-	}
+	
 	
 	@Test
 	private void inListOfCommunities() throws Exception {

@@ -1423,6 +1423,14 @@ public class Queues {
 	}
 	
 	/**
+	 * Returns all.q, which is the one queue in the system that is always guaranteed to exist
+	 * @return
+	 */
+	public static Queue getAllQ() {
+		return Queues.get(R.DEFAULT_QUEUE_ID);
+	}
+	
+	/**
 	 * Gets the queue that should be used for running test jobs. If no such queue
 	 * is currently set, it will be set to all.q before returning. This is to ensure
 	 * a test queue is always set

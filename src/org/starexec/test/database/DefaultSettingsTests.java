@@ -53,6 +53,14 @@ public class DefaultSettingsTests extends TestSequence {
 		Assert.assertTrue(temp.equals(settings));
 	}
 	
+	@Test
+	private void updateDefaultMemoryLimitTest() {
+
+		
+		Assert.assertTrue(Settings.setDefaultMaxMemory(settings.getId(), settings.getMaxMemory()+1));
+		Assert.assertEquals(settings.getMaxMemory()+1, Settings.getProfileById(settings.getId()).getMaxMemory());
+		Assert.assertTrue(Settings.setDefaultMaxMemory(settings.getId(), settings.getMaxMemory()));
+	}
 	
 	@Override
 	protected void setup() throws Exception {

@@ -53,6 +53,12 @@ public class Users {
 		return false;
 	}
 	
+	/**
+	 * Adds a new DefaultSettings object to the database. The type of the DefaultSettings
+	 * object will be a USER settings object
+	 * @param d The object to store in the database
+	 * @return The new ID of the setting
+	 */
 	public static int createNewDefaultSettings(DefaultSettings d) {
 		d.setType(SettingType.USER);
 		return Settings.addNewSettingsProfile(d);
