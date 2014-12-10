@@ -450,17 +450,12 @@ public class ResourceLoader {
 	
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
-			QueueRequest req=new QueueRequest();
-			/** 
-			req.setQueueName(TestUtil.getRandomQueueName());
-			req.setNodeCount(0);
-			**/
+			String queueName=TestUtil.getRandomQueueName();
 
-			R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,TestUtil.getRandomQueueName(), null,null);
+			R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queueName, null,null);
 			
 			
-			int queueId=Queues.getIdByName(req.getQueueName());
-			
+			int queueId=Queues.getIdByName(queueName);
 			boolean success = Queues.makeQueuePermanent(queueId);
 			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
