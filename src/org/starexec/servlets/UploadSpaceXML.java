@@ -70,7 +70,7 @@ public class UploadSpaceXML extends HttpServlet {
 				// Redirect based on success/failure
 
 
-				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId)); 
+				response.sendRedirect(Util.docRoot("secure/details/XMLuploadStatus.jsp?id=" + statusId)); 
 												
 			} else {
 				// Got a non multi-part request, invalid
@@ -127,6 +127,7 @@ public class UploadSpaceXML extends HttpServlet {
 								Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
 							}
 						}
+						
 					} catch (Exception e){
 						log.error("upload Benchmarks says " + e);
 						Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
@@ -136,6 +137,7 @@ public class UploadSpaceXML extends HttpServlet {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}		
+		Uploads.XMLEverythingComplete(statusId);
 	}	
 
 	
