@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 
 
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -19,6 +20,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
@@ -451,11 +453,18 @@ public class ResourceLoader {
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
-
+			String [] empty=new String[0];
 			R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queueName, null,null);
 			
-			
+			//reloads worker nodes and queues
+			Cluster.loadWorkerNodes();
+			Cluster.loadQueues();
 			int queueId=Queues.getIdByName(queueName);
+			if (queueId<=0) {
+				log.error("loadQueueIntoDatabase failed to create a queue!");
+				return null;
+			}
+			
 			boolean success = Queues.makeQueuePermanent(queueId);
 			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
