@@ -1,5 +1,6 @@
 package org.starexec.test.database;
 
+import java.util.List;
 import java.util.Random;
 
 import org.junit.Assert;
@@ -27,14 +28,26 @@ public class UploadTests extends TestSequence {
 		return "UploadTests";
 	}
 	
+
+	
 	@Test
 	private void getBenchmarkUploadStatusSummaryTest() {
 		Assert.assertNotNull(Uploads.getUploadStatusSummary(bs.getId()));
 	}
 	@Test
 	private void failedBenchesTest() {
-		
+		String benchName=TestUtil.getRandomAlphaString(50);
 		Assert.assertNotNull(Uploads.getFailedBenches(bs.getId()));
+		Assert.assertTrue(Uploads.addFailedBenchmark(bs.getId(), benchName));
+		List<String> failed=Uploads.getFailedBenches(bs.getId());
+		boolean found=false;
+		for (String s : failed) {
+			if (s.equals(benchName)) {
+				found=true;
+				break;
+			}
+		}
+		Assert.assertTrue(found);
 	}
 	
 	@Test

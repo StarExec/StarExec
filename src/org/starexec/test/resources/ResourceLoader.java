@@ -9,6 +9,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
+
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -20,10 +22,12 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
@@ -391,6 +395,20 @@ public class ResourceLoader {
 	 */
 	public static User loadUserIntoDatabase() {
 		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","test");
+	}
+	
+	public static CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
+		CommunityRequest req=new CommunityRequest();
+		req.setCode(UUID.randomUUID().toString());
+		req.setCommunityId(commId);
+		req.setUserId(userId);
+		req.setMessage(TestUtil.getRandomAlphaString(30));
+		
+		boolean success=Requests.addCommunityRequest(Users.get(userId), commId, req.getCode(), req.getMessage());
+		if (!success) {
+			return null;
+		}
+		return req;
 	}
 	
 	public static User loadUserIntoDatabase(String password) {

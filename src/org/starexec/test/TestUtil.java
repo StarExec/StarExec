@@ -36,6 +36,10 @@ public class TestUtil {
 		return getRandomAlphaString(R.USER_FIRST_LEN-1);
 	}
 	
+	public static String getRandomEmail() {
+		return getRandomAlphaString(R.EMAIL_LEN-10)+"@test.edu";
+	}
+	
 	/**
 	 * Gets a random string of lowercase letters of the given size
 	 * @param length
