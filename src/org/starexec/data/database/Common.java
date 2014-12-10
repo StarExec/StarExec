@@ -108,7 +108,7 @@ public class Common {
 	protected synchronized static Connection getConnection() throws SQLException {
 		try {
 			connectionsOpened++;
-			//log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
+			log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
 			//StackTraceElement m1=Thread.currentThread().getStackTrace()[1];
 			//StackTraceElement m2=Thread.currentThread().getStackTrace()[2];
 			//log.info("stack trace info for the open connection is "+m1.getClassName()+"."+m1.getMethodName()+ " "+m2.getClassName()+"."+m2.getMethodName());
