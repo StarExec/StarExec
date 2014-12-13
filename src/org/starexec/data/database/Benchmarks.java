@@ -646,7 +646,7 @@ public class Benchmarks {
 			}
 
 			if (uploadCounter>0) {
-				Uploads.incrementXMLCompletedSolvers(XMLUploadId, uploadCounter);
+				Uploads.incrementXMLCompletedBenchmarks(XMLUploadId, uploadCounter);
 
 			}
 			Common.endTransaction(con);

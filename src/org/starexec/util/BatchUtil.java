@@ -724,7 +724,7 @@ public class BatchUtil {
 			Benchmarks.associate(benchmarks, spaceId,statusId);
 		}
 		if (!solvers.isEmpty()){
-			Solvers.associate(solvers, spaceId);
+			Solvers.associate(solvers, spaceId,statusId);
 		}
 		
 		//TODO: Handle the upload status page for XML uploads
