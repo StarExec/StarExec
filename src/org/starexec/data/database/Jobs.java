@@ -394,9 +394,11 @@ public class Jobs {
 	
 	public static boolean deleteAndRemove(int jobId) {
 		Job j=Jobs.get(jobId);
-		log.debug("Called deleteAndRemove on the following job");
-		log.debug(jobId);
-		log.debug(j.getName());
+		if (j!=null) {
+			log.debug("Called deleteAndRemove on the following job");
+			log.debug(jobId);
+			log.debug(j.getName());
+		}
 		boolean success=delete(jobId);
 		if (!success) {
 			return false;
@@ -421,7 +423,6 @@ public class Jobs {
 		}
 		Connection con=null;
 		try {
-			//Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
 			con=Common.getConnection();
 			Jobs.removeCachedJobStats(jobId,con);
 			return delete(jobId,con);
