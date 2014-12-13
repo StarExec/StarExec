@@ -738,7 +738,7 @@ public class StarexecCommandTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		
-		Jobs.deleteAndRemove(job.getId());
+		//Jobs.deleteAndRemove(job.getId());
 		
 		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
 		Processors.delete(proc.getId());
