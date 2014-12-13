@@ -688,9 +688,7 @@ public class Uploads {
 	    }
 	    Connection con = null;	
 	    CallableStatement procedure = null;
-	    if (!Validator.isValidRequestMessage(message)){
-	    	throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
-	    }
+	   
 	    try {
 			con = Common.getConnection();	
 					
@@ -722,9 +720,7 @@ public class Uploads {
 	    }
 	    Connection con = null;	
 	    CallableStatement procedure = null;
-	    if (!Validator.isValidRequestMessage(message)){
-	    	throw new IllegalArgumentException("set Error Message too long, must be less than 512 chars.  This message has " + message.length());
-	    }
+	    
 	    try {
 			con = Common.getConnection();	
 					

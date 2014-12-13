@@ -37,6 +37,7 @@ import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DependValidator;
+import org.starexec.util.Timer;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -444,6 +445,7 @@ public class Benchmarks {
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		int incrementCounter=0;
+		Timer timer=new Timer();
 		for(Benchmark b : benchmarks) {
 		    int id=Benchmarks.add(b, spaceId,statusId);
 			if(id<0) {
@@ -456,9 +458,10 @@ public class Benchmarks {
 				benchmarkIds.add(id);
 
 				incrementCounter++;
-				if (incrementCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 					Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
 					incrementCounter=0;
+					timer.reset();
 				}
 				
 			}
@@ -476,6 +479,7 @@ public class Benchmarks {
 
 		Benchmark b = new Benchmark();
 		int incrementCounter=0;
+		Timer timer=new Timer();
 		for(int i = 0; i < benchmarks.size(); i++) {
 			b = benchmarks.get(i);
 			b = Benchmarks.addBenchWDepend(b, dataStruct, i, statusId);
@@ -483,9 +487,10 @@ public class Benchmarks {
 				throw new Exception("Failed to add benchmark to database");
 			}
 			incrementCounter++;
-			if (incrementCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+			if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 				Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
 				incrementCounter=0;
+				timer.reset();
 			}
 		}
 		if (incrementCounter>0) {
@@ -622,6 +627,39 @@ public class Benchmarks {
 		return false;
 			
 	}
+	
+	public static boolean associate(List<Integer> benchIds, int spaceId, int XMLUploadId) {
+		Connection con = null;			
+		int uploadCounter=0;
+		try {
+			con = Common.getConnection();	
+			Common.beginTransaction(con);
+			Timer timer=new Timer();
+			for (int benchId: benchIds) {
+				associate(benchId,spaceId, con);
+				uploadCounter++;
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+					Uploads.incrementXMLCompletedBenchmarks(XMLUploadId, uploadCounter);
+					uploadCounter=0;
+					timer.reset();
+				}
+			}
+
+			if (uploadCounter>0) {
+				Uploads.incrementXMLCompletedSolvers(XMLUploadId, uploadCounter);
+
+			}
+			Common.endTransaction(con);
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return false;
+	}	
 
 	/**
 	 * Associates the benchmarks with the given ids to the given space
@@ -667,6 +705,7 @@ public class Benchmarks {
 		// For each benchmark in the list to process...
 		int validatedCounter=0; //stores the number of benchmarks that have been validated since the last update
 		int failedCounter=0; //stores the TOTAL number of benchmarks that failed 
+		Timer timer=new Timer();
 		for(Benchmark b : benchmarks) {
 			try {
 				List<File> files=new ArrayList<File>();
@@ -693,9 +732,10 @@ public class Benchmarks {
 				count--;
 				if (Benchmarks.isBenchValid(prop)){
 					validatedCounter++;
-					if (validatedCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 						Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
 						validatedCounter=0;
+						timer.reset();
 					}
 				}
 				else{
@@ -1001,6 +1041,8 @@ public class Benchmarks {
 		space.setDescription(strUnzipped);
 		int benchCounter=0;
 		int spaceCounter=0;
+		Timer timer=new Timer();
+		Timer benchTimer=new Timer();
 		for(File f : directory.listFiles()) {
 			// If it's a sub-directory			
 			if(f.isDirectory()) {
@@ -1008,9 +1050,10 @@ public class Benchmarks {
 				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, 
 						userId, downloadable, perm, statusId));
 				spaceCounter++;
-				if (spaceCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD/20) {
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 					Uploads.incrementTotalSpaces(statusId,spaceCounter);//for upload status page
 					spaceCounter=0;
+					timer.reset();
 				}
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 
@@ -1025,9 +1068,10 @@ public class Benchmarks {
 					b.setUserId(userId);
 					b.setDownloadable(downloadable);
 					benchCounter++;
-					if (benchCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+					if (benchTimer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 						Uploads.incrementTotalBenchmarks(statusId,benchCounter);//for upload status page
 						benchCounter=0;
+						benchTimer.reset();
 					}
 					
 
@@ -2443,6 +2487,7 @@ public class Benchmarks {
 				return false;
 			}
 			int incrementCounter=0;
+			Timer timer=new Timer();
 			for (Benchmark b : benchmarks) {
 			    //only work on the benchmarks the given user owns if they are not a community leader
 			    if (!isCommunityLeader && b.getUserId()!=userId) {
@@ -2461,9 +2506,10 @@ public class Benchmarks {
 			    Benchmarks.updateDetails(b.getId(), b.getName(), b.getDescription(), b.isDownloadable(), p.getId());
 			    
 			    incrementCounter++;
-				if (incrementCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 					Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
 					incrementCounter=0;
+					timer.reset();
 				}
 			}
 			if (incrementCounter>0) {

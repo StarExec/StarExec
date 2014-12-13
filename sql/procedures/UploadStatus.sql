@@ -141,7 +141,7 @@ CREATE PROCEDURE IncrementFailedBenchmarks(IN _id INT,IN _num INT)
 	
 	
 DROP PROCEDURE IF EXISTS SetXMLErrorMessage;
-CREATE PROCEDURE SetXMLErrorMessage(IN _id INT, IN _message VARCHAR(512))
+CREATE PROCEDURE SetXMLErrorMessage(IN _id INT, IN _message TEXT)
 	BEGIN
 		UPDATE space_xml_uploads
 		SET error_message = _message
@@ -151,7 +151,7 @@ CREATE PROCEDURE SetXMLErrorMessage(IN _id INT, IN _message VARCHAR(512))
 -- Updates status when an error occurs
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS SetBenchmarkErrorMessage;
-CREATE PROCEDURE SetBenchmarkErrorMessage(IN _id INT, IN _message VARCHAR(512))
+CREATE PROCEDURE SetBenchmarkErrorMessage(IN _id INT, IN _message TEXT)
 	BEGIN
 		UPDATE benchmark_uploads
 		SET error_message = _message

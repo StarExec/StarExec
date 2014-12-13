@@ -132,12 +132,13 @@ public class UploadSpaceXML extends HttpServlet {
 						log.error("upload Benchmarks says " + e);
 						Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
 					}
+					Uploads.XMLEverythingComplete(statusId);
+
 				}
 			});
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}		
-		Uploads.XMLEverythingComplete(statusId);
 	}	
 
 	

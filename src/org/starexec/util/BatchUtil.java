@@ -446,6 +446,7 @@ public class BatchUtil {
 		//Create Space Hierarchies as children of parent space	
 		this.spaceCreationSuccess = true;
 		int spaceCounter=0;
+		Timer timer=new Timer();
 		for (int i = 0; i < listOfRootSpaceElements.getLength(); i++){
 			Node spaceNode = listOfRootSpaceElements.item(i);
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
@@ -453,9 +454,10 @@ public class BatchUtil {
 				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId,statusId);
 				spaceIds.add(spaceId);
 				spaceCounter++;
-				if (spaceCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD/20) {
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 					Uploads.incrementXMLCompletedSpaces(statusId, 1);
 					spaceCounter=0;
+					timer.reset();
 				}
 				spaceCreationSuccess = spaceCreationSuccess && (spaceId!=-1);
 			} 
@@ -680,9 +682,7 @@ public class BatchUtil {
 		
 		//these counters are counting the number of primitives that have been completed since the last time
 		// we updated the uploadstatus object
-		int solverCounter=0;
-		int benchCounter=0;
-		int updateCounter=0;
+		
 		
 		for (int i = 0; i < childList.getLength(); i++){
 			Node childNode = childList.item(i);
@@ -694,12 +694,10 @@ public class BatchUtil {
 				if (elementType.equals("Benchmark")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
 					benchmarks.add(id);
-					benchCounter++;
 				}
 				else if (elementType.equals("Solver")){
 					id=Integer.parseInt(childElement.getAttribute("id"));
 					solvers.add(id);
-					solverCounter++;
 					
 				}
 				else if (elementType.equals("Space")){
@@ -713,41 +711,23 @@ public class BatchUtil {
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
 				    updates.add(u);
-				    updateCounter++;
 				}
-				if (solverCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
-					Uploads.incrementXMLCompletedSolvers(statusId, solverCounter);
-					solverCounter=0;
-				}
-				if (updateCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
-					Uploads.incrementXMLCompletedUpdates(statusId, updateCounter);
-					updateCounter=0;
-				}
-				if (benchCounter>R.UPLOAD_STATUS_UPDATE_THRESHOLD) {
-					Uploads.incrementXMLCompletedBenchmarks(statusId, benchCounter);
-					benchCounter=0;
-				}
+				
 			}
 			else{
 				//do nothing, as it's probably just whitespace
 				//log.warn("Space " + spaceId + " has a node that should be an element, but isn't");
 			}
 		}
-		if (solverCounter>0) {
-			Uploads.incrementXMLCompletedSolvers(statusId, solverCounter);
-		}
-		if (updateCounter>0) {
-			Uploads.incrementXMLCompletedUpdates(statusId, updateCounter);
-		}
-		if (benchCounter>0) {
-			Uploads.incrementXMLCompletedBenchmarks(statusId, benchCounter);
-		}
+		
 		if (!benchmarks.isEmpty()){
-			Benchmarks.associate(benchmarks, spaceId);
+			Benchmarks.associate(benchmarks, spaceId,statusId);
 		}
 		if (!solvers.isEmpty()){
 			Solvers.associate(solvers, spaceId);
 		}
+		
+		//TODO: Handle the upload status page for XML uploads
 		if (!updates.isEmpty())
 		{
 		    addUpdates(updates,spaceId);
