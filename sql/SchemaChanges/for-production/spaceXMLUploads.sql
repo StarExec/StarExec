@@ -16,7 +16,7 @@ CREATE TABLE space_xml_uploads (
     completed_solvers INT DEFAULT 0,
     total_updates INT DEFAULT 0,
     completed_updates INT DEFAULT 0,
-    error_message TEXT DEFAULT "no error",
+    error_message TEXT,
 	PRIMARY KEY (id),
 	CONSTRAINT space_xml_uploads_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

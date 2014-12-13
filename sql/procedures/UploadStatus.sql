@@ -7,7 +7,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 DROP PROCEDURE IF EXISTS CreateBenchmarkUploadStatus;
 CREATE PROCEDURE CreateBenchmarkUploadStatus(IN _spaceId INT, IN _userId INT, OUT id INT)
 	BEGIN
-		INSERT INTO benchmark_uploads (space_id, user_id, upload_time) VALUES (_spaceId, _userId, NOW());
+		INSERT INTO benchmark_uploads (space_id, user_id, upload_time,error_message) VALUES (_spaceId, _userId, NOW(),"no error");
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 	
@@ -16,7 +16,7 @@ CREATE PROCEDURE CreateBenchmarkUploadStatus(IN _spaceId INT, IN _userId INT, OU
 DROP PROCEDURE IF EXISTS CreateSpaceXMLUploadStatus;
 CREATE PROCEDURE CreateSpaceXMLUploadStatus(IN _userId INT, OUT id INT)
 	BEGIN
-		INSERT INTO space_xml_uploads (user_id, upload_time) VALUES (_userId, NOW());
+		INSERT INTO space_xml_uploads (user_id, upload_time,error_message) VALUES (_userId, NOW(), "no error");
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 

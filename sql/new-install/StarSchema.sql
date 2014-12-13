@@ -495,7 +495,7 @@ CREATE TABLE space_xml_uploads (
     completed_solvers INT DEFAULT 0,
     total_updates INT DEFAULT 0,
     completed_updates INT DEFAULT 0,
-    error_message TEXT DEFAULT "no error",
+    error_message TEXT,
 	PRIMARY KEY (id),
 	CONSTRAINT space_xml_uploads_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -518,7 +518,7 @@ CREATE TABLE benchmark_uploads (
     failed_benchmarks INT DEFAULT 0,
     completed_benchmarks INT DEFAULT 0,
     completed_spaces INT DEFAULT 0,
-    error_message TEXT DEFAULT "no error",
+    error_message TEXT,
 	PRIMARY KEY (id),
 	CONSTRAINT benchmark_uploads_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT benchmark_uploads_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
