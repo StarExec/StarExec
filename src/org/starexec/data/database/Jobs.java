@@ -393,6 +393,10 @@ public class Jobs {
 	 */
 	
 	public static boolean deleteAndRemove(int jobId) {
+		Job j=Jobs.get(jobId);
+		log.debug("Called deleteAndRemove on the following job");
+		log.debug(jobId);
+		log.debug(j.getName());
 		boolean success=delete(jobId);
 		if (!success) {
 			return false;
