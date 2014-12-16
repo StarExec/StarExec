@@ -424,7 +424,7 @@ public class GetPageTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space1.getId(), admin.getId());
+		Spaces.removeSubspaces(space1.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Processors.delete(proc.getId());
 		for (Integer i : benchmarkIds) {

@@ -283,7 +283,17 @@ public class Benchmarks {
 				log.debug("found the following processor ID for the new benchmark " +p.getId());
 				Common.endTransaction(con);
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
-				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
+				//We do not actually do any processing if it is the no-type, as it is not necessary 
+				// The no-type always validates everything
+				if (p.getId()!=Processors.getNoTypeProcessor().getId()) {
+					Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
+				} else {
+					for (Benchmark b : benchmarks) {
+						Properties prop = new Properties();
+						prop.put("starexec-valid", "true");
+						b.setAttributes(prop);
+					}
+				}
 
 				// Next add them to the database (must happen AFTER they are processed);
 				return Benchmarks.addNoCon(benchmarks, spaceId, statusId);

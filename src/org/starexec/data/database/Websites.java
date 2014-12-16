@@ -142,6 +142,14 @@ public class Websites {
 		return false;
 	}	
 	
+	/**
+	 * Gets all the websites for the given entity, processed so that they
+	 * are suitable for insertion into HTML code without risking a 
+	 * cross site scripting attack
+	 * @param id
+	 * @param webType
+	 * @return
+	 */
 	public static List<Website> getAllForHTML(int id, WebsiteType webType) {
 		List<Website> sites=getAll(id,webType);
 		List<Website> answer=new ArrayList<Website>();

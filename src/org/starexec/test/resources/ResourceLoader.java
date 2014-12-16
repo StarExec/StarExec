@@ -314,7 +314,7 @@ public class ResourceLoader {
 			FileUtils.copyFile(archive, archiveCopy);
 			Integer statusId = Uploads.createBenchmarkUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
-			List<Integer> ids=BenchmarkUploader.addBechmarksFromArchive(archiveCopy, userId, parentSpaceId, 1, false, p, 
+			List<Integer> ids=BenchmarkUploader.addBechmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p, 
 					"dump", statusId, false, false, null);
 			return ids;
 		} catch (Exception e) {

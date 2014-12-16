@@ -42,7 +42,7 @@ public class PasswordReset extends HttpServlet {
 			if(userId > 0){
 				String tempPass = Util.getTempPassword();
 				request.getSession().setAttribute("pwd", tempPass);
-				if(Users.setPassword(userId, tempPass)){
+				if(Users.updatePassword(userId, tempPass)){
 					log.debug(String.format("Temporary password successfully set for user id [%d]", userId));
 					response.sendRedirect(Util.docRoot("public/temp_pass.jsp"));
 				}

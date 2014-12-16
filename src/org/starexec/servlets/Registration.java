@@ -121,7 +121,7 @@ public class Registration extends HttpServlet {
 			} 
 		} else {
 			int id = Users.add(user);
-			boolean success = Users.addToCommunity(id, communityId);
+			boolean success = Users.associate(id, communityId);
 			if (success) {
 				Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
 				return new ValidatorStatusCode(true);

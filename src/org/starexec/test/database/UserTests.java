@@ -41,6 +41,34 @@ public class UserTests extends TestSequence {
 	}
 	
 	@Test
+	private void getUserByEmailTest() {
+		Assert.assertFalse(Users.getUserByEmail(TestUtil.getRandomEmail()));
+		Assert.assertTrue(Users.getUserByEmail(user1.getEmail()));
+		Assert.assertTrue(Users.getUserByEmail(admin.getEmail()));
+
+	}
+	
+	//TODO: Confirm the password was actually updated correctly?
+	@Test
+	private void setPasswordTest() {
+		String randomPass=TestUtil.getRandomPassword();
+		Assert.assertTrue(Users.updatePassword(user1.getId(), randomPass));
+	}
+	
+	@Test
+	private void getCommunitiesTest() {
+		List<Integer> commIds=Users.getCommunities(user1.getId());
+		Assert.assertEquals(0,commIds.size());
+		commIds=Users.getCommunities(admin.getId());
+		Assert.assertTrue(commIds.size()>0);
+		boolean found=false;
+		for (Integer i : commIds) {
+			found=found || comm.getId()==i;
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@Test
 	private void registerUserTest() {
 		User u=new User();
 		u.setFirstName(TestUtil.getRandomUserName());
@@ -329,8 +357,8 @@ public class UserTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId(), admin.getId());
-		Spaces.removeSubspaces(comm.getId(), admin.getId());
+		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspaces(comm.getId());
 		
 	}
 	

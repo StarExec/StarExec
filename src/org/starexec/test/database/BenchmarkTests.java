@@ -85,7 +85,7 @@ public class BenchmarkTests extends TestSequence {
 		List<Benchmark> spaceBenchmarks=Spaces.getDetails(subspace.getId(),admin.getId()).getBenchmarks();
 		Assert.assertEquals(spaceBenchmarks.size(),benchmarks.size());
 		
-		Spaces.removeSubspaces(subspace.getId(),admin.getId());
+		Spaces.removeSubspaces(subspace.getId());
 	}
 	
 	
@@ -214,7 +214,7 @@ public class BenchmarkTests extends TestSequence {
 		for (Benchmark b : benchmarks) { 
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
-		Spaces.removeSubspaces(space.getId(),admin.getId());
+		Spaces.removeSubspaces(space.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(user2.getId(), admin.getId());
 		

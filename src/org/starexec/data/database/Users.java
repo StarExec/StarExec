@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.UserSecurity;
-
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
@@ -233,6 +233,26 @@ public class Users {
 		return false;
 	}
 	
+	/**
+	 * Given a ResultSet currently pointing at a row with a user in it, returns
+	 * that user
+	 * @param results
+	 * @return
+	 * @throws SQLException
+	 */
+	private static User resultSetToUser(ResultSet results) throws SQLException {
+		User u = new User();
+		u.setId(results.getInt("id"));
+		u.setEmail(results.getString("email"));
+		u.setFirstName(results.getString("first_name"));
+		u.setLastName(results.getString("last_name"));
+		u.setInstitution(results.getString("institution"));
+		u.setCreateDate(results.getTimestamp("created"));
+		u.setRole(results.getString("role"));
+		u.setDiskQuota(results.getLong("disk_quota"));
+		return u;
+	}
+	
 	
 	/**
 	 * Retrieves a user from the database given the user's id
@@ -251,16 +271,7 @@ public class Users {
 			 results = procedure.executeQuery();
 			
 			if(results.next()){
-				User u = new User();
-				u.setId(results.getInt("id"));
-				u.setEmail(results.getString("email"));
-				u.setFirstName(results.getString("first_name"));
-				u.setLastName(results.getString("last_name"));
-				u.setInstitution(results.getString("institution"));
-				u.setCreateDate(results.getTimestamp("created"));
-				u.setRole(results.getString("role"));
-				u.setDiskQuota(results.getLong("disk_quota"));
-				return u;
+				return resultSetToUser(results);
 			} else {
 				log.debug("Could not find user with id = "+id);
 			}
@@ -293,16 +304,8 @@ public class Users {
 			results = procedure.executeQuery();
 			
 			if(results.next()){
-				User u = new User();
-				u.setId(results.getInt("id"));
-				u.setEmail(results.getString("email"));
-				u.setFirstName(results.getString("first_name"));
-				u.setLastName(results.getString("last_name"));
-				u.setInstitution(results.getString("institution"));
-				u.setCreateDate(results.getTimestamp("created"));
-				u.setRole(results.getString("role"));
-				u.setDiskQuota(results.getLong("disk_quota"));
-				return u;
+				return resultSetToUser(results);
+
 			}			
 			
 		} catch (Exception e){			
@@ -327,12 +330,7 @@ public class Users {
 			
 			List<User> admins =  new LinkedList<User>();
 			while (results.next()) {
-				User u = new User();
-				u.setId(results.getInt("id"));
-				u.setInstitution(results.getString("institution"));
-				u.setFirstName(results.getString("first_name"));
-				u.setLastName(results.getString("last_name"));
-				u.setEmail(results.getString("email"));
+				User u = resultSetToUser(results);
 				admins.add(u);
 			}
 			return admins;
@@ -541,15 +539,7 @@ public class Users {
 			 results = procedure.executeQuery();
 			
 			if (results.next()) {
-				User u = new User();
-				u.setId(results.getInt("id"));
-				u.setEmail(results.getString("email"));
-				u.setFirstName(results.getString("first_name"));
-				u.setLastName(results.getString("last_name"));
-				u.setInstitution(results.getString("institution"));
-				u.setCreateDate(results.getTimestamp("created"));
-				u.setDiskQuota(results.getLong("disk_quota"));
-				return u;
+				return resultSetToUser(results);
 			}
 
 		} catch (Exception e) {
@@ -610,16 +600,11 @@ public class Users {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetNameofUserByJob(?)}");
+			 procedure = con.prepareCall("{CALL GetUserByJob(?)}");
 			procedure.setInt(1, jobId);
 			 results = procedure.executeQuery();
 			while (results.next()) {
-				User u = new User();
-				u.setId(results.getInt("id"));
-				u.setInstitution(results.getString("institution"));
-				u.setFirstName(results.getString("first_name"));
-				u.setLastName(results.getString("last_name"));
-				u.setEmail(results.getString("email"));
+				User u = resultSetToUser(results);
 				return u;
 			}
 				
@@ -910,34 +895,7 @@ public class Users {
 		return false;
 	}
 	
-	/**
-	 * Sets the password of a user, given their user_id; this method requires
-	 * the password be supplied in plaintext
-	 * @param user_id the id of the user to set the new password for
-	 * @param password the new password
-	 * @return True if the operation was a success, false otherwise
-	 * @author Todd Elvers
-	 */
-	public static boolean setPassword(int user_id, String password){
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL SetPasswordByUserId(?, ?)}");
-			procedure.setInt(1, user_id);
-			procedure.setString(2, Hash.hashPassword(password));
-			
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
+	
 	
 	//We should not be using this right now, since our login setup can't handle changing email
 	/**
@@ -1093,6 +1051,7 @@ public class Users {
 		
 		return false;
 	}
+	
 	/**
 	 * Completely deletes a user from the database. Right now, this is only
 	 * being used to delete temporary users created during testing
@@ -1240,27 +1199,6 @@ public class Users {
 		return -1;
 	}
 
-	public static boolean addToCommunity(int userId, int communityId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		try{
-			con = Common.getConnection();					
-						
-			procedure = con.prepareCall("{CALL AddUserToCommunity(?, ?)}");
-			procedure.setInt(1, userId);
-			procedure.setInt(2, communityId);
-			procedure.executeUpdate();			
-
-			return true;
-		} catch (Exception e){	
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);						
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}		
-		return false;
-	}
 	
 	/**
 	 * Sets the role of the given user to the given role

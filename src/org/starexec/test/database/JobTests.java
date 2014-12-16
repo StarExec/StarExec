@@ -55,6 +55,12 @@ public class JobTests extends TestSequence {
 	}
 	
 	@Test
+	private void getUserByJobTest() {
+		User u=Users.getUserByJob(job.getId());
+		Assert.assertEquals(user.getId(),u.getId());
+	}
+	
+	@Test
 	private void GetDetailedTest() {
 		Job testJob=Jobs.getDetailed(job.getId());
 		Assert.assertNotNull(testJob);
@@ -314,7 +320,7 @@ public class JobTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
-		Spaces.removeSubspaces(space.getId(), admin.getId());
+		Spaces.removeSubspaces(space.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());

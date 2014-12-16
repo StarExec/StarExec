@@ -1664,6 +1664,13 @@ public class Solvers {
 		return setRecycledState(id,true);
 	}
 	
+	/**
+	 * Given a list of solvers and a user ID, recycles all of the solvers in the list 
+	 * that the user owns
+	 * @param solvers
+	 * @param userId
+	 * @return
+	 */
 	public static boolean recycleSolversOwnedByUser(Collection<Solver> solvers, int userId) {
 		boolean success=true;
 		for (Solver s : solvers) {

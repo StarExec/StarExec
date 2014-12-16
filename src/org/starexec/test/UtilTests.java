@@ -149,7 +149,7 @@ public class UtilTests extends TestSequence{
 	protected void teardown() throws Exception {
 		Assert.assertTrue(Solvers.deleteAndRemoveSolver(s1.getId()));
 		Assert.assertTrue(Solvers.deleteAndRemoveSolver(s2.getId()));
-		Assert.assertTrue(Spaces.removeSubspaces(s.getId(), u.getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(s.getId()));
 		Assert.assertTrue(Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId()));
 	}
 

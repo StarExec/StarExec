@@ -1017,9 +1017,7 @@ function removeJobs(selectedJobs,ownsAll){
  * @author Todd Elvers
  */
 function removeSubspaces(selectedSubspaces,deletePrims){
-	$('#dialog-confirm-delete-txt').text('are you sure you want to remove the selected subspace(s), and all their subspaces, from ' + spaceName + '?');
 	log('user confirmed (in quickremove dialog) subspace deletion');
-
 
 	$.post(  
 			starexecRoot+"services/remove/subspace/" + spaceId,

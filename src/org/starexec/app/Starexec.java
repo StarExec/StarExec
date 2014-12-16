@@ -96,8 +96,7 @@ public class Starexec implements ServletContextListener {
 		Validator.initialize();		
 		
 		
-		//TODO : rename RUN_PERIODIC_SGE_TASKS
-		if (R.RUN_PERIODIC_SGE_TASKS) {
+		if (R.IS_FULL_STAREXEC_INSTANCE) {
 		    R.BACKEND.initialize(R.SGE_ROOT);
 
 		}
@@ -230,7 +229,7 @@ public class Starexec implements ServletContextListener {
 		
 		TestManager.initializeTests();
 		//Schedule the recurring tasks above to be run every so often
-		if (R.RUN_PERIODIC_SGE_TASKS) {
+		if (R.IS_FULL_STAREXEC_INSTANCE) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
@@ -246,12 +245,7 @@ public class Starexec implements ServletContextListener {
 		    
 		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
-		File badFile=new File("C:/users/eric/desktop/testtwo_XML.zip");
-		System.out.println(badFile.exists());
-		System.out.println(ArchiveUtil.isValidZip(badFile));
-		File goodFile=new File("C:/users/eric/desktop/sonarqube-4.5.1.zip");
-		System.out.println(goodFile.exists());
-		System.out.println(ArchiveUtil.isValidZip(goodFile));
+		
 		//TestManager.executeAllTestSequences();
 	}
 	

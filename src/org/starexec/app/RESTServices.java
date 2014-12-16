@@ -2711,15 +2711,20 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
+		log.debug("found the following spaces");
+		for (Integer i : selectedSubspaces) {
+			log.debug(i);
+		}
 		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId,selectedSubspaces);
 		if (!status.isSuccess()) {
+			log.debug("fail: here is the error code = "+status.getMessage());
 			return gson.toJson(status);
 		}
 		
 		boolean recycleAllAllowed=false;
 		if (Util.paramExists("deletePrims", request)) {
 			if (Boolean.parseBoolean(request.getParameter("deletePrims"))) {
-				log.debug("Request to delete all solvers, benchmarks, and jobs in a hierarchy received");
+				log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
 				recycleAllAllowed=true;
 			}
 			
@@ -2730,11 +2735,19 @@ public class RESTServices {
 			for (int sid : selectedSubspaces) {
 				solvers.addAll(Solvers.getBySpace(sid));
 				benchmarks.addAll(Benchmarks.getBySpace(sid));
+				for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
+					solvers.addAll(Solvers.getBySpace(s.getId()));
+					benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+				}
 			}
+		}
+		log.debug("found the following benchmarks");
+		for (Benchmark b : benchmarks) {
+			log.debug(b.getId());
 		}
 		// Remove the subspaces from the space
 		boolean success=true;
-		if (Spaces.removeSubspaces(selectedSubspaces, SessionUtil.getUserId(request))) {
+		if (Spaces.removeSubspaces(selectedSubspaces)) {
 			if (recycleAllAllowed) {
 				log.debug("Space removed successfully, recycling primitives");
 				success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);

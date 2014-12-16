@@ -24,8 +24,9 @@ import org.starexec.test.resources.ResourceLoader;
 public class SpaceTests extends TestSequence {
 	
 	Space community=null;
-	Space subspace=null;
-	Space subspace2=null;
+	Space subspace=null;  //subspace of community
+	Space subspace2=null; //subspace of community
+	Space subspace3=null; //subspace of subspace2
 	User leader=null;
 	User admin=null;
 	User member1=null;
@@ -46,6 +47,16 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(community.getId(), test.getId());
 		
 		
+	}
+	
+	//TODO: Test to make sure the solvers are no longer in there
+	@Test
+	private void removeSolversFromHierarchyTest() {
+		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
+		Assert.assertTrue(Solvers.associate(solver.getId(), subspace3.getId()));
+		List<Integer> si=new ArrayList<Integer>();
+		si.add(solver.getId());
+		Assert.assertTrue(Spaces.removeSolversFromHierarchy(si, subspace2.getId(), leader.getId()));
 	}
 	
 	
@@ -131,7 +142,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(space1Path, SP.get(space1.getId()));
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 		
-		Spaces.removeSubspaces(space1.getId(), leader.getId());
+		Spaces.removeSubspaces(space1.getId());
 	}
 	
 	@Test
@@ -242,6 +253,7 @@ public class SpaceTests extends TestSequence {
 		community = ResourceLoader.loadSpaceIntoDatabase(leader.getId(), 1);	
 		subspace=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
 		subspace2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		subspace3=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
 		Users.associate(member1.getId(), community.getId());
 		Users.associate(member2.getId(), community.getId());
 		Users.associate(member1.getId(), subspace.getId());
@@ -268,10 +280,10 @@ public class SpaceTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
 		
-		Spaces.removeSubspaces(subspace.getId(), Users.getAdmins().get(0).getId());
-		Spaces.removeSubspaces(subspace2.getId(), Users.getAdmins().get(0).getId());
-
-		boolean success=Spaces.removeSubspaces(community.getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(subspace.getId());
+		Spaces.removeSubspaces(subspace2.getId());
+		Spaces.removeSubspaces(subspace3.getId());
+		boolean success=Spaces.removeSubspaces(community.getId());
 		Users.deleteUser(leader.getId(),admin.getId());
 		Users.deleteUser(member1.getId(),admin.getId());
 		Users.deleteUser(member2.getId(),admin.getId());

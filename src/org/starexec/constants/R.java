@@ -151,7 +151,7 @@ public class R {
     public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
-    public static boolean RUN_PERIODIC_SGE_TASKS = true;  // should we run SGE tasks (see app/Starexec.java)
+    public static boolean IS_FULL_STAREXEC_INSTANCE = true;  // should we run SGE tasks (see app/Starexec.java)
     public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
     public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
