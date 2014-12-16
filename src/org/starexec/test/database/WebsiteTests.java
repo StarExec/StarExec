@@ -58,6 +58,12 @@ public class WebsiteTests extends TestSequence {
 	}
 	
 	@Test
+	private void getAllforHTMLTest() {
+		List<Website> sites=Websites.getAllForHTML(solver.getId(), WebsiteType.SOLVER);
+		Assert.assertNotNull(sites);
+	}
+	
+	@Test
 	private void addAndRemoveSpaceWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(space.getId(), "http://www.uiowa.edu", name, WebsiteType.SPACE));
@@ -101,7 +107,7 @@ public class WebsiteTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		Solvers.deleteAndRemoveSolver(solver.getId());
-		Spaces.removeSubspaces(space.getId(), admin.getId());
+		Spaces.removeSubspaces(space.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		
 	}

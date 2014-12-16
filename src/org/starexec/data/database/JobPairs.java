@@ -1086,7 +1086,7 @@ public class JobPairs {
     //TODO : marked for grid engine interface
     public static boolean killPair(int pairId, int execId) {
 	try {	
-	    R.BACKEND.killPair(execId);
+	    R.BACKEND.killPair(R.SGE_ROOT,execId);
 	    JobPairs.UpdateStatus(pairId, 21);
 	    return true;
 	} catch (Exception e) {

@@ -28,6 +28,7 @@ import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
+import org.starexec.util.Timer;
 import org.starexec.util.Util;
 
 /**
@@ -199,6 +200,40 @@ public class Solvers {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solverId);
 		return associate(solverIds,spaceId);
+	}
+	
+	public static boolean associate(List<Integer> solverIds, int spaceId, int XMLUploadId) {
+		Connection con = null;			
+		int counter=0;
+		Timer timer=new Timer();
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			for(int sid : solverIds) {
+				Solvers.associate(con, spaceId, sid);
+				counter++;
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+					Uploads.incrementXMLCompletedSolvers(XMLUploadId, counter);
+					counter=0;
+					timer.reset();
+				}
+			}	
+			if (counter>0) {
+				Uploads.incrementXMLCompletedSolvers(XMLUploadId, counter);
+
+			}
+			Common.endTransaction(con);
+			
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		log.error("Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]");
+		return false;
 	}
 	
 	/**
@@ -1629,6 +1664,13 @@ public class Solvers {
 		return setRecycledState(id,true);
 	}
 	
+	/**
+	 * Given a list of solvers and a user ID, recycles all of the solvers in the list 
+	 * that the user owns
+	 * @param solvers
+	 * @param userId
+	 * @return
+	 */
 	public static boolean recycleSolversOwnedByUser(Collection<Solver> solvers, int userId) {
 		boolean success=true;
 		for (Solver s : solvers) {

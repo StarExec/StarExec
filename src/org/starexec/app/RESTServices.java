@@ -223,7 +223,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getBenchmarkUploadDescription(@PathParam("statusId") int statusId, @Context HttpServletRequest request) {
 		int userId =SessionUtil.getUserId(request);
-		if (!Permissions.canUserSeeStatus(statusId, userId)) {
+		if (!Permissions.canUserSeeBenchmarkStatus(statusId, userId)) {
 			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to view this upload"));
 		}
 		return gson.toJson(new ValidatorStatusCode(true,Uploads.getUploadStatusSummary(statusId)));
@@ -307,7 +307,12 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			gson.toJson(status);
 		}
-		return R.BACKEND.clearNodeErrorStates() ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
+		
+		LinkedList<String> queueNames = new LinkedList<String>();
+		for(Queue q : Queues.getAll()){
+		    queueNames.add(q.getName());
+		}
+		return R.BACKEND.clearNodeErrorStates(R.SGE_ROOT,queueNames.toArray(new String[queueNames.size()])) ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
 	}
 	
 	/**
@@ -337,7 +342,7 @@ public class RESTServices {
 	@Produces("text/plain")		
 	public String getQstatOutput(@Context HttpServletRequest request) {		
 		int userId = SessionUtil.getUserId(request);
-		String qstat=R.BACKEND.getRunningJobsStatus();
+		String qstat=R.BACKEND.getRunningJobsStatus(R.SGE_ROOT);
 		if(!Util.isNullOrEmpty(qstat)) {
 			return qstat;
 		}
@@ -2706,15 +2711,20 @@ public class RESTServices {
 		} catch(Exception e){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
 		}
+		log.debug("found the following spaces");
+		for (Integer i : selectedSubspaces) {
+			log.debug(i);
+		}
 		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(parentSpaceId, userId,selectedSubspaces);
 		if (!status.isSuccess()) {
+			log.debug("fail: here is the error code = "+status.getMessage());
 			return gson.toJson(status);
 		}
 		
 		boolean recycleAllAllowed=false;
 		if (Util.paramExists("deletePrims", request)) {
 			if (Boolean.parseBoolean(request.getParameter("deletePrims"))) {
-				log.debug("Request to delete all solvers, benchmarks, and jobs in a hierarchy received");
+				log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
 				recycleAllAllowed=true;
 			}
 			
@@ -2725,11 +2735,19 @@ public class RESTServices {
 			for (int sid : selectedSubspaces) {
 				solvers.addAll(Solvers.getBySpace(sid));
 				benchmarks.addAll(Benchmarks.getBySpace(sid));
+				for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
+					solvers.addAll(Solvers.getBySpace(s.getId()));
+					benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+				}
 			}
+		}
+		log.debug("found the following benchmarks");
+		for (Benchmark b : benchmarks) {
+			log.debug(b.getId());
 		}
 		// Remove the subspaces from the space
 		boolean success=true;
-		if (Spaces.removeSubspaces(selectedSubspaces, SessionUtil.getUserId(request))) {
+		if (Spaces.removeSubspaces(selectedSubspaces)) {
 			if (recycleAllAllowed) {
 				log.debug("Space removed successfully, recycling primitives");
 				success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
@@ -3994,7 +4012,7 @@ public class RESTServices {
 		boolean success = true;
 		//Make BACKEND changes
 		if (!q.getStatus().equals("ACTIVE")) {
-			success = R.BACKEND.createPermanentQueue(req, true, null);
+		    success = R.BACKEND.createPermanentQueue(R.SGE_ROOT, true,req.getQueueName(),null,null);
 		}
 		
 		//Make database changes

@@ -9,6 +9,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
+
+
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -17,13 +20,16 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
+import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
@@ -306,9 +312,9 @@ public class ResourceLoader {
 			//make a copy of the archive, because the benchmark extraction function will delete the archive
 			File archiveCopy=new File(getDownloadDirectory(),UUID.randomUUID()+archive.getName());
 			FileUtils.copyFile(archive, archiveCopy);
-			Integer statusId = Uploads.createUploadStatus(parentSpaceId, userId);
+			Integer statusId = Uploads.createBenchmarkUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
-			List<Integer> ids=BenchmarkUploader.addBechmarksFromArchive(archiveCopy, userId, parentSpaceId, 1, false, p, 
+			List<Integer> ids=BenchmarkUploader.addBechmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p, 
 					"dump", statusId, false, false, null);
 			return ids;
 		} catch (Exception e) {
@@ -393,6 +399,20 @@ public class ResourceLoader {
 		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","test");
 	}
 	
+	public static CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
+		CommunityRequest req=new CommunityRequest();
+		req.setCode(UUID.randomUUID().toString());
+		req.setCommunityId(commId);
+		req.setUserId(userId);
+		req.setMessage(TestUtil.getRandomAlphaString(30));
+		
+		boolean success=Requests.addCommunityRequest(Users.get(userId), commId, req.getCode(), req.getMessage());
+		if (!success) {
+			return null;
+		}
+		return req;
+	}
+	
 	public static User loadUserIntoDatabase(String password) {
 		return loadUserIntoDatabase("test","user",password,password,"The University of Iowa","test");
 	}
@@ -432,14 +452,18 @@ public class ResourceLoader {
 	
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
-			QueueRequest req=new QueueRequest();
-			req.setQueueName(TestUtil.getRandomQueueName());
-			req.setNodeCount(0);
-
-			R.BACKEND.createPermanentQueue(req, true, new HashMap<WorkerNode,Queue>());
+			String queueName=TestUtil.getRandomQueueName();
+			String [] empty=new String[0];
+			R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queueName, null,null);
 			
-			
-			int queueId=Queues.getIdByName(req.getQueueName());
+			//reloads worker nodes and queues
+			Cluster.loadWorkerNodes();
+			Cluster.loadQueues();
+			int queueId=Queues.getIdByName(queueName);
+			if (queueId<=0) {
+				log.error("loadQueueIntoDatabase failed to create a queue!");
+				return null;
+			}
 			
 			boolean success = Queues.makeQueuePermanent(queueId);
 			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);

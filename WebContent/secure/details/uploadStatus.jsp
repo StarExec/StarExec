@@ -10,35 +10,35 @@
 		int userId = SessionUtil.getUserId(request);
 		int statusId = Integer.parseInt(request.getParameter("id"));
 
-		UploadStatus s = null;
+		BenchmarkUploadStatus s = null;
 		List<String> bS = null;
-		if (Permissions.canUserSeeStatus(statusId, userId)) {
-			s = Uploads.get(statusId);
-			bS = Uploads.getFailedBenches(statusId);
+		if (Permissions.canUserSeeBenchmarkStatus(statusId, userId)) {
+	s = Uploads.getBenchmarkStatus(statusId);
+	bS = Uploads.getFailedBenches(statusId);
 		}
 
 		if (s != null) {
-			request.setAttribute("status", s);
-			if (!s.isEverythingComplete()) {
-				response.setIntHeader("Refresh", 10);
-			}
+	request.setAttribute("status", s);
+	if (!s.isEverythingComplete()) {
+		response.setIntHeader("Refresh", 10);
+	}
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,
-					"Upload Status does not exist or is restricted");
+	response.sendError(HttpServletResponse.SC_NOT_FOUND,
+	"Upload Status does not exist or is restricted");
 		}
 		if (bS != null) {
-			request.setAttribute("badBenches", bS);
+	request.setAttribute("badBenches", bS);
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,
-					"Upload Status does not exist or is restricted");
+	response.sendError(HttpServletResponse.SC_NOT_FOUND,
+	"Upload Status does not exist or is restricted");
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-				"The given upload status id was in an invalid format");
+		"The given upload status id was in an invalid format");
 	} catch (Exception e) {
 		response.sendError(
-				HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-				e.getMessage());
+		HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+		e.getMessage());
 	}
 %>
 

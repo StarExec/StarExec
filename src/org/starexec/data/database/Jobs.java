@@ -393,6 +393,12 @@ public class Jobs {
 	 */
 	
 	public static boolean deleteAndRemove(int jobId) {
+		Job j=Jobs.get(jobId);
+		if (j!=null) {
+			log.debug("Called deleteAndRemove on the following job");
+			log.debug(jobId);
+			log.debug(j.getName());
+		}
 		boolean success=delete(jobId);
 		if (!success) {
 			return false;
@@ -417,7 +423,6 @@ public class Jobs {
 		}
 		Connection con=null;
 		try {
-			//Jobs.invalidateAndDeleteJobRelatedCaches(jobId);
 			con=Common.getConnection();
 			Jobs.removeCachedJobStats(jobId,con);
 			return delete(jobId,con);
@@ -3331,7 +3336,7 @@ public class Jobs {
 	    for (JobPair jp : jobPairsEnqueued) {
 		//TODO : remember to change name of getGridEngineId
 		int execId = jp.getGridEngineId();
-		R.BACKEND.killPair(execId);
+		R.BACKEND.killPair(R.SGE_ROOT,execId);
 		JobPairs.UpdateStatus(jp.getId(), 20);
 	    }
 	    //Get the running job pairs and remove them
@@ -3339,7 +3344,7 @@ public class Jobs {
 	    if (jobPairsRunning != null) {
 		for (JobPair jp: jobPairsRunning) {
 		    int execId = jp.getGridEngineId();
-		    R.BACKEND.killPair(execId);
+		    R.BACKEND.killPair(R.SGE_ROOT,execId);
 		    JobPairs.UpdateStatus(jp.getId(), 20);
 		}
 	    }
@@ -3374,7 +3379,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
-			R.BACKEND.killAll();
+			R.BACKEND.killAll(R.SGE_ROOT);
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
 			if (jobs != null) {

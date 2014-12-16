@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -17,6 +18,9 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Queues;
+
+
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
@@ -63,18 +67,37 @@ public class MoveNodes extends HttpServlet {
 	    HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
 	    log.debug("nodeIds = " + nodeIds);
+	    
+	    LinkedList<String> nodeNames = new LinkedList<String>();
+	    LinkedList<String> queueNames = new LinkedList<String>();
+
 	    if (nodeIds != null) {
 		for (int id : nodeIds) {
+
+		    //TODO: don't need to make WorkerNode, can get queue by node id
 		    WorkerNode n = new WorkerNode();
 		    n.setId(id);
 		    n.setName(Cluster.getNodeNameById(id));
 		    Queue q = Cluster.getQueueForNode(n);
 		    NQ.put(n, q);
+
+		    nodeNames.add(Cluster.getNodeNameById(id));
+		    if(q == null){
+			queueNames.add(null);
+		    } else{
+			queueNames.add(q.getName());
+			//Need to call this in prepartion for moving the nodes
+			Queues.pauseJobsIfOneWorker(q);
+		    }
+
 		}
 	    }
 		
 	    //BACKEND Changes
-	    R.BACKEND.moveNodes(queueName, NQ);
+	    R.BACKEND.moveNodes(R.SGE_ROOT,queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
+
+	    Cluster.loadWorkerNodes();
+	    Cluster.loadQueues();
 		
 	    Collection<Queue> queues = NQ.values();
 	    for (Queue q : queues) {

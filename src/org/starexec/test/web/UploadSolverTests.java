@@ -100,7 +100,7 @@ public class UploadSolverTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		driver.quit();
-		Spaces.removeSubspaces(s.getId(), u.getId());
+		Spaces.removeSubspaces(s.getId());
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
 		
 	}

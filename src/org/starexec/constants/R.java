@@ -16,6 +16,8 @@ public class R {
      * 
      * Any fields set here will be treated as defaults
      */
+
+    //TODO : Many descriptions and names in this file reference SGE even though the concepts are not SGE specific, should be changed to refer to BACKEND so that they can be more meaningful
 	
 
 	public R() throws Exception{
@@ -49,6 +51,10 @@ public class R {
     public static int PROCESSOR_DESC_LEN=1024;
     public static int QUEUE_NAME_LEN=64;
     
+    //the number of increments we should accumulate in an upload status field before actually committing to the database
+    //public static int UPLOAD_STATUS_UPDATE_THRESHOLD=100;
+    public static long UPLOAD_STATUS_TIME_BETWEEN_UPDATES=9000; //number of milliseconds that should pass between updates
+    															//to an upload status object
     // Maximum job pair settings
     public static int MAXIMUM_JOB_PAIRS=Integer.MAX_VALUE; // no restriction for now
     public static int MAXIMUM_SOLVER_CONFIG_PAIRS=5;
@@ -145,7 +151,7 @@ public class R {
     public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
-    public static boolean RUN_PERIODIC_SGE_TASKS = true;  // should we run SGE tasks (see app/Starexec.java)
+    public static boolean IS_FULL_STAREXEC_INSTANCE = true;  // should we run SGE tasks (see app/Starexec.java)
     public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
     public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
@@ -174,19 +180,10 @@ public class R {
 	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for an SGE node (indicates the node is live)
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
 	
-    // SGE Configurations, see GridEngineUtil
+    // BACKEND configurations
+    //TODO : The name and meaning of SGE_ROOT should be changed, it should no longer be SGE specific but rather be the BACKEND_ROOT
     public static String SGE_ROOT = null; // root directory for SGE
-    public static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
-    public static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
-    public static String QUEUE_USAGE_COMMAND = "qstat -g c";				// The SGE command to get USAGE details about all queues
-    public static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
-    public static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    public static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
-    public static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
-    public static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
-    //public static String QUEUE_ASSOC_PATTERN = "\\[.+=";  					// The regular expression to parse out the nodes that belong to a queue from SGE's queue detail output
-    public static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-    public static String STATS_ENTRY_PATTERN = "^([\\w\\d\\.]+:){5}%d:.+$"; // The regular expression to parse out entries in the sge accounting file
+    //TODO : SGE_ACCOUNTING_FILE should be changed, it should no longer be SGE specific but rather be BACKEND_ACCOUNTING_ROOT (backends should be able to provide job stats)
     public static String SGE_ACCOUNTING_FILE = null;  						// The absolute path to the SGE accounting file that holds job statistics
     public static int MAX_PAIR_RUNTIME = 86400;  							// The largest possible amount of time a job pair can run before being terminated (in seconds)
     public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)

@@ -6,11 +6,14 @@ package org.starexec.command;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import org.apache.commons.compress.archivers.zip.ZipFile;
 
 public class Validator {
 	
@@ -874,5 +877,27 @@ public class Validator {
 		}
 	}
 	
+	
+	
+	/**
+	 *Checks to see if the given zip file is valid
+	 */
+	 public static boolean isValidZip(File file) {
+		    ZipFile zipfile = null;
+		    try {
+		        zipfile = new ZipFile(file);
+		        return true;
+		    } catch (Exception e) {
+		        return false;
+		    } finally {
+		        try {
+		            if (zipfile != null) {
+		                zipfile.close();
+		                zipfile = null;
+		            }
+		        } catch (IOException e) {
+		        }
+		    }
+		}
 	
 }

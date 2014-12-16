@@ -212,7 +212,12 @@ function initUI(){
 	$('#togglePreProcessor').click(function() {
 		$('#newPreProcessTbl').slideToggle('fast');
 		togglePlusMinus(this);
-	});	
+	});
+
+        $('#toggleUpdateProcessor').click(function() {
+		$('#newUpdateProcessTbl').slideToggle('fast');
+		togglePlusMinus(this);
+	});
 	
 	$('#editPostProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
@@ -225,6 +230,11 @@ function initUI(){
 	$('#editPreProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PreProcess', 0);
 	});
+
+       	$('#editUpdateProcess').change(function() {
+		saveChanges($(this).children('option:selected').attr('value'), true, 'UpdateProcess', 0);
+	});
+
 	
 	$('#editDependenciesEnabled').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
@@ -258,7 +268,8 @@ function initUI(){
 	$('#websiteField').expandable(true);
 	$('#benchmarkField').expandable(true);
 	$('#settingsField').expandable(true);
-	$('#processorField').expandable(true);
+    $('#postProcessorField').expandable(true);
+    $('#updateProcessorField').expandable(true);
 	$("#preProcessorField").expandable(true);
 	$('#addType').button({
 		icons: {
@@ -273,7 +284,11 @@ function initUI(){
 	$('#addPreProcessor').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-    }});
+		}});
+    $('#addUpdateProcessor').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-n"
+		}});
 	
 	$('#addWebsite').button({
 		icons: {
@@ -302,7 +317,7 @@ function attachFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
-	var formsToValidate = ['#addPostProcessorForm','#addPreProcessorForm', '#newTypeForm'];
+    var formsToValidate = ['#addPostProcessorForm','#addPreProcessorForm', '#newTypeForm', '#addUpdateProcessorForm'];
 	
 	$.each(formsToValidate, function(i, selector) {
 		$(selector).validate({
@@ -413,7 +428,7 @@ function saveChanges(obj, save, attr, old) {
 				showMessage('error', $('#nameRow').attr('length')+ " characters maximum",5000);
 				return;
 			}
-		} else if (attr == "PostProcess" || attr == "PreProcess" || attr=="BenchProcess"){
+		} else if (attr == "PostProcess" || attr == "PreProcess" || attr=="BenchProcess" || attr == "UpdateProcess"){
 			newVal = obj;
 		} else if (attr == "CpuTimeout"){
 			newVal = $(obj).siblings('input:first').val();

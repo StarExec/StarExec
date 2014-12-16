@@ -942,12 +942,12 @@ public class Spaces {
 	/**
 	 * Gets the parent space belong to the given spaceId
 	 * @param spaceId the id of the space to get the parent of
-	 * @return the id of the parent space
+	 * @return the id of the parent space or -1 on error or if none exists
 	 * 
 	 * @author Wyatt Kaiser
 	 */
 	
-	public static Integer getParentSpace(int spaceId) {
+	public static int getParentSpace(int spaceId) {
 		Connection con = null;			
 		
 		try {
@@ -959,18 +959,18 @@ public class Spaces {
 			Common.safeClose(con);
 		}
 		
-		return null;
+		return -1;
 	}
 	
 	/**
 	 * Given a space id, returns the id of the parent space
 	 * @param spaceId the id of the space to get parent of
 	 * @param con the database connection to use
-	 * @return the Id of the parent space
+	 * @return the Id of the parent space or -1 on error
 	 * @author Wyatt Kaiser
 	 */
 		
-		protected static Integer getParentSpace(int spaceId, Connection con) throws Exception{
+		protected static int getParentSpace(int spaceId, Connection con) throws Exception{
 			CallableStatement procedure = null;
 			ResultSet results = null;
 			try {
@@ -1203,7 +1203,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @return A List of Space objects
 	 */
 	public static List<Space> getSubSpaceHierarchy(int spaceId, int userId) {
-
+		if (Users.isAdmin(userId)) {
+			return getSubSpaceHierarchy(spaceId); //not dependent on user, as admins can see everything
+		}
 		Connection con = null;			
 		
 		try {
@@ -1219,33 +1221,60 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	}
 	
 	/**
-	 * Helper method for getSubSpaces() - gets either the first level of subspaces of a space or, recursively, all
-	 * subspaces of a given space
+	 * Recursively returns all of the spaces in the subspace hierarchy rooted at spaceId
+	 * @param spaceId
+	 * @return
+	 */
+	public static List<Space> getSubSpaceHierarchy(int spaceId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyAdmin(?)}");
+			procedure.setInt(1, spaceId);
+			results=procedure.executeQuery();
+			List<Space> subSpaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getInt("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				subSpaces.add(s);
+			}
+			log.debug("now returning this many subspaces = "+subSpaces.size());
+			return subSpaces;
+		} catch (Exception e) {
+			log.debug(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Helper method for getSubSpaces() - recursivley finds all the subspaces of the given root space
+	 * that the given user can see
 	 * 
 	 * @param spaceId The id of the space to get the subspaces of
 	 * @param userId The id of the user making the request for the subspaces
-	 * @param isRecursive True if we want all subspaces of a space recursively; False if we want only the first level of subspaces of a space
 	 * @param con the database connection to use
 	 * @return the list of subspaces of the given space
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
 	
-	protected static List<Space> getSubSpaceHierarchy(int spaceId, int userId, Connection con) throws Exception{
+	private static List<Space> getSubSpaceHierarchy(int spaceId, int userId, Connection con) throws Exception{
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
-		if (Users.isAdmin(userId)) {
-			log.debug("calling GetSubSpaceHierarchyAdmin");
-			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyAdmin(?)}");
-			procedure.setInt(1, spaceId);
-		} else {
-			log.debug("calling GetSubSpaceHierarchyById");
+		try {
 			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyById(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-		}
-		try {
 			results = procedure.executeQuery();
 			List<Space> subSpaces = new LinkedList<Space>();
 			
@@ -1873,7 +1902,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @param userId
 	 * @return
 	 */
-	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds,int rootSpaceId, int userId) {
+	public static boolean removeSolversFromHierarchy(List<Integer> solverIds,int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
 		subspaces.add(Spaces.get(rootSpaceId));
 		List<Space> allowedSpaces=new ArrayList<Space>();
@@ -1895,7 +1924,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * 
 	 * @author Skylar Stark
 	 */
-	public static boolean removeSolversFromHierarchy(ArrayList<Integer> solverIds, List<Space> subspaces) {
+	public static boolean removeSolversFromHierarchy(List<Integer> solverIds, List<Space> subspaces) {
 		Connection con = null;
 		
 		try {
@@ -1904,7 +1933,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			
 			for (Space space : subspaces) {
 				Spaces.removeSolvers(solverIds, space.getId(), con);
-				//Cache.invalidateAndDeleteCache(space.getId(), CacheType.CACHE_SPACE);
 			}
 			
 			Common.endTransaction(con);
@@ -1923,27 +1951,22 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	
 	
 	/**
-	 * Removes a list of subspaces, and all of their subspaces, from a given space 
-	 * in an all-or-none fashion (uses a transaction)
+	 * Given a single space, removes all of the subspaces of that space from the database
+	 * recursively
 	 * 
 	 * @param subspaceIds the list of subspaces to remove
 	 * @param parentSpaceId the id of the space to remove the subspaces from
 	 * @param con the database transaction to use
 	 * @author Todd Elvers
 	 */
-	private static void removeSubspaces(int spaceId, int userId, Connection con) throws Exception {
+	private static void removeSubspaces(int spaceId, Connection con) throws Exception {
 		
 		CallableStatement procedure = null;
 		// For every subspace of the space to be deleted...
 		
-		//TODO: I don't think it makes any sense to get spaces by user here. 
-		for(Space subspace : Spaces.getSubSpaces(spaceId, userId)){
-			
-			
-			// Recursively delete its subspaces
-			Spaces.removeSubspaces(subspace.getId(), userId, con);
-			
-			 procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
+		for(Space subspace : Spaces.getSubSpaceHierarchy(spaceId)){
+
+			procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 			procedure.setInt(1, subspace.getId());
 			procedure.executeUpdate();			
 			Common.safeClose(procedure);
@@ -1951,10 +1974,10 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 		}
 	}
 	
-	public static boolean removeSubspaces(int subspaceId,int userId) {
+	public static boolean removeSubspaces(int subspaceId) {
 		List<Integer> spaceId=new ArrayList<Integer>();
 		spaceId.add(subspaceId);
-		return removeSubspaces(spaceId,userId);
+		return removeSubspaces(spaceId);
 	}
 	
 	/**
@@ -1967,7 +1990,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * false otherwise
 	 * @author Todd Elvers
 	 */
-	public static boolean removeSubspaces(List<Integer> subspaceIds, int userId) {
+	public static boolean removeSubspaces(List<Integer> subspaceIds) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -1981,7 +2004,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 				log.debug("subspaceId = " + subspaceId);
 
 				// Check if it has any subspaces itself, and if so delete them 
-				Spaces.removeSubspaces(subspaceId, userId, con);
+				Spaces.removeSubspaces(subspaceId, con);
 
 				 procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
 				procedure.setInt(1, subspaceId);
@@ -2218,13 +2241,14 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			// Finally, add the benchmarks in the space to the database
 			//not really using connection parameter right now due to problems
 			ids.addAll(Benchmarks.add(space.getBenchmarks(), spaceId, statusId));
-			Uploads.incrementCompletedSpaces(statusId);		
+			//TODO: Consider refactoring this to reduce the number of calls that get made
+			Uploads.incrementCompletedSpaces(statusId,1);		
 			return ids;
 		}
 		catch (Exception e){			
 			log.error("traverse says " + e.getMessage(), e);
 			String message = "Major Error encountered traversing spaces";
-			Uploads.setErrorMessage(statusId, message);
+			Uploads.setBenchmarkErrorMessage(statusId, message);
 			return null;//need to pass up
 		} finally {
 			Common.safeClose(con);
@@ -2258,7 +2282,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			}			
 			// Finally, add the benchmarks in the space to the database
 			ids.addAll(Benchmarks.addWithDeps(space.getBenchmarks(), spaceId, con, depRootSpaceId, linked, userId, statusId));
-			Uploads.incrementCompletedSpaces(statusId);
+			Uploads.incrementCompletedSpaces(statusId,1);
 			return ids;
 		}
 		catch (Exception e){			

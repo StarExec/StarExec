@@ -29,23 +29,7 @@ CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCH
 		VALUES (_email, _role);
 	END //
 
--- Adds a user to a community directly (used through admin interface)
--- Skips the community request stage
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS AddUserToCommunity;
-CREATE PROCEDURE AddUserToCommunity(IN _userId INT, IN _communityId INT)
-	BEGIN
-		DECLARE _newPermId INT;
-		DECLARE _pid INT;
-		
-		-- Copy the default permission for the community 					
-		SELECT default_permission FROM spaces WHERE id=_communityId INTO _pid;
-		CALL CopyPermissions(_pid, _newPermId);
-		
-		INSERT INTO user_assoc(user_id, space_id, permission)
-		VALUES(_userId, _communityId, _newPermId);
-		
-	END //
+
 	
 -- Removes the user given by _userId from every space in the hierarchy rooted at _spaceId that _requestUserId can see
 -- Author: Eric Burns
@@ -104,7 +88,7 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 			VALUES (_userId, _spaceId, _newPermId);
 		END IF;
 	END //
-		
+			
 	
 -- Gets the fewest necessary Users in order to service a client's
 -- request for the next page of Users in their DataTable object.  
@@ -351,16 +335,6 @@ CREATE PROCEDURE UpdatePassword(IN _id INT, IN _password VARCHAR(128))
 		WHERE users.id = _id;
 	END //
 	
--- Sets a new password for a given user
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS SetPasswordByUserId;
-CREATE PROCEDURE SetPasswordByUserId(IN _id INT, IN _password VARCHAR(128))
-	BEGIN
-		UPDATE users
-		SET password = _password
-		WHERE users.id = _id;
-	END //
-	
 -- Gets the default page size for a given user
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetDefaultPageSize;
@@ -429,8 +403,8 @@ CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 	END // 
 	
 -- Gets the user that owns the given job
-DROP PROCEDURE IF EXISTS GetNameofUserByJob;
-CREATE PROCEDURE GetNameofUserByJob(IN _jobId INT)
+DROP PROCEDURE IF EXISTS GetUserByJob;
+CREATE PROCEDURE GetUserByJob(IN _jobId INT)
 	BEGIN
 		SELECT *
 		FROM users

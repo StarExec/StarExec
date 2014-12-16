@@ -21,6 +21,7 @@ import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestManager;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
@@ -55,7 +56,7 @@ public class Starexec implements ServletContextListener {
 		    log.debug("Releasing Util threadpool...");
 		    Util.shutdownThreadPool();
 
-		    R.BACKEND.destroyIf();
+		    R.BACKEND.destroyIf(R.SGE_ROOT);
 		    // Wait for the task scheduler to finish
 		    taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
 		    taskScheduler.shutdownNow();
@@ -95,9 +96,8 @@ public class Starexec implements ServletContextListener {
 		Validator.initialize();		
 		
 		
-		//TODO : rename RUN_PERIODIC_SGE_TASKS
-		if (R.RUN_PERIODIC_SGE_TASKS) {
-		    R.BACKEND.initialize();
+		if (R.IS_FULL_STAREXEC_INSTANCE) {
+		    R.BACKEND.initialize(R.SGE_ROOT);
 
 		}
 		
@@ -229,7 +229,7 @@ public class Starexec implements ServletContextListener {
 		
 		TestManager.initializeTests();
 		//Schedule the recurring tasks above to be run every so often
-		if (R.RUN_PERIODIC_SGE_TASKS) {
+		if (R.IS_FULL_STAREXEC_INSTANCE) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
@@ -245,6 +245,7 @@ public class Starexec implements ServletContextListener {
 		    
 		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
+		
 		//TestManager.executeAllTestSequences();
 	}
 	

@@ -23,8 +23,7 @@
 			 type="tns:SpaceAttributes" minOccurs="0"
 			 maxOccurs="1"></element>
 		
-		<element name = "Update" type = "tns:Update" minOccurs
-			 = "0" maxOccurs = "unbounded">
+		<element name = "Update" type = "tns:Update" minOccurs = "0" maxOccurs = "unbounded">
 		</element>
     		<element name="Benchmark" type="tns:Benchmark" minOccurs="0"
     			maxOccurs="unbounded">
@@ -78,9 +77,10 @@
       <element name = "Text" type = "string" minOccurs = "0" maxOccurs
 	       = "1"/>
       </all>
-      <attribute name = "id" type = "int" />
+      <attribute name = "id" type = "int" /> <!--benchmark being updated id-->
       <attribute name = "name" type = "string" use = "optional" />
-      <attribute name = "pid" type = "int" />
+      <attribute name = "pid" type = "int" /> <!-- update processor id-->
+      <attribute name = "bid" type = "int" /> <!-- benchmark processor id-->
     </complexType>
 
     <complexType name="Benchmark">

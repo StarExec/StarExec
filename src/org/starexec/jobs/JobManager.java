@@ -288,11 +288,11 @@ public abstract class JobManager {
 							}
 
 							// Submit to the grid engine
-							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
+							int execId = R.BACKEND.submitScript(R.SGE_ROOT,scriptPath, "/export/starexec/sandbox",logPath);
 							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
 
 							//TODO : need a better way to handle error codes
-							if(!R.BACKEND.isError(execId)){
+							if(!R.BACKEND.isError(R.SGE_ROOT,execId)){
 							    //TODO : remember to change name of update gridEngineId to update execId or something similar
 							    JobPairs.updateGridEngineId(pair.getId(),execId);
 							} else{

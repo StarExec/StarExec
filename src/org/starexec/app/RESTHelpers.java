@@ -1551,6 +1551,7 @@ public class RESTHelpers {
 			//Create the User Link
     		sb = new StringBuilder();
 			String hiddenUserId;
+			
 			User user = Users.getUserByJob(j.getJobId());
 			// Create the hidden input tag containing the user id
 			if(user.getId() == userId) {

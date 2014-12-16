@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -69,23 +70,42 @@ public class CreatePermanentQueue extends HttpServlet {
 		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
 		log.debug("nodeIds = " + nodeIds);
+		LinkedList<String> nodeNames = new LinkedList<String>();
+		LinkedList<String> queueNames = new LinkedList<String>();
 		if (nodeIds != null) {
-			for (int id : nodeIds) {
-				log.debug("id = " + id);
-				WorkerNode n = new WorkerNode();
-				n.setId(id);
-				n.setName(Cluster.getNodeNameById(id));
-				Queue q = Cluster.getQueueForNode(n);
-				NQ.put(n, q);
+		    for (int id : nodeIds) {
+			log.debug("id = " + id);
+			WorkerNode n = new WorkerNode();
+			n.setId(id);
+			n.setName(Cluster.getNodeNameById(id));
+			Queue q = Cluster.getQueueForNode(n);
+			NQ.put(n, q);
+
+			nodeNames.add(Cluster.getNodeNameById(id));
+			if(q == null){
+			    queueNames.add(null);
+			}else{
+			    queueNames.add(q.getName());
 			}
+		    }
 		}
 		String queue_name = (String)request.getParameter(name);
+		log.debug("queue_name: " + queue_name);
 
 		//BACKEND Changes
 		QueueRequest req = new QueueRequest();
 		req.setQueueName(queue_name + ".q");
 	
-		R.BACKEND.createPermanentQueue(req, true, NQ);
+		//TODO : BUG when trying to create a permanent queue using an orphaned node, seems to create queue with right node, returning wrong status code for some reason? seems related to cputimeout and wallclock timeout
+		String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
+		String[] qNames = queueNames.toArray(new String[queueNames.size()]);
+		boolean backend_success = R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queue_name+".q",nNames,qNames);
+
+		log.debug("backend_success: " + backend_success);
+
+		//reloads worker nodes and queues
+		Cluster.loadWorkerNodes();
+		Cluster.loadQueues();
 		
 		Collection<Queue> queues = NQ.values();
 		for (Queue q : queues) {
@@ -102,6 +122,7 @@ public class CreatePermanentQueue extends HttpServlet {
 		log.debug("just added new permanent queue with id = "+queueId);
 		
 		boolean success = Queues.makeQueuePermanent(queueId);
+		log.debug("after Queues.makeQueuePermament - success: " + success);
 		
 		Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
 		Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));

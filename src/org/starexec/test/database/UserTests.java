@@ -2,12 +2,13 @@ package org.starexec.test.database;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -30,12 +31,57 @@ public class UserTests extends TestSequence {
 	User admin=null;
 	Space space=null;
 	Space subspace=null;
+	Space comm=null;
 	
 	private boolean removeUserFromSpace(User user, Space space) {
 		List<Integer> userId=new ArrayList<Integer>();
 		userId.add(user.getId());
 		
 		return Spaces.removeUsers(userId, space.getId());
+	}
+	
+	@Test
+	private void getUserByEmailTest() {
+		Assert.assertFalse(Users.getUserByEmail(TestUtil.getRandomEmail()));
+		Assert.assertTrue(Users.getUserByEmail(user1.getEmail()));
+		Assert.assertTrue(Users.getUserByEmail(admin.getEmail()));
+
+	}
+	
+	//TODO: Confirm the password was actually updated correctly?
+	@Test
+	private void setPasswordTest() {
+		String randomPass=TestUtil.getRandomPassword();
+		Assert.assertTrue(Users.updatePassword(user1.getId(), randomPass));
+	}
+	
+	@Test
+	private void getCommunitiesTest() {
+		List<Integer> commIds=Users.getCommunities(user1.getId());
+		Assert.assertEquals(0,commIds.size());
+		commIds=Users.getCommunities(admin.getId());
+		Assert.assertTrue(commIds.size()>0);
+		boolean found=false;
+		for (Integer i : commIds) {
+			found=found || comm.getId()==i;
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@Test
+	private void registerUserTest() {
+		User u=new User();
+		u.setFirstName(TestUtil.getRandomUserName());
+		u.setLastName(TestUtil.getRandomUserName());
+		u.setEmail(TestUtil.getRandomEmail());
+		u.setPassword(TestUtil.getRandomPassword());
+		u.setInstitution(TestUtil.getRandomAlphaString(10));
+		String randomCode=UUID.randomUUID().toString();
+		String randomMessage=TestUtil.getRandomAlphaString(20);
+		Assert.assertTrue(Users.register(u, comm.getId(), randomCode, randomMessage));
+		Assert.assertNotNull(Users.get(u.getId()));
+		Assert.assertTrue(Requests.declineCommunityRequest(u.getId(), comm.getId()));
+		Assert.assertNull(Users.get(u.getId()));
 	}
 	
 	@Test
@@ -252,6 +298,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(originalName, Users.get(user1.getId()).getFirstName());
 		Assert.assertTrue(Users.updateFirstName(user1.getId(), newName));
 		Assert.assertEquals(newName, Users.get(user1.getId()).getFirstName());
+		user1.setFirstName(newName);
 	}
 	
 	@Test
@@ -261,6 +308,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(originalName, Users.get(user1.getId()).getLastName());
 		Assert.assertTrue(Users.updateLastName(user1.getId(), newName));
 		Assert.assertEquals(newName, Users.get(user1.getId()).getLastName());
+		user1.setLastName(newName);
 	}
 	
 	@Test
@@ -270,6 +318,8 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(originalInst, Users.get(user1.getId()).getInstitution());
 		Assert.assertTrue(Users.updateInstitution(user1.getId(), newInst));
 		Assert.assertEquals(newInst, Users.get(user1.getId()).getInstitution());
+		user1.setInstitution(newInst);
+
 	}
 	@Test
 	private void SuspendAndReinstateTest() {
@@ -298,6 +348,7 @@ public class UserTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), Communities.getTestCommunity().getId());
 		subspace=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space.getId());
+		comm=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
 		
 	}
 
@@ -306,7 +357,8 @@ public class UserTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId(), admin.getId());
+		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspaces(comm.getId());
 		
 	}
 	

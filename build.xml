@@ -212,7 +212,7 @@
 		</copy>
 
 		<replaceregexp  match="www.starexec.org/starexec/" 
-				replace="${server-name}/${appname}/" byline="false">
+				replace="${server-name}/${appname}/" byline="false" flags="g">
 		   <fileset dir="WebContent/public">
 		                <include name="**/*.xsd"/>
 				<include name="**/*.xml"/>

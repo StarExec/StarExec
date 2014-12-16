@@ -58,6 +58,8 @@ public class TestManager {
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
 		tests.add(new DefaultSettingsTests());
+		tests.add(new UploadTests());
+		tests.add(new RequestsTests());
 		//tests.add(new LoginTests());
 		//tests.add(new UploadSolverTests());
 		//tests.add(new UploadBenchmarksTests());

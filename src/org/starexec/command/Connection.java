@@ -2045,6 +2045,12 @@ public class Connection {
 			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
+			if (!Validator.isValidZip(out)) {
+				out.delete();
+				return Status.ERROR_INTERNAL; //we got back an invalid archive for some reason
+			}
+			
+			
 			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
 			if (urlParams.containsKey(R.FORMPARAM_SINCE) && lastSeen>=0) {

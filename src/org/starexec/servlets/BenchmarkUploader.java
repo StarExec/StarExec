@@ -87,7 +87,7 @@ public class BenchmarkUploader extends HttpServlet {
 					// create status object
 				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 				Integer userId = SessionUtil.getUserId(request);					
-				Integer statusId = Uploads.createUploadStatus(spaceId, userId);
+				Integer statusId = Uploads.createBenchmarkUploadStatus(spaceId, userId);
 				log.debug("upload status id is " + statusId);
 				
 				// Go ahead and process the request
@@ -191,7 +191,7 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			if (fileSize>allowedBytes-usedBytes) {
 				archiveFile.delete();
-				Uploads.setErrorMessage(statusId,"The benchmark upload is too large to fit in your disk quota. The uncompressed" +
+				Uploads.setBenchmarkErrorMessage(statusId,"The benchmark upload is too large to fit in your disk quota. The uncompressed" +
 						" size of the archive is approximately "+fileSize+" bytes, but you have only "+(allowedBytes-usedBytes)+" bytes remaining.");
 				throw new Exception("File too large to fit in user's disk quota");
 			}		
@@ -199,11 +199,11 @@ public class BenchmarkUploader extends HttpServlet {
 			// Copy the benchmark zip to the server from the client
 																		
 			log.info("upload complete - now extracting");
-			Uploads.fileUploadComplete(statusId);
+			Uploads.benchmarkFileUploadComplete(statusId);
 			// Extract the downloaded benchmark zip file
 			if(!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(),uniqueDir.getAbsolutePath())) {
 				String message = "StarExec has failed to extract your uploaded file.";
-				Uploads.setErrorMessage(statusId, message);
+				Uploads.setBenchmarkErrorMessage(statusId, message);
 				log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
 				return null;
 			}
@@ -224,7 +224,7 @@ public class BenchmarkUploader extends HttpServlet {
 				//first we test to see if any names conflict
 				ValidatorStatusCode status=doSpaceNamesConflict(uniqueDir,spaceId);
 				if (!status.isSuccess()) {
-					Uploads.setErrorMessage(statusId,status.getMessage());
+					Uploads.setBenchmarkErrorMessage(statusId,status.getMessage());
 					return null;
 				}
 				
@@ -233,7 +233,7 @@ public class BenchmarkUploader extends HttpServlet {
 				Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
 				if (result == null) {
 					String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
-					Uploads.setErrorMessage(statusId, message);
+					Uploads.setBenchmarkErrorMessage(statusId, message);
 					log.error(message + " - status id = " + statusId);
 					return null;
 				}
@@ -335,10 +335,10 @@ public class BenchmarkUploader extends HttpServlet {
 				}
 				catch (Exception e){
 					log.error("upload Benchmarks says " + e);
-					Uploads.setErrorMessage(statusId, e.getMessage());
+					Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
 				}
 				finally{
-					Uploads.everythingComplete(statusId);
+					Uploads.benchmarkEverythingComplete(statusId);
 				}
 			}
 		});

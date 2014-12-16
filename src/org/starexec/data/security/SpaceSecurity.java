@@ -223,8 +223,8 @@ public class SpaceSecurity {
 		
 		for (Integer sid : subspaceIds) {
 			Space subspace=Spaces.get(sid);
-			int parent=Spaces.getParentSpace(sid);
-			if (parent!=spaceId) {
+			Integer parent=Spaces.getParentSpace(sid);
+			if (parent>0 && parent!=spaceId) {
 				return new ValidatorStatusCode(false, "One or more of the given subspaces does not belong to the given parent space");
 			}
 			if(!Permissions.get(userId, subspace.getId()).isLeader()){

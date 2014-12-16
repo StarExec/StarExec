@@ -7,8 +7,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SpaceXMLUploadStatus;
 
 /**
  * Handles all database interaction for permissions
@@ -333,33 +335,20 @@ public class Permissions {
 	 * @return True if the user owns the status, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean canUserSeeStatus(int statusId, int userId) {		
-
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
+	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
 		if (Users.isAdmin(userId)) {
 			return true;
 		}
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewStatus(?, ?)}");
-			procedure.setInt(1, statusId);					
-			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
-
-			if(results.first()) {
-				return results.getBoolean(1);
-			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
+		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
+		return status.getUserId()==userId;
+	}
+	
+	public static boolean canUserSeeSpaceXMLStatus(int statusId, int userId) {		
+		if (Users.isAdmin(userId)) {
+			return true;
 		}
-
-		return false;		
+		SpaceXMLUploadStatus status=Uploads.getSpaceXMLStatus(statusId);
+		return status.getUserId()==userId;
 	}
 
 

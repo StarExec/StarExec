@@ -26,7 +26,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.UploadStatus;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -61,7 +61,7 @@ public class StarexecCommandTests extends TestSequence {
 	@Test
 	private void CreateJobTest() {
 		String jobName=TestUtil.getRandomJobName();
-		int qid=Queues.getAll().get(0).getId();
+		int qid=Queues.getAllQ().getId();
 		int jobId=con.createJob(space1.getId(), jobName, "", proc.getId(), -1, qid, 1, 1, true,1.0,false,0L);
 		Assert.assertTrue(jobId>0);
 		Job job=Jobs.get(jobId);
@@ -233,7 +233,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void waitForUpload(int uploadId, int maxSeconds) {
 		//it takes some time to finish benchmark uploads, so we want to wait for the upload to finish
 		for (int x=0;x<maxSeconds;x++) {
-			UploadStatus stat= Uploads.get(uploadId);
+			BenchmarkUploadStatus stat= Uploads.getBenchmarkStatus(uploadId);
 			log.debug("upload Id = "+uploadId+" is finished = "+stat.isEverythingComplete());
 			if (stat.isEverythingComplete()) {
 				break;
@@ -255,7 +255,7 @@ public class StarexecCommandTests extends TestSequence {
 		addMessage("upload ID = "+ result);
 		
 		waitForUpload(result,60);
-		UploadStatus stat= Uploads.get(result);
+		BenchmarkUploadStatus stat= Uploads.getBenchmarkStatus(result);
 		Assert.assertTrue(stat.isEverythingComplete());
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
@@ -264,7 +264,7 @@ public class StarexecCommandTests extends TestSequence {
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
-		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId()));
 	}
 	
 	@Test
@@ -276,7 +276,7 @@ public class StarexecCommandTests extends TestSequence {
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);
 		Assert.assertTrue(result>0);
 		waitForUpload(result, 60);
-		Assert.assertTrue(Uploads.get(result).isEverythingComplete());
+		Assert.assertTrue(Uploads.getBenchmarkStatus(result).isEverythingComplete());
 
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 		Assert.assertTrue(t.getBenchmarks().size()>0);
@@ -284,7 +284,7 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
 		
-		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId()));
 
 	}
 	
@@ -427,7 +427,7 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 		
-		Spaces.removeSubspaces(toCopy.getId(), Users.getAdmins().get(0).getId());		
+		Spaces.removeSubspaces(toCopy.getId());		
 	}
 	
 	@Test 
@@ -460,7 +460,7 @@ public class StarexecCommandTests extends TestSequence {
 		benchIds.addAll(benches.keySet());
 		
 		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
-		Spaces.removeSubspaces(toCopy.getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(toCopy.getId());
 		
 	}
 	
@@ -475,7 +475,7 @@ public class StarexecCommandTests extends TestSequence {
 			Assert.assertEquals(name, testSpace.getName());
 			Assert.assertEquals(testCommunity.getId(), (int)Spaces.getParentSpace(testSpace.getId()));
 			
-			Assert.assertTrue(Spaces.removeSubspaces(newSpaceId, Users.getAdmins().get(0).getId()));
+			Assert.assertTrue(Spaces.removeSubspaces(newSpaceId));
 		} else {
 			throw new Exception("there was an error creating a new subspace. code = "+newSpaceId);
 		}
@@ -521,7 +521,7 @@ public class StarexecCommandTests extends TestSequence {
 			//once we've confirmed the deletion worked, make sure the benchmark is actually removed from the database
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
-		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId(), user.getId()));
+		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId()));
 		
 	}
 	
@@ -615,7 +615,7 @@ public class StarexecCommandTests extends TestSequence {
 		for (Integer i : ids) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
-		Spaces.removeSubspaces(tempSpace.getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(tempSpace.getId());
 	}
 	
 	@Test
@@ -627,7 +627,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,con.removeJobs(jobIds, tempSpace.getId()));
 		Assert.assertNotNull(Jobs.getDirectory(job.getId())); //we do not want to have deleted the job
 		
-		Spaces.removeSubspaces(tempSpace.getId(),Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(tempSpace.getId());
 	}
 	
 	@Test
@@ -695,7 +695,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0,status);
 		
 		//space1 will contain solvers and benchmarks
-		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
+		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId(), "name with spaces");
 		space2=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());	
 		
 		Users.associate(user2.getId(), space1.getId());
@@ -730,15 +730,15 @@ public class StarexecCommandTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space1.getId(), Users.getAdmins().get(0).getId());
-		Spaces.removeSubspaces(space2.getId(), Users.getAdmins().get(0).getId());
+		Spaces.removeSubspaces(space1.getId());
+		Spaces.removeSubspaces(space2.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		
 		for (Integer i : benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		
-		Jobs.deleteAndRemove(job.getId());
+		//Jobs.deleteAndRemove(job.getId());
 		
 		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
 		Processors.delete(proc.getId());

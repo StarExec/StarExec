@@ -37,7 +37,7 @@ public class Cluster {
 			// Set all nodes as inactive (we will update them to active as we see them)
 			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
 			
-			String[] lines = R.BACKEND.getWorkerNodes();
+			String[] lines = R.BACKEND.getWorkerNodes(R.SGE_ROOT);
 			for (int i = 0; i < lines.length; i++) {
 				String name = lines[i];
 				log.debug("Updating info for node "+name);
@@ -59,7 +59,7 @@ public class Cluster {
 	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
 	 */
 	public static HashMap<String, String> getNodeDetails(String name) {
-	    String[] map = R.BACKEND.getNodeDetails(name);
+	    String[] map = R.BACKEND.getNodeDetails(R.SGE_ROOT,name);
 	    HashMap<String, String> details = new HashMap<String, String>();
 	    
 	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
@@ -90,7 +90,7 @@ public class Cluster {
 			// Set all queues as inactive (we will set them as active when we see them)
 			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
 
-			String[] queueNames = R.BACKEND.getQueues();
+			String[] queueNames = R.BACKEND.getQueues(R.SGE_ROOT);
 
 			for (int i = 0; i < queueNames.length; i++) {
 			    String name = queueNames[i];
@@ -118,7 +118,7 @@ public class Cluster {
 	 */
 	public static HashMap<String, String> getQueueDetails(String name) {
 
-	    String[] map = R.BACKEND.getQueueDetails(name);
+	    String[] map = R.BACKEND.getQueueDetails(R.SGE_ROOT,name);
 	    HashMap<String, String> details = new HashMap<String, String>();
 	    
 	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
@@ -136,7 +136,7 @@ public class Cluster {
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 	    Queues.clearQueueAssociations();
-	    String[] assoc = R.BACKEND.getQueueNodeAssociations();
+	    String[] assoc = R.BACKEND.getQueueNodeAssociations(R.SGE_ROOT);
 	    
 	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
 	    for(int i = 0; i < (assoc.length/2)*2; i=i+2){
