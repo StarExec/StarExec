@@ -38,8 +38,9 @@
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="1073741824" />	
 	  									
-			<!-- SGE Configuration -->
-                        <property key="RUN_PERIODIC_SGE_TASKS" value="true"/>
+                        <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
+            			<!-- SGE Configuration -->
+            
 			<property key="SGE_ROOT" value="/cluster/sge-6.2u5" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
@@ -198,7 +199,7 @@
    				
                 <property key="STAREXEC_SERVERNAME" value="localhost:8080" />
                 <property key="STAREXEC_APPNAME" value="starexec"/>
-                <property key="RUN_PERIODIC_SGE_TASKS" value="false"/>
+                <property key="IS_FULL_STAREXEC_INSTANCE" value="false"/>
                 <property key="STAREXEC_URL_PREFIX" value="http"/>
                 
                 </class> 
