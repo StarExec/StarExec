@@ -409,6 +409,8 @@ CREATE PROCEDURE GetUserByJob(IN _jobId INT)
 		SELECT *
 		FROM users
 			INNER JOIN jobs AS owner ON users.id = owner.user_id
+			INNER JOIN user_roles AS roles ON users.email = roles.email
+
 		WHERE owner.id = _jobId;
 	END //
 	
