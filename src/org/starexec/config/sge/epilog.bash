@@ -52,7 +52,7 @@ function copyOutput {
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
-	if [ "$POST_PROCESSOR_PATH" != "null" ]; then
+	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"
 		mkdir $OUT_DIR/postProcessor
 		cp -r "$POST_PROCESSOR_PATH"/* $OUT_DIR/postProcessor
