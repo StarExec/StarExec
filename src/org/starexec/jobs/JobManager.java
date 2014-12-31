@@ -408,9 +408,9 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", outputFile.getParentFile().getAbsolutePath());
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getParentFile().getAbsolutePath()));
 
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", outputFile.getAbsolutePath());
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", base64encode(outputFile.getAbsolutePath()));
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{

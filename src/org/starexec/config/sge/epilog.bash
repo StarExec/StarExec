@@ -34,6 +34,16 @@ then
 	exit 0
 fi
 
+#################################################################################
+# base64 decode some names which could otherwise have nasty characters in them
+#################################################################################
+TMP=`mktemp`
+echo $PAIR_OUTPUT_DIRECTORY > $TMP
+PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
+
+echo $PAIR_OUTPUT_PATH > $TMP
+PAIR_OUTPUT_PATH=`base64 -d $TMP`
+
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
