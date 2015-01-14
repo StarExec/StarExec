@@ -595,18 +595,16 @@ public class Util {
     	return sb.toString(); 
     	
     }
-    
     /**
-     * Deletes all files in the given directory that are as old as, or older than the specified number of days
+     * Retrieves all files in the given directory that are as old as, or older than the specified number of days
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
      */
-    public static void clearOldFiles(String directory, int daysAgo,boolean includeDirs){
-	try {
-	    File dir = new File(directory);
-			
+    public static Collection<File> getOldFiles(String directory, int daysAgo, boolean includeDirs) {
+    	File dir = new File(directory);
+		
 	    if(!dir.exists()) {
-		return;
+	    	return null;
 	    }
 			
 	    // Subtract days from the current time
@@ -628,10 +626,42 @@ public class Util {
 	    		outdatedFiles.add(f);
 	    	}
 	    }
+	    return outdatedFiles;
+    }
+    
+    /**
+     * Deletes all files in the given directory that are as old as, or older than the specified number of days
+     * @param directory The directory to clear old files out of (non-recursive)
+     * @param daysAgo Files older than this many days ago will be deleted
+     */
+    public static void clearOldSandboxFiles(String directory, int daysAgo,boolean includeDirs){
+	try {
+	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 	    // Remove them all
 	    for(File f : outdatedFiles) {
-		FileUtils.deleteQuietly(f);
+	    	sandboxChmodDirectory(f,true);
+	    	//FileUtils.deleteQuietly(f);
+	    	FileUtils.deleteDirectory(f);
+	    }					
+	} catch (Exception e) {
+	    log.warn(e.getMessage(), e);
+	}
+    }
+    
+    /**
+     * Deletes all files in the given directory that are as old as, or older than the specified number of days
+     * @param directory The directory to clear old files out of (non-recursive)
+     * @param daysAgo Files older than this many days ago will be deleted
+     */
+    public static void clearOldFiles(String directory, int daysAgo,boolean includeDirs){
+	try {
+	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
+	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
+	    // Remove them all
+	    for(File f : outdatedFiles) {
+	    	
+	    	FileUtils.deleteQuietly(f);
 	    }					
 	} catch (Exception e) {
 	    log.warn(e.getMessage(), e);
@@ -869,8 +899,8 @@ public class Util {
     		sudoCpCmd[2]=f.getAbsolutePath();
     		Util.executeSandboxCommand(sudoCpCmd);
     	}
-    	log.debug(Util.executeCommand("ls -l -r "+sandbox.getAbsolutePath()));
-    	log.debug(Util.executeCommand("ls -l -r "+sandbox2.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
+    	log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
 
     	
     	sandboxChmodDirectory(sandbox2,false);
@@ -899,7 +929,10 @@ public class Util {
 
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
+    
     	}
     }
+    
+    
     
 }
