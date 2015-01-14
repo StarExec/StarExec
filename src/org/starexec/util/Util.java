@@ -925,7 +925,7 @@ public class Util {
     
     public static void logSandboxContents() {
     	try {
-        	log.debug(Util.executeCommand("ls -l -r "+Util.getSandboxDirectory().getAbsolutePath()));
+        	log.debug(Util.executeCommand("ls -l -R "+Util.getSandboxDirectory().getAbsolutePath()));
 
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
