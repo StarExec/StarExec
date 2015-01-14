@@ -45,13 +45,15 @@ CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHA
 -- Updates a job pairs node Id
 -- Author: Wyatt	
 DROP PROCEDURE IF EXISTS UpdateNodeId;
-CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128))
+CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128), IN _sandbox INT)
 	BEGIN
 		DECLARE _nodeId INT;
 
 		SELECT id FROM nodes WHERE name=_nodeName INTO _nodeId;
 
 		UPDATE job_pairs SET node_id=_nodeId WHERE id = _jobPairId;
+		UPDATE job_pairs SET sandbox_num=_sandbox WHERE id=_jobPairId;
+		UPDATE job_pairs SET status_code = 10 WHERE node_id = _nodeID AND status_code = 4 AND id!=_jobPairId AND sandbox_num=_sandbox;
 	END //
 	
 -- Updates a job pair's status

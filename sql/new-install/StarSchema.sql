@@ -270,6 +270,7 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	maximum_memory BIGINT DEFAULT 1073741824,
+	sandbox_num INT,
 	PRIMARY KEY(id),
 	KEY(sge_id),
 	KEY (job_space_id, config_id),

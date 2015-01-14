@@ -217,7 +217,7 @@ fi
 
 
 sendStatus $STATUS_PREPARING
-sendNode "$HOSTNAME"
+sendNode "$HOSTNAME" "$SANDBOX"
 cleanWorkspace 1
 fillDependArrays
 checkCache
