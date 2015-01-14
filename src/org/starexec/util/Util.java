@@ -893,4 +893,13 @@ public class Util {
 		return sandboxDir;
     }
     
+    public static void logSandboxContents() {
+    	try {
+        	log.debug(Util.executeCommand("ls -l -r "+Util.getSandboxDirectory().getAbsolutePath()));
+
+    	} catch (Exception e) {
+    		log.error(e.getMessage(),e);
+    	}
+    }
+    
 }

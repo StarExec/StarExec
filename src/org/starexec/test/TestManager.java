@@ -53,7 +53,7 @@ public class TestManager {
 		tests.add(new BenchmarkTests());
 		tests.add(new ProcessorTests());
 		tests.add(new JobTests());
-		//tests.add(new GetPageTests());
+		tests.add(new GetPageTests());
 		tests.add(new JobPairTests());
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
@@ -109,6 +109,7 @@ public class TestManager {
 	}
 	
 	public static List<TestSequence> getAllTestSequences() {
+		log.debug("the size of the tests list is "+tests.size());
 		return tests;
 	}
 	public static List<TestResult> getAllTestResults(String sequenceName) {

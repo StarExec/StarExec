@@ -187,6 +187,7 @@ public class UploadSolver extends HttpServlet {
 			returnArray[1] = 0;
 			
 			File sandboxDir=Util.getRandomSandboxDirectory();
+			Util.logSandboxContents();
 			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
 			FileItem item=null;
 			String name=null;
@@ -292,7 +293,7 @@ public class UploadSolver extends HttpServlet {
 				command[1]="-u";
 				command[2]="sandbox";
 				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
-				
+					
 				buildstr=Util.executeCommand(command, null,sandboxDir);
 				build=true;
 				log.debug("got back the output "+buildstr);
@@ -342,10 +343,12 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			
+			
 			//Find configurations from the top-level "bin" directory
 			for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
 			}
+			Util.logSandboxContents();
 			
 			if (newSolver.getConfigurations().isEmpty()) {
 				returnArray[1] = -4; //It is empty
