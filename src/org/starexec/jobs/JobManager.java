@@ -235,7 +235,7 @@ public abstract class JobManager {
 				for (Integer uid : usersToPairCounts.keySet()) {
 					usersToPairCounts.put(uid,Queues.getSizeOfQueue(q.getId(),uid));	
 				}
-				
+				it = schedule.iterator();
 				int min=Collections.min(usersToPairCounts.values());
 				int max=Collections.max(usersToPairCounts.values());
 				
