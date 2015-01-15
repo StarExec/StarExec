@@ -109,6 +109,7 @@ public class TestManager {
 	}
 	
 	public static List<TestSequence> getAllTestSequences() {
+		log.debug("the size of the tests list is "+tests.size());
 		return tests;
 	}
 	public static List<TestResult> getAllTestResults(String sequenceName) {

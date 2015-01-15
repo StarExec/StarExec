@@ -355,9 +355,21 @@ function sendStatus {
 	return $?
 }
 
+function setStartTime {
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairStartTime($PAIR_ID)"
+	log "set start time for pair id = $PAIR_ID"
+	return $?
+}
+
+function setEndTime {
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairEndTime($PAIR_ID)"
+	log "set start time for pair id = $PAIR_ID"
+	return $?
+}
+
 function sendNode {
-    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, '$1' )"
-	log "sent Node Id $1 to $REPORT_HOST"
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, '$1', '$2' )"
+	log "sent Node Id $1 to $REPORT_HOST in sandbox $2"
 	return $?
 }
 

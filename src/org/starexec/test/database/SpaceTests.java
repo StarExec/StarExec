@@ -64,7 +64,7 @@ public class SpaceTests extends TestSequence {
 	@Test
 	private void getSpaceHierarchyTest() {
 		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
-		Assert.assertEquals(2, spaces.size());
+		Assert.assertEquals(3, spaces.size());
 		
 	}
 	

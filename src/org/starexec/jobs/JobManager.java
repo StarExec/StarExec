@@ -151,7 +151,6 @@ public abstract class JobManager {
 			initMainTemplateIf();
 
 			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-			HashMap<Integer,Integer> usersToPairCounts=new HashMap<Integer,Integer>();
 			
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (Job job : joblist) {
@@ -160,10 +159,7 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-				int userId=job.getUserId();
-				if (!usersToPairCounts.containsKey(userId)) {
-					usersToPairCounts.put(userId,0);
-				}
+				
 				//Post processor
 				Processor processor = job.getPostProcessor();
 				if (processor == null) {
@@ -208,22 +204,38 @@ public abstract class JobManager {
 			 *
 			 */
 
+			
+			HashMap<Integer,Integer> usersToPairCounts=new HashMap<Integer,Integer>();
+
 			int count = queueSize;
 			
+			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
+			int maxLoops=300;
+			int curLoops=0;
 			while (!schedule.isEmpty()) {
-
-				if (count >= R.NODE_MULTIPLIER * nodeCount)
+				curLoops++;
+				if (count >= R.NODE_MULTIPLIER * nodeCount) {
 					break; // out of while (!schedule.isEmpty())
+
+				}
+				if (curLoops>maxLoops) {
+					log.warn("forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
+					break;
+				}
 
 				Iterator<SchedulingState> it = schedule.iterator();
 				
-				
-				
-				for (Integer uid : usersToPairCounts.keySet()) {
-					usersToPairCounts.put(uid,Queues.getSizeOfQueue(q.getId(),uid));
-					
+				//add all of the users that still have pending entries to the list of users
+				usersToPairCounts=new HashMap<Integer,Integer>();
+				while (it.hasNext()) {
+					SchedulingState s = it.next();
+					int userId=s.job.getUserId();
+					usersToPairCounts.put(userId,0);
 				}
-				
+				for (Integer uid : usersToPairCounts.keySet()) {
+					usersToPairCounts.put(uid,Queues.getSizeOfQueue(q.getId(),uid));	
+				}
+				it = schedule.iterator();
 				int min=Collections.min(usersToPairCounts.values());
 				int max=Collections.max(usersToPairCounts.values());
 				
@@ -275,8 +287,7 @@ public abstract class JobManager {
 							// Write the script that will run this individual pair				
 							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
 
-							// do this first, before we submit to grid engine, to avoid race conditions
-							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							
 
 							String logPath=JobPairs.getLogFilePath(pair);
 							File file=new File(logPath);
@@ -287,6 +298,9 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
+							// do this first, before we submit to grid engine, to avoid race conditions
+							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							JobPairs.setQueueSubTime(pair.getId());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(R.SGE_ROOT,scriptPath, "/export/starexec/sandbox",logPath);
 							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();

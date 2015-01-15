@@ -217,7 +217,7 @@ fi
 
 
 sendStatus $STATUS_PREPARING
-sendNode "$HOSTNAME"
+sendNode "$HOSTNAME" "$SANDBOX"
 cleanWorkspace 1
 fillDependArrays
 checkCache
@@ -231,6 +231,7 @@ JOB_ERROR=`grep 'job error:' "$SGE_STDOUT_PATH"`
 # If there was no error...
 if [ "$JOB_ERROR" = "" ]; then
 	sendStatus $STATUS_RUNNING
+	setStartTime
 fi
 
 NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')

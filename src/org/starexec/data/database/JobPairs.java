@@ -874,6 +874,24 @@ public class JobPairs {
 	}
 	
 	
+	public static boolean setQueueSubTime(int pairId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetQueueSubTime(?)}");
+			procedure.setInt(1, pairId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 	/**
 	 * Sets the status of a given job pair to the given status
 	 * @param pairId
