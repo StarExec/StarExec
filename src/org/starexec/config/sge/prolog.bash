@@ -105,7 +105,7 @@ function copyDependencies {
 	log "benchmark copy complete"
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
-	if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
+	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
 		mkdir $OUT_DIR/preProcessor
 		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
 		chmod -R gu+rwx $OUT_DIR/preProcessor
@@ -126,7 +126,7 @@ function copyDependencies {
 		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
-		if [ "$PRE_PROCESSOR_PATH" != "null" ]; then
+		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
 			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
 		
 			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"

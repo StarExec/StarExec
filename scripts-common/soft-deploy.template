@@ -70,7 +70,7 @@ cp $APPNAME.war $WEB_HOME/$WAR
 #echo Changing permissions on $STAR_WAR
 chmod 775 $STAR_WAR
 
-while [ -d $APPDIR ] ; do
+while [ ! -d $APPDIR ] ; do
   echo "waiting for tomcat to recreate the app directory"
   sleep 4
 done

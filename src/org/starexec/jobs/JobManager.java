@@ -168,7 +168,7 @@ public abstract class JobManager {
 				Processor processor = job.getPostProcessor();
 				if (processor == null) {
 					log.debug("Postprocessor is null.");
-					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "null");
+					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "");
 				}
 				else {
 					String path = processor.getFilePath();
@@ -180,7 +180,7 @@ public abstract class JobManager {
 				processor = job.getPreProcessor();
 				if (processor == null) {
 					log.debug("Preprocessor is null.");
-					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "null");
+					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "");
 				}
 				else {
 					String path = processor.getFilePath();
@@ -408,9 +408,9 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", outputFile.getParentFile().getAbsolutePath());
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getParentFile().getAbsolutePath()));
 
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", outputFile.getAbsolutePath());
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", base64encode(outputFile.getAbsolutePath()));
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{

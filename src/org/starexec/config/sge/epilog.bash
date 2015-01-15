@@ -34,6 +34,16 @@ then
 	exit 0
 fi
 
+#################################################################################
+# base64 decode some names which could otherwise have nasty characters in them
+#################################################################################
+TMP=`mktemp`
+echo $PAIR_OUTPUT_DIRECTORY > $TMP
+PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
+
+echo $PAIR_OUTPUT_PATH > $TMP
+PAIR_OUTPUT_PATH=`base64 -d $TMP`
+
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
@@ -52,7 +62,7 @@ function copyOutput {
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
-	if [ "$POST_PROCESSOR_PATH" != "null" ]; then
+	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"
 		mkdir $OUT_DIR/postProcessor
 		cp -r "$POST_PROCESSOR_PATH"/* $OUT_DIR/postProcessor
