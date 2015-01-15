@@ -151,4 +151,24 @@ CREATE PROCEDURE RemovePairFromCompletedTable(IN _id INT)
 		WHERE pair_id=_id;
 	END //
 	
+-- Sets the queue submission time to now for the pair with the given id
+DROP PROCEDURE IF EXISTS SetQueueSubTime;
+CREATE PROCEDURE SetQueueSubTime(IN _id INT)
+BEGIN
+	UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_id;
+END //
+
+-- Sets the queue submission time to now for the pair with the given id
+DROP PROCEDURE IF EXISTS SetPairStartTime;
+CREATE PROCEDURE SetPairStartTime(IN _id INT)
+	BEGIN
+		UPDATE job_pairs SET start_time=NOW() WHERE id=_id;
+	END //
+	
+DROP PROCEDURE IF EXISTS SetPairEndTime;
+CREATE PROCEDURE SetPairEndTime(IN _id INT)
+	BEGIN
+		UPDATE job_pairs SET end_time=NOW() WHERE id=_id;
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

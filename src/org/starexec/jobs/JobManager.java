@@ -287,8 +287,7 @@ public abstract class JobManager {
 							// Write the script that will run this individual pair				
 							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
 
-							// do this first, before we submit to grid engine, to avoid race conditions
-							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							
 
 							String logPath=JobPairs.getLogFilePath(pair);
 							File file=new File(logPath);
@@ -299,6 +298,9 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
+							// do this first, before we submit to grid engine, to avoid race conditions
+							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							JobPairs.setQueueSubTime(pair.getId());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(R.SGE_ROOT,scriptPath, "/export/starexec/sandbox",logPath);
 							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
