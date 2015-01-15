@@ -220,6 +220,7 @@ public abstract class JobManager {
 				}
 				if (curLoops>maxLoops) {
 					log.warn("forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
+					break;
 				}
 
 				Iterator<SchedulingState> it = schedule.iterator();
