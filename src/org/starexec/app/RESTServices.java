@@ -594,7 +594,6 @@ public class RESTServices {
 		
 		Space s = null;
 		Permission p = null;
-		
 		if(SpaceSecurity.canUserSeeSpace(spaceId, userId).isSuccess()) {
 			s = Spaces.get(spaceId); 
 			p = SessionUtil.getPermission(request, spaceId);
@@ -1006,6 +1005,8 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
+		log.debug("reached part two with space id = "+spaceId);
+
 		ValidatorStatusCode status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
 		if (!status.isSuccess()) {
 			log.debug("attempted unauthorized access");

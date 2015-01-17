@@ -328,6 +328,7 @@ public class SpaceSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeSpace(int spaceId, int userId){
 		if (!Permissions.canUserSeeSpace(spaceId, userId)) {
+			log.debug("denying user id = "+userId +" for space = "+spaceId);
 			return new ValidatorStatusCode(false, "You do not have permission to view this space");
 		}
 		return new ValidatorStatusCode(true);

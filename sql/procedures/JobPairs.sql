@@ -171,4 +171,11 @@ CREATE PROCEDURE SetPairEndTime(IN _id INT)
 		UPDATE job_pairs SET end_time=NOW() WHERE id=_id;
 	END //
 	
+DROP PROCEDURE IF EXISTS GetPairsByStatus;
+CREATE PROCEDURE GetPairsByStatus(IN _status INT)
+	BEGIN
+		SELECT * FROM job_pairs WHERE status_code=_status;
+	END //
+	 
+	
 DELIMITER ; -- this should always be at the end of the file
