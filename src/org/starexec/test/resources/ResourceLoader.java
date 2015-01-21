@@ -111,7 +111,7 @@ public class ResourceLoader {
 			File processorFile=getResource(fileName);
 			FileUtils.copyFileToDirectory(processorFile, processorDir);
 			ArchiveUtil.extractArchive(new File(processorDir,processorFile.getName()).getAbsolutePath());
-			File processorScript=new File(processorDir,R.PROCSSESSOR_RUN_SCRIPT);
+			File processorScript=new File(processorDir,R.PROCESSOR_RUN_SCRIPT);
 
 			if (!processorScript.setExecutable(true, false)) {			
 				log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());

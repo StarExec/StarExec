@@ -2,11 +2,15 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
+import java.lang.StringBuilder;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,6 +34,8 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Processors;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
@@ -37,6 +43,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.DOMHelper;
 import org.starexec.util.Util;
+import org.starexec.servlets.BenchmarkUploader;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -677,6 +684,7 @@ public class BatchUtil {
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();
 		List<Update> updates = new ArrayList<Update>();
+		List<Integer> updateIds;
 		NodeList childList = spaceElement.getChildNodes();
 		int id=0;
 		
@@ -705,11 +713,31 @@ public class BatchUtil {
 					Uploads.incrementXMLCompletedSpaces(statusId, 1);
 				}
 				else if(elementType.equals("Update")){
-				    
+				    //Grab information and store it into temp structure.
 				    Update u = new Update();
+				    
 				    u.id = Integer.parseInt(childElement.getAttribute("id"));
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+				    
+				    NodeList updateChildList = childElement.getChildNodes();
+				    log.debug("UpdateChildList Length = " + updateChildList.getLength());
+				    for(int j = 0; j < updateChildList.getLength(); j++)
+					{
+					    Node updateChildNode = updateChildList.item(j);
+					    log.debug(updateChildNode.getNodeType() + " = " + Node.ELEMENT_NODE);
+					    if (updateChildNode.getNodeType() == Node.ELEMENT_NODE){	
+						log.debug("found a new element = "+childNode.toString());
+						Element updateChildElement = (Element)updateChildNode;
+						String updateElementType = updateChildElement.getTagName();
+						log.debug("Element type = " + updateElementType);
+						if (updateElementType.equals("Text")){
+						    log.debug("Found text = " + updateChildElement.getTextContent());
+						    u.text = updateChildElement.getTextContent();
+						}
+					    }
+					    
+					}
 				    updates.add(u);
 				}
 				
@@ -730,14 +758,102 @@ public class BatchUtil {
 		//TODO: Handle the upload status page for XML uploads
 		if (!updates.isEmpty())
 		{
-		    addUpdates(updates,spaceId);
+		    //Add the updates to the database and system.
+		    updateIds = addUpdates(updates);
+		    //assocaite new updates with the space given.
+		    Benchmarks.associate(updateIds, spaceId, statusId);
 		}
 		return spaceId;
 	}
 
-        private void addUpdates(List<Update> updates, int spaceID)
+
+         /**
+	 * Verifies that a user can look at all of the benchmarks.
+	 * @author Ryan McCleeary
+	 * @param updates takes a list of updates to be associated with a space.
+	 * @param spaceID the space the updates are to be associated with.
+	 * 
+	 */
+    private List<Integer> addUpdates(List<Update> updates)
         {
-	    return;
+	    //For each update.
+	    List<Integer> updateIds = new ArrayList<Integer>();
+	    for(Update update : updates)
+		{
+		    log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
+		    //Get the information out of the update.
+		    Benchmark b = Benchmarks.get(update.id);
+		    Processor up = Processors.get(update.pid);
+		    Processor bp = Processors.get(update.bid);
+		    //Get the files.
+		    File bf = new File(b.getPath());
+		    File upf = new File(up.getFilePath());
+		    File ubp = new File(bp.getFilePath());
+		    List<File> files = new ArrayList<File>();
+		    files.add(bf);
+		    files.add(upf);
+		    files.add(ubp);
+		    try
+			{
+			    //Place files into sandbox.
+			    File sb = Util.copyFilesToNewSandbox(files);
+			    //Create text file.
+			    File text = new File(sb, "text.txt");
+			   
+			    if(!text.exists()){
+				text.createNewFile();
+			    }
+			    //Write text to a file.
+			    String textPath = text.getAbsolutePath();
+			    FileWriter w = new FileWriter(text);
+			    log.debug("Got here writing text to text.txt" + update.text);
+			    w.write(update.text);
+			    w.flush();
+
+			    
+			    String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
+			    String [] procCmd = new String[3];
+			    
+			    //Run proc command on text file and on benchmark given.
+			    procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
+			    procCmd[1] = textPath;
+			    procCmd[2] = benchPath;
+			    
+			    
+			    Util.executeSandboxCommand(procCmd, null, sb);
+
+			    //Upload the new benchmark created by the command to the system.
+			    File outputFile = new File(sb, "output");
+			    if(!outputFile.exists()){
+				errorMessage = "Output file failed to create";
+				log.error("Update Processor failed to create an update");
+			    }
+			    String singleOutputText;
+
+			    BufferedReader br = new BufferedReader(new FileReader(outputFile));
+			    String line;
+			    StringBuilder stringBuild = new StringBuilder();
+			    String sep = "\n";
+			    while ((line = br.readLine()) != null) {
+				stringBuild.append(sep).append(line);
+			    }
+			    singleOutputText =  stringBuild.toString();                           
+			    int newBenchID =  BenchmarkUploader.addBenchmarkFromText(singleOutputText, b.getName(), b.getUserId(), b.getType().getId(),
+								   b.isDownloadable());
+			   
+			    
+			    updateIds.add(newBenchID);
+			  
+			    
+			}
+		    catch(IOException e)
+			{
+			    errorMessage = "Creating Updated Benchmarks Failed";
+			    log.warn("Sandbox creation failed: "+e.toString(), e);
+			}
+			
+		}
+	    return updateIds;
         }
 	/**
 	 * @return doc the document object
@@ -780,10 +896,10 @@ public class BatchUtil {
        Basic struct class to store all the id's needed for an update.
      */
     private class Update {
-	public int id;
-	public int pid;
-	public int bid;
-	//public string text;
+	public int id; //Benchmark ID
+	public int pid; //Processor ID
+	public int bid; //Benchmark Processor ID
+	public String text;
     }
 	
 	

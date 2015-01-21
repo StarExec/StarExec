@@ -122,7 +122,7 @@ public class Processor extends Identifiable {
 	 * @return The path to the process script for this processor on disk
 	 */
 	public String getExecutablePath() {
-		return new File(this.getFilePath(),R.PROCSSESSOR_RUN_SCRIPT).getAbsolutePath();
+		return new File(this.getFilePath(),R.PROCESSOR_RUN_SCRIPT).getAbsolutePath();
 	}
 	
 	/**

@@ -59,6 +59,7 @@ public class ProcessorManager extends HttpServlet {
 	private static final String BENCH_TYPE = "bench";
 	private static final String PRE_PROCESS_TYPE = "pre";
 	private static final String POST_PROCESS_TYPE = "post";
+        private static final String UPDATE_PROCESS_TYPE = "update";
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -144,7 +145,7 @@ public class ProcessorManager extends HttpServlet {
 		if (curFile.exists() && !curFile.isDirectory()) {
 			File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
 			if (newDirectory.exists()) {
-				File destination=new File(newDirectory,R.PROCSSESSOR_RUN_SCRIPT);
+				File destination=new File(newDirectory,R.PROCESSOR_RUN_SCRIPT);
 				FileUtils.copyFile(curFile,destination);
 				return Processors.updateFilePath(p.getId(), newDirectory.getAbsolutePath());
 			}
@@ -249,7 +250,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			
-			File processorScript=new File(uniqueDir,R.PROCSSESSOR_RUN_SCRIPT);
+			File processorScript=new File(uniqueDir,R.PROCESSOR_RUN_SCRIPT);
 			if (!processorScript.exists()) {
 				log.warn("the new processor did not have a process script!");
 				return null;
@@ -287,6 +288,8 @@ public class ProcessorManager extends HttpServlet {
 			 return ProcessorType.PRE;
 		} else if(type.equals(BENCH_TYPE)) {
 			return ProcessorType.BENCH;
+		} else if(type.equals(UPDATE_PROCESS_TYPE)) {
+		        return ProcessorType.UPDATE;
 		}
 		
 		return ProcessorType.DEFAULT;
@@ -346,7 +349,7 @@ public class ProcessorManager extends HttpServlet {
 			String procType = (String)form.get(PROCESSOR_TYPE);
 			if(procType==null || !procType.equals(POST_PROCESS_TYPE) && 
 			   !procType.equals(PRE_PROCESS_TYPE) && 
-			   !procType.equals(BENCH_TYPE)) {
+			   !procType.equals(BENCH_TYPE) && !procType.equals(UPDATE_PROCESS_TYPE)) {
 
 				return new ValidatorStatusCode(false,"The given processor type is invalid");
 			}

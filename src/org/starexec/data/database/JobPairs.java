@@ -191,7 +191,7 @@ public class JobPairs {
 			
 			
 			String [] procCmd = new String[3];
-			procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
+			procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
 			
 			procCmd[1] = outputPath;
 			
