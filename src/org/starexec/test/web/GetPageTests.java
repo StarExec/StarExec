@@ -402,7 +402,7 @@ public class GetPageTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		Assert.assertNotNull(space1);
 		
-		q=Queues.getAll().get(0);
+		q=Queues.getAllQ();
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());

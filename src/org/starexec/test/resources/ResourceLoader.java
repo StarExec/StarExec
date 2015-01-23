@@ -163,7 +163,8 @@ public class ResourceLoader {
 		
 		
 		String name=TestUtil.getRandomJobName();
-		Queue q=Queues.getUserQueues(userId).get(0);
+		
+		Queue q=Queues.getAllQ();
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
 		
 		
@@ -195,7 +196,7 @@ public class ResourceLoader {
 		spaces.add(Spaces.get(rootSpaceId));
 		log.debug("loading this number of spaces into the job ="+spaces.size());
 		String name=TestUtil.getRandomJobName();
-		Queue q=Queues.getUserQueues(userId).get(0);
+		Queue q=Queues.getAllQ();
 
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
 		job.setPrimarySpace(rootSpaceId);

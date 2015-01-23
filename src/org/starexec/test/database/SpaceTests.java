@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Settings;
@@ -123,9 +124,9 @@ public class SpaceTests extends TestSequence {
 	@Test
 	private void SpacePathCreateTest() {
 		Space space1=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
-		String space1Path=community.getName()+File.separator+space1.getName();
+		String space1Path=community.getName()+R.JOB_PAIR_PATH_DELIMITER+space1.getName();
 		Space space2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
-		String space2Path=space1Path+File.separator+space2.getName();
+		String space2Path=space1Path+R.JOB_PAIR_PATH_DELIMITER+space2.getName();
 		
 		List<Space> spaceList=new ArrayList<Space>();
 		spaceList.add(space1);

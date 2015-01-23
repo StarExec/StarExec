@@ -23,7 +23,7 @@ public class BenchmarkComparator implements Comparator<Benchmark> {
 			
 			return o1.getType().getName().compareToIgnoreCase(o2.getType().getName());
 		} 
-		return o1.getName().compareTo(o2.getName());
+		return o1.getName().compareToIgnoreCase(o2.getName());
 	}
 	
 }
