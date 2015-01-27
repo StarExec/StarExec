@@ -458,7 +458,7 @@ function saveChanges(obj, save, attr, old) {
 			    function(returnCode){  		
 					s=parseReturnCode(returnCode);
 					if (s) {
-						// Change to original in case above code modified it before posting
+						// Change newVal to original in case above code modified newVal before call to post
 						newVal = unmodifiedNewVal;
 
 						// Hide the input box and replace it with the table cell
@@ -503,6 +503,7 @@ function convertToBytes(bytesOfAnyUnits) {
 			return (parseInt(quotaValue)*Math.pow(1024, 3)).toString();
 		}
 	} 
+	// Return unaltered input if input was not formatted properly.
 	return bytesOfAnyUnits;
 }
 
