@@ -443,15 +443,24 @@ function saveChanges(obj, save, attr, old) {
 
 	if (true == save) {
 		var newVal = $(obj).siblings('input:first').val();
+		var unmodifiedNewVal = newVal;
 		
 		// Fixes 'session expired' bug that would occur if user inputed the empty String
 		newVal = (newVal == "") ? "-1" : newVal;
+
+		if (attr === 'diskquota') {
+			// Convert input values like 1 KB to 1000
+			newVal = convertToBytes(newVal);
+		}
 		
 		$.post(  
 				starexecRoot+"services/edit/user/" + attr + "/" + userId + "/" + newVal,
 			    function(returnCode){  		
 					s=parseReturnCode(returnCode);
 					if (s) {
+						// Change to original in case above code modified it before posting
+						newVal = unmodifiedNewVal;
+
 						// Hide the input box and replace it with the table cell
 			    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
 			    		// Make the value editable again
@@ -473,6 +482,30 @@ function saveChanges(obj, save, attr, old) {
 		editable(attr);
 	}
 }
+
+/**
+ * Takes a String that represents a number of bytes in
+ * GB, MB, KB, or Bytes. Returns a String that represents
+ * the number of bytes with no units specified.
+ */
+function convertToBytes(bytesOfAnyUnits) {
+	var inputStrings = bytesOfAnyUnits.split(' ');
+	if (inputStrings.length === 2) {
+		var quotaValue = inputStrings[0];
+		var byteUnits  = inputStrings[1].toUpperCase(); 	
+		if (byteUnits === 'B' || byteUnits === 'BYTES') {
+			return quotaValue;
+		} else if (byteUnits === 'KB') {
+			return (parseInt(quotaValue)*1024).toString();
+		} else if (byteUnits === 'MB') {
+			return (parseInt(quotaValue)*Math.pow(1024, 2)).toString();
+		} else if (byteUnits === 'GB') {
+			return (parseInt(quotaValue)*Math.pow(1024, 3)).toString();
+		}
+	} 
+	return bytesOfAnyUnits;
+}
+
 	
 /**
  * Displays the picture in the URI in a JQuery modal window
