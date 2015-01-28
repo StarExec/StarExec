@@ -719,6 +719,7 @@ public class BatchUtil {
 				    u.id = Integer.parseInt(childElement.getAttribute("id"));
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+				    u.name = childElement.getAttribute("name");
 				    
 				    NodeList updateChildList = childElement.getChildNodes();
 				    log.debug("UpdateChildList Length = " + updateChildList.getLength());
@@ -772,6 +773,7 @@ public class BatchUtil {
 	 * @author Ryan McCleeary
 	 * @param updates takes a list of updates to be associated with a space.
 	 * @param spaceID the space the updates are to be associated with.
+	 * @return List of new benchmark ID's corresponding to the updates.
 	 * 
 	 */
     private List<Integer> addUpdates(List<Update> updates)
@@ -829,8 +831,9 @@ public class BatchUtil {
 			    File outputFile = new File(processFile, "output");
 			    if(!outputFile.exists()){
 				errorMessage = "Output file failed to create";
-				log.error("Update Processor failed to create an update");
+				log.error("Update Processor failed to create an output");
 			    }
+			    /*
 			    String singleOutputText;
 
 			    BufferedReader br = new BufferedReader(new FileReader(outputFile));
@@ -843,6 +846,39 @@ public class BatchUtil {
 			    singleOutputText =  stringBuild.toString();                           
 			    int newBenchID =  BenchmarkUploader.addBenchmarkFromText(singleOutputText, b.getName(), b.getUserId(), b.getType().getId(),
 								   b.isDownloadable());
+			    */
+
+			    //Rename the the output file to correct name
+			    String name;
+			    if(update.name == null)
+				name = b.getName();
+			    else
+				name = update.name;
+
+			    File renamedFile = new File(processFile, name);
+
+			    String [] renameCmd = new String[3];
+			    renameCmd[0] = "mv";
+			    renameCmd[1] = outputFile.getAbsolutePath();
+			    renameCmd[2] = processFile.getAbsolutePath()+ "/" + name;
+
+			    Util.executeSandboxCommand(renameCmd, null, processFile);
+
+			    if(!renamedFile.exists()){
+				errorMessage = "Renamed file failed to created";
+				log.error("Failed renaming output file");
+			    }
+
+			    /*
+			     if(!outputFile.renameTo(renameFile))
+				log.error("Failed to rename output to new benchmark name");
+			    */
+			    
+			    
+
+			    
+			    int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
+										   b.isDownloadable());
 			   
 			    
 			    updateIds.add(newBenchID);
@@ -899,6 +935,7 @@ public class BatchUtil {
        Basic struct class to store all the id's needed for an update.
      */
     private class Update {
+	public String name;
 	public int id; //Benchmark ID
 	public int pid; //Processor ID
 	public int bid; //Benchmark Processor ID

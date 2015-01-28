@@ -156,6 +156,32 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		return null;
 	}
+    	/**
+	 * Adds a single new benchmark to the database with contents given by a File
+	 * @param benchFile The file containing the new benchmark, name of file will be name of benchmark
+	 * @param userId The ID of the user creating this benchmark
+	 * @param typeId The ID of the benchmark processor to use on this benchmark
+	 * @param downloadable Whether the benchmark should be set as being "downloadable"
+	 * @return The ID of the newly created benchmark
+	 */
+    public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId,
+					    boolean downloadable)
+        {
+	    try {
+	    File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
+	    FileUtils.copyFileToDirectory(benchFile, uniqueDir);
+	    
+	    List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+	    log.debug("found this many benchmarks to add from text "+bench.size());
+	    //add the benchmark to the database, but don't put it in any spaces
+			
+	    return Benchmarks.add(bench, null, null).get(0);
+	    }
+	    catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+	    return null;
+        }
 	
 	/**
 	 * Adds a set of benchmarks to the database by extracting the given archive and finding the
@@ -268,6 +294,8 @@ public class BenchmarkUploader extends HttpServlet {
 		return null;
 		
 	}
+
+       
 	
 	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
 		//First extract all data from request
