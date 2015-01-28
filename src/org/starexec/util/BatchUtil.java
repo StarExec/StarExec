@@ -812,18 +812,21 @@ public class BatchUtil {
 
 			    
 			    String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
+			    File processFile = new File(sb, new File(up.getFilePath()).getName());
+			    //log.debug("Process Path = " + processPath);
 			    String [] procCmd = new String[3];
 			    
 			    //Run proc command on text file and on benchmark given.
+			     
 			    procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
 			    procCmd[1] = textPath;
 			    procCmd[2] = benchPath;
 			    
 			    
-			    Util.executeSandboxCommand(procCmd, null, sb);
+			    Util.executeSandboxCommand(procCmd, null, processFile);
 
 			    //Upload the new benchmark created by the command to the system.
-			    File outputFile = new File(sb, "output");
+			    File outputFile = new File(processFile, "output");
 			    if(!outputFile.exists()){
 				errorMessage = "Output file failed to create";
 				log.error("Update Processor failed to create an update");
