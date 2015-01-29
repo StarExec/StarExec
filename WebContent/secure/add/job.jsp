@@ -26,7 +26,13 @@
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
-			request.setAttribute("defaultSettings",listOfDefaultSettings);			
+			request.setAttribute("defaultSettings",listOfDefaultSettings);	
+			Integer defaultId=Settings.getDefaultProfileForUser(userId);
+			if (defaultId!=null && defaultId>0) {
+				request.setAttribute("defaultProfile",defaultId);
+			} else {
+				request.setAttribute("defaultProfile",-1);
+			}
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
@@ -40,7 +46,7 @@
 	<c:forEach items="${defaultSettings}" var="setting">
 		<star:settings setting="${setting}" />
 	</c:forEach>
-	
+	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
 	
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" value="${space.id}"/>

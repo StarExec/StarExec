@@ -16,7 +16,13 @@
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add solvers here");
 		}
 		List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
-		request.setAttribute("defaultSettings",listOfDefaultSettings);			
+		request.setAttribute("defaultSettings",listOfDefaultSettings);	
+		Integer defaultId=Settings.getDefaultProfileForUser(userId);
+		if (defaultId!=null && defaultId>0) {
+			request.setAttribute("defaultProfile",defaultId);
+		} else {
+			request.setAttribute("defaultProfile",-1);
+		}
 
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The parent space id was not in the correct format");
@@ -25,6 +31,8 @@
 	}
 %>
 <star:template title="upload solver to ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner ,lib/jquery.validate.min, add/solver">
+	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
+	
 	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/solvers" id="upForm" flag= "false">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>

@@ -441,7 +441,7 @@ public class CreateJob extends HttpServlet {
 			if (request.getParameter(run).equals("choose")) {
 
 				// Check to see if we have a valid list of benchmark ids
-				if (!request.getParameter(benchChoice).equals("runAllBenchInHierarchy")){
+				if (request.getParameter(benchChoice).equals("runChosenFromSpace")){
 					if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
 						return new ValidatorStatusCode(false, "All selected benchmark IDs need to be valid integers");
 					}
