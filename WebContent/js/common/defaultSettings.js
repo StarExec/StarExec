@@ -38,7 +38,11 @@ function populateDefaults() {
 	if (!stringExists(selectedSettingId)) {
 		return; //no setting selected.
 	}
+	if ($(".defaultSettingsProfile[value="+selectedSettingId+"]").length<=0) {
+		return; //couldn't find the profile, so nothing to populate
+	}
 	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
+	
 	//first, pull out
 	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
 	clockTimeout=$(profile).find("span.clockTimeout").attr("value");
