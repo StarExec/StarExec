@@ -145,11 +145,18 @@ function initUI(){
 				}
 			}
 		});
-		
-		
-		
-		
-		
+	});
+	
+	//save the selected profile as a default
+	$("#setDefaultProfile").click(function() {
+		curSettingId=getSelectedSettingId();
+		$.post(
+				starexecRoot+"services/set/defaultSettings/"+ curSettingId,
+				function(returnData){
+					s=parseReturnCode(returnData);
+				},
+				"json"
+		);
 	});
 	
 	//delete the selected DefaultSettings profile

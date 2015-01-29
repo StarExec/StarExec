@@ -239,9 +239,10 @@ public class CreateJob extends HttpServlet {
 		} else { //user selected "choose"
 			
 			SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 			if (benchMethod.equals("runAllBenchInSpace")) {
-			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, cpuLimit, runLimit, memoryLimit, space, Spaces.getName(space));
+			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, cpuLimit, runLimit, memoryLimit, space, Spaces.getName(space),configIds);
 			    if (pairs==null) {
 			    	error="unable to get any job pairs for the space ID = "+space;
 			    } else {
@@ -251,7 +252,6 @@ public class CreateJob extends HttpServlet {
 			
 			}else if (benchMethod.equals("runAllBenchInHierarchy")) {
 				log.debug("got request to run all in bench hierarchy");
-				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
 				
@@ -273,7 +273,6 @@ public class CreateJob extends HttpServlet {
 					return;
 				}
 			} else {
-				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
 				JobManager.buildJob(j, cpuLimit, runLimit,memoryLimit, benchmarkIds, configIds, space, SP);
 			}

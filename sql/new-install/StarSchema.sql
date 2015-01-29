@@ -579,26 +579,6 @@ CREATE TABLE job_stats (
 	KEY (config_id)
 );
 
--- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
--- solver, benchmark, job, etc
--- Author: Eric Burns
-CREATE TABLE file_cache (
-	id INT NOT NULL,
-	path TEXT NOT NULL,
-	cache_type INT NOT NULL,
-	last_access TIMESTAMP NOT NULL,
-	PRIMARY KEY (id,cache_type)
-);
-
--- Table that contains some global flags
--- Author: Wyatt Kaiser
-CREATE TABLE system_flags (
-	integrity_keeper ENUM('') NOT NULL,
-	paused BOOLEAN DEFAULT FALSE,
-	test_queue INT,
-	PRIMARY KEY (integrity_keeper),
-	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
-);
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 

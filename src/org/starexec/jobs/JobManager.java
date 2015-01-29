@@ -670,6 +670,57 @@ public abstract class JobManager {
 		}
 		return pairs;
 	}
+	
+	/**
+	 * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
+	 * and create job pairs from the result. Will then return those job pairs
+	 * 
+	 * @param spaceId the id of the space we start in
+	 * @param userId the id of the user creating the job
+	 * @param solverIds a list of solvers to use
+	 * @param configIds a list of configurations to use
+	 * @param cpuTimeout the CPU timeout for the job
+	 * @param clockTimeout the clock timeout for the job
+	 * @param memoryLimit The maximum memory any pair can use, in bytes
+	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
+	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
+	 * desirable order
+	 */
+	public static List<JobPair> addJobPairsFromSpace( int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, String path, List<Integer> configIds) {
+		try {			
+			List<Solver> solvers = Solvers.getWithConfig(configIds);
+			
+			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
+		
+			
+			// Pair up the solvers and benchmarks
+
+				benchmarks = Benchmarks.getBySpace(spaceId);
+				List<JobPair> curPairs=new ArrayList<JobPair>();
+				for(Benchmark bench : benchmarks){
+					for(Solver solver : solvers) {
+						JobPair pair = new JobPair();
+						pair.setBench(bench);
+						pair.setSolver(solver);				
+						pair.setCpuTimeout(cpuTimeout);
+						pair.setWallclockTimeout(clockTimeout);
+						pair.setMaxMemory(memoryLimit);
+						pair.setPath(path);
+						pair.setSpace(Spaces.get(spaceId));
+						curPairs.add(pair);
+						
+					}
+				}
+			return curPairs;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+
+	}
+
+	
+	
 	/**
 	 * Adds job pairs to a job object in a depth-first manner. All pairs from space1 are added,
 	 * then all pairs from space2, and so on
@@ -715,7 +766,8 @@ public abstract class JobManager {
 		}
 		
 	}
-
+	
+	
 	/**
 	 * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
 	 * and create job pairs from the result. Will then return those job pairs

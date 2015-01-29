@@ -178,9 +178,9 @@ public class SpaceTests extends TestSequence {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 		
 		int timeout=Communities.getDefaultCpuTimeout(community.getId());
-		Assert.assertTrue(Settings.setDefaultSettings(settingId, 2, timeout+1));
+		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout+1));
 		Assert.assertEquals(timeout+1, Communities.getDefaultCpuTimeout(community.getId()));
-		Assert.assertTrue(Settings.setDefaultSettings(settingId, 2, timeout));
+		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout));
 	}
 	@Test
 	private void getDefaultWallclockTimeoutTest() {
@@ -194,9 +194,9 @@ public class SpaceTests extends TestSequence {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 
 		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
-		Assert.assertTrue(Settings.setDefaultSettings(settingId, 3, timeout+1));
+		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout+1));
 		Assert.assertEquals(timeout+1, Communities.getDefaultWallclockTimeout(community.getId()));
-		Assert.assertTrue(Settings.setDefaultSettings(settingId, 3, timeout));
+		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout));
 	}
 	
 	@Test

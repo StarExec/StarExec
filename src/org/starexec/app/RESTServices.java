@@ -1340,6 +1340,31 @@ public class RESTServices {
 	}
 	
 	
+	/**
+	 * Sets a settings profile to be the default for the user making the request
+	 * @param id The ID of a settings profile
+	 * @param request
+	 * @return
+	 */
+	@POST
+	@Path("/set/defaultSettings/{id}")
+	@Produces("application/json")
+	public String setSettingsProfileForUser(@PathParam("id") int id, @Context HttpServletRequest request) {	
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=SettingSecurity.canUserSeeProfile(id,userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		log.debug("setting a new default profile for a user");	
+		boolean success=Settings.setDefaultProfileForUser(userId, id);
+		// Passed validation AND Database update successful
+		return success ? gson.toJson(new ValidatorStatusCode(true,"Profile set as default")) : gson.toJson(ERROR_DATABASE);
+		
+		
+	}
+	
+	
 	@POST
 	@Path("/delete/defaultSettings/{id}")
 	@Produces("application/json")
@@ -1390,27 +1415,27 @@ public class RESTServices {
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
 			if (attribute.equals("PostProcess")) {
-				success = Settings.setDefaultSettings(id, 1, Integer.parseInt(request.getParameter("val")));
+				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(request.getParameter("val")));
 			} else if (attribute.equals("BenchProcess")) {
-				Settings.setDefaultSettings(id,8,Integer.parseInt(request.getParameter("val")));
+				Settings.updateSettingsProfile(id,8,Integer.parseInt(request.getParameter("val")));
 			}
 			
 			else if (attribute.equals("CpuTimeout")) {
-				success = Settings.setDefaultSettings(id, 2, Integer.parseInt(request.getParameter("val")));			
+				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(request.getParameter("val")));			
 			}else if (attribute.equals("ClockTimeout")) {
-				success = Settings.setDefaultSettings(id, 3, Integer.parseInt(request.getParameter("val")));			
+				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(request.getParameter("val")));			
 			} else if (attribute.equals("DependenciesEnabled")) {
-				success = Settings.setDefaultSettings(id, 4, Integer.parseInt(request.getParameter("val")));
+				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(request.getParameter("val")));
 			} else if (attribute.equals("defaultbenchmark")) {
-				success=Settings.setDefaultSettings(id, 5, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(request.getParameter("val")));
 			} else if (attribute.equals("defaultsolver")) {
-				success=Settings.setDefaultSettings(id, 7, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(request.getParameter("val")));
 			} else if(attribute.equals("MaxMem")) {
 				double gigabytes=Double.parseDouble(request.getParameter("val"));
 				long bytes = Util.gigabytesToBytes(gigabytes); 
 				success=Settings.setDefaultMaxMemory(id, bytes);
 			} else if (attribute.equals("PreProcess")) {
-				success=Settings.setDefaultSettings(id, 6, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(request.getParameter("val")));
 			}
 			
 			// Passed validation AND Database update successful
@@ -3369,7 +3394,6 @@ public class RESTServices {
 	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
 				|| !Util.paramExists("copyHierarchy", request)
 				|| !Validator.isValidBool(request.getParameter("copyHierarchy"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -3378,14 +3402,13 @@ public class RESTServices {
 		// Get the id of the user who initiated the request
 		int requestUserId = SessionUtil.getUserId(request);
 		
-		// Get the space the subSpace is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
+		
 		
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
 		
 		// Convert the subSpaces to copy to an int list
 		List<Integer> selectedSubSpaces = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
-		ValidatorStatusCode status=SpaceSecurity.canCopySpace(fromSpace, spaceId, requestUserId, selectedSubSpaces);
+		ValidatorStatusCode status=SpaceSecurity.canCopySpace(spaceId, requestUserId, selectedSubSpaces);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}

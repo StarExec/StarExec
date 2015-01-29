@@ -132,4 +132,17 @@ CREATE PROCEDURE DeleteDefaultSettings(IN _id INT)
 		DELETE FROM default_settings WHERE id=_id;
 	END //
 
+DROP PROCEDURE IF EXISTS SetDefaultProfileForUser;
+CREATE PROCEDURE SetDefaultProfileForUser(IN _uid INT, IN _sid INT) 
+	BEGIN
+		UPDATE users SET default_settings_profile=_sid WHERE id=_uid;
+	END //
+	
+
+DROP PROCEDURE IF EXISTS GetDefaultProfileForUser;
+CREATE PROCEDURE GetDefaultProfileForUser(IN _uid INT) 
+	BEGIN
+		SELECT default_settings_profile FROM users WHERE id=_uid;
+	END //
+	
 DELIMITER ; -- This should always be at the end of this file

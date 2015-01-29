@@ -1,5 +1,7 @@
 package org.starexec.data.security;
 
+import java.util.List;
+
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Settings;
@@ -16,6 +18,16 @@ import org.starexec.util.Validator;
 
 public class SettingSecurity {
 	
+	
+	public static ValidatorStatusCode canUserSeeProfile(int settingId, int userId) {
+		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+		for (DefaultSettings s : settings) {
+			if (s.getId()==settingId) {
+				return new ValidatorStatusCode(true);
+			}
+		}
+		return new ValidatorStatusCode(false, "You do not have permission to see the given profile, or it does not exist");
+	}
 	
 	/**
 	 * Checks whether the given user can modify the settings profile with the given ID. They can do this
