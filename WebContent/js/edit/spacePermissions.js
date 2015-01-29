@@ -222,22 +222,12 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	
 	// Extract the id of the currently selected space from the DOM
 	var idOfSelectedSpace = $('#exploreList').find('.jstree-clicked').parent().attr("id");
-	console.log("selected space: " + idOfSelectedSpace);
 
-	// If we can't find the id of the space selected from the DOM, get it from the cookie instead
+	// If we can't find the id of the space selected from the DOM, just do not populate the table
 	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
-		idOfSelectedSpace = $.cookie("jstree_select");
-		console.log("cookies!  " + idOfSelectedSpace);
-		// If we also can't find the cookie, then just set the space selected to be the root space
-		if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
-		    console.log("no cookies");
-		    $('#exploreList').jstree('select_node', '#1', false);
-			idOfSelectedSpace = 15;
-		} else {
-			idOfSelectedSpace = idOfSelectedSpace[1];
-		} 
+		return;
 	}
-
+	
 
 	// Request the next page of primitives from the server via AJAX
 	$.post(  

@@ -3,6 +3,7 @@ package org.starexec.test.database;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
@@ -17,6 +18,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 
 public class BenchmarkTests extends TestSequence {
+	private static final Logger log = Logger.getLogger(BenchmarkTests.class);	
 	private User user=null;
 	private User user2=null;
 	private User admin=null;
@@ -42,6 +44,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertNotNull(benches);
 		Assert.assertEquals(benchmarks.size(),benches.size());
 		for (Benchmark b : benches) {
+			log.debug(b.getId());
 			Assert.assertTrue(containsBenchmark(benchmarks,b));
 		}
 	}

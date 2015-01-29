@@ -53,6 +53,11 @@ CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128), IN _
 
 		UPDATE job_pairs SET node_id=_nodeId WHERE id = _jobPairId;
 		UPDATE job_pairs SET sandbox_num=_sandbox WHERE id=_jobPairId;
+		
+		-- Next lines finish a pair that is still in the "running" state despite another pair being in the same place now
+		-- First, mark the end time of the pairs
+		UPDATE job_pairs SET end_time=NOW() WHERE node_id = _nodeID AND status_code = 4 AND id!=_jobPairId AND sandbox_num=_sandbox;
+		-- Then, update the stuck pairs to an error code
 		UPDATE job_pairs SET status_code = 10 WHERE node_id = _nodeID AND status_code = 4 AND id!=_jobPairId AND sandbox_num=_sandbox;
 	END //
 	
@@ -170,5 +175,16 @@ CREATE PROCEDURE SetPairEndTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET end_time=NOW() WHERE id=_id;
 	END //
+	
+-- Counts the number of pairs with the given status code that completed in within the given
+-- number of days
+DROP PROCEDURE IF EXISTS CountRecentPairsByStatus;
+CREATE PROCEDURE CountRecentPairsByStatus(IN _status INT, IN _days INT)
+	BEGIN
+		SELECT count(*) FROM job_pairs WHERE status_code=_status AND 
+		
+		status_code=_status;-- end_time BETWEEN DATE_SUB(NOW(), INTERVAL _days DAY) AND NOW();
+	END //
+	 
 	
 DELIMITER ; -- this should always be at the end of the file

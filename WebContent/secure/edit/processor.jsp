@@ -44,6 +44,7 @@ try {
 <star:template title="edit ${proc.name}" css="edit/processor, edit/shared" js="lib/jquery.validate.min, edit/processor">
 	<input type="hidden" id="cid" value="${proc.communityId}"/>
 	<input type="hidden" id="ppid" value="${defaultPPId}"/>
+	<p>id = ${proc.id}</p>
 	<form id="editProcForm">
 	<fieldset>
 		<legend>processor details</legend>

@@ -253,7 +253,7 @@
 			<tr>
 				<td>update processor </td>
 				<td>					
-					<select id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
+					<select id="editUpdateProcess" name="editUpdateProcess" default="${defaultPPId}">
 					<option value=-1>none</option>
 					<c:forEach var="proc" items="${update_proc}">
 							<option value="${proc.id}">${proc.name}</option>
@@ -362,7 +362,7 @@
 		<form id="addPostProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
-			<input type="hidden" name="type" value="post"/>
+			<input type="hidden" name="type" value="update"/>
 			<table id="newPostProcessTbl">			
 				<tr>
 					<td><label for="processorName">name</label></td>
@@ -384,7 +384,7 @@
 	</fieldset>
 	<fieldset id="updateProcessorField">
 		<legend>update processors</legend>
-			<table id="updateProcessorTbl" class="shaded">
+			<table id="updateProcessTbl" class="shaded">
 				<thead>
 					<tr class="headerRow">
 						<th id="procName" length="${processorNameLen}">name</th>				
@@ -406,7 +406,7 @@
 		<form id="addUpdateProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
-			<input type="hidden" name="type" value="post"/>
+			<input type="hidden" name="type" value="update"/>
 			<table id="newUpdateProcessTbl">			
 				<tr>
 					<td><label for="processorName">name</label></td>

@@ -328,6 +328,7 @@ public class SpaceSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeSpace(int spaceId, int userId){
 		if (!Permissions.canUserSeeSpace(spaceId, userId)) {
+			log.debug("denying user id = "+userId +" for space = "+spaceId);
 			return new ValidatorStatusCode(false, "You do not have permission to view this space");
 		}
 		return new ValidatorStatusCode(true);
@@ -406,7 +407,8 @@ public class SpaceSecurity {
 	 * @param spaceIdBeingCopied The ID of the space that would be copied
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
-	private static ValidatorStatusCode canCopySpaceFromSpace(int fromSpaceId, int userId, int spaceIdBeingCopied) {
+	private static ValidatorStatusCode canCopySpaceFromSpace(int userId, int spaceIdBeingCopied) {
+		int fromSpaceId=Spaces.getParentSpace(spaceIdBeingCopied);
 		ValidatorStatusCode status=canCopyPrimFromSpace(fromSpaceId,userId);
 		if (!status.isSuccess()) {
 			return status;
@@ -527,10 +529,10 @@ public class SpaceSecurity {
  	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
 	
-	public static ValidatorStatusCode canCopySpace(int fromSpaceId, int toSpaceId, int userId, List<Integer> subspaceIds) {
+	public static ValidatorStatusCode canCopySpace(int toSpaceId, int userId, List<Integer> subspaceIds) {
 		ValidatorStatusCode status=null;
 		for (Integer sid : subspaceIds) {
-			status=SpaceSecurity.canCopySpaceFromSpace(fromSpaceId, userId, sid);
+			status=SpaceSecurity.canCopySpaceFromSpace(userId, sid);
 			if (!status.isSuccess()) {
 				return status;
 			}

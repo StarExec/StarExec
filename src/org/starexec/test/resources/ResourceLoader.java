@@ -111,7 +111,7 @@ public class ResourceLoader {
 			File processorFile=getResource(fileName);
 			FileUtils.copyFileToDirectory(processorFile, processorDir);
 			ArchiveUtil.extractArchive(new File(processorDir,processorFile.getName()).getAbsolutePath());
-			File processorScript=new File(processorDir,R.PROCSSESSOR_RUN_SCRIPT);
+			File processorScript=new File(processorDir,R.PROCESSOR_RUN_SCRIPT);
 
 			if (!processorScript.setExecutable(true, false)) {			
 				log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
@@ -163,7 +163,8 @@ public class ResourceLoader {
 		
 		
 		String name=TestUtil.getRandomJobName();
-		Queue q=Queues.getUserQueues(userId).get(0);
+		
+		Queue q=Queues.getAllQ();
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
 		
 		
@@ -195,7 +196,7 @@ public class ResourceLoader {
 		spaces.add(Spaces.get(rootSpaceId));
 		log.debug("loading this number of spaces into the job ="+spaces.size());
 		String name=TestUtil.getRandomJobName();
-		Queue q=Queues.getUserQueues(userId).get(0);
+		Queue q=Queues.getAllQ();
 
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
 		job.setPrimarySpace(rootSpaceId);

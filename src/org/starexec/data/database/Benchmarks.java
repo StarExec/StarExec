@@ -728,7 +728,7 @@ public class Benchmarks {
 				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
 				String [] procCmd = new String[2];
 				
-				procCmd[0] = "./"+R.PROCSSESSOR_RUN_SCRIPT; 
+				procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
 				procCmd[1] = benchPath;
 				String propstr = Util.executeSandboxCommand(procCmd,null,working);
 				FileUtils.deleteQuietly(sandbox);

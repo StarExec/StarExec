@@ -472,6 +472,7 @@ public class Util {
 		    public void run() {
 		    try {
 			if (drainInputStream(b,p.getErrorStream()))
+				
 			    log.error("The process produced stderr output.");
 		    }
 		    catch(Exception e) {

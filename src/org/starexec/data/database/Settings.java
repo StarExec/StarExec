@@ -293,6 +293,66 @@ public class Settings {
 		return true;
 	}
 	
+	/**
+	 * Sets the default settings profile for a given user. This is the profile
+	 * that will show up initially on job creation
+	 * @param userId The ID of the user having their default updated
+	 * @param settingId The setting ID to use
+	 * @return True on success and false on error
+	 */
+	public static boolean setDefaultProfileForUser(int userId, int settingId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetDefaultProfileForUser(?,?)}");
+			procedure.setInt(1,userId);
+			procedure.setInt(2,settingId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the default settings profile for a given user. This is the profile
+	 * that will show up initially on job creation
+	 * @param userId 
+	 * @return The id of the settings profile a user has as their default, OR null
+	 *  	   if the user has no default settings profile. -1 is returned on error
+	 */
+	public static Integer getDefaultProfileForUser(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetDefaultProfileForUser(?)}");
+			procedure.setInt(1,userId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				int result=results.getInt("default_settings_profile");
+				//a value of 0 means the field is null in SQL
+				if (result==0) {
+					return null;
+				}
+				return result;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
+	}
+	
 	
 	/**
 	 * Set the default settings for a community given by the id.
@@ -310,7 +370,7 @@ public class Settings {
 	 * @return True if the operation is successful
 	 * @author Ruoyu Zhang
 	 */
-	public static boolean setDefaultSettings(int id, int num, long setting) {
+	public static boolean updateSettingsProfile(int id, int num, long setting) {
 		Connection con = null;	
 		CallableStatement procedure= null;
 		try {			

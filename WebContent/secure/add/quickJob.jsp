@@ -43,6 +43,12 @@
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("benchProcs",ListOfBenchProcessors);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);
+			Integer defaultId=Settings.getDefaultProfileForUser(userId);
+			if (defaultId!=null && defaultId>0) {
+				request.setAttribute("defaultProfile",defaultId);
+			} else {
+				request.setAttribute("defaultProfile",-1);
+			}
 			request.setAttribute("isPublicUser",isPublicUser);
 		}
 	} catch (NumberFormatException nfe) {
@@ -60,6 +66,8 @@
 	<c:forEach items="${defaultSettings}" var="setting">
 		<star:settings setting="${setting}" />
 	</c:forEach>
+	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
+	
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="runChoice" value="quickJob" />
 		<input type="hidden" name="seed" value="0" />

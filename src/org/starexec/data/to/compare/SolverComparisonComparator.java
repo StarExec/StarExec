@@ -6,10 +6,25 @@ import org.starexec.data.to.*;
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
 	private int column; //will specify which field we are using to sort the job pairs
 	private boolean isWallclock;
+	
+	/**
+	 * Creates a new object that will compare SolverComparisons on different fields based on the given 
+	 * parameters
+	 * 
+	 * 0 Benchmark Name
+	 * 1 First pair wallclock time OR CPU time, depending on whether  isWallclock is true
+	 * 2 Second pair wallclock time OR CPU time, depending on whether  isWallclock is true
+	 * 3 Differences between wallclock OR CPU times, depending on whether isWallclock is true
+	 * 4 Starexec-result of first pair
+	 * 5 Starexec-result of second pair
+	 * 6 Results-match column
+	 */
+	
 	public SolverComparisonComparator(int c, boolean w) {
 		column=c;
 		isWallclock=w;
 	}
+	
 	
 	private  int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2) {
 		try {
@@ -48,16 +63,8 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 				}
 			}
 			
+			return Double.compare(db1, db2);
 			
-			
-			//if db1> db2, then db2 should go first
-			if (db1>db2) {
-				return 1;
-			}
-			if (db1==db2) {
-				return 0;
-			}
-			return -1;
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first
 		}
@@ -101,6 +108,15 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	}
 	
 	
+	/**
+	 * 0 Benchmark Name
+	 * 1 First pair wallclock time OR CPU time, depending on whether  isWallclock is true
+	 * 2 Second pair wallclock time OR CPU time, depending on whether  isWallclock is true
+	 * 3 Differences between wallclock OR CPU times, depending on whether isWallclock is true
+	 * 4 Starexec-result of first pair
+	 * 5 Starexec-result of second pair
+	 * 6 Results-match column
+	 */
 	
 	@Override
 	public int compare(SolverComparison o1, SolverComparison o2) {

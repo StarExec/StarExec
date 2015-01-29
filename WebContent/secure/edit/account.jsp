@@ -294,7 +294,10 @@
 		<fieldset id="settingActions">
 			<legend>actions</legend>
 			<button id="saveProfile">save profile changes</button>
+			
 			<button id="createProfile">create new profile</button>
+			<button title="Setting a profile as a default means it will be selected 
+			automatically when visiting the job creation page" id="setDefaultProfile">set profile as default</button>
 			<button id="deleteProfile">delete selected profile</button>
 			
 		</fieldset>

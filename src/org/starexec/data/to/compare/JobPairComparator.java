@@ -81,12 +81,7 @@ public class JobPairComparator implements Comparator<JobPair> {
 				db2=jp2.getCpuTime();
 			}
 			
-			
-			if (db1==db2) {
-				return 0;
-			} else if (db1<db2) {
-				return -1;
-			}
+			return Double.compare(db1, db2);
 			
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first

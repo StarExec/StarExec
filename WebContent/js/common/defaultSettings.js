@@ -2,7 +2,6 @@ $(document).ready(function() {
 	$("#settingProfile").change(function() {
 		populateDefaults();
 	});
-	populateDefaults();
 	
 	$(".clearSolver").click(function() {
 		clearSelectedSolver();
@@ -10,12 +9,24 @@ $(document).ready(function() {
 	$(".clearBenchmark").click(function() {
 		clearSelectedBenchmark();
 	});
+	//sets the default profile if one exists
+	if (("#defaultProfile").length>0) {
+		defaultValue=$("#defaultProfile").attr("value");
+		if (parseInt(defaultValue)>0) {
+			if ($('#settingProfile > [value='+defaultValue+']').length > 0) {
+				$("#settingProfile").val(defaultValue);
+			}
+		}
+		
+	} 
+	populateDefaults();	
+
+	
 });
 
 
 function getSelectedSettingId() {
 	return $("#settingProfile option:selected").attr("value");
-
 }
 
 /**
@@ -27,7 +38,11 @@ function populateDefaults() {
 	if (!stringExists(selectedSettingId)) {
 		return; //no setting selected.
 	}
+	if ($(".defaultSettingsProfile[value="+selectedSettingId+"]").length<=0) {
+		return; //couldn't find the profile, so nothing to populate
+	}
 	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
+	
 	//first, pull out
 	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
 	clockTimeout=$(profile).find("span.clockTimeout").attr("value");
