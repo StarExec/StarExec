@@ -110,7 +110,7 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td>disk quota</td>
+							<td>disk quota <h6>Format: [Number] [Units(B, KB, MB, GB)]</h6></td>
 							<td id="editdiskquota">${diskQuota}</td>
 						</tr>
 						<tr>
