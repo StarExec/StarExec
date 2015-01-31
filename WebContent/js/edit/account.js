@@ -494,9 +494,11 @@ function saveChanges(obj, save, attr, old) {
  * Takes a String that represents a number of bytes in
  * GB, MB, KB, or Bytes. Returns a String that represents
  * the number of bytes with no units specified.
+ * @author Albert Giegerich
  */
 function convertToBytes(bytesOfAnyUnits) {
 	var inputStrings = bytesOfAnyUnits.split(' ');
+	
 	if (inputStrings.length === 2) {
 		var quotaValue = inputStrings[0];
 		var byteUnits  = inputStrings[1].toUpperCase(); 	
