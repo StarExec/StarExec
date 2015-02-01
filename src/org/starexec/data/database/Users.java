@@ -318,22 +318,42 @@ public class Users {
 		
 		return null;
 	}
+
+	/**
+	 * Gets every user.
+	 * @return A list of every user.
+	 * @author Albert Giegerich
+	 */
+	public static List<User> getAllUsers() {
+		return getUserList("{CALL GetAllUsers()}");
+	}
 	
 	public static List<User> getAdmins() {
+		return getUserList("{CALL GetAdmins()}");
+	}
+
+	/**
+	 * Returns a list of users based on the sql database stored procedure that is
+	 * input.
+	 * @param sql An sql statement used for calling a database stored procedure.
+	 * @return A List of users based on the sql procedure that was input.
+	 * @author Albert Giegerich
+	 */
+	private static List<User> getUserList(String sql) {
 		Connection con = null;
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetAdmins()}");
+			procedure = con.prepareCall(sql);
 			results = procedure.executeQuery();
 			
-			List<User> admins =  new LinkedList<User>();
+			List<User> users =  new LinkedList<User>();
 			while (results.next()) {
 				User u = resultSetToUser(results);
-				admins.add(u);
+				users.add(u);
 			}
-			return admins;
+			return users;
 				
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -344,6 +364,7 @@ public class Users {
 		}
 		return null;
 	}
+	
 	
 	/**
 	 * Gets the number of Users in the whole system
