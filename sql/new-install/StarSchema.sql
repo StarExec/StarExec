@@ -133,6 +133,8 @@ CREATE TABLE bench_attributes (
 	CONSTRAINT bench_attributes_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
+
+
 -- The record for an individual solver
 CREATE TABLE solvers (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -145,6 +147,7 @@ CREATE TABLE solvers (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
+	executable_type INT DEFAULT 1, 
 	PRIMARY KEY (id),	
 	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
@@ -579,6 +582,54 @@ CREATE TABLE job_stats (
 	KEY (config_id)
 );
 
+-- table for storing the top level of solver pipelines
+CREATE TABLE solver_pipelines (
+	id INT NOT NULL,
+	name VARCHAR(128),
+	user_id INT NOT NULL,
+	
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE pipeline_stages (
+	pipeline_id INT NOT NULL,
+	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
+	solver_id INT NOT NULL,
+	cpu_timeout INT NOT NULL,
+	clock_timeout INT NOT NULL,
+	PRIMARY KEY (stage_id), -- pipelines can have many stages
+	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
+	CONSTRAINT pipeline_stages_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
+);
+-- Stores any dependencies that pipeline stages have on benchmarks or previous artifacts
+CREATE TABLE pipeline_dependencies (
+	stage_id INT NOT NULL,
+	dependency_id INT NOT NULL, -- id of either the benchmark or pipeline stage that is a dependency
+	dependency_type INT NOT NULL, -- type of the dependency (which is either a benchmark or previous artifact)
+	PRIMARY KEY (stage_id, dependency_id,dependency_type),
+	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (pipeline_id) REFERENCES pipeline_stages(id) ON DELETE CASCADE,
+);
+
+-- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
+-- solver, benchmark, job, etc
+-- Author: Eric Burns
+CREATE TABLE file_cache (
+	id INT NOT NULL,
+	path TEXT NOT NULL,
+	cache_type INT NOT NULL,
+	last_access TIMESTAMP NOT NULL,
+	PRIMARY KEY (id,cache_type)
+);
+
+-- Table that contains some global flags
+-- Author: Wyatt Kaiser
+CREATE TABLE system_flags (
+	integrity_keeper ENUM('') NOT NULL,
+	paused BOOLEAN DEFAULT FALSE,
+	test_queue INT,
+	PRIMARY KEY (integrity_keeper),
+	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
+);
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 
