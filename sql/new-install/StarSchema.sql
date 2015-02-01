@@ -607,7 +607,7 @@ CREATE TABLE pipeline_dependencies (
 	dependency_id INT NOT NULL, -- id of either the benchmark or pipeline stage that is a dependency
 	dependency_type INT NOT NULL, -- type of the dependency (which is either a benchmark or previous artifact)
 	PRIMARY KEY (stage_id, dependency_id,dependency_type),
-	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (pipeline_id) REFERENCES pipeline_stages(id) ON DELETE CASCADE
+	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(id) ON DELETE CASCADE
 );
 
 -- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
