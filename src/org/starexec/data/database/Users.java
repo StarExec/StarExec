@@ -325,11 +325,11 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	public static List<User> getAllUsers() {
-		return getUserList("{CALL GetAllUsers()}");
+		return getUserListFromQuery("{CALL GetAllUsers()}");
 	}
 	
 	public static List<User> getAdmins() {
-		return getUserList("{CALL GetAdmins()}");
+		return getUserListFromQuery("{CALL GetAdmins()}");
 	}
 
 	/**
@@ -339,7 +339,7 @@ public class Users {
 	 * @return A List of users based on the sql procedure that was input.
 	 * @author Albert Giegerich
 	 */
-	private static List<User> getUserList(String sql) {
+	private static List<User> getUserListFromQuery(String sql) {
 		Connection con = null;
 		CallableStatement procedure= null;
 		ResultSet results=null;
