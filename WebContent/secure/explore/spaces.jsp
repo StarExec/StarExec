@@ -74,7 +74,8 @@
 				<thead>
 					<tr>
 						<th id="solverNameHead">name</th>
-						<th id="solverDescHead">description</th>						
+						<th id="solverDescHead">description</th>		
+						<th id="solverTypeHead">Type</th>				
 					</tr>
 				</thead>			
 			</table>

@@ -166,6 +166,9 @@ public class DefaultSettings extends Identifiable {
 	public SettingType getType() {
 		return type;
 	}
+	public String getTypeString() {
+		return type.name();
+	}
 	
 	@Override
 	public String toString() {
@@ -205,26 +208,6 @@ public class DefaultSettings extends Identifiable {
 		}
 		DefaultSettings set=(DefaultSettings) s;
 
-		log.debug(this.toString());
-		log.debug(set.toString());
-		
-		log.debug(this.getId()==set.getId());
-		log.debug(Util.objectsEqual(this.getName(), set.getName()));
-		log.debug(this.getPrimId()==set.getPrimId());
-		log.debug(this.getPrimId());
-		log.debug(set.getPrimId());
-		log.debug(this.getPreProcessorId()==set.getPreProcessorId());
-		log.debug(this.getBenchProcessorId()==set.getBenchProcessorId());
-		log.debug(this.getPostProcessorId()==set.getPostProcessorId());
-		log.debug(this.getCpuTimeout()==set.getCpuTimeout());
-		log.debug(this.getWallclockTimeout()==set.getWallclockTimeout());
-		log.debug(this.getMaxMemory()==set.getMaxMemory());
-		log.debug(this.getSolverId()==set.getSolverId());
-		log.debug(this.getBenchId()==set.getBenchId());
-		
-		
-		log.debug(this.toString());
-		log.debug(set.toString());
 		return (this.getId()==set.getId() &&
 				Util.objectsEqual(this.getName(), set.getName()) &&
 				Util.objectsEqual(this.getPrimId(),set.getPrimId()) &&

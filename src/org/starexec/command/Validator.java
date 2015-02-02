@@ -55,7 +55,7 @@ public class Validator {
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
 		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED, R.PARAM_SEED};
-	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
+	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_TYPE,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE, R.PARAM_RUN, R.PARAM_SETTING};
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
 		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
@@ -445,6 +445,11 @@ public class Validator {
 		int valid= isValidUploadRequest(commandParams, true);
 		if (valid<0) {
 			return valid;
+		}
+		if (commandParams.containsKey(R.PARAM_TYPE)) {
+			if (!Validator.isValidInteger(commandParams.get(R.PARAM_TYPE))) {
+				return Status.ERROR_INVALID_ID;
+			}
 		}
 		findUnnecessaryParams(allowedUploadSolverParams,commandParams);
 		return 0;

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -15,6 +16,44 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen
  */
 public class Solver extends Identifiable implements Iterable<Configuration> {
+	
+	/**
+	 * Represents the type of the processor (along with it's SQL storage values)
+	 */
+	public static enum ExecutableType {
+		
+		SOLVER(1), 
+		PREPROC(2), 
+		RESULTCHECKER(3),
+		OTHER(4);
+		
+		private int val;
+		
+		private ExecutableType(int val) {
+			this.val = val;
+		}
+		
+		public int getVal() {
+			return this.val;
+		}
+		
+		public static ExecutableType valueOf(int val) {
+			switch(val) {			
+				case 1:
+					return SOLVER;
+				case 2:
+					return PREPROC;
+				case 3:
+					return RESULTCHECKER;
+			    case 4:
+				   return OTHER;
+				default:
+					return null;				
+			}
+		}
+	}
+	
+	
 	private int userId = -1;
 	@Expose	private String name;
 	@Expose private String description = "no description";
@@ -26,6 +65,7 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	private long diskSize;
 	private boolean recycled;
 	private boolean deleted;
+	private ExecutableType type;
 	public Solver() {
 		this.configurations = new LinkedList<Configuration>();
 	}
@@ -178,5 +218,13 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 
 	public boolean isDeleted() {
 		return deleted;
+	}
+
+	public ExecutableType getType() {
+		return type;
+	}
+
+	public void setType(ExecutableType type) {
+		this.type = type;
 	}
 }

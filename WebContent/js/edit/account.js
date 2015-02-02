@@ -76,8 +76,7 @@ function initUI(){
 	initButtonIcons();
 	
 	// Collapse all fieldsets on page load except for the one containing the client's information
-	//$('fieldset:first').expandable(false);
-	$('fieldset:not(:first)').expandable(true);
+	$('fieldset:not(:first, #settingActions)').expandable(true);
 	
 	// Setup "+ add new" & "- add new" animation
 	$('#toggleWebsite').click(function() {
@@ -112,6 +111,7 @@ function initUI(){
 						showMessage("success","Profile settings updated successfully",5000);
 				}
 			).error(function(xhr, textStatus, errorThrown){
+				
 				showMessage('error',"Invalid parameters",5000);
 			});
 	});
@@ -230,7 +230,11 @@ function initUI(){
 			}
 		});
 	
-	
+	//this marks all community settings profiles with the text "(community)" so users can tell
+	    $('#settingProfile > [type=COMMUNITY]').each(function() {
+	    	
+	    	$(this).text($(this).text() + " (community profile)");
+	    });
 }
 
 function fnSolverPaginationHandler(sSource,aoData,fnCallback) {
@@ -525,7 +529,6 @@ function popUp(uri) {
 	imageTag = $("#popImage");
 	
 	imageTag.attr('src', uri);
-
 	imageTag.load(function(){
 		$('#popDialog').dialog({
 			dialogClass: "popup",

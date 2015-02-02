@@ -119,6 +119,9 @@ corresponds to a dependent bench space.
 "trav" -When creating a job, specifies the type of traversal that shold be used. The value "d" is
 		used to specify depth-first traversal, whereas "r" is for a round-robin traversal.
 
+"type" -When uploading a solver, specifies the type of executable being uploaded. 1=solver,
+		2= preprocessor, 3=result checker, 4=other. Defaults to 1 if not specified.
+
 "u" -When logging in, specifies the username to log in with. When listing primitives, causes a user's own 
 	 primitives to be retrieved instead of the primitives of a space.
 
@@ -338,7 +341,7 @@ individually unique than previous commands, and many accept a large number of op
 --pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID.
 			  The ID of the newly uploaded solver will be printed if "returnids" has been called.
 REQUIRED: ("f" OR "url") "id"
-OPTIONAL: "n" ("d" OR "df") "downloadable" "run" "set"
+OPTIONAL: "n" ("d" OR "df") "downloadable" "run" "set" "type"
 EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Description downloadable='
 
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.

@@ -48,7 +48,7 @@ public class SettingSecurity {
 		} else {
 			Permission perm = Permissions.get(userId, d.getPrimId());		
 			if(perm == null || !perm.isLeader()) {
-				return new ValidatorStatusCode(false, "Only leaders can update default settings in a space");
+				return new ValidatorStatusCode(false, "Only leaders can update settings profiles belonging to communities.");
 			}
 		}
 		return new ValidatorStatusCode(true);

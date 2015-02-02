@@ -137,6 +137,7 @@
 					<tr>
 						<th> name </th>
 						<th> description </th>
+						<th>type</th>
 					</tr>
 				</thead>
 			</table>

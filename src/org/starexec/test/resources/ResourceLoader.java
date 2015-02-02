@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 
 
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -40,6 +41,7 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
@@ -346,6 +348,7 @@ public class ResourceLoader {
 			FileUtils.copyFile(archive, archiveCopy);
 			String filePath=Solvers.getDefaultSolverPath(userId, s.getName());
 			s.setPath(filePath);
+			s.setType(ExecutableType.SOLVER);
 			File solverDir=new File(filePath);
 			solverDir.mkdirs();
 			ArchiveUtil.extractArchive(archiveCopy.getAbsolutePath(), solverDir.getAbsolutePath());
