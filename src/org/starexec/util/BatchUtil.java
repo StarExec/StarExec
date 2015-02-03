@@ -90,6 +90,7 @@ public class BatchUtil {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
 		
+		//we can't let the top level have spaces in the name
 		File file = new File(R.STAREXEC_ROOT, (space.getName().replaceAll("\\s+", "")) +".xml");
 		log.debug(file.getAbsolutePath());
 		StreamResult result = new StreamResult(file);

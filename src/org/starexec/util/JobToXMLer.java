@@ -63,7 +63,7 @@ public class JobToXMLer {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
 		
-		File file = new File(R.STAREXEC_ROOT, job.getName() +".xml");
+		File file = new File(R.STAREXEC_ROOT, job.getName().replaceAll("\\s+", "") +".xml");
 		
 		
 		StreamResult result = new StreamResult(file);
