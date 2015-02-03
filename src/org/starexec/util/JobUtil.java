@@ -25,6 +25,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Pipelines;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
@@ -36,6 +37,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.pipelines.*;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.DOMHelper;
 import org.w3c.dom.Document;
@@ -79,7 +81,7 @@ public class JobUtil {
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.parse(file);
         Element jobsElement = doc.getDocumentElement();
-		NodeList listOfJobElements = jobsElement.getChildNodes();
+		NodeList listOfJobElements = jobsElement.getElementsByTagName("Job");
 		
 		NodeList listOfPipelines = doc.getElementsByTagName("SolverPipeline");
 		log.info("# of pipelines = " + listOfPipelines.getLength());
@@ -92,13 +94,20 @@ public class JobUtil {
 		
 		String name = "";//name variable to check
 		
+		
+		//validate all solver pipelines
+		for (int i=0; i< listOfPipelines.getLength(); i++) {
+			Node pipeline = listOfPipelines.item(i);
+			int pipeId=createPipelineFromElement(userId, (Element) pipeline);
+			log.debug("new pipeline received id = "+pipeId);
+		}
+		
 		// Make sure jobs are named
 		for (int i = 0; i < listOfJobs.getLength(); i++){
 			Node jobNode = listOfJobs.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				name = jobElement.getAttribute("name");
-				log.info("delete me if you find me");
 				if (name == null) {
 					log.info("Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
@@ -136,6 +145,25 @@ public class JobUtil {
 		return jobIds;
 	}
 	
+	
+	//TODO: Dependencies
+	private Integer createPipelineFromElement(int userId, Element pipeElement) {
+		SolverPipeline pipeline=new SolverPipeline();
+		pipeline.setUserId(userId);
+		
+		pipeline.setName(pipeElement.getAttribute("name"));
+		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
+		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
+		for (int i=0;i<stages.getLength();i++) {
+			Element stage=(Element)stages.item(i);
+			PipelineStage s=new PipelineStage();
+			s.setExecutableId(Integer.parseInt(stage.getAttribute("executable")));
+			
+			stageList.add(s);
+		}
+		pipeline.setStages(stageList);
+		return Pipelines.addPipelineToDatabase(pipeline);
+	}
 
 
 	/**
