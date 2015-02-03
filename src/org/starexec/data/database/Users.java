@@ -319,15 +319,6 @@ public class Users {
 		return null;
 	}
 
-	/**
-	 * Gets every user.
-	 * @return A list of every user.
-	 * @author Albert Giegerich
-	 */
-	public static List<User> getAllUsers() {
-		return getUserListFromQuery("{CALL GetAllUsers()}");
-	}
-	
 	public static List<User> getAdmins() {
 		return getUserListFromQuery("{CALL GetAdmins()}");
 	}
