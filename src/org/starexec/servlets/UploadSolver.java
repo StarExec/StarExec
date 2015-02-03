@@ -355,6 +355,7 @@ public class UploadSolver extends HttpServlet {
 			if (newSolver.getConfigurations().isEmpty()) {
 				returnArray[1] = -4; //It is empty
 			}
+			newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
 			//Try adding the solver to the database
 			int solver_Success = Solvers.add(newSolver, spaceId);
 			
