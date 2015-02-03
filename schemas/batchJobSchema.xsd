@@ -7,10 +7,28 @@
     	</documentation>
     </annotation>
     
+    <complexType name="SolverPipeline">
+    
+    	<sequence>
+    		<element name="PipelineAttributes" type="tns:PipelineAttributes" minOccurs="1" maxOccurs="1"></element>
+    	
+    		<element name="PipelineStage" type="tns:PipelineStage" minOccurs="1" maxOccurs="unbounded"></element>
+    	</sequence> 
+    
+    </complexType>
+    
+    <complexType name="PipelineStage">    	
+    	<attribute name="solver_id" type="int" use="required"></attribute>
+    	
+    
+    </complexType>
+    
     <element name="Jobs" type="tns:Jobs"></element>
     
     <complexType name="Jobs">
     	<sequence>
+    		<element name="SolverPipeline" type="tns:SolverPipeline" minOccurs="0" maxOccurs="unbounded"></element>
+    		
     		<element name="Job" type="tns:Job" minOccurs="1" 
     			maxOccurs="unbounded">
     		</element>
@@ -30,6 +48,13 @@
     	<!-- The job name must be unique to the space -->
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
     	
+    </complexType>
+    
+     <complexType name="PipelineAttributes">
+      <all>
+	<element name="name" type="tns:PrimitiveName" maxOccurs="1" minOccurs="1"></element>
+      </all>
+      
     </complexType>
     
     <complexType name="JobAttributes">

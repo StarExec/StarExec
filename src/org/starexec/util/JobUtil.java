@@ -51,7 +51,7 @@ public class JobUtil {
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
 	
 	/**
-	 * Creates jobs from the xml file.
+	 * Creates jobs from the xml file. This also creates any solver pipelines defined in the XML document
 	 * @author Tim Smith
 	 * @param file the xml file we wish to create jobs from
 	 * @param userId the userId of the user making the request
@@ -81,12 +81,14 @@ public class JobUtil {
         Element jobsElement = doc.getDocumentElement();
 		NodeList listOfJobElements = jobsElement.getChildNodes();
 		
+		NodeList listOfPipelines = doc.getElementsByTagName("SolverPipeline");
+		log.info("# of pipelines = " + listOfPipelines.getLength());
+		
         //Check Jobs and Job Pairs
         NodeList listOfJobs = doc.getElementsByTagName("Job");
 		log.info("# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
 		log.info("# of JobPairs = " + listOfJobPairs.getLength());
-		log.warn("this is a test, delete if you find this");
 		
 		String name = "";//name variable to check
 		
