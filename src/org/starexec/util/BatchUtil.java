@@ -26,6 +26,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -793,6 +794,14 @@ public class BatchUtil {
 		    File upf = new File(up.getFilePath());
 		    File ubp = new File(bp.getFilePath());
 		    List<File> files = new ArrayList<File>();
+		    log.debug("Update name = " + update.name);
+		    log.debug("Update name = empty " + (update.name == ""));
+		    String name = "";
+		    if(update.name == "")
+			name = b.getName();
+		    else
+			name = update.name;
+		    log.debug("name = " + name);
 		    files.add(bf);
 		    files.add(upf);
 		    files.add(ubp);
@@ -825,8 +834,14 @@ public class BatchUtil {
 			    procCmd[1] = textPath;
 			    procCmd[2] = benchPath;
 			    
+			    String message = null;
+			    message = Util.executeSandboxCommand(procCmd, null, processFile);
 			    
-			    Util.executeSandboxCommand(procCmd, null, processFile);
+			    if(message != null)
+				{
+				    errorMessage = message;
+				    log.warn("User script generated following message " + message);
+				}
 
 			    //Upload the new benchmark created by the command to the system.
 			    File outputFile = new File(processFile, "output");
@@ -834,53 +849,39 @@ public class BatchUtil {
 				errorMessage = "Output file failed to create";
 				log.error("Update Processor failed to create an output");
 			    }
-			    /*
-			    String singleOutputText;
 
-			    BufferedReader br = new BufferedReader(new FileReader(outputFile));
-			    String line;
-			    StringBuilder stringBuild = new StringBuilder();
-			    String sep = "\n";
-			    while ((line = br.readLine()) != null) {
-				stringBuild.append(sep).append(line);
-			    }
-			    singleOutputText =  stringBuild.toString();                           
-			    int newBenchID =  BenchmarkUploader.addBenchmarkFromText(singleOutputText, b.getName(), b.getUserId(), b.getType().getId(),
-								   b.isDownloadable());
-			    */
+			    
+			   
 
 			    //Rename the the output file to correct name
-			    String name;
-			    if(update.name == null)
-				name = b.getName();
-			    else
-				name = update.name;
 
-			    File renamedFile = new File(processFile, name);
+			    
+
+			    File newSb = Util.getRandomSandboxDirectory();
+			    File renamedFile = new File(newSb, name);
 
 			    String [] renameCmd = new String[3];
 			    renameCmd[0] = "mv";
 			    renameCmd[1] = outputFile.getAbsolutePath();
-			    renameCmd[2] = processFile.getAbsolutePath()+ "/" + name;
+			    renameCmd[2] = renamedFile.getAbsolutePath();
 
-			    Util.executeSandboxCommand(renameCmd, null, processFile);
+			    Util.executeSandboxCommand(renameCmd, null, newSb);
 
 			    if(!renamedFile.exists()){
 				errorMessage = "Renamed file failed to created";
 				log.error("Failed renaming output file");
 			    }
 
-			    /*
-			     if(!outputFile.renameTo(renameFile))
-				log.error("Failed to rename output to new benchmark name");
-			    */
+			   
 			    
 			    
 
 			    
 			    int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
 										   b.isDownloadable());
-			   
+
+			    FileUtils.deleteQuietly(newSb);
+			    FileUtils.deleteQuietly(sb);
 			    
 			    updateIds.add(newBenchID);
 			  
@@ -893,6 +894,7 @@ public class BatchUtil {
 			}
 			
 		}
+	    
 	    return updateIds;
         }
 	/**
@@ -936,7 +938,7 @@ public class BatchUtil {
        Basic struct class to store all the id's needed for an update.
      */
     private class Update {
-	public String name;
+	public String name = "";
 	public int id; //Benchmark ID
 	public int pid; //Processor ID
 	public int bid; //Benchmark Processor ID
