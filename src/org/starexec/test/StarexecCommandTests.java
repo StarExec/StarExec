@@ -732,7 +732,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Spaces.removeSubspaces(space1.getId());
 		Spaces.removeSubspaces(space2.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
+		//Solvers.deleteAndRemoveSolver(solver.getId());
 		
 		for (Integer i : benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
