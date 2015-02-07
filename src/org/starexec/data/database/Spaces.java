@@ -2133,10 +2133,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy){
-		ValidatorStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, usrId);
-		if (!status.isSuccess()){
-			return false;
-		}
+		
 
 		Connection con = null;	
 		CallableStatement procedure = null;

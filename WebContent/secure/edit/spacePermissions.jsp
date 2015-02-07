@@ -209,10 +209,14 @@
 		
 		<fieldset id="permissionActions">
 			<a id="exploreSpaces" href="/${starexecRoot}/secure/explore/spaces.jsp">return to space explorer</a>
+			<a class="btnRun" id="makePublic">make public</a>
 		</fieldset>
 
 	</div>	
 	
+	<div id="dialog-confirm-change" title="confirm change">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
+	</div>
 	
 	
 </star:template>

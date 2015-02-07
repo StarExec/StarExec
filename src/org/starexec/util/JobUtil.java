@@ -146,12 +146,17 @@ public class JobUtil {
 	}
 	
 	
-	//TODO: Dependencies
+	/**
+	 * Creates a single solver pipeline from a SolverPipeline XML element
+	 * @param userId
+	 * @param pipeElement
+	 * @return
+	 */
 	private Integer createPipelineFromElement(int userId, Element pipeElement) {
 		SolverPipeline pipeline=new SolverPipeline();
 		pipeline.setUserId(userId);
 		
-		pipeline.setName(pipeElement.getAttribute("name"));
+		pipeline.setName(pipeElement.getAttribute("pipelineName"));
 		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
 		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
 		for (int i=0;i<stages.getLength();i++) {

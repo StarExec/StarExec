@@ -133,7 +133,15 @@ CREATE TABLE bench_attributes (
 	CONSTRAINT bench_attributes_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
+-- This table holds the names of executable types so that they are accessible for SQL sorts and filters.
+-- The contents in this table should match with the enum in Solver.java to ensure proper sorts!
+CREATE TABLE executable_types (
+	type_id INT NOT NULL,
+	type_name VARCHAR(32),
+	PRIMARY KEY (type_id)
+);
 
+INSERT INTO executable_types (type_id, type_name) VALUES (1,"solver"), (2,"transformer"),(3,"result checker"),(4,"other");
 
 -- The record for an individual solver
 CREATE TABLE solvers (
@@ -149,8 +157,11 @@ CREATE TABLE solvers (
 	recycled BOOLEAN DEFAULT FALSE,
 	executable_type INT DEFAULT 1, 
 	PRIMARY KEY (id),	
-	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
 );
+
+
 
 -- All the SGE node queues on the system
 CREATE TABLE queues (
@@ -602,11 +613,17 @@ CREATE TABLE pipeline_stages (
 );
 -- Stores any dependencies that pipeline stages have on benchmarks or previous artifacts
 CREATE TABLE pipeline_dependencies (
-	stage_id INT NOT NULL,
-	dependency_id INT NOT NULL, -- id of either the benchmark or pipeline stage that is a dependency
-	dependency_type INT NOT NULL, -- type of the dependency (which is either a benchmark or previous artifact)
-	PRIMARY KEY (stage_id, dependency_id,dependency_type),
+	stage_id INT NOT NULL, -- ID of a pipeline_stage
+	input_id INT NOT NULL, -- which input needs to be passed into this stage
+	PRIMARY KEY (stage_id, input_id),
 	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
+);
+
+CREATE TABLE jobline_inputs (
+	jobline_id INT NOT NULL, -- ID of a jobline
+	input_id INT NOT NULL,   -- number of this input
+	dependency_id INT NOT NULL, -- ID of the dependency (maybe a benchmark ID, maybe something else)
+	dependency_type INT NOT NULL -- type of the dependency (benchmark, artifact, maybe others)
 );
 
 -- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,

@@ -314,29 +314,7 @@
 				</c:forEach>
 			</tbody>																				
 		</table>
-		<span id="togglePreProcessor" class="caption">+ add new</span>
-		<form id="addPreProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
-			<input type="hidden" name="com" value="${com.id}"/>
-			<input type="hidden" name="action" value="add"/>
-			<input type="hidden" name="type" value="pre"/>
-			<table id="newPreProcessTbl">			
-				<tr>
-					<td><label for="processorName">name</label></td>
-					<td><input name="name" type="text" id="processorName"/></td>
-				</tr>
-				<tr>
-					<td><label for="processorDesc">description</label></td>
-					<td><textarea name="desc" id="processorDesc"></textarea></td>
-				</tr>
-				<tr>
-					<td><label for="processorFile">processor</label></td>
-					<td><input name="file" type="file" id="processorFile"/></td>
-				</tr>
-				<tr>
-					<td colspan="2"><button id="addPreProcessor" type="submit">add</button></td>				
-				</tr>			 			 			
-			</table>
-		</form>
+		
 	</fieldset>
 	<fieldset id="postProcessorField">
 		<legend>post processors</legend>

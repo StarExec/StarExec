@@ -16,6 +16,7 @@ var curIsLeader = false;
 var curIsAdmin = false;
 
 var communityIdList = null;
+var currentSpacePublic=false; // is the space we are currently in public (true) or private (false)
 
 //logger allows me to enable or disable console.log() lines
 var logger = function()
@@ -45,6 +46,7 @@ $(document).ready(function(){
 
 	//logger.disableLogger();
 	console.log("spacePermissions log start");
+	$("#dialog-confirm-change").hide();
 
 	currentUserId=parseInt($("#userId").attr("value"));
 	curIsAdmin = isAdmin();
@@ -174,7 +176,7 @@ function initButtonUI() {
 		icons: {
 		    primary: "ui-icon-arrowthick-1-w"
 		}});
-
+	$("#makePublic").button();
 }
 
 
@@ -450,7 +452,15 @@ function populateSpaceDetails(jsonData, id) {
 	$('#spaceID').fadeOut('fast', function() {
 		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
 	});
+	
+	if (jsonData.perm.isLeader) {
+		handlePublicButton(id);
 
+    } else {
+		$('#makePublic').fadeOut('fast');
+    }
+	
+	
 	/*
 	 * Issue a redraw to all DataTable objects to force them to requery for
 	 * the newly selected space's primitives.  This will effectively clear
@@ -488,10 +498,10 @@ function isCommunity(space_id){
 
 function canChangePermissions(user_id){
     if(curIsLeader && !isRoot(spaceId) && (user_id != currentUserId)){
-	return true;
+    	return true;
     }
     else{
-	return false;
+    	return false;
     }
 }
 function populateDetails(data, user_id) {
@@ -503,36 +513,38 @@ function populateDetails(data, user_id) {
 
 	    $('#communityLeaderStatusRow').hide();
 	    $('#leaderStatusRow').hide();
-
 	    console.log("current user selected: " + (user_id == currentUserId));
 
 	    var leaderStatus = data.perm.isLeader;
-
+	    
 	    if(isCommunity(spaceId)){
 
-		if(canChangePermissions(user_id) && (leaderStatus!=true || curIsAdmin)){
-		    $('#permCheckboxes').show();
-		    if(curIsAdmin){
-			$('#leaderStatusRow').show();
-		    }
-		    else{
-			$('#communityLeaderStatusRow').show();
-		    }
-		}
-		else{
-		    $('#currentPerms').show();
-		    
-		}
+			if(canChangePermissions(user_id) && (leaderStatus!=true || curIsAdmin)){
+			    $('#permCheckboxes').show();
+	
+			    if(curIsAdmin){
+			    	$('#leaderStatusRow').show();
+				
+			    }
+			    else{
+			    	$('#communityLeaderStatusRow').show();
+			    }
+			} else {
+			    $('#currentPerms').show();
+	
+			}
 	    }
 	    else{
 
-		if(canChangePermissions(user_id)){
-		    $('#permCheckboxes').show();
-		    $('#leaderStatusRow').show();
-		}
-		else{
-		    $("#currentPerms").show();
-		}
+			if(canChangePermissions(user_id)){
+			    $('#permCheckboxes').show();
+			    $('#leaderStatusRow').show();
+
+			}
+			else{
+			    $("#currentPerms").show();
+
+			}
 	    }
 
 	    var addSolver = data.perm.addSolver;
@@ -718,10 +730,10 @@ function setUpButtons() {
 	    
 	    
 	    if(lastSelectedUserId == null){
-		showMessage('error','No user selected',5000);
+	    	showMessage('error','No user selected',5000);
 	    }
 	    else{
-		getPermissionDetails(lastSelectedUserId,spaceId);
+	    	getPermissionDetails(lastSelectedUserId,spaceId);
 	    }
 	    
 
@@ -751,8 +763,79 @@ function setUpButtons() {
 		    }
 		});
 	});
+    
+    
+    $("#makePublic").click(function(){
+		// Display the confirmation dialog
+		$('#dialog-confirm-change-txt').text('do you want to make the single space public or the hierarchy?');
+		$('#dialog-confirm-change').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space': function(){
+					$.post(
+							starexecRoot+"services/space/changePublic/" + spaceId + "/" + false+"/"+!currentSpacePublic,
+							{},
+							function(returnCode) {
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location.reload(true);
+								} else {
+									$(this).dialog("close");
+								}
+							},
+							"json"
+					);
+				},
+				'hierarchy': function(){
+					$.post(
+							starexecRoot+"services/space/changePublic/" + spaceId + "/" + true+"/"+!currentSpacePublic,
+							{},
+							function(returnCode) {
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location.reload(true);
+								} else {
+									$(this).dialog("close");
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled making public action');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+	
 }
 	
 
+function handlePublicButton(id) {
+	$('#loader').show();
+	$.post(  
+			starexecRoot+"services/space/isSpacePublic/" + id,  
+			function(returnCode){
+				$("#makePublic").show(); //the button may be hidden if the user is coming from another space
+				switch(returnCode){
+				case 0:
 
+					currentSpacePublic=false;
+					setJqueryButtonText("#makePublic","make public");
+					break;
+				case 1:
+					currentSpacePublic=true;
+					setJqueryButtonText("#makePublic","make private");
+					break;
+				}	
+			},  
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error getting determining whether space is public",5000);
+		$('#makePublic').fadeOut('fast');
+	});
+}
 

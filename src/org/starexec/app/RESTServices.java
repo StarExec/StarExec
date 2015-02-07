@@ -1001,7 +1001,6 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {	
 		log.debug("got a request to getPrimitiveDetailsPaginated!");
-		
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
@@ -3627,34 +3626,21 @@ public class RESTServices {
 	 * @author Ruoyu Zhang 
 	 */
 	@POST
-	@Path("/space/makePublic/{id}/{hierarchy}")
+	@Path("/space/changePublic/{id}/{hierarchy}/{makePublic}")
 	@Produces("application/json")	
-	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
+	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @PathParam("makePublic") boolean makePublic, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		if(Spaces.setPublicSpace(spaceId, userId, true, hierarchy))
+		ValidatorStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, userId);
+		if (!status.isSuccess()){
+			return gson.toJson(status);
+		}
+		if(Spaces.setPublicSpace(spaceId, userId, makePublic, hierarchy))
 			return gson.toJson(new ValidatorStatusCode(true,"Space(s) successfully made public"));
 		else
 			return gson.toJson(new ValidatorStatusCode(false, "Internal database error when making spaces public"));
 	}
 	
-	/**
-	 * Make a space private
-	 * @param spaceId the space to be made private
-	 * @param request the http request
-	 * @return 0: fails
-	 *         1: success
-	 * @author Ruoyu Zhang 
-	 */
-	@POST
-	@Path("/space/makePrivate/{id}/{hierarchy}")
-	@Produces("application/json")
-	public String makePrivate(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		if(Spaces.setPublicSpace(spaceId, userId, false, hierarchy))
-			return gson.toJson(new ValidatorStatusCode(true,"Space(s) successfully made private"));
-		else
-			return gson.toJson(new ValidatorStatusCode(false, "Internal database error when making spaces private"));
-	}
+	
 	
 	/**
 	 * Is a space public

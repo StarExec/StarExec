@@ -2,6 +2,11 @@ package org.starexec.command;
 
 import java.util.HashMap;
 
+/**
+ * This class holds constants for the StarexecCommand file.
+ * @author Eric
+ *
+ */
 public class R {
 	
 	public static String VERSION="1/31/2015-1";
@@ -30,7 +35,7 @@ public class R {
     public static String URL_UPLOADJOBXML="secure/upload/jobXML";
 	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
-	public static String URL_EDITSPACEVISIBILITY="services/space";
+	public static String URL_EDITSPACEVISIBILITY="services/space/changePublic";
 	public static String URL_UPLOADCONFIG="secure/upload/configurations";
 	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";

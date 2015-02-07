@@ -704,9 +704,6 @@ class ArgumentParser {
 		return uploadProcessor(commandParams, "bench");
 	}
 	
-	protected int uploadPreProc(HashMap<String,String> commandParams) {
-		return uploadProcessor(commandParams,"pre");
-	}
 	
 	/**
 	 * This function handles user requests for uploading an xml archive (space or job).

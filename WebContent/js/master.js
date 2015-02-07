@@ -312,3 +312,9 @@ function parseReturnCode(code,printMessage) {
 	
 	return s;
 }
+
+//TODO: might want to factor this into some sort of utility file?
+function setJqueryButtonText(buttonSelector,txt) {
+	$(buttonSelector+" .ui-button-text").html(txt);
+
+}

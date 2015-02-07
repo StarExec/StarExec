@@ -23,7 +23,7 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 	public static enum ExecutableType {
 		
 		SOLVER(1), 
-		PREPROC(2), 
+		TRANSFORMER(2), 
 		RESULTCHECKER(3),
 		OTHER(4);
 		
@@ -42,7 +42,7 @@ public class Solver extends Identifiable implements Iterable<Configuration> {
 				case 1:
 					return SOLVER;
 				case 2:
-					return PREPROC;
+					return TRANSFORMER;
 				case 3:
 					return RESULTCHECKER;
 			    case 4:

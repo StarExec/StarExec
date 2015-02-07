@@ -404,7 +404,7 @@ public class Connection {
 	 * @param desc A description for the processor
 	 * @param filePath An absolute file path to the file to upload
 	 * @param communityID The ID of the community that will be given the processor
-	 * @param type Must be "post" "pre" or "bench"
+	 * @param type Must be "post" or "bench"
 	 * @return The positive integer ID assigned the new processor on success, or a negative
 	 * error code on failure
 	 */
@@ -919,14 +919,8 @@ public class Connection {
 	 */
 	protected int setSpaceVisibility(Integer spaceID,Boolean hierarchy, Boolean setPublic) {
 		try {
-			String pubOrPriv="";
-			//these strings are specified in StarExec
-			if (setPublic) {
-				pubOrPriv="makePublic";
-			} else {
-				pubOrPriv="makePrivate";
-			}
-			HttpPost post=new HttpPost(baseURL+R.URL_EDITSPACEVISIBILITY+"/"+pubOrPriv +"/"+spaceID.toString() +"/" +hierarchy.toString());
+			
+			HttpPost post=new HttpPost(baseURL+R.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
 			post=(HttpPost) setHeaders(post);
 			HttpResponse response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());

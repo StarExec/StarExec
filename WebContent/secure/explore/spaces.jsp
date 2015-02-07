@@ -153,8 +153,6 @@
 				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
 				<li><a class="btnEdit" id="editSpacePermissions" href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
-				<li><a class="btnRun" id="makePublic">make public</a></li>
-				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
 				<!-- <li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>-->
 				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
@@ -164,9 +162,7 @@
 		</fieldset>	
 
 	</div>	
-	<div id="dialog-confirm-change" title="confirm change">
-		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
-	</div>
+	
 	<div id="dialog-confirm-copy" title="confirm copy">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
