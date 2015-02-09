@@ -558,6 +558,17 @@ public class RESTServices {
 		
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
+
+
+	/**
+	 * @return a 
+	 */
+	@GET
+	@Path("/space/community/{spaceId}")
+	@Produces("application/json")
+	public String getCommunityIdOfSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+		return gson.toJson(Spaces.getCommunityOfSpace(spaceId));	
+	}
 	
 	/**
 	 * @return a json string representing permissions within a particular space for a user
