@@ -449,7 +449,7 @@ public class UploadSolver extends HttpServlet {
 			boolean goodExtension=false;
 			String fileName=null;
 			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
-				fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
+				fileName = FilenameUtils.getName(((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName());
 				
 			} else {
 				fileName=(String)form.get(UploadSolver.FILE_URL);
