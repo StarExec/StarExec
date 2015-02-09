@@ -101,7 +101,6 @@ public class UploadJobXML extends HttpServlet {
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 			
 			uniqueDir.mkdirs();
-			
 			//Process the archive file and extract
 		
 			File archiveFile = new File(uniqueDir,  item.getName());

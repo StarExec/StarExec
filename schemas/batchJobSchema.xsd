@@ -18,9 +18,11 @@
     </complexType>
     
     <complexType name="PipelineStage">    	
-    	<attribute name="executable" type="int" use="required"></attribute>
-    	
-    
+    	<sequence>
+    	    	<element name="stageDependency" minOccurs="0" maxOccurs="unbounded"></element>
+    			<element name="benchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+        <attribute name="executable" type="int" use="required"></attribute>
     </complexType>
     
     <element name="Jobs" type="tns:Jobs"></element>
@@ -88,11 +90,16 @@
     <complexType name="booleanInfo">
       <attribute name="value" type="boolean" use="required"></attribute>
     </complexType>
-
+	
     <complexType name="doubleInfo">
       <attribute name="value" type="double" use="required"></attribute>
     </complexType>
-    
+    <complexType name="benchmarkDependency">
+    	<attribute name="input" type="int" use="required"></attribute>
+    </complexType>
+    <complexType name="stageDependency">
+    	<attribute name="stage" type="int" use="required"></attribute>
+    </complexType>
     <!-- end job attributes type definitions -->
 
     

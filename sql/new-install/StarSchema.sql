@@ -611,20 +611,69 @@ CREATE TABLE pipeline_stages (
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
 	CONSTRAINT pipeline_stages_solver_id FOREIGN KEY (executable_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
--- Stores any dependencies that pipeline stages have on benchmarks or previous artifacts
-CREATE TABLE pipeline_dependencies (
-	stage_id INT NOT NULL, -- ID of a pipeline_stage
-	input_id INT NOT NULL, -- which input needs to be passed into this stage
-	PRIMARY KEY (stage_id, input_id),
+
+-- Stores any dependencies that a particular stage has.
+CREATE TABLE pipeline_depenencies (
+	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
+	
+	input_type INT NOT NULL, -- ID of the stage that produces the output
+	input_id INT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
+						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
+	input_number INT NOT NULL, -- which input to the stage is this? First input, second input, and so on
+	PRIMARY KEY (stage_id, input_number), -- obviously a given stage may only have one dependency per number
 	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
 );
 
 CREATE TABLE jobline_inputs (
 	jobline_id INT NOT NULL, -- ID of a jobline
 	input_id INT NOT NULL,   -- number of this input
-	dependency_id INT NOT NULL, -- ID of the dependency (maybe a benchmark ID, maybe something else)
-	dependency_type INT NOT NULL -- type of the dependency (benchmark, artifact, maybe others)
+	dependency_id INT NOT NULL, -- ID of the benchmark
 );
+/*
+-- Table which contains information that is useful for the top level of a jobline
+-- Other data, like timeouts, time taken, max memory, and so on is kept at the stage level
+
+CREATE TABLE joblines (
+	id INT NOT NULL AUTO_INCREMENT,	
+	job_id INT NOT NULL,
+	sge_id INT,
+	pipeline_id INT NOT NULL,
+	bench_id INT,
+	bench_name VARCHAR(255),
+	status_code TINYINT DEFAULT 0,
+	node_id INT,
+	queuesub_time TIMESTAMP DEFAULT 0,
+	start_time TIMESTAMP DEFAULT 0,
+	end_time TIMESTAMP DEFAULT 0,
+	exit_status INT,
+	job_space_id INT,
+	path VARCHAR(2048),
+	sandbox_num INT,
+	PRIMARY KEY(id),
+	KEY(sge_id),
+	KEY (job_space_id, bench_name),
+	KEY (node_id, status_code),
+	KEY (status_code), -- TODO: Do we actually want this change
+	CONSTRAINT joblines_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
+	CONSTRAINT joblines_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index
+	CONSTRAINT joblines_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES pipelines(id) ON DELETE NO ACTION
+);
+-- todo: should timeouts be here?
+CREATE TABLE jobline_stage (
+	jobline_id INT NOT NULL,
+	stage_id INT NOT NULL,
+	wallclock DOUBLE,
+	cpu DOUBLE,
+	cpuTimeout INT,
+	clockTimeout INT,
+	maximum_memory BIGINT DEFAULT 1073741824,
+	mem_usage DOUBLE,
+	max_vmem DOUBLE,
+	PRIMARY KEY (jobline_id, stage_id),
+	FOREIGN KEY jobline_stage_jobline_id (jobline_id) REFERENCES joblines(id) ON DELETE CASCADE,
+	FOREIGN KEY jobline_stage_stage_id (stage_id) REFERENCES pipeline_stages
+);*/
+
 
 -- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
 -- solver, benchmark, job, etc

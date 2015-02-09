@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.pipelines.*;
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineDependencyType;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 
 /**
  * Class responsible for inserting and removing pipelines from the database
@@ -37,7 +37,7 @@ public class Pipelines {
 				PipelineDependency dep=new PipelineDependency();
 				dep.setStageId(stageId);
 				dep.setDependencyId(results.getInt("dependency_id"));
-				dep.setType(PipelineDependencyType.valueOf(results.getInt("dependency_type")));
+				dep.setType(PipelineInputType.valueOf(results.getInt("dependency_type")));
 				answers.add(dep);
 			}
 			return answers;
@@ -125,10 +125,11 @@ public class Pipelines {
 	public static boolean addDependencyToDatabase(PipelineDependency dep, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddPipelineDependency(?,?,?)}");
+			procedure=con.prepareCall("{CALL AddPipelineDependency(?,?,?,?)}");
 			procedure.setInt(1,dep.getStageId());
 			procedure.setInt(2,dep.getDependencyId());
 			procedure.setInt(3,dep.getType().getVal());
+			procedure.setInt(4,dep.getInputNumber());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {

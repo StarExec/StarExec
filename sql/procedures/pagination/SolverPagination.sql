@@ -13,7 +13,7 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				-- Exclude solvers whose name and description don't contain the query string
 				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
 				OR		description	LIKE 	CONCAT('%', _query, '%')
@@ -31,7 +31,7 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
 				OR		description			LIKE 	CONCAT('%', _query, '%')
@@ -45,7 +45,7 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				-- Exclude solvers whose name and description don't contain the query string
 				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
 				OR		description	LIKE 	CONCAT('%', _query, '%')
@@ -63,7 +63,7 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
 				OR		description			LIKE 	CONCAT('%', _query, '%')
 				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
@@ -77,7 +77,7 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				-- Exclude solvers whose name and description don't contain the query string
 				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
@@ -96,7 +96,7 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
 				OR		description			LIKE 	CONCAT('%', _query, '%')
 				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
@@ -121,7 +121,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				FROM	solvers 
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type		
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type		
 				
 				
 				where user_id = _userId and deleted=false AND recycled=_recycled
@@ -139,7 +139,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				SELECT 	*
 						
 				FROM	solvers 
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				where user_id = _userId and deleted=false AND recycled=_recycled
 				
@@ -156,7 +156,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				SELECT 	*
 				
 				FROM	solvers 
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				
 				where user_id = _userId and deleted=false AND recycled=_recycled
@@ -174,7 +174,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				SELECT 	*
 						
 				FROM	solvers 
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				
 				where user_id = _userId and deleted=false AND recycled=_recycled
@@ -191,7 +191,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				SELECT 	*
 				
 				FROM	solvers 
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				
 				where user_id = _userId and deleted=false AND recycled=_recycled
@@ -209,7 +209,7 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 				SELECT 	*
 						
 				FROM	solvers
-				INNER JOIN executable_types AS types ON executable_types.type_id=solvers.executable_type
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
 				where user_id = _userId and deleted=false AND recycled=_recycled
 				

@@ -8,7 +8,7 @@ public class PipelineDependency {
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */
-	public static enum PipelineDependencyType {
+	public static enum PipelineInputType {
 		
 		BENCHMARK(1), 
 		ARTIFACT(2);  //type for the output from a previous stage
@@ -16,7 +16,7 @@ public class PipelineDependency {
 		
 		private int val;
 		
-		private PipelineDependencyType(int val) {
+		private PipelineInputType(int val) {
 			this.val = val;
 		}
 		
@@ -24,7 +24,7 @@ public class PipelineDependency {
 			return this.val;
 		}
 		
-		public static PipelineDependencyType valueOf(int val) {
+		public static PipelineInputType valueOf(int val) {
 			switch(val) {			
 				case 1:
 					return BENCHMARK;
@@ -39,9 +39,11 @@ public class PipelineDependency {
 	
 	
 	
-	private int stageId;
-	private int dependencyId;
-	private PipelineDependencyType type;
+	private int stageId; // the stage this dependency is for
+	private int dependencyId; // either a 1-indexed number of a stage in a pipeline if the type is "artifact" 
+						 	  // or a 1-indexed number indicating which of the benchmarks a user has uploaded
+	private PipelineInputType type; // whether this is a benchmark or artifact
+	private int inputNumber; // whether this is the first, second... or so on input
 	
 	
 	
@@ -58,11 +60,17 @@ public class PipelineDependency {
 	public void setDependencyId(int dependency_id) {
 		this.dependencyId = dependency_id;
 	}
-	public PipelineDependencyType getType() {
+	public PipelineInputType getType() {
 		return type;
 	}
-	public void setType(PipelineDependencyType type) {
+	public void setType(PipelineInputType type) {
 		this.type = type;
+	}
+	public int getInputNumber() {
+		return inputNumber;
+	}
+	public void setInputNumber(int inputNumber) {
+		this.inputNumber = inputNumber;
 	}
 	
 }

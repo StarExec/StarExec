@@ -38,6 +38,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.pipelines.*;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.DOMHelper;
 import org.w3c.dom.Document;
@@ -163,7 +164,25 @@ public class JobUtil {
 			Element stage=(Element)stages.item(i);
 			PipelineStage s=new PipelineStage();
 			s.setExecutableId(Integer.parseInt(stage.getAttribute("executable")));
-			
+			NodeList dependencies=stage.getChildNodes();
+			int inputNumber=0;
+			for (int x=0;x<dependencies.getLength();x++) {
+				Node t=stages.item(x);
+				if (t.getNodeType() == Node.ELEMENT_NODE) {
+					inputNumber++;
+					Element dependency = (Element) t;
+					PipelineDependency dep = new PipelineDependency();
+					dep.setInputNumber(inputNumber);
+					if (dependency.getTagName().equals("stageDependency")) {
+						dep.setType(PipelineInputType.ARTIFACT);
+						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("stage")));
+
+					} else {
+						dep.setType(PipelineInputType.BENCHMARK);
+						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
+					}
+				}
+			}
 			stageList.add(s);
 		}
 		pipeline.setStages(stageList);

@@ -34,11 +34,14 @@ CREATE TABLE pipeline_stages (
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
 	CONSTRAINT pipeline_stages_solver_id FOREIGN KEY (executable_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
--- Stores any dependencies that pipeline stages have on benchmarks or previous artifacts
-CREATE TABLE pipeline_dependencies (
-	stage_id INT NOT NULL,
-	dependency_id INT NOT NULL, -- id of either the benchmark or pipeline stage that is a dependency
-	dependency_type INT NOT NULL, -- type of the dependency (which is either a benchmark or previous artifact)
-	PRIMARY KEY (stage_id, dependency_id,dependency_type),
+-- Stores any dependencies that a particular stage has.
+CREATE TABLE pipeline_depenencies (
+	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
+	
+	input_type INT NOT NULL, -- ID of the stage that produces the output
+	input_id INT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
+						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
+	input_number INT NOT NULL, -- which input to the stage is this? First input, second input, and so on
+	PRIMARY KEY (stage_id, input_number), -- obviously a given stage may only have one dependency per number
 	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
 );

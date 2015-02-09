@@ -46,9 +46,9 @@ CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _eid INT, OUT _id INT)
 
 -- Adds a dependency for an existing stage. 
 DROP PROCEDURE IF EXISTS AddPipelineDependency;
-CREATE PROCEDURE AddPipelineDependency(IN _sid INT, IN _did INT, IN _type INT)
+CREATE PROCEDURE AddPipelineDependency(IN _sid INT, IN _iid INT, IN _type INT, IN _num INT)
 	BEGIN
-		INSERT INTO pipeline_dependencies (stage_id, dependency_id, dependency_type) VALUES (_sid, _did,_type);
+		INSERT INTO pipeline_dependencies (stage_id, input_id, input_type, input_number) VALUES (_sid, _iid,_type, _num);
 
 	END //
 	
