@@ -627,7 +627,7 @@ CREATE TABLE pipeline_depenencies (
 CREATE TABLE jobline_inputs (
 	jobline_id INT NOT NULL, -- ID of a jobline
 	input_id INT NOT NULL,   -- number of this input
-	dependency_id INT NOT NULL, -- ID of the benchmark
+	dependency_id INT NOT NULL -- ID of the benchmark
 );
 /*
 -- Table which contains information that is useful for the top level of a jobline
