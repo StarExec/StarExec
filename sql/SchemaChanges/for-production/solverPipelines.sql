@@ -37,7 +37,7 @@ CREATE TABLE pipeline_stages (
 	CONSTRAINT pipeline_stages_solver_id FOREIGN KEY (executable_id) REFERENCES solvers(id) ON DELETE CASCADE
 );
 -- Stores any dependencies that a particular stage has.
-CREATE TABLE pipeline_depenencies (
+CREATE TABLE pipeline_dependencies (
 	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
 	
 	input_type INT NOT NULL, -- ID of the stage that produces the output

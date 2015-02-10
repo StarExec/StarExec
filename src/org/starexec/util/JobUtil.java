@@ -171,7 +171,7 @@ public class JobUtil {
 			NodeList dependencies=stage.getChildNodes();
 			int inputNumber=0;
 			for (int x=0;x<dependencies.getLength();x++) {
-				Node t=stages.item(x);
+				Node t=dependencies.item(x);
 				if (t.getNodeType() == Node.ELEMENT_NODE) {
 					inputNumber++;
 					Element dependency = (Element) t;
