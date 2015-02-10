@@ -173,20 +173,23 @@ public class JobUtil {
 			for (int x=0;x<dependencies.getLength();x++) {
 				Node t=dependencies.item(x);
 				if (t.getNodeType() == Node.ELEMENT_NODE) {
-					inputNumber++;
+					log.debug("found a pipeline stage dependency");
 					Element dependency = (Element) t;
 					PipelineDependency dep = new PipelineDependency();
 					dep.setInputNumber(inputNumber);
 					if (dependency.getTagName().equals("stageDependency")) {
+						inputNumber++;
+
 						dep.setType(PipelineInputType.ARTIFACT);
 						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("stage")));
 
 					} else if (dependency.getTagName().equals("benchmarkDependency")) {
+						inputNumber++;
+
 						dep.setType(PipelineInputType.BENCHMARK);
 						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
-					} else {
-						log.warn("the following bad dep was found "+dependency.getTagName());
 					}
+					s.addDependency(dep);
 					
 				}
 			}
