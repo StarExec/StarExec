@@ -23,6 +23,7 @@
     			<element name="benchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>
         <attribute name="executable" type="int" use="required"></attribute>
+        <attribute name="keepoutput" type="boolean" use="optional"></attribute>
     </complexType>
     
     <element name="Jobs" type="tns:Jobs"></element>

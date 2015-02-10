@@ -36,9 +36,9 @@ CREATE PROCEDURE AddPipeline(IN _uid INT, IN _name VARCHAR(128), OUT _id INT)
 -- pipelines must be added to the database in the order that they are to be used in the pipeline
 -- to ensure that the AUTO_INCREMENT IDs are ordered
 DROP PROCEDURE IF EXISTS AddPipelineStage;
-CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _eid INT, OUT _id INT)
+CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _eid INT, IN _keep BOOLEAN, OUT _id INT)
 	BEGIN
-		INSERT INTO pipeline_stages (pipeline_id, executable_id) VALUES (_pid, _eid);
+		INSERT INTO pipeline_stages (pipeline_id, executable_id, keep_output) VALUES (_pid, _eid,_keep);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 

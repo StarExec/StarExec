@@ -152,12 +152,13 @@ public class Pipelines {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?)}");
+			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
 			procedure.setInt(2,stage.getExecutableId());
-			procedure.registerOutParameter(3, java.sql.Types.INTEGER);
+			procedure.setBoolean(3, stage.doKeepOutput());
+			procedure.registerOutParameter(4, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			int id = procedure.getInt(3);			
+			int id = procedure.getInt(4);			
 			stage.setId(id);
 			
 			for (PipelineDependency dep : stage.getDependencies()) {

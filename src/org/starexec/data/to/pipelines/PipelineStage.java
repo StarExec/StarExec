@@ -9,6 +9,7 @@ public class PipelineStage extends Identifiable {
 
 	private int pipelineId;
 	private int executableId;
+	private boolean keepOutput;
 	private List<PipelineDependency> dependencies;
 	
 	public PipelineStage() {
@@ -34,5 +35,16 @@ public class PipelineStage extends Identifiable {
 
 	public void setDependencies(List<PipelineDependency> dependencies) {
 		this.dependencies = dependencies;
+	}
+	public void addDependency(PipelineDependency dep) {
+		this.dependencies.add(dep);
+	}
+
+	public boolean doKeepOutput() {
+		return keepOutput;
+	}
+
+	public void setKeepOutput(boolean keepOutput) {
+		this.keepOutput = keepOutput;
 	}
 }

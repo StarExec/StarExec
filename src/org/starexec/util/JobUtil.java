@@ -163,7 +163,11 @@ public class JobUtil {
 		for (int i=0;i<stages.getLength();i++) {
 			Element stage=(Element)stages.item(i);
 			PipelineStage s=new PipelineStage();
+			s.setKeepOutput(false);
 			s.setExecutableId(Integer.parseInt(stage.getAttribute("executable")));
+			if (stage.hasAttribute("keepoutput")) {
+				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
+			}
 			NodeList dependencies=stage.getChildNodes();
 			int inputNumber=0;
 			for (int x=0;x<dependencies.getLength();x++) {
@@ -177,10 +181,13 @@ public class JobUtil {
 						dep.setType(PipelineInputType.ARTIFACT);
 						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("stage")));
 
-					} else {
+					} else if (dependency.getTagName().equals("benchmarkDependency")) {
 						dep.setType(PipelineInputType.BENCHMARK);
 						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
+					} else {
+						log.warn("the following bad dep was found "+dependency.getTagName());
 					}
+					
 				}
 			}
 			stageList.add(s);

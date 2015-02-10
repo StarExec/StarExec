@@ -607,6 +607,7 @@ CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
 	executable_id INT NOT NULL,
+	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
 	CONSTRAINT pipeline_stages_solver_id FOREIGN KEY (executable_id) REFERENCES solvers(id) ON DELETE CASCADE
