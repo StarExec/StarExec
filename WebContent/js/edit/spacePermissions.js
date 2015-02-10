@@ -1,5 +1,6 @@
 /** Global Variables */
 var userTable;
+var addUsersTable;
 var spaceId = 1;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
@@ -59,7 +60,6 @@ $(document).ready(function(){
 	usingSpaceChain=(getSpaceChain("#spaceChain").length>1);
 
 	communityIdList=getCommunityIdList();
-
 	
 	 // Build left-hand side of page (space explorer)
 	 initSpaceExplorer();
@@ -95,9 +95,9 @@ function getCommunityIdList(){
     list = new Array();
     spaces = $("#communityIdList").attr("value").split(",");
     for(i=0;i < spaces.length; i++){
-	if(spaces[i].trim().length > 0){
-	    list[i] = spaces[i];
-	}
+		if(spaces[i].trim().length > 0){
+			list[i] = spaces[i];
+		}
     }
     return list
 
@@ -207,8 +207,10 @@ function initSpaceExplorer(){
 			}).bind("open_node.jstree",function(event,data) {
 				openDone=true;
 			});
+	$('#exploreList').click(function() {
+		
+	});
 }
-
 
 
 /**
@@ -221,30 +223,53 @@ function initSpaceExplorer(){
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var tableName = $(this).attr('id');
+	log("Populating table " + tableName);
 	
 	// Extract the id of the currently selected space from the DOM
-	var idOfSelectedSpace = $('#exploreList').find('.jstree-clicked').parent().attr("id");
+	var idOfSelectedSpace = getIdOfSelectedSpace();
 
 	// If we can't find the id of the space selected from the DOM, just do not populate the table
 	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
 		return;
 	}
 	
+	fillTableWithPaginatedPrimitives(tableName, 'users', idOfSelectedSpace, sSource, aoData, fnCallback);
+}
 
-	// Request the next page of primitives from the server via AJAX
+function addUsersPaginationHandler(sSource, aoData, fnCallback) {
+	var tableName = $(this).attr('id');
+	log("Populating table " + tableName);
+
+	// Extract the id of the currently selected space from the DOM
+	var idOfSelectedSpace = getIdOfSelectedSpace();
+
+	$.get(starexecRoot + 'services/space/community/' + idOfSelectedSpace, function(communityIdOfSelectedSpace) {
+		fillTableWithPaginatedPrimitives(tableName, 'users', communityIdOfSelectedSpace, sSource, aoData, fnCallback);
+	});
+}
+
+/**
+ * Gets paginated primitives from the server and fills the table with it. Called from pagination handlers.
+ * @param tableName The name of the table being filled.
+ * @param primitiveType The type of primitive the table holds ('users', 'benchmarks', etc)
+ * @param spaceId The space id of the space to get the primitives from.
+ * @param sSource the "sAjaxSource" of the calling table
+ * @param aoData the parameters of the DataTable object to send to the server
+ * @param fnCallback the function that actually maps the returned page to the DataTable object
+ */
+function fillTableWithPaginatedPrimitives(tableName, primitiveType, spaceId, sSource, aoData, fnCallback) {
 	$.post(  
-			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
+			sSource + spaceId + "/" + primitiveType + "/pagination",
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
-				// Update the number displayed in this DataTable's fieldset
-				updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
+					// Update the number displayed in this DataTable's fieldset
+					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords, 'user');
+					
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
 				}
-
 			},  
 			"json"
 	).error(function(){
@@ -252,22 +277,30 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	});
 }
 
+function getIdOfSelectedSpace() {
+	return $('#exploreList').find('.jstree-clicked').parent().attr("id");
+}
+
 /**
- * Helper function for fnPaginationHandler; since the proper fieldset to update
- * cannot be reliably found via jQuery DOM navigation from fnPaginationHandler,
+ * Helper function for the pagination handlers; since the proper fieldset to update
+ * cannot be reliably found via jQuery DOM navigation from pagination handlers,
  * this method providemanually updates the appropriate fieldset to the new value
  * 
  * @param tableName the name of the table whose fieldset we want to update (not in jQuery id format)
- * @param primCount the new value to update the fieldset with
+ * @param value the new value to update the fieldset with
+ * @param primType the type of primitive the table holds
  * @author Todd Elvers
  */
-function updateFieldsetCount(tableName, value){
-	switch(tableName[0]){
+function updateFieldsetCount(tableName, value, primType){
+	switch(primType[0]){
 	case 'j':
 		$('#jobExpd').children('span:first-child').text(value);
 		break;
 	case 'u':
-		$('#userExpd').children('span:first-child').text(value);
+		// Base selector on table's legend as well as userExpd class since there are
+		// multiple elements with userExpd class.
+		var legendSelector = '#'+tableName+'Legend';
+		$(legendSelector+'.userExpd').children('span:first-child').text(value);
 		break;
 	case 's':
 		if('o' == tableName[1]) {
@@ -302,9 +335,18 @@ function initDataTables(){
 		"fnServerData"	: fnPaginationHandler
 	});
 
-	
 
-	var tables=["#users"];
+	addUsersTable = $('#addUsers').dataTable({
+		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"iDisplayStart"	: 0,
+		"iDisplayLength": defaultPageSize,
+		"bServerSide"	: true,
+		"sAjaxSource"	: starexecRoot+"services/space/",
+		"sServerMethod" : 'POST',
+		"fnServerData"	: addUsersPaginationHandler
+	});
+
+	var tables=["#users", "#addUsers"];
 
 	function unselectAll(except) {
 		var tables=["#users"];
@@ -331,10 +373,11 @@ function initDataTables(){
 		var sid = spaceId;
 		lastSelectedUserId = uid;
 		getPermissionDetails(uid,sid);
-	    });
+	});
 	
-	//Move to the footer of the Table
+	//Move select all/none buttons to the footer of the Table
 	$('#userField div.selectWrap').detach().prependTo('#userField div.bottom');
+	$('#addUsersField div.selectWrap').detach().prependTo('#addUsersField div.bottom');
 
 	
 	//Hook up select all/ none buttons
@@ -349,7 +392,7 @@ function initDataTables(){
 
 	// Set the DataTable filters to only query the server when the user finishes typing
 	userTable.fnFilterOnDoneTyping();
-
+	addUsersTable.fnFilterOnDoneTyping();
 
 	log('all datatables initialized');
 }
@@ -395,6 +438,19 @@ function getSpaceDetails(id) {
 	});
 }
 
+function getPermissionDetails(user_id, space_id) {	
+	$.get(  
+		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
+		function(data){  			
+		    populatePermissionDetails(data, user_id);			
+		},  
+		"json"
+	).error(function(){
+		showMessage('error',"Internal error getting selectd user's permission details",5000);
+	});
+}
+
+
 
 
 /**
@@ -407,8 +463,8 @@ function populateSpaceDetails(jsonData, id) {
 	// If the space is null, the user can see the space but is not a member
 	if(jsonData.space == null) {
 		// Go ahead and show the space's name
-		$('#spaceName').fadeOut('fast', function(){
-			$('#spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
+		$('.spaceName').fadeOut('fast', function(){
+			$('.spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
 		});
 
 		// Show a message why they can't see the space's details
@@ -438,8 +494,8 @@ function populateSpaceDetails(jsonData, id) {
 	}
 
 	// Populate space defaults
-	$('#spaceName').fadeOut('fast', function(){
-		$('#spaceName').text(jsonData.space.name).fadeIn('fast');
+	$('.spaceName').fadeOut('fast', function(){
+		$('.spaceName').text(jsonData.space.name).fadeIn('fast');
 	});
 	$('#spaceLeader').fadeOut('fast', function(){
 		if(curIsLeader && (spaceId != "1")){
@@ -468,6 +524,7 @@ function populateSpaceDetails(jsonData, id) {
 	 * primitives, and update the number displayed in every table's fieldset.
 	 */
 	userTable.fnDraw();
+	addUsersTable.fnDraw();
 
 	// Done loading, hide the loader
 	$('#loader').hide();
@@ -475,12 +532,11 @@ function populateSpaceDetails(jsonData, id) {
 	log('Client side UI updated with details for ' + spaceName);
 }
 
-
 function getPermissionDetails(user_id, space_id) {	
 	$.get(  
 		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
 		function(data){  			
-		    populateDetails(data, user_id);			
+		    populatePermissionDetails(data, user_id);			
 		},  
 		"json"
 	).error(function(){
@@ -504,7 +560,7 @@ function canChangePermissions(user_id){
     	return false;
     }
 }
-function populateDetails(data, user_id) {
+function populatePermissionDetails(data, user_id) {
 	if (data.perm == null) {
 	    showMessage("error","permissions seem to be null",5000);
 	} else {
@@ -584,6 +640,64 @@ function populateDetails(data, user_id) {
 	    }
 	}
 	
+}
+
+/**
+ * Populates addUsers table with members of community that the current space resides in.
+ * @author Albert Giegerich
+ */
+/*
+function populateAddUsersTable(communityId) {
+	$('#loader').show();
+	$.get(  
+		starexecRoot+"services/communities/details/" + communityId,  
+		function(data){  			
+			populateAddUsersTableCallback(data);
+		},  
+		"json"
+	).error(function(){
+		showMessage('error',"Internal error getting community details",5000);
+	});
+}
+
+function populateAddUsersTableCallback(jsonData) {
+	$('#addUsersField legend').children('span:first-child').text(jsonData.space.users.length);
+	// addUsersTable.fnClearTable();	
+	
+	$.each(jsonData.space.users, function(i, user) {
+		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
+		var fullName = user.firstName + ' ' + user.lastName;
+		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>' + hiddenUserId;
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>';			
+		if (!user.isPublic) {
+			addUsersTable.fnAddData([userLink, user.institution, emailLink]);
+		} else {
+			$('#addUsersField legend').children('span:first-child').text(jsonData.space.users.length-1);
+		}
+		
+	});
+	
+	// Done loading, hide the loader
+	$('#loader').hide();	
+}
+*/
+
+
+function isRoot(space_id){
+    return space_id == "1";
+}
+
+function isCommunity(space_id){
+    return ($.inArray(space_id.toString(),communityIdList) != -1);
+}
+
+function canChangePermissions(user_id){
+    if(curIsLeader && !isRoot(spaceId) && (user_id != currentUserId)){
+	return true;
+    }
+    else{
+	return false;
+    }
 }
 
 function checkBoxes(name, value) {
@@ -763,7 +877,37 @@ function setUpButtons() {
 		    }
 		});
 	});
-    
+	
+	$('#addUsersButton').unbind('click');
+	$('#addUsersButton').click(function(e) {
+		var selectedUsersIds = getSelectedRows(addUsersTable);
+		var currentSpace = spaceId;
+		var communityId = getSpaceChain('#spaceChain')[1];
+		$('#dialog-confirm-update-txt').text('do you want to copy the selected users to '
+			+ spaceName + ' and all of its subspaces or just to ' + spaceName + '?');
+		$('#dialog-confirm-update').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'space hierarchy': function() {
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-update').dialog('close');
+					// Make the request to the server	
+					doUserCopyPost(selectedUsersIds,spaceId,communityId,true,doUserCopyPostCB);
+				},
+				'space': function(){
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-update').dialog('close');
+					doUserCopyPost(selectedUsersIds,spaceId,communityId,false, doUserCopyPostCB);
+				},
+				"cancel": function() {
+					log('user canceled copy action');
+					$(this).dialog("close");
+				}
+			}		
+		});		
+	});
     
     $("#makePublic").click(function(){
 		// Display the confirmation dialog
@@ -810,9 +954,40 @@ function setUpButtons() {
 			}
 		});
 	});
-	
+}
+
+function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces, callback){
+	$.post(  	    		
+		starexecRoot+'services/spaces/' + destSpace + '/add/user',
+		{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: copyToSubspaces},	
+		function(returnCode) {
+			parseReturnCode(returnCode);
+		},
+		"json"
+	).done(function() {
+		if (callback) {
+			callback();
+		}
+	}).fail(function(){
+		showMessage('error',"Internal error copying users",5000);
+	});				
+}
+
+/**
+ * helper function that redraws the userTable after a copy post.
+ */
+function doUserCopyPostCB() {
+	userTable.fnDraw();
 }
 	
+function getSelectedRows(dataTable){
+	var idArray = new Array();
+	var rows = $(dataTable).children('tbody').children('tr.row_selected');
+	$.each(rows, function(i, row) {
+		idArray.push($(this).children('td:first').children('input').val());
+	});
+	return idArray;
+}
 
 function handlePublicButton(id) {
 	$('#loader').show();
