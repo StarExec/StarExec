@@ -40,10 +40,10 @@ CREATE TABLE pipeline_stages (
 CREATE TABLE pipeline_dependencies (
 	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
 	
-	input_type INT NOT NULL, -- ID of the stage that produces the output
-	input_id INT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
+	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
+	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
 						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
-	input_number INT NOT NULL, -- which input to the stage is this? First input, second input, and so on
+	input_number SMALLINT NOT NULL, -- which input to the stage is this? First input, second input, and so on
 	PRIMARY KEY (stage_id, input_number), -- obviously a given stage may only have one dependency per number
 	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
 );
