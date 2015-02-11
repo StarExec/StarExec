@@ -882,6 +882,7 @@ public class BatchUtil {
 
 			    FileUtils.deleteQuietly(newSb);
 			    FileUtils.deleteQuietly(sb);
+			    FileUtils.deleteQuietly(renamedFile);
 			    
 			    updateIds.add(newBenchID);
 			  
