@@ -883,30 +883,44 @@ function setUpButtons() {
 		var selectedUsersIds = getSelectedRows(addUsersTable);
 		var currentSpace = spaceId;
 		var communityId = getSpaceChain('#spaceChain')[1];
-		$('#dialog-confirm-update-txt').text('do you want to copy the selected users to '
-			+ spaceName + ' and all of its subspaces or just to ' + spaceName + '?');
-		$('#dialog-confirm-update').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'space hierarchy': function() {
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-update').dialog('close');
-					// Make the request to the server	
-					doUserCopyPost(selectedUsersIds,spaceId,communityId,true,doUserCopyPostCB);
-				},
-				'space': function(){
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-update').dialog('close');
-					doUserCopyPost(selectedUsersIds,spaceId,communityId,false, doUserCopyPostCB);
-				},
-				"cancel": function() {
-					log('user canceled copy action');
-					$(this).dialog("close");
-				}
-			}		
-		});		
+		if (selectedUsersIds.length > 0) {
+			$('#dialog-confirm-update-txt').text('do you want to copy the selected users to '
+				+ spaceName + ' and all of its subspaces or just to ' + spaceName + '?');
+			$('#dialog-confirm-update').dialog({
+				modal: true,
+				width: 380,
+				height: 165,
+				buttons: {
+					'space hierarchy': function() {
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-update').dialog('close');
+						// Make the request to the server	
+						doUserCopyPost(selectedUsersIds,spaceId,communityId,true,doUserCopyPostCB);
+					},
+					'space': function(){
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-update').dialog('close');
+						doUserCopyPost(selectedUsersIds,spaceId,communityId,false, doUserCopyPostCB);
+					},
+					"cancel": function() {
+						log('user canceled copy action');
+						$(this).dialog("close");
+					}
+				}		
+			});		
+		} else {
+			$('#dialog-confirm-update-txt').text('select users to add to table.'); 
+			$('#dialog-confirm-update').dialog({
+				modal: true,
+				width: 380,
+				height: 165,
+				buttons: {
+					'ok': function() {
+						$(this).dialog("close");
+					}
+				}		
+			});
+		}
 	});
     
     $("#makePublic").click(function(){
