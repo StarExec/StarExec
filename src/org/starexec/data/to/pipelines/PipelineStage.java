@@ -8,7 +8,7 @@ import org.starexec.data.to.*;
 public class PipelineStage extends Identifiable {
 
 	private int pipelineId;
-	private int executableId;
+	private int configId;
 	private boolean keepOutput;
 	private List<PipelineDependency> dependencies;
 	
@@ -22,11 +22,11 @@ public class PipelineStage extends Identifiable {
 	public void setPipelineId(int pipelineId) {
 		this.pipelineId = pipelineId;
 	}
-	public int getExecutableId() {
-		return executableId;
+	public int getConfigId() {
+		return configId;
 	}
-	public void setExecutableId(int executableId) {
-		this.executableId = executableId;
+	public void setConfigId(int configId) {
+		this.configId = configId;
 	}
 
 	public List<PipelineDependency> getDependencies() {

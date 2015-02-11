@@ -67,7 +67,7 @@ public class Pipelines {
 			while (results.next()) {
 				PipelineStage stage=new PipelineStage();
 				stage.setPipelineId(pipeId);
-				stage.setExecutableId(results.getInt("executable_id"));
+				stage.setConfigId(results.getInt("config_id"));
 				stage.setId(results.getInt("stage_id"));
 				stage.setDependencies(getDependenciesForStage(stage.getId(),con));
 				stages.add(stage);
@@ -154,9 +154,10 @@ public class Pipelines {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
-			procedure.setInt(2,stage.getExecutableId());
+			procedure.setInt(2,stage.getConfigId());
 			procedure.setBoolean(3, stage.doKeepOutput());
 			procedure.registerOutParameter(4, java.sql.Types.INTEGER);
+			log.debug("trying ot use the config id = "+stage.getConfigId());
 			procedure.executeUpdate();
 			int id = procedure.getInt(4);			
 			stage.setId(id);
@@ -211,5 +212,30 @@ public class Pipelines {
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * Deletes a pipeline from the database, including deletion of all stages
+	 * and pipeline_dependencies entries
+	 * @param pipelineId The ID of the pipeline being deleted
+	 * @return
+	 */
+	public static boolean deletePipelineFromDatabase(int pipelineId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL DeletePipeline(?)}");
+			procedure.setInt(1,pipelineId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+		
 	}
 }

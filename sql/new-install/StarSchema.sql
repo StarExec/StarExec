@@ -260,8 +260,8 @@ CREATE TABLE job_pairs (
 	solver_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
-	cpuTimeout INT,
-	clockTimeout INT,
+	-- cpuTimeout INT,
+	-- clockTimeout INT,
 	queuesub_time TIMESTAMP DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
@@ -270,20 +270,20 @@ CREATE TABLE job_pairs (
 	cpu DOUBLE,
 	user_time DOUBLE,
 	system_time DOUBLE,
-	io_data DOUBLE,
-	io_wait DOUBLE,
+	-- io_data DOUBLE,
+	-- io_wait DOUBLE,
 	mem_usage DOUBLE,
 	max_vmem DOUBLE,
-	max_res_set DOUBLE,
-	page_reclaims DOUBLE,
-	page_faults DOUBLE,
-	block_input DOUBLE,
-	block_output DOUBLE,
-	vol_contex_swtch DOUBLE,
-	invol_contex_swtch DOUBLE,
+	-- max_res_set DOUBLE,
+	-- page_reclaims DOUBLE,
+	-- page_faults DOUBLE,
+	-- block_input DOUBLE,
+	-- block_output DOUBLE,
+	-- vol_contex_swtch DOUBLE,
+	-- invol_contex_swtch DOUBLE,
 	job_space_id INT,
 	path VARCHAR(2048),
-	maximum_memory BIGINT DEFAULT 1073741824,
+	-- maximum_memory BIGINT DEFAULT 1073741824,
 	sandbox_num INT,
 	PRIMARY KEY(id),
 	KEY(sge_id),
@@ -606,11 +606,11 @@ CREATE TABLE solver_pipelines (
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
-	executable_id INT NOT NULL,
+	config_id INT NOT NULL,
 	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
-	CONSTRAINT pipeline_stages_solver_id FOREIGN KEY (executable_id) REFERENCES solvers(id) ON DELETE CASCADE
+	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE CASCADE
 );
 
 -- Stores any dependencies that a particular stage has.

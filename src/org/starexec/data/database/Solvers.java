@@ -92,7 +92,8 @@ public class Solvers {
 	 * Adds a run configuration to the database
 	 * @param con the database connection associated with the whole process of adding the solver
 	 * @param c the configuration we are adding
-	 * @return True if the operation was a success, false otherwise
+	 * @return The ID of the new configuration, or -1 on error. The ID will also be set in the 
+	 * configuration object
 	 * @author Skylar Stark
 	 */
 	protected static int addConfiguration(Connection con, Configuration c) throws Exception {
@@ -105,7 +106,8 @@ public class Solvers {
 			procedure.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
 			procedure.registerOutParameter(5, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			return procedure.getInt(5);
+			c.setId(procedure.getInt(5));
+			return c.getId();
 		} catch (Exception e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
 		} finally {

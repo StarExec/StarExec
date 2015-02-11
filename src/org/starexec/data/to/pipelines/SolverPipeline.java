@@ -47,4 +47,8 @@ public class SolverPipeline extends Identifiable {
 		this.stages = stages;
 	}
 	
+	public void addStage(PipelineStage stage) {
+		this.stages.add(stage);
+	}
+	
 }

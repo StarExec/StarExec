@@ -164,7 +164,7 @@ public class JobUtil {
 			Element stage=(Element)stages.item(i);
 			PipelineStage s=new PipelineStage();
 			s.setKeepOutput(false);
-			s.setExecutableId(Integer.parseInt(stage.getAttribute("executable")));
+			s.setConfigId(Integer.parseInt(stage.getAttribute("executable")));
 			if (stage.hasAttribute("keepoutput")) {
 				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
 			}
@@ -176,7 +176,6 @@ public class JobUtil {
 					log.debug("found a pipeline stage dependency");
 					Element dependency = (Element) t;
 					PipelineDependency dep = new PipelineDependency();
-					dep.setInputNumber(inputNumber);
 					if (dependency.getTagName().equals("stageDependency")) {
 						inputNumber++;
 
@@ -189,6 +188,8 @@ public class JobUtil {
 						dep.setType(PipelineInputType.BENCHMARK);
 						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
 					}
+					dep.setInputNumber(inputNumber);
+
 					s.addDependency(dep);
 					
 				}

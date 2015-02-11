@@ -61,6 +61,7 @@ public class TestManager {
 		tests.add(new UploadTests());
 		tests.add(new RequestsTests());
 		tests.add(new ComparatorTests());
+		tests.add(new PipelineTests());
 		//tests.add(new LoginTests());
 		//tests.add(new UploadSolverTests());
 		//tests.add(new UploadBenchmarksTests());
@@ -249,4 +250,6 @@ public class TestManager {
 		}
 		return null;
 	}
+	
+	
 }

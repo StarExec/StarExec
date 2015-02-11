@@ -13,6 +13,9 @@ import java.util.concurrent.TimeUnit;
 
 
 
+
+
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -23,6 +26,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Pipelines;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
@@ -51,6 +55,8 @@ import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
 
 /**
  * This file contains functions for loading test objects into the database.
@@ -395,6 +401,33 @@ public class ResourceLoader {
 		return loadSpaceIntoDatabase(userId, parentSpaceId,TestUtil.getRandomSpaceName() );
 		
 	}
+	
+	/**
+	 * Creates a new SolverPipeline for the given user, where a stage is created for each given
+	 * configuration. The pipeline will have no dependencies, and it will have a random name
+	 * @param userId The ID of the user who will own the new pipeline
+	 * @param configs The ordered list of configurations to make into a pipeline
+	 * @return The SolverPipeline object
+	 */
+	public static SolverPipeline loadPipelineIntoDatabase(int userId, List<Configuration> configs) {
+		SolverPipeline pipe=new SolverPipeline();
+		pipe.setName(TestUtil.getRandomAlphaString(10));
+		pipe.setUserId(userId);
+		for (Configuration c : configs) {
+			PipelineStage stage=new PipelineStage();
+			stage.setConfigId(c.getId());
+			stage.setKeepOutput(false);
+			pipe.addStage(stage);
+		}
+		int returnValue= Pipelines.addPipelineToDatabase(pipe);
+		if (returnValue>0) {
+	 		return pipe;
+
+		} else {
+			return null;
+		}
+	}
+	
 	/**
 	 * Loads a user into the database, without any particular name, email, password, and so on. Useful for testing.
 	 * @return The user, with their ID and all parameters set, or null on error
@@ -493,7 +526,9 @@ public class ResourceLoader {
 		    driver = new FirefoxDriver();
 
 		} else {
-		    driver = new HtmlUnitDriver(true);
+		    driver = new HtmlUnitDriver(false);
+		    HtmlUnitDriver test=(HtmlUnitDriver) driver;
+		   
 		}
 	       
 	        driver.get(Util.url("secure/index.jsp"));
@@ -509,6 +544,13 @@ public class ResourceLoader {
 	public static WebDriver getFirefoxDriver(String email, String password) {
 	   return getWebDriver(email,password,true);
 	}
+	
+	/**
+	 * Retrieves an HTMLUnit WebDriver. This is the same as calling getWe
+	 * @param email
+	 * @param password
+	 * @return
+	 */
 	public static WebDriver getWebDriver(String email, String password) {
 		   return getWebDriver(email,password,false);
 		}
