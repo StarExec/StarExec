@@ -444,6 +444,7 @@ public class Solvers {
 		newSolver.setUploadDate(s.getUploadDate());
 		newSolver.setDiskSize(s.getDiskSize());
 		newSolver.setDownloadable(s.isDownloadable());
+		newSolver.setType(s.getType());
 		File solverDirectory=new File(s.getPath());
 		
 		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);

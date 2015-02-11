@@ -1396,7 +1396,6 @@ public class Connection {
 	 */
 	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, String type) {
 		List<Integer> fail=new ArrayList<Integer>();
-
 		try {
 			String urlExtension;
 			if (type.equals("solver")) {
@@ -1452,7 +1451,6 @@ public class Connection {
 				} else {
 					newPrimIds.add(0);
 				}
-				
 				return newPrimIds;
 			} else {
 				setLastError(message);

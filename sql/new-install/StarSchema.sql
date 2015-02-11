@@ -260,8 +260,8 @@ CREATE TABLE job_pairs (
 	solver_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
-	-- cpuTimeout INT,
-	-- clockTimeout INT,
+	cpuTimeout INT,
+	clockTimeout INT,
 	queuesub_time TIMESTAMP DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
@@ -270,20 +270,20 @@ CREATE TABLE job_pairs (
 	cpu DOUBLE,
 	user_time DOUBLE,
 	system_time DOUBLE,
-	-- io_data DOUBLE,
-	-- io_wait DOUBLE,
+	io_data DOUBLE,
+	io_wait DOUBLE,
 	mem_usage DOUBLE,
 	max_vmem DOUBLE,
-	-- max_res_set DOUBLE,
-	-- page_reclaims DOUBLE,
-	-- page_faults DOUBLE,
-	-- block_input DOUBLE,
-	-- block_output DOUBLE,
-	-- vol_contex_swtch DOUBLE,
-	-- invol_contex_swtch DOUBLE,
+	max_res_set DOUBLE,
+	page_reclaims DOUBLE,
+	page_faults DOUBLE,
+	block_input DOUBLE,
+	block_output DOUBLE,
+	vol_contex_swtch DOUBLE,
+	invol_contex_swtch DOUBLE,
 	job_space_id INT,
 	path VARCHAR(2048),
-	-- maximum_memory BIGINT DEFAULT 1073741824,
+	maximum_memory BIGINT DEFAULT 1073741824,
 	sandbox_num INT,
 	PRIMARY KEY(id),
 	KEY(sge_id),
@@ -631,34 +631,6 @@ CREATE TABLE jobline_inputs (
 	dependency_id INT NOT NULL -- ID of the benchmark
 );
 /*
--- Table which contains information that is useful for the top level of a jobline
--- Other data, like timeouts, time taken, max memory, and so on is kept at the stage level
-
-CREATE TABLE joblines (
-	id INT NOT NULL AUTO_INCREMENT,	
-	job_id INT NOT NULL,
-	sge_id INT,
-	pipeline_id INT NOT NULL,
-	bench_id INT,
-	bench_name VARCHAR(255),
-	status_code TINYINT DEFAULT 0,
-	node_id INT,
-	queuesub_time TIMESTAMP DEFAULT 0,
-	start_time TIMESTAMP DEFAULT 0,
-	end_time TIMESTAMP DEFAULT 0,
-	exit_status INT,
-	job_space_id INT,
-	path VARCHAR(2048),
-	sandbox_num INT,
-	PRIMARY KEY(id),
-	KEY(sge_id),
-	KEY (job_space_id, bench_name),
-	KEY (node_id, status_code),
-	KEY (status_code), -- TODO: Do we actually want this change
-	CONSTRAINT joblines_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
-	CONSTRAINT joblines_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index
-	CONSTRAINT joblines_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES pipelines(id) ON DELETE NO ACTION
-);
 -- todo: should timeouts be here?
 CREATE TABLE jobline_stage (
 	jobline_id INT NOT NULL,

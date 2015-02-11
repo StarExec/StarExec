@@ -248,7 +248,6 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
-			
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
 			return con.copyPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
 					commandParams.containsKey(R.PARAM_HIERARCHY),type);
