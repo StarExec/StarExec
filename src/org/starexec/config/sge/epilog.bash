@@ -38,7 +38,7 @@ fi
 #################################################################################
 # base64 decode some names which could otherwise have nasty characters in them
 #################################################################################
-TMP=`mktemp`
+TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
 echo $PAIR_OUTPUT_DIRECTORY > $TMP
 PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 

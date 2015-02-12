@@ -91,7 +91,17 @@
 							<input name="dlable" type="radio" value="false" /><label>no</label>
 						</td>
 					</tr>
-					
+					<tr>
+						<td>Executable Type</td>
+						<td>
+							<select name="type">
+								<option value="1">solver</option>
+								<option value="2">preprocessor</option>
+								<option value="3">result checker</option>
+								<option value="4">other</option>
+							</select>
+						</td>
+					</tr>
 					<tr>
 						<td title="After uploading this solver, a job will immediately be created in which this solver
 						is run against the default benchmark for this community, using community default settings.">run test job</td>

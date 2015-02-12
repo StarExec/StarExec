@@ -23,7 +23,8 @@
 			if( (visiting_userId != userId) && !isadmin){
 				owner = false;
 			} else {
-				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsOwnedByUser(userId);
+				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+				
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
@@ -110,7 +111,7 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td>disk quota</td>
+							<td>disk quota <h6>Format: [Integer] [Units(B, KB, MB, GB)]</h6></td>
 							<td id="editdiskquota">${diskQuota}</td>
 						</tr>
 						<tr>
@@ -214,7 +215,7 @@
 				<option value="" />
 			</c:if>				
 		<c:forEach var="setting" items="${settings}">
-		    <option class="settingOption" value="${setting.getId()}">${setting.name}</option>
+		    <option class="settingOption" value="${setting.getId()}" type="${setting.getTypeString()}">${setting.name}</option>
 		</c:forEach>
 		</select>
 		<table id="settings" class ="shaded">
@@ -310,6 +311,7 @@
 					<tr>
 						<th>name</th>
 						<th>description</th>
+						<th>type</th>
 					</tr>
 				</thead>
 				<tbody>

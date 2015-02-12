@@ -24,6 +24,7 @@ import org.starexec.util.JobUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -101,10 +102,9 @@ public class UploadJobXML extends HttpServlet {
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 			
 			uniqueDir.mkdirs();
-			
 			//Process the archive file and extract
 		
-			File archiveFile = new File(uniqueDir,  item.getName());
+			File archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
@@ -150,7 +150,7 @@ public class UploadJobXML extends HttpServlet {
 			}
 			
 			boolean goodExtension=false;
-			String fileName = ((FileItem)form.get(UploadJobXML.UPLOAD_FILE)).getName();
+			String fileName = FilenameUtils.getName(((FileItem)form.get(UploadJobXML.UPLOAD_FILE)).getName());
 			for(String ext : UploadJobXML.extensions) {
 				if(fileName.endsWith(ext)) {
 					goodExtension=true;

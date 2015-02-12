@@ -390,11 +390,13 @@ public class GetPageTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		testCommunity=Communities.getTestCommunity();
 		
-		
+		driver=ResourceLoader.getWebDriver(user.getEmail(), R.TEST_USER_PASSWORD,false);
 
-		driver=ResourceLoader.getFirefoxDriver(user.getEmail(), R.TEST_USER_PASSWORD);
+		//driver=ResourceLoader.getFirefoxDriver(user.getEmail(), R.TEST_USER_PASSWORD);
 		driverActions=new Actions(driver);
-		adminDriver=ResourceLoader.getFirefoxDriver(admin.getEmail(), R.TEST_USER_PASSWORD);
+		adminDriver=ResourceLoader.getWebDriver(admin.getEmail(), R.TEST_USER_PASSWORD,false);
+
+		//adminDriver=ResourceLoader.getFirefoxDriver(admin.getEmail(), R.TEST_USER_PASSWORD);
 
 	
 		
@@ -412,9 +414,9 @@ public class GetPageTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
-		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
-		Assert.assertNotNull(benchmarkIds);
+		//job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
+		//settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
+		//Assert.assertNotNull(benchmarkIds);
 
 		
 	}
@@ -427,14 +429,22 @@ public class GetPageTests extends TestSequence {
 		Spaces.removeSubspaces(space1.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Processors.delete(proc.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
+		//for (Integer i : benchmarkIds) {
+		//	Benchmarks.deleteAndRemoveBenchmark(i);
+		//}
+		
+		//Jobs.deleteAndRemove(job.getId());
+		//Settings.deleteProfile(settings.getId());
+		for (String s: driver.getWindowHandles()) {
+			driver.switchTo().window(s);
+			driver.close();
 		}
-		
-		Jobs.deleteAndRemove(job.getId());
-		Settings.deleteProfile(settings.getId());
-		
 		driver.quit();
+		
+		for (String s: adminDriver.getWindowHandles()) {
+			adminDriver.switchTo().window(s);
+			adminDriver.close();
+		}
 		adminDriver.quit();
 	}
 	

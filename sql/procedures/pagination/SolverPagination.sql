@@ -13,9 +13,11 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				-- Exclude solvers whose name and description don't contain the query string
 				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
-				OR		description	LIKE 	CONCAT('%', _query, '%'))
+				OR		description	LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
 										
 				-- Exclude solvers that aren't in the specified space
 				AND assoc.space_id=_spaceId
@@ -29,20 +31,25 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+
 				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%'))
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
 				AND 	assoc.space_id=_spaceId
 				ORDER BY name DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
-		ELSE
+		ELSEIF (_colSortedOn = 1) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				-- Exclude solvers whose name and description don't contain the query string
 				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
-				OR		description	LIKE 	CONCAT('%', _query, '%'))
+				OR		description	LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
 										
 				-- Exclude solvers that aren't in the specified space
 				AND assoc.space_id=_spaceId
@@ -56,10 +63,45 @@ CREATE PROCEDURE GetNextPageOfSolvers(IN _startingRecord INT, IN _recordsPerPage
 				SELECT 	*
 				FROM 	solvers
 				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%'))
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
 				AND 	assoc.space_id=_spaceId
 				ORDER BY description DESC
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
+			
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	*
+				FROM 	solvers
+				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+
+				-- Exclude solvers whose name and description don't contain the query string
+				WHERE 	(name 		LIKE	CONCAT('%', _query, '%')
+				OR		description	LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
+										
+				-- Exclude solvers that aren't in the specified space
+				AND assoc.space_id=_spaceId
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY type_name ASC
+					 
+				-- Shrink the results to only those required for the next page of solvers
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	*
+				FROM 	solvers
+				INNER JOIN solver_assoc AS assoc ON assoc.solver_id=id
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+				WHERE 	(name 				LIKE	CONCAT('%', _query, '%')
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
+				AND 	assoc.space_id=_spaceId
+				ORDER BY type_name DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		END IF;	
@@ -78,11 +120,16 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 		IF (_colSortedOn = 0) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	*
-				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
+				FROM	solvers 
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type		
 				
+				
+				where user_id = _userId and deleted=false AND recycled=_recycled
+
 				-- Exclude Solvers whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%'))										
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))										
 										
 				-- Order results depending on what column is being sorted on
 				ORDER BY name ASC	 
@@ -91,24 +138,33 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			ELSE
 				SELECT 	*
 						
-				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
+				FROM	solvers 
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%'))
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
 				ORDER BY name DESC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 
-		ELSE
+		ELSEIF (_colSortedOn = 1) THEN
 			IF _sortASC = TRUE THEN
 				SELECT 	*
 				
-				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
+				FROM	solvers 
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+
+				
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				-- Exclude Solvers whose name doesn't contain the query string
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%'))										
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))										
 										
 				-- Order results depending on what column is being sorted on
 				ORDER BY description ASC	 
@@ -117,15 +173,53 @@ CREATE PROCEDURE GetNextPageOfUserSolvers(IN _startingRecord INT, IN _recordsPer
 			ELSE
 				SELECT 	*
 						
-				FROM	solvers where user_id = _userId and deleted=false AND recycled=_recycled
+				FROM	solvers 
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+
+				
+				where user_id = _userId and deleted=false AND recycled=_recycled
 				
 				AND 	(name				LIKE	CONCAT('%', _query, '%')
-				OR		description			LIKE 	CONCAT('%', _query, '%'))
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
 				ORDER BY description DESC
 				
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
+		ELSE
+			IF _sortASC = TRUE THEN
+				SELECT 	*
+				
+				FROM	solvers 
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
 
+				
+				where user_id = _userId and deleted=false AND recycled=_recycled
+				
+				-- Exclude Solvers whose name doesn't contain the query string
+				AND 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))										
+										
+				-- Order results depending on what column is being sorted on
+				ORDER BY type_name ASC	 
+				-- Shrink the results to only those required for the next page of Solvers
+				LIMIT _startingRecord, _recordsPerPage;
+			ELSE
+				SELECT 	*
+						
+				FROM	solvers
+				INNER JOIN executable_types AS types ON types.type_id=solvers.executable_type
+
+				where user_id = _userId and deleted=false AND recycled=_recycled
+				
+				AND 	(name				LIKE	CONCAT('%', _query, '%')
+				OR		description			LIKE 	CONCAT('%', _query, '%')
+				OR 		type_name			LIKE	CONCAT('%', _query, '%'))
+				ORDER BY type_name DESC
+				
+				LIMIT _startingRecord, _recordsPerPage;
+			END IF;
 		END IF;
 	END //
 

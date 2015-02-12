@@ -170,13 +170,14 @@ function updateGraphs() {
 	
 	summaryTable.fnProcessingIndicator(false);
 
-	rows = $("#solveTbl tbody tr");	
+	rows = summaryTable.fnGetNodes();
 	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
 		$("#graphField").hide();
 	} else {
 		$("#graphField").show();
 		$("#spaceOverviewSelections").empty();
-		rows.each(function() {
+		$(rows).each(function() {
+			//alert(this.html());
 			solverName=$(this).find("a:first").attr("title");
 			configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
 			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");

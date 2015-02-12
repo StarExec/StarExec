@@ -20,6 +20,7 @@ source procedures/Queues.sql;
 source procedures/Cache.sql;
 source procedures/Settings.sql;
 source procedures/UploadStatus.sql;
+source procedures/Pipelines.sql;
 source procedures/pagination/PairPagination.sql;
 source procedures/pagination/JobPagination.sql;
 source procedures/pagination/SolverPagination.sql;

@@ -7,10 +7,31 @@
     	</documentation>
     </annotation>
     
+    <complexType name="SolverPipeline">
+    
+    	<sequence>
+    		<element name="PipelineAttributes" type="tns:PipelineAttributes" minOccurs="1" maxOccurs="1"></element>
+    		
+    		<element name="PipelineStage" type="tns:PipelineStage" minOccurs="1" maxOccurs="unbounded"></element>
+    	</sequence> 
+    
+    </complexType>
+    
+    <complexType name="PipelineStage">    	
+    	<sequence>
+    	    	<element name="stageDependency" minOccurs="0" maxOccurs="unbounded"></element>
+    			<element name="benchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+        <attribute name="config" type="int" use="required"></attribute>
+        <attribute name="keepoutput" type="boolean" use="optional"></attribute>
+    </complexType>
+    
     <element name="Jobs" type="tns:Jobs"></element>
     
     <complexType name="Jobs">
     	<sequence>
+    		<element name="SolverPipeline" type="tns:SolverPipeline" minOccurs="0" maxOccurs="unbounded"></element>
+    		
     		<element name="Job" type="tns:Job" minOccurs="1" 
     			maxOccurs="unbounded">
     		</element>
@@ -30,6 +51,10 @@
     	<!-- The job name must be unique to the space -->
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
     	
+    </complexType>
+    
+    <complexType name="PipelineAttributes">
+    	<attribute name="pipelineName" type="tns:PrimitiveName" use="required"></attribute>
     </complexType>
     
     <complexType name="JobAttributes">
@@ -66,11 +91,16 @@
     <complexType name="booleanInfo">
       <attribute name="value" type="boolean" use="required"></attribute>
     </complexType>
-
+	
     <complexType name="doubleInfo">
       <attribute name="value" type="double" use="required"></attribute>
     </complexType>
-    
+    <complexType name="benchmarkDependency">
+    	<attribute name="input" type="int" use="required"></attribute>
+    </complexType>
+    <complexType name="stageDependency">
+    	<attribute name="stage" type="int" use="required"></attribute>
+    </complexType>
     <!-- end job attributes type definitions -->
 
     

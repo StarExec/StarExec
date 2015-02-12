@@ -135,8 +135,9 @@
 			<table id="solvers" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
-						<th> name </th>
-						<th> description </th>
+						<th>name</th>
+						<th>description</th>
+						<th>type</th>
 					</tr>
 				</thead>
 			</table>

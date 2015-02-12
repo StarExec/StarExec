@@ -133,6 +133,16 @@ CREATE TABLE bench_attributes (
 	CONSTRAINT bench_attributes_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
+-- This table holds the names of executable types so that they are accessible for SQL sorts and filters.
+-- The contents in this table should match with the enum in Solver.java to ensure proper sorts!
+CREATE TABLE executable_types (
+	type_id INT NOT NULL,
+	type_name VARCHAR(32),
+	PRIMARY KEY (type_id)
+);
+
+INSERT INTO executable_types (type_id, type_name) VALUES (1,"solver"), (2,"transformer"),(3,"result checker"),(4,"other");
+
 -- The record for an individual solver
 CREATE TABLE solvers (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -145,9 +155,13 @@ CREATE TABLE solvers (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
+	executable_type INT DEFAULT 1, 
 	PRIMARY KEY (id),	
-	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
+	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
 );
+
+
 
 -- All the SGE node queues on the system
 CREATE TABLE queues (
@@ -579,6 +593,81 @@ CREATE TABLE job_stats (
 	KEY (config_id)
 );
 
+-- table for storing the top level of solver pipelines
+CREATE TABLE solver_pipelines (
+	id INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(128),
+	user_id INT NOT NULL,
+	uploaded TIMESTAMP NOT NULL,
+
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE pipeline_stages (
+	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
+	pipeline_id INT NOT NULL,
+	config_id INT NOT NULL,
+	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
+	PRIMARY KEY (stage_id), -- pipelines can have many stages
+	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
+	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE CASCADE
+);
+
+-- Stores any dependencies that a particular stage has.
+CREATE TABLE pipeline_dependencies (
+	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
+	
+	input_type INT NOT NULL, -- ID of the stage that produces the output
+	input_id INT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
+						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
+	input_number INT NOT NULL, -- which input to the stage is this? First input, second input, and so on
+	PRIMARY KEY (stage_id, input_number), -- obviously a given stage may only have one dependency per number
+	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
+);
+
+CREATE TABLE jobline_inputs (
+	jobline_id INT NOT NULL, -- ID of a jobline
+	input_id INT NOT NULL,   -- number of this input
+	dependency_id INT NOT NULL -- ID of the benchmark
+);
+/*
+-- todo: should timeouts be here?
+CREATE TABLE jobline_stage (
+	jobline_id INT NOT NULL,
+	stage_id INT NOT NULL,
+	wallclock DOUBLE,
+	cpu DOUBLE,
+	cpuTimeout INT,
+	clockTimeout INT,
+	maximum_memory BIGINT DEFAULT 1073741824,
+	mem_usage DOUBLE,
+	max_vmem DOUBLE,
+	PRIMARY KEY (jobline_id, stage_id),
+	FOREIGN KEY jobline_stage_jobline_id (jobline_id) REFERENCES joblines(id) ON DELETE CASCADE,
+	FOREIGN KEY jobline_stage_stage_id (stage_id) REFERENCES pipeline_stages
+);*/
+
+
+-- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
+-- solver, benchmark, job, etc
+-- Author: Eric Burns
+CREATE TABLE file_cache (
+	id INT NOT NULL,
+	path TEXT NOT NULL,
+	cache_type INT NOT NULL,
+	last_access TIMESTAMP NOT NULL,
+	PRIMARY KEY (id,cache_type)
+);
+
+-- Table that contains some global flags
+-- Author: Wyatt Kaiser
+CREATE TABLE system_flags (
+	integrity_keeper ENUM('') NOT NULL,
+	paused BOOLEAN DEFAULT FALSE,
+	test_queue INT,
+	PRIMARY KEY (integrity_keeper),
+	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
+);
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 

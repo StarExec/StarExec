@@ -39,6 +39,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
+import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
@@ -71,6 +72,7 @@ public class UploadSolver extends HttpServlet {
     private static final String FILE_URL="url";
     private static final String RUN_TEST_JOB="runTestJob";
     private static final String SETTING_ID="setting";
+    private static final String SOLVER_TYPE="type";
         
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userId = SessionUtil.getUserId(request);
@@ -353,6 +355,7 @@ public class UploadSolver extends HttpServlet {
 			if (newSolver.getConfigurations().isEmpty()) {
 				returnArray[1] = -4; //It is empty
 			}
+			newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
 			//Try adding the solver to the database
 			int solver_Success = Solvers.add(newSolver, spaceId);
 			
@@ -397,13 +400,17 @@ public class UploadSolver extends HttpServlet {
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form, HttpServletRequest request) {
 		try {
 			int userId=SessionUtil.getUserId(request);
+			//defines the set of attributes that are required
 			if (!form.containsKey(UPLOAD_METHOD) ||
+					!form.containsKey(UploadSolver.SOLVER_TYPE) ||
 					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
-					!form.containsKey(DESC_METHOD) ||
+					!form.containsKey(DESC_METHOD) || 
 					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file"))) {
 				
 				return new ValidatorStatusCode(false, "Required parameters are missing from the request");
 			}
+			
+			//ensure the space ID is valid
 			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
@@ -412,6 +419,13 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
 			
+			if (!Validator.isValidInteger((String)form.get(SOLVER_TYPE))) {
+				return new ValidatorStatusCode(false, "Executable Type needed to be sent as a valid integer");
+			}
+			ExecutableType type=ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE)));
+			if (type==null) {
+				return new ValidatorStatusCode(false, "Invalid executable type");
+			}
 			
 			
 			if(!Validator.isValidSolverName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
@@ -435,7 +449,7 @@ public class UploadSolver extends HttpServlet {
 			boolean goodExtension=false;
 			String fileName=null;
 			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
-				fileName = ((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName();
+				fileName = FilenameUtils.getName(((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName());
 				
 			} else {
 				fileName=(String)form.get(UploadSolver.FILE_URL);

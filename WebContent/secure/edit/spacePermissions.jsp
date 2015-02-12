@@ -44,7 +44,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="edit permissions" js="util/spaceTree, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, edit/spacePermissions, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces">			
+<star:template title="edit permissions" js="util/spaceTree, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, edit/spacePermissions, util/datatablesUtility, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces, edit/spacePermissions">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="isAdmin" value="${isAdmin}"></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
@@ -57,12 +57,12 @@
 	</div>
 	
 	<div id="detailPanel">				
-		<h3 id="spaceName"></h3>
+		<h3 class="spaceName"></h3>
 		<p id="spaceLeader" class="accent"></p>
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>																			
 		<fieldset  id="userField">
-			<legend id="userExpd"><span>0</span> users</legend>
+			<legend id="usersLegend" class="userExpd"><span>0</span> users</legend>
 			<table id="users">
 				<thead>
 					<tr>
@@ -206,13 +206,44 @@
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
 		</fieldset>
+
+		<h3 class="addUsersTitle">Add users to <span class="spaceName"></span></h3>
+		<fieldset  id="addUsersField">
+			<legend id="addUsersLegend" class="userExpd"><span>0</span> users</legend>
+			<table id="addUsers">
+				<thead>
+					<tr>
+						<th>name</th>
+						<th>institution</th>
+						<th style="width:270px;">email</th>
+					</tr>
+				</thead>			
+			</table>
+			<div class="selectWrap">
+				<p class="selectAllUsers">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>All
+				</p> |
+				<p class="unselectAllUsers">
+					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
+			</div>
+			<hr>
+			<table id="addUsersButtons">
+				<tr>
+					<td><input class="btnUp" type="button" id="addUsersButton" value="add"></input></td>
+				</tr>
+			</table>
+		</fieldset>
 		
 		<fieldset id="permissionActions">
 			<a id="exploreSpaces" href="/${starexecRoot}/secure/explore/spaces.jsp">return to space explorer</a>
+			<a class="btnRun" id="makePublic">make public</a>
 		</fieldset>
 
 	</div>	
 	
+	<div id="dialog-confirm-change" title="confirm change">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
+	</div>
 	
 	
 </star:template>

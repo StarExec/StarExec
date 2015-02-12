@@ -26,6 +26,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.util.Timer;
@@ -54,7 +55,7 @@ public class Solvers {
 			con = Common.getConnection();
 			long diskUsage=FileUtils.sizeOf(new File(s.getPath()));
 			// Add the solver
-			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?)}");
+			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, s.getUserId());
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
@@ -62,6 +63,7 @@ public class Solvers {
 			procedure.setString(5, s.getDescription());
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			procedure.setLong(7, diskUsage);
+			procedure.setInt(8,s.getType().getVal());
 			
 			procedure.executeUpdate();
 			
@@ -90,7 +92,8 @@ public class Solvers {
 	 * Adds a run configuration to the database
 	 * @param con the database connection associated with the whole process of adding the solver
 	 * @param c the configuration we are adding
-	 * @return True if the operation was a success, false otherwise
+	 * @return The ID of the new configuration, or -1 on error. The ID will also be set in the 
+	 * configuration object
 	 * @author Skylar Stark
 	 */
 	protected static int addConfiguration(Connection con, Configuration c) throws Exception {
@@ -103,7 +106,8 @@ public class Solvers {
 			procedure.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
 			procedure.registerOutParameter(5, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			return procedure.getInt(5);
+			c.setId(procedure.getInt(5));
+			return c.getId();
 		} catch (Exception e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
 		} finally {
@@ -440,6 +444,7 @@ public class Solvers {
 		newSolver.setUploadDate(s.getUploadDate());
 		newSolver.setDiskSize(s.getDiskSize());
 		newSolver.setDownloadable(s.isDownloadable());
+		newSolver.setType(s.getType());
 		File solverDirectory=new File(s.getPath());
 		
 		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
@@ -542,16 +547,13 @@ public class Solvers {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
-			int solverId=Solvers.getSolverByConfig(configId, false).getId();
 			con = Common.getConnection();
 			 procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");	
 			procedure.setInt(1, configId);
 			procedure.executeUpdate();
 			
 			log.info(String.format("Configuration %d has been successfully deleted from the database.", configId));
-			//Cache.invalidateSpacesAssociatedWithSolver(solverId);
-			//Cache.invalidateAndDeleteCache(solverId, CacheType.CACHE_SOLVER);
-			//Cache.invalidateAndDeleteCache(solverId,CacheType.CACHE_SOLVER_REUPLOAD);
+			
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -1390,6 +1392,7 @@ public class Solvers {
 				s.setRecycled(results.getBoolean("recycled"));
 				s.setUserId(results.getInt("user_id"));
 				s.setDescription(results.getString("description"));
+				s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
 				solvers.add(s);	
 			}	
 			
@@ -1440,6 +1443,7 @@ public class Solvers {
 				s.setRecycled(results.getBoolean("recycled"));
 				s.setUserId(results.getInt("user_id"));
 				s.setDescription(results.getString("description"));
+				s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
 				solvers.add(s);	
 			}	
 			
@@ -1736,25 +1740,25 @@ public class Solvers {
 	
 	protected static Solver resultToSolver(ResultSet results, String prefix) throws SQLException {
 		Solver s=new Solver();
-		if (prefix==null || prefix=="") {
-			s.setId(results.getInt("id"));
-			s.setUserId(results.getInt("user_id"));
-			s.setName(results.getString("name"));
-			s.setUploadDate(results.getTimestamp("uploaded"));
-			s.setPath(results.getString("path"));
-			s.setDescription(results.getString("description"));
-			s.setDownloadable(results.getBoolean("downloadable"));
-			s.setDiskSize(results.getLong("disk_size"));
-		} else {
-			s.setId(results.getInt(prefix+".id"));
-			s.setUserId(results.getInt(prefix+".user_id"));
-			s.setName(results.getString(prefix+".name"));
-			s.setUploadDate(results.getTimestamp(prefix+".uploaded"));
-			s.setPath(results.getString(prefix+".path"));
-			s.setDescription(results.getString(prefix+".description"));
-			s.setDownloadable(results.getBoolean(prefix+".downloadable"));
-			s.setDiskSize(results.getLong(prefix+".disk_size"));
+		// first format the prefix so it is either empty OR is the prefix plus a period
+		if (prefix==null) {
+			prefix="";
 		}
+		if (!prefix.isEmpty()) {
+			prefix=prefix+".";
+		}
+	
+		s.setId(results.getInt(prefix+"id"));
+		s.setUserId(results.getInt(prefix+"user_id"));
+		s.setName(results.getString(prefix+"name"));
+		s.setUploadDate(results.getTimestamp(prefix+"uploaded"));
+		s.setPath(results.getString(prefix+"path"));
+		s.setDescription(results.getString(prefix+"description"));
+		s.setDownloadable(results.getBoolean(prefix+"downloadable"));
+		s.setDiskSize(results.getLong(prefix+"disk_size"));
+		s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
+
+		
 		
 		
 		

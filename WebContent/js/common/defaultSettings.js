@@ -1,6 +1,8 @@
 $(document).ready(function() {
 	$("#settingProfile").change(function() {
+		
 		populateDefaults();
+		
 	});
 	
 	$(".clearSolver").click(function() {
@@ -24,9 +26,15 @@ $(document).ready(function() {
 	
 });
 
+function getSelectedSettingType() {
+	
+	return $("#settingProfile option:selected").attr("type");
+
+}
 
 function getSelectedSettingId() {
 	return $("#settingProfile option:selected").attr("value");
+	
 }
 
 /**
@@ -37,6 +45,14 @@ function populateDefaults() {
 	selectedSettingId=getSelectedSettingId();
 	if (!stringExists(selectedSettingId)) {
 		return; //no setting selected.
+	}
+	if (getSelectedSettingType()=="COMMUNITY") {
+	    $("#saveProfile").hide();
+	    $("#deleteProfile").hide();
+
+	} else {
+		 $("#saveProfile").show();
+		 $("#deleteProfile").show();
 	}
 	if ($(".defaultSettingsProfile[value="+selectedSettingId+"]").length<=0) {
 		return; //couldn't find the profile, so nothing to populate

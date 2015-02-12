@@ -30,7 +30,7 @@
 	
 	
 %>
-<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces,  lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
+<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
@@ -74,7 +74,8 @@
 				<thead>
 					<tr>
 						<th id="solverNameHead">name</th>
-						<th id="solverDescHead">description</th>						
+						<th id="solverDescHead">description</th>		
+						<th id="solverTypeHead">Type</th>				
 					</tr>
 				</thead>			
 			</table>
@@ -152,8 +153,6 @@
 				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
 				<li><a class="btnEdit" id="editSpacePermissions" href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
-				<li><a class="btnRun" id="makePublic">make public</a></li>
-				<li><a class="btnRun" id="makePrivate">make private</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
 				<!-- <li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>-->
 				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
@@ -163,9 +162,7 @@
 		</fieldset>	
 
 	</div>	
-	<div id="dialog-confirm-change" title="confirm change">
-		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
-	</div>
+	
 	<div id="dialog-confirm-copy" title="confirm copy">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>

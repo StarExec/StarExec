@@ -159,7 +159,7 @@ public class UploadSpaceXML extends HttpServlet {
 			Integer.parseInt((String)form.get(SPACE_ID));
 			
 			boolean goodExtension=false;
-			String fileName = ((FileItem)form.get(UploadSpaceXML.UPLOAD_FILE)).getName();
+			String fileName = FilenameUtils.getName(((FileItem)form.get(UploadSpaceXML.UPLOAD_FILE)).getName());
 			for(String ext : UploadSpaceXML.extensions) {
 				if(fileName.endsWith(ext)) {
 					goodExtension=true;

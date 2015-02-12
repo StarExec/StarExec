@@ -22,7 +22,9 @@
 #################################################################################
 # base64 decode some names which could otherwise have nasty characters in them
 #################################################################################
-TMP=`mktemp`
+
+# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
+TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
 
 echo $SOLVER_NAME > $TMP
 SOLVER_NAME=`base64 -d $TMP`

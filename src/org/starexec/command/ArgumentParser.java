@@ -248,7 +248,6 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
-			
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
 			return con.copyPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
 					commandParams.containsKey(R.PARAM_HIERARCHY),type);
@@ -704,9 +703,6 @@ class ArgumentParser {
 		return uploadProcessor(commandParams, "bench");
 	}
 	
-	protected int uploadPreProc(HashMap<String,String> commandParams) {
-		return uploadProcessor(commandParams,"pre");
-	}
 	
 	/**
 	 * This function handles user requests for uploading an xml archive (space or job).
@@ -831,10 +827,14 @@ class ArgumentParser {
 		if (commandParams.containsKey(R.PARAM_SETTING)) {
 			settingId=Integer.parseInt(R.PARAM_SETTING);
 		}
+		Integer type=1;
+		if (commandParams.containsKey(R.PARAM_TYPE)) {
+			type=Integer.parseInt(commandParams.get(R.PARAM_TYPE));
+		}
 		if (upMethod.equals("local")) {
-			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable,runTestJob,settingId);
+			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable,runTestJob,settingId,type);
 		} else {
-			return con.uploadSolverFromURL(name, desc,descMethod, Integer.parseInt(space), url, downloadable,runTestJob,settingId);
+			return con.uploadSolverFromURL(name, desc,descMethod, Integer.parseInt(space), url, downloadable,runTestJob,settingId,type);
 		}
 		
 	}

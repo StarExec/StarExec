@@ -282,10 +282,7 @@ function initUI(){
 			secondary: "ui-icon-arrowthick-1-n"
     }});
 	
-	$('#addPreProcessor').button({
-		icons: {
-			secondary: "ui-icon-arrowthick-1-n"
-		}});
+	
     $('#addUpdateProcessor').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
@@ -318,7 +315,7 @@ function attachFormValidation(){
 				return this.optional(element) || re.test(value);
 	});
 	
-    var formsToValidate = ['#addPostProcessorForm','#addPreProcessorForm', '#newTypeForm', '#addUpdateProcessorForm'];
+    var formsToValidate = ['#addPostProcessorForm', '#newTypeForm', '#addUpdateProcessorForm'];
 	
 	$.each(formsToValidate, function(i, selector) {
 		$(selector).validate({

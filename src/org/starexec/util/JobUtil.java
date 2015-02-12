@@ -25,6 +25,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Pipelines;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
@@ -36,6 +37,8 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.pipelines.*;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.DOMHelper;
 import org.w3c.dom.Document;
@@ -51,7 +54,7 @@ public class JobUtil {
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
 	
 	/**
-	 * Creates jobs from the xml file.
+	 * Creates jobs from the xml file. This also creates any solver pipelines defined in the XML document
 	 * @author Tim Smith
 	 * @param file the xml file we wish to create jobs from
 	 * @param userId the userId of the user making the request
@@ -79,16 +82,26 @@ public class JobUtil {
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         Document doc = docBuilder.parse(file);
         Element jobsElement = doc.getDocumentElement();
-		NodeList listOfJobElements = jobsElement.getChildNodes();
+		NodeList listOfJobElements = jobsElement.getElementsByTagName("Job");
+		
+		NodeList listOfPipelines = doc.getElementsByTagName("SolverPipeline");
+		log.info("# of pipelines = " + listOfPipelines.getLength());
 		
         //Check Jobs and Job Pairs
         NodeList listOfJobs = doc.getElementsByTagName("Job");
 		log.info("# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
 		log.info("# of JobPairs = " + listOfJobPairs.getLength());
-		log.warn("this is a test, delete if you find this");
 		
 		String name = "";//name variable to check
+		
+		
+		//validate all solver pipelines
+		for (int i=0; i< listOfPipelines.getLength(); i++) {
+			Node pipeline = listOfPipelines.item(i);
+			int pipeId=createPipelineFromElement(userId, (Element) pipeline);
+			log.debug("new pipeline received id = "+pipeId);
+		}
 		
 		// Make sure jobs are named
 		for (int i = 0; i < listOfJobs.getLength(); i++){
@@ -96,7 +109,6 @@ public class JobUtil {
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				name = jobElement.getAttribute("name");
-				log.info("delete me if you find me");
 				if (name == null) {
 					log.info("Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
@@ -134,6 +146,59 @@ public class JobUtil {
 		return jobIds;
 	}
 	
+	
+	/**
+	 * Creates a single solver pipeline from a SolverPipeline XML element
+	 * @param userId
+	 * @param pipeElement
+	 * @return
+	 */
+	private Integer createPipelineFromElement(int userId, Element pipeElement) {
+		SolverPipeline pipeline=new SolverPipeline();
+		pipeline.setUserId(userId);
+		
+		pipeline.setName(pipeElement.getAttribute("pipelineName"));
+		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
+		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
+		for (int i=0;i<stages.getLength();i++) {
+			Element stage=(Element)stages.item(i);
+			PipelineStage s=new PipelineStage();
+			s.setKeepOutput(false);
+			s.setConfigId(Integer.parseInt(stage.getAttribute("executable")));
+			if (stage.hasAttribute("keepoutput")) {
+				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
+			}
+			NodeList dependencies=stage.getChildNodes();
+			int inputNumber=0;
+			for (int x=0;x<dependencies.getLength();x++) {
+				Node t=dependencies.item(x);
+				if (t.getNodeType() == Node.ELEMENT_NODE) {
+					log.debug("found a pipeline stage dependency");
+					Element dependency = (Element) t;
+					PipelineDependency dep = new PipelineDependency();
+					if (dependency.getTagName().equals("stageDependency")) {
+						inputNumber++;
+
+						dep.setType(PipelineInputType.ARTIFACT);
+						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("stage")));
+
+					} else if (dependency.getTagName().equals("benchmarkDependency")) {
+						inputNumber++;
+
+						dep.setType(PipelineInputType.BENCHMARK);
+						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
+					}
+					dep.setInputNumber(inputNumber);
+
+					s.addDependency(dep);
+					
+				}
+			}
+			stageList.add(s);
+		}
+		pipeline.setStages(stageList);
+		return Pipelines.addPipelineToDatabase(pipeline);
+	}
 
 
 	/**

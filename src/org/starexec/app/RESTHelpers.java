@@ -2246,7 +2246,7 @@ public class RESTHelpers {
 			JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(solverLink));
 			entry.add(new JsonPrimitive(solver.getDescription()));
-
+			entry.add(new JsonPrimitive(solver.getType().toString().toLowerCase()));
 			dataTablePageEntries.add(entry);
 		}
 

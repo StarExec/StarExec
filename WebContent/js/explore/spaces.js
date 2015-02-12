@@ -61,7 +61,6 @@ function initDialogs() {
 	$("#dialog-download-space").hide();
 	$("#dialog-warning").hide();
 	$("#dialog-spacexml-attributes").hide();
-	$("#dialog-confirm-change").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -136,92 +135,8 @@ function initButtonUI() {
 		}});
 	attachSortButtonFunctions();
 
-	$("#makePublic").click(function(){
-		// Display the confirmation dialog
-		$('#dialog-confirm-change-txt').text('do you want to make the single space public or the hierarchy?');
-		$('#dialog-confirm-change').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'space': function(){
-					$.post(
-							starexecRoot+"services/space/makePublic/" + spaceId + "/" + false,
-							{},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location.reload(true);
-								} else {
-									$(this).dialog("close");
-								}
-							},
-							"json"
-					);
-				},
-				'hierarchy': function(){
-					$.post(
-							starexecRoot+"services/space/makePublic/" + spaceId + "/" + true,
-							{},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location.reload(true);
-								}
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled making public action');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});
 	
-	$("#makePrivate").click(function(){
-		// Display the confirmation dialog
-		$('#dialog-confirm-change-txt').text('do you want to make the single space private or the hierarchy?');
-		$('#dialog-confirm-change').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'space': function(){
-					$.post(
-							starexecRoot+"services/space/makePrivate/" + spaceId + "/" + false,
-							{},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location.reload(true);
-
-								} else {
-									$(this).dialog("close");
-								}
-							},
-							"json"
-					);
-				},
-				'hierarchy': function(){
-					$.post(
-							starexecRoot+"services/space/makePrivate/" + spaceId + "/" + true,
-							{},
-							function(returnCode) {
-								window.location.reload(true);
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled making private action');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});
-
+	
 	log('jQuery UI buttons initialized');
 }
 
@@ -1598,30 +1513,7 @@ function getSpaceDetails(id) {
 	});
 }
 
-function handlePublicButton(id) {
-	$('#loader').show();
-	$.post(  
-			starexecRoot+"services/space/isSpacePublic/" + id,  
-			function(returnCode){
-				switch(returnCode){
-				case 0:
-					$('#makePrivate').hide();
 
-					$('#makePublic').show();
-					break;
-				case 1:
-					$('#makePublic').hide();
-					$('#makePrivate').show();
-					break;
-				}	
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error getting determining whether space is public",5000);
-		$('#makePublic').fadeOut('fast');
-		$('#makePrivate').fadeOut('fast');
-	});
-}
 
 /**
  * Populates the space details of the currently selected space and queries
@@ -1765,14 +1657,11 @@ function checkPermissions(perms, id) {
 		//$('#editSpacePermissions').fadeIn('fast');
 		$('#reserveQueue').fadeIn('fast');
 
-		handlePublicButton(id);
 	} else {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
 		//$('#editSpacePermissions').fadeOut('fast');
-		$('#makePublic').fadeOut('fast');
-		$('#makePrivate').fadeOut('fast');
 		$('#reserveQueue').fadeOut('fast');
 	}	
 
@@ -1937,24 +1826,6 @@ function userCanDeleteAll(dataTable){
 	});
 	return allMatch;
 }
-
-/**
- * For a given dataTable, this extracts the id's of the rows that have been
- * selected by the user
- * 
- * @param dataTable the particular dataTable to extract the id's from
- * @returns {Array} list of id values for the selected rows
- * @author Todd Elvers
- */
-function getSelectedRows(dataTable){
-	var idArray = new Array();
-	var rows = $(dataTable).children('tbody').children('tr.row_selected');
-	$.each(rows, function(i, row) {
-		idArray.push($(this).children('td:first').children('input').val());
-	});
-	return idArray;
-}
-
 
 /**
  * Updates a table by removing selected rows and updating the table's legend to match the new table size.
