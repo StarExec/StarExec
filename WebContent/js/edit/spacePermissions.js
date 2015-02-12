@@ -642,47 +642,6 @@ function populatePermissionDetails(data, user_id) {
 	
 }
 
-/**
- * Populates addUsers table with members of community that the current space resides in.
- * @author Albert Giegerich
- */
-/*
-function populateAddUsersTable(communityId) {
-	$('#loader').show();
-	$.get(  
-		starexecRoot+"services/communities/details/" + communityId,  
-		function(data){  			
-			populateAddUsersTableCallback(data);
-		},  
-		"json"
-	).error(function(){
-		showMessage('error',"Internal error getting community details",5000);
-	});
-}
-
-function populateAddUsersTableCallback(jsonData) {
-	$('#addUsersField legend').children('span:first-child').text(jsonData.space.users.length);
-	// addUsersTable.fnClearTable();	
-	
-	$.each(jsonData.space.users, function(i, user) {
-		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
-		var fullName = user.firstName + ' ' + user.lastName;
-		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>';			
-		if (!user.isPublic) {
-			addUsersTable.fnAddData([userLink, user.institution, emailLink]);
-		} else {
-			$('#addUsersField legend').children('span:first-child').text(jsonData.space.users.length-1);
-		}
-		
-	});
-	
-	// Done loading, hide the loader
-	$('#loader').hide();	
-}
-*/
-
-
 function isRoot(space_id){
     return space_id == "1";
 }
@@ -881,8 +840,7 @@ function setUpButtons() {
 	$('#addUsersButton').unbind('click');
 	$('#addUsersButton').click(function(e) {
 		var selectedUsersIds = getSelectedRows(addUsersTable);
-		var currentSpace = spaceId;
-		var communityId = getSpaceChain('#spaceChain')[1];
+		var selectedSpace = spaceId;
 		if (selectedUsersIds.length > 0) {
 			$('#dialog-confirm-update-txt').text('do you want to copy the selected users to '
 				+ spaceName + ' and all of its subspaces or just to ' + spaceName + '?');
@@ -894,13 +852,18 @@ function setUpButtons() {
 					'space hierarchy': function() {
 						// If the user actually confirms, close the dialog right away
 						$('#dialog-confirm-update').dialog('close');
-						// Make the request to the server	
-						doUserCopyPost(selectedUsersIds,spaceId,communityId,true,doUserCopyPostCB);
+						// Get the community id of the selected space and make the request to the server	
+						$.get(starexecRoot + 'services/space/community/' + selectedSpace, function(communityIdOfSelectedSpace) {
+							doUserCopyPost(selectedUsersIds,selectedSpace,communityIdOfSelectedSpace,true,doUserCopyPostCB);
+						});
 					},
 					'space': function(){
 						// If the user actually confirms, close the dialog right away
 						$('#dialog-confirm-update').dialog('close');
-						doUserCopyPost(selectedUsersIds,spaceId,communityId,false, doUserCopyPostCB);
+						// Get the community id of the selected space and make the request to the server	
+						$.get(starexecRoot + 'services/space/community/' + selectedSpace, function(communityIdOfSelectedSpace) {
+							doUserCopyPost(selectedUsersIds,selectedSpace,communityIdOfSelectedSpace,false,doUserCopyPostCB);
+						});
 					},
 					"cancel": function() {
 						log('user canceled copy action');
@@ -909,7 +872,7 @@ function setUpButtons() {
 				}		
 			});		
 		} else {
-			$('#dialog-confirm-update-txt').text('select users to add to table.'); 
+			$('#dialog-confirm-update-txt').text('select users to add to space.'); 
 			$('#dialog-confirm-update').dialog({
 				modal: true,
 				width: 380,
