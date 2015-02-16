@@ -288,7 +288,7 @@ OPTIONAL: "ow" "nosolve" "nobench"
 REQUIRED: "id" "out"
 OPTIONAL: "ow" "nosolve" "nobench"
 
---getspacexml -Downloads an XML file representing.
+--getspacexml -Downloads an XML file representing the space hierarchy.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
