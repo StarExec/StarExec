@@ -1780,6 +1780,7 @@ public class Jobs {
 	 * @return The list of job pairs or null on failure
 	 */
 	
+	//TODO: This just gets the primary stage right now-- is that what we want?
 	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results, boolean includeExpected, boolean includeCompletion) {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 		try{

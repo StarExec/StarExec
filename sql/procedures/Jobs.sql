@@ -293,10 +293,11 @@ CREATE PROCEDURE RefreshEntriesByAncestor(IN _id INT, IN _time TIMESTAMP)
 -- Retrieves info about job pairs for a given job in a given space with a given configuration,
 -- getting back only the data required to populate a client side datatable
 -- Author: Eric Burns
+-- TODO: This currently only works on the primary stage-- should this change?
 DROP PROCEDURE IF EXISTS GetJobPairsForTableByConfigInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT id, 
+		SELECT job_pairs.id, 
 				solver_id,
 				solver_name,
 				config_id,
@@ -307,9 +308,10 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				job_attributes.attr_value AS result,
 				bench_attributes.attr_value AS expected,
 				completion_id,
-				wallclock,
-				cpu
+				jobline_stage_data.wallclock,
+				jobline_stage_data.cpu
 		FROM job_pairs JOIN job_space_closure ON descendant=job_space_id
+		JOIN jobline_stage_data ON jobline_stage_data.id=job_pairs.primary_stage
 		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
