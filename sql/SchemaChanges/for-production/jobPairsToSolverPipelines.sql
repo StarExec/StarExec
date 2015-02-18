@@ -1,9 +1,6 @@
 USE starexec;
 
-START TRANSACTION
-
-BEGIN
-
+START TRANSACTION;
 -- step 1: port timeouts over to the jobs table, removing them from job_pairs
 
 ALTER TABLE jobs ADD COLUMN cpuTimeout INT;
@@ -43,7 +40,7 @@ ALTER TABLE pipeline_stages DROP FOREIGN KEY pipeline_stages_config_id;
 
 ALTER TABLE job_pairs DROP FOREIGN KEY job_pairs_solver_id;
 ALTER TABLE job_pairs DROP COLUMN page_reclaims;
-ALTER TABLE job_pairs DROP COLUMN page_faults
+ALTER TABLE job_pairs DROP COLUMN page_faults;
 ALTER TABLE job_pairs DROP COLUMN block_input;
 ALTER TABLE job_pairs DROP COLUMN block_output;
 ALTER TABLE job_pairs DROP COLUMN vol_contex_swtch;
