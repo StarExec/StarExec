@@ -37,6 +37,9 @@ public class JobPair extends Identifiable {
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
 							  //the job is initiated to the space the benchmark is in
 	
+	//these defaults are only used temporarily when there is some stage without a set solver and configuration
+	private Solver defaultSolver=null;
+	private Configuration defaultConfiguration=null;
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
@@ -272,7 +275,7 @@ public class JobPair extends Identifiable {
 				return s;
 			}
 		}
-		if (stages.size()>00){
+		if (stages.size()>0){
 			// if we get down here, it means that there are no stages currently added. For convenience,
 			// we simply add an empty stage, which prevents null from being returned by many of the functions
 			// below
@@ -386,5 +389,21 @@ public class JobPair extends Identifiable {
 
 	public void setSandboxNum(int sandboxNum) {
 		this.sandboxNum = sandboxNum;
+	}
+
+	public Solver getDefaultSolver() {
+		return defaultSolver;
+	}
+
+	public void setDefaultSolver(Solver defaultSolver) {
+		this.defaultSolver = defaultSolver;
+	}
+
+	public Configuration getDefaultConfiguration() {
+		return defaultConfiguration;
+	}
+
+	public void setDefaultConfiguration(Configuration defaultConfiguration) {
+		this.defaultConfiguration = defaultConfiguration;
 	}
 }

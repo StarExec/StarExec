@@ -14,7 +14,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 	BEGIN
 		IF (_sortColumn = 0) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
@@ -47,7 +47,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
@@ -78,7 +78,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=1) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
@@ -112,7 +112,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -144,7 +144,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=2) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -180,7 +180,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -211,7 +211,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=3) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -247,7 +247,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -279,7 +279,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=4) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -316,7 +316,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -348,7 +348,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 		ELSEIF (_sortColumn=5) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -385,7 +385,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
@@ -417,7 +417,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 			ELSEIF (_sortColumn=6) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
@@ -451,7 +451,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						
@@ -483,7 +483,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 			END IF;
 			ELSEIF (_sortColumn=7) THEN
 			IF (_sortASC = TRUE) THEN
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
@@ -517,7 +517,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
-				SELECT 	id, 
+				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
 						

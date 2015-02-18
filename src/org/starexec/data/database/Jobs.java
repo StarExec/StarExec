@@ -61,46 +61,6 @@ public class Jobs {
 	}
 	
 	
-	
-	/**
-	 * Creates a new quick job, which is a job with only one job pair. Quick jobs
-	 * are implemented differently than normal jobs with just one pair, because
-	 * no space hierarchy information is used for quick jobs. As such, no relationship
-	 * is necessary between the the space of the solver, the space of the benchmark, and the 
-	 * space the job is being created in.
-	 * @param job The Job object representing the job to create, which should have exactly 1 pair
-	 * and all other relevant fields set
-	 * @param spaceId
-	 * @return
-	 */
-	public static boolean addJob(Job job,int spaceId) {
-		Connection con=null;
-		try {
-			int jobSpaceId=Spaces.addJobSpace("job space",con);
-			job.setPrimarySpace(jobSpaceId);
-
-			job.getJobPairs().get(0).setJobSpaceId(jobSpaceId);
-			Jobs.addJob(con, job);
-			//put the job in the space it was created in
-			Jobs.associate(con, job.getId(), spaceId);
-			for(JobPair pair : job) {
-				pair.setJobId(job.getId());
-				//writer.write(getPairString(pair));
-				JobPairs.addJobPair(con, pair);
-			}
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-			Common.doRollback(con);
-
-		}finally {
-			Common.safeClose(con);
-		}
-		
-		return false;
-	} 
-	
 	/**
 	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
 	 * they must all be rooted at the same space. Upon return, each pair will have its job space id set
@@ -1702,7 +1662,7 @@ public class Jobs {
 		
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-		int id;
+		Integer id;
 		Solver solve=null;
 		Configuration config=null;
 		HashMap<Integer,JobPair> idsToPairs = new HashMap<Integer,JobPair>();
@@ -1714,18 +1674,22 @@ public class Jobs {
 			
 			//every row in this resultset is a single stage 
 			while (results.next()) {
-				int tempId=results.getInt("job_pairs.id");
-				log.debug("working with "+tempId);
-				JobPair jp=idsToPairs.get(tempId);
+				
+				JobPair jp=idsToPairs.get(results.getInt("job_pairs.id"));
 				JoblineStage stage=new JoblineStage();
 				stage.setCpuUsage(results.getInt("cpu"));
 				stage.setWallclockTime(results.getInt("wallclock"));
 				stage.setStageId(results.getInt("pipeline_stages.stage_id"));
 				//everything below this line is in a stage
 				id=results.getInt("solver_id");
-				
+				//means it was null in SQL
+				if (id==0) {
+					id=jp.getDefaultSolver().getId();
+					solvers.put(id, jp.getDefaultSolver());
+				}
 				
 				if (!solvers.containsKey(id)) {
+					
 					solve=new Solver();
 					solve.setId(id);
 					solve.setName(results.getString("solver_name"));
@@ -1733,7 +1697,14 @@ public class Jobs {
 				}
 				stage.setSolver(solvers.get(id));
 				
+				
+				
 				id=results.getInt("config_id");
+				
+				if (id==0) {
+					id=jp.getDefaultConfiguration().getId();
+					configs.put(id, jp.getDefaultConfiguration());
+				}
 				if (!configs.containsKey(id)) {
 					config=new Configuration();
 					config.setId(id);
@@ -1778,6 +1749,8 @@ public class Jobs {
 			results = procedure.executeQuery();
 			
 			List<JobPair> pairs=processStatResults(results);
+			
+			
 			
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -3701,6 +3674,19 @@ public class Jobs {
 		Benchmark bench=null;
 		while(results.next()){
 			JobPair jp = new JobPair();
+			
+			// these are the solver and configuration defaults. If any jobline_stage_data
+			// entry has null for a stage_id, then these are the correct primitives. 
+						
+			Solver solve=new Solver();
+			solve.setId(results.getInt("solver_id"));
+			solve.setName(results.getString("solver_name"));
+						
+			Configuration c=new Configuration();
+			c.setId(results.getInt("config_id"));
+			c.setName(results.getString("config_name"));
+			jp.setDefaultConfiguration(c);
+			jp.setDefaultSolver(solve);
 			Status s = new Status();
 
 			s.setCode(results.getInt("status_code"));

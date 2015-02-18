@@ -64,8 +64,8 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		 try {
 			 log.debug("received a call to add a job pair with path = "+pair.getPath());
-			int primStage=pair.getPrimaryStage().getId();
-			
+			int primStage=pair.getPrimaryStage().getStageId();
+			log.debug("prim stage = "+primStage);
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());

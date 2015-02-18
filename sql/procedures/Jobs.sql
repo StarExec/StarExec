@@ -362,7 +362,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id
 		JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id
-		JOIN pipeline_stages ON jobline_stage_data.stage_id=pipeline_stages.stage_id
+		LEFT JOIN pipeline_stages ON jobline_stage_data.stage_id=pipeline_stages.stage_id
 		WHERE ancestor=_jobSpaceId;
 	END //
 	
@@ -373,7 +373,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
-		SELECT status_code,
+		SELECT status_code,solver_name,config_name,solver_id,config_id,
 		job_pairs.id,job_pairs.bench_id,
 		bench_attributes.attr_value AS expected,
 		job_attributes.attr_value AS result
