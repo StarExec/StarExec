@@ -81,6 +81,8 @@ ALTER TABLE job_pairs DROP COLUMN max_res_set;
 
 
 -- Step 7: Add primary stage column to the job_pairs table
-ALTER TABLE job_pairs ADD COLUMN primary_stage INT; -- which of this pairs stages is the primary one?
+ALTER TABLE job_pairs ADD COLUMN primary_stage INT; -- which of this pairs stages is the primary one? references jobline_stage_data.id
+
+UPDATE job_pairs JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id SET primary_stage=jobline_stage_data.id;
 
 COMMIT;

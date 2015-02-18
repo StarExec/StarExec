@@ -37,13 +37,22 @@ public class JobPairs {
 	 * @param con
 	 * @return
 	 */
-	private static boolean addJobPairStage(int pairId, int stageId, Connection con) {
+	private static boolean addJobPairStage(int pairId, int stageId, boolean primary, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobPairStage(?,?)}");
+			log.debug("the primary is ");
+			log.debug(primary);
+			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?)}");
 			procedure.setInt(1, pairId);
 			procedure.setInt(2,stageId);
+			procedure.setBoolean(3, primary);
+			procedure.registerOutParameter(4, java.sql.Types.INTEGER);	
+			
+
+			// Update the pair's ID so it can be used outside this method
 			procedure.executeUpdate();
+			
+
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -64,9 +73,7 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		 try {
 			 log.debug("received a call to add a job pair with path = "+pair.getPath());
-			int primStage=pair.getPrimaryStage().getStageId();
-			log.debug("prim stage = "+primStage);
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getPrimarySolver().getConfigurations().get(0).getId());
@@ -78,16 +85,17 @@ public class JobPairs {
 			procedure.setString(8,pair.getPrimarySolver().getName());
 			procedure.setString(9,pair.getBench().getName());
 			procedure.setInt(10,pair.getPrimarySolver().getId());
-			procedure.setInt(11,primStage);
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(11, java.sql.Types.INTEGER);	
 		
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(12));
+			pair.setId(procedure.getInt(11));
+			int primStage=pair.getPrimaryStage().getStageId();
+
 			for (JoblineStage stage : pair.getStages()) {
-				addJobPairStage(pair.getId(),stage.getStageId(),con);
+				addJobPairStage(pair.getId(),stage.getStageId(),stage.getStageId()==primStage,con);
 			}
 			return true;
 		} catch (Exception e) {

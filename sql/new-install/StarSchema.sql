@@ -322,8 +322,7 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
-	primary_stage INT, -- which of this pairs stages is the primary one? This should not usually be null, but if it is,
-					   -- then the first stage is the primary one
+	primary_stage INT, -- which of this pairs stages is the primary one? references jobline_stage_data.id
 	PRIMARY KEY(id),
 	KEY(sge_id),
 	KEY (job_space_id, config_id),
