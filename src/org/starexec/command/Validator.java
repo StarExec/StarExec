@@ -44,7 +44,11 @@ public class Validator {
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
 	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
-        private static String[] allowedCopyHierParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
+	private static String[] allowedCopyUserParams=new String[]{R.PARAM_TO,R.PARAM_ID};
+	private static String[] allowedCopySpaceParams=new String[]{R.PARAM_TO,R.PARAM_ID, R.PARAM_FROM};
+
+    private static String[] allowedCopySolverParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
+    private static String[] allowedCopyBenchmarkParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
 	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
@@ -239,13 +243,6 @@ public class Validator {
     		return Status.ERROR_MISSING_PARAM;
     	}
     	
-    	//these three types do NOT require PARAM_FROM, but other types do
-    	if (!type.equals("solver") && !type.equals("benchmark") && !type.equals("job")) {
-    		if (!paramsExist(new String[]{R.PARAM_FROM},commandParams)) {
-        		return Status.ERROR_MISSING_PARAM;
-        	}
-    	}
-    	
     	if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID)) 
     			|| (commandParams.containsKey(R.PARAM_FROM) && !isValidPosInteger(commandParams.get(R.PARAM_FROM)))
     			|| !isValidPosInteger(commandParams.get(R.PARAM_TO))) {
@@ -253,10 +250,15 @@ public class Validator {
     	}
     	
     	//the hierarchy parameter is also acceptable if the type is either solver or space
-    	if (type.equals("solver") || type.equals("space")) {
-    		findUnnecessaryParams(allowedCopyHierParams,commandParams);
-    	} else {
-    		findUnnecessaryParams(allowedCopyParams,commandParams);
+    	if (type.equals("user")) {
+    		findUnnecessaryParams(allowedCopyUserParams,commandParams);
+    	} else if (type.equals("space")) {
+    		findUnnecessaryParams(allowedCopySpaceParams,commandParams);
+    	} else if (type.equals("solver")) {
+    		findUnnecessaryParams(allowedCopySolverParams,commandParams);
+
+    	} else if (type.equals("benchmark") || type.equals("job")) {
+    		findUnnecessaryParams(allowedCopyBenchmarkParams,commandParams);
     	}
     	
     	return 0;

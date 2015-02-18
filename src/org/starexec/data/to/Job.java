@@ -27,6 +27,12 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	@Expose private String description = "no description"; 
 	private Queue queue = null;
 	private long seed = 0;
+	
+	private int cpuTimeout = -1;
+	private int wallclockTimeout = -1; 
+	private long maxMemory;		//maximum memory the pair can use, in bytes
+	
+	
 	@Expose private Timestamp createTime;
 	@Expose private Timestamp completeTime;
 	// this is the root JOB SPACE for this job. It is NOT a space from the spaces table.
@@ -38,6 +44,8 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	private Processor postProcessor;	
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
+	
+	
 	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
@@ -263,6 +271,30 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 */
 	public Timestamp getCompleteTime() {
 		return completeTime;
+	}
+
+	public int getCpuTimeout() {
+		return cpuTimeout;
+	}
+
+	public void setCpuTimeout(int cpuTimeout) {
+		this.cpuTimeout = cpuTimeout;
+	}
+
+	public int getWallclockTimeout() {
+		return wallclockTimeout;
+	}
+
+	public void setWallclockTimeout(int wallclockTimeout) {
+		this.wallclockTimeout = wallclockTimeout;
+	}
+
+	public long getMaxMemory() {
+		return maxMemory;
+	}
+
+	public void setMaxMemory(long maxMemory) {
+		this.maxMemory = maxMemory;
 	}
 
 	

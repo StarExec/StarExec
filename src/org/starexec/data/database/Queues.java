@@ -19,6 +19,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.data.to.pipelines.JoblineStage;
 
 
 /**
@@ -412,8 +413,12 @@ public class Queues {
 				//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
 				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
 				//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				JoblineStage stage=new JoblineStage();
+				
+				stage.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
+				stage.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				jp.addStage(stage);
+
 				Status s = new Status();
 
 				s.setCode(results.getInt("status_code"));
@@ -533,18 +538,20 @@ public class Queues {
 				Solver s=new Solver();
 				s.setId(results.getInt("solver_id"));
 				s.setName(results.getString("solver_name"));
-				jp.setSolver(s);
+				JoblineStage stage=new JoblineStage();
+				stage.setSolver(s);
 				
 				Configuration c = new Configuration();
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
-				jp.setConfiguration(c);
-				jp.getSolver().addConfiguration(c);
+				stage.setConfiguration(c);
+				jp.getPrimarySolver().addConfiguration(c);
 
 				Status stat = new Status();
 
 				stat.setCode(results.getInt("status_code"));
 				jp.setStatus(stat);
+				jp.addStage(stage);
 				returnList.add(jp);
 			}			
 			log.debug("the returnlist had "+returnList.size()+" items");
@@ -827,8 +834,9 @@ public class Queues {
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
 				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				jp.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				JoblineStage stage=new JoblineStage();
+				stage.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
+				stage.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 				Status s = new Status();
 
 				s.setCode(results.getInt("status_code"));

@@ -2012,7 +2012,7 @@ public class RESTServices {
 	public String copyUserToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of users to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
+				
 				|| !Util.paramExists("copyToSubspaces", request)
 				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -2021,14 +2021,12 @@ public class RESTServices {
 		// Get the id of the user who initiated the request
 		int requestUserId = SessionUtil.getUserId(request);
 		
-		// Get the space the user is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
 		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-
-		ValidatorStatusCode status=SpaceSecurity.canCopyUserBetweenSpaces(fromSpace, spaceId, requestUserId, selectedUsers, copyToSubspaces);
+		
+		ValidatorStatusCode status=SpaceSecurity.canCopyUserBetweenSpaces(spaceId, requestUserId, selectedUsers, copyToSubspaces);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}

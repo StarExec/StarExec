@@ -318,14 +318,14 @@ function onSpaceDrop(event, ui) {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 					// Make the request to the server	
-					doUserCopyPost(ids,destSpace,spaceId,true,destName,ui);
+					doUserCopyPost(ids,destSpace,true,destName,ui);
 								
 											
 				},
 				'space': function(){
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-					doUserCopyPost(ids,destSpace,spaceId,false,destName,ui);
+					doUserCopyPost(ids,destSpace,false,destName,ui);
 						
 				},
 				"cancel": function() {
@@ -349,7 +349,7 @@ function onSpaceDrop(event, ui) {
 					$('#dialog-confirm-copy').dialog('close');
 
 					// Making the request		
-					doSpaceCopyPost(ids,destSpace,spaceId,false,destName);
+					doSpaceCopyPost(ids,destSpace,false,destName);
 					
 				},
 				'hierarchy': function(){
@@ -357,7 +357,7 @@ function onSpaceDrop(event, ui) {
 					$('#dialog-confirm-copy').dialog('close');
 
 					// Making the request
-					doSpaceCopyPost(ids,destSpace,spaceId,true,destName);
+					doSpaceCopyPost(ids,destSpace,true,destName);
 				},
 				"cancel": function() {
 					log('user canceled copy action');
@@ -425,10 +425,10 @@ function onSpaceDrop(event, ui) {
 	}
 }
 
-function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
+function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-			{selectedIds : ids, fromSpace : spaceId, copyHierarchy: copyHierarchy},
+			{selectedIds : ids, copyHierarchy: copyHierarchy},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {							
@@ -441,10 +441,10 @@ function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
 	});
 }
 
-function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
+function doUserCopyPost(ids,destSpace,copyToSubspaces,destName,ui){
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/user',
-			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: copyToSubspaces},	
+			{selectedIds : ids, copyToSubspaces: copyToSubspaces},	
 			function(returnCode) {
 				parseReturnCode(returnCode);
 			},

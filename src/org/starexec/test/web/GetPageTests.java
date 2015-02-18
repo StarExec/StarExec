@@ -188,7 +188,7 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getPairsInSpaceTest(){
-		driver.get(Util.url("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getConfiguration().getId()
+		driver.get(Util.url("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getPrimaryConfiguration().getId()
 				+"&sid="+job.getPrimarySpace()+"&id="+job.getId()));
 		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
 	}

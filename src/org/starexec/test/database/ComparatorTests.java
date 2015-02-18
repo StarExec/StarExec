@@ -12,6 +12,7 @@ import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
@@ -121,8 +122,12 @@ public class ComparatorTests extends TestSequence {
 			s2.setName(b);
 			JobPair p1=new JobPair();
 			JobPair p2=new JobPair();
-			p1.setSolver(s1);
-			p2.setSolver(s2);
+			JoblineStage st1=new JoblineStage();
+			JoblineStage st2=new JoblineStage();
+			p1.addStage(st1);
+			p2.addStage(st2);
+			st2.setSolver(s1);
+			st2.setSolver(s2);
 			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
 		}
 		comp=new JobPairComparator(2);
@@ -135,8 +140,12 @@ public class ComparatorTests extends TestSequence {
 			c2.setName(b);
 			JobPair p1=new JobPair();
 			JobPair p2=new JobPair();
-			p1.setConfiguration(c1);
-			p2.setConfiguration(c2);
+			JoblineStage s1=new JoblineStage();
+			JoblineStage s2=new JoblineStage();
+			p1.addStage(s1);
+			p2.addStage(s2);
+			s1.setConfiguration(c1);
+			s2.setConfiguration(c2);
 			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
 		}
 		
@@ -147,8 +156,12 @@ public class ComparatorTests extends TestSequence {
 			
 			JobPair p1=new JobPair();
 			JobPair p2=new JobPair();
-			p1.setWallclockTime(a);
-			p2.setWallclockTime(b);
+			JoblineStage s1=new JoblineStage();
+			JoblineStage s2=new JoblineStage();
+			p1.addStage(s1);
+			p2.addStage(s2);
+			s1.setWallclockTime(a);
+			s2.setWallclockTime(b);
 			Assert.assertTrue(comp.compare(p1, p1)==Double.compare(a, b));
 		}
 		
@@ -159,8 +172,12 @@ public class ComparatorTests extends TestSequence {
 			
 			JobPair p1=new JobPair();
 			JobPair p2=new JobPair();
-			p1.setCpuUsage(a);
-			p2.setCpuUsage(b);
+			JoblineStage s1=new JoblineStage();
+			JoblineStage s2=new JoblineStage();
+			p1.addStage(s1);
+			p2.addStage(s2);
+			s1.setCpuUsage(a);
+			s2.setCpuUsage(b);
 			Assert.assertTrue(comp.compare(p1, p1)==Double.compare(a, b));
 		}
 	}

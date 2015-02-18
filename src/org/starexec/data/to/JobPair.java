@@ -1,9 +1,13 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.starexec.constants.R;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PipelineStage;
 
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
@@ -12,50 +16,35 @@ import org.starexec.constants.R;
 public class JobPair extends Identifiable {	
 	private int jobId = -1;
 	private int gridEngineId = -1;
-	private int cpuTimeout = -1;
-	private int wallclockTimeout = -1;
+	
+
+
 	private int completionId=-1;
 	private int jobSpaceId=-1;
 	private String jobSpaceName="";
 	private WorkerNode node = null;
-	private Solver solver = null;
-	private Benchmark bench = null;	
+	private Benchmark bench = null;	//this is the input benchmark to the jobline
 	private Status status = null;
 	private Properties attributes = null;
-	
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;	
 	private int exitStatus;
-	private double wallclockTime;
-	private double cpuTime;
-	private double userTime;
-	private double systemTime;
-	private double ioDataUsage;
-	private double ioDataWait;
-	private double memoryUsage;
-	private double maxVirtualMemory;
-	private double maxResidenceSetSize;
-	private double pageReclaims;
-	private double pageFaults;
-	private double blockInput;
-	private double blockOutput;
-	private long maxMemory;		//maximum memory the pair can use, in bytes
-	private double voluntaryContextSwitches;
-	private double involuntaryContextSwitches;
-	private Configuration configuration = null;
+	private List<JoblineStage> stages=null; // this is an ordered list of all the stages in this jobline
+	private int primaryStageId;
+	private int sandboxNum;
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
 							  //the job is initiated to the space the benchmark is in
 	
 	public JobPair() {
 		this.node = new WorkerNode();
-		this.solver = new Solver();
 		this.bench = new Benchmark();
 		this.status = new Status();		
-		this.configuration=new Configuration();
 		this.attributes=new Properties();
 		this.space=new Space();
+		setStages(new ArrayList<JoblineStage>());
+		primaryStageId=-1;
 	}
 	
 	/**
@@ -108,33 +97,7 @@ public class JobPair extends Identifiable {
 		this.gridEngineId = gridEngineId;
 	}
 		
-	/**
-	 * @return the maximum amount of cpu time (in seconds) a job pair can run
-	 */
-	public int getCpuTimeout() {
-		return this.cpuTimeout;
-	}
-
-	/**
-	 * @param timeout the cpu timeout for the job pair
-	 */
-	public void setCpuTimeout(int timeout) {
-		this.cpuTimeout = timeout;
-	}
 	
-	/**
-	 * @return the maximum amount of wallclock time (in seconds) a job pair can run
-	 */
-	public int getWallclockTimeout() {
-		return this.wallclockTimeout;
-	}
-
-	/**
-	 * @param timeout the wallclock timeout for the job pair
-	 */
-	public void setWallclockTimeout(int timeout) {
-		this.wallclockTimeout = timeout;
-	}
 	
 	/**
 	 * @return the node this pair ran on
@@ -150,19 +113,6 @@ public class JobPair extends Identifiable {
 		this.node = node;
 	}
 	
-	/**
-	 * @return the solver used in this pair
-	 */
-	public Solver getSolver() {
-		return solver;
-	}
-	
-	/**
-	 * @param solver the solver to set for this pair
-	 */
-	public void setSolver(Solver solver) {
-		this.solver = solver;
-	}
 	
 	/**
 	 * @return the starexec-result value from attributes list
@@ -257,230 +207,6 @@ public class JobPair extends Identifiable {
 		this.exitStatus = exitStatus;
 	}
 
-	/**
-	 * @return the wallclock time it took for this pair to execute in seconds
-	 */
-	public double getWallclockTime() {
-		return wallclockTime;
-	}
-
-	/**
-	 * @param wallclockTime the wallclock time to set for this pair
-	 */
-	public void setWallclockTime(double wallclockTime) {
-		this.wallclockTime = wallclockTime;
-	}
-
-	/**
-	 * @return the cpu time usage in seconds
-	 */
-	
-	public double getCpuTime() {
-		return cpuTime;
-	}
-
-	/**
-	 * @param cpuTime the cpu usage to set for this pair
-	 */
-	public void setCpuUsage(double cpuTime) {
-		this.cpuTime = cpuTime;
-	}
-
-	/**
-	 * @return the the total amount of time spent executing in user mode in seconds + microseconds
-	 */
-	public double getUserTime() {
-		return userTime;
-	}
-
-	/**
-	 * @param userTime the user time to set for this pair
-	 */
-	public void setUserTime(double userTime) {
-		this.userTime = userTime;
-	}
-
-	/**
-	 * @return the total amount of time spent executing in kernel mode
-	 */
-	public double getSystemTime() {
-		return systemTime;
-	}
-
-	/**
-	 * @param systemTime the system time to set for this pair
-	 */
-	public void setSystemTime(double systemTime) {
-		this.systemTime = systemTime;
-	}
-
-	/**
-	 * @return the amount of data transferred in input/output operations
-	 */
-	public double getIoDataUsage() {
-		return ioDataUsage;
-	}
-
-	/**
-	 * @param ioDataUsage the io data usage to set for this pair
-	 */
-	public void setIoDataUsage(double ioDataUsage) {
-		this.ioDataUsage = ioDataUsage;
-	}
-
-	/**
-	 * @return the io wait time in seconds
-	 */
-	public double getIoDataWait() {
-		return ioDataWait;
-	}
-
-	/**
-	 * @param ioDataWait the io wait time to set for this job
-	 */
-	public void setIoDataWait(double ioDataWait) {
-		this.ioDataWait = ioDataWait;
-	}
-
-	/**
-	 * @return the integral memory usage in Gbytes seconds
-	 */
-	public double getMemoryUsage() {
-		return memoryUsage;
-	}
-
-	/**
-	 * @param memoryUsage the memory usage to set for this pair
-	 */
-	public void setMemoryUsage(double memoryUsage) {
-		this.memoryUsage = memoryUsage;
-	}
-
-	/**
-	 * @return the maximum vmem size in bytes
-	 */
-	public double getMaxVirtualMemory() {
-		return maxVirtualMemory;
-	}
-
-	/**
-	 * @param maxVirtualMemory the maximum virtual memory size to set for this pair
-	 */
-	public void setMaxVirtualMemory(double maxVirtualMemory) {
-		this.maxVirtualMemory = maxVirtualMemory;
-	}
-
-	/**
-	 * @return the maximum resident set size used (in kilobytes)
-	 */
-	public double getMaxResidenceSetSize() {
-		return maxResidenceSetSize;
-	}
-
-	/**
-	 * @param d the maxResidenceSetSize to set for this pair
-	 */
-	public void setMaxResidenceSetSize(double d) {
-		this.maxResidenceSetSize = d;
-	}
-
-	/**
-	 * @return the number of page faults serviced without any I/O activity
-	 */
-	public double getPageReclaims() {
-		return pageReclaims;
-	}
-
-	/**
-	 * @param pageReclaims the page reclaims to set for this pair
-	 */
-	public void setPageReclaims(double pageReclaims) {
-		this.pageReclaims = pageReclaims;
-	}
-
-	/**
-	 * @return the number of page faults serviced that required I/O activity
-	 */
-	public double getPageFaults() {
-		return pageFaults;
-	}
-
-	/**
-	 * @param pageFaults the page faults to set for this pair
-	 */
-	public void setPageFaults(double pageFaults) {
-		this.pageFaults = pageFaults;
-	}
-
-	/**
-	 * @return the number of times the file system had to perform input
-	 */
-	public double getBlockInput() {
-		return blockInput;
-	}
-
-	/**
-	 * @param blockInput the block input to set for this pair
-	 */
-	public void setBlockInput(double blockInput) {
-		this.blockInput = blockInput;
-	}
-
-	/**
-	 * @return the number of times the file system had to perform output
-	 */
-	public double getBlockOutput() {
-		return blockOutput;
-	}
-
-	/**
-	 * @param blockOutput the block output to set for this pair
-	 */
-	public void setBlockOutput(double blockOutput) {
-		this.blockOutput = blockOutput;
-	}
-
-	/**
-	 * @return the number of times a context switch resulted due to a process voluntarily giving up the processor before its time slice was completed
-	 */
-	public double getVoluntaryContextSwitches() {
-		return voluntaryContextSwitches;
-	}
-
-	/**
-	 * @param voluntaryContextSwitches the voluntary context switches to set for this pair
-	 */
-	public void setVoluntaryContextSwitches(double voluntaryContextSwitches) {
-		this.voluntaryContextSwitches = voluntaryContextSwitches;
-	}
-
-	/**
-	 * @return the number of times a context switch resulted due to a higher priority process becoming runnable or because the current process exceeded its time slice
-	 */
-	public double getInvoluntaryContextSwitches() {
-		return involuntaryContextSwitches;
-	}
-
-	/**
-	 * @param involuntaryContextSwitches the involuntary context switches to set for this pair
-	 */
-	public void setInvoluntaryContextSwitches(double involuntaryContextSwitches) {
-		this.involuntaryContextSwitches = involuntaryContextSwitches;
-	}
-
-	/**
-	 * @return the configuration
-	 */
-	public Configuration getConfiguration() {
-		return configuration;
-	}
-
-	/**
-	 * @param configuration the configuration to set
-	 */
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
 
 	/**
 	 * @return the space
@@ -521,20 +247,144 @@ public class JobPair extends Identifiable {
 	public String getJobSpaceName() {
 		return jobSpaceName;
 	}
-	
-/**
- * Sets max memory usage
- * @param maxMemory memory in bytes
- */
-	public void setMaxMemory(long maxMemory) {
-		this.maxMemory = maxMemory;
+
+
+	public List<JoblineStage> getStages() {
+		return stages;
 	}
+
+	public void setStages(List<JoblineStage> stages) {
+		this.stages = stages;
+	}
+	
 	/**
-	 * Gets max memory usage by this pair
-	 * @return Memory usage in bytes
+	 * Adds a stage to the end of this job pairs stage list
+	 * @param stage
 	 */
-	public long getMaxMemory() {
-		return maxMemory;
+	public void addStage(JoblineStage stage) {
+		this.stages.add(stage);
 	}
 	
+	public JoblineStage getPrimaryStage() {
+		
+		for (JoblineStage s : stages) {
+			if (s.isPrimary() || (primaryStageId>0 && s.getStageId()==primaryStageId)) {
+				return s;
+			}
+		}
+		if (stages.size()>00){
+			// if we get down here, it means that there are no stages currently added. For convenience,
+			// we simply add an empty stage, which prevents null from being returned by many of the functions
+			// below
+			return stages.get(0);
+
+		}
+		
+		
+		// just return the first stage if there is none marked as primary
+		return null;
+		
+	}
+	
+	/**
+	 * Returns the configuration of the "priamry" stage of this jobline. Returns
+	 * null  if there is no such stage.
+	 * @return
+	 */
+	public Configuration getPrimaryConfiguration() {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return null;
+		}
+		
+		return s.getConfiguration();
+	}
+	
+	/**
+	 * Returns the solver of the "priamry" stage of this jobline. Returns
+	 * null  if there is no such stage.
+	 * @return
+	 */
+	public Solver getPrimarySolver() {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return null;
+		}
+		
+		return s.getSolver();
+	}
+	
+	/**
+	 * Returns the solver of the "priamry" stage of this jobline. Returns
+	 * null  if there is no such stage.
+	 * @return
+	 */
+	public Double getPrimaryCpuTime() {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return null;
+		}
+		
+		return s.getCpuTime();
+	}
+	
+	/**
+	 * Returns the solver of the "priamry" stage of this jobline. Returns
+	 * null  if there is no such stage.
+	 * @return
+	 */
+	public Double getPrimaryWallclockTime() {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return null;
+		}
+		
+		return s.getWallclockTime();
+	}
+	
+	/**
+	 * Returns the solver of the "priamry" stage of this jobline. Returns
+	 * null  if there is no such stage.
+	 * @return
+	 */
+	public Double getPrimaryMaxVirtualMemory() {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return null;
+		}
+		
+		return s.getMaxVirtualMemory();
+	}
+	
+	/**
+	 * Returns a string that uniquely identifies the stages of this jobline
+	 * using the following format. A colon will terminate the string. The
+	 * empty string is returned if there are no stages
+	 * <stage1id>:<stage2id>:...
+	 * @return
+	 */
+	public String getStageString() {
+		StringBuilder sb=new StringBuilder();
+		for (JoblineStage s : stages) {
+			sb.append(s.getConfiguration().getId());
+			sb.append(":");
+		}
+		return sb.toString();
+	}
+
+	public int getPrimaryStageId() {
+		return primaryStageId;
+	}
+
+	public void setPrimaryStageId(int primaryStageId) {
+		this.primaryStageId = primaryStageId;
+	}
+
+	public int getSandboxNum() {
+		return sandboxNum;
+	}
+
+	public void setSandboxNum(int sandboxNum) {
+		this.sandboxNum = sandboxNum;
+	}
 }

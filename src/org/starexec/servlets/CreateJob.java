@@ -19,6 +19,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Pipelines;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
@@ -35,6 +36,9 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -117,7 +121,7 @@ public class CreateJob extends HttpServlet {
 		}
 		List<Integer> benchmarkIds = new ArrayList<Integer>();
 		benchmarkIds.add(benchId);
-		JobManager.buildJob(j, cpuLimit, wallclockLimit,memoryLimit, benchmarkIds, configIds, sId, null);
+		JobManager.buildJob(j, benchmarkIds, configIds, sId, null);
 	}
 	/**
 	 * Tests a solver using default info for the space it is being uploaded in
@@ -187,7 +191,9 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
 				seed);
-		
+		j.setCpuTimeout(cpuLimit);
+		j.setWallclockTimeout(runLimit);
+		j.setMaxMemory(memoryLimit);
 		
 		
 		String selection = request.getParameter(run);
@@ -215,13 +221,8 @@ public class CreateJob extends HttpServlet {
 			spaces.add(0, Spaces.get(space));
 			
 			for (Space s : spaces) {
-			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, cpuLimit, runLimit, memoryLimit, 
-								  s.getId(), SP.get(s.getId()));
-			    //seemingly unnecessary code below, as the function above never returns null
-			    //if (pairs == null) {
-			    //	error="unable to get any job pairs for the space ID = "+s.getId();
-				//	break;
-			    //}
+			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
+			    
 			    spaceToPairs.put(s.getId(), pairs);
 			}
 			log.debug("added all the job pairs from every space");
@@ -242,7 +243,7 @@ public class CreateJob extends HttpServlet {
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 			if (benchMethod.equals("runAllBenchInSpace")) {
-			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, cpuLimit, runLimit, memoryLimit, space, Spaces.getName(space),configIds);
+			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, space, Spaces.getName(space),configIds);
 			    if (pairs==null) {
 			    	error="unable to get any job pairs for the space ID = "+space;
 			    } else {
@@ -253,7 +254,7 @@ public class CreateJob extends HttpServlet {
 			}else if (benchMethod.equals("runAllBenchInHierarchy")) {
 				log.debug("got request to run all in bench hierarchy");
 
-				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, cpuLimit, runLimit,memoryLimit, SP);
+				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, SP);
 				
 				if (traversalMethod.equals("depth")) {
 					log.debug("User selected depth-first traversal");
@@ -274,7 +275,7 @@ public class CreateJob extends HttpServlet {
 				}
 			} else {
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
-				JobManager.buildJob(j, cpuLimit, runLimit,memoryLimit, benchmarkIds, configIds, space, SP);
+				JobManager.buildJob(j, benchmarkIds, configIds, space, SP);
 			}
 		}
 		
@@ -292,8 +293,9 @@ public class CreateJob extends HttpServlet {
 			return;
 		}
 		
-		//decoupling adding job to db and script creation/submission
-		//boolean submitSuccess = JobManager.submitJob(j, space);
+		
+		
+
 		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
 

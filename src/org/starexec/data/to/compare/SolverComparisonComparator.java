@@ -32,19 +32,19 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 			double db2=0;
 			if (column==1) {
 				if (isWallclock) {
-					db1=c1.getFirstPair().getWallclockTime();
-					db2=c2.getFirstPair().getWallclockTime();
+					db1=c1.getFirstPair().getPrimaryWallclockTime();
+					db2=c2.getFirstPair().getPrimaryWallclockTime();
 				} else {
-					db1=c1.getFirstPair().getCpuTime();
-					db2=c2.getFirstPair().getCpuTime();
+					db1=c1.getFirstPair().getPrimaryCpuTime();
+					db2=c2.getFirstPair().getPrimaryCpuTime();
 				}
 			} else if (column==2) {
 				if (isWallclock) {
-					db1=c1.getSecondPair().getWallclockTime();
-					db2=c2.getSecondPair().getWallclockTime();
+					db1=c1.getSecondPair().getPrimaryWallclockTime();
+					db2=c2.getSecondPair().getPrimaryWallclockTime();
 				} else {
-					db1=c1.getSecondPair().getCpuTime();
-					db2=c2.getSecondPair().getCpuTime();
+					db1=c1.getSecondPair().getPrimaryCpuTime();
+					db2=c2.getSecondPair().getPrimaryCpuTime();
 				}
 			} else if (column==3) {
 				if (isWallclock) {

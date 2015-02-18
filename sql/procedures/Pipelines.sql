@@ -36,9 +36,13 @@ CREATE PROCEDURE AddPipeline(IN _uid INT, IN _name VARCHAR(128), OUT _id INT)
 -- pipelines must be added to the database in the order that they are to be used in the pipeline
 -- to ensure that the AUTO_INCREMENT IDs are ordered
 DROP PROCEDURE IF EXISTS AddPipelineStage;
-CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _eid INT, IN _keep BOOLEAN, OUT _id INT)
+CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _cid INT, IN _keep BOOLEAN, OUT _id INT)
 	BEGIN
-		INSERT INTO pipeline_stages (pipeline_id, config_id, keep_output) VALUES (_pid, _eid,_keep);
+		INSERT INTO pipeline_stages (pipeline_id, config_id, keep_output,solver_name,config_name,solver_id)
+		VALUES (_pid, _cid,_keep,
+		(SELECT solvers.name FROM solvers JOIN configurations ON configurations.solver_id=solvers.id WHERE configurations.id=_cid),
+		(SELECT name FROM configurations WHERE id=_cid),
+		(SELECT solvers.id FROM solvers JOIN configurations ON configurations.solver_id=solvers.id WHERE configurations.id=_cid));
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 
@@ -52,9 +56,10 @@ CREATE PROCEDURE AddPipelineDependency(IN _sid INT, IN _iid INT, IN _type INT, I
 
 	END //
 	
+-- deletes a pipeline from the database. This will also delete all of its dependencies and stages
 DROP PROCEDURE IF EXISTS DeletePipeline;
 CREATE PROCEDURE DeletePipeline(IN _pid INT)
 	BEGIN
-		DELETE FROM pipeline_dependencies WHERE id=_pid;
+		DELETE FROM solver_pipelines WHERE id=_pid;
 	END //
 DELIMITER ; -- This should always be at the end of this file

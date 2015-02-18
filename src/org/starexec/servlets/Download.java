@@ -547,30 +547,30 @@ public class Download extends HttpServlet {
 				sb.append(pair.getBench().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getSolver().getName());
+			sb.append(pair.getPrimarySolver().getName());
 			sb.append(",");
 			if (returnIds) {
-				sb.append(pair.getSolver().getId());
+				sb.append(pair.getPrimarySolver().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getConfiguration().getName());
+			sb.append(pair.getPrimaryConfiguration().getName());
 			sb.append(",");
 			if (returnIds) {
-				sb.append(pair.getConfiguration().getId());
+				sb.append(pair.getPrimaryConfiguration().getId());
 				sb.append(",");
 			}
 			sb.append(pair.getStatus().toString());
 
 			sb.append(",");
-			sb.append((pair.getCpuTime()));
+			sb.append((pair.getPrimaryCpuTime()));
 
 			sb.append(",");
-			sb.append((pair.getWallclockTime()));
+			sb.append((pair.getPrimaryWallclockTime()));
 
 			sb.append(",");
 			
 			
-			sb.append(pair.getMaxVirtualMemory());
+			sb.append(pair.getPrimaryMaxVirtualMemory());
 			sb.append(",");
 			sb.append(pair.getStarexecResult());
 
@@ -628,9 +628,9 @@ public class Download extends HttpServlet {
 						zipFileName.append(File.separator);
 					}
 
-					zipFileName.append(p.getSolver().getName());
+					zipFileName.append(p.getPrimarySolver().getName());
 					zipFileName.append(File.separator);
-					zipFileName.append(p.getConfiguration().getName());
+					zipFileName.append(p.getPrimaryConfiguration().getName());
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
 					zipFileName.append(File.separator);

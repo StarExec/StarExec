@@ -161,7 +161,19 @@ CREATE TABLE solvers (
 	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
 );
 
-
+-- All the configurations that belong to a solver. A solver
+-- may have different settings that the user wants to run it with,
+-- so they provide one or more configuration that tells us how they want
+-- us to run their solver.
+CREATE TABLE configurations (
+	id INT NOT NULL AUTO_INCREMENT,
+	solver_id INT,
+	name VARCHAR(128) NOT NULL,
+	description TEXT,
+	updated TIMESTAMP NOT NULL,
+	PRIMARY KEY (id),
+	CONSTRAINT configurations_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
+);
 
 -- All the SGE node queues on the system
 CREATE TABLE queues (
@@ -206,6 +218,43 @@ CREATE TABLE comm_queue (
 	PRIMARY KEY (space_id, queue_id)
 );
 
+
+
+-- table for storing the top level of solver pipelines. These should generally not be deleted
+-- if there are jobs making use of them.
+CREATE TABLE solver_pipelines (
+	id INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(128),
+	user_id INT NOT NULL,
+	uploaded TIMESTAMP NOT NULL,
+
+	PRIMARY KEY(id)
+);
+-- Stages for solver pipelines. Stages are ordered by their stage_id primary key
+CREATE TABLE pipeline_stages (
+	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
+	pipeline_id INT NOT NULL,
+	config_id INT NOT NULL,
+	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
+	solver_name VARCHAR(128), -- These columns are redundant, but they allow us to keep stages even with deleted configs
+	config_name VARCHAR(128),
+	solver_id INT,
+	PRIMARY KEY (stage_id), -- pipelines can have many stages
+	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE
+);
+
+-- Stores any dependencies that a particular stage has.
+CREATE TABLE pipeline_dependencies (
+	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
+	
+	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
+	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
+						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
+	input_number SMALLINT NOT NULL, -- which input to the stage is this? First input, second input, and so on
+	PRIMARY KEY (stage_id, input_number), -- obviously a given stage may only have one dependency per number
+	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
+);
+
 -- All of the jobs within the system, this is the overarching entity
 -- that contains individual job pairs (solver/config -> benchmark)
 CREATE TABLE jobs (
@@ -222,6 +271,9 @@ CREATE TABLE jobs (
 	paused BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
 	seed BIGINT DEFAULT 0,
+	cpuTimeout INT, 
+	clockTimeout INT, 
+	maximum_memory BIGINT DEFAULT 1073741824,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
@@ -229,20 +281,21 @@ CREATE TABLE jobs (
 	CONSTRAINT jobs_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
 	CONSTRAINT jobs_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL
 );
-
--- All the configurations that belong to a solver. A solver
--- may have different settings that the user wants to run it with,
--- so they provide one or more configuration that tells us how they want
--- us to run their solver.
-CREATE TABLE configurations (
-	id INT NOT NULL AUTO_INCREMENT,
-	solver_id INT,
-	name VARCHAR(128) NOT NULL,
-	description TEXT,
-	updated TIMESTAMP NOT NULL,
-	PRIMARY KEY (id),
-	CONSTRAINT configurations_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE
+-- This table stores timeouts for individual pipeline stages for this job. 
+-- These are essentially overrides for the columns in the jobs table
+CREATE TABLE job_stage_params (
+	job_id INT,
+	stage_id INT,
+	cpuTimeout INT, 
+	clockTimeout INT,
+	maximum_memory BIGINT DEFAULT 1073741824,
+	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them?
+	PRIMARY KEY (job_id,stage_id),
+	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL
 );
+
+
 
 -- Table which contains specific information about a job pair
 -- When changing to using runsolver, wallclock changed from bigint to double
@@ -254,37 +307,23 @@ CREATE TABLE job_pairs (
 	sge_id INT,
 	bench_id INT,
 	bench_name VARCHAR(255),
-	config_id INT,	
+	config_id INT,-- these represent the config and solver of the "primary" elements for this jobline. 
+				  -- They are redundant with data in other tables, but they make sorting and filtering overwhelmingly faster
 	solver_id INT,
 	config_name VARCHAR(255),
 	solver_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
-	cpuTimeout INT,
-	clockTimeout INT,
 	queuesub_time TIMESTAMP DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
 	exit_status INT,
-	wallclock DOUBLE,
-	cpu DOUBLE,
-	user_time DOUBLE,
-	system_time DOUBLE,
-	io_data DOUBLE,
-	io_wait DOUBLE,
-	mem_usage DOUBLE,
-	max_vmem DOUBLE,
-	max_res_set DOUBLE,
-	page_reclaims DOUBLE,
-	page_faults DOUBLE,
-	block_input DOUBLE,
-	block_output DOUBLE,
-	vol_contex_swtch DOUBLE,
-	invol_contex_swtch DOUBLE,
+	wallclock DOUBLE,-- will store the total time this pair took, which might be greater than the sum of stages
 	job_space_id INT,
 	path VARCHAR(2048),
-	maximum_memory BIGINT DEFAULT 1073741824,
 	sandbox_num INT,
+	primary_stage INT, -- which of this pairs stages is the primary one? This should not usually be null, but if it is,
+					   -- then the first stage is the primary one
 	PRIMARY KEY(id),
 	KEY(sge_id),
 	KEY (job_space_id, config_id),
@@ -292,11 +331,27 @@ CREATE TABLE job_pairs (
 	KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
 	KEY (node_id, status_code),
---	KEY (status_code), -- TODO: Do we actually want this change
+--	KEY (status_code), -- TODO: Do we actually want this change?
 	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
-	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION, -- not used as an index
-	CONSTRAINT job_pairs_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE SET NULL -- not used as an index
+	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION -- not used as an index
+);
+
+CREATE TABLE jobline_stage_data (
+	id INT AUTO_INCREMENT, -- this id orders the stages
+	jobline_id INT NOT NULL,
+	stage_id INT, -- stages are ordered by this ID as well
+	cpu DOUBLE,
+	wallclock DOUBLE,
+	mem_usage DOUBLE,
+	max_vmem DOUBLE,
+	max_res_set DOUBLE,
+	user_time DOUBLE,
+	system_time DOUBLE,
+	PRIMARY KEY (id),
+	KEY(jobline_id),
+	CONSTRAINT jobline_stage_data_jobline_id FOREIGN KEY (jobline_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
+	CONSTRAINT jobline_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
@@ -592,61 +647,6 @@ CREATE TABLE job_stats (
 	CONSTRAINT job_stats_job_space_id FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
 );
-
--- table for storing the top level of solver pipelines
-CREATE TABLE solver_pipelines (
-	id INT NOT NULL AUTO_INCREMENT,
-	name VARCHAR(128),
-	user_id INT NOT NULL,
-	uploaded TIMESTAMP NOT NULL,
-
-	PRIMARY KEY(id)
-);
-
-CREATE TABLE pipeline_stages (
-	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
-	pipeline_id INT NOT NULL,
-	config_id INT NOT NULL,
-	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
-	PRIMARY KEY (stage_id), -- pipelines can have many stages
-	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
-	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE CASCADE
-);
-
--- Stores any dependencies that a particular stage has.
-CREATE TABLE pipeline_dependencies (
-	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
-	
-	input_type INT NOT NULL, -- ID of the stage that produces the output
-	input_id INT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
-						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
-	input_number INT NOT NULL, -- which input to the stage is this? First input, second input, and so on
-	PRIMARY KEY (stage_id, input_number), -- obviously a given stage may only have one dependency per number
-	CONSTRAINT pipeline_dependencies_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE CASCADE
-);
-
-CREATE TABLE jobline_inputs (
-	jobline_id INT NOT NULL, -- ID of a jobline
-	input_id INT NOT NULL,   -- number of this input
-	dependency_id INT NOT NULL -- ID of the benchmark
-);
-/*
--- todo: should timeouts be here?
-CREATE TABLE jobline_stage (
-	jobline_id INT NOT NULL,
-	stage_id INT NOT NULL,
-	wallclock DOUBLE,
-	cpu DOUBLE,
-	cpuTimeout INT,
-	clockTimeout INT,
-	maximum_memory BIGINT DEFAULT 1073741824,
-	mem_usage DOUBLE,
-	max_vmem DOUBLE,
-	PRIMARY KEY (jobline_id, stage_id),
-	FOREIGN KEY jobline_stage_jobline_id (jobline_id) REFERENCES joblines(id) ON DELETE CASCADE,
-	FOREIGN KEY jobline_stage_stage_id (stage_id) REFERENCES pipeline_stages
-);*/
-
 
 -- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
 -- solver, benchmark, job, etc

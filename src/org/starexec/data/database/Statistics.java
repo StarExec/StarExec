@@ -319,8 +319,8 @@ public class Statistics {
 			}
 			log.debug("making solver comparison chart");
 			
-			String xAxisName=pairs1.get(0).getSolver().getName()+"/"+pairs1.get(0).getConfiguration().getName() +" time(s)";
-			String yAxisName=pairs2.get(0).getSolver().getName() +"/"+pairs2.get(0).getConfiguration().getName()+" time(s)";
+			String xAxisName=pairs1.get(0).getPrimarySolver().getName()+"/"+pairs1.get(0).getPrimaryConfiguration().getName() +" time(s)";
+			String yAxisName=pairs2.get(0).getPrimarySolver().getName() +"/"+pairs2.get(0).getPrimaryConfiguration().getName()+" time(s)";
 			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
@@ -348,7 +348,7 @@ public class Statistics {
 						names.put(key, jp.getBench().getName());
 						item+=1;
 											
-						d.add(jp.getWallclockTime(),jp2.getWallclockTime());
+						d.add(jp.getPrimaryWallclockTime(),jp2.getPrimaryWallclockTime());
 						
 					}
 				}
@@ -573,18 +573,18 @@ public class Statistics {
 				// we don't want to consider incomplete pairs
 				continue;
 			}
-			Solver s=jp.getSolver();
+			Solver s=jp.getPrimarySolver();
 			if (!solvers.containsKey(s.getId())) {
 				solvers.put(s.getId(), s);
 				answer.put(solvers.get(s.getId()), new HashMap<Configuration,List<Double>>());
 			}
 			HashMap<Configuration,List<Double>>configMap=answer.get(solvers.get(s.getId()));
-			Configuration c=jp.getConfiguration();
+			Configuration c=jp.getPrimaryConfiguration();
 			if (!configs.containsKey(c.getId())) {
 				configs.put(c.getId(), c);
 				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
 			}
-			configMap.get(configs.get(c.getId())).add(jp.getWallclockTime());
+			configMap.get(configs.get(c.getId())).add(jp.getPrimaryWallclockTime());
 			
 		}
 		for (HashMap<Configuration,List<Double>> h : answer.values()) {

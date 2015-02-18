@@ -23,12 +23,36 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.util.Util;
 
 
 public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
 	
+	/**
+	 * Adds a stage to a given job pair in the database
+	 * @param pairId
+	 * @param stageId
+	 * @param con
+	 * @return
+	 */
+	private static boolean addJobPairStage(int pairId, int stageId, Connection con) {
+		CallableStatement procedure=null;
+		try {
+			procedure=con.prepareCall("{CALL AddJobPairStage(?,?)}");
+			procedure.setInt(1, pairId);
+			procedure.setInt(2,stageId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+		
+	}
 	
 	/**
 	 * Adds a job pair record to the database. This is a helper method for the Jobs.add method
@@ -40,27 +64,31 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		 try {
 			 log.debug("received a call to add a job pair with path = "+pair.getPath());
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			int primStage=pair.getPrimaryStage().getId();
+			
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
-			procedure.setInt(3, pair.getSolver().getConfigurations().get(0).getId());
+			procedure.setInt(3, pair.getPrimarySolver().getConfigurations().get(0).getId());
 			procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());
-			procedure.setInt(5, Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));
-			procedure.setInt(6, Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout()));
-			procedure.setString(7, pair.getPath());
-			procedure.setInt(8,pair.getJobSpaceId());
-			procedure.setString(9,pair.getSolver().getConfigurations().get(0).getName());
-			procedure.setString(10,pair.getSolver().getName());
-			procedure.setString(11,pair.getBench().getName());
-			procedure.setInt(12,pair.getSolver().getId());
-			procedure.setLong(13, pair.getMaxMemory());
+			
+			procedure.setString(5, pair.getPath());
+			procedure.setInt(6,pair.getJobSpaceId());
+			procedure.setString(7,pair.getPrimarySolver().getConfigurations().get(0).getName());
+			procedure.setString(8,pair.getPrimarySolver().getName());
+			procedure.setString(9,pair.getBench().getName());
+			procedure.setInt(10,pair.getPrimarySolver().getId());
+			procedure.setInt(11,primStage);
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
+		
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(14));
-
+			pair.setId(procedure.getInt(12));
+			for (JoblineStage stage : pair.getStages()) {
+				addJobPairStage(pair.getId(),stage.getStageId(),con);
+			}
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPair says "+e.getMessage(),e);
@@ -434,7 +462,7 @@ public class JobPairs {
 		for (JobPair jp : pairs) {
 			try {
 				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
-						|| jp.getSolver().getName().toLowerCase().contains(searchQuery) || jp.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
+						|| jp.getPrimarySolver().getName().toLowerCase().contains(searchQuery) || jp.getPrimaryConfiguration().getName().toLowerCase().contains(searchQuery) ||
 						jp.getStarexecResult().contains(searchQuery)) {
 						
 					filteredPairs.add(jp);
@@ -467,9 +495,9 @@ public class JobPairs {
 				JobPair pair=new JobPair();
 				pair.setPath(results.getString("path"));
 				pair.setJobId(results.getInt("job_id"));
-				Solver s=pair.getSolver();
+				Solver s=pair.getPrimarySolver();
 				s.setName(results.getString("solver_name"));
-				Configuration c=pair.getConfiguration();
+				Configuration c=pair.getPrimaryConfiguration();
 				c.setName(results.getString("config_name"));
 				Benchmark b=pair.getBench();
 				b.setName(results.getString("bench_name"));
@@ -555,6 +583,12 @@ public class JobPairs {
 		return getLogFilePath(getFilePathInfo(pairId));
 	}
 	
+	/**
+	 * Populates a job pair with just enough information to find the file path.
+	 * The pair will be returned with a single primary stage set with a solver name and config name
+	 * @param pairId
+	 * @return
+	 */
 	private static JobPair getFilePathInfo(int pairId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -566,11 +600,12 @@ public class JobPairs {
 			results=procedure.executeQuery();
 			if (results.next()) {
 				JobPair pair=new JobPair();
-				Solver s= pair.getSolver();
+				pair.addStage(new JoblineStage());
+				Solver s= pair.getPrimarySolver();
 				s.setName(results.getString("solver_name"));
 				Benchmark b=pair.getBench();
 				b.setName(results.getString("bench_name"));
-				Configuration c=pair.getConfiguration();
+				Configuration c=pair.getPrimaryConfiguration();
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
@@ -664,7 +699,7 @@ public class JobPairs {
 				file=new File(file,space);
 			}
 
-			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
+			file=new File(file,pair.getPrimarySolver().getName()+"___"+pair.getPrimaryConfiguration().getName());
 
 			file=new File(file,pair.getBench().getName());
 			
@@ -700,14 +735,14 @@ public class JobPairs {
 				file=new File(file,space);
 			}
 
-			file=new File(file,pair.getSolver().getName()+"___"+pair.getConfiguration().getName());
+			file=new File(file,pair.getPrimarySolver().getName()+"___"+pair.getPrimaryConfiguration().getName());
 
 			file=new File(file,pair.getBench().getName());
 			
 			
 			if (!file.exists()) {	    // if the job output could not be found
-				File testFile=new File(file,pair.getSolver().getName());
-				testFile=new File(testFile,pair.getConfiguration().getName());
+				File testFile=new File(file,pair.getPrimarySolver().getName());
+				testFile=new File(testFile,pair.getPrimaryConfiguration().getName());
 				testFile=new File(testFile,pair.getBench().getName());
 				if (testFile.exists()) {  //check the alternate path some pairs are still stored at
 					FileUtils.copyFile(testFile, file);
@@ -731,7 +766,8 @@ public class JobPairs {
 	
 	/**
 	 * Gets the job pair with the given id non-recursively 
-	 * (Worker node, status, benchmark and solver will NOT be populated) 
+	 * (Worker node, status, benchmark and solver will NOT be populated).
+	 * Only the primary stage is created! To get all the stages, you need to call getPairDetailed
 	 * @param pairId The id of the pair to get
 	 * @return The job pair object with the given id.
 	 * @author Tyler Jensen
@@ -748,15 +784,16 @@ public class JobPairs {
 
 			if(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
+				jp.addStage(new JoblineStage()); // just add an empty stage that we can populate below
 				jp.getNode().setId(results.getInt("node_id"));
 				jp.getStatus().setCode(results.getInt("status_code"));
 				jp.getBench().setId(results.getInt("bench_id"));
 				jp.getBench().setName(results.getString("bench_name"));
-				jp.getSolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
-				jp.getSolver().setId(results.getInt("solver_id"));
-				jp.getSolver().setName(results.getString("solver_name"));
-				jp.getSolver().getConfigurations().get(0).setName(results.getString("config_name"));
-				jp.setConfiguration(jp.getSolver().getConfigurations().get(0));
+				jp.getPrimarySolver().getConfigurations().add(new Configuration(results.getInt("config_id")));
+				jp.getPrimarySolver().setId(results.getInt("solver_id"));
+				jp.getPrimarySolver().setName(results.getString("solver_name"));
+				jp.getPrimarySolver().getConfigurations().get(0).setName(results.getString("config_name"));
+				jp.getStages().get(0).setConfiguration(jp.getPrimarySolver().getConfigurations().get(0));
 				return jp;
 			}		
 			Common.safeClose(results);
@@ -786,21 +823,37 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 			procedure.setInt(1, pairId);					
 			results = procedure.executeQuery();
-
+			JobPair jp=null;
+			// first, we get the top level info from the job_pairs table
 			if(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
+				jp = JobPairs.resultToPair(results);
 				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),true));
-				jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id"),true));
 				jp.setAttributes(getAttributes(pairId));
-				jp.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
 
 				Status s = new Status();
 				s.setCode(results.getInt("status_code"));
 				jp.setStatus(s);					
 				jp.setJobSpaceName(results.getString("jobSpace.name"));
-				return jp;
+				
+			} else {
+				//couldn't find the pair for some reason
+				return null;
 			}
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			procedure=con.prepareCall("{CALL GetJobPairStagesById(?)}");
+			procedure.setInt(1,pairId);
+			results= procedure.executeQuery();
+			//next, we get data at the stage level
+			while (results.next()) {
+				JoblineStage stage=resultToStage(results);
+				stage.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id"),true));
+				stage.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+
+				jp.addStage(stage);
+			}
+			return jp;
 		} catch (Exception e) {
 			log.error("Get JobPair says "+e.getMessage(),e);
 		} finally {
@@ -832,6 +885,28 @@ public class JobPairs {
 
 		return null;		
 	}
+	
+	/**
+	 * Extracts query informaiton into a JoblineStage. Does NOT get deep information like
+	 * solver and configuration
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
+	protected static JoblineStage resultToStage(ResultSet result) throws Exception {
+		JoblineStage stage=new JoblineStage();
+				
+		stage.setId(result.getInt("id"));
+		stage.setWallclockTime(result.getDouble("wallclock"));
+		stage.setCpuUsage(result.getDouble("cpu"));
+		stage.setUserTime(result.getDouble("user_time"));
+		stage.setSystemTime(result.getDouble("system_time"));		
+		stage.setMemoryUsage(result.getDouble("mem_usage"));
+		stage.setMaxVirtualMemory(result.getDouble("max_vmem"));
+		stage.setMaxResidenceSetSize(result.getDouble("max_res_set"));
+		stage.setStageId(result.getInt("stage_id"));
+		return stage;
+	}
 
 	/**
 	 * Helper method to extract information from a query for job pairs
@@ -845,30 +920,24 @@ public class JobPairs {
 		jp.setId(result.getInt("id"));
 		jp.setJobId(result.getInt("job_id"));
 		jp.setGridEngineId(result.getInt("sge_id"));	
-		jp.setCpuTimeout(result.getInt("cpuTimeout"));		
-		jp.setWallclockTimeout(result.getInt("clockTimeout"));
+		//JoblineStage stage=new JoblineStage();
 		jp.setQueueSubmitTime(result.getTimestamp("queuesub_time"));
 		jp.setStartTime(result.getTimestamp("start_time"));
 		jp.setEndTime(result.getTimestamp("end_time"));
 		jp.setExitStatus(result.getInt("exit_status"));
-		jp.setWallclockTime(result.getDouble("wallclock"));
-		jp.setCpuUsage(result.getDouble("cpu"));
-		jp.setUserTime(result.getDouble("user_time"));
-		jp.setSystemTime(result.getDouble("system_time"));
-		jp.setIoDataUsage(result.getDouble("io_data"));
-		jp.setIoDataWait(result.getDouble("io_wait"));
-		jp.setMemoryUsage(result.getDouble("mem_usage"));
-		jp.setMaxVirtualMemory(result.getDouble("max_vmem"));
-		jp.setMaxResidenceSetSize(result.getDouble("max_res_set"));
-		jp.setPageReclaims(result.getDouble("page_reclaims"));
-		jp.setPageFaults(result.getDouble("page_faults"));
-		jp.setBlockInput(result.getDouble("block_input"));
-		jp.setBlockOutput(result.getDouble("block_output"));
-		jp.setVoluntaryContextSwitches(result.getDouble("vol_contex_swtch"));
-		jp.setInvoluntaryContextSwitches(result.getDouble("invol_contex_swtch"));
+		//stage.setWallclockTime(result.getDouble("wallclock"));
+		//stage.setCpuUsage(result.getDouble("cpu"));
+		//stage.setUserTime(result.getDouble("user_time"));
+		//stage.setSystemTime(result.getDouble("system_time"));
+		
+		//stage.setMemoryUsage(result.getDouble("mem_usage"));
+		//stage.setMaxVirtualMemory(result.getDouble("max_vmem"));
+		//stage.setMaxResidenceSetSize(result.getDouble("max_res_set"));
+		//jp.addStage(stage);
 		jp.setPath(result.getString("path"));
 		jp.setJobSpaceId(result.getInt("job_space_id"));
-		jp.setMaxMemory(result.getLong("maximum_memory"));
+		jp.setPrimaryStageId(result.getInt("primary_stage"));
+		jp.setSandboxNum(result.getInt("sandbox_num"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}
@@ -942,22 +1011,7 @@ public class JobPairs {
 
 	
 
-	/**
-	 * Given a resultset, populates only the fields of a job pair important for displaying stats.
-	 * 
-	 * @param result the result set
-	 * @return A job pair with only a few fields populated.
-	 * @throws Exception
-	 */
 	
-	protected static JobPair shallowResultToPair(ResultSet result) throws Exception {
-		JobPair jp = new JobPair();
-		jp.setId(result.getInt("job_pairs.id"));
-		jp.setWallclockTime(result.getDouble("wallclock"));
-		jp.setCpuUsage(result.getDouble("cpu"));
-		return jp;
-	}
-
 
 	/**
 	 * Update's a job pair's grid engine id
@@ -1054,53 +1108,13 @@ public class JobPairs {
 		return false;
 	}
 	
-	/**
-	 * Updates a pair's statistics in the database with statistics contained within the given
-	 * pair TO
-	 * @param pair The pair that contains statistics to update with (must have an SGE id)
-	 * @return True if the operation was a success, false otherwise
-	 */
-	public static boolean updatePairStatistics(JobPair pair) {		
-		Connection con = null;		
-		CallableStatement procedure= null;
-		try {
-			Common.getDataPoolData();//just for logging
-			con = Common.getConnection();	
-			procedure = con.prepareCall("{CALL UpdatePairStats(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");			
-			procedure.setInt(1, pair.getGridEngineId());			
-			procedure.setString(2, pair.getNode().getName());
-			procedure.setTimestamp(3, pair.getQueueSubmitTime());
-			procedure.setTimestamp(4, pair.getStartTime());
-			procedure.setTimestamp(5, pair.getEndTime());
-			procedure.setInt(6, pair.getExitStatus());
-			procedure.setDouble(7, pair.getCpuTime());
-			procedure.setDouble(8, pair.getUserTime());
-			procedure.setDouble(9, pair.getSystemTime());
-			procedure.setDouble(10, pair.getIoDataUsage());
-			procedure.setDouble(11, pair.getIoDataWait());
-			procedure.setDouble(12, pair.getMemoryUsage());
-			procedure.setDouble(13, pair.getMaxVirtualMemory());
-			procedure.setDouble(14, pair.getMaxResidenceSetSize());
-			procedure.setDouble(15, pair.getPageReclaims());
-			procedure.setDouble(16, pair.getPageFaults());
-			procedure.setDouble(17, pair.getBlockInput());
-			procedure.setDouble(18, pair.getBlockOutput());
-			procedure.setDouble(19, pair.getVoluntaryContextSwitches());
-			procedure.setDouble(20, pair.getInvoluntaryContextSwitches());							
 
-			procedure.executeUpdate();						
-			return true;
-		} catch (Exception e){			
-			log.error("updatePairStatistics says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-
-		return false;
-	}
-
-    
+    /**
+     * Kills the given job pair
+     * @param pairId
+     * @param execId
+     * @return
+     */
     //TODO : marked for grid engine interface
     public static boolean killPair(int pairId, int execId) {
 	try {	

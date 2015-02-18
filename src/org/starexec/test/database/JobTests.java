@@ -114,20 +114,7 @@ public class JobTests extends TestSequence {
 		Assert.assertNotNull(path);
 	}
 	
-	@Test
-	private void GetWallclockTimeout() {
-		Assert.assertEquals(wallclockTimeout, Jobs.getWallclockTimeout(job.getId()));
-	}
 	
-	@Test
-	private void GetCpuTimeout() {
-		Assert.assertEquals(cpuTimeout, Jobs.getCpuTimeout(job.getId()));
-	}
-	
-	@Test
-	private void GetMemoryLimit() {
-		Assert.assertEquals(Util.gigabytesToBytes(gbMemory), Jobs.getMaximumMemory(job.getId()));
-	}
 	
 	
 	//TODO: Right now, this test is basically just checking to see if the method throws errors. Since the status of the job

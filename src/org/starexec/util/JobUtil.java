@@ -318,9 +318,7 @@ public class JobUtil {
 					path=rootName;
 				}
 				jobPair.setPath(path);
-				jobPair.setCpuTimeout(cpuTimeout);
-				jobPair.setWallclockTimeout(wallclock);
-				jobPair.setMaxMemory(memoryLimit);
+				
 				
 			Benchmark b = Benchmarks.get(benchmarkId);
 			if (!Permissions.canUserSeeBench(benchmarkId, userId)){
@@ -334,9 +332,10 @@ public class JobUtil {
 			    errorMessage = "You do not have permission to see the solver " + s.getId();
 			    return -1;
 			}
-				
-			jobPair.setSolver(s);
-			jobPair.setConfiguration(Solvers.getConfiguration(configId));
+			JoblineStage stage=new JoblineStage();
+			stage.setSolver(s);
+			stage.setConfiguration(Solvers.getConfiguration(configId));
+			jobPair.addStage(stage);
 			jobPair.setSpace(Spaces.get(spaceId));
 				
 				
