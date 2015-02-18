@@ -169,8 +169,13 @@
 	<div id="dialog-confirm-delete" title="confirm delete">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-spacexml-attributes" title="include attributes">
-  	  <p><span id="dialog-spacexml-attributes-txt"></span></p>
+	<div id="dialog-spacexml" title="xml properties">
+	  <p><span id="dialog-spacexml-attributes-txt"></span></p>
+	  <input type="radio" value="true" name="att" />Yes
+	  <input type="radio" value="false" name="att" checked />No
+	  <p><span id="dialog-spacexml-updates-txt"></span></p>
+	  <input type="radio" value="true" name="up" />Yes
+	  <input type="radio" value="false" name="up" checked />No
 	</div>
 	<div id="dialog-download-space" title="download space">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-download-space-txt"></span></p><br>

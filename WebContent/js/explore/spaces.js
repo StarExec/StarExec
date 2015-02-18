@@ -60,7 +60,7 @@ function initDialogs() {
 	$("#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
 	$("#dialog-warning").hide();
-	$("#dialog-spacexml-attributes").hide();
+	$("#dialog-spacexml").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -1722,28 +1722,28 @@ function updateButtonIds(id) {
 	
 
 	$("#downloadXML").unbind("click");
-	$('#downloadXML').click(function(e) {
-		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
+        $('#downloadXML').click(function (e) {
+	    $('#dialog-spacexml-attributes-txt').text('Do you want benchmark attributes included in the XML?');
+	    $('#dialog-spacexml-updates-txt').text('Do you want to convert the benchmarks to updates?');
 
-		$('#dialog-spacexml-attributes').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'yes': function() {
-					$('#dialog-spacexml-attributes').dialog('close');
-					createDownloadSpaceXMLRequest(true,id);		
-				},
-				"no": function() {
-					$('#dialog-spacexml-attributes').dialog('close');
-					createDownloadSpaceXMLRequest(false,id);		
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
-		});
-
+	    $('#dialog-spacexml').dialog({
+		modal: true,
+		width: 380,
+		height: 300,
+		buttons: {
+		    "download": function () {
+			var attVal = $('input[name=att]:checked').val();
+			var upVal = $('input[name=up]:checked').val();
+			attBool = attVal == "true";
+			upBool = upVal == "true";
+			createDownloadSpaceXMLRequest(attBool, upBool, id);
+			$(this).dialog("close");
+		    },
+                    "cancel": function () {
+			$(this).dialog("close");
+		    }
+		}
+	    });
 	});
 	
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
@@ -1780,10 +1780,10 @@ function updateButtonIds(id) {
 }
 
 
-function createDownloadSpaceXMLRequest(includeAttrs,id) {
+function createDownloadSpaceXMLRequest(includeAttrs,updates,id) {
   createDialog("Processing your download request, please wait. This will take some time for large spaces.");
   token=Math.floor(Math.random()*100000000);
-  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs;
+  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs+"&updates="+updates;
   destroyOnReturn(token);
   window.location.href = myhref;
  

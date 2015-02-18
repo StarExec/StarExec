@@ -71,10 +71,11 @@ public class BatchUtil {
 	 *  @param space The space for which we want an xml representation.
 	 *  @param userId the id of the user making the request
 	 *  @param includeAttributes whether or not to include benchmark attributes
+	 *  @param updates whether or not to convert benchmarks to updates
 	 *  @return xml file to represent space hierarchy of input space
 	 *  @throws Exception   
 	 */	
-    public File generateXMLfile(Space space, int userId, boolean includeAttributes) throws Exception{
+    public File generateXMLfile(Space space, int userId, boolean includeAttributes, boolean updates) throws Exception{
 	//TODO : attributes are being sorted alphabetically, want to preserve order of insertion instead
 		log.debug("Generating XML for Space = " +space.getId());			
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -82,7 +83,7 @@ public class BatchUtil {
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		
 		doc = docBuilder.newDocument();
-		Element rootSpace = generateSpacesXML(space, userId, includeAttributes);
+		Element rootSpace = generateSpacesXML(space, userId, includeAttributes,updates);
 		doc.appendChild(rootSpace);
 		
 		// write the content into xml file
@@ -107,9 +108,10 @@ public class BatchUtil {
      *  @param space The space for which we want an xml representation.
      *  @param userId the id of the user making the request
      *  @param includeAttributes whether or not to include benchmark attributes
+     *  @param updates whether or not to convert benchmarks to updates
      *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
      */	
-    public Element generateSpacesXML(Space space, int userId, boolean includeAttributes){		
+    public Element generateSpacesXML(Space space, int userId, boolean includeAttributes, boolean updates){		
 		log.debug("Generating Space XML for space " + space.getId());
 		Element spacesElement=null;
 	
@@ -119,7 +121,7 @@ public class BatchUtil {
 		spacesElement.setAttribute("xsi:schemaLocation", 
 						   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
 			
-		Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes);
+		Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes,updates);
 		spacesElement.appendChild(rootSpaceElement);
 			
 		return spacesElement;
@@ -131,9 +133,10 @@ public class BatchUtil {
 	 *  @param space The space for which we want an xml representation.
 	 *  @param userId the id of the user making the request
 	 *  @param includeAttributes whether or not to include benchmark attributes
+	 *  @param updates whether or not to convert benchmarks to updates
 	 *  @return spaceElement for xml file to represent space hierarchy of input space 
 	 */	
-    public Element generateSpaceXML(Space space, int userId, boolean includeAttributes){		
+    public Element generateSpaceXML(Space space, int userId, boolean includeAttributes, boolean updates){		
 		log.debug("Generating Space XML for space " + space.getId());
 		
 		Element spaceElement = doc.createElement("Space");
@@ -296,6 +299,16 @@ public class BatchUtil {
 		// -------------------------------------------------
 		
 		for (Benchmark benchmark:space.getBenchmarks()){
+		    if(updates)
+			{
+			    //to do add updates
+			    Element updateElement = doc.createElement("Update");
+			    updateElement.setAttribute("id", Integer.toString(benchmark.getId()));
+			    updateElement.setAttribute("name", benchmark.getName());
+			    spaceElement.appendChild(updateElement);
+			}
+		    else
+			{
 			Element benchElement = doc.createElement("Benchmark");	
 			benchElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			benchElement.setAttribute("name", benchmark.getName());
@@ -314,6 +327,7 @@ public class BatchUtil {
 			    }
 			}
 			spaceElement.appendChild(benchElement);
+			}
 		}
 		for (Solver solver:space.getSolvers()){		
 			Element solverElement = doc.createElement("Solver");
@@ -322,7 +336,7 @@ public class BatchUtil {
 			spaceElement.appendChild(solverElement);
 		}	
 		for (Space subspace:space.getSubspaces()){			
-		    spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId, includeAttributes));
+		    spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId, includeAttributes,updates));
 		}
 		
 		return spaceElement;
