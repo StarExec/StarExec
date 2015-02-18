@@ -59,7 +59,7 @@
 	<p>review and edit your account details here.</p>
 	<fieldset>
 	<legend>personal information</legend>
-	<table id="infoTable" uid="${t_user.id}">
+	<table id="infoTable" uid="${userId}">
 		<tr>
 			<td id="picSection">
 				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">
@@ -102,7 +102,7 @@
 	<c:if test="${isadmin}">
 		<fieldset>
 			<legend>user disk quota</legend>
-				<table id="diskUsageTable" class="shaded" uid=${t_user.id}>
+				<table id="diskUsageTable" class="shaded" uid=${userId}>
 					<thead>
 						<tr>
 							<th>attribute</th>
