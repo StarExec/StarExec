@@ -353,10 +353,12 @@ public class JobUtil {
 		Element memLimitEle = DOMHelper.getElementByName(jobAttributes, "mem-limit");
 		log.info("mem-limit: " + memLimitEle.getAttribute("value"));
 		double memLimit = Double.parseDouble(memLimitEle.getAttribute("value"));
+		job.setCpuTimeout(cpuTimeout);
+		job.setWallclockTimeout(wallclock);
 		
 		long memoryLimit=Util.gigabytesToBytes(memLimit);
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
-
+		job.setMaxMemory(memoryLimit);
 		log.info("nodelist about to be set");
 				
 		NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
