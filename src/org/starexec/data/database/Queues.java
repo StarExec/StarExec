@@ -529,6 +529,10 @@ public class Queues {
 			
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
+				JoblineStage stage=new JoblineStage();
+
+				jp.addStage(stage);
+
 				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
 				Benchmark b=new Benchmark();
 				b.setId(results.getInt("bench_id"));
@@ -538,7 +542,6 @@ public class Queues {
 				Solver s=new Solver();
 				s.setId(results.getInt("solver_id"));
 				s.setName(results.getString("solver_name"));
-				JoblineStage stage=new JoblineStage();
 				stage.setSolver(s);
 				
 				Configuration c = new Configuration();
@@ -551,7 +554,6 @@ public class Queues {
 
 				stat.setCode(results.getInt("status_code"));
 				jp.setStatus(stat);
-				jp.addStage(stage);
 				returnList.add(jp);
 			}			
 			log.debug("the returnlist had "+returnList.size()+" items");

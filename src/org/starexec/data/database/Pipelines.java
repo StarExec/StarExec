@@ -76,7 +76,8 @@ public class Pipelines {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}  finally {
-			
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -151,7 +152,6 @@ public class Pipelines {
 	public static int addPipelineStageToDatabase(PipelineStage stage, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
 			procedure.setInt(2,stage.getConfigId());
