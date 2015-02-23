@@ -81,9 +81,9 @@ ALTER TABLE job_pairs DROP COLUMN max_res_set;
 
 
 -- Step 7: Add primary stage column to the job_pairs table
-ALTER TABLE job_pairs ADD COLUMN primary_jobline_data INT; -- which of this pairs stages is the primary one? references jobpair_stage_data.id
+ALTER TABLE job_pairs ADD COLUMN primary_jobpair_data INT; -- which of this pairs stages is the primary one? references jobpair_stage_data.id
 
-UPDATE job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id SET primary_jobline_data=jobpair_stage_data.id;
+UPDATE job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id SET primary_jobpair_data=jobpair_stage_data.id;
 
 -- Step 8: Add table for storing job pair dependencies
 

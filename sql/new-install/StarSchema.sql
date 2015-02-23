@@ -323,7 +323,7 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
-	primary_jobline_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.id
+	primary_jobpair_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.id
 	PRIMARY KEY(id),
 	KEY(sge_id),
 	KEY (job_space_id, config_id),

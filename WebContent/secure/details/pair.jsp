@@ -8,9 +8,7 @@
 		int pairId = Integer.parseInt(request.getParameter("id"));
 		
 		JobPair jp = JobPairs.getPairDetailed(pairId);
-		for (JoblineStage stage : jp.getStages()) {
-			System.out.println(stage.getStageId());
-		}
+		
 		
 		
 		if(jp == null) {

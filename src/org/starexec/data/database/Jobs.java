@@ -922,6 +922,9 @@ public class Jobs {
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+				j.setCpuTimeout(results.getInt("cpuTimeout"));
+				j.setWallclockTimeout(results.getInt("clockTimeout"));
+				j.setMaxMemory(results.getLong("maximum_memory"));
 			}
 			else{
 				return null;
@@ -929,7 +932,8 @@ public class Jobs {
 			
 			
 			if (since==null) {
-				j.setJobPairs(Jobs.getPairsDetailed(j.getId()));
+				
+				j.setJobPairs(Jobs.getPairsPrimaryStageDetailed(j.getId()));
 			} else  {
 				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
 			}
@@ -2355,15 +2359,21 @@ public class Jobs {
 
 			while(results.next()){
 			    JobPair jp = new JobPair();
-			    
+			    JoblineStage stage=new JoblineStage();
+			    Configuration c=new Configuration();
+			    Solver s=new Solver();
+			    stage.setConfiguration(c);
+			    s.addConfiguration(c);
+			    stage.setSolver(s);
+			    jp.addStage(stage);
 			    jp.setId(results.getInt("id"));
 			    jp.getStatus().setCode(results.getInt("status_code"));
 			    jp.getBench().setId(results.getInt("bench_id"));
 			    jp.getBench().setName(results.getString("bench_name"));
-			    jp.getPrimaryConfiguration().setId(results.getInt("config_id"));
-			    jp.getPrimaryConfiguration().setName(results.getString("config_name"));
-			    jp.getPrimarySolver().setId(results.getInt("solver_id"));
-			    jp.getPrimarySolver().setName(results.getString("solver_name"));
+			    c.setId(results.getInt("config_id"));
+			    c.setName(results.getString("config_name"));
+			    s.setId(results.getInt("solver_id"));
+			    s.setName(results.getString("solver_name"));
 			    jp.getSpace().setName(results.getString("name"));
 			    jp.getSpace().setId(results.getInt("job_spaces.id"));
 			    jp.setPath(results.getString("path"));
@@ -2465,14 +2475,15 @@ public class Jobs {
 
 	/**
 	 * Gets all job pairs for the given job and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * (Worker node, status, benchmark and solver WILL be populated) Only the primary
+	 * stage is populated
 	 * @param jobId The id of the job to get pairs for
 	 * @param since The completion ID to get all the pairs after. If null, gets all pairs
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Eric Burns
 	 */
 	
-	public static List<JobPair> getPairsDetailed(int jobId) {
+	public static List<JobPair> getPairsPrimaryStageDetailed(int jobId) {
 		Connection con = null;	
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -2546,7 +2557,7 @@ public class Jobs {
 				curBench=results.getInt("bench_id");
 				curConfig=results.getInt("config_id");
 				curSolver=results.getInt("config.solver_id");
-				JoblineStage stage=new JoblineStage();
+				JoblineStage stage=JobPairs.resultToStage(results);
 				if (!discoveredSolvers.containsKey(curSolver)) {
 					Solver solver= Solvers.resultToSolver(results,"solver");				
 					stage.setSolver(solver);
@@ -3940,7 +3951,7 @@ public class Jobs {
 		
 		try {
 			log.debug("Setting up job space hierarchy for old job id = "+jobId);
-			List<JobPair> p=Jobs.getPairsDetailed(jobId);
+			List<JobPair> p=Jobs.getPairsPrimaryStageDetailed(jobId);
 			Integer primarySpaceId=null;
 			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
 			for (JobPair jp : p) {

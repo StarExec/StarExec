@@ -322,9 +322,6 @@ public class CreateJob extends HttpServlet {
 	}
 	
 	public ValidatorStatusCode isValid(int userId, int queueId, int cpuLimit, int wallclockLimit, Integer preProcId, Integer postProcId) {
-		
-		
-	
 		List<Queue> userQueues = Queues.getUserQueues(userId); 
 		Boolean queueFound=false;
 		for (Queue queue:userQueues){
@@ -400,13 +397,20 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
 				postProc=Integer.parseInt(request.getParameter(postProcessor));
+				//means none was selected
+				if (postProc<1) {
+					postProc=null;
+				}
 			}
 			
 			if(Util.paramExists(preProcessor, request)) {
 				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
-				preProc=Integer.parseInt(request.getParameter(postProcessor));
+				preProc=Integer.parseInt(request.getParameter(preProcessor));
+				if (preProc<1) {
+					preProc=null;
+				}
 			}
 
 			// Make sure the queue is a valid integer

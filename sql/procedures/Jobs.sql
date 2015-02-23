@@ -266,6 +266,7 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+									JOIN 	jobpair_stage_data AS jobpair_stage_data  ON jobpair_stage_data.id=job_pairs.primary_jobpair_data
 									LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 									LEFT JOIN	job_spaces 		AS  jobSpace ON jobSpace.id=job_pairs.job_space_id
 									
@@ -311,7 +312,7 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				jobpair_stage_data.wallclock,
 				jobpair_stage_data.cpu
 		FROM job_pairs JOIN job_space_closure ON descendant=job_space_id
-		JOIN jobpair_stage_data ON jobpair_stage_data.id=job_pairs.primary_jobline_data
+		JOIN jobpair_stage_data ON jobpair_stage_data.id=job_pairs.primary_jobpair_data
 		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
@@ -396,7 +397,7 @@ CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpaceHierarchy(IN _jobSpaceId IN
 		FROM job_pairs 
 		JOIN job_space_closure ON descendant=job_pairs.job_space_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId AND job_pairs.primary_jobline_data=jobpair_stage_data.id;
+		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId AND job_pairs.primary_jobpair_data=jobpair_stage_data.id;
 	END //
 	
 -- Counts the number of pairs in a job
@@ -613,7 +614,7 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _primary BOO
 		INSERT INTO jobpair_stage_data (jobpair_id, stage_id) VALUES (_pairId, _stageId);
 		SELECT LAST_INSERT_ID() INTO _id;
 		IF (_primary) THEN
-			UPDATE job_pairs SET primary_jobline_data=_id WHERE job_pairs.id=_pairId;
+			UPDATE job_pairs SET primary_jobpair_data=_id WHERE job_pairs.id=_pairId;
 		END IF;
 		 
 	END //

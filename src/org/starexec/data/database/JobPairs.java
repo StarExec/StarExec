@@ -864,14 +864,20 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 			procedure.setInt(1, pairId);					
 			results = procedure.executeQuery();
+			Solver defaultSolver=new Solver();
+			Configuration defaultConfiguration=new Configuration();
 			JobPair jp=null;
 			// first, we get the top level info from the job_pairs table
 			if(results.next()){
 				jp = JobPairs.resultToPair(results);
+				defaultSolver.setId(results.getInt("solver_id"));
+				defaultSolver.setName(results.getString("solver_name"));
+				defaultConfiguration.setId(results.getInt("config_id"));
+				defaultConfiguration.setName(results.getString("config_name"));
 				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),true));
 				jp.setAttributes(getAttributes(pairId));
-
+				
 				Status s = new Status();
 				s.setCode(results.getInt("status_code"));
 				jp.setStatus(s);					
@@ -889,8 +895,16 @@ public class JobPairs {
 			//next, we get data at the stage level
 			while (results.next()) {
 				JoblineStage stage=resultToStage(results);
-				stage.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id"),true));
-				stage.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				int configId=results.getInt("config_id");
+				if (configId>0) {
+					stage.setSolver(Solvers.getSolverByConfig(con, configId,true));
+					stage.setConfiguration(Solvers.getConfiguration(configId));
+				} else {
+					//there was no pipeline stage we could find
+					stage.setSolver(defaultSolver);
+					stage.setConfiguration(defaultConfiguration);
+				}
+				
 
 				jp.addStage(stage);
 			}
@@ -937,15 +951,15 @@ public class JobPairs {
 	protected static JoblineStage resultToStage(ResultSet result) throws Exception {
 		JoblineStage stage=new JoblineStage();
 				
-		stage.setId(result.getInt("id"));
-		stage.setWallclockTime(result.getDouble("wallclock"));
-		stage.setCpuUsage(result.getDouble("cpu"));
-		stage.setUserTime(result.getDouble("user_time"));
-		stage.setSystemTime(result.getDouble("system_time"));		
-		stage.setMemoryUsage(result.getDouble("mem_usage"));
-		stage.setMaxVirtualMemory(result.getDouble("max_vmem"));
-		stage.setMaxResidenceSetSize(result.getDouble("max_res_set"));
-		stage.setStageId(result.getInt("stage_id"));
+		stage.setId(result.getInt("jobpair_stage_data.id"));
+		stage.setWallclockTime(result.getDouble("jobpair_stage_data.wallclock"));
+		stage.setCpuUsage(result.getDouble("jobpair_stage_data.cpu"));
+		stage.setUserTime(result.getDouble("jobpair_stage_data.user_time"));
+		stage.setSystemTime(result.getDouble("jobpair_stage_data.system_time"));		
+		stage.setMemoryUsage(result.getDouble("jobpair_stage_data.mem_usage"));
+		stage.setMaxVirtualMemory(result.getDouble("jobpair_stage_data.max_vmem"));
+		stage.setMaxResidenceSetSize(result.getDouble("jobpair_stage_data.max_res_set"));
+		stage.setStageId(result.getInt("jobpair_stage_data.stage_id"));
 		return stage;
 	}
 
@@ -968,7 +982,7 @@ public class JobPairs {
 		
 		jp.setPath(result.getString("path"));
 		jp.setJobSpaceId(result.getInt("job_space_id"));
-		jp.setPrimaryStageId(result.getInt("primary_jobline_data"));
+		jp.setPrimaryStageId(result.getInt("primary_jobpair_data"));
 		jp.setSandboxNum(result.getInt("sandbox_num"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
