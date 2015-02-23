@@ -24,13 +24,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -38,7 +38,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				-- Order results depending on what column is being sorted on
@@ -57,20 +57,20 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
 
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY bench_name DESC
@@ -88,13 +88,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -102,7 +102,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				
@@ -125,18 +125,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY solver_name DESC
@@ -156,13 +156,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						
 						job_attributes.attr_value AS result,
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -170,7 +170,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				
@@ -192,18 +192,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						
 						job_attributes.attr_value AS result,
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY config_name DESC
@@ -223,13 +223,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						
 						job_attributes.attr_value AS result,
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -237,7 +237,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				
@@ -260,18 +260,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY status_code DESC
@@ -292,13 +292,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -306,7 +306,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR     job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				
@@ -329,18 +329,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY wallclock DESC
@@ -361,13 +361,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -375,7 +375,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 
@@ -397,18 +397,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
 
@@ -427,13 +427,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_name,
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -441,7 +441,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				
@@ -464,18 +464,18 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				 
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				ORDER BY job_pairs.id DESC
@@ -492,14 +492,14 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
 				LEFT JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock
 				-- don't include the query
@@ -507,7 +507,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
 				
@@ -530,21 +530,21 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						
 						job_attributes.attr_value AS result,
 						
-						jobline_stage_data.wallclock AS wallclock,
-						jobline_stage_data.cpu AS cpu
+						jobpair_stage_data.wallclock AS wallclock,
+						jobpair_stage_data.cpu AS cpu
 				FROM	job_pairs	
 				
 				LEFT JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
 
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-				JOIN jobline_stage_data ON jobline_stage_data.jobline_id = job_pairs.id
-				WHERE 	job_space_id=_spaceId AND jobline_stage_data.id=primary_stage
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+				WHERE 	job_space_id=_spaceId AND jobpair_stage_data.id=primary_jobline_data
 				
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
 				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
-				OR		jobline_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				

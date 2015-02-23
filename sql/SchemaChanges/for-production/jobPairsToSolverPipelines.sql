@@ -50,9 +50,9 @@ ALTER TABLE job_pairs DROP COLUMN io_wait;
 
 -- Step 5: Create table for storing jobline data at the stage level
 
-CREATE TABLE jobline_stage_data (
+CREATE TABLE jobpair_stage_data (
 	id INT AUTO_INCREMENT, -- this id orders the stages
-	jobline_id INT NOT NULL,
+	jobpair_id INT NOT NULL,
 	stage_id INT, -- stages are ordered by this ID as well
 	cpu DOUBLE,
 	wallclock DOUBLE,
@@ -62,13 +62,13 @@ CREATE TABLE jobline_stage_data (
 	user_time DOUBLE,
 	system_time DOUBLE,
 	PRIMARY KEY (id),
-	KEY(jobline_id),
-	CONSTRAINT jobline_stage_data_jobline_id FOREIGN KEY (jobline_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
-	CONSTRAINT jobline_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
+	KEY(jobpair_id),
+	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
+	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );
 
--- Step 6: Populate the jobline_stage_data table with data from the job_pairs table and remove it from job pairs
-INSERT INTO jobline_stage_data (jobline_id,stage_id,cpu,wallclock,mem_usage,max_vmem,max_res_set,user_time,system_time)
+-- Step 6: Populate the jobpair_stage_data table with data from the job_pairs table and remove it from job pairs
+INSERT INTO jobpair_stage_data (jobpair_id,stage_id,cpu,wallclock,mem_usage,max_vmem,max_res_set,user_time,system_time)
 SELECT id,null,cpu,wallclock,mem_usage,max_vmem,max_res_set,user_time,system_time FROM job_pairs;
 
 
@@ -81,8 +81,19 @@ ALTER TABLE job_pairs DROP COLUMN max_res_set;
 
 
 -- Step 7: Add primary stage column to the job_pairs table
-ALTER TABLE job_pairs ADD COLUMN primary_stage INT; -- which of this pairs stages is the primary one? references jobline_stage_data.id
+ALTER TABLE job_pairs ADD COLUMN primary_jobline_data INT; -- which of this pairs stages is the primary one? references jobpair_stage_data.id
 
-UPDATE job_pairs JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id SET primary_stage=jobline_stage_data.id;
+UPDATE job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id SET primary_jobline_data=jobpair_stage_data.id;
+
+-- Step 8: Add table for storing job pair dependencies
+
+CREATE TABLE jobpair_inputs (
+	jobpair_id INT NOT NULL,
+	input_number SMALLINT NOT NULL,
+	bench_id INT NOT NULL,
+	PRIMARY KEY (jobpair_id,input_number),
+	CONSTRAINT jobpair_inputs_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
+	CONSTRAINT jobpair_inputs_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
+);
 
 COMMIT;

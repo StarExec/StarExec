@@ -308,10 +308,10 @@ CREATE PROCEDURE GetJobPairsForTableByConfigInJobSpaceHierarchy(IN _jobSpaceId I
 				job_attributes.attr_value AS result,
 				bench_attributes.attr_value AS expected,
 				completion_id,
-				jobline_stage_data.wallclock,
-				jobline_stage_data.cpu
+				jobpair_stage_data.wallclock,
+				jobpair_stage_data.cpu
 		FROM job_pairs JOIN job_space_closure ON descendant=job_space_id
-		JOIN jobline_stage_data ON jobline_stage_data.id=job_pairs.primary_stage
+		JOIN jobpair_stage_data ON jobpair_stage_data.id=job_pairs.primary_jobline_data
 		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
@@ -359,12 +359,12 @@ DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
 		SELECT job_pairs.id AS pair_id,pipeline_stages.solver_id,pipeline_stages.solver_name,
-		pipeline_stages.config_id,pipeline_stages.config_name,jobline_stage_data.cpu,pipeline_stages.stage_id,
-		jobline_stage_data.wallclock AS wallclock,job_pairs.id
+		pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
+		jobpair_stage_data.wallclock AS wallclock,job_pairs.id
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id
-		JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id
-		LEFT JOIN pipeline_stages ON jobline_stage_data.stage_id=pipeline_stages.stage_id
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
 		WHERE ancestor=_jobSpaceId;
 	END //
 	
@@ -392,11 +392,11 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
 	BEGIN
-		SELECT job_pairs.id, status_code, bench_id,bench_name,jobline_stage_data.cpu,jobline_stage_data.wallclock, solver_id, solver_name, config_id, config_name
+		SELECT job_pairs.id, status_code, bench_id,bench_name,jobpair_stage_data.cpu,jobpair_stage_data.wallclock, solver_id, solver_name, config_id, config_name
 		FROM job_pairs 
 		JOIN job_space_closure ON descendant=job_pairs.job_space_id
-		JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id
-		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId AND job_pairs.primary_stage=jobline_stage_data.id;
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId AND job_pairs.primary_jobline_data=jobpair_stage_data.id;
 	END //
 	
 -- Counts the number of pairs in a job
@@ -443,8 +443,8 @@ DROP PROCEDURE IF EXISTS GetTimelessJobPairsByStatus;
 CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN 
 		SELECT job_pairs.id FROM job_pairs
-		JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id
-		WHERE job_id=_jobId AND status_code=_statusCode AND (jobline_stage_data.cpu=0 OR jobline_stage_data.wallclock=0);
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_id=_jobId AND status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
 	END //
 -- Retrieves basic info about pending/rejected job pairs for the given job id
 -- Author:Benton McCune
@@ -610,10 +610,10 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN
 DROP PROCEDURE IF EXISTS AddJobPairStage;
 CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _primary BOOLEAN, OUT _id INT)
 	BEGIN
-		INSERT INTO jobline_stage_data (jobline_id, stage_id) VALUES (_pairId, _stageId);
+		INSERT INTO jobpair_stage_data (jobpair_id, stage_id) VALUES (_pairId, _stageId);
 		SELECT LAST_INSERT_ID() INTO _id;
 		IF (_primary) THEN
-			UPDATE job_pairs SET primary_stage=_id WHERE job_pairs.id=_pairId;
+			UPDATE job_pairs SET primary_jobline_data=_id WHERE job_pairs.id=_pairId;
 		END IF;
 		 
 	END //
@@ -789,8 +789,8 @@ CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	BEGIN
 		SELECT COUNT(distinct job_pairs.id) AS count
 		FROM job_pairs 
-		JOIN jobline_stage_data ON jobline_stage_data.jobline_id=job_pairs.id
-		WHERE job_pairs.job_id=_jobId and _status=status_code AND (jobline_stage_data.wallclock=0 OR jobline_stage_data.cpu=0);
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId and _status=status_code AND (jobpair_stage_data.wallclock=0 OR jobpair_stage_data.cpu=0);
 	END //
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor

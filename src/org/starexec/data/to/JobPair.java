@@ -40,6 +40,11 @@ public class JobPair extends Identifiable {
 	//these defaults are only used temporarily when there is some stage without a set solver and configuration
 	private Solver defaultSolver=null;
 	private Configuration defaultConfiguration=null;
+	
+	//the inputs to this job pair, excluding the primary benchmark (in other words, the dependencies stored in the
+	//jobpair_inputs table
+	private List<Integer> benchInputs;
+	
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
@@ -48,6 +53,7 @@ public class JobPair extends Identifiable {
 		this.space=new Space();
 		setStages(new ArrayList<JoblineStage>());
 		primaryStageId=-1;
+		setBenchInputs(new ArrayList<Integer>());
 	}
 	
 	/**
@@ -405,5 +411,13 @@ public class JobPair extends Identifiable {
 
 	public void setDefaultConfiguration(Configuration defaultConfiguration) {
 		this.defaultConfiguration = defaultConfiguration;
+	}
+
+	public List<Integer> getBenchInputs() {
+		return benchInputs;
+	}
+
+	public void setBenchInputs(List<Integer> benchInputs) {
+		this.benchInputs = benchInputs;
 	}
 }

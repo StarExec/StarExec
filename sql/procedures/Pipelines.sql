@@ -62,4 +62,6 @@ CREATE PROCEDURE DeletePipeline(IN _pid INT)
 	BEGIN
 		DELETE FROM solver_pipelines WHERE id=_pid;
 	END //
+	
+
 DELIMITER ; -- This should always be at the end of this file

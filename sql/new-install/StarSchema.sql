@@ -243,6 +243,7 @@ CREATE TABLE pipeline_stages (
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE
 );
 
+
 -- Stores any dependencies that a particular stage has.
 CREATE TABLE pipeline_dependencies (
 	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
@@ -322,7 +323,7 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
-	primary_stage INT, -- which of this pairs stages is the primary one? references jobline_stage_data.id
+	primary_jobline_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.id
 	PRIMARY KEY(id),
 	KEY(sge_id),
 	KEY (job_space_id, config_id),
@@ -336,9 +337,9 @@ CREATE TABLE job_pairs (
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION -- not used as an index
 );
 
-CREATE TABLE jobline_stage_data (
+CREATE TABLE jobpair_stage_data (
 	id INT AUTO_INCREMENT, -- this id orders the stages
-	jobline_id INT NOT NULL,
+	jobpair_id INT NOT NULL,
 	stage_id INT, -- stages are ordered by this ID as well
 	cpu DOUBLE,
 	wallclock DOUBLE,
@@ -348,9 +349,18 @@ CREATE TABLE jobline_stage_data (
 	user_time DOUBLE,
 	system_time DOUBLE,
 	PRIMARY KEY (id),
-	KEY(jobline_id),
-	CONSTRAINT jobline_stage_data_jobline_id FOREIGN KEY (jobline_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
-	CONSTRAINT jobline_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
+	KEY(jobpair_id),
+	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
+	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
+);
+
+CREATE TABLE jobpair_inputs (
+	jobpair_id INT NOT NULL,
+	input_number SMALLINT NOT NULL,
+	bench_id INT NOT NULL,
+	PRIMARY KEY (jobpair_id,input_number),
+	CONSTRAINT jobpair_inputs_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
+	CONSTRAINT jobpair_inputs_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion

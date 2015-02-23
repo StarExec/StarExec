@@ -27,14 +27,14 @@ DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
 CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
-		UPDATE jobline_stage_data
+		UPDATE jobpair_stage_data
 		SET wallclock = _wallClock,
 			cpu=_cpu,
 			user_time=_userTime,
 			system_time=_systemTime,
 			max_vmem=_maxVmem,
 			max_res_set=_maxResSet
-		WHERE jobline_id=_jobPairId;
+		WHERE jobpair_id=_jobPairId;
 	END //
 	
 -- Updates a job pairs node Id
@@ -83,10 +83,10 @@ DROP PROCEDURE IF EXISTS GetJobPairStagesById;
 CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
 	BEGIN
 		SELECT *
-		FROM jobline_stage_data
-		LEFT JOIN pipeline_stages ON pipeline_stages.stage_id=jobline_stage_data.stage_id
-		WHERE jobline_id=_id
-		ORDER BY jobline_stage_data.stage_id ASC;
+		FROM jobpair_stage_data
+		LEFT JOIN pipeline_stages ON pipeline_stages.stage_id=jobpair_stage_data.stage_id
+		WHERE jobpair_id=_id
+		ORDER BY jobpair_stage_data.stage_id ASC;
 	END //
 -- Gets the job pair with the given id
 -- Author: Tyler Jensen
@@ -183,6 +183,12 @@ CREATE PROCEDURE CountRecentPairsByStatus(IN _status INT, IN _days INT)
 		
 		status_code=_status;-- end_time BETWEEN DATE_SUB(NOW(), INTERVAL _days DAY) AND NOW();
 	END //
-	 
+
+-- Adds a single job pair input to the database
+DROP PROCEDURE IF EXISTS AddJobPairInput;
+CREATE PROCEDURE AddJobPairInput(IN _pairId INT, IN _input INT, IN _benchId INT)
+	BEGIN
+		INSERT INTO jobpair_inputs (jobpair_id, input_number,bench_id) VALUES (_pairId,_input,_benchId);
+	END //
 	
 DELIMITER ; -- this should always be at the end of the file

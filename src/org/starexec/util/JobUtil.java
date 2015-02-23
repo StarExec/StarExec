@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.ErrorManager;
@@ -30,6 +31,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -91,16 +93,30 @@ public class JobUtil {
         NodeList listOfJobs = doc.getElementsByTagName("Job");
 		log.info("# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
+        
 		log.info("# of JobPairs = " + listOfJobPairs.getLength());
-		
+		NodeList listOfJobLines= doc.getElementsByTagName("JobLine");
+		log.info(" # of JobLines = "+listOfJobLines.getLength());
+		//this job has nothing to run
+		if (listOfJobLines.getLength()+listOfJobPairs.getLength()==0) {
+			errorMessage="Every job must have at least one job pair or job line to be created";
+			return null;
+		}
 		String name = "";//name variable to check
 		
 		
 		//validate all solver pipelines
+		
+		//data structure to ensure all pipeline names in this upload are unique
+		HashMap<String,SolverPipeline> pipelineNames=new HashMap<String,SolverPipeline>();
 		for (int i=0; i< listOfPipelines.getLength(); i++) {
 			Node pipeline = listOfPipelines.item(i);
-			int pipeId=createPipelineFromElement(userId, (Element) pipeline);
-			log.debug("new pipeline received id = "+pipeId);
+			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
+			if (pipelineNames.containsKey(pipe.getName())) {
+				errorMessage=" Duplicate pipline name = "+pipe.getName()+". All pipelines in this upload must have unique names";
+				return null;
+			}
+			pipelineNames.put(pipe.getName(),pipe);
 		}
 		
 		// Make sure jobs are named
@@ -134,7 +150,7 @@ public class JobUtil {
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				log.info("about to create job from element");
-				Integer id = createJobFromElement(userId, spaceId, jobElement);
+				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames);
 				if (id < 0) {
 				    this.jobCreationSuccess = false;
 				    break; // out of for loop
@@ -148,12 +164,13 @@ public class JobUtil {
 	
 	
 	/**
-	 * Creates a single solver pipeline from a SolverPipeline XML element
+	 * Creates a single solver pipeline from a SolverPipeline XML element. If there are any errors,
+	 * returns null
 	 * @param userId
 	 * @param pipeElement
 	 * @return
 	 */
-	private Integer createPipelineFromElement(int userId, Element pipeElement) {
+	private SolverPipeline createPipelineFromElement(int userId, Element pipeElement) {
 		SolverPipeline pipeline=new SolverPipeline();
 		pipeline.setUserId(userId);
 		
@@ -161,6 +178,7 @@ public class JobUtil {
 		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
 		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
 		for (int i=0;i<stages.getLength();i++) {
+			int currentStage=i+1;
 			Element stage=(Element)stages.item(i);
 			PipelineStage s=new PipelineStage();
 			s.setKeepOutput(false);
@@ -171,6 +189,7 @@ public class JobUtil {
 			NodeList dependencies=stage.getChildNodes();
 			int inputNumber=0;
 			for (int x=0;x<dependencies.getLength();x++) {
+				
 				Node t=dependencies.item(x);
 				if (t.getNodeType() == Node.ELEMENT_NODE) {
 					log.debug("found a pipeline stage dependency");
@@ -178,10 +197,25 @@ public class JobUtil {
 					PipelineDependency dep = new PipelineDependency();
 					if (dependency.getTagName().equals("stageDependency")) {
 						inputNumber++;
-
+						
 						dep.setType(PipelineInputType.ARTIFACT);
-						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("stage")));
-
+						
+						
+						int neededStageId=Integer.parseInt(dependency.getAttribute("stage"));
+						
+						if (neededStageId<1) {
+							errorMessage = "Invalid stage dependency-- all stages are numbered 1 or greater";
+							return null;
+						} else if (neededStageId>=(currentStage-1)) {
+							errorMessage="Invalid stage dependency-- stages can only depend on earlier stages, and a"
+									+ " stages implicitly depend on previous stages. Bad dependency =  Stage "+currentStage+" depends on"
+											+ " stage "+neededStageId;
+									
+						}
+						
+						
+						dep.setDependencyId(neededStageId);
+						
 					} else if (dependency.getTagName().equals("benchmarkDependency")) {
 						inputNumber++;
 
@@ -197,10 +231,14 @@ public class JobUtil {
 			stageList.add(s);
 		}
 		pipeline.setStages(stageList);
-		return Pipelines.addPipelineToDatabase(pipeline);
+		int id=Pipelines.addPipelineToDatabase(pipeline);
+		if (id<=0) {
+			return null;
+		}
+		return pipeline;
 	}
 
-
+	//TODO: Validate benchmark inputs are correct
 	/**
 	 * Creates a single job from an XML job element.
 	 * @param userId the ID of the user creating the job
@@ -210,12 +248,12 @@ public class JobUtil {
 	 * @author Tim Smith
 	 */
 	private Integer createJobFromElement(int userId, Integer spaceId,
-			Element jobElement) {
+			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
 	    try {
 		
 
 		Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
-		
+		HashMap<Integer,Solver> configIdsToSolvers=new HashMap<Integer,Solver>();
 
 		Job job = new Job();
 		job.setName(jobElement.getAttribute("name"));
@@ -250,11 +288,17 @@ public class JobUtil {
 		    Element preProcEle = DOMHelper.getElementByName(jobAttributes,"preproc-id");
 		    String preProc = preProcEle.getAttribute("value");
 		    preProcId = Integer.parseInt(preProc);
-		    if (preProcId != null && preProcId > 0) {
-			Processor p = Processors.get(preProcId);
-			if (p != null && p.getFilePath() != null) {
-			    job.setPreProcessor(p);
-			}
+		    if (preProcId != null) {
+		    	if (ProcessorSecurity.canUserSeeProcessor(preProcId, userId).isSuccess()) {
+		    		Processor p = Processors.get(preProcId);
+					if (p != null && p.getFilePath() != null) {
+						
+					    job.setPreProcessor(p);
+					}
+				} else {
+				    errorMessage = "You do not have permission to see this preprocessor, or it does not exist. Id = " + preProcId;
+				    return -1;
+				}
 		    }
 		}
 		
@@ -266,19 +310,30 @@ public class JobUtil {
 		    Element postProcEle = DOMHelper.getElementByName(jobAttributes,"postproc-id");
 		    String postProc = postProcEle.getAttribute("value");
 		    postProcId = Integer.parseInt(postProc);
-		    if (postProcId != null && postProcId > 0) {
-			Processor p = Processors.get(postProcId);
-			if (p != null && p.getFilePath() != null) {
-			    job.setPostProcessor(p);
-			}
+		    if (postProcId != null) {
+		    	
+		    	if (ProcessorSecurity.canUserSeeProcessor(postProcId, userId).isSuccess()) {
+		    		Processor p = Processors.get(postProcId);
+					if (p != null && p.getFilePath() != null) {
+					    job.setPostProcessor(p);
+					}
+				} else {
+				    errorMessage = "You do not have permission to see this postprocessor, or it does not exist. Id = " + postProcId;
+				    return -1;
+				}
+		    	
+		    	
+		    	
+			
 		    }
 		}
 		
-
+		//TODO: the validity of this queue is not being checked, nor are the timeouts below
 		log.info("queueId about to be set");
 
 		Element queueIdEle = DOMHelper.getElementByName(jobAttributes,"queue-id");
 		int queueId = Integer.parseInt(queueIdEle.getAttribute("value"));
+		
 		Queue queue = Queues.get(queueId);
 		job.setQueue(queue);
 		job.setPrimarySpace(spaceId);
@@ -308,12 +363,61 @@ public class JobUtil {
 		for (int i = 0; i < jobPairs.getLength(); i++) {
 		    Node jobPairNode = jobPairs.item(i);
 		    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
-			Element jobPairElement = (Element)jobPairNode;
+				Element jobPairElement = (Element)jobPairNode;
+					
+					JobPair jobPair = new JobPair();
+					int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
+					int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
+					String path = jobPairElement.getAttribute("job-space-path");
+					if (path.equals("")) {
+						path=rootName;
+					}
+					jobPair.setPath(path);
+					
+					
+				Benchmark b = Benchmarks.get(benchmarkId);
+				if (!Permissions.canUserSeeBench(benchmarkId, userId)){
+				    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
+				    return -1;
+				}
+				jobPair.setBench(b);
+				if (!configIdsToSolvers.containsKey(configId)) {
+					Solver s = Solvers.getSolverByConfig(configId, false);
+					if (!Permissions.canUserSeeSolver(s.getId(), userId)){
+					    errorMessage = "You do not have permission to see the solver " + s.getId();
+					    return -1;
+					}
+					s.addConfiguration(Solvers.getConfiguration(configId));
+					configIdsToSolvers.put(configId, s);
+				}
+				Solver s = configIdsToSolvers.get(configId);
+				
+				JoblineStage stage=new JoblineStage();
+				stage.setSolver(s);
+				stage.setConfiguration(s.getConfigurations().get(0));
+				jobPair.addStage(stage);
+				jobPair.setSpace(Spaces.get(spaceId));
+					
+					
+				job.addJobPair(jobPair);
+		    }
+		}
+		//TODO: populate the pair with the inputs
+		NodeList jobLines = jobElement.getElementsByTagName("JobLine");
+		for (int i = 0; i < jobLines.getLength(); i++) {
+		    Node jobLineNode = jobLines.item(i);
+		    if (jobLineNode.getNodeType() == Node.ELEMENT_NODE){
+		    	Element jobLineElement = (Element)jobLineNode;
 				
 				JobPair jobPair = new JobPair();
-				int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-				int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-				String path = jobPairElement.getAttribute("job-space-path");
+				int benchmarkId = Integer.parseInt(jobLineElement.getAttribute("bench-id"));
+				String pipeName = jobLineElement.getAttribute("pipe-name");
+				if (!pipelines.containsKey(pipeName)) {
+					errorMessage="the pipeline with name = "+pipeName+" is not declared as a pipeline in this file";
+					return -1;
+				}
+				SolverPipeline currentPipe=pipelines.get(pipeName);
+				String path = jobLineElement.getAttribute("job-space-path");
 				if (path.equals("")) {
 					path=rootName;
 				}
@@ -327,21 +431,46 @@ public class JobUtil {
 			}
 			jobPair.setBench(b);
 				
-			Solver s = Solvers.getSolverByConfig(configId, false);
-			if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-			    errorMessage = "You do not have permission to see the solver " + s.getId();
-			    return -1;
+			
+			// add all the jobline stages to this pair
+			for (PipelineStage s : currentPipe.getStages()) {
+				JoblineStage stage = new JoblineStage();
+				
+				int configId=s.getConfigId();
+				
+				if (!configIdsToSolvers.containsKey(configId)) {
+					Solver solver = Solvers.getSolverByConfig(configId, false);
+					if (!Permissions.canUserSeeSolver(s.getId(), userId)){
+					    errorMessage = "You do not have permission to see the solver " + s.getId();
+					    return -1;
+					}
+					solver.addConfiguration(Solvers.getConfiguration(configId));
+					configIdsToSolvers.put(configId, solver);
+				}
+				Solver solver = configIdsToSolvers.get(configId);
+				
+				
+				
+				
+				
+				stage.setSolver(solver);
+				stage.setConfiguration(solver.getConfigurations().get(0));
+				jobPair.addStage(stage);
 			}
-			JoblineStage stage=new JoblineStage();
-			stage.setSolver(s);
-			stage.setConfiguration(Solvers.getConfiguration(configId));
-			jobPair.addStage(stage);
+			
+			
 			jobPair.setSpace(Spaces.get(spaceId));
 				
 				
 			job.addJobPair(jobPair);
 		    }
 		}
+		
+		
+		
+		
+		
+		
 		
 		log.info("job pairs set");
 

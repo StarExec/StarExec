@@ -31,6 +31,36 @@ public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
 	
 	/**
+	 * Saves a job pair input in the database
+	 * @param pairId
+	 * @param inputNumber
+	 * @param benchId
+	 * @param con
+	 * @return
+	 */
+	private static boolean addJobPairInput(int pairId, int inputNumber, int benchId, Connection con) {
+		CallableStatement procedure=null;
+		try {
+			
+			procedure=con.prepareCall("{CALL AddJobPairInput(?,?,?)}");
+			procedure.setInt(1, pairId);
+			procedure.setInt(2,inputNumber);
+			procedure.setInt(3, benchId);
+			
+
+			procedure.executeUpdate();
+			
+
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Adds a stage to a given job pair in the database
 	 * @param pairId
 	 * @param stageId
@@ -96,6 +126,9 @@ public class JobPairs {
 
 			for (JoblineStage stage : pair.getStages()) {
 				addJobPairStage(pair.getId(),stage.getStageId(),stage.getStageId()==primStage,con);
+			}
+			for (int i=0;i<pair.getBenchInputs().size();i++) {
+				addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);
 			}
 			return true;
 		} catch (Exception e) {
@@ -928,23 +961,14 @@ public class JobPairs {
 		jp.setId(result.getInt("id"));
 		jp.setJobId(result.getInt("job_id"));
 		jp.setGridEngineId(result.getInt("sge_id"));	
-		//JoblineStage stage=new JoblineStage();
 		jp.setQueueSubmitTime(result.getTimestamp("queuesub_time"));
 		jp.setStartTime(result.getTimestamp("start_time"));
 		jp.setEndTime(result.getTimestamp("end_time"));
 		jp.setExitStatus(result.getInt("exit_status"));
-		//stage.setWallclockTime(result.getDouble("wallclock"));
-		//stage.setCpuUsage(result.getDouble("cpu"));
-		//stage.setUserTime(result.getDouble("user_time"));
-		//stage.setSystemTime(result.getDouble("system_time"));
 		
-		//stage.setMemoryUsage(result.getDouble("mem_usage"));
-		//stage.setMaxVirtualMemory(result.getDouble("max_vmem"));
-		//stage.setMaxResidenceSetSize(result.getDouble("max_res_set"));
-		//jp.addStage(stage);
 		jp.setPath(result.getString("path"));
 		jp.setJobSpaceId(result.getInt("job_space_id"));
-		jp.setPrimaryStageId(result.getInt("primary_stage"));
+		jp.setPrimaryStageId(result.getInt("primary_jobline_data"));
 		jp.setSandboxNum(result.getInt("sandbox_num"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;

@@ -25,6 +25,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -319,6 +320,48 @@ public class CreateJob extends HttpServlet {
 				       "Your job failed to submit for an unknown reason. Please try again.");
 		}
 	}
+	
+	public ValidatorStatusCode isValid(int userId, int queueId, int cpuLimit, int wallclockLimit, Integer preProcId, Integer postProcId) {
+		
+		
+	
+		List<Queue> userQueues = Queues.getUserQueues(userId); 
+		Boolean queueFound=false;
+		for (Queue queue:userQueues){
+			if (queue.getId() == queueId){
+				queueFound=true;
+				break;
+			}
+		}
+					
+		if (!queueFound){
+			return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
+		}
+		
+		Queue q=Queues.get(queueId);
+		if (wallclockLimit > q.getWallTimeout()) {
+			return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
+		}
+		
+		if (cpuLimit>q.getCpuTimeout()) {
+			return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
+		}
+		
+		 if (preProcId != null) {
+		    if (!ProcessorSecurity.canUserSeeProcessor(preProcId, userId).isSuccess()) {
+		    	return new ValidatorStatusCode(false, "You do not have permission to use the given preprocessor, or it does not exist");
+			} 
+		 }
+		 if (postProcId != null) {
+			if (!ProcessorSecurity.canUserSeeProcessor(postProcId, userId).isSuccess()) {
+			    return new ValidatorStatusCode(false, "You do not have permission to use the given postprocessor, or it does not exist");
+			} 
+		 }
+		
+		return new ValidatorStatusCode(true);
+	}
+	
+	//TODO: Refactor this and use it for the JobUtil file
 
 	/**
 	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
@@ -348,53 +391,36 @@ public class CreateJob extends HttpServlet {
 			if (!Validator.isValidLong(request.getParameter(randSeed))) {
 				return new ValidatorStatusCode(false, "The random seed needs to be a valid long integer");
 			}
-
+			Integer preProc=null;
+			Integer postProc=null;
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
+				
 				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
+				postProc=Integer.parseInt(request.getParameter(postProcessor));
 			}
-
+			
 			if(Util.paramExists(preProcessor, request)) {
 				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
+				preProc=Integer.parseInt(request.getParameter(postProcessor));
 			}
 
 			// Make sure the queue is a valid integer
 			if(!Validator.isValidInteger(request.getParameter(workerQueue))) {
 				return new ValidatorStatusCode(false, "The given queue ID needs to be a valid integer");
 			}
-			
 			// Make sure the queue is a valid selection and user has access to it
 			Integer queueId = Integer.parseInt(request.getParameter(workerQueue));
 			int userId = SessionUtil.getUserId(request);
-			List<Queue> userQueues = Queues.getUserQueues(userId); 
-			Boolean queueFound=false;
-			for (Queue queue:userQueues){
-				if (queue.getId() == queueId){
-					queueFound=true;
-					break;
-				}
-			}
-			
-			if (!queueFound){
-				return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
-			}
 			
 			//make sure both timeouts are <= the queue settings
 			int cpuLimit = Integer.parseInt(request.getParameter(cpuTimeout));
 			int runLimit = Integer.parseInt(request.getParameter(clockTimeout));
 			
-			Queue q=Queues.get(queueId);
-			if (runLimit > q.getWallTimeout()) {
-				return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
-			}
-			
-			if (cpuLimit>q.getCpuTimeout()) {
-				return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
-			}
 			
 			
 			
@@ -405,7 +431,8 @@ public class CreateJob extends HttpServlet {
 
 			
 			int sid = Integer.parseInt(request.getParameter(spaceId));
-			Permission perm = SessionUtil.getPermission(request, sid);
+			
+			Permission perm = Permissions.get(userId, sid);
 			// Make sure the user has access to the space
 			
 			if (!Util.paramExists(run, request)) {
@@ -474,8 +501,8 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
 			}
-			// Passed all checks, return true
-			return new ValidatorStatusCode(true);
+			// Passed all type checks-- next we check permissions 
+			return isValid(userId,queueId,cpuLimit,runLimit,preProc,postProc);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}

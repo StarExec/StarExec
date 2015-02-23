@@ -3676,7 +3676,7 @@ public class Jobs {
 		while(results.next()){
 			JobPair jp = new JobPair();
 			
-			// these are the solver and configuration defaults. If any jobline_stage_data
+			// these are the solver and configuration defaults. If any jobpair_stage_data
 			// entry has null for a stage_id, then these are the correct primitives. 
 						
 			Solver solve=new Solver();
