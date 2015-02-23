@@ -277,7 +277,7 @@ public class JobPair extends Identifiable {
 	public JoblineStage getPrimaryStage() {
 		
 		for (JoblineStage s : stages) {
-			if (s.isPrimary() || (primaryStageId>0 && s.getStageId()==primaryStageId)) {
+			if (primaryStageId>0 && s.getId()==primaryStageId) {
 				return s;
 			}
 		}

@@ -37,6 +37,7 @@ try {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "the configuration does not exist or is restricted");
 	}
 } catch (Exception e) {
+	e.printStackTrace();
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 }
 %>

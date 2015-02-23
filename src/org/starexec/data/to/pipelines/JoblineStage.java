@@ -28,10 +28,11 @@ public class JoblineStage extends Identifiable {
 	private double maxVirtualMemory;
 	private double maxResidenceSetSize;
 	private Configuration configuration = null;
-	private boolean primary=false;
+	//private boolean primary=false;
 	public JoblineStage() {
 		this.setSolver(new Solver());
 		this.setConfiguration(new Configuration());
+		
 		
 	}
 
@@ -115,13 +116,13 @@ public class JoblineStage extends Identifiable {
 		this.stageId = stageId;
 	}
 
-	public boolean isPrimary() {
+	/*public boolean isPrimary() {
 		return primary;
 	}
 
 	public void setPrimary(boolean primary) {
 		this.primary = primary;
-	}
+	}*/
 
 	public Integer getJobpairId() {
 		return jobpairId;

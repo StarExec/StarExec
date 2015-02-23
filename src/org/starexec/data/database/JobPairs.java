@@ -904,7 +904,7 @@ public class JobPairs {
 					stage.setSolver(defaultSolver);
 					stage.setConfiguration(defaultConfiguration);
 				}
-				
+				stage.getSolver().addConfiguration(stage.getConfiguration());
 
 				jp.addStage(stage);
 			}

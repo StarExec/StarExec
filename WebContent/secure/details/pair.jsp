@@ -77,10 +77,7 @@
 					<td>execution host</td>
 					<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 				</tr>				
-				<tr>
-					<td>runtime (wallclock)</td>			
-					<td>${pair.wallclockTime} seconds</td>
-				</tr>			
+							
 				</c:if>
 				<tr>
 					<td>space</td>
@@ -113,6 +110,10 @@
 						<tr>
 							<td>configuration</td>			
 							<td><star:config value="${stage.solver.configurations[0]}" /></td>
+						</tr>
+						<tr>
+							<td>runtime (wallclock)</td>			
+							<td>${stage.wallclockTime} seconds</td>
 						</tr>
 						<tr title="the cpu time usage in seconds">
 							<td>cpu usage</td>

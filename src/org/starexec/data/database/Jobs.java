@@ -1795,7 +1795,7 @@ public class Jobs {
 				JoblineStage stage=new JoblineStage();
 				stage.setWallclockTime(results.getDouble("wallclock"));
 				stage.setCpuUsage(results.getDouble("cpu"));
-				stage.setPrimary(true);
+				//stage.setPrimary(true);
 				jp.addStage(stage);
 				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));
@@ -2825,6 +2825,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
+	//TODO: right now, this works only for the primary stage. Needs to be updated to get back all stages
     protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId,int limit) throws Exception {	
 
 	CallableStatement procedure = null;
@@ -2845,16 +2846,17 @@ public class Jobs {
 
 		    JobPair jp = JobPairs.resultToPair(results);
 			JoblineStage stage=new JoblineStage();
+			stage.setId(jp.getPrimaryStageId());
 			jp.addStage(stage);
 		    //we need to check to see if the benchId and configId are null, since they might
 		    //have been deleted while the the job is still pending
 		    Integer benchId=results.getInt("bench_id");
 		    if (benchId!=null) {
-			if (!benchmarks.containsKey(benchId)) {
-			    benchmarks.put(benchId,Benchmarks.get(benchId));
-			}
-						
-			jp.setBench(benchmarks.get(benchId));
+				if (!benchmarks.containsKey(benchId)) {
+				    benchmarks.put(benchId,Benchmarks.get(benchId));
+				}
+							
+				jp.setBench(benchmarks.get(benchId));
 		    }
 		    Integer configId=results.getInt("config_id");
 		    String configName=results.getString("config_name");
