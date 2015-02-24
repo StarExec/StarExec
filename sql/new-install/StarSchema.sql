@@ -364,6 +364,8 @@ CREATE TABLE jobpair_inputs (
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
+-- TODO: Consider eliminating this table, as we store end_time in the job_pairs table. Need to be careful porting 
+-- over old pairs.
 CREATE TABLE job_pair_completion (
 	pair_id INT NOT NULL,
 	completion_id INT NOT NULL AUTO_INCREMENT,
