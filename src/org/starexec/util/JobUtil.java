@@ -200,7 +200,7 @@ public class JobUtil {
 			}
 			
 			
-			s.setConfigId(Integer.parseInt(stage.getAttribute("executable")));
+			s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
 			// make sure the user is authorized to use the solver they are trying to use
 			Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
 			if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
