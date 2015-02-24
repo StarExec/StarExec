@@ -336,7 +336,7 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 DROP PROCEDURE IF EXISTS GetCompletedJobPairsInJobSpace;
 CREATE PROCEDURE GetCompletedJobPairsInJobSpace(IN _jobSpaceId INT)
 	BEGIN
-		SELECT id, 
+		SELECT job_pairs.id, 
 						config_id,
 						config_name,
 						status_code,
