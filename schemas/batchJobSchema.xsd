@@ -10,11 +10,11 @@
     <complexType name="SolverPipeline">
     
     	<sequence>
-    		<element name="PipelineAttributes" type="tns:PipelineAttributes" minOccurs="1" maxOccurs="1"></element>
     		
     		<element name="PipelineStage" type="tns:PipelineStage" minOccurs="1" maxOccurs="unbounded"></element>
     	</sequence> 
-    
+    	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
+    	
     </complexType>
     
     <complexType name="PipelineStage">    	
@@ -54,9 +54,7 @@
     	
     </complexType>
     
-    <complexType name="PipelineAttributes">
-    	<attribute name="pipelineName" type="tns:PrimitiveName" use="required"></attribute>
-    </complexType>
+   
     
     <complexType name="BenchmarkInput">
     	<attribute name="bench-id" type="int" use="required"></attribute>

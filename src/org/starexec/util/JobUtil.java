@@ -177,7 +177,7 @@ public class JobUtil {
 		SolverPipeline pipeline=new SolverPipeline();
 		pipeline.setUserId(userId);
 		
-		pipeline.setName(pipeElement.getAttribute("pipelineName"));
+		pipeline.setName(pipeElement.getAttribute("name"));
 		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
 		
 		//data structure for storing all of the unique benchmark inputs in this upload.
