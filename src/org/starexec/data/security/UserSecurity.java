@@ -123,6 +123,19 @@ public class UserSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	/**
+	 * Checks to see whether the given user can subscribe or unsubscribe users from the report e-mails
+	 * @param userIdMakingRequest The Id of the user making the request
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCode otherwise
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserSubscribeOrUnsubscribeUser(int userIdMakingRequest) {
+		if (!Users.isAdmin(userIdMakingRequest)){
+			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
 	/**
 	 * Checks to see whether a given user is allowed to see the primitives owned by another user
 	 * @param ownerId The ID of the user who owns the primitives
