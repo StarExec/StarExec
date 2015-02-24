@@ -406,12 +406,14 @@ public class JobUtil {
 					}
 					Solver s = configIdsToSolvers.get(configId);
 					
+					//no actual pipeline yet exists for this stage-- one will be created 
+					// when the job is added
 					JoblineStage stage=new JoblineStage();
 					stage.setSolver(s);
 					stage.setConfiguration(s.getConfigurations().get(0));
 					jobPair.addStage(stage);
 					jobPair.setSpace(Spaces.get(spaceId));
-						
+					
 						
 					job.addJobPair(jobPair);
 			    }
@@ -437,52 +439,50 @@ public class JobUtil {
 					jobPair.setPath(path);
 					
 					
-				Benchmark b = Benchmarks.get(benchmarkId);
-				if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-				    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-				    return -1;
-				}
-				jobPair.setBench(b);
-				
-				NodeList inputs=jobLineElement.getElementsByTagName("BenchmarkInput");
-				for (int inputIndex=0;inputIndex<inputs.getLength();inputIndex++) {
-					Element inputElement=(Element)inputs.item(inputIndex);
-					int benchmarkInput=Integer.parseInt(inputElement.getAttribute("bench-id"));
-					if (!Permissions.canUserSeeBench(benchmarkInput, userId)){
-					    errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
+					Benchmark b = Benchmarks.get(benchmarkId);
+					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
+					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
 					    return -1;
 					}
-					jobPair.addBenchInput(benchmarkInput);
-				}
-				if (currentPipe.getRequiredNumberOfInputs()!=jobPair.getBenchInputs().size()) {
-					errorMessage="Job pairs have invalid inputs. Given inputs = "+jobPair.getBenchInputs().size()+", but "
-							+ "required inputs = "+currentPipe.getRequiredNumberOfInputs();
-				}
-	
-				
-				
-				// add all the jobline stages to this pair
-				for (PipelineStage s : currentPipe.getStages()) {
-					JoblineStage stage = new JoblineStage();
+					jobPair.setBench(b);
 					
-					int configId=s.getConfigId();
-					
-					if (!configIdsToSolvers.containsKey(configId)) {
-						Solver solver = Solvers.getSolverByConfig(configId, false);
-						if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-						    errorMessage = "You do not have permission to see the solver " + s.getId();
+					NodeList inputs=jobLineElement.getElementsByTagName("BenchmarkInput");
+					for (int inputIndex=0;inputIndex<inputs.getLength();inputIndex++) {
+						Element inputElement=(Element)inputs.item(inputIndex);
+						int benchmarkInput=Integer.parseInt(inputElement.getAttribute("bench-id"));
+						if (!Permissions.canUserSeeBench(benchmarkInput, userId)){
+						    errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
 						    return -1;
 						}
-						solver.addConfiguration(Solvers.getConfiguration(configId));
-						configIdsToSolvers.put(configId, solver);
+						jobPair.addBenchInput(benchmarkInput);
 					}
-					Solver solver = configIdsToSolvers.get(configId);
-					stage.setSolver(solver);
-					stage.setConfiguration(solver.getConfigurations().get(0));
-					jobPair.addStage(stage);
-				}
-				jobPair.setSpace(Spaces.get(spaceId));
-				job.addJobPair(jobPair);
+					if (currentPipe.getRequiredNumberOfInputs()!=jobPair.getBenchInputs().size()) {
+						errorMessage="Job pairs have invalid inputs. Given inputs = "+jobPair.getBenchInputs().size()+", but "
+								+ "required inputs = "+currentPipe.getRequiredNumberOfInputs();
+					}
+					// add all the jobline stages to this pair
+					for (PipelineStage s : currentPipe.getStages()) {
+						JoblineStage stage = new JoblineStage();
+						
+						int configId=s.getConfigId();
+						
+						if (!configIdsToSolvers.containsKey(configId)) {
+							Solver solver = Solvers.getSolverByConfig(configId, false);
+							if (!Permissions.canUserSeeSolver(s.getId(), userId)){
+							    errorMessage = "You do not have permission to see the solver " + s.getId();
+							    return -1;
+							}
+							solver.addConfiguration(Solvers.getConfiguration(configId));
+							configIdsToSolvers.put(configId, solver);
+						}
+						Solver solver = configIdsToSolvers.get(configId);
+						stage.setSolver(solver);
+						stage.setConfiguration(solver.getConfigurations().get(0));
+						stage.setStageId(s.getId());
+						jobPair.addStage(stage);
+					}
+					jobPair.setSpace(Spaces.get(spaceId));
+					job.addJobPair(jobPair);
 			    }
 			}
 			log.info("job pairs set");
@@ -505,7 +505,7 @@ public class JobUtil {
 	
 			log.info("start-paused: " + (new Boolean(startPaused).toString()));
 	
-			boolean submitSuccess = Jobs.add(job, spaceId,false);
+			boolean submitSuccess = Jobs.add(job, spaceId);
 			if (!submitSuccess){
 			    errorMessage = "Error: could not add job with id " + job.getId() + " to space with id " + spaceId;
 			    return -1;

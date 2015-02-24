@@ -188,7 +188,7 @@ public class ResourceLoader {
 
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId, SP);
 		
-		Jobs.add(job, spaceId,true);
+		Jobs.add(job, spaceId);
 		return job;
 	}
 	/**
@@ -215,7 +215,7 @@ public class ResourceLoader {
 			spaceToPairs.put(s.getId(), pairs);
 		}
 		JobManager.addJobPairsDepthFirst(job, spaceToPairs);
-		Jobs.add(job, rootSpaceId,true);
+		Jobs.add(job, rootSpaceId);
 		if (job.getId()<=0) {
 			log.error("could not load a job hierarchy into the database");
 			return null;

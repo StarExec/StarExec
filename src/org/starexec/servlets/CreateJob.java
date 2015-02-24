@@ -145,7 +145,7 @@ public class CreateJob extends HttpServlet {
 				0);
 		
 		buildQuickJob(j, settings.getCpuTimeout(), settings.getWallclockTimeout(), settings.getMaxMemory(), solverId, settings.getBenchId(), spaceId);
-		boolean submitSuccess = Jobs.add(j, spaceId,true);
+		boolean submitSuccess = Jobs.add(j, spaceId);
 		if (submitSuccess) {
 			return j.getId();
 		}
@@ -297,7 +297,7 @@ public class CreateJob extends HttpServlet {
 		
 		
 
-		boolean submitSuccess = Jobs.add(j, space,true);
+		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
 
 		//if the user chose to immediately pause the job

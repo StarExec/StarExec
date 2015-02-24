@@ -138,6 +138,11 @@ public class Jobs {
 	 * a set of solver pipelines to represent all the joblines. Pairs using the same solvers
 	 * will use the same pipelines, so this will generally create many fewer pipelines than there are 
 	 * job pairs. 
+	 * 
+	 * Pipelines are not added whenever a pair's joblines already have stage IDs set. In other words,
+	 * pipelines are not added whenever the necessary pipelines already exist for a pair
+	 * 
+	 *
 	 * @param j
 	 * @return
 	 */
@@ -146,6 +151,9 @@ public class Jobs {
 			//data structure will map unique sequences of configurations to pipelines
 			HashMap<String, SolverPipeline> pairsToPipes=new HashMap<String,SolverPipeline>();
 			for (JobPair pair : j.getJobPairs()) {
+				if (pair.getPrimaryStage().getStageId()==null) {
+					continue;
+				}
 				String pairString=pair.getStageString(); //a string that uniquely identifies a pipeline of configs
 				if (!pairsToPipes.containsKey(pairString)) { //if we haven't created this pipeline already, create it
 					SolverPipeline pipe=new SolverPipeline();
@@ -185,11 +193,10 @@ public class Jobs {
 	 * This method also fills in the IDs of job pairs of the given job object.
 	 * @param job The job data to add to the database
 	 * @param spaceId The id of the space to add the job to
-	 * @param createPipelines Whether to create new pipelines for all the pairs in this job. Should be true
 	 * if pipelines have not yet been created (most cases) and false if they have (job XML)
 	 * @return True if the operation was successful, false otherwise.
 	 */
-	public static boolean add(Job job, int spaceId, boolean createPipelines) {
+	public static boolean add(Job job, int spaceId) {
 		Connection con = null;
 		PreparedStatement procedure=null;
 		try {			
