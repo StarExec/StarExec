@@ -1,3 +1,4 @@
+//TODO: All reliance on ids should be changed to classes for easier mixins in other files
 $(document).ready(function() {
 	$("#settingProfile").change(function() {
 		
@@ -37,28 +38,12 @@ function getSelectedSettingId() {
 	
 }
 
-/**
- * Sets all of the fields that have defaults according to the currently selected default setting
- */
-//TODO: This currently requires that everything is in a very specific format. Some way to abstract this?
-function populateDefaults() {
-	selectedSettingId=getSelectedSettingId();
-	if (!stringExists(selectedSettingId)) {
-		return; //no setting selected.
-	}
-	if (getSelectedSettingType()=="COMMUNITY") {
-	    $("#saveProfile").hide();
-	    $("#deleteProfile").hide();
-
-	} else {
-		 $("#saveProfile").show();
-		 $("#deleteProfile").show();
-	}
+function populateDefaultsWithId(selectedSettingId) {
+	
 	if ($(".defaultSettingsProfile[value="+selectedSettingId+"]").length<=0) {
 		return; //couldn't find the profile, so nothing to populate
 	}
 	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
-	
 	//first, pull out
 	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
 	clockTimeout=$(profile).find("span.clockTimeout").attr("value");
@@ -71,12 +56,13 @@ function populateDefaults() {
 	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
 	deps = $(profile).find("span.dependency").attr("value");
 	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
-	
 	setInputToValue("#cpuTimeout",cpuTimeout);
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
+	
 	setInputToValue("#solver",solverId);
 	setInputToValue("#benchmark",benchId);
+	
 	//setInputToValue("#benchmarkField",benchContents);
 	$("#solverNameField").text(solverName);
 	$("#benchmarkNameField").text(benchName);
@@ -86,9 +72,7 @@ function populateDefaults() {
 		//only set the pre processor if one with this ID actually exists in the dropdown
 		if (($('.preProcessSetting > [value='+preProcessorId+']').length > 0)) {
 			$(".preProcessSetting").val(preProcessorId);
-
 		}
-		
 	}
 	
 	if (stringExists(postProcessorId)) {
@@ -102,6 +86,29 @@ function populateDefaults() {
 			$(".benchProcessSetting").val(benchProcessorId);
 		}
 	}
+	
+	
+}
+
+/**
+ * Sets all of the fields that have defaults according to the currently selected default setting
+ */
+function populateDefaults() {
+	selectedSettingId=getSelectedSettingId();
+	if (!stringExists(selectedSettingId)) {
+		return; //no setting selected.
+	}
+	
+	if (getSelectedSettingType()=="COMMUNITY") {
+	    $("#saveProfile").hide();
+	    $("#deleteProfile").hide();
+
+	} else {
+		 $("#saveProfile").show();
+		 $("#deleteProfile").show();
+	}
+	
+	populateDefaultsWithId(selectedSettingId);
 
 	
 }

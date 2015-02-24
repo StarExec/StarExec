@@ -380,15 +380,14 @@ public class Settings {
 			procedure.setInt(2, num);
 			//if we are setting one of the IDs and it is -1, this means there is no setting
 			//and we should use null
-			if ((num==1 || num==5) && setting==-1) {
+			if ((num==1 || num==5 || num==6 || num==7 || num==8) && setting==-1) {
 				procedure.setObject(3,null);
 			} else {
-					procedure.setInt(3,(int)setting);
-				
+				procedure.setInt(3,(int)setting);
 			}			
 			
 			procedure.executeUpdate();
-
+			return true;
 		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -397,6 +396,6 @@ public class Settings {
 			Common.safeClose(procedure);
 		}
 		
-		return true;
+		return false;
 	}
 }

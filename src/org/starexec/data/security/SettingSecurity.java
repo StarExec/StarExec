@@ -84,21 +84,29 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
 		} else if (attribute.equals("PostProcess")) {
-			if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
-				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+			int procId=Integer.parseInt(newValue);
+			if (procId>=0) {
+				if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
+					return new ValidatorStatusCode(false, "You do not have permission to see the given processor, or the given solver does not exist");
+				}
+				Processor p=Processors.get(Integer.parseInt(newValue));
+				if (p.getType()!=ProcessorType.POST){
+					return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
+				}
 			}
-			Processor p=Processors.get(Integer.parseInt(newValue));
-			if (p.getType()!=ProcessorType.POST){
-				return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
-			}	
+				
 		} else if (attribute.equals("BenchProcess")) {
-			if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
-				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+			int procId=Integer.parseInt(newValue);
+			if (procId>=0) {
+				if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
+					return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+				}
+				Processor p=Processors.get(Integer.parseInt(newValue));
+				if (p.getType()!=ProcessorType.BENCH){
+					return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
+				}
 			}
-			Processor p=Processors.get(Integer.parseInt(newValue));
-			if (p.getType()!=ProcessorType.BENCH){
-				return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
-			}
+			
 		} else if (attribute.equals("defaultbenchmark")) {
 			if (!Permissions.canUserSeeBench(Integer.parseInt(newValue), userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
@@ -108,13 +116,17 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
 			}
 		} else if (attribute.equals("PreProcess")) {
-			if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
-				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+			int procId=Integer.parseInt(newValue);
+			if (procId>=0) {
+				if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
+					return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+				}
+				Processor p=Processors.get(Integer.parseInt(newValue));
+				if (p.getType()!=ProcessorType.PRE){
+					return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
+				}
 			}
-			Processor p=Processors.get(Integer.parseInt(newValue));
-			if (p.getType()!=ProcessorType.PRE){
-				return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
-			}
+			
 		}
 		
 		return canModifySettings(id,userId);

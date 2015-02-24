@@ -1425,27 +1425,25 @@ public class RESTServices {
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
 			if (attribute.equals("PostProcess")) {
-				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(request.getParameter("val")));
+				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
 			} else if (attribute.equals("BenchProcess")) {
-				Settings.updateSettingsProfile(id,8,Integer.parseInt(request.getParameter("val")));
-			}
-			
-			else if (attribute.equals("CpuTimeout")) {
-				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(request.getParameter("val")));			
+				success = Settings.updateSettingsProfile(id,8,Integer.parseInt(newValue));
+			}else if (attribute.equals("CpuTimeout")) {
+				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(newValue));			
 			}else if (attribute.equals("ClockTimeout")) {
-				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(request.getParameter("val")));			
+				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(newValue));			
 			} else if (attribute.equals("DependenciesEnabled")) {
-				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(request.getParameter("val")));
+				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
 			} else if (attribute.equals("defaultbenchmark")) {
-				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(newValue));
 			} else if (attribute.equals("defaultsolver")) {
-				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
 			} else if(attribute.equals("MaxMem")) {
-				double gigabytes=Double.parseDouble(request.getParameter("val"));
+				double gigabytes=Double.parseDouble(newValue);
 				long bytes = Util.gigabytesToBytes(gigabytes); 
 				success=Settings.setDefaultMaxMemory(id, bytes);
 			} else if (attribute.equals("PreProcess")) {
-				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
 			}
 			
 			// Passed validation AND Database update successful
