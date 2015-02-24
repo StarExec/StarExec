@@ -1507,6 +1507,7 @@ public class Jobs {
 	 * @param jobSpaceId
 	 * @return
 	 */
+	//TODO: This currently works only on primary stages-- probably needs to be pdated
 	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId, int jobId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -1784,7 +1785,7 @@ public class Jobs {
 	 * @return The list of job pairs or null on failure
 	 */
 	
-	//TODO: This just gets the primary stage right now-- is that what we want?
+	//TODO: This just gets the primary stage right now-- may need to be updated to get all stages
 	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results, boolean includeExpected, boolean includeCompletion) {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 		try{
@@ -1795,7 +1796,7 @@ public class Jobs {
 				JoblineStage stage=new JoblineStage();
 				stage.setWallclockTime(results.getDouble("wallclock"));
 				stage.setCpuUsage(results.getDouble("cpu"));
-				//stage.setPrimary(true);
+				
 				jp.addStage(stage);
 				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));

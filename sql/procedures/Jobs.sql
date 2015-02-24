@@ -346,11 +346,12 @@ CREATE PROCEDURE GetCompletedJobPairsInJobSpace(IN _jobSpaceId INT)
 						bench_name,
 						job_attributes.attr_value AS result,
 						completion_id,
-						wallclock,
-						cpu
+						jobpair_stage_data.wallclock,
+						jobpair_stage_data.cpu
 		FROM job_pairs 				
 		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
 		JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
+		JOIN jobpair_stage_data ON jobpair_stage_data.id=job_pairs.primary_stage_data
 
 		WHERE job_space_id =_jobSpaceId AND status_code=7;
 	END //

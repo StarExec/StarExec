@@ -314,6 +314,9 @@ function cleanWorkspace {
         chmod g+s $WORKING_DIR
 	# change ownership and permissions to make sure we can clean everything up
 	log "WORKING_DIR is $WORKING_DIR"
+	quicktest="extra"
+	mkdir -p $WORKING_DIR
+	mkdir -p $WORKING_DIR$quicktest
 	sudo chown -R `whoami` $WORKING_DIR 
 	chmod -R gu+rxw $WORKING_DIR
 
