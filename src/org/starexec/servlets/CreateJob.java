@@ -145,7 +145,7 @@ public class CreateJob extends HttpServlet {
 				0);
 		
 		buildQuickJob(j, settings.getCpuTimeout(), settings.getWallclockTimeout(), settings.getMaxMemory(), solverId, settings.getBenchId(), spaceId);
-		boolean submitSuccess = Jobs.add(j, spaceId);
+		boolean submitSuccess = Jobs.add(j, spaceId,true);
 		if (submitSuccess) {
 			return j.getId();
 		}
@@ -297,7 +297,7 @@ public class CreateJob extends HttpServlet {
 		
 		
 
-		boolean submitSuccess = Jobs.add(j, space);
+		boolean submitSuccess = Jobs.add(j, space,true);
 		String start_paused = request.getParameter(pause);
 
 		//if the user chose to immediately pause the job
@@ -321,7 +321,7 @@ public class CreateJob extends HttpServlet {
 		}
 	}
 	
-	public ValidatorStatusCode isValid(int userId, int queueId, int cpuLimit, int wallclockLimit, Integer preProcId, Integer postProcId) {
+	public static ValidatorStatusCode isValid(int userId, int queueId, int cpuLimit, int wallclockLimit, Integer preProcId, Integer postProcId) {
 		List<Queue> userQueues = Queues.getUserQueues(userId); 
 		Boolean queueFound=false;
 		for (Queue queue:userQueues){
@@ -506,7 +506,7 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 			// Passed all type checks-- next we check permissions 
-			return isValid(userId,queueId,cpuLimit,runLimit,preProc,postProc);
+			return CreateJob.isValid(userId,queueId,cpuLimit,runLimit,preProc,postProc);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}

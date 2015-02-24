@@ -14,6 +14,7 @@ public class PipelineStage extends Identifiable {
 	
 	public PipelineStage() {
 		setDependencies(new ArrayList<PipelineDependency>());
+		keepOutput=false;
 	}
 	
 	public int getPipelineId() {

@@ -420,4 +420,7 @@ public class JobPair extends Identifiable {
 	public void setBenchInputs(List<Integer> benchInputs) {
 		this.benchInputs = benchInputs;
 	}
+	public void addBenchInput(Integer input) {
+		this.benchInputs.add(input);
+	}
 }

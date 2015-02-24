@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.starexec.data.to.*;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 
 /**
  * Class represents the top level of a solver pipeline
@@ -49,6 +50,24 @@ public class SolverPipeline extends Identifiable {
 	
 	public void addStage(PipelineStage stage) {
 		this.stages.add(stage);
+	}
+	
+	/**
+	 * Returns the number of benchmark inputs expected by this pipeline. 
+	 * This method requires that all stages and dependencies are populated to work properly.
+	 * @return
+	 */
+	public int getRequiredNumberOfInputs() {
+		int inputs=0;
+		for (PipelineStage stage : stages) {
+			for (PipelineDependency dep : stage.getDependencies()) {
+				if (dep.getType()==PipelineInputType.BENCHMARK)  {
+					inputs=Math.max(inputs, dep.getDependencyId());
+				}
+			}
+		}
+		
+		return inputs;
 	}
 	
 }

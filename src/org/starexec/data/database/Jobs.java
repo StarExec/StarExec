@@ -137,12 +137,10 @@ public class Jobs {
 	 * Given a job with a set of job pairs, each job pair populated with its joblines, creates
 	 * a set of solver pipelines to represent all the joblines. Pairs using the same solvers
 	 * will use the same pipelines, so this will generally create many fewer pipelines than there are 
-	 * job pairs
+	 * job pairs. 
 	 * @param j
 	 * @return
 	 */
-	//TODO: Ensure that this is the correct procedure for generating pipelines needed for this job
-
 	public static boolean addPipelinesToDatabase(Job j) {
 		try {
 			//data structure will map unique sequences of configurations to pipelines
@@ -187,9 +185,11 @@ public class Jobs {
 	 * This method also fills in the IDs of job pairs of the given job object.
 	 * @param job The job data to add to the database
 	 * @param spaceId The id of the space to add the job to
+	 * @param createPipelines Whether to create new pipelines for all the pairs in this job. Should be true
+	 * if pipelines have not yet been created (most cases) and false if they have (job XML)
 	 * @return True if the operation was successful, false otherwise.
 	 */
-	public static boolean add(Job job, int spaceId) {
+	public static boolean add(Job job, int spaceId, boolean createPipelines) {
 		Connection con = null;
 		PreparedStatement procedure=null;
 		try {			
