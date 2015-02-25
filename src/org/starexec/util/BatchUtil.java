@@ -1,5 +1,7 @@
 package org.starexec.util;
 
+
+import java.sql.Timestamp;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
@@ -10,6 +12,8 @@ import java.util.List;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.lang.StringBuilder;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -75,7 +79,7 @@ public class BatchUtil {
 	 *  @return xml file to represent space hierarchy of input space
 	 *  @throws Exception   
 	 */	
-    public File generateXMLfile(Space space, int userId, boolean includeAttributes, boolean updates) throws Exception{
+    public File generateXMLfile(Space space, int userId, boolean includeAttributes, boolean updates, int upid) throws Exception{
 	//TODO : attributes are being sorted alphabetically, want to preserve order of insertion instead
 		log.debug("Generating XML for Space = " +space.getId());			
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -83,7 +87,7 @@ public class BatchUtil {
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 		
 		doc = docBuilder.newDocument();
-		Element rootSpace = generateSpacesXML(space, userId, includeAttributes,updates);
+		Element rootSpace = generateSpacesXML(space, userId, includeAttributes,updates,upid);
 		doc.appendChild(rootSpace);
 		
 		// write the content into xml file
@@ -111,7 +115,7 @@ public class BatchUtil {
      *  @param updates whether or not to convert benchmarks to updates
      *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
      */	
-    public Element generateSpacesXML(Space space, int userId, boolean includeAttributes, boolean updates){		
+    public Element generateSpacesXML(Space space, int userId, boolean includeAttributes, boolean updates, int upid){		
 		log.debug("Generating Space XML for space " + space.getId());
 		Element spacesElement=null;
 	
@@ -121,7 +125,7 @@ public class BatchUtil {
 		spacesElement.setAttribute("xsi:schemaLocation", 
 						   Util.url("public/batchSpaceSchema.xsd batchSpaceSchema.xsd"));	
 			
-		Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes,updates);
+		Element rootSpaceElement = generateSpaceXML(space, userId, includeAttributes,updates, upid);
 		spacesElement.appendChild(rootSpaceElement);
 			
 		return spacesElement;
@@ -136,7 +140,7 @@ public class BatchUtil {
 	 *  @param updates whether or not to convert benchmarks to updates
 	 *  @return spaceElement for xml file to represent space hierarchy of input space 
 	 */	
-    public Element generateSpaceXML(Space space, int userId, boolean includeAttributes, boolean updates){		
+    public Element generateSpaceXML(Space space, int userId, boolean includeAttributes, boolean updates, int upid){		
 		log.debug("Generating Space XML for space " + space.getId());
 		
 		Element spaceElement = doc.createElement("Space");
@@ -301,10 +305,12 @@ public class BatchUtil {
 		for (Benchmark benchmark:space.getBenchmarks()){
 		    if(updates)
 			{
-			    //to do add updates
+			   
 			    Element updateElement = doc.createElement("Update");
-			    updateElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			    updateElement.setAttribute("name", benchmark.getName());
+			    updateElement.setAttribute("id", Integer.toString(benchmark.getId()));
+			    updateElement.setAttribute("pid", Integer.toString(upid));
+			    updateElement.setAttribute("bid", Integer.toString(benchmark.getType().getId()));
 			    spaceElement.appendChild(updateElement);
 			}
 		    else
@@ -312,6 +318,8 @@ public class BatchUtil {
 			Element benchElement = doc.createElement("Benchmark");	
 			benchElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			benchElement.setAttribute("name", benchmark.getName());
+			String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(benchmark.getUploadDate());
+                        benchElement.setAttribute("time", timeStamp);
 			if (includeAttributes) {
 			    Properties attrs = Benchmarks.getAttributes(benchmark.getId());
 			    if (attrs != null) {
@@ -336,7 +344,7 @@ public class BatchUtil {
 			spaceElement.appendChild(solverElement);
 		}	
 		for (Space subspace:space.getSubspaces()){			
-		    spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId, includeAttributes,updates));
+		    spaceElement.appendChild(generateSpaceXML(Spaces.getDetails(subspace.getId(), userId),userId, includeAttributes,updates,upid));
 		}
 		
 		return spaceElement;

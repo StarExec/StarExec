@@ -173,9 +173,15 @@
 	  <p><span id="dialog-spacexml-attributes-txt"></span></p>
 	  <input type="radio" value="true" name="att" />Yes
 	  <input type="radio" value="false" name="att" checked />No
+	  <div style='position: absolute; left: 0; width: 100%; bottom: 0;'>
+	  <p><span ><a id="showUpdateDialog" href="#" style="color:
+							     rgb(0,0,255)">Download
+	  with updates (advanced)</a></span></p>
+	  </div>
+	</div>
+	<div id="dialog-spaceUpdateXml" title="Updates">
 	  <p><span id="dialog-spacexml-updates-txt"></span></p>
-	  <input type="radio" value="true" name="up" />Yes
-	  <input type="radio" value="false" name="up" checked />No
+	  <div><input  type="text" id="updateID" /></div>
 	</div>
 	<div id="dialog-download-space" title="download space">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-download-space-txt"></span></p><br>

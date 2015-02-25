@@ -89,7 +89,9 @@
     	  </element>
         </sequence>
     	<attribute name="id" type="int"></attribute>
-    	<attribute name="name" type="string" use="optional"></attribute>
+    	<attribute name="name" type="string"
+		   use="optional"></attribute>
+	<attribute name="time" type="string" use="optional"></attribute>
     </complexType>
     
     <complexType name="Attribute">

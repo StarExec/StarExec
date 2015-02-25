@@ -60,7 +60,8 @@ function initDialogs() {
 	$("#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
 	$("#dialog-warning").hide();
-	$("#dialog-spacexml").hide();
+    $("#dialog-spacexml").hide();
+    $("#dialog-spaceUpdateXml").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -1721,10 +1722,12 @@ function updateButtonIds(id) {
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 
-	$("#downloadXML").unbind("click");
+
+
+        $("#downloadXML").unbind("click");
         $('#downloadXML').click(function (e) {
 	    $('#dialog-spacexml-attributes-txt').text('Do you want benchmark attributes included in the XML?');
-	    $('#dialog-spacexml-updates-txt').text('Do you want to convert the benchmarks to updates?');
+	    
 
 	    $('#dialog-spacexml').dialog({
 		modal: true,
@@ -1733,10 +1736,9 @@ function updateButtonIds(id) {
 		buttons: {
 		    "download": function () {
 			var attVal = $('input[name=att]:checked').val();
-			var upVal = $('input[name=up]:checked').val();
 			attBool = attVal == "true";
-			upBool = upVal == "true";
-			createDownloadSpaceXMLRequest(attBool, upBool, id);
+			
+			createDownloadSpaceXMLRequest(attBool, false,-1, id);
 			$(this).dialog("close");
 		    },
                     "cancel": function () {
@@ -1745,6 +1747,27 @@ function updateButtonIds(id) {
 		}
 	    });
 	});
+
+    $('#showUpdateDialog').click(function(){
+        $("#dialog-spaceUpdateXml").dialog();
+        $('#dialog-spacexml').dialog("close");
+        $('#dialog-spacexml-updates-txt').text('Enter default update processor id');
+        $('#dialog-spaceUpdateXml').dialog({
+		modal: true,
+		width: 380,
+		height: 300,
+		buttons: {
+		    "download": function () {
+			var updatePID = $('#updateID').val();
+			createDownloadSpaceXMLRequest(false, true,updatePID, id);
+			$(this).dialog("close");
+		    },
+                    "cancel": function () {
+			$(this).dialog("close");
+		    }
+		}
+	    });
+    });
 	
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
@@ -1780,10 +1803,10 @@ function updateButtonIds(id) {
 }
 
 
-function createDownloadSpaceXMLRequest(includeAttrs,updates,id) {
+function createDownloadSpaceXMLRequest(includeAttrs,updates,upid,id) {
   createDialog("Processing your download request, please wait. This will take some time for large spaces.");
   token=Math.floor(Math.random()*100000000);
-  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs+"&updates="+updates;
+  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs+"&updates="+updates+"&upid="+upid;
   destroyOnReturn(token);
   window.location.href = myhref;
  
