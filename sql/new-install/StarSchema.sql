@@ -1,3 +1,4 @@
+
 -- Author: Tyler Jensen
 -- Description: This file is the schema used to create the starexec database in MySQL
 
@@ -11,6 +12,7 @@ CREATE TABLE users (
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
 	disk_quota BIGINT NOT NULL,
+	subscribed_to_reports BOOLEAN NOT NULL DEFAULT FALSE,
 	default_page_size INT NOT NULL DEFAULT 10,
 	default_settings_profile INT DEFAULT NULL,
 	PRIMARY KEY (id),
@@ -682,3 +684,17 @@ CREATE TABLE system_flags (
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 
+-- table for storing statistics for the weekly report
+CREATE TABLE report_data (
+	id INT NOT NULL AUTO_INCREMENT,
+	event_name VARCHAR(64),
+	queue_id INT, -- NULL if data is not associated with a queue 
+	occurrences INT NOT NULL,
+
+	UNIQUE KEY(event_name),
+	PRIMARY KEY(id),
+	CONSTRAINT datas_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
+);
+
+INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('logins', NULL, 0), ('jobs initiated', NULL, 0),
+	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 
