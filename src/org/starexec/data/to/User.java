@@ -22,6 +22,7 @@ public class User extends Identifiable {
 	private transient String password;		
 	private List<Website> websites;
 	private long diskQuota;
+	private boolean subscribedToReports;
 	
 	/**
 	 * @return the user's disk quota (in bytes)
@@ -164,6 +165,27 @@ public class User extends Identifiable {
 		}
 		
 		this.websites.add(website);
+	}
+
+	/**
+	 * @return true if the user is subscribed to reports. False otherwise.
+	 * @author Albert Giegerich
+	 */
+	public boolean isSubscribedToReports() {
+		return subscribedToReports;
+	}
+
+	/**
+	 * Subscribe/unsubscribe user to reports.
+	 * @param subscribe Whether or not to subscribe the user.
+	 * @author Albert Giegerich
+	 */
+	public void setSubscribedToReports(boolean subscribe) {
+		subscribedToReports = subscribe;
+	}
+
+	public void toggleSubscribedToReports() {
+		subscribedToReports = !subscribedToReports;
 	}
 	
 	@Override
