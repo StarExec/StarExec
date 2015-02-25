@@ -146,12 +146,13 @@ public class Jobs {
 	 * @param j
 	 * @return
 	 */
+	//TODO: Ensure this piece is working correctly
 	public static boolean addPipelinesToDatabase(Job j) {
 		try {
 			//data structure will map unique sequences of configurations to pipelines
 			HashMap<String, SolverPipeline> pairsToPipes=new HashMap<String,SolverPipeline>();
 			for (JobPair pair : j.getJobPairs()) {
-				if (pair.getPrimaryStage().getStageId()==null) {
+				if (pair.getPrimaryStage().getStageId()!=null) { //don't do anything with pairs that already have associated pipelines
 					continue;
 				}
 				String pairString=pair.getStageString(); //a string that uniquely identifies a pipeline of configs

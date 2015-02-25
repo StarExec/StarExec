@@ -52,9 +52,6 @@ trap 'handleUsrTwo' USR2
 
 #==========================================================================
 # Execute (prolog will take care of data staging)
-# NOTE: Keep things in here to a MINIMUM. Anything below this line counts
-# against the user's execution time
-#==========================================================================
 
 findSandbox $JOB_ID
 
