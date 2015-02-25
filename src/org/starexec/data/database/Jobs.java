@@ -1696,8 +1696,8 @@ public class Jobs {
 				
 				JobPair jp=idsToPairs.get(results.getInt("job_pairs.id"));
 				JoblineStage stage=new JoblineStage();
-				stage.setCpuUsage(results.getInt("cpu"));
-				stage.setWallclockTime(results.getInt("wallclock"));
+				stage.setCpuUsage(results.getDouble("cpu"));
+				stage.setWallclockTime(results.getDouble("wallclock"));
 				stage.setStageId(results.getInt("pipeline_stages.stage_id"));
 				//everything below this line is in a stage
 				id=results.getInt("solver_id");
