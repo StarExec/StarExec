@@ -48,35 +48,31 @@ function editPermissions(userId) {
 	window.location.replace("permissions.jsp?id=" + userId);
 }
 
-function suspendUser(userId) {
-
-	// Request the next page of primitives from the server via AJAX
+function postAndReloadPageIfSuccessful(postPath) {
 	$.post(  
-			starexecRoot+"services/suspend/user/" + userId,
-			function(returnCode){
-				s=parseReturnCode(returnCode);
-				if (s) {
-					setTimeout(function(){document.location.reload(true);}, 1000);
-
-				}
-				
-			},  
-			"json"
+		postPath,
+		function(returnCode){
+			s=parseReturnCode(returnCode);
+			if (s) {
+				setTimeout(function(){document.location.reload(true);}, 1000);
+			}
+		},  
+		"json"
 	)
 }
 
+function suspendUser(userId) {
+	postAndReloadPageIfSuccessful(starexecRoot+"services/suspend/user/"+userId);
+}
+
 function reinstateUser(userId) {
+	postAndReloadPageIfSuccessful(starexecRoot+"services/reinstate/user/"+userId);
+}
 
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			starexecRoot+"services/reinstate/user/" + userId,
-			function(returnCode){
-				s=parseReturnCode(returnCode);
-				if (s) {
-					setTimeout(function(){document.location.reload(true);}, 1000);
+function subscribeUserToReports(userId) {
+	postAndReloadPageIfSuccessful(starexecRoot+"services/subscribe/user/"+userId);
+}
 
-				}
-			},  
-			"json"
-	)
+function unsubscribeUserFromReports(userId) {
+	postAndReloadPageIfSuccessful(starexecRoot+"services/unsubscribe/user/"+userId);
 }

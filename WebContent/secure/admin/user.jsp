@@ -26,14 +26,15 @@
 	</fieldset>	
 	<fieldset  id="userField">
 			<legend class="expd" id="userExpd"><span>0</span> users</legend>
-			<table id="users">
+			<table id="users" style="width:900px">
 				<thead>
 					<tr>
-						<th>name</th>
-						<th>institution</th>
-						<th style="width:240px;">email</th>
-						<th>permissions</th>
-						<th style="width:80px;">suspend</th>
+						<th style="width:100px;">name</th>
+						<th style="width:100px;">institution</th>
+						<th style="width:200px;">email</th>
+						<th style="width:100px;">permissions</th>
+						<th style="width:100px;">suspend</th>
+						<th style="width:100px;">reports</th>
 					</tr>
 				</thead>			
 			</table>
