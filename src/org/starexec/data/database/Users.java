@@ -722,7 +722,8 @@ public class Users {
 				u.setLastName(results.getString("last_name"));
 				u.setEmail(results.getString("email"));
 				u.setRole(results.getString("role"));
-				
+				u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
+
 				//Prevents public user from appearing in table.
 				users.add(u);
 				
@@ -1239,6 +1240,27 @@ public class Users {
 		}		
 		return false;
 	}
+
+	public static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
+		Connection con = null;
+		CallableStatement procedure= null;
+		try{
+			con = Common.getConnection();					
+						
+			procedure = con.prepareCall("{CALL SetUserReportSubscription(?,?)}");
+			procedure.setInt(1, userId);
+			procedure.setBoolean(2, willBeSubscribed);
+			procedure.executeUpdate();			
+			return true;
+		} catch (Exception e){	
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);						
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}		
+		return false;
+	}
 	
 	/**
 	 * Sets the role of the given user to 'suspended' 
@@ -1258,6 +1280,14 @@ public class Users {
 	public static boolean reinstate(int userId) {
 		return changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
 	}	
+
+	public static boolean subscribeToReports(int userId) {
+		return setUserReportSubscription(userId, true); 
+	}
+
+	public static boolean unsubscribeFromReports(int userId) {
+		return setUserReportSubscription(userId, false); 
+	}
 	
 	/**
 	 * Returns the list of community IDs for every community this user is a part of
