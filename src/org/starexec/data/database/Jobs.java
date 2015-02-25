@@ -1670,7 +1670,13 @@ public class Jobs {
 		return null;
 	}
 	
-	
+	/**
+	 * Given a list of job pairs and a ResultSet that contains stages for those pairs, populates
+	 * the pairs with their stages
+	 * @param pairs
+	 * @param results
+	 * @return
+	 */
 	public static boolean populateJobPairStages(List<JobPair> pairs, ResultSet results) {
 		
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
@@ -3661,6 +3667,8 @@ public class Jobs {
 			
 			int correct=JobPairs.isPairCorrect(jp);
 			if (correct==0) {
+				log.debug("found wallclock time = "+jp.getPrimaryWallclockTime());
+				log.debug(jp.getStages().size());
 				curSolver.incrementWallTime(jp.getPrimaryWallclockTime());
     			curSolver.incrementCpuTime(jp.getPrimaryCpuTime());
     			curSolver.incrementCorrectJobPairs();

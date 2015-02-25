@@ -693,7 +693,7 @@ CREATE TABLE report_data (
 
 	UNIQUE KEY(event_name),
 	PRIMARY KEY(id),
-	CONSTRAINT datas_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
+	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
 );
 
 INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('logins', NULL, 0), ('jobs initiated', NULL, 0),
