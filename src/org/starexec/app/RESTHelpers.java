@@ -1993,6 +1993,20 @@ public class RESTHelpers {
 			}
 			entry.add(new JsonPrimitive(suspendButton));
 
+			String subscribeButton = "";
+			if (user.isSubscribedToReports()) {
+				sb = new StringBuilder();
+				sb.append("<input type=\"button\" onclick=\"unsubscribeUserFromReports(" + user.getId() + ")\" value=\"Unsubscribe\"/>");
+				subscribeButton = sb.toString();
+			} else {
+				sb = new StringBuilder();
+				sb.append("<input type=\"button\" onclick=\"subscribeUserToReports(" + user.getId() + ")\" value=\"Subscribe\"/>");
+				subscribeButton = sb.toString();
+			}
+
+			entry.add(new JsonPrimitive(subscribeButton));
+
+
 
 
 
