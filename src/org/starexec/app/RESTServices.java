@@ -4183,7 +4183,7 @@ public class RESTServices {
 		}
 
 		boolean success = Users.unsubscribeFromReports(userId);
-		return success ? gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully")) : gson.toJson(ERROR_DATABASE);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
