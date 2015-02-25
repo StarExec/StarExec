@@ -20,7 +20,7 @@ CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 	END //
 	
 	
--- Updates a job pair's statistics directly from the execution node
+-- Updates a job pair's statistics directly from the execution node  
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
 CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT)
@@ -32,13 +32,7 @@ CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHA
 			user_time=_userTime,
 			system_time=_systemTime,
 			max_vmem=_maxVmem,
-			max_res_set=_maxResSet,
-			page_reclaims=_pageReclaims,
-			page_faults=_pageFaults,
-			block_input=_blockInput,
-			block_output=_blockOutput,
-			vol_contex_swtch=_volContexSwtch,
-			invol_contex_swtch=_involContexSwtch
+			max_res_set=_maxResSet
 		WHERE id=_jobPairId;
 	END //
 	
