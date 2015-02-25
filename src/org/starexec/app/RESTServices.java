@@ -991,6 +991,7 @@ public class RESTServices {
 		if (primType.startsWith("n")) {
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.NODE, request);
 		}
+
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 	
@@ -4147,6 +4148,42 @@ public class RESTServices {
 		boolean success = Users.reinstate(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User reinstated successfully")) : gson.toJson(ERROR_DATABASE);
 
+	}
+
+	/**
+	 * Subscribes a user to the e-mail report system.
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/subscribe/user/{userId}")
+	@Produces("application/json")
+	public String subscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		boolean success = Users.subscribeToReports(userId);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully")) : gson.toJson(ERROR_DATABASE);
+	}
+
+	/**
+	 * Unsubscribes a user from the e-mail report system.
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/unsubscribe/user/{userId}")
+	@Produces("application/json")
+	public String unsubscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		boolean success = Users.unsubscribeFromReports(userId);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST
