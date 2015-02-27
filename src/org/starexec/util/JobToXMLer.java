@@ -178,7 +178,7 @@ public class JobToXMLer {
 		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
 
 		Attr cpuTimeout = doc.createAttribute("value");
-		cpuTimeout.setValue(Integer.toString(Jobs.getCpuTimeout(job.getId())));
+		cpuTimeout.setValue(Integer.toString(job.getCpuTimeout()));
 		cpuTimeoutElement.setAttributeNode(cpuTimeout);
 
 		attrsElement.appendChild(cpuTimeoutElement);
@@ -188,7 +188,7 @@ public class JobToXMLer {
 		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
 
 		Attr wallClockTimeout = doc.createAttribute("value");
-                wallClockTimeout.setValue(Integer.toString(Jobs.getWallclockTimeout(job.getId())));
+                wallClockTimeout.setValue(Integer.toString(job.getWallclockTimeout()));
 		wallClockTimeoutElement.setAttributeNode(wallClockTimeout);
 
 		attrsElement.appendChild(wallClockTimeoutElement);
@@ -198,7 +198,7 @@ public class JobToXMLer {
 		Element memLimitElement = doc.createElement("mem-limit");
 
 		Attr memLimit = doc.createAttribute("value");
-		memLimit.setValue(Double.toString(Util.bytesToGigabytes(Jobs.getMaximumMemory(job.getId()))));
+		memLimit.setValue(Double.toString(Util.bytesToGigabytes(job.getMaxMemory())));
 		memLimitElement.setAttributeNode(memLimit);
 
 		attrsElement.appendChild(memLimitElement);
@@ -218,8 +218,8 @@ public class JobToXMLer {
 
 			Attr configID = doc.createAttribute("config-id");
 			Attr configName = doc.createAttribute("config-name");
-			configID.setValue(Integer.toString(jobpair.getConfiguration().getId()));
-			configName.setValue(jobpair.getConfiguration().getName());
+			configID.setValue(Integer.toString(jobpair.getPrimaryConfiguration().getId()));
+			configName.setValue(jobpair.getPrimaryConfiguration().getName());
 			
 
 			
@@ -231,8 +231,8 @@ public class JobToXMLer {
 			spaceId.setValue(Integer.toString(jobpair.getSpace().getId()));
 			spacePath.setValue(jobpair.getPath());
 			
-			solverId.setValue(Integer.toString(jobpair.getSolver().getId()));
-			solverName.setValue(jobpair.getSolver().getName());
+			solverId.setValue(Integer.toString(jobpair.getPrimarySolver().getId()));
+			solverName.setValue(jobpair.getPrimarySolver().getName());
 			
 			
 			

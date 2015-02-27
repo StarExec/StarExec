@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -8,6 +8,8 @@
 		int pairId = Integer.parseInt(request.getParameter("id"));
 		
 		JobPair jp = JobPairs.getPairDetailed(pairId);
+		
+		
 		
 		if(jp == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	
@@ -53,14 +55,6 @@
 				<tr>
 					<td>benchmark</td>			
 					<td><star:benchmark value="${pair.bench}" /></td>
-				</tr>
-				<tr>
-					<td>solver</td>			
-					<td><star:solver value="${pair.solver}" /></td>
-				</tr>
-				<tr>
-					<td>configuration</td>			
-					<td><star:config value="${pair.solver.configurations[0]}" /></td>
 				</tr>				
 				<tr>
 					<td>ran by</td>			
@@ -68,25 +62,22 @@
 				</tr>
 				<tr>
 					<td>cpu timeout</td>			
-					<td>${pair.cpuTimeout} seconds</td>
+					<td>${job.cpuTimeout} seconds</td>
 				</tr>
 				<tr>
 					<td>wallclock timeout</td>			
-					<td>${pair.wallclockTimeout} seconds</td>
+					<td>${job.wallclockTimeout} seconds</td>
 				</tr>
 				<tr>
 					<td>memory limit</td>
-					<td>${pair.maxMemory} bytes</td>
+					<td>${job.maxMemory} bytes</td>
 				</tr>
 				<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>
 					<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
 				</tr>				
-				<tr>
-					<td>runtime (wallclock)</td>			
-					<td>${pair.wallclockTime} seconds</td>
-				</tr>			
+							
 				</c:if>
 				<tr>
 					<td>space</td>
@@ -102,72 +93,57 @@
 			<p>waiting for results. try again in 2 minutes.</p>
 		</c:when>
 		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
-			<table id="pairStats" class="shaded">
-				<thead>
-					<tr>
-						<th>property</th>
-						<th>value</th>				
-					</tr>		
-				</thead>	
-				<tbody>
-					<tr title="the cpu time usage in seconds">
-						<td>cpu usage</td>
-						<td>${pair.cpuTime}</td>
-					</tr>
-					<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
-						<td>user time</td>
-						<td>${pair.userTime}</td>
-					</tr>
-					<tr title="the total amount of time spent executing in kernel mode, expressed in microseconds">
-						<td>system time</td>
-						<td>${pair.systemTime}</td>
-					</tr>
-					<tr title="the amount of data transferred in input/output operations">
-						<td>io data usage</td>
-						<td>${pair.ioDataUsage}</td>
-					</tr>
-					<tr title="the io wait time in seconds">
-						<td>io data wait</td>
-						<td>${pair.ioDataWait}</td>
-					</tr>
-					<tr title="the integral memory usage in Gbyte seconds">
-						<td>memory usage</td>
-						<td>${pair.memoryUsage}</td>
-					</tr>
-					<tr title="the maximum vmem size in bytes">
-						<td>max virtual memory</td>
-						<td>${pair.maxVirtualMemory}</td>
-					</tr>
-					<tr title="the maximum resident set size used (in kilobytes)">
-						<td>max residence set size</td>
-						<td>${pair.maxResidenceSetSize}</td>
-					</tr>
-					<tr title="the number of page faults serviced without any io activity; here io activity is avoided by 'reclaiming' a page frame from the list of pages awaiting reallocation">
-						<td>page reclaims</td>
-						<td>${pair.pageReclaims}</td>
-					</tr>
-					<tr title="the number of page faults serviced that required io activity">
-						<td>page faults</td>
-						<td>${pair.pageFaults}</td>
-					</tr>
-					<tr title="the number of times the file system had to perform input">
-						<td>block input</td>
-						<td>${pair.blockInput}</td>
-					</tr>
-					<tr title="the number of times the file system had to perform output">
-						<td>block output</td>
-						<td>${pair.blockOutput}</td>
-					</tr>
-					<tr title="the number of times a context switch resulted due to a process voluntarily giving up the processor before its time slice was completed (usually to await availability of a resource)">
-						<td>voluntary context switches</td>
-						<td>${pair.voluntaryContextSwitches}</td>
-					</tr>
-					<tr title="the number of times a context switch resulted due to a higher priority process becoming runnable or because the current process exceeded its time slice">
-						<td>involuntary context switches</td>
-						<td>${pair.involuntaryContextSwitches}</td>
-					</tr>
-				</tbody>
-			</table>
+			<c:forEach var="stage" items="${pair.getStages()}">
+				
+				<table id="pairStats" class="shaded">
+					<thead>
+						<tr>
+							<th>property</th>
+							<th>value</th>				
+						</tr>		
+					</thead>	
+					<tbody>
+						<tr>
+							<td>solver</td>			
+							<td><star:solver value="${stage.solver}" /></td>
+						</tr>
+						<tr>
+							<td>configuration</td>			
+							<td><star:config value="${stage.solver.configurations[0]}" /></td>
+						</tr>
+						<tr>
+							<td>runtime (wallclock)</td>			
+							<td>${stage.wallclockTime} seconds</td>
+						</tr>
+						<tr title="the cpu time usage in seconds">
+							<td>cpu usage</td>
+							<td>${stage.cpuTime}</td>
+						</tr>
+						<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
+							<td>user time</td>
+							<td>${stage.userTime}</td>
+						</tr>
+						<tr title="the total amount of time spent executing in kernel mode, expressed in microseconds">
+							<td>system time</td>
+							<td>${stage.systemTime}</td>
+						</tr>
+						
+						<tr title="the integral memory usage in Gbyte seconds">
+							<td>memory usage</td>
+							<td>${stage.memoryUsage}</td>
+						</tr>
+						<tr title="the maximum vmem size in bytes">
+							<td>max virtual memory</td>
+							<td>${stage.maxVirtualMemory}</td>
+						</tr>
+						<tr title="the maximum resident set size used (in kilobytes)">
+							<td>max residence set size</td>
+							<td>${stage.maxResidenceSetSize}</td>
+						</tr>
+					</tbody>
+				</table>
+			</c:forEach>
+			
 		</c:when>				
 		<c:otherwise>		
 			<p>unavailable</p>

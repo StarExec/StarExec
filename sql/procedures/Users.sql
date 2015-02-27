@@ -107,7 +107,8 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name,
-						role
+						role,
+						subscribed_to_reports
 						
 				FROM	users NATURAL JOIN user_roles
 
@@ -128,7 +129,8 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name,
-						role
+						role,
+						subscribed_to_reports
 				FROM	users NATURAL JOIN user_roles
 				ORDER BY 
 				(CASE _colSortedOn
@@ -147,7 +149,8 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name,
-						role
+						role,
+						subscribed_to_reports
 				
 				FROM	users NATURAL JOIN user_roles WHERE 
 							
@@ -173,7 +176,8 @@ CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerP
 						first_name,
 						last_name,
 						CONCAT(first_name, ' ', last_name) AS full_name,
-						role
+						role,
+						subscribed_to_reports
 				FROM	users NATURAL JOIN user_roles WHERE
 				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
 				OR		institution							LIKE 	CONCAT('%', _query, '%')
@@ -453,6 +457,14 @@ CREATE PROCEDURE ChangeUserRole(IN _userId INT, IN _role VARCHAR(24))
 		JOIN users ON users.email=user_roles.email
 		SET role=_role
 		WHERE id=_userId;
+	END //
+
+DROP PROCEDURE IF EXISTS SetUserReportSubscription;
+CREATE PROCEDURE SetUserReportSubscription(IN _userId INT, IN _willBeSubscribed BOOLEAN)
+	BEGIN
+		UPDATE users
+		SET subscribed_to_reports = _willBeSubscribed
+		WHERE id = _userId;
 	END //
 	
 	

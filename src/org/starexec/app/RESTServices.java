@@ -991,6 +991,7 @@ public class RESTServices {
 		if (primType.startsWith("n")) {
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.NODE, request);
 		}
+
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 	
@@ -1425,27 +1426,25 @@ public class RESTServices {
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
 			if (attribute.equals("PostProcess")) {
-				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(request.getParameter("val")));
+				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
 			} else if (attribute.equals("BenchProcess")) {
-				Settings.updateSettingsProfile(id,8,Integer.parseInt(request.getParameter("val")));
-			}
-			
-			else if (attribute.equals("CpuTimeout")) {
-				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(request.getParameter("val")));			
+				success = Settings.updateSettingsProfile(id,8,Integer.parseInt(newValue));
+			}else if (attribute.equals("CpuTimeout")) {
+				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(newValue));			
 			}else if (attribute.equals("ClockTimeout")) {
-				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(request.getParameter("val")));			
+				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(newValue));			
 			} else if (attribute.equals("DependenciesEnabled")) {
-				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(request.getParameter("val")));
+				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
 			} else if (attribute.equals("defaultbenchmark")) {
-				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(newValue));
 			} else if (attribute.equals("defaultsolver")) {
-				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
 			} else if(attribute.equals("MaxMem")) {
-				double gigabytes=Double.parseDouble(request.getParameter("val"));
+				double gigabytes=Double.parseDouble(newValue);
 				long bytes = Util.gigabytesToBytes(gigabytes); 
 				success=Settings.setDefaultMaxMemory(id, bytes);
 			} else if (attribute.equals("PreProcess")) {
-				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(request.getParameter("val")));
+				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
 			}
 			
 			// Passed validation AND Database update successful
@@ -2012,7 +2011,7 @@ public class RESTServices {
 	public String copyUserToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		// Make sure we have a list of users to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
-				|| !Util.paramExists("fromSpace", request)
+				
 				|| !Util.paramExists("copyToSubspaces", request)
 				|| !Validator.isValidBool(request.getParameter("copyToSubspaces"))){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -2021,14 +2020,12 @@ public class RESTServices {
 		// Get the id of the user who initiated the request
 		int requestUserId = SessionUtil.getUserId(request);
 		
-		// Get the space the user is being copied from
-		int fromSpace = Integer.parseInt(request.getParameter("fromSpace"));
 		
 		// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 		boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
 		List<Integer> selectedUsers = Util.toIntegerList(request.getParameterValues("selectedIds[]"));		
-
-		ValidatorStatusCode status=SpaceSecurity.canCopyUserBetweenSpaces(fromSpace, spaceId, requestUserId, selectedUsers, copyToSubspaces);
+		
+		ValidatorStatusCode status=SpaceSecurity.canCopyUserBetweenSpaces(spaceId, requestUserId, selectedUsers, copyToSubspaces);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -4151,6 +4148,42 @@ public class RESTServices {
 		boolean success = Users.reinstate(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User reinstated successfully")) : gson.toJson(ERROR_DATABASE);
 
+	}
+
+	/**
+	 * Subscribes a user to the e-mail report system.
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/subscribe/user/{userId}")
+	@Produces("application/json")
+	public String subscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		boolean success = Users.subscribeToReports(userId);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully")) : gson.toJson(ERROR_DATABASE);
+	}
+
+	/**
+	 * Unsubscribes a user from the e-mail report system.
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/unsubscribe/user/{userId}")
+	@Produces("application/json")
+	public String unsubscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSuspendOrReinstateUser(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		boolean success = Users.unsubscribeFromReports(userId);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	@POST

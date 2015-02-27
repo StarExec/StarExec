@@ -60,7 +60,8 @@ function initDialogs() {
 	$("#dialog-confirm-delete" ).hide();
 	$("#dialog-download-space").hide();
 	$("#dialog-warning").hide();
-	$("#dialog-spacexml-attributes").hide();
+    $("#dialog-spacexml").hide();
+    $("#dialog-spaceUpdateXml").hide();
 	log('all confirmation dialogs hidden');
 }
 
@@ -318,14 +319,14 @@ function onSpaceDrop(event, ui) {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 					// Make the request to the server	
-					doUserCopyPost(ids,destSpace,spaceId,true,destName,ui);
+					doUserCopyPost(ids,destSpace,true,destName,ui);
 								
 											
 				},
 				'space': function(){
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-					doUserCopyPost(ids,destSpace,spaceId,false,destName,ui);
+					doUserCopyPost(ids,destSpace,false,destName,ui);
 						
 				},
 				"cancel": function() {
@@ -349,7 +350,7 @@ function onSpaceDrop(event, ui) {
 					$('#dialog-confirm-copy').dialog('close');
 
 					// Making the request		
-					doSpaceCopyPost(ids,destSpace,spaceId,false,destName);
+					doSpaceCopyPost(ids,destSpace,false,destName);
 					
 				},
 				'hierarchy': function(){
@@ -357,7 +358,7 @@ function onSpaceDrop(event, ui) {
 					$('#dialog-confirm-copy').dialog('close');
 
 					// Making the request
-					doSpaceCopyPost(ids,destSpace,spaceId,true,destName);
+					doSpaceCopyPost(ids,destSpace,true,destName);
 				},
 				"cancel": function() {
 					log('user canceled copy action');
@@ -425,10 +426,10 @@ function onSpaceDrop(event, ui) {
 	}
 }
 
-function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
+function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-			{selectedIds : ids, fromSpace : spaceId, copyHierarchy: copyHierarchy},
+			{selectedIds : ids, copyHierarchy: copyHierarchy},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {							
@@ -441,10 +442,10 @@ function doSpaceCopyPost(ids,destSpace,spaceId,copyHierarchy,destName) {
 	});
 }
 
-function doUserCopyPost(ids,destSpace,spaceId,copyToSubspaces,destName,ui){
+function doUserCopyPost(ids,destSpace,copyToSubspaces,destName,ui){
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/add/user',
-			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: copyToSubspaces},	
+			{selectedIds : ids, copyToSubspaces: copyToSubspaces},	
 			function(returnCode) {
 				parseReturnCode(returnCode);
 			},
@@ -1721,30 +1722,52 @@ function updateButtonIds(id) {
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 
-	$("#downloadXML").unbind("click");
-	$('#downloadXML').click(function(e) {
-		$('#dialog-spacexml-attributes-txt').text('do you want benchmark attributes included in the XML?');
 
-		$('#dialog-spacexml-attributes').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'yes': function() {
-					$('#dialog-spacexml-attributes').dialog('close');
-					createDownloadSpaceXMLRequest(true,id);		
-				},
-				"no": function() {
-					$('#dialog-spacexml-attributes').dialog('close');
-					createDownloadSpaceXMLRequest(false,id);		
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
-		});
 
+        $("#downloadXML").unbind("click");
+        $('#downloadXML').click(function (e) {
+	    $('#dialog-spacexml-attributes-txt').text('Do you want benchmark attributes included in the XML?');
+	    
+
+	    $('#dialog-spacexml').dialog({
+		modal: true,
+		width: 380,
+		height: 300,
+		buttons: {
+		    "download": function () {
+			var attVal = $('input[name=att]:checked').val();
+			attBool = attVal == "true";
+			
+			createDownloadSpaceXMLRequest(attBool, false,-1, id);
+			$(this).dialog("close");
+		    },
+                    "cancel": function () {
+			$(this).dialog("close");
+		    }
+		}
+	    });
 	});
+
+    $('#showUpdateDialog').click(function(){
+        $("#dialog-spaceUpdateXml").dialog();
+        $('#dialog-spacexml').dialog("close");
+        $('#dialog-spacexml-updates-txt').text('Enter default update processor id');
+        $('#dialog-spaceUpdateXml').dialog({
+		modal: true,
+		width: 380,
+		height: 300,
+		buttons: {
+		    "download": function () {
+			var updatePID = $('#updateID').val();
+			createDownloadSpaceXMLRequest(false, true,updatePID, id);
+			$(this).dialog("close");
+		    },
+                    "cancel": function () {
+			$(this).dialog("close");
+		    }
+		}
+	    });
+    });
 	
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
@@ -1780,10 +1803,10 @@ function updateButtonIds(id) {
 }
 
 
-function createDownloadSpaceXMLRequest(includeAttrs,id) {
+function createDownloadSpaceXMLRequest(includeAttrs,updates,upid,id) {
   createDialog("Processing your download request, please wait. This will take some time for large spaces.");
   token=Math.floor(Math.random()*100000000);
-  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs;
+  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs+"&updates="+updates+"&upid="+upid;
   destroyOnReturn(token);
   window.location.href = myhref;
  

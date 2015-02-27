@@ -38,11 +38,11 @@ public class JobPairComparator implements Comparator<JobPair> {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
 			} else if (column==2) {
-				str1=jp1.getConfiguration().getName();
-				str2=jp2.getConfiguration().getName();
+				str1=jp1.getPrimaryConfiguration().getName();
+				str2=jp2.getPrimaryConfiguration().getName();
 			} else {
-				str1=jp1.getSolver().getName();
-				str2=jp2.getSolver().getName();
+				str1=jp1.getPrimarySolver().getName();
+				str2=jp2.getPrimarySolver().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			return str1.compareToIgnoreCase(str2);
@@ -73,12 +73,12 @@ public class JobPairComparator implements Comparator<JobPair> {
 				db1=jp1.getCompletionId();
 				db2=jp2.getCompletionId();
 			} else if (column==4) {
-				db1=jp1.getWallclockTime();
-				db2=jp2.getWallclockTime();
+				db1=jp1.getPrimaryWallclockTime();
+				db2=jp2.getPrimaryWallclockTime();
 				
 			} else  {
-				db1=jp1.getCpuTime();
-				db2=jp2.getCpuTime();
+				db1=jp1.getPrimaryCpuTime();
+				db2=jp2.getPrimaryCpuTime();
 			}
 			
 			return Double.compare(db1, db2);

@@ -1589,22 +1589,22 @@ public class RESTHelpers {
 			// Create the solver link
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
-    		sb.append(j.getSolver().getDescription());
+    		sb.append(j.getPrimarySolver().getDescription());
     		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-    		sb.append(j.getSolver().getId());
+    		sb.append(j.getPrimarySolver().getId());
     		sb.append("\" target=\"_blank\">");
-    		sb.append(j.getSolver().getName());
+    		sb.append(j.getPrimarySolver().getName());
     		RESTHelpers.addImg(sb);
 			String solverLink = sb.toString();
 			
 			// Create the configuration link
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
-    		sb.append(j.getSolver().getConfigurations().get(0).getDescription());
+    		sb.append(j.getPrimarySolver().getConfigurations().get(0).getDescription());
     		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-    		sb.append(j.getSolver().getConfigurations().get(0).getId());
+    		sb.append(j.getPrimarySolver().getConfigurations().get(0).getId());
     		sb.append("\" target=\"_blank\">");
-    		sb.append(j.getSolver().getConfigurations().get(0).getName());
+    		sb.append(j.getPrimarySolver().getConfigurations().get(0).getName());
     		RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
 			
@@ -1658,8 +1658,8 @@ public class RESTHelpers {
     		
     		
     		if (useWallclock) {
-    			double displayWC1 = Math.round(c.getFirstPair().getWallclockTime()*100)/100.0;		
-    			double displayWC2 =  Math.round(c.getSecondPair().getWallclockTime()*100)/100.0;
+    			double displayWC1 = Math.round(c.getFirstPair().getPrimaryWallclockTime()*100)/100.0;		
+    			double displayWC2 =  Math.round(c.getSecondPair().getPrimaryWallclockTime()*100)/100.0;
     			double displayDiff =  Math.round(c.getWallclockDifference()*100)/100.0;		
 
         		entry.add(new JsonPrimitive(displayWC1 + " s"));
@@ -1667,8 +1667,8 @@ public class RESTHelpers {
         		entry.add(new JsonPrimitive(displayDiff + " s"));
 
     		} else {
-    			double display1 = Math.round(c.getFirstPair().getCpuTime()*100)/100.0;		
-    			double display2 =  Math.round(c.getSecondPair().getCpuTime()*100)/100.0;
+    			double display1 = Math.round(c.getFirstPair().getPrimaryCpuTime()*100)/100.0;		
+    			double display2 =  Math.round(c.getSecondPair().getPrimaryCpuTime()*100)/100.0;
     			double displayDiff =  Math.round(c.getCpuDifference()*100)/100.0;		
 
         		entry.add(new JsonPrimitive(display1 + " s"));
@@ -1759,9 +1759,9 @@ public class RESTHelpers {
 	    		sb = new StringBuilder();
 	    		sb.append("<a title=\"");
 	    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-	    		sb.append(jp.getSolver().getId());
+	    		sb.append(jp.getPrimarySolver().getId());
 	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(jp.getSolver().getName());
+	    		sb.append(jp.getPrimarySolver().getName());
 	    		RESTHelpers.addImg(sb);
 				solverLink = sb.toString();
 				
@@ -1769,9 +1769,9 @@ public class RESTHelpers {
 	    		sb = new StringBuilder();
 	    		sb.append("<a title=\"");
 	    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-	    		sb.append(jp.getSolver().getConfigurations().get(0).getId());
+	    		sb.append(jp.getPrimarySolver().getConfigurations().get(0).getId());
 	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(jp.getSolver().getConfigurations().get(0).getName());
+	    		sb.append(jp.getPrimarySolver().getConfigurations().get(0).getName());
 	    		RESTHelpers.addImg(sb);
 				configLink = sb.toString();
 			}
@@ -1797,11 +1797,11 @@ public class RESTHelpers {
     		
     		entry.add(new JsonPrimitive(status));
     		if (useWallclock) {
-    			double displayWC = Math.round(jp.getWallclockTime()*100)/100.0;		    	
+    			double displayWC = Math.round(jp.getPrimaryWallclockTime()*100)/100.0;		    	
         		
         		entry.add(new JsonPrimitive(displayWC + " s"));
     		} else {
-    			double displayCpu = Math.round(jp.getCpuTime()*100)/100.0;		    	
+    			double displayCpu = Math.round(jp.getPrimaryCpuTime()*100)/100.0;		    	
         		
         		entry.add(new JsonPrimitive(displayCpu + " s"));
     		}
@@ -1992,6 +1992,20 @@ public class RESTHelpers {
 				suspendButton = sb.toString();
 			}
 			entry.add(new JsonPrimitive(suspendButton));
+
+			String subscribeButton = "";
+			if (user.isSubscribedToReports()) {
+				sb = new StringBuilder();
+				sb.append("<input type=\"button\" onclick=\"unsubscribeUserFromReports(" + user.getId() + ")\" value=\"Unsubscribe\"/>");
+				subscribeButton = sb.toString();
+			} else {
+				sb = new StringBuilder();
+				sb.append("<input type=\"button\" onclick=\"subscribeUserToReports(" + user.getId() + ")\" value=\"Subscribe\"/>");
+				subscribeButton = sb.toString();
+			}
+
+			entry.add(new JsonPrimitive(subscribeButton));
+
 
 
 

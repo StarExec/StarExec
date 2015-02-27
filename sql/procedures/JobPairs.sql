@@ -20,20 +20,21 @@ CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 	END //
 	
 	
--- Updates a job pair's statistics directly from the execution node  
+-- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
+-- TODO: This needs to be modified to work by stage! Not converting yet to avoid messing with the job scripts
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
 CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT)
 	BEGIN
-		UPDATE job_pairs
-		SET node_id=(SELECT id FROM nodes WHERE name=_nodeName),
-			wallclock = _wallClock,
+		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
+		UPDATE jobpair_stage_data
+		SET wallclock = _wallClock,
 			cpu=_cpu,
 			user_time=_userTime,
 			system_time=_systemTime,
 			max_vmem=_maxVmem,
 			max_res_set=_maxResSet
-		WHERE id=_jobPairId;
+		WHERE jobpair_id=_jobPairId;
 	END //
 	
 -- Updates a job pairs node Id
@@ -76,24 +77,25 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			END IF;
 		END IF;
 	END //
-	
--- Gets the job pair with the given id
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairBySGE;
-CREATE PROCEDURE GetJobPairBySGE(IN _Id INT)
+		
+-- Gets all the stages for the given job pair
+DROP PROCEDURE IF EXISTS GetJobPairStagesById;
+CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
 	BEGIN
 		SELECT *
-		FROM job_pairs
-		WHERE job_pairs.sge_id=_Id;
+		FROM jobpair_stage_data
+		LEFT JOIN pipeline_stages ON pipeline_stages.stage_id=jobpair_stage_data.stage_id
+		WHERE jobpair_id=_id
+		ORDER BY jobpair_stage_data.stage_id ASC;
 	END //
-	
 -- Gets the job pair with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairById;
 CREATE PROCEDURE GetJobPairById(IN _Id INT)
 	BEGIN
 		SELECT *
-		FROM job_pairs LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+		FROM job_pairs 
+		LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.id=_Id;
 	END //
 	
@@ -157,13 +159,15 @@ BEGIN
 	UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_id;
 END //
 
--- Sets the queue submission time to now for the pair with the given id
+-- Sets the queue submission time to now (the moment this is called) for the pair with the given id
 DROP PROCEDURE IF EXISTS SetPairStartTime;
 CREATE PROCEDURE SetPairStartTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET start_time=NOW() WHERE id=_id;
 	END //
 	
+-- Sets the completion time to now (the moment this is called) for the pair with the given id
+
 DROP PROCEDURE IF EXISTS SetPairEndTime;
 CREATE PROCEDURE SetPairEndTime(IN _id INT)
 	BEGIN
@@ -179,6 +183,12 @@ CREATE PROCEDURE CountRecentPairsByStatus(IN _status INT, IN _days INT)
 		
 		status_code=_status;-- end_time BETWEEN DATE_SUB(NOW(), INTERVAL _days DAY) AND NOW();
 	END //
-	 
+
+-- Adds a single job pair input to the database
+DROP PROCEDURE IF EXISTS AddJobPairInput;
+CREATE PROCEDURE AddJobPairInput(IN _pairId INT, IN _input INT, IN _benchId INT)
+	BEGIN
+		INSERT INTO jobpair_inputs (jobpair_id, input_number,bench_id) VALUES (_pairId,_input,_benchId);
+	END //
 	
 DELIMITER ; -- this should always be at the end of the file

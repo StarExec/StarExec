@@ -116,10 +116,18 @@ public class Download extends HttpServlet {
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				boolean includeAttributes = false;
+				boolean updates = false;
+				int upid = -1;
 				if (Util.paramExists("includeattrs",request)) {
 				    includeAttributes=Boolean.parseBoolean(request.getParameter("includeattrs"));
 				}
-				success = handleSpaceXML(space, u.getId(), response, includeAttributes);
+				if (Util.paramExists("updates",request)) {
+				    updates=Boolean.parseBoolean(request.getParameter("updates"));
+				}
+				if (Util.paramExists("updates",request)) {
+				    upid=Integer.parseInt(request.getParameter("upid"));
+				}
+			success = handleSpaceXML(space, u.getId(), response, includeAttributes,updates,upid);
 
 			} else if (request.getParameter("type").equals("jobXML")) {
 				Job job = Jobs.get(Integer.parseInt(request.getParameter("id")));
@@ -340,13 +348,13 @@ public class Download extends HttpServlet {
 	 */
 
     private static boolean handleSpaceXML(Space space, int userId, HttpServletResponse response,
-					  boolean includeAttributes) throws Exception {
+					  boolean includeAttributes, boolean updates, int upid) throws Exception {
 		
 		// If we can see this Space
 			List<File> files=new ArrayList<File>();
 			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));		
 			BatchUtil butil = new BatchUtil();
-			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes);
+			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes, updates, upid);
 			
 			files.add(file);
 			String baseFileName=space.getName()+"_XML";
@@ -547,30 +555,30 @@ public class Download extends HttpServlet {
 				sb.append(pair.getBench().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getSolver().getName());
+			sb.append(pair.getPrimarySolver().getName());
 			sb.append(",");
 			if (returnIds) {
-				sb.append(pair.getSolver().getId());
+				sb.append(pair.getPrimarySolver().getId());
 				sb.append(",");
 			}
-			sb.append(pair.getConfiguration().getName());
+			sb.append(pair.getPrimaryConfiguration().getName());
 			sb.append(",");
 			if (returnIds) {
-				sb.append(pair.getConfiguration().getId());
+				sb.append(pair.getPrimaryConfiguration().getId());
 				sb.append(",");
 			}
 			sb.append(pair.getStatus().toString());
 
 			sb.append(",");
-			sb.append((pair.getCpuTime()));
+			sb.append((pair.getPrimaryCpuTime()));
 
 			sb.append(",");
-			sb.append((pair.getWallclockTime()));
+			sb.append((pair.getPrimaryWallclockTime()));
 
 			sb.append(",");
 			
 			
-			sb.append(pair.getMaxVirtualMemory());
+			sb.append(pair.getPrimaryMaxVirtualMemory());
 			sb.append(",");
 			sb.append(pair.getStarexecResult());
 
@@ -628,9 +636,9 @@ public class Download extends HttpServlet {
 						zipFileName.append(File.separator);
 					}
 
-					zipFileName.append(p.getSolver().getName());
+					zipFileName.append(p.getPrimarySolver().getName());
 					zipFileName.append(File.separator);
-					zipFileName.append(p.getConfiguration().getName());
+					zipFileName.append(p.getPrimaryConfiguration().getName());
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
 					zipFileName.append(File.separator);

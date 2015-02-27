@@ -186,7 +186,7 @@ public class ResourceLoader {
 		SP.put(spaceId, Spaces.get(spaceId).getName());
 		log.debug("building a job with a total number of configs = "+configIds.size());
 
-		JobManager.buildJob(job, cpuTimeout, wallclockTimeout, Util.gigabytesToBytes(memory), benchmarkIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, benchmarkIds, configIds, spaceId, SP);
 		
 		Jobs.add(job, spaceId);
 		return job;
@@ -211,7 +211,7 @@ public class ResourceLoader {
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
 		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
 		for (Space s : spaces) {
-			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, 100, 100,Util.gigabytesToBytes(1), s.getId(), SP.get(s.getName()));
+			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getName()));
 			spaceToPairs.put(s.getId(), pairs);
 		}
 		JobManager.addJobPairsDepthFirst(job, spaceToPairs);

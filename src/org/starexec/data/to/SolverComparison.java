@@ -19,11 +19,11 @@ public class SolverComparison {
 	 * @return
 	 */
 	public double getWallclockDifference() {
-		return pair2.getWallclockTime()-pair1.getWallclockTime();
+		return pair2.getPrimaryWallclockTime()-pair1.getPrimaryWallclockTime();
 	}
 	
 	public double getCpuDifference() {
-		return pair2.getCpuTime()-pair1.getCpuTime();
+		return pair2.getPrimaryCpuTime()-pair1.getPrimaryCpuTime();
 	}
 	
 	public Benchmark getBenchmark() {

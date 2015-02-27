@@ -98,7 +98,7 @@ public class JobPairTests extends TestSequence {
 		Assert.assertNotNull(test);
 		Assert.assertEquals(test.getJobId(),job.getId());
 		
-		Assert.assertEquals(test.getSolver().getName(),solver.getName());
+		Assert.assertEquals(test.getPrimarySolver().getName(),solver.getName());
 	}
 	
 	@Test

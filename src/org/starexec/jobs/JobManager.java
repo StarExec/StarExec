@@ -37,6 +37,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.util.Util;
 
 
@@ -274,7 +275,7 @@ public abstract class JobManager {
 
 
 						JobPair pair = s.pairIter.next();
-						if (pair.getSolver()==null || pair.getBench()==null) {
+						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
 							//submission failed and move on
 							JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
@@ -412,11 +413,11 @@ public abstract class JobManager {
 		String jobScript = template;		
 
 		// General pair configuration
-		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getSolver().getPath()));
-		jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getSolver().getId()));
-		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getSolver().getMostRecentUpdate());
-		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getSolver().getName()));
-		jobScript = jobScript.replace("$$CONFIG$$", pair.getSolver().getConfigurations().get(0).getName());
+		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
+		jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
+		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
+		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
+		jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
@@ -435,10 +436,10 @@ public abstract class JobManager {
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
 		}
 		// Resource limits
-		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, pair.getWallclockTimeout())); 
-		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, pair.getCpuTimeout()));		
-		log.debug("the current job pair has a memory = "+pair.getMaxMemory());
-		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(pair.getMaxMemory()));
+		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, job.getWallclockTimeout())); 
+		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));		
+		log.debug("the current job pair has a memory = "+job.getMaxMemory());
+		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(job.getMaxMemory()));
 		log.debug("The jobscript is: "+jobScript);
 
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
@@ -562,9 +563,6 @@ public abstract class JobManager {
 	 * 
 	 * @param j the job to add job pairs to
 	 * @param userId The ID of the user creating this job
-	 * @param cpuTimeout The maximum amount of cpu time this job's pairs can run (individually)
-	 * @param clockTimeout The maximum amount of time (wallclock) this job's pairs can run (individually)
-	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 * @param benchmarkIds A list of benchmarks to use in this job
 	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
@@ -572,7 +570,7 @@ public abstract class JobManager {
 	 * @param SP A mapping of space IDs to space paths for every space in this job, with paths being relative to the space this job is
 	 * being created in. If null, the job will be flat, with every job pair in a single top level job space
 	 */
-	public static void buildJob(Job j, int cpuTimeout, int clockTimeout,long memoryLimit, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId, HashMap<Integer, String> SP) {
+	public static void buildJob(Job j, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId, HashMap<Integer, String> SP) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
@@ -588,18 +586,20 @@ public abstract class JobManager {
 			for(Solver solver : solvers) {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
-				pair.setSolver(solver);		
-				pair.setConfiguration(solver.getConfigurations().get(0));
-				pair.setCpuTimeout(cpuTimeout);
-				pair.setWallclockTimeout(clockTimeout);
-				pair.setMaxMemory(memoryLimit);
+				JoblineStage stage=new JoblineStage();
+				//stage.setPrimary(true);
+
+				stage.setSolver(solver);
+				stage.setConfiguration(solver.getConfigurations().get(0));
+				pair.addStage(stage);
+				
+				
 				pair.setSpace(Spaces.get(spaceId));
 				if (SP!=null) {
 					pair.setPath(SP.get(spaceId));
 				} else {
 					pair.setPath(spaceName);
 				}
-				pair.setMaxMemory(memoryLimit);
 				j.addJobPair(pair);
 				
 			}
@@ -615,14 +615,11 @@ public abstract class JobManager {
 	 * 
 	 * @param j the Job to add Job Pairs to
 	 * @param userId the id of the user adding the job pairs
-	 * @param cpuTimeout the CPU Timeout for the job
-	 * @param clockTimeout the Clock Timeout for the job 
-	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 * @param spaceId the id of the space to build the job pairs from
 	 * @param path The space path to give to every job pair created by this function
 	 * @return an error message if there was a problem, and null otherwise.
 	 */
-	public static List<JobPair> addJobPairsFromSpace(int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, String path) {
+	public static List<JobPair> addJobPairsFromSpace(int userId, int spaceId, String path) {
 		Space space = Spaces.get(spaceId);
 		log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
 		List<JobPair> pairs=new ArrayList<JobPair>();
@@ -652,12 +649,14 @@ public abstract class JobManager {
 
 					pair = new JobPair();
 					pair.setBench(b);
-					pair.setSolver(clone);
-					pair.setConfiguration(c);
-					pair.setCpuTimeout(cpuTimeout);
-					log.debug("adding a max memory of "+memoryLimit +" bytes to a job pair");
-					pair.setMaxMemory(memoryLimit);
-					pair.setWallclockTimeout(clockTimeout);
+					JoblineStage stage=new JoblineStage();
+					//stage.setPrimary(true);
+
+					stage.setSolver(clone);
+					stage.setConfiguration(c);
+					pair.addStage(stage);
+					
+					
 					pair.setSpace(space);
 					//we are running pairs in a single space, so the path is flat
 					pair.setPath(path);
@@ -679,14 +678,11 @@ public abstract class JobManager {
 	 * @param userId the id of the user creating the job
 	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
-	 * @param cpuTimeout the CPU timeout for the job
-	 * @param clockTimeout the clock timeout for the job
-	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
-	public static List<JobPair> addJobPairsFromSpace( int userId, int cpuTimeout, int clockTimeout, long memoryLimit, int spaceId, String path, List<Integer> configIds) {
+	public static List<JobPair> addJobPairsFromSpace( int userId, int spaceId, String path, List<Integer> configIds) {
 		try {			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
 			
@@ -701,10 +697,12 @@ public abstract class JobManager {
 					for(Solver solver : solvers) {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
-						pair.setSolver(solver);				
-						pair.setCpuTimeout(cpuTimeout);
-						pair.setWallclockTimeout(clockTimeout);
-						pair.setMaxMemory(memoryLimit);
+						JoblineStage stage=new JoblineStage();
+						//stage.setPrimary(true);
+
+						stage.setSolver(solver);
+						pair.addStage(stage);			
+						
 						pair.setPath(path);
 						pair.setSpace(Spaces.get(spaceId));
 						curPairs.add(pair);
@@ -776,14 +774,11 @@ public abstract class JobManager {
 	 * @param userId the id of the user creating the job
 	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
-	 * @param cpuTimeout the CPU timeout for the job
-	 * @param clockTimeout the clock timeout for the job
-	 * @param memoryLimit The maximum memory any pair can use, in bytes
 	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
-	public static HashMap<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, int cpuTimeout, int clockTimeout, long memoryLimit, HashMap<Integer, String> SP) {
+	public static HashMap<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, HashMap<Integer, String> SP) {
 		try {
 			HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
 			
@@ -804,10 +799,11 @@ public abstract class JobManager {
 					for(Solver solver : solvers) {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
-						pair.setSolver(solver);				
-						pair.setCpuTimeout(cpuTimeout);
-						pair.setWallclockTimeout(clockTimeout);
-						pair.setMaxMemory(memoryLimit);
+						JoblineStage stage=new JoblineStage();
+						stage.setSolver(solver);
+						//stage.setPrimary(true);
+						pair.addStage(stage);				
+						
 						pair.setPath(SP.get(s.getId()));
 						pair.setSpace(Spaces.get(s.getId()));
 						curPairs.add(pair);

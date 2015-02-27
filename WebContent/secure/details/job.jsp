@@ -38,16 +38,15 @@
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
 				JobStatus status=Jobs.getJobStatusCode(jobId);
-				List<JobPair> incomplete_pairs = Jobs.getIncompleteJobPairs(jobId);
 				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
 				boolean isAdminPaused = Jobs.isSystemPaused();
 				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
 				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
 				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
 				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
-				int wallclock=Jobs.getWallclockTimeout(jobId);
-				int cpu=Jobs.getCpuTimeout(jobId);
-				long memory=Jobs.getMaximumMemory(jobId);
+				int wallclock=j.getWallclockTimeout();
+				int cpu=j.getCpuTimeout();
+				long memory=j.getMaxMemory();
 				Space s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				

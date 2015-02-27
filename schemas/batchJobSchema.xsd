@@ -10,11 +10,11 @@
     <complexType name="SolverPipeline">
     
     	<sequence>
-    		<element name="PipelineAttributes" type="tns:PipelineAttributes" minOccurs="1" maxOccurs="1"></element>
     		
     		<element name="PipelineStage" type="tns:PipelineStage" minOccurs="1" maxOccurs="unbounded"></element>
     	</sequence> 
-    
+    	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
+    	
     </complexType>
     
     <complexType name="PipelineStage">    	
@@ -43,9 +43,10 @@
 
 	  <element name="JobAttributes" type="tns:JobAttributes"></element>
 
-    		<element name="JobPair" type="tns:JobPair" minOccurs="1"
+    		<element name="JobPair" type="tns:JobPair" minOccurs="0"
     			maxOccurs="unbounded">
     		</element>
+    		<element name="JobLine" type="tns:JobLine" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>
     	
     	<!-- The job name must be unique to the space -->
@@ -53,8 +54,10 @@
     	
     </complexType>
     
-    <complexType name="PipelineAttributes">
-    	<attribute name="pipelineName" type="tns:PrimitiveName" use="required"></attribute>
+   
+    
+    <complexType name="BenchmarkInput">
+    	<attribute name="bench-id" type="int" use="required"></attribute>
     </complexType>
     
     <complexType name="JobAttributes">
@@ -96,6 +99,8 @@
       <attribute name="value" type="double" use="required"></attribute>
     </complexType>
     <complexType name="benchmarkDependency">
+    	<!-- The user will be required to give n inputs to each jobline, where n is the number of inputs
+    	declared in a pipeline -->
     	<attribute name="input" type="int" use="required"></attribute>
     </complexType>
     <complexType name="stageDependency">
@@ -117,6 +122,19 @@
     	
     	<attribute name="job-space-id" type="int" use="optional"></attribute>
     	<attribute name="job-space-path" type="tns:Path" use="optional"></attribute>
+    </complexType>
+    
+    <complexType name="JobLine">
+    	<sequence>
+    		<element name="BenchmarkInput" type="tns:BenchmarkInput" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence> 
+    	<attribute name="bench-id" type="int" use="required"></attribute>
+    	<attribute name="bench-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
+    	<!-- Must be the name of some pipeline declared in this upload -->
+    	<attribute name="pipe-name" type="tns:PrimitiveName" use="required"></attribute>
+    	<attribute name="job-space-path" type="tns:Path" use="optional"></attribute>
+    	
     </complexType>
     
     <simpleType name="Description">

@@ -26,6 +26,7 @@
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 		} else {
 			DefaultSettings settings = Communities.getDefaultSettings(id);
+			request.setAttribute("setting",settings);
 			String url = Util.docRoot("secure/edit/defaultPrimitive.jsp?id="+settings.getId());
 			
 			request.setAttribute("defaultBenchLink", url+"&type=benchmark");
@@ -37,11 +38,8 @@
                         request.setAttribute("update_proc", Processors.getByCommunity(id, ProcessorType.UPDATE));
 			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
 			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
-			request.setAttribute("defaultPPId", settings.getPostProcessorId());
-			request.setAttribute("defaultBPId", settings.getBenchProcessorId());
+			
 	
-			request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
-			request.setAttribute("defaultPreProcId", settings.getPreProcessorId());
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
 			request.setAttribute("settingId",settings.getId());
 			try {
@@ -74,7 +72,8 @@
 }
 %>
 
-<star:template title="edit ${com.name}" js="lib/jquery.dataTables.min, lib/jquery.validate.min, edit/community" css="common/table, edit/community">
+<star:template title="edit ${com.name}" js="common/defaultSettings, lib/jquery.dataTables.min, lib/jquery.validate.min, edit/community" css="common/table, edit/community">
+	<star:settings setting="${setting}" />
 	
 	<input type="hidden" value="${com.id}" id="comId"/>
 	<input type="hidden" value="${settingId}" id="settingId"/>
@@ -218,7 +217,7 @@
 			<tr>
 				<td>pre processor </td>
 				<td>					
-					<select id="editPreProcess" name="editPreProcess" default="${defaultPreProcId}">
+					<select class="preProcessSetting" id="editPreProcess" name="editPreProcess" >
 					<option value=-1>none</option>
 					<c:forEach var="proc" items="${pre_proc}">
 							<option value="${proc.id}">${proc.name}</option>
@@ -230,7 +229,7 @@
 			<tr>
 				<td>bench processor </td>
 				<td>					
-					<select id="editBenchProcess" name="editBenchProcess" default="${defaultBPId}">
+					<select class="benchProcessSetting" id="editBenchProcess" name="editBenchProcess" >
 					<option value=-1>none</option>
 					<c:forEach var="proc" items="${bench_proc}">
 							<option value="${proc.id}">${proc.name}</option>
@@ -242,7 +241,7 @@
 			<tr>
 				<td>post processor </td>
 				<td>					
-					<select id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
+					<select class="postProcessSetting" id="editPostProcess" name="editPostProcess">
 					<option value=-1>none</option>
 					<c:forEach var="proc" items="${post_proc}">
 							<option value="${proc.id}">${proc.name}</option>
@@ -253,7 +252,7 @@
 			<tr>
 				<td>update processor </td>
 				<td>					
-					<select id="editUpdateProcess" name="editUpdateProcess" default="${defaultPPId}">
+					<select id="editUpdateProcess" name="editUpdateProcess">
 					<option value=-1>none</option>
 					<c:forEach var="proc" items="${update_proc}">
 							<option value="${proc.id}">${proc.name}</option>
@@ -276,7 +275,7 @@
 			<tr>
 				<td>dependencies enabled</td>
 				<td>
-					<select id="editDependenciesEnabled" name="editDependenciesEnabled" default="${dependenciesEnabled}">
+					<select class="dependencySetting" id="editDependenciesEnabled" name="editDependenciesEnabled">
 						<option value="1">True</option>
 						<option value="0">False</option>
 					</select>

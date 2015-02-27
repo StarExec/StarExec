@@ -706,7 +706,7 @@ public class SpaceSecurity {
 	 * @param hierarchy If true, the copy will take place in the entire hierarchy rooted at the space with ID toSpaceId
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and a status code from ValidatorStatusCodes otherwise
 	 */
-	public static ValidatorStatusCode canCopyUserBetweenSpaces(int fromSpaceId, int toSpaceId, int userIdDoingCopying, List<Integer> userIdsBeingCopied, boolean hierarchy) {
+	public static ValidatorStatusCode canCopyUserBetweenSpaces(int toSpaceId, int userIdDoingCopying, List<Integer> userIdsBeingCopied, boolean hierarchy) {
 		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		if (hierarchy) {
@@ -716,12 +716,7 @@ public class SpaceSecurity {
 			}
 		}
 		ValidatorStatusCode status=null;
-		for (Integer uid : userIdsBeingCopied) {
-			status=canCopyUserFromSpace(fromSpaceId,userIdDoingCopying, uid);
-			if (!status.isSuccess()) {
-				return status;
-			}
-		}
+		
 		for (Integer sid : spaceIds) {
 			for (Integer uid : userIdsBeingCopied) {
 				status=canAddUserToSpace(sid,userIdDoingCopying,uid);
