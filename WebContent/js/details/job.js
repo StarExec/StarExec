@@ -28,8 +28,15 @@ $(document).ready(function(){
 	reloadTables($("#spaceId").attr("value"));
 });
 
+
+//gets the selected stage. If there is not one, defaults to 0
 function getSelectedStage() {
-	return $("#subspaceSummaryStageSelector").val();
+	value = $("#subspaceSummaryStageSelector").val();
+	if (!stringExists(value)) {
+		return "0";
+	}
+	
+	return value;
 }
 
 function setTimeButtonText(){
@@ -404,8 +411,12 @@ function initUI(){
 	});
 	//TODO: Redraw the pair table? Requires a different sorting algorithm
 	$(".stageSelector").change(function() {
+		//set the value of all .stageSelectors to this one to sync them.
+		//this does not trigger the change event, which is good because it would loop forever
+		$(".stageSelector").val($(this).val());
 		refreshPanels();
 		refreshStats(curSpaceId);
+		
 	});
 	
 	$("#recompileSpaces").click(function() {
