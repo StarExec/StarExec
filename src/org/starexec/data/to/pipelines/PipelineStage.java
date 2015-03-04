@@ -10,6 +10,9 @@ public class PipelineStage extends Identifiable {
 	private int pipelineId;
 	private int configId;
 	private boolean keepOutput;
+	
+	//this field is not stored in the database-- it is transiently used during a job XML upload
+	private boolean isPrimary;
 	private List<PipelineDependency> dependencies;
 	
 	public PipelineStage() {
@@ -47,5 +50,13 @@ public class PipelineStage extends Identifiable {
 
 	public void setKeepOutput(boolean keepOutput) {
 		this.keepOutput = keepOutput;
+	}
+
+	public boolean isPrimary() {
+		return isPrimary;
+	}
+
+	public void setPrimary(boolean isPrimary) {
+		this.isPrimary = isPrimary;
 	}
 }

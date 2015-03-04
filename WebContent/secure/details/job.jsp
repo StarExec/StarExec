@@ -47,7 +47,7 @@
 				int wallclock=j.getWallclockTimeout();
 				int cpu=j.getCpuTimeout();
 				long memory=j.getMaxMemory();
-				Space s=Spaces.getJobSpace(jobSpaceId);
+				JobSpace s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
@@ -116,6 +116,14 @@
 						<button id="collapsePanels">Collapse All</button>
 						<button id="openPanels">Open All</button>
 						<button class="changeTime">Use CPU Time</button>
+						<label for="subspaceSummaryStageSelector">Stage: </label>
+						<select id="subspaceSummaryStageSelector" class="stageSelector">
+							<option value="0">Primary</option>
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>
+							
+						</select> 
 				</fieldset>
 			</fieldset>
 			
@@ -123,7 +131,16 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
+				<label for="solverSummaryStageSelector">Stage: </label>
+				<select id="solverSummaryStageSelector" class="stageSelector">
+						<option value="0">Primary</option>
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>	
+							
+				</select> 
 				<button id="compareSolvers">compare selected solvers</button>
+				
 			</fieldset>
 				<table id="solveTbl" class="shaded">
 					<thead>

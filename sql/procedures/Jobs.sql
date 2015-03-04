@@ -159,23 +159,23 @@ CREATE PROCEDURE GetJobAttrsInJobSpaceByKey(IN _jobSpaceId INT, IN _key VARCHAR(
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
 DROP PROCEDURE IF EXISTS AddJobStats;
-CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT)
+CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT, IN _stage INT)
 	BEGIN
-		INSERT INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, wallclock,cpu,resource_out, incomplete)
-		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _wallclock, _cpu,_resource, _incomplete);
+		INSERT INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, wallclock,cpu,resource_out, incomplete,stage_number)
+		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _wallclock, _cpu,_resource, _incomplete,_stage);
 	END //	
 
 -- Gets the cached job results for the hierarchy rooted at the given job space
 -- Author: Eric Burns	
 
 DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace;
-CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT) 
+CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT) 
 	BEGIN
 		SELECT *
 		FROM job_stats
 			JOIN configurations AS config ON config.id=job_stats.config_id
 			JOIN solvers AS solver ON solver.id=config.solver_id
-		WHERE job_stats.job_space_id = _jobSpaceId;
+		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber;
 	END //
 -- Clears the entire cache of job stats
 -- Author: Eric Burns
@@ -356,21 +356,6 @@ CREATE PROCEDURE GetCompletedJobPairsInJobSpace(IN _jobSpaceId INT)
 		WHERE job_space_id =_jobSpaceId AND status_code=7;
 	END //
 	
--- Gets all the stages of job pairs in a particular job space
-DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
-	BEGIN
-		SELECT job_pairs.id AS pair_id,pipeline_stages.solver_id,pipeline_stages.solver_name,
-		pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
-		jobpair_stage_data.wallclock AS wallclock,job_pairs.id
-		FROM job_pairs 		
-		JOIN job_space_closure ON descendant=job_space_id
-		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
-		WHERE ancestor=_jobSpaceId;
-	END //
-	
-	
 
 -- Gets all the job pairs for a given job in a particular space
 -- Author: Eric Burns
@@ -387,19 +372,22 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		WHERE ancestor=_jobSpaceId;
 	END //
+
 	
--- TODO: Currently gets only the primary stage-- should that change?	
--- Retrieves info about job pairs for a given job in a given space with a given configuration
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsShallowByConfigInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairsShallowByConfigInJobSpaceHierarchy(IN _jobSpaceId INT, IN _configId INT)
+-- Gets all the stages of job pairs in a particular job space
+DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
+CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
-		SELECT job_pairs.id, status_code, bench_id,bench_name,jobpair_stage_data.cpu,jobpair_stage_data.wallclock, solver_id, solver_name, config_id, config_name
-		FROM job_pairs 
-		JOIN job_space_closure ON descendant=job_pairs.job_space_id
+		SELECT job_pairs.id AS pair_id,pipeline_stages.solver_id,pipeline_stages.solver_name,
+		pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
+		jobpair_stage_data.wallclock AS wallclock,job_pairs.id
+		FROM job_pairs 		
+		JOIN job_space_closure ON descendant=job_space_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE ancestor=_jobSpaceId AND job_pairs.config_id=_configId AND job_pairs.primary_jobpair_data=jobpair_stage_data.id;
+		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
+		WHERE ancestor=_jobSpaceId;
 	END //
+
 	
 -- Counts the number of pairs in a job
 -- Author Eric Burns

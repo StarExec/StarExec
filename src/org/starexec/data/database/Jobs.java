@@ -26,6 +26,7 @@ import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Processor;
@@ -41,6 +42,7 @@ import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
+import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.Util;
 
 /**
@@ -221,6 +223,11 @@ public class Jobs {
 			//put the job in the space it was created in, assuming a space was selected
 			if (spaceId>0) {
 				Jobs.associate(con, job.getId(), spaceId);
+			}
+			
+			for (StageAttributes attrs: job.getStageAttributes()) {
+				attrs.setJobId(job.getId());
+				Jobs.setJobStageAttributes(attrs);
 			}
 			
 			log.debug("adding job pairs");
@@ -600,17 +607,22 @@ public class Jobs {
 	 * @param maxMemory
 	 * @return
 	 */
-	public static boolean setJobStageTimeouts(int jobId, int stageId, int cpuTimeout, int clockTimeout, long maxMemory) {
+	public static boolean setJobStageAttributes(StageAttributes attrs) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?)}");
-			procedure.setInt(1,jobId);
-			procedure.setInt(2,stageId);
-			procedure.setInt(3,cpuTimeout);
-			procedure.setInt(4,clockTimeout);
-			procedure.setLong(5, maxMemory);
+			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?)}");
+			procedure.setInt(1,attrs.getJobId());
+			procedure.setInt(2,attrs.getStageId());
+			procedure.setInt(3,attrs.getCpuTimeout());
+			procedure.setInt(4,attrs.getWallclockTimeout());
+			procedure.setLong(5, attrs.getMaxMemory());
+			if (attrs.getSpaceId()==null) {
+				procedure.setNull(6,java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(6, attrs.getSpaceId());
+			}
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
@@ -708,10 +720,11 @@ public class Jobs {
 	 * @param spaceId The ID of the root space in question
 	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
 	 * @author Eric Burns
+	 * @param jobSpaceId The ID of the job space we are getting stats for
 	 */
 
-	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId) {
-		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(jobSpaceId);
+	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId, int stageNumber) {
+		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(jobSpaceId,stageNumber);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
@@ -724,12 +737,18 @@ public class Jobs {
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
 		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobSpaceId);
-
 		
 		
-		List<SolverStats> newStats=processPairsToSolverStats(pairs);
+		//compiles pairs into solver stats
+		List<SolverStats> newStats=processPairsToSolverStats(pairs,stageNumber);
+		for (SolverStats s : newStats) {
+			s.setJobSpaceId(jobSpaceId);
+			s.setStageNumber(stageNumber);
+		}
+		
+		//caches the job stats so we do not need to compute them again in the future
 		if (isJobComplete) {
-			saveStats(jobId,jobSpaceId,newStats);
+			saveStats(jobId,newStats);
 		}
 		
 		return newStats;
@@ -1747,7 +1766,7 @@ public class Jobs {
 	
 	/**
 	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
-	 * to display in a SolverStats table
+	 * to display in a SolverStats table. All job pair stages are obtained
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
 	 * @return A list of job pairs for the given job for which the solver is in the given space
@@ -1894,61 +1913,42 @@ public class Jobs {
 	}
 
 	/**
-	 * Gets shallow job pair information for the given job, where all the pairs had benchmarks in the given job_space
-	 * and used the configuration with the given ID. Used to make the space overview chart, so only info needed for
-	 * it is returned. In particular, pairs are populated only with their primary stage!
+	 * Gets job pair information necessary for populating clinet side grphs
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The ID of the job_space in question
 	 * @param configId The ID of the configuration in question
 	 * @return A List of JobPair objects
 	 * @author Eric Burns
+	 * @param stageNumber The number of the stage that we are concerned with. If <=0, the primary stage is obtained
 	 */
-	
-	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobSpaceId, int configId) {
-		Connection con = null;	
-		
-		ResultSet results=null;
-		CallableStatement procedure = null;
+	//TODO: Rename
+	public static List<JobPair> getJobPairsShallowByConfigInJobSpace(int jobSpaceId, int configId, int stageNumber) {
 		try {			
-			Spaces.updateJobSpaceClosureTable(jobSpaceId);
-
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsShallowByConfigInJobSpaceHierarchy(?, ?)}");
-
-			procedure.setInt(1,jobSpaceId);
-			procedure.setInt(2,configId);
-
-			results = procedure.executeQuery();
-			List<JobPair> pairs = new ArrayList<JobPair>();
-			while (results.next()) {
-				JobPair jp=new JobPair();
-				Status s=jp.getStatus();
-				s.setCode(results.getInt("status_code"));
-				JoblineStage stage=new JoblineStage();
-				jp.setId(results.getInt("job_pairs.id"));
-				stage.setWallclockTime(results.getDouble("wallclock"));
-				stage.setCpuUsage(results.getDouble("cpu"));
-				jp.addStage(stage);
-				Solver solver=jp.getPrimarySolver();
-				solver.setId(results.getInt("solver_id"));
-				solver.setName(results.getString("solver_name"));
-				Configuration c=jp.getPrimaryConfiguration();
-				c.setId(results.getInt("config_id"));
-				c.setName(results.getString("config_name"));
-				solver.addConfiguration(c);
-				Benchmark b=jp.getBench();
-				b.setId(results.getInt("bench_id"));
-				b.setName(results.getString("bench_name"));
+			List<JobPair> pairs = Jobs.getJobPairsForStatsInJobSpace(jobSpaceId);
+			List<JobPair> filteredPairs=new ArrayList<JobPair>();
+			
+			for (JobPair jp : pairs) {
+				if (stageNumber > jp.getStages().size()) {
+					continue; //this pair does not have the needed stage
+				}
+				JoblineStage stage=null;
+				if (stageNumber<=0) {
+					stage=jp.getPrimaryStage();
+				} else {
+					stage=jp.getStages().get(stageNumber-1);
+				}
+				if (stage.getConfiguration().getId()==configId) {
+					filteredPairs.add(jp);
+				}
 				
-				pairs.add(jp);
 			}
-			return pairs;
+			return filteredPairs;
+			
+		
 		}catch (Exception e) {
 			log.error("getJobPairsShallowByConfigInJobSpace says " +e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
+			
 		}
 		return null;
 	}
@@ -2172,15 +2172,16 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(int jobSpaceId) {
+	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(int jobSpaceId, int stageNumber) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?)}");
+			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?,?)}");
 			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2,stageNumber);
 			results=procedure.executeQuery();
 			List<SolverStats> stats=new ArrayList<SolverStats>();
 			while (results.next()) {
@@ -3619,25 +3620,32 @@ public class Jobs {
 	/**
 	 * Given a list of JobPairs, compiles them into SolverStats objects
 	 * @param pairs The JobPairs with their relevant fields populated
-	 * @param startingRecord The record to start at (currently unused)
-	 * @param recordsPerPage The number of records to include (currently unused)
-	 * @param isSortedASC Whether to sort ASC or DESC (currently unused)
-	 * @param indexOfColumnSortedBy The index of the datatables column to sort on (currently unused)
-	 * @param searchQuery The query to filter the results on (currently unused)
-	 * @param jobId The ID of the job to gets stats for
-	 * @param total A size 1 Integer array that will contain the total number of stats records
+	 * @param stageNumber Which stage number to get stats for. 0 indicates the primary stage
 	 * when this function returns
 	 * @return A list of SolverStats objects to use in a datatable
 	 * @author Eric Burns
 	 */
-	//TODO: This currently only works on the primary stage. Should stats be per stage? Should some stages be excluded?
-	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
+	
+	//TODO: How to handle the status code?
+	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs, int stageNumber) {
+		log.debug("reached processPairsToSolverStats with stageNumber = "+stageNumber +" and this many pairs "+pairs.size());
 		Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
 		String key=null;
 		for (JobPair jp : pairs) {
+			JoblineStage stage=null;
+			System.out.println(jp.getStages().size());
+			if (stageNumber<=0) {
+				stage=jp.getPrimaryStage();
+			} else if (stageNumber<=jp.getStages().size()) {
+				stage=jp.getStages().get(stageNumber-1);
+			}
 			
+			
+			if (stage==null) {
+				continue; // this pair does not have the given stage, so we just skip it
+			}
 			//entries in the stats table determined by solver/configuration pairs
-			key=String.valueOf(jp.getPrimarySolver().getId())+":"+String.valueOf(jp.getPrimaryConfiguration().getId());
+			key=String.valueOf(stage.getSolver().getId())+":"+String.valueOf(stage.getConfiguration().getId());
 			
 			if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
 				SolverStats newSolver=new SolverStats();
@@ -3667,18 +3675,14 @@ public class Jobs {
 			
 			int correct=JobPairs.isPairCorrect(jp);
 			if (correct==0) {
-				log.debug("found wallclock time = "+jp.getPrimaryWallclockTime());
-				log.debug(jp.getStages().size());
-				curSolver.incrementWallTime(jp.getPrimaryWallclockTime());
-    			curSolver.incrementCpuTime(jp.getPrimaryCpuTime());
+				
+				curSolver.incrementWallTime(stage.getWallclockTime());
+    			curSolver.incrementCpuTime(stage.getCpuTime());
     			curSolver.incrementCorrectJobPairs();
 			} else if (correct==1) {
 	   			curSolver.incrementIncorrectJobPairs();
 
 			}
-			
-			
-			   
 		}
 		
 		List<SolverStats> returnValues=new LinkedList<SolverStats>();
@@ -3870,7 +3874,7 @@ public class Jobs {
 	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
 	 */	
-	public static boolean saveStats(int jobId, int jobSpaceId,List<SolverStats> stats) {
+	public static boolean saveStats(int jobId,List<SolverStats> stats) {
 		
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = "+jobId+" were not saved because the job is incomplete");
@@ -3881,7 +3885,8 @@ public class Jobs {
 			con=Common.getConnection();
 			Common.beginTransaction(con);
 			for (SolverStats s : stats) {
-				if (!saveStats(jobSpaceId,s,con)) {
+				
+				if (!saveStats(s,con)) {
 					throw new Exception ("saving stats failed, rolling back connection");
 				}
 			}
@@ -3909,11 +3914,11 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static boolean saveStats(int jobSpaceId, SolverStats stats, Connection con) {
+	private static boolean saveStats(SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?)}");
-			procedure.setInt(1,jobSpaceId);
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?)}");
+			procedure.setInt(1,stats.getJobSpaceId());
 			procedure.setInt(2,stats.getConfiguration().getId());
 			procedure.setInt(3,stats.getCompleteJobPairs());
 			procedure.setInt(4,stats.getCorrectJobPairs());
@@ -3923,6 +3928,7 @@ public class Jobs {
 			procedure.setDouble(8,stats.getCpuTime());
 			procedure.setInt(9,stats.getResourceOutJobPairs());
 			procedure.setInt(10, stats.getIncompleteJobPairs());
+			procedure.setInt(11,stats.getStageNumber());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
@@ -3973,11 +3979,17 @@ public class Jobs {
 			List<JobPair> p=Jobs.getPairsPrimaryStageDetailed(jobId);
 			Integer primarySpaceId=null;
 			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
+			
+			//this hashmap maps every job space ID to the maximal number of stages
+			// of any pair that is in the hierarchy rooted at the job space
+			HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
 			for (JobPair jp : p) {
 				String pathString=jp.getPath();
 				if (pathString==null) {
 					pathString="job space";
 				}
+				
+				//every entry in a path is a single job space
 				String[] path=pathString.split(R.JOB_PAIR_PATH_DELIMITER);
 				String key="";
 				for (int index=0;index<path.length; index++) {
@@ -3985,9 +3997,12 @@ public class Jobs {
 					String spaceName=path[index];
 					key=key+R.JOB_PAIR_PATH_DELIMITER+spaceName;
 					if (namesToIds.containsKey(key)) {
-						if (index==(path.length-1)) {
+						int id=namesToIds.get(key);
+						if (index==(path.length-1)) { // if this is the last space in the path
 							jp.setJobSpaceId(namesToIds.get(key));
 						}
+						
+						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), jp.getStages().size()));
 						continue; //means we've already added this space
 					}
 					
@@ -3997,6 +4012,7 @@ public class Jobs {
 					}
 					//otherwise, there was an error getting the new job space
 					if (newJobSpaceId>0) {
+						idsToMaxStages.put(newJobSpaceId, jp.getStages().size());
 						namesToIds.put(key, newJobSpaceId);
 						if (index==(path.length-1)) {
 							jp.setJobSpaceId(newJobSpaceId);
@@ -4007,6 +4023,9 @@ public class Jobs {
 						}
 					}
 				}
+			}
+			for (Integer id : idsToMaxStages.values()) {
+				Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id));
 			}
 			//there seem to be some jobs with no pairs somehow, so this just prevents
 			//a red error screen when viewing them
@@ -4094,10 +4113,10 @@ public class Jobs {
 			if (j==null) {
 				return false; //could not find the job
 			}
-			List<Space> jobSpaces=Spaces.getSubSpacesForJob(j.getPrimarySpace(), true);
+			List<JobSpace> jobSpaces=Spaces.getSubSpacesForJob(j.getPrimarySpace(), true);
 			jobSpaces.add(Spaces.getJobSpace(j.getPrimarySpace()));
 			
-			for (Space s : jobSpaces) {
+			for (JobSpace s : jobSpaces) {
 				procedure=con.prepareCall("{CALL RemoveJobStatsInJobSpace(?)}");
 				procedure.setInt(1,s.getId());
 				procedure.executeUpdate();

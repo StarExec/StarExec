@@ -91,7 +91,7 @@ function getPanelTable(space) {
 }
 
 function initializePanels() {
-	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+jobSpaceId,function(spaces) {
+	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+jobSpaceId,function(spaces) {
 		panelArray=new Array();		
 		for (i=0;i<spaces.length;i++) {
 			

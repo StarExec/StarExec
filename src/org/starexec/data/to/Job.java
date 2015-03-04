@@ -1,6 +1,7 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import org.jfree.util.Log;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -45,6 +47,8 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
 	
+	//a list of all the stage attributes for this job, in no particular order
+	private List<StageAttributes> stageAttributes;
 	
 	
 	public Job() {
@@ -52,6 +56,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 		preProcessor = new Processor();
 		postProcessor = new Processor();
 		queue = new Queue();		
+		setStageAttributes(new ArrayList<StageAttributes>());
 	}
 	
 	/**
@@ -295,6 +300,18 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 
 	public void setMaxMemory(long maxMemory) {
 		this.maxMemory = maxMemory;
+	}
+
+	public List<StageAttributes> getStageAttributes() {
+		return stageAttributes;
+	}
+
+	public void setStageAttributes(List<StageAttributes> stageAttributes) {
+		this.stageAttributes = stageAttributes;
+	}
+	
+	public void addStageAttributes(StageAttributes attrs) {
+		this.stageAttributes.add(attrs);
 	}
 
 	

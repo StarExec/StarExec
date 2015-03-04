@@ -211,3 +211,7 @@ table.panel .configHead, table.panel .solverHead {
 table.panel .solvedHead, table.panel .timeHead {
 	width: 20%;	
 }
+
+.stageSelector {
+    width: 90px;
+}

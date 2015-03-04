@@ -39,18 +39,22 @@ public class DOMHelper{
 
     /**
      * Helper function, gets element by name assuming that there is only one such descendent element
-     * if there is more than one descendant element, gets the first in the returned NodeList
+     * if there is more than one descendant element, gets the first in the returned NodeList. If there
+     * are no such descendants, returns null
      *@param e the parent element
      *@param name the element name
-     *@return The child element with the given name
+     *@return The child element with the given name.
      *@author Julio Cervantes
      **/
     public static Element getElementByName(Element e, String name){
-	return (Element) e.getElementsByTagName(name).item(0);
+    	if (hasElement(e,name)) {
+        	return (Element) e.getElementsByTagName(name).item(0);
+    	}
+    	return null;
     }
 
     public static boolean hasElement(Element e, String name){
-	return (e.getElementsByTagName(name).getLength() > 0);
+    	return (e.getElementsByTagName(name).getLength() > 0);
     }
 
 }

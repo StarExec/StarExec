@@ -46,9 +46,9 @@ import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.pipelines.JoblineStage;
 
 import com.google.gson.JsonObject;
-
 import com.mysql.jdbc.ResultSetMetaData;
 
 /**
@@ -271,21 +271,21 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large) {
+	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large, int stageNumber) {
 		try {
-			List<JobPair> pairs1=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configId1);
+			List<JobPair> pairs1=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configId1,stageNumber);
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
 				answer.add("big");
 				return answer;
 			}
-			List<JobPair> pairs2=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId,configId2);
+			List<JobPair> pairs2=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId,configId2,stageNumber);
 			if ((pairs2.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
 				answer.add("big");
 				return answer;
 			}
-			return makeSolverComparisonChart(pairs1,pairs2, large);
+			return makeSolverComparisonChart(pairs1,pairs2, large,stageNumber);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}
@@ -306,7 +306,7 @@ public class Statistics {
 	 */
 	
 	@SuppressWarnings("deprecation")
-	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, boolean large) {
+	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, boolean large, int stageNumber) {
 		try {
 			
 			//there are no points if either list of pairs is empty
@@ -317,10 +317,19 @@ public class Statistics {
 			for (JobPair jp : pairs2) {
 				pairs2Map.put(jp.getBench().getId(), jp);
 			}
+			JoblineStage stage1=null;
+			JoblineStage stage2=null;
+			if(stageNumber<=0) {
+				stage1=pairs1.get(0).getPrimaryStage();
+				stage2=pairs2.get(0).getPrimaryStage();
+			} else {
+				stage1=pairs1.get(0).getStages().get(stageNumber-1);
+				stage2=pairs2.get(0).getStages().get(stageNumber-1);
+			}
 			log.debug("making solver comparison chart");
 			
-			String xAxisName=pairs1.get(0).getPrimarySolver().getName()+"/"+pairs1.get(0).getPrimaryConfiguration().getName() +" time(s)";
-			String yAxisName=pairs2.get(0).getPrimarySolver().getName() +"/"+pairs2.get(0).getPrimaryConfiguration().getName()+" time(s)";
+			String xAxisName=stage1.getSolver().getName()+"/"+stage1.getConfiguration().getName()+" time(s)";
+			String yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
 			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
@@ -347,8 +356,17 @@ public class Statistics {
 						//when hovering over the point in the image map
 						names.put(key, jp.getBench().getName());
 						item+=1;
-											
-						d.add(jp.getPrimaryWallclockTime(),jp2.getPrimaryWallclockTime());
+							
+						
+						if(stageNumber<=0) {
+							stage1=jp.getPrimaryStage();
+							stage2=jp2.getPrimaryStage();
+						} else {
+							stage1=jp.getStages().get(stageNumber-1);
+							stage2=jp2.getStages().get(stageNumber-1);
+						}
+						
+						d.add(stage1.getWallclockTime(),stage2.getWallclockTime());
 						
 					}
 				}
@@ -439,28 +457,29 @@ public class Statistics {
 	 * @param logX Whether to use a log scale on the X axis
 	 * @param logY Whether to use a log scale on the Y axis
 	 * @param configIds The IDs of the configurations that should be included in this graph
-	 * @return A String filepath to the newly created graph, or null if there was an error.
+	 * @return A String filepath to the newly created graph, or null if there was an error. Returns the string
+	 * "big" if there are too many job pairs to display
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSpaceOverviewChart(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds) {
+	public static String makeSpaceOverviewChart(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds, int stageNumber) {
 		try {
 			if (configIds.size()==0) {
 				return null;
 			}
 			
-			List<JobPair> pairs=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(0));
+			List<JobPair> pairs=Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(0), stageNumber);
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 				return "big";
 			}
 			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll(Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(x)));
+				pairs.addAll(Jobs.getJobPairsShallowByConfigInJobSpace(jobSpaceId, configIds.get(x),stageNumber));
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 					return "big";
 				}
 			}
 			
-			return makeSpaceOverviewChart(pairs, logX,logY);
+			return makeSpaceOverviewChart(pairs, logX,logY,stageNumber);
 		} catch (Exception e) {
 			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
 		}
@@ -476,10 +495,10 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY) {
+	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY, int stageNumber) {
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
-			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs);
+			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs,stageNumber);
 			XYSeries d;
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(Solver s : data.keySet()) {
@@ -554,15 +573,15 @@ public class Statistics {
 		return null;
 	}
 	/**
-	 * Given a list of completed job pairs in a given job, arranges them by solver and configuraiton and sorts them
-	 * by CPU run time
+	 * Given a list of completed job pairs in a given job, arranges them by solver and configuration and sorts them
+	 * by CPU run time. Used by the space overview graph
 	 * @param pairs
 	 * @return A HashMap for which solvers map to another HashMap mapping configurations to a sorted list of doubles
 	 * representing the CPU usage of every completed, correct job pair produced by that solver/configuration pair
 	 * @author Eric Burns
 	 */
 	
-	private static HashMap<Solver,HashMap<Configuration,List<Double>>> processJobPairData(List<JobPair> pairs) {
+	private static HashMap<Solver,HashMap<Configuration,List<Double>>> processJobPairData(List<JobPair> pairs, int stageNumber) {
 		//we need to store solvers and configs by ID and only put items into answer from these two HashMaps.
 		//We can't compare to solvers to see if they are equal directly, so we have to compare IDs
 		HashMap <Integer, Solver> solvers=new HashMap<Integer, Solver> ();
@@ -573,18 +592,26 @@ public class Statistics {
 				// we don't want to consider incomplete pairs
 				continue;
 			}
-			Solver s=jp.getPrimarySolver();
+			//variable that will contain the single relevant stage for this pair, corresponding to stageNumber
+			JoblineStage stage=null;
+			if(stageNumber<=0) {
+				stage=jp.getPrimaryStage();
+			} else {
+				stage=jp.getStages().get(stageNumber-1);
+			}
+			
+			Solver s=stage.getSolver();
 			if (!solvers.containsKey(s.getId())) {
 				solvers.put(s.getId(), s);
 				answer.put(solvers.get(s.getId()), new HashMap<Configuration,List<Double>>());
 			}
 			HashMap<Configuration,List<Double>>configMap=answer.get(solvers.get(s.getId()));
-			Configuration c=jp.getPrimaryConfiguration();
+			Configuration c=stage.getConfiguration();
 			if (!configs.containsKey(c.getId())) {
 				configs.put(c.getId(), c);
 				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
 			}
-			configMap.get(configs.get(c.getId())).add(jp.getPrimaryWallclockTime());
+			configMap.get(configs.get(c.getId())).add(stage.getWallclockTime());
 			
 		}
 		for (HashMap<Configuration,List<Double>> h : answer.values()) {

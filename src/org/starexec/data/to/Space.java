@@ -10,7 +10,7 @@ import org.starexec.util.Util;
 import com.google.gson.annotations.Expose;
 
 /**
- * Represents a space in the database
+ * Represents a space in the database.
  * 
  * @author Tyler Jensen
  */

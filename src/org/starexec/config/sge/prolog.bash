@@ -197,6 +197,8 @@ echo "timestamp: $SOLVER_TIMESTAMP"
 echo "configuration: $CONFIG_NAME"
 echo "benchmark: ${BENCH_PATH##*/}"
 echo "execution host: $HOSTNAME"
+echo "cpu timeout: $STAREXEC_CPU_LIMIT"
+echo "wallclock timeout: $STAREXEC_WALLCLOCK_LIMIT"
 echo ""
 
 

@@ -23,6 +23,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
@@ -111,20 +112,23 @@ public class RESTHelpers {
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
-	protected static List<JSTreeItem> toJobSpaceTree(List<Space> jobSpaceList) {
+	protected static List<JSTreeItem> toJobSpaceTree(List<JobSpace> jobSpaceList) {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 
-		for (Space space : jobSpaceList) {
+		for (JobSpace space : jobSpaceList) {
 			JSTreeItem t;
 
 			if (Spaces.getCountInJobSpace(space.getId()) > 0) {
+				log.debug("the max stages for this job space is "+space.getMaxStages());
 				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						"space");
+						"space",space.getMaxStages());
+				
 			} else {
+				log.debug("the max stages for this job space is "+space.getMaxStages());
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						"space");
+						"space",space.getMaxStages());
 			}
-
+			
 			list.add(t);
 		}
 
@@ -232,6 +236,13 @@ public class RESTHelpers {
 			this.state = state;
 			this.children = new LinkedList<JSTreeItem>();
 		}
+		
+		public JSTreeItem(String name, int id, String state, String type, int maxStages) {
+			this.data = name;
+			this.attr = new JSTreeAttribute(id, type,maxStages);
+			this.state = state;
+			this.children = new LinkedList<JSTreeItem>();
+		}
 
 		public List<JSTreeItem> getChildren() {
 			return children;
@@ -251,16 +262,26 @@ public class RESTHelpers {
 		private boolean permanent;
 		private boolean global;
 		private int defaultQueueId;
-		
+		private int maxStages;
 
-		public JSTreeAttribute(int id, String type) {
+		
+		private void init(int id, String type,int maxStages) {
 			this.id = id;
 			this.rel = type;
+			this.maxStages=maxStages;
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
 				this.permanent = Queues.isQueuePermanent(id);
 				this.global = Queues.isQueueGlobal(id);
 			}
 			this.defaultQueueId = Cluster.getDefaultQueueId();
+		}
+		
+		public JSTreeAttribute(int id, String type) {
+			init(id,type,0);
+		}
+		
+		public JSTreeAttribute(int id, String type,int maxStages) {
+			init(id,type,maxStages);
 		}
 	}
 
