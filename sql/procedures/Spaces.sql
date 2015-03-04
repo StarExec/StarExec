@@ -270,7 +270,7 @@ CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
 -- Returns all subsspaces of a given name belonging to the space with the given id.
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS GetSubSpaceByName;
-CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(64))
+CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(255))
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
 			SELECT *
