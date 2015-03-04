@@ -118,7 +118,10 @@
 						<button class="changeTime">Use CPU Time</button>
 						<label for="subspaceSummaryStageSelector">Stage: </label>
 						<select id="subspaceSummaryStageSelector" class="stageSelector">
-							
+							<option value="0">Primary</option>
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>
 							
 						</select> 
 				</fieldset>
@@ -130,7 +133,10 @@
 				<button class="changeTime">Use CPU Time</button>
 				<label for="solverSummaryStageSelector">Stage: </label>
 				<select id="solverSummaryStageSelector" class="stageSelector">
-							
+						<option value="0">Primary</option>
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>	
 							
 				</select> 
 				<button id="compareSolvers">compare selected solvers</button>
