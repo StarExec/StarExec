@@ -75,9 +75,10 @@
     <complexType name = "Update">
       <all>
       <element name = "Text" type = "string" minOccurs = "0" maxOccurs
-	       = "1"/>
+	       = "1"/> <!-- Text used by update processor -->
       </all>
-      <attribute name = "id" type = "int" /> <!--benchmark being updated id-->
+      <attribute name = "id" type = "int" /> <!--id of benchmark being
+      updated-->
       <attribute name = "name" type = "string" use = "optional" />
       <attribute name = "pid" type = "int" /> <!-- update processor id-->
       <attribute name = "bid" type = "int" /> <!-- benchmark processor id-->
@@ -91,7 +92,7 @@
     	<attribute name="id" type="int"></attribute>
     	<attribute name="name" type="string"
 		   use="optional"></attribute>
-	<attribute name="time" type="string" use="optional"></attribute>
+	<attribute name="uploadTime" type="string" use="optional"></attribute>
     </complexType>
     
     <complexType name="Attribute">

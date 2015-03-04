@@ -307,10 +307,12 @@ public class BatchUtil {
 			{
 			   
 			    Element updateElement = doc.createElement("Update");
+			    //Element textElement = doc.createElement("Text");
 			    updateElement.setAttribute("name", benchmark.getName());
 			    updateElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			    updateElement.setAttribute("pid", Integer.toString(upid));
 			    updateElement.setAttribute("bid", Integer.toString(benchmark.getType().getId()));
+			    //updateElement.appendChild(textElement);
 			    spaceElement.appendChild(updateElement);
 			}
 		    else
@@ -318,9 +320,10 @@ public class BatchUtil {
 			Element benchElement = doc.createElement("Benchmark");	
 			benchElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			benchElement.setAttribute("name", benchmark.getName());
-			String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(benchmark.getUploadDate());
-                        benchElement.setAttribute("time", timeStamp);
+		
 			if (includeAttributes) {
+			    String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(benchmark.getUploadDate());
+                            benchElement.setAttribute("uploadTime", timeStamp);
 			    Properties attrs = Benchmarks.getAttributes(benchmark.getId());
 			    if (attrs != null) {
 				Enumeration<Object> keys = attrs.keys();
