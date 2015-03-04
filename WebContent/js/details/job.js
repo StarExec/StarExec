@@ -28,6 +28,10 @@ $(document).ready(function(){
 	reloadTables($("#spaceId").attr("value"));
 });
 
+function getSelectedStage() {
+	return $("#subspaceSummaryStageSelector").val();
+}
+
 function setTimeButtonText(){
 	if (useWallclock){
 		$(".changeTime .ui-button-text").html("use CPU time");
@@ -84,7 +88,7 @@ function initSpaceExplorer() {
 	$("#exploreList").jstree({  
 		"json_data" : { 
 			"ajax" : { 
-				"url" : starexecRoot+"services/space/" +jobId+ "/subspaces",	// Where we will be getting json data from 
+				"url" : starexecRoot+"services/space/" +jobId+ "/jobspaces/true",	// Where we will be getting json data from 
 				"data" : function (n) {
 					
 					return { id : n.attr ? n.attr("id") : 0}; // What the default space id should be
@@ -120,10 +124,25 @@ function initSpaceExplorer() {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
 		name = data.rslt.obj.attr("name");
+		maxStages = data.rslt.obj.attr("maxStages");
+		setMaxStagesDropdown(parseInt(maxStages));
 		$("#spaceName").text($('.jstree-clicked').text());
 		$("#displayJobSpaceID").text("id  = "+id);
 		reloadTables(id);
 	}).on( "click", "a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
+}
+//Sets the stages dropdown menu with all needed options
+function setMaxStagesDropdown(maximum) {
+	$('.stageSelector').empty();
+	
+	$('.stageSelector').append($("<option></option>").attr("value","0").text("Primary")); 
+	setInputToValue(".stageSelector","0");
+	x=1;
+	while (x<=maximum) {
+		$('.stageSelector').append($("<option></option>").attr("value",x).text(x)); 
+		x=x+1;
+	}
+	
 }
 
 function clearPanels() {
@@ -383,6 +402,11 @@ function initUI(){
 		refreshStats(curSpaceId);
 		pairTable.fnDraw(false);
 	});
+	//TODO: Redraw the pair table? Requires a different sorting algorithm
+	$(".stageSelector").change(function() {
+		refreshPanels();
+		refreshStats(curSpaceId);
+	});
 	
 	$("#recompileSpaces").click(function() {
 		$.get(
@@ -638,7 +662,7 @@ function updateSpaceOverviewGraph() {
 	}
 	
 	$.post(
-			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/spaceOverview",
+			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/spaceOverview/"+getSelectedStage(),
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -675,7 +699,7 @@ function updateSolverComparison(big) {
 	config2=$("#solverChoice2 option:selected").attr("value");
 	
 	$.post(
-			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big,
+			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage(),
 			{},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -730,7 +754,7 @@ function getPanelTable(space) {
 
 function initializePanels() {
 	sentSpaceId=curSpaceId;
-	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces?id="+sentSpaceId,function(spaces) {
+	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+sentSpaceId,function(spaces) {
 		panelArray=new Array();
 		var open=true;
 		if (spaces.length==0) {
@@ -906,7 +930,7 @@ function extendDataTableFunctions(){
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(  
-			sSource+useWallclock,
+			sSource+useWallclock+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
@@ -929,7 +953,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	outSpaceId=curSpaceId;
 	$.post(  
-			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock,
+			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these

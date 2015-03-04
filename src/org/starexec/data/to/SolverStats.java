@@ -19,8 +19,8 @@ public class SolverStats extends Identifiable {
 	@Expose private int resourceOutJobPairs=0; //status 14-17
 	@Expose private double wallTime=0;
 	@Expose private double cpuTime=0;
-	
-	
+	@Expose private int stageNumber=0;
+	@Expose private int jobSpaceId;
 	public SolverStats() {
 		this.solver=new Solver();
 		this.configuration=new Configuration();
@@ -151,5 +151,29 @@ public class SolverStats extends Identifiable {
 	
 	public int getUnknown(){
 		return completeJobPairs - (resourceOutJobPairs + correctJobPairs + incorrectJobPairs);
+	}
+
+
+
+	public int getStageNumber() {
+		return stageNumber;
+	}
+
+
+
+	public void setStageNumber(int stageNumber) {
+		this.stageNumber = stageNumber;
+	}
+
+
+
+	public int getJobSpaceId() {
+		return jobSpaceId;
+	}
+
+
+
+	public void setJobSpaceId(int jobSpaceId) {
+		this.jobSpaceId = jobSpaceId;
 	}
 }

@@ -165,6 +165,31 @@ public class Spaces {
 	}
 	
 	/**
+	 * Sets the max_stages column in the job_spaces table for the given job space to the given value
+	 * @param jobSpaceId The ID of the job space in question
+	 * @param maxStages The maximum number of stages for any pair in the hierarchy rooted at this job space
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetJobSpaceMaxStages(?,?)}");
+			procedure.setInt(1, jobSpaceId);
+			procedure.setInt(2,maxStages);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Creates a new job space with the given name
 	 * @param name The name to be given to the job space
 	 * @return The ID of the newly created job space, or -1 on failure
@@ -321,11 +346,11 @@ public class Spaces {
 	private static boolean updateJobSpaceClosureTable(int jobSpaceId, Connection con) {
 		try {
 			Timestamp time=new Timestamp(System.currentTimeMillis());
-			Space root=new Space();
+			JobSpace root=new JobSpace();
 			root.setId(jobSpaceId);
-			List<Space> spaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
+			List<JobSpace> spaces=Spaces.getSubSpacesForJob(jobSpaceId, true);
 			spaces.add(root);
-			for (Space s : spaces) {
+			for (JobSpace s : spaces) {
 				boolean success=addToJobSpaceClosure(root.getId(),s.getId(),time,con);
 				if (!success) {
 					return false;
@@ -836,7 +861,7 @@ public class Spaces {
 	 * @return A space object of just an ID and a name
 	 * @author Eric Burns
 	 */
-	public static Space getJobSpace(int jobSpaceId) {
+	public static JobSpace getJobSpace(int jobSpaceId) {
 		Connection con = null;		
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -847,9 +872,10 @@ public class Spaces {
 			 results = procedure.executeQuery();		
 			
 			if(results.next()){
-				Space s = new Space();
+				JobSpace s = new JobSpace();
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
+				s.setMaxStages(results.getInt("max_stages"));
 				return s;
 			}														
 		} catch (Exception e){			
@@ -1380,12 +1406,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	public static List<Space> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
+	public static List<JobSpace> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
 		Connection con = null;			
 		HashSet<Integer>seenSpaces=new HashSet<Integer>(); //will store everything we've already seen to prevent looping
 		try {
 			con = Common.getConnection();
-			List<Space> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, con);
+			List<JobSpace> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, con);
 			if (!recursive) {
 				return subspaces;
 			} else {
@@ -1421,7 +1447,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	protected static List<Space> getSubSpacesForJob(int jobSpaceId, Connection con) throws Exception{
+	protected static List<JobSpace> getSubSpacesForJob(int jobSpaceId, Connection con) throws Exception{
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1429,13 +1455,13 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 			procedure.setInt(1, jobSpaceId);
 			
 			 results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
+			List<JobSpace> subSpaces = new LinkedList<JobSpace>();
 			
 			while(results.next()){
-				Space s = new Space();
+				JobSpace s = new JobSpace();
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
-				
+				s.setMaxStages(results.getInt("max_stages"));
 				subSpaces.add(s);
 			}
 			

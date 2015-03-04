@@ -47,7 +47,7 @@
 				int wallclock=j.getWallclockTimeout();
 				int cpu=j.getCpuTimeout();
 				long memory=j.getMaxMemory();
-				Space s=Spaces.getJobSpace(jobSpaceId);
+				JobSpace s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
 				
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
@@ -116,6 +116,11 @@
 						<button id="collapsePanels">Collapse All</button>
 						<button id="openPanels">Open All</button>
 						<button class="changeTime">Use CPU Time</button>
+						<label for="subspaceSummaryStageSelector">Stage: </label>
+						<select id="subspaceSummaryStageSelector" class="stageSelector">
+							
+							
+						</select> 
 				</fieldset>
 			</fieldset>
 			

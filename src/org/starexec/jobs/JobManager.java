@@ -587,7 +587,8 @@ public abstract class JobManager {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
 				JoblineStage stage=new JoblineStage();
-				//stage.setPrimary(true);
+				//TODO: This will need to change if we make preprocessors stages
+				pair.setPrimaryStageNumber(1);
 
 				stage.setSolver(solver);
 				stage.setConfiguration(solver.getConfigurations().get(0));
@@ -650,12 +651,13 @@ public abstract class JobManager {
 					pair = new JobPair();
 					pair.setBench(b);
 					JoblineStage stage=new JoblineStage();
-					//stage.setPrimary(true);
 
 					stage.setSolver(clone);
 					stage.setConfiguration(c);
 					pair.addStage(stage);
 					
+					//TODO: This will need to change if we make preprocessors stages
+					pair.setPrimaryStageNumber(1);
 					
 					pair.setSpace(space);
 					//we are running pairs in a single space, so the path is flat
@@ -698,8 +700,8 @@ public abstract class JobManager {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
 						JoblineStage stage=new JoblineStage();
-						//stage.setPrimary(true);
-
+						//TODO: This will need to change if we make preprocessors stages
+						pair.setPrimaryStageNumber(1);
 						stage.setSolver(solver);
 						pair.addStage(stage);			
 						
@@ -801,7 +803,8 @@ public abstract class JobManager {
 						pair.setBench(bench);
 						JoblineStage stage=new JoblineStage();
 						stage.setSolver(solver);
-						//stage.setPrimary(true);
+						//TODO: This will need to change if we make preprocessors stages
+						pair.setPrimaryStageNumber(1);
 						pair.addStage(stage);				
 						
 						pair.setPath(SP.get(s.getId()));

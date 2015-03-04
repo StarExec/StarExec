@@ -130,12 +130,12 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@GET
-	@Path("/space/{jobid}/jobspaces")
+	@Path("/space/{jobid}/jobspaces/{spaceTree}")
 	@Produces("application/json")	
-	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
+	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @PathParam("spaceTree") boolean makeSpaceTree, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
-		List<Space> subspaces=new ArrayList<Space>();
+		List<JobSpace> subspaces=new ArrayList<JobSpace>();
 		log.debug("getting job spaces for panels");
 		//don't populate the subspaces if the user can't see the job
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
@@ -151,12 +151,18 @@ public class RESTServices {
 		} else {
 			//if the id given is 0, we want to get the root space
 			Job j=Jobs.get(jobId);
-			Space s=Spaces.getJobSpace(j.getPrimarySpace());
+			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
 			subspaces.add(s);
 		}
 		
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
-		return gson.toJson(subspaces);
+		if (makeSpaceTree) {
+			return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
+
+		} else {
+			return gson.toJson(subspaces);
+
+		}
 	}
 	
 	/**
@@ -229,39 +235,7 @@ public class RESTServices {
 		return gson.toJson(new ValidatorStatusCode(true,Uploads.getUploadStatusSummary(statusId)));
 	}
 	
-	/**
-	 * @return a json string representing all the subspaces of the job space
-	 * with the given id
-	 * @author Eric Burns
-	 */
-	@GET
-	@Path("/space/{jobid}/subspaces")
-	@Produces("application/json")	
-	public String getSubSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
-		int userId = SessionUtil.getUserId(request);
-		
-		List<Space> subspaces=new ArrayList<Space>();
-		
-		//don't populate the subspaces if the user can't see the job
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		log.debug("got a request for parent space = "+parentId);
-		if (parentId>0) {
-			
-			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-			
-		} else {
-			//if the id given is 0, we want to get the root space
-			Job j=Jobs.get(jobId);
-			Space s=Spaces.getJobSpace(j.getPrimarySpace());
-			subspaces.add(s);
-		}
-		
-		log.debug("making next tree layer with "+subspaces.size()+" spaces");
-		return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
-	}
+	
 	
 	/**
 	 * @return a json string representing all the subspaces of the space with
@@ -758,9 +732,9 @@ public class RESTServices {
 	 */
 	
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview")
+	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
 	@Produces("application/json")	
-	public String getSpaceOverviewGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+	public String getSpaceOverviewGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from
@@ -784,7 +758,7 @@ public class RESTServices {
 			}
 		}
 		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
-			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds);
+			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber);
 			if (chartPath.equals("big")) {
 				return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
 			}
@@ -874,9 +848,9 @@ public class RESTServices {
 	 * an image map linking points to benchmarks
 	 */
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}")
+	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}/{stageNum}")
 	@Produces("application/json")	
-	public String getSolverComparisonGraph(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {		
+	public String getSolverComparisonGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {		
 
 	        
 		int userId = SessionUtil.getUserId(request);
@@ -887,7 +861,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large);
+		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large,stageNumber);
 		if (chartPath==null) {
 			return gson.toJson(ERROR_DATABASE);
 		}
@@ -911,9 +885,9 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}")
+	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
@@ -921,8 +895,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		
-		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId);
+		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId,stageNumber);
 
 		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,shortFormat,wallclock);
 

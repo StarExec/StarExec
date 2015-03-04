@@ -24,6 +24,10 @@
     	</sequence>
         <attribute name="config" type="int" use="required"></attribute>
         <attribute name="keepoutput" type="boolean" use="optional"></attribute>
+        
+        <!-- Defaults to false. A maximum of a single stage per pipeline can be primary. If none is primary
+        it will default to the first stage -->
+        <attribute name="primary" type="boolean" use="optional"></attribute>
     </complexType>
     
     <element name="Jobs" type="tns:Jobs"></element>
@@ -42,7 +46,7 @@
     	<sequence>
 
 	  <element name="JobAttributes" type="tns:JobAttributes"></element>
-
+	  <element name="StageAttributes" type="tns:StageAttributes" minOccurs="0" maxOccurs="unbounded"></element>
     		<element name="JobPair" type="tns:JobPair" minOccurs="0"
     			maxOccurs="unbounded">
     		</element>
@@ -59,6 +63,23 @@
     <complexType name="BenchmarkInput">
     	<attribute name="bench-id" type="int" use="required"></attribute>
     </complexType>
+    
+    
+    <complexType name="StageAttributes">
+      <sequence>
+	
+    	<element name="pipe-name" type="tns:PrimitiveName" minOccurs="1" maxOccurs="1"></element>
+    	<element name="stage-num" type="int" minOccurs="1" maxOccurs="1"></element> 
+    	<element name="cpu-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
+    	<element name="wallclock-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
+    	
+    	<!-- Note: This is in Gigabytes -->
+    	<element name="mem-limit" type="tns:doubleInfo" minOccurs="0" maxOccurs="1"></element>
+		<element name="space-id" type="int" minOccurs="0" maxOccurs="1"></element>
+      </sequence>
+      
+    </complexType>
+    
     
     <complexType name="JobAttributes">
       <all>

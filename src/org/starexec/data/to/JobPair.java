@@ -31,7 +31,17 @@ public class JobPair extends Identifiable {
 	private Timestamp endTime = null;	
 	private int exitStatus;
 	private List<JoblineStage> stages=null; // this is an ordered list of all the stages in this jobline
+	
+	// this is the jobpair_stage_data.id for the primary stage. However, before job creation,
+	// this field stores the pipeline_stages id as no jobpair_stage_data entry has yet been created
 	private int primaryStageId;
+	
+	
+	// this field says what the primary stage is by stage number. It is used during job construction,
+	// before the job is loaded into the database, as before thta there are no ids. This is not necessary
+	// and will not be set for jobs after creation.
+	private Integer primaryStageNumber=null;
+	
 	private int sandboxNum;
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
@@ -276,6 +286,10 @@ public class JobPair extends Identifiable {
 	
 	public JoblineStage getPrimaryStage() {
 		
+		if (primaryStageNumber!=null) {
+			return stages.get(primaryStageNumber-1);
+		}
+		
 		for (JoblineStage s : stages) {
 			if (primaryStageId>0 && s.getId()==primaryStageId) {
 				return s;
@@ -422,5 +436,13 @@ public class JobPair extends Identifiable {
 	}
 	public void addBenchInput(Integer input) {
 		this.benchInputs.add(input);
+	}
+
+	public Integer getPrimaryStageNumber() {
+		return primaryStageNumber;
+	}
+
+	public void setPrimaryStageNumber(Integer primaryStageNumber) {
+		this.primaryStageNumber = primaryStageNumber;
 	}
 }

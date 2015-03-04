@@ -174,6 +174,7 @@ public class JobUtil {
 	 * @return
 	 */
 	private SolverPipeline createPipelineFromElement(int userId, Element pipeElement) {
+		boolean foundPrimary=false;
 		SolverPipeline pipeline=new SolverPipeline();
 		pipeline.setUserId(userId);
 		
@@ -199,6 +200,19 @@ public class JobUtil {
 				s.setKeepOutput(false);
 			}
 			
+			if (stage.hasAttribute("primary")) {
+				boolean currentPrimary=Boolean.parseBoolean(stage.getAttribute("primary"));
+				if (currentPrimary) {
+					if (foundPrimary) {
+						errorMessage="More than one primary stage for pipeline "+pipeline.getName();
+						return null;
+					}
+					foundPrimary=true;
+				}
+				s.setPrimary(true);
+			} else {
+				s.setPrimary(false);
+			}
 			
 			s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
 			// make sure the user is authorized to use the solver they are trying to use
@@ -276,7 +290,7 @@ public class JobUtil {
 			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
 	    try {
 			
-	
+	    	
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
 			HashMap<Integer,Solver> configIdsToSolvers=new HashMap<Integer,Solver>();
 	
@@ -372,6 +386,63 @@ public class JobUtil {
 			job.setMaxMemory(memoryLimit);
 			log.info("nodelist about to be set");
 			
+			
+			//next, we set the per-stage job attributes
+			Element stageAttributes=DOMHelper.getElementByName(jobElement, "stageAttributes");
+			if (stageAttributes!=null) {
+				StageAttributes attrs=new StageAttributes();
+				
+				
+				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
+				String pipeName=DOMHelper.getElementByName(stageAttributes, "pipe-name").getAttribute("value");
+				if (!pipelines.containsKey(pipeName)) {
+					errorMessage="the pipeline with name = "+pipeName+" is not declared as a pipeline in this file";
+					return -1;
+				}
+				SolverPipeline currentPipe=pipelines.get(pipeName);
+				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
+				if (neededStageNum<=0 || neededStageNum>currentPipe.getStages().size()) {
+					errorMessage="StageAttributes tag has invalid pipe-number = "+neededStageNum;
+					return -1;
+				}
+				attrs.setStageId(currentPipe.getStages().get(neededStageNum-1).getId());
+
+				
+				// all timeouts are optional-- they default to job timeouts if not given
+				int stageCpu=cpuTimeout;
+				if (DOMHelper.hasElement(stageAttributes, "cpu-timeout")) {
+					stageCpu=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "cpu-timeout").getAttribute("value"));
+				}
+				int stageWallclock=wallclock;
+				if (DOMHelper.hasElement(stageAttributes, "wallclock-timeout")) {
+					stageWallclock=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "wallclock-timeout").getAttribute("value"));
+				}
+				long stageMemory=memoryLimit;
+				if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
+					stageMemory=Long.parseLong(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+				}
+				Integer stageSpace=null;
+				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
+					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
+				}
+				if (stageSpace!=null) {
+					if (!Permissions.get(userId, stageSpace).canAddBenchmark()) {
+						errorMessage="You do not have permission to add benchmarks to the space with id = "+stageSpace;
+						return -1;
+					}
+				}
+				
+				//user can specify an optional space ID 
+				
+				attrs.setWallclockTimeout(stageWallclock);
+				attrs.setCpuTimeout(stageCpu);
+				attrs.setMaxMemory(stageMemory);
+				attrs.setSpaceId(stageSpace);
+				job.addStageAttributes(attrs);
+			}
+			
+			
+			
 			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 			for (int i = 0; i < jobPairs.getLength(); i++) {
 			    Node jobPairNode = jobPairs.item(i);
@@ -411,7 +482,10 @@ public class JobUtil {
 					JoblineStage stage=new JoblineStage();
 					stage.setSolver(s);
 					stage.setConfiguration(s.getConfigurations().get(0));
+					
 					jobPair.addStage(stage);
+					//the primary stage is the one we just added
+					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
 					jobPair.setSpace(Spaces.get(spaceId));
 					
 						
@@ -479,7 +553,12 @@ public class JobUtil {
 						stage.setSolver(solver);
 						stage.setConfiguration(solver.getConfigurations().get(0));
 						stage.setStageId(s.getId());
+						
 						jobPair.addStage(stage);
+						// if the stage is primary, then set it as such in the job pair
+						if (s.isPrimary()) {
+							jobPair.setPrimaryStageNumber(jobPair.getStages().size());
+						}
 					}
 					jobPair.setSpace(Spaces.get(spaceId));
 					job.addJobPair(jobPair);

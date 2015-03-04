@@ -32,7 +32,7 @@ public class PipelineTests extends TestSequence {
 		SolverPipeline p=Pipelines.getFullPipeline(pipe.getId());
 		Assert.assertNotNull(p);
 		Assert.assertEquals(pipe.getName(), p.getName());
-		Assert.assertEquals(pipe.getId(),p.getName());
+		Assert.assertEquals(pipe.getId(),p.getId());
 		Assert.assertEquals(pipe.getStages().size(),p.getStages().size());
 		for (int i=0;i<pipe.getStages().size();i++) {
 			Assert.assertEquals(pipe.getStages().get(i).getId(),p.getStages().get(i).getId());

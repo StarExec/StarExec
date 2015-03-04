@@ -229,7 +229,6 @@ CREATE TABLE solver_pipelines (
 	name VARCHAR(128),
 	user_id INT NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
-
 	PRIMARY KEY(id)
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
@@ -621,6 +620,8 @@ CREATE TABLE unvalidated_benchmarks (
 CREATE TABLE job_spaces (
 	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(255),
+	max_stages INT DEFAULT 1, -- This columns stores the maximum number of stages any job pair has
+							  -- anywhere in the job space hierarchy rooted at this job space
 	PRIMARY KEY (id)
 );
 
@@ -644,7 +645,8 @@ CREATE TABLE job_space_assoc (
 	CONSTRAINT job_space_assoc_child_id FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
 -- Stores a cache of stats for a particular job space. Incomplete pairs are not stored,
--- as we only store complete jobs, so incomplete=failed
+-- as we only store complete jobs, so incomplete=failed. Stats are hierarchical,
+-- so stats at a particular job space include all pairs below that job space
 -- Author: Eric Burns
 CREATE TABLE job_stats (
 	job_space_id INT NOT NULL,
@@ -657,6 +659,8 @@ CREATE TABLE job_stats (
 	wallclock DOUBLE,
 	cpu DOUBLE,
 	resource_out INT NOT NULL,
+	stage_number INT NOT NULL DEFAULT 0, -- what stage is this? from 1...n, with 0 meaning the primary stage
+	PRIMARY KEY (job_space_id,config_id,stage_number),
 	CONSTRAINT job_stats_job_space_id FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
 );

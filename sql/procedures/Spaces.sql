@@ -19,8 +19,8 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(255), IN _desc TEXT, IN _locked TINYI
 			UNION ALL SELECT _parent, id UNION SELECT id, id; 
 	END //
 	
--- Adds a new space with the given information
--- Author: Tyler Jensen
+-- Adds a new job space with the given information
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS AddJobSpace;
 CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), OUT id INT)
 	BEGIN		
@@ -29,7 +29,15 @@ CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), OUT id INT)
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 
+DROP PROCEDURE IF EXISTS SetJobSpaceMaxStages;
+CREATE PROCEDURE SetJobSpaceMaxStages(IN _id INT, IN _max INT)
+	BEGIN
+		UPDATE job_spaces SET max_stages=_max WHERE id=_id;
+	END //
 	
+
+	
+
 -- Gets the id of every job space in the database
 DROP PROCEDURE IF EXISTS GetAllJobSpaceIds;
 CREATE PROCEDURE GetAllJobSpaceIds()
