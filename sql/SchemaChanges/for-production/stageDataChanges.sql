@@ -1,0 +1,9 @@
+USE starexec;
+
+ALTER TABLE jobpair_stage_data ADD COLUMN status_code TINYINT DEFAULT 0;
+
+UPDATE jobpair_stage_data JOIN (SELECT id, status_code FROM job_pairs) AS pairs ON pairs.id=jobpair_stage_data.jobpair_id SET jobpair_stage_data.status_code = pairs.status_code;
+
+ALTER TABLE job_attributes ADD COLUMN jobpair_data INT NOT NULL DEFAULT 0;
+
+UPDATE job_attributes JOIN (SELECT id, primary_jobpair_data FROM job_pairs) AS pairs ON pairs.id=job_attributes.pair_id SET jobpair_data=primary_jobpair_data;
