@@ -3716,7 +3716,6 @@ public class Jobs {
 			jp.setCompletionId(results.getInt("completion_id"));
 						
 			returnList.add(jp);		
-			log.debug("here with id = "+jp.getId());
 			
 		}
 
