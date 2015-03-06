@@ -31,11 +31,6 @@ public class JobPair extends Identifiable {
 	private int exitStatus;
 	private List<JoblineStage> stages=null; // this is an ordered list of all the stages in this jobline
 	
-	// this is the jobpair_stage_data.id for the primary stage. However, before job creation,
-	// this field stores the pipeline_stages id as no jobpair_stage_data entry has yet been created
-	private int primaryStageId;
-	
-	
 	// this field says what the primary stage is by stage number. It is used during job construction,
 	// before the job is loaded into the database, as before thta there are no ids. This is not necessary
 	// and will not be set for jobs after creation.
@@ -60,7 +55,6 @@ public class JobPair extends Identifiable {
 		this.status = new Status();		
 		this.space=new Space();
 		setStages(new ArrayList<JoblineStage>());
-		primaryStageId=-1;
 		setBenchInputs(new ArrayList<Integer>());
 	}
 	
@@ -263,21 +257,21 @@ public class JobPair extends Identifiable {
 		this.stages.add(stage);
 	}
 	
+	/**
+	 * Returns the primary stage of this job pair, as determined by the 
+	 * primaryStageNumber field. If that field is not set, returns the first stage.
+	 * If no stages are set, returns null
+	 * @return
+	 */
 	public JoblineStage getPrimaryStage() {
 		
 		if (primaryStageNumber!=null) {
 			return stages.get(primaryStageNumber-1);
 		}
 		
-		for (JoblineStage s : stages) {
-			if (primaryStageId>0 && s.getId()==primaryStageId) {
-				return s;
-			}
-		}
+		// if the primary stage isn't set for some reason, we simply return the first stage.
 		if (stages.size()>0){
-			// if we get down here, it means that there are no stages currently added. For convenience,
-			// we simply add an empty stage, which prevents null from being returned by many of the functions
-			// below
+			
 			return stages.get(0);
 
 		}
@@ -374,14 +368,7 @@ public class JobPair extends Identifiable {
 		return sb.toString();
 	}
 
-	public int getPrimaryStageId() {
-		return primaryStageId;
-	}
-
-	public void setPrimaryStageId(int primaryStageId) {
-		this.primaryStageId = primaryStageId;
-	}
-
+	
 	public int getSandboxNum() {
 		return sandboxNum;
 	}

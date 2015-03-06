@@ -16,7 +16,7 @@ import org.starexec.data.to.WorkerNode;
  * @author Eric
  *
  */
-public class JoblineStage extends Identifiable {
+public class JoblineStage {
 	private Solver solver = null;
 	private Integer stageId=null;
 	private Integer jobpairId=null;
@@ -31,7 +31,7 @@ public class JoblineStage extends Identifiable {
 	private Configuration configuration = null;
 	private boolean noOp=false;
 	private Properties attributes = null;
-
+	private Integer stageNumber =null; //which stage is this? 1,2... etc.
 	public JoblineStage() {
 		this.setSolver(new Solver());
 		this.setConfiguration(new Configuration());
@@ -167,6 +167,14 @@ public class JoblineStage extends Identifiable {
 		Properties prop = this.getAttributes();
 		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
 			? prop.getProperty(R.STAREXEC_RESULT) : "--";
+	}
+
+	public Integer getStageNumber() {
+		return stageNumber;
+	}
+
+	public void setStageNumber(Integer stageNumber) {
+		this.stageNumber = stageNumber;
 	}
 	
 }

@@ -25,7 +25,7 @@ public class ProcessingManager {
     		}
 	    
 	   
-	    JobPairs.postProcessPair(triple.getPairId(),triple.getStageId(), triple.getProcessorId());
+	    JobPairs.postProcessPair(triple.getPairId(),triple.getStageNumber(), triple.getProcessorId());
 	    num_processed++;
     	}
     	

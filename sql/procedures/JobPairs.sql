@@ -137,11 +137,11 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
 CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 	BEGIN
-		SELECT post_processor ,job_pairs.id AS pairid, jobpair_stage_data.id AS id 
+		SELECT post_processor ,job_pairs.id AS pairid, jobpair_stage_data.stage_number AS stageNumber 
 		FROM jobpair_stage_data 
 		JOIN job_pairs ON pairid = jobpair_stage_data.jobpair_id
 		JOIN job_stage_params ON (job_stage_params.job_id=job_pairs.job_id AND job_stage_params.stage_id=jobpair_stage_data.stage_id)
-		WHERE status_code=_processingStatus;
+		WHERE jobpair_stage_data.status_code=_processingStatus;
 	END //
 	
 DROP PROCEDURE IF EXISTS RemovePairFromCompletedTable;

@@ -32,6 +32,7 @@
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given pair id was in an invalid format");
 	} catch (Exception e) {
+		e.printStackTrace();
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
@@ -142,6 +143,41 @@
 						</tr>
 					</tbody>
 				</table>
+				
+			<fieldset id="fieldAttrs">
+				<legend>stage attributes</legend>	
+					<c:choose>
+						<c:when test="${stage.status.code == 'STATUS_WAIT_RESULTS'}">
+							<p>waiting for results. try again in 2 minutes.</p>
+						</c:when>
+						<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
+							<p>none</p>
+						</c:when>
+						<c:when test="${stage.status.code == 'STATUS_COMPLETE'}">
+							<table id="pairAttrs" class="shaded">
+								<thead>
+									<tr>
+										<th>key</th>
+										<th>value</th>				
+									</tr>		
+								</thead>	
+								<tbody>
+									<c:forEach var="entry" items="${stage.attributes}">
+									<tr>
+										<td>${entry.key}</td>
+										<td>${entry.value}</td>
+									</tr>
+								</c:forEach>
+								</tbody>
+							</table>
+						</c:when>				
+						<c:otherwise>		
+							<p>unavailable</p>
+						</c:otherwise>
+					</c:choose>		
+				</fieldset>
+				
+				
 			</c:forEach>
 			
 		</c:when>				
@@ -151,38 +187,7 @@
 	</c:choose>		
 	</fieldset>		
 	
-	<fieldset id="fieldAttrs">
-	<legend>pair attributes</legend>	
-	<c:choose>
-		<c:when test="${pair.status.code == 'STATUS_WAIT_RESULTS'}">
-			<p>waiting for results. try again in 2 minutes.</p>
-		</c:when>
-		<c:when test="${pair.status.code == 'STATUS_COMPLETE' && empty pair.attributes}">
-			<p>none</p>
-		</c:when>
-		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
-			<table id="pairAttrs" class="shaded">
-				<thead>
-					<tr>
-						<th>key</th>
-						<th>value</th>				
-					</tr>		
-				</thead>	
-				<tbody>
-					<c:forEach var="entry" items="${pair.attributes}">
-					<tr>
-						<td>${entry.key}</td>
-						<td>${entry.value}</td>
-					</tr>
-				</c:forEach>
-				</tbody>
-			</table>
-		</c:when>				
-		<c:otherwise>		
-			<p>unavailable</p>
-		</c:otherwise>
-	</c:choose>		
-	</fieldset>
+	
 	
 	<fieldset id="fieldOutput">		
 			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			

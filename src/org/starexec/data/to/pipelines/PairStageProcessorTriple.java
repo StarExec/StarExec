@@ -9,7 +9,7 @@ package org.starexec.data.to.pipelines;
 public class PairStageProcessorTriple {
 
 	private int pairId;
-	private int stageId;
+	private int stageNumber;
 	private int processorId;
 	public int getPairId() {
 		return pairId;
@@ -17,11 +17,11 @@ public class PairStageProcessorTriple {
 	public void setPairId(int pairId) {
 		this.pairId = pairId;
 	}
-	public int getStageId() {
-		return stageId;
+	public int getStageNumber() {
+		return stageNumber;
 	}
-	public void setStageId(int stageId) {
-		this.stageId = stageId;
+	public void setStageNumber(int stageId) {
+		this.stageNumber = stageId;
 	}
 	public int getProcessorId() {
 		return processorId;

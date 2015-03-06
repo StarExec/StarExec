@@ -68,7 +68,7 @@ public class JobPairs {
 	 * @param con
 	 * @return
 	 */
-	private static boolean addJobPairStage(int pairId, int stageId, boolean primary, Connection con) {
+	private static boolean addJobPairStage(int pairId, int stageId,int stageNumber, boolean primary, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			log.debug("the primary is ");
@@ -76,8 +76,8 @@ public class JobPairs {
 			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?)}");
 			procedure.setInt(1, pairId);
 			procedure.setInt(2,stageId);
-			procedure.setBoolean(3, primary);
-			procedure.registerOutParameter(4, java.sql.Types.INTEGER);	
+			procedure.setInt(3,stageNumber);
+			procedure.setBoolean(4, primary);
 			
 
 			// Update the pair's ID so it can be used outside this method
@@ -125,8 +125,9 @@ public class JobPairs {
 			pair.setId(procedure.getInt(11));
 			int primStage=pair.getPrimaryStage().getStageId();
 
-			for (JoblineStage stage : pair.getStages()) {
-				addJobPairStage(pair.getId(),stage.getStageId(),stage.getStageId()==primStage,con);
+			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
+				JoblineStage  stage= pair.getStageFromNumber(stageNumber);
+				addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,stage.getStageId()==primStage,con);
 			}
 			for (int i=0;i<pair.getBenchInputs().size();i++) {
 				addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);
@@ -199,7 +200,7 @@ public class JobPairs {
 			while (results.next()) {
 				PairStageProcessorTriple next= new PairStageProcessorTriple();
 				next.setPairId(results.getInt("pairid"));
-				next.setStageId(results.getInt("id"));
+				next.setStageNumber(results.getInt("stageNumber"));
 				next.setProcessorId(results.getInt("post_processor"));
 				list.add(next);
 			}
@@ -576,7 +577,7 @@ public class JobPairs {
 	
 	/**
 	 * Retrieves all attributes (key/value) of the given job pair. Returns a mapping
-	 * of those attributes to stages based on the jobpair_stage_data.id 
+	 * of those attributes to stages based on the jobpair_stage_data.stage_number
 	 * @param con The connection to make the query on
 	 * @param pairId The id of the pair to get the attributes of
 	 * @return The properties object which holds all the pair's attributes
@@ -661,6 +662,7 @@ public class JobPairs {
 			if (results.next()) {
 				JobPair pair=new JobPair();
 				pair.addStage(new JoblineStage());
+				pair.setPrimaryStageNumber(1);
 				Solver s= pair.getPrimarySolver();
 				s.setName(results.getString("solver_name"));
 				Benchmark b=pair.getBench();
@@ -934,8 +936,8 @@ public class JobPairs {
 			//last, we get attributes for everything
 			HashMap<Integer,Properties> attrs = getAttributes(pairId);
 			for (JoblineStage stage : jp.getStages()) {
-				if (attrs.containsKey(stage.getId())) {
-					stage.setAttributes(attrs.get(stage.getId()));
+				if (attrs.containsKey(stage.getStageNumber())) {
+					stage.setAttributes(attrs.get(stage.getStageNumber()));
 				}
 			}
 			return jp;
@@ -981,7 +983,7 @@ public class JobPairs {
 	protected static JoblineStage resultToStage(ResultSet result) throws Exception {
 		JoblineStage stage=new JoblineStage();
 				
-		stage.setId(result.getInt("jobpair_stage_data.id"));
+		stage.setStageNumber(result.getInt("jobpair_stage_data.stage_number"));
 		stage.setWallclockTime(result.getDouble("jobpair_stage_data.wallclock"));
 		stage.setCpuUsage(result.getDouble("jobpair_stage_data.cpu"));
 		stage.setUserTime(result.getDouble("jobpair_stage_data.user_time"));
@@ -1013,7 +1015,7 @@ public class JobPairs {
 		
 		jp.setPath(result.getString("path"));
 		jp.setJobSpaceId(result.getInt("job_space_id"));
-		jp.setPrimaryStageId(result.getInt("primary_jobpair_data"));
+		jp.setPrimaryStageNumber(result.getInt("primary_jobpair_data"));
 		jp.setSandboxNum(result.getInt("sandbox_num"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;

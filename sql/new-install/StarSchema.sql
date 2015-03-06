@@ -328,7 +328,7 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
-	primary_jobpair_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.id
+	primary_jobpair_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.stage_number
 	PRIMARY KEY(id),
 	KEY(sge_id),
 	KEY (job_space_id, config_id),
@@ -343,9 +343,9 @@ CREATE TABLE job_pairs (
 );
 
 CREATE TABLE jobpair_stage_data (
-	id INT AUTO_INCREMENT, -- this id orders the stages
+	stage_number INT NOT NULL, -- this id orders the stages
 	jobpair_id INT NOT NULL,
-	stage_id INT, -- stages are ordered by this ID as well
+	stage_id INT, -- References pipeline_stages stages are ordered by this ID as well.
 	cpu DOUBLE,
 	wallclock DOUBLE,
 	mem_usage DOUBLE,
@@ -354,8 +354,7 @@ CREATE TABLE jobpair_stage_data (
 	user_time DOUBLE,
 	system_time DOUBLE,
 	status_code TINYINT DEFAULT 0,
-	PRIMARY KEY (id),
-	KEY(jobpair_id),
+	PRIMARY KEY (jobpair_id,stage_number),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );

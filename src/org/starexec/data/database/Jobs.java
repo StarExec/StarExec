@@ -1478,15 +1478,13 @@ public class Jobs {
 	 * @return
 	 */
 	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId, int jobId, int stageNumber) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
+	
 		HashSet<String> solverConfigPairs=new HashSet<String>(); // will store all the solver/configuration pairs so we know how many there are
 		HashMap<Integer, Integer> benchmarksCount=new HashMap<Integer,Integer>(); //will store the number of pairs every benchmark has
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		try {
 			//first, get all the completed pairs in the space
-			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId);
+			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber);
 			JobPairs.filterPairsByType(pairs, "complete", stageNumber);
 			
 			//then, filter them down to the synced pairs
@@ -1551,9 +1549,9 @@ public class Jobs {
 			searchQuery="";
 		}
 		long a=System.currentTimeMillis();
-		List<JobPair> pairs=Jobs.getJobPairsInJobSpace(jobSpaceId);
+		List<JobPair> pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber);
 		log.debug("getting all job pairs in the job space took "+(System.currentTimeMillis()-a));
-		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,"all",wallclock,stageNumber,totals);
+		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,"all",wallclock,1,totals);
 		
 	}
 	
@@ -1591,6 +1589,9 @@ public class Jobs {
 		return null;
 	}
 	
+	
+	
+	
 	/**
 	 * Given a list of job pairs and a ResultSet that contains stages for those pairs, populates
 	 * the pairs with their stages
@@ -1616,12 +1617,12 @@ public class Jobs {
 				
 				JobPair jp=idsToPairs.get(results.getInt("job_pairs.id"));
 				JoblineStage stage=new JoblineStage();
-				stage.setCpuUsage(results.getDouble("cpu"));
-				stage.setWallclockTime(results.getDouble("wallclock"));
+				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
+				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
 				stage.setStageId(results.getInt("pipeline_stages.stage_id"));
-				stage.getStatus().setCode(results.getInt("status_code"));
+				stage.getStatus().setCode(results.getInt("jobpair_stage_data.status_code"));
 				//everything below this line is in a stage
-				id=results.getInt("solver_id");
+				id=results.getInt("pipeline_stages.solver_id");
 				//means it was null in SQL
 				if (id==0) {
 					id=jp.getDefaultSolver().getId();
@@ -1632,14 +1633,14 @@ public class Jobs {
 					
 					solve=new Solver();
 					solve.setId(id);
-					solve.setName(results.getString("solver_name"));
+					solve.setName(results.getString("pipeline_stages.solver_name"));
 					solvers.put(id,solve);
 				}
 				stage.setSolver(solvers.get(id));
 				
 				
 				
-				id=results.getInt("config_id");
+				id=results.getInt("pipeline_stages.config_id");
 				
 				if (id==0) {
 					id=jp.getDefaultConfiguration().getId();
@@ -1648,7 +1649,7 @@ public class Jobs {
 				if (!configs.containsKey(id)) {
 					config=new Configuration();
 					config.setId(id);
-					config.setName(results.getString("config_name"));
+					config.setName(results.getString("pipeline_stages.config_name"));
 					configs.put(id, config);
 				}
 				stage.getSolver().addConfiguration(configs.get(id));
@@ -1692,7 +1693,7 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsInJobSpace(int jobSpaceId) {
+	public static List<JobPair> getJobPairsInJobSpace(int jobSpaceId, int stageNumber) {
 		
 		Connection con = null;
 		ResultSet results = null;
@@ -1701,28 +1702,17 @@ public class Jobs {
 		try {
 			long a=System.currentTimeMillis();
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsInJobSpace(?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsInJobSpace(?,?)}");
 			
 			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2,stageNumber);
 			results = procedure.executeQuery();
 			log.debug("executing query 1 took "+(System.currentTimeMillis()-a));
-			List<JobPair> pairs=processStatResults(results);
+			List<JobPair> pairs=processStatResults(results,true);
 			
-			log.debug("processing query 1 took "+(System.currentTimeMillis()-a));
-
+		
+			return pairs;
 			
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpace(?)}");
-			procedure.setInt(1,jobSpaceId);
-			results=procedure.executeQuery();
-			log.debug("executing query 2 took "+(System.currentTimeMillis()-a));
-
-			if (populateJobPairStages(pairs,results,false)) {
-				log.debug("processing query 2 took "+(System.currentTimeMillis()-a));
-
-				return pairs;
-			} 
 
 		} catch (Exception e) {
 			log.error("getPairsDetailedForStatsInSpace says "+e.getMessage(),e);
@@ -1759,7 +1749,7 @@ public class Jobs {
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
 			
-			List<JobPair> pairs=processStatResults(results);
+			List<JobPair> pairs=processStatResults(results,false);
 			
 			
 			
@@ -2224,8 +2214,8 @@ public class Jobs {
 				JobPair jp = pairs.get(i);
 				if (props.containsKey(jp.getId())) {
 					HashMap<Integer,Properties> pairInfo=props.get(jp.getId());
-					if (pairInfo.containsKey(jp.getPrimaryStage().getId())) {
-						jp.getPrimaryStage().setAttributes(pairInfo.get(jp.getPrimaryStage().getId()));
+					if (pairInfo.containsKey(jp.getPrimaryStage().getStageNumber())) {
+						jp.getPrimaryStage().setAttributes(pairInfo.get(jp.getPrimaryStage().getStageNumber()));
 
 					}
 				} 
@@ -2496,8 +2486,8 @@ public class Jobs {
 				JobPair jp = pairs.get(i);
 				if (props.containsKey(jp.getId())) {
 					HashMap<Integer,Properties> pairInfo=props.get(jp.getId());
-					if (pairInfo.containsKey(jp.getPrimaryStage().getId())) {
-						jp.getPrimaryStage().setAttributes(pairInfo.get(jp.getPrimaryStage().getId()));
+					if (pairInfo.containsKey(jp.getPrimaryStage().getStageNumber())) {
+						jp.getPrimaryStage().setAttributes(pairInfo.get(jp.getPrimaryStage().getStageNumber()));
 
 					}
 				} 
@@ -2842,7 +2832,7 @@ public class Jobs {
 
 		    JobPair jp = JobPairs.resultToPair(results);
 			JoblineStage stage=new JoblineStage();
-			stage.setId(jp.getPrimaryStageId());
+			stage.setStageNumber(jp.getPrimaryStageNumber());
 			jp.addStage(stage);
 		    //we need to check to see if the benchId and configId are null, since they might
 		    //have been deleted while the the job is still pending
@@ -3687,13 +3677,18 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static List<JobPair> processStatResults(ResultSet results) throws Exception {
+	private static List<JobPair> processStatResults(ResultSet results, boolean includeSingleStage) throws Exception {
 		List<JobPair> returnList = new ArrayList<JobPair>();
+		
+		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
+		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+		Integer id;
+		
 		
 		Benchmark bench=null;
 		while(results.next()){
 			JobPair jp = new JobPair();
-			
+			jp.setPrimaryStageNumber(results.getInt("primary_jobpair_data"));
 			// these are the solver and configuration defaults. If any jobpair_stage_data
 			// entry has null for a stage_id, then these are the correct primitives. 
 						
@@ -3717,7 +3712,62 @@ public class Jobs {
 			jp.setBench(bench);
 
 			jp.setCompletionId(results.getInt("completion_id"));
-						
+			
+			
+			if (includeSingleStage) {
+				//If we are here, we are populating exactly 1 stage for purposes of filling up a table.
+				//so, we simply set the primary stage of this pair to the first stage for the time being
+				jp.setPrimaryStageNumber(1);
+				JoblineStage stage=new JoblineStage();
+				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
+				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
+				stage.setStageId(results.getInt("pipeline_stages.stage_id"));
+				stage.getStatus().setCode(results.getInt("jobpair_stage_data.status_code"));
+				//everything below this line is in a stage
+				id=results.getInt("pipeline_stages.solver_id");
+				//means it was null in SQL
+				if (id==0) {
+					id=jp.getDefaultSolver().getId();
+					solvers.put(id, jp.getDefaultSolver());
+				}
+				
+				if (!solvers.containsKey(id)) {
+					
+					solve=new Solver();
+					solve.setId(id);
+					solve.setName(results.getString("pipeline_stages.solver_name"));
+					solvers.put(id,solve);
+				}
+				stage.setSolver(solvers.get(id));
+				
+				
+				
+				id=results.getInt("pipeline_stages.config_id");
+				
+				if (id==0) {
+					id=jp.getDefaultConfiguration().getId();
+					configs.put(id, jp.getDefaultConfiguration());
+				}
+				if (!configs.containsKey(id)) {
+					Configuration config=new Configuration();
+					config.setId(id);
+					config.setName(results.getString("pipeline_stages.config_name"));
+					configs.put(id, config);
+				}
+				stage.getSolver().addConfiguration(configs.get(id));
+				stage.setConfiguration(configs.get(id));
+				
+				Properties p=new Properties();
+				String result=results.getString("result");
+				if (result!=null) {
+					p.put(R.STAREXEC_RESULT, result);
+				}
+				
+				
+				stage.setAttributes(p);
+				jp.addStage(stage);
+			}
+			
 			returnList.add(jp);		
 			
 		}

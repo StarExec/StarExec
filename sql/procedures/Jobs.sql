@@ -236,6 +236,7 @@ CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
+-- TODO: This gets only the primary stage right now. Is that what we want?
 DROP PROCEDURE IF EXISTS GetJobPairsByJob;
 CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 	BEGIN
@@ -244,7 +245,7 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN 	jobpair_stage_data AS jobpair_stage_data  ON jobpair_stage_data.id=job_pairs.primary_jobpair_data
+									JOIN 	jobpair_stage_data AS jobpair_stage_data  ON jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
 									LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 									LEFT JOIN	job_spaces 		AS  jobSpace ON jobSpace.id=job_pairs.job_space_id
 									
@@ -285,14 +286,38 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 -- Gets all the job pairs in a job space. No stages are retrieved
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpace;
-CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT)
+CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 	BEGIN
-		SELECT status_code,solver_name,config_name,solver_id,config_id,
-		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name,
-		completion_id
-		FROM job_pairs 		
-		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
-		WHERE job_space_id=_jobSpaceId;
+		IF _stageNumber>0 THEN
+			SELECT job_pairs.status_code,job_pairs.solver_name,job_pairs.config_name,job_pairs.solver_id,job_pairs.config_id,
+			job_pairs.id, job_pairs.bench_id, job_pairs.bench_name,
+			completion_id, pipeline_stages.solver_id,pipeline_stages.solver_name, jobpair_stage_data.status_code,
+			pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
+			jobpair_stage_data.wallclock, primary_jobpair_data,
+			job_attributes.attr_value AS result
+			FROM job_pairs 		
+			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+			LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
+			LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
+			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
+			WHERE job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=_stageNumber;
+		
+		ELSE
+			SELECT job_pairs.status_code,job_pairs.solver_name,job_pairs.config_name,job_pairs.solver_id,job_pairs.config_id,
+			job_pairs.id, job_pairs.bench_id, job_pairs.bench_name,
+			completion_id, pipeline_stages.solver_id,pipeline_stages.solver_name, jobpair_stage_data.status_code,
+			pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
+			jobpair_stage_data.wallclock, primary_jobpair_data,
+			job_attributes.attr_value AS result
+			FROM job_pairs 		
+			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number
+			LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
+			LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
+			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
+			WHERE job_space_id=_jobSpaceId;
+			
+			
+		END IF;
 	END //
 	
 -- Gets all the job pairs in a job space hierarchy. No stages are retrieved
@@ -302,7 +327,7 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
 		SELECT status_code,solver_name,config_name,solver_id,config_id,
 		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name,
-		completion_id
+		completion_id,primary_jobpair_data
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id
 		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
@@ -320,7 +345,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 		job_attributes.attr_value AS result
 		FROM job_pairs 		
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.id and job_attributes.attr_key="starexec-result")
+		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
 		WHERE job_space_id=_jobSpaceId;
 	END //
@@ -338,7 +363,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.id and job_attributes.attr_key="starexec-result")
+		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
 		WHERE ancestor=_jobSpaceId;
@@ -554,12 +579,11 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _configId INT, IN
 	END //
 	
 DROP PROCEDURE IF EXISTS AddJobPairStage;
-CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _primary BOOLEAN, OUT _id INT)
+CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber INT, IN _primary BOOLEAN)
 	BEGIN
-		INSERT INTO jobpair_stage_data (jobpair_id, stage_id) VALUES (_pairId, _stageId);
-		SELECT LAST_INSERT_ID() INTO _id;
+		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number) VALUES (_pairId, _stageId,_stageNumber);
 		IF (_primary) THEN
-			UPDATE job_pairs SET primary_jobpair_data=_id WHERE job_pairs.id=_pairId;
+			UPDATE job_pairs SET primary_jobpair_data=_stageNumber WHERE job_pairs.id=_pairId;
 		END IF;
 		 
 	END //
