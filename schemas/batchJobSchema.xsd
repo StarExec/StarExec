@@ -9,16 +9,17 @@
     
     <complexType name="SolverPipeline">
     
-    	<sequence>
-    		
-    		<element name="PipelineStage" type="tns:PipelineStage" minOccurs="1" maxOccurs="unbounded"></element>
-    	</sequence> 
+    	<choice minOccurs="1" maxOccurs="unbounded">
+    		<element name="noop"></element>
+    		<element name="PipelineStage" type="tns:PipelineStage"></element>
+    	</choice> 
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
     	
     </complexType>
     
     <complexType name="PipelineStage">    	
     	<sequence>
+    			
     	    	<element name="stageDependency" minOccurs="0" maxOccurs="unbounded"></element>
     			<element name="benchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>

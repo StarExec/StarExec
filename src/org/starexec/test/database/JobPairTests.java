@@ -56,8 +56,8 @@ public class JobPairTests extends TestSequence {
 		Properties p=new Properties();
 		String prop=TestUtil.getRandomAlphaString(14);
 		p.put(prop, prop);
-		Assert.assertTrue(JobPairs.addJobPairAttributes(jp.getId(), p));
-		Properties test=JobPairs.getAttributes(jp.getId());
+		Assert.assertTrue(JobPairs.addJobPairAttributes(jp.getId(),jp.getPrimaryStage().getId(), p));
+		Properties test=JobPairs.getAttributes(jp.getId()).get(jp.getPrimaryStage().getId());
 		Assert.assertTrue(test.contains(prop));		
 	}
 	

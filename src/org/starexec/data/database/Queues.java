@@ -425,7 +425,6 @@ public class Queues {
 				//s.setStatus(results.getString("status.status"));
 				//s.setDescription(results.getString("status.description"));
 				jp.setStatus(s);
-				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
 				returnList.add(jp);
 			}			
 
@@ -846,7 +845,6 @@ public class Queues {
 
 				s.setCode(results.getInt("status_code"));
 				jp.setStatus(s);
-				jp.setAttributes(JobPairs.getAttributes(con, jp.getId()));
 				returnList.add(jp);
 			}			
 

@@ -507,7 +507,7 @@ public class Download extends HttpServlet {
 		HashMap<Integer,String> expectedValues=Jobs.getAllAttrsOfNameForJob(job.getId(),R.EXPECTED_RESULT);
 		for (JobPair jp : pairs) {
 			if (expectedValues.containsKey(jp.getBench().getId())) {
-				jp.getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
+				jp.getPrimaryStage().getAttributes().put(R.EXPECTED_RESULT, expectedValues.get(jp.getBench().getId()));
 			}
 		}
 		/* use the attribute names for the first completed job pair (if any) for more headings for the table
@@ -580,11 +580,11 @@ public class Download extends HttpServlet {
 			
 			sb.append(pair.getPrimaryMaxVirtualMemory());
 			sb.append(",");
-			sb.append(pair.getStarexecResult());
+			sb.append(pair.getPrimaryStarexecResult());
 
 			if (attrNames != null) {
 				// print out attributes for this job pair
-				Properties props = pair.getAttributes();
+				Properties props = pair.getPrimaryStage().getAttributes();
 
 				if (have_expected && props!=null) {
 					sb.append(",");

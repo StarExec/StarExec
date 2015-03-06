@@ -25,7 +25,6 @@ public class JobPair extends Identifiable {
 	private WorkerNode node = null;
 	private Benchmark bench = null;	//this is the input benchmark to the jobline
 	private Status status = null;
-	private Properties attributes = null;
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;	
@@ -59,7 +58,6 @@ public class JobPair extends Identifiable {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
 		this.status = new Status();		
-		this.attributes=new Properties();
 		this.space=new Space();
 		setStages(new ArrayList<JoblineStage>());
 		primaryStageId=-1;
@@ -88,19 +86,7 @@ public class JobPair extends Identifiable {
 		this.completionId=completionId;
 	}
 	
-	/**
-	 * @return the attributes for this job pair
-	 */
-	public Properties getAttributes() {
-		return attributes;
-	}
-
-	/**
-	 * @param attributes the attributes to set for this job pair
-	 */
-	public void setAttributes(Properties attributes) {
-		this.attributes = attributes;
-	}
+	
 
 	/**
 	 * @return the actual job id of this pair in the grid engine
@@ -133,14 +119,7 @@ public class JobPair extends Identifiable {
 	}
 	
 	
-	/**
-	 * @return the starexec-result value from attributes list
-	 */
-	public String getStarexecResult() {
-		Properties prop = this.getAttributes();
-		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
-			? prop.getProperty(R.STAREXEC_RESULT) : "--";
-	}
+	
 	
 	/**
 	 * @return the benchmark used in this pair
@@ -444,5 +423,30 @@ public class JobPair extends Identifiable {
 
 	public void setPrimaryStageNumber(Integer primaryStageNumber) {
 		this.primaryStageNumber = primaryStageNumber;
+	}
+	/**
+	 * Returns a stage based on the number. 
+	 * If given <=0, returns the primary stage
+	 * if given 1...n where there are n stages, returns the stage
+	 * if given >n returns null;
+	 * @param stageNumber
+	 */
+	public JoblineStage getStageFromNumber(int stageNumber) {
+		if (stageNumber<=0) {
+			return this.getPrimaryStage();
+		} else if (stageNumber<=stages.size()) {
+			return stages.get(stageNumber-1);
+		}
+		return null;
+		
+	}
+	
+	/**
+	 * @return the starexec-result value from attributes list
+	 */
+	public String getPrimaryStarexecResult() {
+		Properties prop = this.getPrimaryStage().getAttributes();
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
+			? prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
 }

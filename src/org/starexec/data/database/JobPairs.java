@@ -24,6 +24,7 @@ import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.util.Util;
 
 
@@ -180,8 +181,12 @@ public class JobPairs {
     	return (new File(stdoutPath));	
     }
 
-	
-	public static HashMap<Integer,Integer> getAllPairsForProcessing() {
+	/**
+	 * Returns all pairs that are waiting on post processing. Returns a hashmap mapping
+	 * job pair IDs to post processors
+	 * @return
+	 */
+	public static List<PairStageProcessorTriple> getAllPairsForProcessing() {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -190,11 +195,15 @@ public class JobPairs {
 			procedure=con.prepareCall("{CALL GetPairsToBeProcessed(?)}");
 			procedure.setInt(1,StatusCode.STATUS_PROCESSING.getVal());
 			results=procedure.executeQuery();
-			HashMap<Integer,Integer> mapping=new HashMap<Integer,Integer>();
+			List<PairStageProcessorTriple> list=new ArrayList<PairStageProcessorTriple>();
 			while (results.next()) {
-				mapping.put(results.getInt("id"),results.getInt("post_processor"));
+				PairStageProcessorTriple next= new PairStageProcessorTriple();
+				next.setPairId(results.getInt("pairid"));
+				next.setStageId(results.getInt("id"));
+				next.setProcessorId(results.getInt("post_processor"));
+				list.add(next);
 			}
-			return mapping;
+			return list;
 			
 		} catch (Exception e){
 			log.error("getAllPairsForProcessing says "+e.getMessage(),e);
@@ -214,14 +223,14 @@ public class JobPairs {
 	 * @param processorId The ID of the processor to use
 	 * @return True on success, false on error
 	 */
-	
-	public static boolean postProcessPair(int pairId,int processorId) {
+	//TODO: This needs to be updated to make use of the stage ID.
+	public static boolean postProcessPair(int pairId,int stageId, int processorId) {
 		Connection con=null;
 		try {
 			Properties props=runPostProcessorOnPair(pairId,processorId);
 			con=Common.getConnection();
 			Common.beginTransaction(con);
-			JobPairs.addJobPairAttributes(pairId, props,con);
+			JobPairs.addJobPairAttributes(pairId,stageId, props,con);
 			JobPairs.setPairStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(),con);
 			Common.endTransaction(con);
 			return true;
@@ -292,14 +301,15 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addJobPairAttr(Connection con, int pairId, String key, String val) throws Exception {
+	protected static boolean addJobPairAttr(Connection con, int pairId,int stageId, String key, String val) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?,?)}");
 			procedure.setInt(1, pairId);
+			
 			procedure.setString(2, key);
 			procedure.setString(3, val);
-			
+			procedure.setInt(4,stageId);
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
@@ -318,13 +328,13 @@ public class JobPairs {
 	 * @param con The open connection to make the call on
 	 * @return True on success, false on error
 	 */
-	public static boolean addJobPairAttributes(int pairId, Properties attributes, Connection con) {
+	public static boolean addJobPairAttributes(int pairId,int stageId, Properties attributes, Connection con) {
 		try {
 			// For each attribute (key, value)...
 			log.info("Adding " + attributes.entrySet().size() +" attributes to job pair " + pairId);
 			for(Entry<Object, Object> keyVal : attributes.entrySet()) {
 				// Add the attribute to the database
-				JobPairs.addJobPairAttr(con, pairId, (String)keyVal.getKey(), (String)keyVal.getValue());
+				JobPairs.addJobPairAttr(con, pairId,stageId, (String)keyVal.getKey(), (String)keyVal.getValue());
 			}	
 
 			return true;
@@ -341,12 +351,12 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean addJobPairAttributes(int pairId, Properties attributes) {
+	public static boolean addJobPairAttributes(int pairId,int stageId, Properties attributes) {
 		Connection con = null;
 
 		try {
 			con = Common.getConnection();
-			return addJobPairAttributes(pairId,attributes,con);
+			return addJobPairAttributes(pairId,stageId,attributes,con);
 		} catch(Exception e) {			
 			log.error("error adding Job Attributes = " + e.getMessage(), e);
 		} finally {			
@@ -356,56 +366,58 @@ public class JobPairs {
 		return false;		
 	}
 
-	
-	
-	
-	
-	
-	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type) {
+
+	/**
+	 * Filters job pairs based on their status codes
+	 * @param pairs
+	 * @param type
+	 * @return
+	 */
+	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type, int stageNumber) {
 
 		log.debug("filtering pairs by type with type = "+type);
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 
 		if (type.equals("incomplete")) {
 			for (JobPair jp : pairs) {
-				if (jp.getStatus().getCode().statIncomplete()) {
+				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().statIncomplete()) {
 					filteredPairs.add(jp);
 				}
 			}
 		} else if (type.equals("resource")) {
 			for (JobPair jp : pairs) {
-				if (jp.getStatus().getCode().resource()) {
+				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().resource()) {
 					filteredPairs.add(jp);
 				}
 			}
 		}else if (type.equals("failed")) {
 			for (JobPair jp : pairs) {
-				if (jp.getStatus().getCode().failed()) {
+				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().failed()) {
 					filteredPairs.add(jp);
 				}
 			}
 		} 	else if (type.equals("solved")) {
 
 			for (JobPair jp : pairs) {
-				if (JobPairs.isPairCorrect(jp)==0) {
+				if (JobPairs.isPairCorrect(jp,stageNumber)==0) {
 					filteredPairs.add(jp);
 				}
 			}
 		}  else if (type.equals("wrong")) {
 			for (JobPair jp : pairs) {
-				if (JobPairs.isPairCorrect(jp)==1) {
+				if (JobPairs.isPairCorrect(jp,stageNumber)==1) {
 					filteredPairs.add(jp);
 				}
 			}
 		}  else if (type.equals("unknown")) {
 			for (JobPair jp : pairs) {
-				if (JobPairs.isPairCorrect(jp)==2) {
+				if (JobPairs.isPairCorrect(jp,stageNumber)==2) {
 					filteredPairs.add(jp);
 				}
 			}
 		} else if (type.equals("complete")) {
 			for (JobPair jp : pairs) {
-				if (jp.getStatus().getCode().complete()) {
+				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().complete()) {
 					filteredPairs.add(jp);
 				}
 			}
@@ -423,13 +435,15 @@ public class JobPairs {
 	 * 1 == pair is incorrect
 	 * 2 == pair is unknown
 	 */
-	public static int isPairCorrect(JobPair jp) {
+	
+	
+	public static int isPairCorrect(JobPair jp,int stageNumber) {
 		log.debug("checking whether pair with id = "+jp.getId() +" is correct");
-		StatusCode statusCode=jp.getStatus().getCode();
+		StatusCode statusCode=jp.getStageFromNumber(stageNumber).getStatus().getCode();
 
 		if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
-			if (jp.getAttributes()!=null) {
-			   	Properties attrs = jp.getAttributes();
+			if (jp.getStageFromNumber(stageNumber).getAttributes()!=null) {
+			   	Properties attrs = jp.getStageFromNumber(stageNumber).getAttributes();
 			   	log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
 			   	log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
 			   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){
@@ -492,6 +506,8 @@ public class JobPairs {
 	 * @return A filtered list of job pairs
 	 * @author Eric burns
 	 */
+	
+	//TODO: This may need to be fixed to work by stage
 	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery) {
 		//no filtering is necessary if there's no query
 		if (searchQuery==null || searchQuery=="") {
@@ -504,7 +520,7 @@ public class JobPairs {
 			try {
 				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
 						|| jp.getPrimarySolver().getName().toLowerCase().contains(searchQuery) || jp.getPrimaryConfiguration().getName().toLowerCase().contains(searchQuery) ||
-						jp.getStarexecResult().contains(searchQuery)) {
+						jp.getPrimaryStarexecResult().contains(searchQuery)) {
 						
 					filteredPairs.add(jp);
 				}
@@ -559,30 +575,33 @@ public class JobPairs {
 	
 	
 	/**
-	 * Retrieves all attributes (key/value) of the given job pair
+	 * Retrieves all attributes (key/value) of the given job pair. Returns a mapping
+	 * of those attributes to stages based on the jobpair_stage_data.id 
 	 * @param con The connection to make the query on
 	 * @param pairId The id of the pair to get the attributes of
 	 * @return The properties object which holds all the pair's attributes
 	 * @author Tyler Jensen
 	 */
-	protected static Properties getAttributes(Connection con, int pairId) throws Exception {
+	protected static HashMap<Integer,Properties> getAttributes(Connection con, int pairId) throws Exception {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
+			HashMap<Integer,Properties> props= new HashMap<Integer,Properties>();
 			 procedure = con.prepareCall("{CALL GetPairAttrs(?)}");
 			procedure.setInt(1, pairId);					
 			 results = procedure.executeQuery();
 
-			Properties prop = new Properties();
 
 			while(results.next()){
-				prop.put(results.getString("attr_key"), results.getString("attr_value"));				
+				int joblineStageId = results.getInt("jobpair_data");
+				if (!props.containsKey(joblineStageId)) {
+					props.put(joblineStageId, new Properties());
+				}
+				props.get(joblineStageId).put(results.getString("attr_key"), results.getString("attr_value"));				
 			}			
 
-			if(prop.size() <= 0) {
-				prop = null;
-			}
-			return prop;
+			
+			return props;
 		} catch (Exception e) {
 			log.error("getAttributes says "+e.getMessage(),e);
 		} finally {
@@ -598,7 +617,7 @@ public class JobPairs {
 	 * @return The properties object which holds all the pair's attributes
 	 * @author Tyler Jensen
 	 */
-	public static Properties getAttributes(int pairId) {
+	public static HashMap<Integer,Properties> getAttributes(int pairId) {
 		Connection con = null;			
 		log.debug("Calling JobPairs.getAttributes for an individual pair");
 		try {
@@ -650,6 +669,7 @@ public class JobPairs {
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
+				
 				pair.setId(pairId);
 				return pair;
 			}
@@ -876,7 +896,6 @@ public class JobPairs {
 				defaultConfiguration.setName(results.getString("config_name"));
 				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),true));
-				jp.setAttributes(getAttributes(pairId));
 				
 				Status s = new Status();
 				s.setCode(results.getInt("status_code"));
@@ -896,17 +915,28 @@ public class JobPairs {
 			while (results.next()) {
 				JoblineStage stage=resultToStage(results);
 				int configId=results.getInt("config_id");
-				if (configId>0) {
+				//means this stage has no configuration
+				if (configId==-1) {
+					stage.setNoOp(true);
+				}else if (configId>0) {
 					stage.setSolver(Solvers.getSolverByConfig(con, configId,true));
 					stage.setConfiguration(Solvers.getConfiguration(configId));
 				} else {
-					//there was no pipeline stage we could find
+					//otherwise, this is not a noop, but we couldn't find an entry in the pipeline_stages
+					// so we want to take the default solver and config
 					stage.setSolver(defaultSolver);
 					stage.setConfiguration(defaultConfiguration);
 				}
 				stage.getSolver().addConfiguration(stage.getConfiguration());
 
 				jp.addStage(stage);
+			}
+			//last, we get attributes for everything
+			HashMap<Integer,Properties> attrs = getAttributes(pairId);
+			for (JoblineStage stage : jp.getStages()) {
+				if (attrs.containsKey(stage.getId())) {
+					stage.setAttributes(attrs.get(stage.getId()));
+				}
 			}
 			return jp;
 		} catch (Exception e) {
@@ -960,6 +990,7 @@ public class JobPairs {
 		stage.setMaxVirtualMemory(result.getDouble("jobpair_stage_data.max_vmem"));
 		stage.setMaxResidenceSetSize(result.getDouble("jobpair_stage_data.max_res_set"));
 		stage.setStageId(result.getInt("jobpair_stage_data.stage_id"));
+		stage.getStatus().setCode(result.getInt("jobpair_stage_data.status_code"));
 		return stage;
 	}
 

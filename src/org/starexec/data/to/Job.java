@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.jfree.util.Log;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.Util;
 
@@ -158,11 +159,14 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	    Iterator<JobPair> itr = jobPairs.iterator();
 	    while(itr.hasNext()) {
 	    	JobPair pair = itr.next();
-	    	Properties props = pair.getAttributes();
+	    	for (JoblineStage stage : pair.getStages()) {
+	    		Properties props = stage.getAttributes();
+		    	
+		    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
+		    		attrs.addAll(props.stringPropertyNames());
+		    		
+	    	}
 	    	
-	    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
-	    		attrs.addAll(props.stringPropertyNames());
-	    		
 	    }
 	    Log.debug("Returning "+attrs.size()+" unique attr names");
 	    return attrs;

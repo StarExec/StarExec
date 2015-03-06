@@ -232,6 +232,7 @@ CREATE TABLE solver_pipelines (
 	PRIMARY KEY(id)
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
+-- if config_id = -1, then that means that this is a noop entry
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
@@ -267,7 +268,7 @@ CREATE TABLE jobs (
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	completed TIMESTAMP,
 	pre_processor INT,
-	post_processor INT,		
+	post_processor INT, -- might want to delete this column in favor of job_stage_params?
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
@@ -292,9 +293,12 @@ CREATE TABLE job_stage_params (
 	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them?
+	post_processor INT,
 	PRIMARY KEY (job_id,stage_id),
 	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL
+	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,
+	CONSTRAINT job_stage_params_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL
+
 );
 
 
@@ -349,6 +353,7 @@ CREATE TABLE jobpair_stage_data (
 	max_res_set DOUBLE,
 	user_time DOUBLE,
 	system_time DOUBLE,
+	status_code TINYINT DEFAULT 0,
 	PRIMARY KEY (id),
 	KEY(jobpair_id),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
@@ -377,11 +382,12 @@ CREATE TABLE job_pair_completion (
 
 -- All attributes for each job pair
 CREATE TABLE job_attributes (
-	pair_id INT NOT NULL,
+	pair_id INT NOT NULL, -- This column is not strictly necessary, but it might be useful for efficiency
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	job_id INT NOT NULL,
-    PRIMARY KEY (pair_id, attr_key),
+	jobpair_data INT NOT NULL,
+    PRIMARY KEY (jobpair_data, attr_key),
     KEY (job_id),
 	CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );

@@ -22,30 +22,9 @@ $(document).ready(function(){
 		refreshPanels();
 	},30000);
 	
-	
-	
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
 });
-
-
-//gets the selected stage. If there is not one, defaults to 0
-function getSelectedStage() {
-	value = $("#subspaceSummaryStageSelector").val();
-	if (!stringExists(value)) {
-		return "0";
-	}
-	
-	return value;
-}
-
-function setTimeButtonText(){
-	if (useWallclock){
-		$(".changeTime .ui-button-text").html("use CPU time");
-	} else {
-		$(".changeTime .ui-button-text").html("use wall time");
-	}
-}
 
 function setSyncResultsText() {
 	if (syncResults) {
@@ -137,19 +116,6 @@ function initSpaceExplorer() {
 		$("#displayJobSpaceID").text("id  = "+id);
 		reloadTables(id);
 	}).on( "click", "a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
-}
-//Sets the stages dropdown menu with all needed options
-function setMaxStagesDropdown(maximum) {
-	$('.stageSelector').empty();
-	
-	$('.stageSelector').append($("<option></option>").attr("value","0").text("Primary")); 
-	setInputToValue(".stageSelector","0");
-	x=1;
-	while (x<=maximum) {
-		$('.stageSelector').append($("<option></option>").attr("value",x).text(x)); 
-		x=x+1;
-	}
-	
 }
 
 function clearPanels() {

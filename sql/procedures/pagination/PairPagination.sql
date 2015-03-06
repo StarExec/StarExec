@@ -17,7 +17,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						bench_id,
@@ -37,7 +37,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -50,7 +50,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						bench_id,
@@ -68,7 +68,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
@@ -81,7 +81,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						bench_id,
@@ -101,7 +101,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -116,7 +116,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -135,7 +135,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -148,7 +148,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -169,7 +169,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -184,7 +184,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -202,7 +202,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
@@ -215,7 +215,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -236,13 +236,13 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
 				
 				-- Order results depending on what column is being sorted on
-				ORDER BY status_code ASC
+				ORDER BY job_pairs.status_code ASC
 			 
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -251,7 +251,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -270,11 +270,11 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
-				ORDER BY status_code DESC
+				ORDER BY job_pairs.status_code DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 		ELSEIF (_sortColumn=4) THEN
@@ -283,7 +283,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -305,7 +305,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR     job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -320,7 +320,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -339,7 +339,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
@@ -352,7 +352,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -374,7 +374,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -388,7 +388,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -407,7 +407,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
@@ -420,7 +420,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						bench_id,
@@ -440,7 +440,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -455,7 +455,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -474,7 +474,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -486,7 +486,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				SELECT 	job_pairs.id, 
 						config_id,
 						config_name,
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						bench_id,
@@ -506,7 +506,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value			LIKE 	CONCAT('%', _query, '%'))
@@ -521,7 +521,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 						config_id,
 						config_name,
 						
-						status_code,
+						job_pairs.status_code,
 						solver_id,
 						solver_name,
 						
@@ -543,7 +543,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpace(IN _startingRecord INT, IN _rec
 				AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		config_name		LIKE	CONCAT('%', _query, '%')
 				OR		solver_name		LIKE	CONCAT('%', _query, '%')
-				OR		status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		job_pairs.status_code 	LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'))
@@ -566,14 +566,14 @@ CREATE PROCEDURE GetNextPageOfRunningJobPairs(IN _startingRecord INT, IN _record
 			IF (_sortASC = TRUE) THEN
 				SELECT *
 				FROM job_pairs
-				WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
+				WHERE node_id = _id AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3)
 				ORDER BY sge_id ASC
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT *
 				FROM job_pairs
-				WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
+				WHERE node_id = _id AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3)
 				ORDER BY sge_id DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
@@ -589,7 +589,7 @@ CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recor
 					FROM job_pairs
 					-- Where the job_pair is running on the input Queue
 						INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
-					WHERE (enqueued.queue_id = _id AND status_code = 2)
+					WHERE (enqueued.queue_id = _id AND job_pairs.status_code = 2)
 					ORDER BY job_pairs.sge_id ASC
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -598,7 +598,7 @@ CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recor
 					FROM job_pairs
 					-- Where the job_pair is running on the input Queue
 						INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
-					WHERE (enqueued.queue_id = _id AND status_code = 2)
+					WHERE (enqueued.queue_id = _id AND job_pairs.status_code = 2)
 					ORDER BY job_pairs.sge_id DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;

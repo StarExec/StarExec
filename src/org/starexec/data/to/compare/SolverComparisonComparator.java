@@ -89,14 +89,14 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 			String str1=null;
 			String str2=null;
 			 if (column==5) {
-				str1=c1.getSecondPair().getAttributes().getProperty(R.STAREXEC_RESULT);
-				str2=c2.getSecondPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+				str1=c1.getSecondPair().getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=c2.getSecondPair().getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
 			} else if (column==0) {
 				str1=c1.getBenchmark().getName();
 				str2=c2.getBenchmark().getName();
 			} else {
-				str1=c1.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
-				str2=c2.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+				str1=c1.getFirstPair().getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=c2.getFirstPair().getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			return str1.compareToIgnoreCase(str2);

@@ -4,10 +4,11 @@ import java.util.Comparator;
 
 import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.pipelines.JoblineStage;
 
 public class JobPairComparator implements Comparator<JobPair> {
 	private int column; //will specify which field we are using to sort the job pairs
-	
+	private int stageNumber;
 	
 	/**
 	 * Compares the solver names of jp1 and jp2 
@@ -24,25 +25,27 @@ public class JobPairComparator implements Comparator<JobPair> {
 	 * @author Eric Burns
 	 */ 
 	private int compareJobPairStrings(JobPair jp1, JobPair jp2) {
+		JoblineStage stage1=jp1.getStageFromNumber(stageNumber);
+		JoblineStage stage2=jp2.getStageFromNumber(stageNumber);
 		try {
 			String str1=null;
 			String str2=null;
 			if (column==3) {
-				str1=jp1.getStatus().getStatus();
-				str2=jp2.getStatus().getStatus();
+				str1=stage1.getStatus().getStatus();
+				str2=stage2.getStatus().getStatus();
 			}
 			else if (column==5) {
-				str1=jp1.getAttributes().getProperty(R.STAREXEC_RESULT);
-				str2=jp2.getAttributes().getProperty(R.STAREXEC_RESULT);
+				str1=stage1.getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=stage2.getAttributes().getProperty(R.STAREXEC_RESULT);
 			} else if (column==0) {
 				str1=jp1.getBench().getName();
 				str2=jp2.getBench().getName();
 			} else if (column==2) {
-				str1=jp1.getPrimaryConfiguration().getName();
-				str2=jp2.getPrimaryConfiguration().getName();
+				str1=stage1.getConfiguration().getName();
+				str2=stage2.getConfiguration().getName();
 			} else {
-				str1=jp1.getPrimarySolver().getName();
-				str2=jp2.getPrimarySolver().getName();
+				str1=stage1.getSolver().getName();
+				str2=stage2.getSolver().getName();
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			return str1.compareToIgnoreCase(str2);
@@ -92,7 +95,7 @@ public class JobPairComparator implements Comparator<JobPair> {
 	
 	
 	/**
-	 * @param c
+	 * @param c Which column to compare on
 	 * 0 = bench name
 	 * 1 = solver name
 	 * 2 = config name
@@ -103,8 +106,9 @@ public class JobPairComparator implements Comparator<JobPair> {
 	 * 7 completion id
 	 * 8 is cpu time
 	 */
-	public JobPairComparator(int c) {
+	public JobPairComparator(int c, int stage) {
 		column=c;
+		stageNumber=stage;
 	}
 	
 	@Override

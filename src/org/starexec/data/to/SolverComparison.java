@@ -5,9 +5,18 @@ import org.starexec.constants.R;
 public class SolverComparison {
 	private JobPair pair1;
 	private JobPair pair2;
+	
+	/**
+	 * Both pairs are assumed to have only a single stage
+	 * @param p1
+	 * @param p2
+	 * @throws Exception
+	 */
 	public SolverComparison(JobPair p1, JobPair p2) throws Exception {
 		if (p1.getBench().getId()!=p2.getBench().getId()) {
-			throw new Exception("both job pairs in a comparison must have the same benchmark!");
+		}
+		if (p1.getStages().size()!=1 || p2.getStages().size()!=1) {
+			throw new Exception("both pairs in a comparision must have only a single populated stage");
 		}
 		
 		pair1=p1;
@@ -44,8 +53,8 @@ public class SolverComparison {
 	
 	public boolean doResultsMatch() {
 		
-		String result1=pair1.getAttributes().getProperty(R.STAREXEC_RESULT);
-		String result2=pair2.getAttributes().getProperty(R.STAREXEC_RESULT);
+		String result1=pair1.getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
+		String result2=pair2.getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
 		if (result1==null && result2==null) {
 			return true;
 		} else if (result1== null || result2==null) {

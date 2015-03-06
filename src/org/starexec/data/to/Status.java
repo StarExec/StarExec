@@ -34,7 +34,8 @@ public class Status {
 		STATUS_PROCESSING_RESULTS(19),
 		STATUS_PAUSED(20),
 		STATUS_KILLED(21),
-		STATUS_PROCESSING(22);
+		STATUS_PROCESSING(22),
+		STATUS_NOT_REACHED(23); 
 		
 		private int val;
 		private int count;
@@ -119,6 +120,8 @@ public class Status {
 			    return STATUS_KILLED;
 			    case 22:
 			    return STATUS_PROCESSING;
+			    case 23:
+			    return STATUS_NOT_REACHED;
 		    }
 		    return STATUS_UNKNOWN;
 		}
@@ -171,6 +174,8 @@ public class Status {
 		    return "the job was killed, so all job_pairs that were not complete were sent to this status";
 		    case 22:
 		    return "this job is being processed by a new post-processor, and this pair is awaiting processing";
+		    case 23:
+		    return "this stage was not reached because a previous stage had some sort of error";
 	    }
 		return "the job status is not known or has not been set";
 	}
@@ -220,6 +225,8 @@ public class Status {
 		    return "killed";
 		    case 22:
 		    return "awaiting processing";
+		    case 23:
+		    return "stage not reached";
 	    }
 		return "unknown";
 	}

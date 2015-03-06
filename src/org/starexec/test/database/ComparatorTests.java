@@ -98,7 +98,7 @@ public class ComparatorTests extends TestSequence {
 	
 	@Test
 	private void JobPairComparatorTest() {
-		JobPairComparator comp=new JobPairComparator(0);
+		JobPairComparator comp=new JobPairComparator(0,0);
 		for (int x=0;x<100;x++) {
 			String a=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
 			String b=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
@@ -112,7 +112,7 @@ public class ComparatorTests extends TestSequence {
 			p2.setBench(b2);
 			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
 		}
-		comp=new JobPairComparator(1);
+		comp=new JobPairComparator(1,0);
 		for (int x=0;x<100;x++) {
 			String a=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
 			String b=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
@@ -130,7 +130,7 @@ public class ComparatorTests extends TestSequence {
 			st2.setSolver(s2);
 			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
 		}
-		comp=new JobPairComparator(2);
+		comp=new JobPairComparator(2,0);
 		for (int x=0;x<100;x++) {
 			String a=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
 			String b=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
@@ -149,7 +149,7 @@ public class ComparatorTests extends TestSequence {
 			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
 		}
 		
-		comp=new JobPairComparator(4);
+		comp=new JobPairComparator(4,0);
 		for (int x=0;x<100;x++) {
 			int a=rand.nextInt(100)+3;
 			int b=rand.nextInt(100)+3;
@@ -165,7 +165,7 @@ public class ComparatorTests extends TestSequence {
 			Assert.assertTrue(comp.compare(p1, p1)==Double.compare(a, b));
 		}
 		
-		comp=new JobPairComparator(8);
+		comp=new JobPairComparator(8,0);
 		for (int x=0;x<100;x++) {
 			int a=rand.nextInt(100)+3;
 			int b=rand.nextInt(100)+3;

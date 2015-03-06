@@ -34,6 +34,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.SessionUtil;
@@ -726,6 +727,7 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
 	}
 	
+	//TODO: This currently works on the primary stage specifically. 
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false);
@@ -797,7 +799,7 @@ public class RESTHelpers {
     		totalPairsAfterQuery=Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY));
     	}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,totalPairsAfterQuery,attrMap.get(SYNC_VALUE),true,wallclock);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,totalPairsAfterQuery,attrMap.get(SYNC_VALUE),true,wallclock,0);
 	}
 	
 	
@@ -922,7 +924,7 @@ public class RESTHelpers {
 	 * @return
 	 */
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock) {
+			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock, int stageNumber) {
 		
 		
 		try {
@@ -951,7 +953,7 @@ public class RESTHelpers {
 							attrMap.get(SORT_COLUMN), // Column sorted on
 							request.getParameter(SEARCH_QUERY), // Search query
 							jobId, // Parent space id
-							jobSpaceId, configId1,configId2, totals,wallclock);
+							jobSpaceId, configId1,configId2, totals,wallclock,stageNumber);
 			
 			totalComparisons = totals[0];
 
@@ -972,7 +974,7 @@ public class RESTHelpers {
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock) {
+			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock, int stageNumber) {
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
 				Primitive.JOB_PAIR, request);
 		if (null == attrMap) {
@@ -1010,7 +1012,7 @@ public class RESTHelpers {
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
 						jobId, // Parent space id
-						jobSpaceId, configId, totals,type,wallclock);
+						jobSpaceId, configId, totals,type,wallclock,stageNumber);
 		
 		totalJobs = totals[0];
 
@@ -1021,7 +1023,7 @@ public class RESTHelpers {
     
        attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock,stageNumber);
 	}
 
 	/**
@@ -1653,7 +1655,7 @@ public class RESTHelpers {
 	    	return nextPage;
 		}
 	
-	
+	//TODO: This needs to be edited to work by stage
 	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean useWallclock) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
@@ -1697,8 +1699,8 @@ public class RESTHelpers {
         		entry.add(new JsonPrimitive(displayDiff + " s"));
     		}
     		
-    		entry.add(new JsonPrimitive(c.getFirstPair().getStarexecResult()));    	
-    		entry.add(new JsonPrimitive(c.getSecondPair().getStarexecResult()));    		
+    		entry.add(new JsonPrimitive(c.getFirstPair().getPrimaryStarexecResult()));    	
+    		entry.add(new JsonPrimitive(c.getSecondPair().getPrimaryStarexecResult()));    		
     		if (c.doResultsMatch()) {
         		entry.add(new JsonPrimitive(1));    		
     		} else {
@@ -1746,8 +1748,7 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver, boolean useWallclock) {
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver, boolean useWallclock, int stageNumber) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1755,6 +1756,7 @@ public class RESTHelpers {
 		String solverLink=null;
 		String configLink=null;
 		for(JobPair jp : pairs){
+			JoblineStage stage=jp.getStageFromNumber(stageNumber);
     		StringBuilder sb = new StringBuilder();
 			String hiddenJobPairId;
 
@@ -1780,9 +1782,9 @@ public class RESTHelpers {
 	    		sb = new StringBuilder();
 	    		sb.append("<a title=\"");
 	    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-	    		sb.append(jp.getPrimarySolver().getId());
+	    		sb.append(stage.getSolver().getId());
 	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(jp.getPrimarySolver().getName());
+	    		sb.append(stage.getSolver().getName());
 	    		RESTHelpers.addImg(sb);
 				solverLink = sb.toString();
 				
@@ -1790,9 +1792,9 @@ public class RESTHelpers {
 	    		sb = new StringBuilder();
 	    		sb.append("<a title=\"");
 	    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-	    		sb.append(jp.getPrimarySolver().getConfigurations().get(0).getId());
+	    		sb.append(stage.getSolver().getConfigurations().get(0).getId());
 	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(jp.getPrimarySolver().getConfigurations().get(0).getName());
+	    		sb.append(stage.getSolver().getConfigurations().get(0).getName());
 	    		RESTHelpers.addImg(sb);
 				configLink = sb.toString();
 			}
@@ -1801,9 +1803,9 @@ public class RESTHelpers {
 			// Create the status field
     		sb = new StringBuilder();
     		sb.append("<a title=\"");
-    		sb.append(jp.getStatus().getDescription());
+    		sb.append(stage.getStatus().getDescription());
     		sb.append("\">");
-    		sb.append(jp.getStatus().getStatus()+" ("+jp.getStatus().getCode().getVal()+")");
+    		sb.append(stage.getStatus().getStatus()+" ("+stage.getStatus().getCode().getVal()+")");
     		sb.append("</a>");
 			String status = sb.toString();
 
@@ -1818,16 +1820,16 @@ public class RESTHelpers {
     		
     		entry.add(new JsonPrimitive(status));
     		if (useWallclock) {
-    			double displayWC = Math.round(jp.getPrimaryWallclockTime()*100)/100.0;		    	
+    			double displayWC = Math.round(stage.getWallclockTime()*100)/100.0;		    	
         		
         		entry.add(new JsonPrimitive(displayWC + " s"));
     		} else {
-    			double displayCpu = Math.round(jp.getPrimaryCpuTime()*100)/100.0;		    	
+    			double displayCpu = Math.round(stage.getCpuTime()*100)/100.0;		    	
         		
         		entry.add(new JsonPrimitive(displayCpu + " s"));
     		}
     		
-    		entry.add(new JsonPrimitive(jp.getStarexecResult()));    		
+    		entry.add(new JsonPrimitive(stage.getStarexecResult()));    		
     		dataTablePageEntries.add(entry);
     	}
 	    	JsonObject nextPage=new JsonObject();
@@ -2441,7 +2443,7 @@ public class RESTHelpers {
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=solved&sid="
 								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
+								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2452,7 +2454,7 @@ public class RESTHelpers {
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=wrong&sid="
 								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
+								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getIncorrectJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2462,7 +2464,7 @@ public class RESTHelpers {
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=resource&sid="
 								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
+								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getResourceOutJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2472,7 +2474,7 @@ public class RESTHelpers {
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=failed&sid="
 								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
+								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getFailedJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2482,7 +2484,7 @@ public class RESTHelpers {
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
 								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
+								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getUnknown());
 				RESTHelpers.addImg(sb);
@@ -2492,7 +2494,7 @@ public class RESTHelpers {
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=incomplete&sid="
 								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId));
+								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getIncompleteJobPairs());
 				RESTHelpers.addImg(sb);

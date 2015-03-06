@@ -14,14 +14,6 @@ $(document).ready(function(){
 	initializePanels();
 });
 
-function setTimeButtonText(){
-	if (useWallclock){
-		$("#changeTime .ui-button-text").html("use CPU time");
-	} else {
-		$("#changeTime .ui-button-text").html("use wall time");
-	}
-}
-
 function refreshPanels(){
 	for (i=0;i<panelArray.length;i++) {
 		panelArray[i].api().ajax.reload(null,false);

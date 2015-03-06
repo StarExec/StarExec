@@ -9,21 +9,20 @@ $(document).ready(function(){
 	spaceId=getParameterByName('sid');
 	configId=getParameterByName("configid");
 	pairType=getParameterByName("type");
+	stageid=getParameterByName("stagenum");
+	if (stringExists(stageid)) {
+		setSelectedStage(stageid);
+	} else {
+		setSelectedStage("0");
+	}
 	$('.id_100 ').prop('selected',true);
 	$('#pairFilter option[value='+pairType+']').prop('selected',true);
 
 	initUI();
 	initDataTables();
 	setTimeButtonText();	
+	
 });
-
-function setTimeButtonText(){
-	if (useWallclock){
-		$(".changeTime .ui-button-text").html("use CPU time");
-	} else {
-		$(".changeTime .ui-button-text").html("use wall time");
-	}
-}
 
 
 /**
@@ -42,6 +41,14 @@ function initUI(){
 		setTimeButtonText();
 		pairTable.fnDraw(false);
 	});
+	
+	$(".stageSelector").change(function() {
+		//set the value of all .stageSelectors to this one to sync them.
+		//this does not trigger the change event, which is good because it would loop forever
+		$(".stageSelector").val($(this).val());
+		pairTable.fnDraw(false);
+	});
+	
 	$('#pairTbl tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
@@ -120,7 +127,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock,
+			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

@@ -90,7 +90,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js="util/sortButtons, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
+<star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
 	<p id="displayJobID" class="accent">id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
@@ -116,7 +116,7 @@
 						<button id="collapsePanels">Collapse All</button>
 						<button id="openPanels">Open All</button>
 						<button class="changeTime">Use CPU Time</button>
-						<label for="subspaceSummaryStageSelector">Stage: </label>
+						<label class="stageSelectorLabel" for="subspaceSummaryStageSelector">Stage: </label>
 						<select id="subspaceSummaryStageSelector" class="stageSelector">
 							<option value="0">Primary</option>
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
@@ -131,7 +131,7 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
-				<label for="solverSummaryStageSelector">Stage: </label>
+				<label class="stageSelectorLabel" for="solverSummaryStageSelector">Stage: </label>
 				<select id="solverSummaryStageSelector" class="stageSelector">
 						<option value="0">Primary</option>
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
