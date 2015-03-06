@@ -1416,19 +1416,23 @@ public class Jobs {
 	 * @return
 	 */
 	public static List<JobPair> getJobPairsForNextPage(List<JobPair> pairs,int startingRecord,int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery,String type, boolean wallclock, int stageNumber,int[]totals){
-	
+		long a=System.currentTimeMillis();
 		pairs=JobPairs.filterPairsByType(pairs, type,stageNumber);
+		log.debug("filtering pairs by type took "+(System.currentTimeMillis()-a));
+
 		totals[0]=pairs.size();
 		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		log.debug("filtering pairs by query took "+(System.currentTimeMillis()-a));
 
 		totals[1]=pairs.size();
 		if (!wallclock && indexOfColumnSortedBy==4) {
 			indexOfColumnSortedBy=8;
 		}
 		JobPairComparator compare=new JobPairComparator(indexOfColumnSortedBy,stageNumber);
-		return Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
-	
-	
+		List<JobPair> finalPairs= Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
+		log.debug("sorting took "+(System.currentTimeMillis()-a));
+
+		return finalPairs;
 	}
 	
 	/**
@@ -1546,7 +1550,9 @@ public class Jobs {
 		if (searchQuery==null) {
 			searchQuery="";
 		}
+		long a=System.currentTimeMillis();
 		List<JobPair> pairs=Jobs.getJobPairsInJobSpace(jobSpaceId);
+		log.debug("getting all job pairs in the job space took "+(System.currentTimeMillis()-a));
 		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,"all",wallclock,stageNumber,totals);
 		
 	}
