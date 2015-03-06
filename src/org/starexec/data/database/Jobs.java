@@ -736,7 +736,7 @@ public class Jobs {
 
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs=getJobPairsForStatsInJobSpace(jobSpaceId);
+		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(jobSpaceId);
 		
 		
 		//compiles pairs into solver stats
@@ -1360,7 +1360,7 @@ public class Jobs {
 	 */
 	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
 			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock, int stageNumber) {
-		List<JobPair> pairs=Jobs.getJobPairsForStatsInJobSpace(jobSpaceId);
+		List<JobPair> pairs=Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);
 		List<JobPair> pairs1=new ArrayList<JobPair>();
 		List<JobPair> pairs2=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
@@ -1400,7 +1400,36 @@ public class Jobs {
 
 	}
 	
+	/**
+	 * Given a list of job pairs, filters and sorts them according to the given parameters and returns the
+	 * set to display
+	 * @param pairs
+	 * @param startingRecord
+	 * @param recordsPerPage
+	 * @param isSortedASC
+	 * @param indexOfColumnSortedBy
+	 * @param searchQuery
+	 * @param type
+	 * @param wallclock
+	 * @param stageNumber
+	 * @param totals
+	 * @return
+	 */
+	public static List<JobPair> getJobPairsForNextPage(List<JobPair> pairs,int startingRecord,int recordsPerPage, boolean isSortedASC,int indexOfColumnSortedBy, String searchQuery,String type, boolean wallclock, int stageNumber,int[]totals){
 	
+		pairs=JobPairs.filterPairsByType(pairs, type,stageNumber);
+		totals[0]=pairs.size();
+		pairs=JobPairs.filterPairs(pairs, searchQuery);
+
+		totals[1]=pairs.size();
+		if (!wallclock && indexOfColumnSortedBy==4) {
+			indexOfColumnSortedBy=8;
+		}
+		JobPairComparator compare=new JobPairComparator(indexOfColumnSortedBy,stageNumber);
+		return Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
+	
+	
+	}
 	
 	/**
 	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
@@ -1420,22 +1449,11 @@ public class Jobs {
 	 */
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
 			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, int[] totals, String type, boolean wallclock, int stageNumber) {
-		long a=System.currentTimeMillis();
 		//get all of the pairs first, then carry out sorting and filtering
 		//PERFMORMANCE NOTE: this call takes over 99.5% of the total time this function takes
 		List<JobPair> pairs=Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId,jobSpaceId,configId,stageNumber);
-		log.debug("getting all the pairs by config in job space took "+(System.currentTimeMillis()-a));
-		pairs=JobPairs.filterPairsByType(pairs, type,stageNumber);
-		totals[0]=pairs.size();
-		pairs=JobPairs.filterPairs(pairs, searchQuery);
-		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
-
-		totals[1]=pairs.size();
-		if (!wallclock && indexOfColumnSortedBy==4) {
-			indexOfColumnSortedBy=8;
-		}
-		JobPairComparator compare=new JobPairComparator(indexOfColumnSortedBy,stageNumber);
-		return Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
+		
+		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,type,wallclock,stageNumber,totals);
 	}
 	
 	/**
@@ -1455,8 +1473,7 @@ public class Jobs {
 	 * @param jobSpaceId
 	 * @return
 	 */
-	//TODO: This currently works only on primary stages-- probably needs to be updated
-	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId, int jobId) {
+	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId, int jobId, int stageNumber) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -1464,40 +1481,34 @@ public class Jobs {
 		HashMap<Integer, Integer> benchmarksCount=new HashMap<Integer,Integer>(); //will store the number of pairs every benchmark has
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetCompletedJobPairsInJobSpace(?)}");
-			procedure.setInt(1, jobSpaceId);
-			results=procedure.executeQuery();
+			//first, get all the completed pairs in the space
+			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId);
+			JobPairs.filterPairsByType(pairs, "complete", stageNumber);
 			
-			pairs=getJobPairsForDataTable(jobId,results,false,true);
+			//then, filter them down to the synced pairs
+			for (JobPair p : pairs) {
+				solverConfigPairs.add(p.getPrimarySolver().getId()+":"+p.getPrimaryConfiguration().getId());
+				if (!benchmarksCount.containsKey(p.getBench().getId())) {
+					benchmarksCount.put(p.getBench().getId(), 1);
+				} else {
+					benchmarksCount.put(p.getBench().getId(), 1+benchmarksCount.get(p.getBench().getId()));
+				}
+			}
 			
+			//now, we exclude pairs that have benchmarks where the benchmark count is not equal to the solver/config count
+			
+			List<JobPair> returnList=new ArrayList<JobPair>();
+			int solverCount=solverConfigPairs.size();
+			for (JobPair p : pairs) {
+				if (benchmarksCount.get(p.getBench().getId())== solverCount) {
+					returnList.add(p);
+				}
+			}
+			return returnList;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
-			return null;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
-		for (JobPair p : pairs) {
-			solverConfigPairs.add(p.getPrimarySolver().getId()+":"+p.getPrimaryConfiguration().getId());
-			if (!benchmarksCount.containsKey(p.getBench().getId())) {
-				benchmarksCount.put(p.getBench().getId(), 1);
-			} else {
-				benchmarksCount.put(p.getBench().getId(), 1+benchmarksCount.get(p.getBench().getId()));
-			}
-		}
-		
-		//now, we exclude pairs that have benchmarks where the benchmark count is not equal to the solver/config count
-		
-		List<JobPair> returnList=new ArrayList<JobPair>();
-		int solverCount=solverConfigPairs.size();
-		for (JobPair p : pairs) {
-			if (benchmarksCount.get(p.getBench().getId())== solverCount) {
-				returnList.add(p);
-			}
-		}
-		return returnList;
+		return null;
 	}
 	/**
 	 * Gets the JobPairs necessary to make the next page of a DataTable of synchronized job pairs in a specific job space
@@ -1512,20 +1523,9 @@ public class Jobs {
 	 * @param totals Must be a size 2 array. The first slot will have the number of results before the query, and the second slot will have the number of results after the query
 	 * @return
 	 */
-	//TODO: This is currently for the primary stage only. Is that what we want?
-	public static List<JobPair> getSynchronizedJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, boolean wallclock, int[] totals) {
-		long a=System.currentTimeMillis();
-		List<JobPair> pairs=Jobs.getSynchronizedPairsInJobSpace(jobSpaceId, jobId);
-		log.debug("getting synced pairs took "+(System.currentTimeMillis()-a));
-		totals[0]=pairs.size();
-		pairs=JobPairs.filterPairs(pairs, searchQuery);
-		log.debug("filtering pairs took "+(System.currentTimeMillis()-a));
-		totals[1]=pairs.size();
-		if (!wallclock && indexOfColumnSortedBy==4) {
-			indexOfColumnSortedBy=8;
-		}
-		Comparator<JobPair> compare=new JobPairComparator(indexOfColumnSortedBy,0);
-		return Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
+	public static List<JobPair> getSynchronizedJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, boolean wallclock,int stageNumber, int[] totals) {
+		List<JobPair> pairs=Jobs.getSynchronizedPairsInJobSpace(jobSpaceId, jobId,stageNumber);
+		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,"all",wallclock,stageNumber,totals);
 	}
 	
 	/**
@@ -1542,41 +1542,13 @@ public class Jobs {
 	 * @author Todd Elvers
 	 */
 	
-	//TODO: Usage?
-	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
+	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock, int[] totals) {
 		if (searchQuery==null) {
 			searchQuery="";
 		}
-		try {
-			
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?,?)}");
-				
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setBoolean(3, isSortedASC);
-			procedure.setString(4, searchQuery);
-			procedure.setInt(5,jobSpaceId);
-			procedure.setInt(6,indexOfColumnSortedBy);
-
-			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
-			
-				
-			
-			return jobPairs;
-		} catch (Exception e){			
-			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
+		List<JobPair> pairs=Jobs.getJobPairsInJobSpace(jobSpaceId);
+		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,"all",wallclock,stageNumber,totals);
+		
 	}
 	
 	/**
@@ -1704,6 +1676,52 @@ public class Jobs {
 		return false;
 	}
 	
+	/**
+	 * Returns all of the job pairs in a given job space, populated with all the fields necessary
+	 * to display in a SolverStats table. All job pair stages are obtained
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
+	 * @return A list of job pairs for the given job for which the solver is in the given space
+	 * @author Eric Burns
+	 */
+	public static List<JobPair> getJobPairsInJobSpace(int jobSpaceId) {
+		Connection con = null;
+		ResultSet results = null;
+		CallableStatement procedure = null;
+		log.debug("called with jobSpaceId = "+ jobSpaceId);
+		try {
+			Spaces.updateJobSpaceClosureTable(jobSpaceId);
+
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL GetJobPairsInJobSpace(?)}");
+			
+			procedure.setInt(1,jobSpaceId);
+			results = procedure.executeQuery();
+			
+			List<JobPair> pairs=processStatResults(results);
+			
+			
+			
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpace(?)}");
+			procedure.setInt(1,jobSpaceId);
+			results=procedure.executeQuery();
+			if (populateJobPairStages(pairs,results)) {
+				return pairs;
+			} 
+		} catch (Exception e) {
+			log.error("getPairsDetailedForStatsInSpace says "+e.getMessage(),e);
+			
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+			
+		}	
+		return null;
+	}
+	
 	
 	/**
 	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
@@ -1713,7 +1731,7 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsForStatsInJobSpace(int jobSpaceId) {
+	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1833,7 +1851,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {			
 			con = Common.getConnection();	
-			List<JobPair> pairs = Jobs.getJobPairsForStatsInJobSpace(jobSpaceId);
+			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);
 			List<JobPair> filteredPairs=new ArrayList<JobPair>();
 			for (JobPair pair: pairs) {
 				JoblineStage stage=pair.getStageFromNumber(stageNumber);
@@ -1866,7 +1884,7 @@ public class Jobs {
 	 */
 	public static List<JobPair> getJobPairsForSolverComparisonGraph(int jobSpaceId, int configId, int stageNumber) {
 		try {			
-			List<JobPair> pairs = Jobs.getJobPairsForStatsInJobSpace(jobSpaceId);
+			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);
 			List<JobPair> filteredPairs=new ArrayList<JobPair>();
 			
 			for (JobPair jp : pairs) {

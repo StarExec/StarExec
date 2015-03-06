@@ -728,7 +728,7 @@ public class RESTHelpers {
 	}
 	
 	//TODO: This currently works on the primary stage specifically. 
-	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
 		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false);
 
@@ -762,6 +762,8 @@ public class RESTHelpers {
 		int totalPairsAfterQuery=0;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
+		int[] totals = new int[2];
+
 		if (!syncResults) {
 			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
 	    			attrMap.get(STARTING_RECORD),						// Record to start at  
@@ -769,18 +771,21 @@ public class RESTHelpers {
 	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
 	    			attrMap.get(SORT_COLUMN), 							// Column sorted on
 	    			request.getParameter(SEARCH_QUERY), 				// Search query
-	    			jobId,													// Parent space id
-	    			jobSpaceId	
+	    															
+	    			jobSpaceId,
+	    			stageNumber,
+	    			wallclock,
+	    			totals
 			);
 		} else {
-			int[] totals = new int[2];
 			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),
 					attrMap.get(RECORDS_PER_PAGE), 
 					attrMap.get(SORT_DIRECTION) == ASC ? true : false,
 							attrMap.get(SORT_COLUMN),
 							request.getParameter(SEARCH_QUERY),
 							jobId, jobSpaceId, 
-							wallclock, 
+							wallclock,
+							stageNumber,
 							totals);
 			totalJobPairs=totals[0];
 			totalPairsAfterQuery=totals[1];

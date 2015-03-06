@@ -970,7 +970,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults,
+			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request

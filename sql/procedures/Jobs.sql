@@ -282,34 +282,20 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 		WHERE attr_key=_attrName AND job_id=_jobId;
 	END  //
 
-
--- Gets all the job pairs for a given job in a particular space
+-- Gets all the job pairs in a job space. No stages are retrieved
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetCompletedJobPairsInJobSpace;
-CREATE PROCEDURE GetCompletedJobPairsInJobSpace(IN _jobSpaceId INT)
+DROP PROCEDURE IF EXISTS GetJobPairsInJobSpace;
+CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT)
 	BEGIN
-		SELECT job_pairs.id, 
-						config_id,
-						config_name,
-						status_code,
-						solver_id,
-						solver_name,
-						bench_id,
-						bench_name,
-						job_attributes.attr_value AS result,
-						completion_id,
-						jobpair_stage_data.wallclock,
-						jobpair_stage_data.cpu
-		FROM job_pairs 				
-		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.attr_key="starexec-result")
-		JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
-		JOIN jobpair_stage_data ON jobpair_stage_data.id=job_pairs.primary_jobpair_data
-
-		WHERE job_space_id =_jobSpaceId AND status_code=7;
+		SELECT status_code,solver_name,config_name,solver_id,config_id,
+		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name,
+		completion_id
+		FROM job_pairs 		
+		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
+		WHERE job_space_id=_jobSpaceId;
 	END //
 	
-
--- Gets all the job pairs for a given job in a particular space
+-- Gets all the job pairs in a job space hierarchy. No stages are retrieved
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
@@ -323,6 +309,23 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 		WHERE ancestor=_jobSpaceId;
 	END //
 
+-- Gets all the stages of job pairs in a particular job space
+-- TODO: This notion of expected result is not correct for any stage except the primary stage
+DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpace;
+CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
+	BEGIN
+		SELECT job_pairs.id AS pair_id,pipeline_stages.solver_id,pipeline_stages.solver_name, jobpair_stage_data.status_code,
+		pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
+		jobpair_stage_data.wallclock AS wallclock,job_pairs.id,
+		bench_attributes.attr_value AS expected,
+		job_attributes.attr_value AS result
+		FROM job_pairs 		
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.id and job_attributes.attr_key="starexec-result")
+		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
+		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
+		WHERE job_space_id=_jobSpaceId;
+	END //
 	
 -- Gets all the stages of job pairs in a particular job space
 -- TODO: This notion of expected result is not correct for any stage except the primary stage
