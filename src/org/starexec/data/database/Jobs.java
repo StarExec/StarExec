@@ -1395,8 +1395,8 @@ public class Jobs {
 		comparisons=JobPairs.filterComparisons(comparisons, searchQuery);
 
 		totals[1]=comparisons.size();
-		SolverComparisonComparator compare=new SolverComparisonComparator(indexOfColumnSortedBy,wallclock);
-		return Util.handlePagination(comparisons, compare, startingRecord, recordsPerPage, isSortedASC);
+		SolverComparisonComparator compare=new SolverComparisonComparator(indexOfColumnSortedBy,wallclock,isSortedASC);
+		return Util.handlePagination(comparisons, compare, startingRecord, recordsPerPage);
 
 	}
 	
@@ -1428,8 +1428,8 @@ public class Jobs {
 		if (!wallclock && indexOfColumnSortedBy==4) {
 			indexOfColumnSortedBy=8;
 		}
-		JobPairComparator compare=new JobPairComparator(indexOfColumnSortedBy,stageNumber);
-		List<JobPair> finalPairs= Util.handlePagination(pairs, compare, startingRecord, recordsPerPage, isSortedASC);
+		JobPairComparator compare=new JobPairComparator(indexOfColumnSortedBy,stageNumber,isSortedASC);
+		List<JobPair> finalPairs= Util.handlePagination(pairs, compare, startingRecord, recordsPerPage);
 		log.debug("sorting took "+(System.currentTimeMillis()-a));
 
 		return finalPairs;

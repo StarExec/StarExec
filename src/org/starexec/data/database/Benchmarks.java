@@ -2781,8 +2781,8 @@ public class Benchmarks {
 		benchmarks=Benchmarks.filterBenchmarks(benchmarks, searchQuery);
 
 		totals[1]=benchmarks.size();
-		BenchmarkComparator compare=new BenchmarkComparator(indexOfColumnSortedBy);
-		return Util.handlePagination(benchmarks, compare, startingRecord, recordsPerPage, isSortedASC);
+		BenchmarkComparator compare=new BenchmarkComparator(indexOfColumnSortedBy,isSortedASC);
+		return Util.handlePagination(benchmarks, compare, startingRecord, recordsPerPage);
 
 	}
 }

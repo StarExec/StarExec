@@ -5,6 +5,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.*;
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
 	private int column; //will specify which field we are using to sort the job pairs
+	private boolean asc;
 	private boolean isWallclock;
 	
 	/**
@@ -20,9 +21,10 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	 * 6 Results-match column
 	 */
 	
-	public SolverComparisonComparator(int c, boolean w) {
+	public SolverComparisonComparator(int c, boolean w, boolean a) {
 		column=c;
 		isWallclock=w;
+		asc=a;
 	}
 	
 	
@@ -120,6 +122,11 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	
 	@Override
 	public int compare(SolverComparison o1, SolverComparison o2) {
+		if (!asc) {
+			SolverComparison temp=o1;
+			o1=o2;
+			o2=temp;
+		}
 		if (column==0 || column==4 || column==5) {
 			return compareSolverComparisonStrings(o1,o2);
 		} else {

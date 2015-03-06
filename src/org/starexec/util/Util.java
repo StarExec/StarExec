@@ -819,12 +819,8 @@ public class Util {
      * @return
      */
     
-    public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records, boolean asc) {
+    public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records) {
     	Collections.sort(arr,compare);
-
-		if (!asc) {
-			Collections.reverse(arr);
-		}
 
 		List<T> returnList=new ArrayList<T>();
 		if (start>=arr.size()) {

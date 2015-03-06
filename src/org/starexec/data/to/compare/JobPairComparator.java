@@ -4,12 +4,13 @@ import java.util.Comparator;
 
 import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.pipelines.JoblineStage;
 
 public class JobPairComparator implements Comparator<JobPair> {
 	private int column; //will specify which field we are using to sort the job pairs
 	private int stageNumber;
-	
+	private boolean asc;
 	/**
 	 * Compares the solver names of jp1 and jp2 
 	 * @param jp1 The first job pair
@@ -106,13 +107,19 @@ public class JobPairComparator implements Comparator<JobPair> {
 	 * 7 completion id
 	 * 8 is cpu time
 	 */
-	public JobPairComparator(int c, int stage) {
+	public JobPairComparator(int c, int stage, boolean a) {
 		column=c;
 		stageNumber=stage;
+		asc=a;
 	}
 	
 	@Override
 	public int compare(JobPair o1, JobPair o2) {
+		if (!asc) {
+			JobPair temp=o1;
+			o1=o2;
+			o2=temp;
+		}
 		if (column!=4 &&column!=6 &&column!=7) {
 			return compareJobPairStrings(o1,o2);
 		} else {
