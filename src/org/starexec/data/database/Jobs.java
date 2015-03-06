@@ -1598,7 +1598,7 @@ public class Jobs {
 	 * @param results
 	 * @return
 	 */
-	public static boolean populateJobPairStages(List<JobPair> pairs, ResultSet results) {
+	public static boolean populateJobPairStages(List<JobPair> pairs, ResultSet results, boolean getExpectedResult) {
 		
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
@@ -1659,11 +1659,14 @@ public class Jobs {
 				if (result!=null) {
 					p.put(R.STAREXEC_RESULT, result);
 				}
-				String expected=results.getString("expected");
-				if (expected!=null) {
-					p.put(R.EXPECTED_RESULT, expected);
+				if (getExpectedResult) {
+					String expected=results.getString("expected");
+					if (expected!=null) {
+						p.put(R.EXPECTED_RESULT, expected);
 
+					}
 				}
+				
 				stage.setAttributes(p);
 				
 				
@@ -1715,7 +1718,7 @@ public class Jobs {
 			results=procedure.executeQuery();
 			log.debug("executing query 2 took "+(System.currentTimeMillis()-a));
 
-			if (populateJobPairStages(pairs,results)) {
+			if (populateJobPairStages(pairs,results,false)) {
 				log.debug("processing query 2 took "+(System.currentTimeMillis()-a));
 
 				return pairs;
@@ -1765,7 +1768,7 @@ public class Jobs {
 			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpaceHierarchy(?)}");
 			procedure.setInt(1,jobSpaceId);
 			results=procedure.executeQuery();
-			if (populateJobPairStages(pairs,results)) {
+			if (populateJobPairStages(pairs,results,true)) {
 				return pairs;
 			} 
 		} catch (Exception e) {

@@ -317,12 +317,10 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 		SELECT job_pairs.id AS pair_id,pipeline_stages.solver_id,pipeline_stages.solver_name, jobpair_stage_data.status_code,
 		pipeline_stages.config_id,pipeline_stages.config_name,jobpair_stage_data.cpu,pipeline_stages.stage_id,
 		jobpair_stage_data.wallclock AS wallclock,job_pairs.id,
-		bench_attributes.attr_value AS expected,
 		job_attributes.attr_value AS result
 		FROM job_pairs 		
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.id and job_attributes.attr_key="starexec-result")
-		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		LEFT JOIN pipeline_stages ON jobpair_stage_data.stage_id=pipeline_stages.stage_id
 		WHERE job_space_id=_jobSpaceId;
 	END //
