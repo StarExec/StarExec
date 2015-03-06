@@ -1608,7 +1608,6 @@ public class Jobs {
 		HashMap<Integer,JobPair> idsToPairs = new HashMap<Integer,JobPair>();
 		try {
 			for(JobPair pair : pairs) {
-				log.debug("found a pair with the following id ="+pair.getId());
 				idsToPairs.put(pair.getId(), pair);
 			}
 			
@@ -1691,31 +1690,37 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<JobPair> getJobPairsInJobSpace(int jobSpaceId) {
+		
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
-		log.debug("called with jobSpaceId = "+ jobSpaceId);
+		log.debug("called getJobPairsInJobSpace with jobSpaceId = "+ jobSpaceId);
 		try {
-			Spaces.updateJobSpaceClosureTable(jobSpaceId);
-
+			long a=System.currentTimeMillis();
 			con=Common.getConnection();
 			procedure = con.prepareCall("{CALL GetJobPairsInJobSpace(?)}");
 			
 			procedure.setInt(1,jobSpaceId);
 			results = procedure.executeQuery();
-			
+			log.debug("executing query 1 took "+(System.currentTimeMillis()-a));
 			List<JobPair> pairs=processStatResults(results);
 			
-			
+			log.debug("processing query 1 took "+(System.currentTimeMillis()-a));
+
 			
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpace(?)}");
 			procedure.setInt(1,jobSpaceId);
 			results=procedure.executeQuery();
+			log.debug("executing query 2 took "+(System.currentTimeMillis()-a));
+
 			if (populateJobPairStages(pairs,results)) {
+				log.debug("processing query 2 took "+(System.currentTimeMillis()-a));
+
 				return pairs;
 			} 
+
 		} catch (Exception e) {
 			log.error("getPairsDetailedForStatsInSpace says "+e.getMessage(),e);
 			
