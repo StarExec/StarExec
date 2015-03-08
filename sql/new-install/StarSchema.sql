@@ -238,9 +238,6 @@ CREATE TABLE pipeline_stages (
 	pipeline_id INT NOT NULL,
 	config_id INT NOT NULL,
 	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
-	solver_name VARCHAR(128), -- These columns are redundant, but they allow us to keep stages even with deleted configs
-	config_name VARCHAR(128),
-	solver_id INT,
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE
 );
@@ -313,11 +310,6 @@ CREATE TABLE job_pairs (
 	sge_id INT,
 	bench_id INT,
 	bench_name VARCHAR(255),
-	config_id INT,-- these represent the config and solver of the "primary" elements for this jobline. 
-				  -- They are redundant with data in other tables, but they make sorting and filtering overwhelmingly faster
-	solver_id INT,
-	config_name VARCHAR(255),
-	solver_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
 	queuesub_time TIMESTAMP DEFAULT 0,
@@ -331,10 +323,7 @@ CREATE TABLE job_pairs (
 	primary_jobpair_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.stage_number
 	PRIMARY KEY(id),
 	KEY(sge_id),
-	KEY (job_space_id, config_id),
-	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
-	KEY (job_space_id, config_name),
 	KEY (node_id, status_code),
 --	KEY (status_code), -- TODO: Do we actually want this change?
 	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
@@ -354,6 +343,15 @@ CREATE TABLE jobpair_stage_data (
 	user_time DOUBLE,
 	system_time DOUBLE,
 	status_code TINYINT DEFAULT 0,
+	solver_name VARCHAR(128), -- These columns are redundant, but they allow us to keep stages even with deleted configs
+	config_name VARCHAR(128),
+	solver_id INT,
+	config_id INT,
+	job_space_id INT,
+	KEY (job_space_id, config_id),
+	KEY (job_space_id, solver_name),
+	-- KEY (job_space_id, bench_name),
+	KEY (job_space_id, config_name),
 	PRIMARY KEY (jobpair_id,stage_number),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL

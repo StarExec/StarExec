@@ -727,10 +727,20 @@ public class RESTHelpers {
 		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
 	}
 	
-	//TODO: This currently works on the primary stage specifically. 
+	/**
+	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
+	 * 
+	 * @param jobId The ID of the job
+	 * @param jobSpaceId The ID of the job space
+	 * @param request
+	 * @param wallclock True to use wallclock time, false to use CPU time
+	 * @param syncResults If true, excludes job pairs for which the benchmark has not been worked on by every solver in the space
+	 * @param stageNumber If <=0, gets the primary stage
+	 * @return
+	 */
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
-		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace");
-		int totalJobPairs = Jobs.getJobPairCountInJobSpace(jobSpaceId,false);
+		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
+		int totalJobPairs = Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId,stageNumber);
 
 		if (totalJobPairs>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them
@@ -775,7 +785,7 @@ public class RESTHelpers {
 	    			jobSpaceId,
 	    			stageNumber,
 	    			wallclock,
-	    			totals
+	    			jobId
 			);
 		} else {
 			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),
@@ -801,7 +811,7 @@ public class RESTHelpers {
 			totalPairsAfterQuery=totalJobPairs;
     	} 
     	else {
-    		totalPairsAfterQuery=Jobs.getJobPairCountInJobSpace(jobSpaceId, request.getParameter(SEARCH_QUERY));
+    		totalPairsAfterQuery=Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId, request.getParameter(SEARCH_QUERY),stageNumber);
     	}
 
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,totalPairsAfterQuery,attrMap.get(SYNC_VALUE),true,wallclock,0);

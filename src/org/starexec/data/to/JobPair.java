@@ -40,10 +40,7 @@ public class JobPair extends Identifiable {
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
 							  //the job is initiated to the space the benchmark is in
-	
-	//these defaults are only used temporarily when there is some stage without a set solver and configuration
-	private Solver defaultSolver=null;
-	private Configuration defaultConfiguration=null;
+
 	
 	//the inputs to this job pair, excluding the primary benchmark (in other words, the dependencies stored in the
 	//jobpair_inputs table
@@ -377,21 +374,7 @@ public class JobPair extends Identifiable {
 		this.sandboxNum = sandboxNum;
 	}
 
-	public Solver getDefaultSolver() {
-		return defaultSolver;
-	}
-
-	public void setDefaultSolver(Solver defaultSolver) {
-		this.defaultSolver = defaultSolver;
-	}
-
-	public Configuration getDefaultConfiguration() {
-		return defaultConfiguration;
-	}
-
-	public void setDefaultConfiguration(Configuration defaultConfiguration) {
-		this.defaultConfiguration = defaultConfiguration;
-	}
+	
 
 	public List<Integer> getBenchInputs() {
 		return benchInputs;

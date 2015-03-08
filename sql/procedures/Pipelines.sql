@@ -38,11 +38,8 @@ CREATE PROCEDURE AddPipeline(IN _uid INT, IN _name VARCHAR(128), OUT _id INT)
 DROP PROCEDURE IF EXISTS AddPipelineStage;
 CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _cid INT, IN _keep BOOLEAN, OUT _id INT)
 	BEGIN
-		INSERT INTO pipeline_stages (pipeline_id, config_id, keep_output,solver_name,config_name,solver_id)
-		VALUES (_pid, _cid,_keep,
-		(SELECT solvers.name FROM solvers JOIN configurations ON configurations.solver_id=solvers.id WHERE configurations.id=_cid),
-		(SELECT name FROM configurations WHERE id=_cid),
-		(SELECT solvers.id FROM solvers JOIN configurations ON configurations.solver_id=solvers.id WHERE configurations.id=_cid));
+		INSERT INTO pipeline_stages (pipeline_id, config_id, keep_output)
+		VALUES (_pid, _cid,_keep);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 

@@ -68,18 +68,20 @@ public class JobPairs {
 	 * @param con
 	 * @return
 	 */
-	private static boolean addJobPairStage(int pairId, int stageId,int stageNumber, boolean primary, Connection con) {
+	private static boolean addJobPairStage(int pairId, int stageId,int stageNumber, boolean primary,Solver s, Configuration c, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			log.debug("the primary is ");
 			log.debug(primary);
-			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, pairId);
 			procedure.setInt(2,stageId);
 			procedure.setInt(3,stageNumber);
 			procedure.setBoolean(4, primary);
-			
-
+			procedure.setInt(5, s.getId());
+			procedure.setString(6,s.getName());
+			procedure.setInt(7,c.getId());
+			procedure.setString(8,c.getName());
 			// Update the pair's ID so it can be used outside this method
 			procedure.executeUpdate();
 			
@@ -117,17 +119,17 @@ public class JobPairs {
 			procedure.setString(9,pair.getBench().getName());
 			procedure.setInt(10,pair.getPrimarySolver().getId());
 			// The procedure will return the pair's new ID in this parameter
-			procedure.registerOutParameter(11, java.sql.Types.INTEGER);	
+			procedure.setInt(11,pair.getPrimaryStageNumber());
+			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
 		
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(11));
-			int primStage=pair.getPrimaryStage().getStageId();
+			pair.setId(procedure.getInt(12));
 
 			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
 				JoblineStage  stage= pair.getStageFromNumber(stageNumber);
-				addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,stage.getStageId()==primStage,con);
+				addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),con);
 			}
 			for (int i=0;i<pair.getBenchInputs().size();i++) {
 				addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);
@@ -533,46 +535,7 @@ public class JobPairs {
 		return filteredPairs;
 	}
 	
-	/**
-	 * This is a helper function for transferOutputFilesToNewDirectory. It should 
-	 * not be used for anything else
-	 * @return A list of job pairs with the necessary fields popoulated
-	 * @author Eric Burns
-	 */
 	
-	private static List<JobPair> getAllPairsForMovingOutputFiles() {
-		Connection con=null;
-		ResultSet results=null;
-		CallableStatement procedure=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetAllPairsShallow()}");
-			results=procedure.executeQuery();
-			List<JobPair> pairs = new ArrayList<JobPair>();
-			while (results.next()) {
-				JobPair pair=new JobPair();
-				pair.setPath(results.getString("path"));
-				pair.setJobId(results.getInt("job_id"));
-				Solver s=pair.getPrimarySolver();
-				s.setName(results.getString("solver_name"));
-				Configuration c=pair.getPrimaryConfiguration();
-				c.setName(results.getString("config_name"));
-				Benchmark b=pair.getBench();
-				b.setName(results.getString("bench_name"));
-				
-				pair.setId(results.getInt("user_id"));
-				pairs.add(pair);
-			}
-			return pairs;
-		} catch (Exception e) {
-			log.debug("getAllPairsShallow says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
-	}
 	
 	
 	/**

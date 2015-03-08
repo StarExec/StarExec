@@ -117,19 +117,13 @@ CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
 		WHERE id=_jobPairId;
 	END //
 	
-DROP PROCEDURE IF EXISTS GetAllPairsShallow;
-CREATE PROCEDURE GetAllPairsShallow()
-	BEGIN
-		SELECT job_id,path,solver_name,config_name,bench_name,jobs.user_id FROM job_pairs
-			JOIN jobs ON jobs.id=job_pairs.job_id;
-	END //
-	
 -- Gets back only the fields of a job pair that are necessary to determine where it is stored on disk
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
-		SELECT job_id,path,solver_name,config_name,bench_name FROM job_pairs
+		SELECT job_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name FROM job_pairs
+		JOIN jobpair_stage_data ON jobpair_stage_data.id = job_pairs.primary_jobpair_data
 		WHERE job_pairs.id=_pairId;
 	END //
 	
