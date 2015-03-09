@@ -68,7 +68,7 @@ public class JobPairs {
 	 * @param con
 	 * @return
 	 */
-	private static boolean addJobPairStage(int pairId, int stageId,int stageNumber, boolean primary,Solver s, Configuration c, Connection con) {
+	private static boolean addJobPairStage(int pairId, int stageId,int stageNumber, boolean primary,Solver s, Configuration c,int jobSpaceId, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			log.debug("the primary is ");
@@ -82,6 +82,7 @@ public class JobPairs {
 			procedure.setString(6,s.getName());
 			procedure.setInt(7,c.getId());
 			procedure.setString(8,c.getName());
+			procedure.setInt(9,jobSpaceId);
 			// Update the pair's ID so it can be used outside this method
 			procedure.executeUpdate();
 			
@@ -126,7 +127,7 @@ public class JobPairs {
 
 			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
 				JoblineStage  stage= pair.getStageFromNumber(stageNumber);
-				addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),con);
+				addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),pair.getJobSpaceId(),con);
 			}
 			for (int i=0;i<pair.getBenchInputs().size();i++) {
 				addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);

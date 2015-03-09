@@ -85,7 +85,7 @@ CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
 		WHERE jobpair_id=_id
 		ORDER BY jobpair_stage_data.stage_id ASC;
 	END //
--- Gets the job pair with the given id
+-- Gets the job pair with the given id. Only gets the primary stage!
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairById;
 CREATE PROCEDURE GetJobPairById(IN _Id INT)
@@ -93,7 +93,8 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 		SELECT *
 		FROM job_pairs 
 		LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
-		WHERE job_pairs.id=_Id;
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+		WHERE job_pairs.id=_Id AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //
 	
 -- Retrieves all attributes for a job pair 
