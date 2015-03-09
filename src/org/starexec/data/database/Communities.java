@@ -347,7 +347,6 @@ public class Communities {
 			    List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
 				
 				if(settings.size()>0){
-					//TODO: Do we want to have more than one set of settings for a community?
 					return settings.get(0);
 				}
 				else {

@@ -285,7 +285,7 @@ CREATE TABLE jobs (
 -- These are essentially overrides for the columns in the jobs table
 CREATE TABLE job_stage_params (
 	job_id INT,
-	stage_id INT,
+	stage_number INT,
 	cpuTimeout INT, 
 	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,

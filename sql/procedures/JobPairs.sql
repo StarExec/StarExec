@@ -123,8 +123,8 @@ DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
 		SELECT job_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name FROM job_pairs
-		JOIN jobpair_stage_data ON jobpair_stage_data.id = job_pairs.primary_jobpair_data
-		WHERE job_pairs.id=_pairId;
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+		WHERE job_pairs.id=_pairId and jobpair_stage_data.stage_number = job_pairs.primary_jobpair_data;
 	END //
 	
 -- Gets every pair_id and processor_id for pairs awiting processing
@@ -134,7 +134,7 @@ CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 		SELECT post_processor ,job_pairs.id AS pairid, jobpair_stage_data.stage_number AS stageNumber 
 		FROM jobpair_stage_data 
 		JOIN job_pairs ON pairid = jobpair_stage_data.jobpair_id
-		JOIN job_stage_params ON (job_stage_params.job_id=job_pairs.job_id AND job_stage_params.stage_id=jobpair_stage_data.stage_id)
+		JOIN job_stage_params ON (job_stage_params.job_id=job_pairs.job_id AND job_stage_params.stage_number=jobpair_stage_data.stage_number)
 		WHERE jobpair_stage_data.status_code=_processingStatus;
 	END //
 	

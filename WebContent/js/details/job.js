@@ -463,7 +463,7 @@ function initUI(){
 					$('#dialog-postProcess').dialog('close');
 					showMessage("info","Beginning job pair processing. ",3000);
 					$.post(
-							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val(),
+							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
 							function(returnCode) {
 								parseReturnCode(returnCode);
 								

@@ -968,18 +968,18 @@ public class JobPairs {
 
 		JobPair jp = new JobPair();
 
-		jp.setId(result.getInt("id"));
-		jp.setJobId(result.getInt("job_id"));
-		jp.setGridEngineId(result.getInt("sge_id"));	
-		jp.setQueueSubmitTime(result.getTimestamp("queuesub_time"));
-		jp.setStartTime(result.getTimestamp("start_time"));
-		jp.setEndTime(result.getTimestamp("end_time"));
-		jp.setExitStatus(result.getInt("exit_status"));
+		jp.setId(result.getInt("job_pairs.id"));
+		jp.setJobId(result.getInt("job_pairs.job_id"));
+		jp.setGridEngineId(result.getInt("job_pairs.sge_id"));	
+		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
+		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
+		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
+		jp.setExitStatus(result.getInt("job_pairs.exit_status"));
 		
-		jp.setPath(result.getString("path"));
-		jp.setJobSpaceId(result.getInt("job_space_id"));
-		jp.setPrimaryStageNumber(result.getInt("primary_jobpair_data"));
-		jp.setSandboxNum(result.getInt("sandbox_num"));
+		jp.setPath(result.getString("job_pairs.path"));
+		jp.setJobSpaceId(result.getInt("job_pairs.job_space_id"));
+		jp.setPrimaryStageNumber(result.getInt("job_pairs.primary_jobpair_data"));
+		jp.setSandboxNum(result.getInt("job_pairs.sandbox_num"));
 		//log.debug("getting job pair from result set for id " + jp.getId());
 		return jp;
 	}

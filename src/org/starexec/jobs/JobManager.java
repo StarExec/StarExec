@@ -152,7 +152,7 @@ public abstract class JobManager {
 			initMainTemplateIf();
 
 			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-			
+			//TODO: Need to send in many different post processors
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (Job job : joblist) {
 				// jobTemplate is a version of mainTemplate customized for this job
@@ -172,7 +172,7 @@ public abstract class JobManager {
 					log.debug("Postprocessor path is "+path+".");
 					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
 				}
-				
+				//TODO: Pre processors become stages
 				//pre processor
 				processor = job.getPreProcessor();
 				if (processor == null) {

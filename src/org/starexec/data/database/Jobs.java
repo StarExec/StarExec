@@ -540,7 +540,7 @@ public class Jobs {
 	 * @return The wallclock timeout in seconds, or -1 on error
 	 */
 	
-	public static int getWallclockTimeout(int jobId, int stageId) {
+	public static int getWallclockTimeout(int jobId, int stageNumber) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -549,7 +549,7 @@ public class Jobs {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetWallclockTimeout(?,?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,stageId);
+			procedure.setInt(2,stageNumber);
 
 			results=procedure.executeQuery();
 			if (results.next()) {
@@ -572,7 +572,7 @@ public class Jobs {
 	 * @return The CPU timeout in seconds, or -1 on error
 	 */
 	
-	public static int getCpuTimeout(int jobId, int stageId) {
+	public static int getCpuTimeout(int jobId, int stageNumber) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -581,7 +581,7 @@ public class Jobs {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetCpuTimeout(?,?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,stageId);
+			procedure.setInt(2,stageNumber);
 
 			results=procedure.executeQuery();
 			if (results.next()) {
@@ -614,7 +614,7 @@ public class Jobs {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?)}");
 			procedure.setInt(1,attrs.getJobId());
-			procedure.setInt(2,attrs.getStageId());
+			procedure.setInt(2,attrs.getStageNumber());
 			procedure.setInt(3,attrs.getCpuTimeout());
 			procedure.setInt(4,attrs.getWallclockTimeout());
 			procedure.setLong(5, attrs.getMaxMemory());
@@ -641,7 +641,7 @@ public class Jobs {
 	 * @return The maximum memory in bytes, or -1 on error
 	 */
 	
-	public static long getMaximumMemory(int jobId, int stageId) {
+	public static long getMaximumMemory(int jobId, int stageNumber) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -650,13 +650,13 @@ public class Jobs {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetMaxMemory(?,?)}");
 			procedure.setInt(1, jobId);
-			procedure.setInt(2,stageId);
+			procedure.setInt(2,stageNumber);
 			results=procedure.executeQuery();
 			if (results.next()) {
 				memory=results.getLong("maximum_memory");
 			}
 		} catch (Exception e) {
-			log.error("getCpuTimeout says "+e.getMessage(),e);
+			log.error("getMaximumMemory says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -2724,22 +2724,7 @@ public class Jobs {
 	
 	
 	
-	public static boolean removePairsOfStatusFromComplete(int jobId, int statusCode, Connection con) {
-		CallableStatement procedure=null;
 
-		try {
-			procedure=con.prepareCall("{CALL RemovePairsOfStatusFromComplete(?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2, statusCode);
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e ) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
 	/**
 	 * Returns all job pairs in the given job with the given status code that have a run time of 0 for
 	 * any stage
@@ -2835,7 +2820,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
-	//TODO: right now, this works only for the primary stage. Needs to be updated to get back all stages
+	//TODO: Need to handle NoOp most likely
     protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId,int limit) throws Exception {	
 
 	CallableStatement procedure = null;
@@ -2850,54 +2835,72 @@ public class Jobs {
 	    HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
 	    HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
 	    HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+	    HashMap<Integer,JobPair> pairs= new HashMap<Integer,JobPair>();
 	    while(results.next()){
 				
-		try {
-
-		    JobPair jp = JobPairs.resultToPair(results);
-			JoblineStage stage=new JoblineStage();
-			stage.setStageNumber(jp.getPrimaryStageNumber());
-			jp.addStage(stage);
-		    //we need to check to see if the benchId and configId are null, since they might
-		    //have been deleted while the the job is still pending
-		    Integer benchId=results.getInt("bench_id");
-		    if (benchId!=null) {
-				if (!benchmarks.containsKey(benchId)) {
-				    benchmarks.put(benchId,Benchmarks.get(benchId));
-				}
-							
-				jp.setBench(benchmarks.get(benchId));
-		    }
-		    Integer configId=results.getInt("config_id");
-		    String configName=results.getString("config_name");
-		    Configuration c=new Configuration();
-		    c.setId(configId);
-		    c.setName(configName);
-		    stage.setConfiguration(c);
-
-		    if (configId!=null) {
-				if (!configs.containsKey(configId)) {
-				    Solver s = Solvers.getSolverByConfig(configId, false);
-				    if (s != null) {
-					solvers.put(configId, s);
-					s.addConfiguration(c);
+			try {
+				int currentJobPairId=results.getInt("job_pairs.id");
+				
+			    JobPair jp = null;
+			    // we have already seen this pair and are getting another stage
+			    if (pairs.containsKey(currentJobPairId)) {
+			    	jp= pairs.get(currentJobPairId);
+			    } else {
+			    	//we have never seen this pair and are getting it for the first time
+			    	jp = JobPairs.resultToPair(results);
+			    	Integer benchId=results.getInt("bench_id");
+				    if (benchId!=null) {
+						if (!benchmarks.containsKey(benchId)) {
+						    benchmarks.put(benchId,Benchmarks.get(benchId));
+						}
+									
+						jp.setBench(benchmarks.get(benchId));
 				    }
-				}
-				stage.setSolver(solvers.get(configId) /* could be null, if Solver s above was null */);
-		    }
+				    Status s = new Status();
+				    s.setCode(results.getInt("job_pairs.status_code"));
+				    jp.setStatus(s);
+			    	pairs.put(currentJobPairId, jp);
+			    }
 
-		    Status s = new Status();
-		    s.setCode(results.getInt("status_code"));
-		    jp.setStatus(s);
-		    returnList.add(jp);
-		} 
-		catch (Exception e) {
-		    log.error("there was an error making a single job pair object");
-		    log.error(e.getMessage(),e);
-		}
+				JoblineStage stage=new JoblineStage();
+				stage.setStageNumber(results.getInt("stage_number"));
+				jp.addStage(stage);
+			    //we need to check to see if the benchId and configId are null, since they might
+			    //have been deleted while the the job is still pending
+			    
+			    Integer configId=results.getInt("jobpair_stage_data.config_id");
+			    String configName=results.getString("jobpair_stage_data.config_name");
+			    Configuration c=new Configuration();
+			    c.setId(configId);
+			    c.setName(configName);
+			    stage.setConfiguration(c);
+	
+			    if (configId!=null) {
+					if (!configs.containsKey(configId)) {
+					    Solver s = Solvers.getSolverByConfig(configId, false);
+					    if (s != null) {
+							solvers.put(configId, s);
+							s.addConfiguration(c);
+					    }
+					}
+					stage.setSolver(solvers.get(configId) /* could be null, if Solver s above was null */);
+			    }
+	
+			    
+			    returnList.add(jp);
+			} 
+			catch (Exception e) {
+			    log.error("there was an error making a single job pair object");
+			    log.error(e.getMessage(),e);
+			}
 	    }
 				
 	    Common.safeClose(results);
+	    
+	    //make sure all stages are in order
+	    for (JobPair jp : returnList) {
+	    	jp.sortStages();
+	    }
 	    return returnList;
 	} catch (Exception e) {
 	    log.error("getPendingPairsDetailed says "+e.getMessage(),e);
@@ -2915,6 +2918,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Benton McCune
 	 */
+    //TODO: Get all stages for these pairs
 	public static List<JobPair> getPendingPairsDetailed(int jobId, int limit) {
 		Connection con = null;			
 
@@ -3868,7 +3872,7 @@ public class Jobs {
 	 * @return True if the operation was successful, false otherwise.
 	 * @author Eric Burns
 	 */
-	public static boolean prepareJobForPostProcessing(int jobId, int processorId) {
+	public static boolean prepareJobForPostProcessing(int jobId, int processorId, int stageNumber) {
 		if (!Jobs.canJobBePostProcessed(jobId)){
 			return false;
 		}
@@ -3880,16 +3884,13 @@ public class Jobs {
 			if (!Jobs.removeCachedJobStats(jobId,con)) {
 				throw new Exception("Couldn't clear out the cache of job stats");
 			}
-			if (!Jobs.removePairsOfStatusFromComplete(jobId, StatusCode.STATUS_COMPLETE.getVal(), con)){
-				throw new Exception("Couldn't remove pairs from the complete table");
-
-			}
 
 			procedure=con.prepareCall("{CALL PrepareJobForPostProcessing(?,?,?,?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,processorId);
 			procedure.setInt(3,StatusCode.STATUS_COMPLETE.getVal());
 			procedure.setInt(4, StatusCode.STATUS_PROCESSING.getVal());
+			procedure.setInt(5,stageNumber);
 			procedure.executeUpdate();
 			return true;
 			

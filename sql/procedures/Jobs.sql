@@ -338,7 +338,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
-		SELECT status_code,solver_name,config_name,solver_id,config_id,
+		SELECT status_code,
 		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name,
 		completion_id,primary_jobpair_data
 		FROM job_pairs 		
@@ -428,17 +428,19 @@ CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 		WHERE job_id=_jobId AND status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
 	END //
--- Retrieves basic info about pending/rejected job pairs for the given job id
+	
+-- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs
 -- Author:Benton McCune
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
 CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
-		SELECT *
+		SELECT * FROM jobpair_stage_data 
+		JOIN (SELECT *
 		FROM job_pairs 
 		
 		WHERE job_id=_id AND (status_code = 1)
 		ORDER BY id ASC
-		LIMIT _limit;
+		LIMIT _limit) as job_pairs ON job_pairs.id = jobpair_stage_data.jobpair_id;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id
@@ -772,11 +774,27 @@ CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor
 -- of the job to the given one
+-- Choosing the primary stage is not allowed here-- an actual stage number must be supplied
 DROP PROCEDURE IF EXISTS PrepareJobForPostProcessing;
-CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _completeStatus INT, IN _processingStatus INT)
+CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _completeStatus INT, IN _processingStatus INT, IN _stageNumber INT)
 	BEGIN
-		UPDATE job_pairs SET status_code=_processingStatus WHERE job_id=_jobId AND status_code=_completeStatus;
-		UPDATE jobs SET post_processor = _procId WHERE id=_jobId;
+		
+		
+		UPDATE job_pairs
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		SET job_pairs.status_code=_processingStatus,
+		jobpair_stage_data.status_code=_processingStatus
+		WHERE job_id=_jobId AND job_pairs.status_code=_completeStatus
+		AND jobpair_stage_data.status_code=_completeStatus AND 
+		(stage_number=_stageNumber);
+		
+	-- makes sure there is actually an entry in job_stage_params for this job / stage pair.
+	INSERT IGNORE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor)
+	VALUES (_jobId, _stageNumber,(select cpuTimeout from jobs where jobs.id=_jobId),(select clockTimeout from jobs where jobs.id=_jobId),
+	(select maximum_memory from jobs where jobs.id=_jobId), null, _procId);
+		
+	UPDATE job_stage_params SET post_processor = _procId WHERE id=_jobId AND stage_number_stageNumber;
+	
 	END //
 	
 	
@@ -787,7 +805,7 @@ CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT, IN _stage INT)
 	BEGIN
 		SELECT clockTimeout
 		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_id=_stage;
+		WHERE job_id=_jobId AND stage_number=_stage;
 	END //
 	
 -- Gets the cpu timeout for the given job
@@ -797,7 +815,7 @@ CREATE PROCEDURE GetCpuTimeout(IN _jobId INT, IN _stage INT)
 	BEGIN
 		SELECT cpuTimeout
 		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_id=_stage;
+		WHERE job_id=_jobId AND stage_number=_stage;
 	END //
 
 -- Gets the maximum memory for the given job
@@ -807,13 +825,13 @@ CREATE PROCEDURE GetMaxMemory(IN _jobId INT, IN _stage INT)
 	BEGIN
 		SELECT maximum_memory
 		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_id=_stage;
+		WHERE job_id=_jobId AND stage_number=_stage;
 	END //
 	
 DROP PROCEDURE IF EXISTS SetJobStageParams;
 CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN _clock INT, IN _mem BIGINT, IN _space INT)
 	BEGIN
-		INSERT INTO job_stage_params (job_id, stage_id,cpuTimeout,clockTimeout,maximum_memory, space_id) VALUES (_jobId, _stage,_cpu,_clock,_mem,_space);
+		INSERT INTO job_stage_params (job_id, stage_number,cpuTimeout,clockTimeout,maximum_memory, space_id) VALUES (_jobId, _stage,_cpu,_clock,_mem,_space);
 	END //
 	
 DROP PROCEDURE IF EXISTS GetAllJobs;

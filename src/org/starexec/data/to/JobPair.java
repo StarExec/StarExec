@@ -2,10 +2,12 @@ package org.starexec.data.to;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import org.starexec.constants.R;
+import org.starexec.data.to.compare.JoblineStageComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineStage;
 
@@ -247,11 +249,23 @@ public class JobPair extends Identifiable {
 	}
 	
 	/**
-	 * Adds a stage to the end of this job pairs stage list
+	 * Adds a stage to the END of this job pairs stage list.
 	 * @param stage
 	 */
 	public void addStage(JoblineStage stage) {
 		this.stages.add(stage);
+	}
+	
+	/**
+	 * Arranges all the stages in this job pair in order of their stage_number.
+	 * In other words, after calling this function, calling getStages().get(0)
+	 * will return the stage with the lowest stage number, then the second lowest,
+	 * and so on
+	 */
+	
+	public void sortStages() {
+		JoblineStageComparator comp= new JoblineStageComparator();
+		Collections.sort(stages, comp);
 	}
 	
 	/**

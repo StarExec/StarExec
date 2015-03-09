@@ -40,6 +40,7 @@ ALTER TABLE job_stage_params ADD COLUMN post_processor INT;
 
 ALTER TABLE job_stage_params ADD CONSTRAINT job_stage_params_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL;
 
+ALTER TABLE job_stage_params CHANGE stage_id stage_number INT;
 
 -- Step 5: Remove unnecessary pipline_stages columns
 

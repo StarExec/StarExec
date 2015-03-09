@@ -381,12 +381,25 @@
 				<div id="dialog-postProcess" title="run new postprocessor">
 					<p><span id="dialog-postProcess-txt"></span></p><br/>
 					
-					<p><select id="postProcessorSelection">
+					<p>
+					<label for="postProcessorSelection">Post Processor</label>
+					<select id="postProcessorSelection">
 						<c:forEach var="proc" items="${postProcs}">
 							<option value="${proc.id}">${proc.name} (${proc.id})</option>
 						</c:forEach>
 					</select></p>
+					<p>
+						<label class="stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
+						<select id="postProcessorStageSelector" class="stageSelector">
+							<option value="0">Primary</option>
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>
+							
+						</select> 
 					
+					
+					</p>
 				</div>
 				<div id="dialog-changeQueue" title="change queue">
 					<p><span id="dialog-changeQueue-txt"></span></p><br/>

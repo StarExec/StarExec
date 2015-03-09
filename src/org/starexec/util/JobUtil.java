@@ -394,18 +394,14 @@ public class JobUtil {
 				
 				
 				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
-				String pipeName=DOMHelper.getElementByName(stageAttributes, "pipe-name").getAttribute("value");
-				if (!pipelines.containsKey(pipeName)) {
-					errorMessage="the pipeline with name = "+pipeName+" is not declared as a pipeline in this file";
-					return -1;
-				}
-				SolverPipeline currentPipe=pipelines.get(pipeName);
+				
 				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
-				if (neededStageNum<=0 || neededStageNum>currentPipe.getStages().size()) {
+				//TODO: Should have a max of the max number of stages in any pair
+				if (neededStageNum<=0) {
 					errorMessage="StageAttributes tag has invalid pipe-number = "+neededStageNum;
 					return -1;
 				}
-				attrs.setStageId(currentPipe.getStages().get(neededStageNum-1).getId());
+				attrs.setStageNumber(neededStageNum);
 
 				
 				// all timeouts are optional-- they default to job timeouts if not given

@@ -67,9 +67,7 @@
     
     
     <complexType name="StageAttributes">
-      <sequence>
-	
-    	<element name="pipe-name" type="tns:PrimitiveName" minOccurs="1" maxOccurs="1"></element>
+      <sequence>	
     	<element name="stage-num" type="int" minOccurs="1" maxOccurs="1"></element> 
     	<element name="cpu-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
     	<element name="wallclock-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
@@ -77,6 +75,8 @@
     	<!-- Note: This is in Gigabytes -->
     	<element name="mem-limit" type="tns:doubleInfo" minOccurs="0" maxOccurs="1"></element>
 		<element name="space-id" type="int" minOccurs="0" maxOccurs="1"></element>
+		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		
       </sequence>
       
     </complexType>

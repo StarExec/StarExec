@@ -7,7 +7,7 @@ package org.starexec.data.to.pipelines;
  */
 public class StageAttributes {
 	private int jobId;
-	private int stageId;
+	private int stageNumber;
 	private int wallclockTimeout;
 	private int cpuTimeout;
 	private long maxMemory;
@@ -15,7 +15,7 @@ public class StageAttributes {
 	
 	public StageAttributes() {
 		jobId=-1;
-		stageId=-1;
+		stageNumber=-1;
 		wallclockTimeout=-1;
 		cpuTimeout=-1;
 		maxMemory=-1;
@@ -28,11 +28,11 @@ public class StageAttributes {
 	public void setJobId(int jobId) {
 		this.jobId = jobId;
 	}
-	public int getStageId() {
-		return stageId;
+	public int getStageNumber() {
+		return stageNumber;
 	}
-	public void setStageId(int stageId) {
-		this.stageId = stageId;
+	public void setStageNumber(int stageId) {
+		this.stageNumber = stageId;
 	}
 	public int getWallclockTimeout() {
 		return wallclockTimeout;
