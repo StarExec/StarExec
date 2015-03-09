@@ -106,7 +106,7 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		 try {
 			 log.debug("received a call to add a job pair with path = "+pair.getPath());
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
 			procedure.setInt(3, pair.getPrimarySolver().getConfigurations().get(0).getId());
@@ -201,7 +201,7 @@ public class JobPairs {
 			List<PairStageProcessorTriple> list=new ArrayList<PairStageProcessorTriple>();
 			while (results.next()) {
 				PairStageProcessorTriple next= new PairStageProcessorTriple();
-				next.setPairId(results.getInt("pairid"));
+				next.setPairId(results.getInt("job_pairs.id"));
 				next.setStageNumber(results.getInt("stageNumber"));
 				next.setProcessorId(results.getInt("post_processor"));
 				list.add(next);

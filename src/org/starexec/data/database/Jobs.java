@@ -2830,7 +2830,6 @@ public class Jobs {
 	    procedure.setInt(1, jobId);				
 	    procedure.setInt(2,limit);
 	    results = procedure.executeQuery();
-	    List<JobPair> returnList = new LinkedList<JobPair>();
 	    //we map ID's to  primitives so we don't need to query the database repeatedly for them
 	    HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
 	    HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
@@ -2884,10 +2883,7 @@ public class Jobs {
 					    }
 					}
 					stage.setSolver(solvers.get(configId) /* could be null, if Solver s above was null */);
-			    }
-	
-			    
-			    returnList.add(jp);
+			    }			    
 			} 
 			catch (Exception e) {
 			    log.error("there was an error making a single job pair object");
@@ -2898,9 +2894,11 @@ public class Jobs {
 	    Common.safeClose(results);
 	    
 	    //make sure all stages are in order
-	    for (JobPair jp : returnList) {
+	    for (JobPair jp : pairs.values()) {
 	    	jp.sortStages();
 	    }
+	    List<JobPair> returnList=new ArrayList<JobPair>();
+	    returnList.addAll(pairs.values());
 	    return returnList;
 	} catch (Exception e) {
 	    log.error("getPendingPairsDetailed says "+e.getMessage(),e);
