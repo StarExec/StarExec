@@ -8,9 +8,9 @@ ALTER TABLE jobpair_stage_data MODIFY id INT NOT NULL;
 
 ALTER TABLE jobpair_stage_data DROP PRIMARY KEY;
 
-ALTER TABLE jobpair_stage_data ADD COLUMN stage_number INT NOT NULL DEFAULT 1;
+ALTER TABLE jobpair_stage_data CHANGE id stage_number INT;
 
-ALTER TABLE jobpair_stage_data DROP COLUMN id;
+UPDATE jobpair_stage_data SET stage_number = 1;
 
 ALTER TABLE jobpair_stage_data ADD PRIMARY KEY (jobpair_id,stage_number);
 

@@ -106,26 +106,23 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		 try {
 			 log.debug("received a call to add a job pair with path = "+pair.getPath());
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());
-			procedure.setInt(3, pair.getPrimarySolver().getConfigurations().get(0).getId());
-			procedure.setInt(4, StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			procedure.setInt(3, StatusCode.STATUS_PENDING_SUBMIT.getVal());
 			
-			procedure.setString(5, pair.getPath());
-			procedure.setInt(6,pair.getJobSpaceId());
-			procedure.setString(7,pair.getPrimarySolver().getConfigurations().get(0).getName());
-			procedure.setString(8,pair.getPrimarySolver().getName());
-			procedure.setString(9,pair.getBench().getName());
-			procedure.setInt(10,pair.getPrimarySolver().getId());
+			procedure.setString(4, pair.getPath());
+			procedure.setInt(5,pair.getJobSpaceId());
+			
+			procedure.setString(6,pair.getBench().getName());
 			// The procedure will return the pair's new ID in this parameter
-			procedure.setInt(11,pair.getPrimaryStageNumber());
-			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
+			procedure.setInt(7,pair.getPrimaryStageNumber());
+			procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
 		
 			procedure.executeUpdate();			
 
 			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(12));
+			pair.setId(procedure.getInt(8));
 
 			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
 				JoblineStage  stage= pair.getStageFromNumber(stageNumber);
