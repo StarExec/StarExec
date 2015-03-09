@@ -304,7 +304,7 @@ DROP PROCEDURE IF EXISTS GetJobPairsInJobSpace;
 CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 	BEGIN
 		IF _stageNumber>0 THEN
-			SELECT job_pairs.status_code,job_pairs.solver_name,job_pairs.config_name,job_pairs.solver_id,job_pairs.config_id,
+			SELECT job_pairs.status_code,
 			job_pairs.id, job_pairs.bench_id, job_pairs.bench_name,
 			completion_id, jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 			jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
@@ -314,10 +314,10 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 			LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
-			WHERE job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=_stageNumber;
+			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=_stageNumber;
 		
 		ELSE
-			SELECT job_pairs.status_code,job_pairs.solver_name,job_pairs.config_name,job_pairs.solver_id,job_pairs.config_id,
+			SELECT job_pairs.status_code,
 			job_pairs.id, job_pairs.bench_id, job_pairs.bench_name,
 			completion_id, jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 			jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
@@ -327,7 +327,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 			LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
-			WHERE job_space_id=_jobSpaceId AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
+			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
 			
 			
 		END IF;
