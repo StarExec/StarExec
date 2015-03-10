@@ -148,7 +148,6 @@ public class Jobs {
 	 * @param j
 	 * @return
 	 */
-	//TODO: Ensure this piece is working correctly
 	public static boolean addPipelinesToDatabase(Job j) {
 		try {
 			//data structure will map unique sequences of configurations to pipelines
@@ -166,12 +165,14 @@ public class Jobs {
 						PipelineStage newStage=new PipelineStage();
 						newStage.setConfigId(line.getConfiguration().getId());
 						newStage.setKeepOutput(false);
+						
 						pipe.addStage(newStage);
 					}
 					
 					pipe.setUserId(j.getUserId());
 					log.debug("working with solver id = "+pair.getPrimarySolver().getId()+" with name "+pair.getPrimarySolver().getName());
 					pipe.setName(pair.getPrimarySolver().getName());
+					pipe.setPrimaryStageId(pair.getPrimaryStageNumber());
 					pairsToPipes.put(pairString, pipe);
 					Pipelines.addPipelineToDatabase(pipe);
 				}
@@ -204,9 +205,13 @@ public class Jobs {
 		PreparedStatement procedure=null;
 		try {			
 			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
-			if (!addPipelinesToDatabase(job)) {
-				throw new Exception("Error adding pipelines to database");
-			}
+			
+			//depending on need, going to avoid adding pipelines for pairs that just have a single solver.
+			// in the jobpair_stage_data table, stage_id will simply be null, as it already is for all 
+			// older jobs
+			//if (!addPipelinesToDatabase(job)) {
+			//	throw new Exception("Error adding pipelines to database");
+			//}
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
@@ -1231,42 +1236,7 @@ public class Jobs {
 	
 
 	
-	/**
-	 * Gets the number of job pairs for a given job, in a given space, with the given configuration 
-	 * (which also uniquely identifies the solver)
-	 * 
-	 * @param jobId the job to count the pairs for
-	 * @param spaceId the space to count the pairs in
-	 * @param configId the configuration id to count the pairs for
-	 * @return the number of job pairs
-	 * @author Eric Burns
-	 */
-	public static int getJobPairCountByConfigInJobSpace(int jobId,int spaceId, int configId) {
-		Connection con = null;
-		ResultSet results = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobPairCountByConfigInJobSpace(?,?, ?)}");
-			procedure.setInt(1,jobId);
-			procedure.setInt(2, spaceId);
-			procedure.setInt(3, configId);
-			results = procedure.executeQuery();
-			int jobCount = 0;
-			if (results.next()) {
-				jobCount = results.getInt("jobPairCount");
-			}
-			
-			return jobCount;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return 0;
-	}
+	
 	
 	/**
 	 * Returns the number of job pairs that exist for a given job in a given space that
@@ -2376,16 +2346,24 @@ public class Jobs {
 			    stage.setSolver(s);
 			    jp.addStage(stage);
 			    jp.setId(results.getInt("id"));
-			    jp.getStatus().setCode(results.getInt("status_code"));
-			    jp.getBench().setId(results.getInt("bench_id"));
-			    jp.getBench().setName(results.getString("bench_name"));
-			    c.setId(results.getInt("config_id"));
-			    c.setName(results.getString("config_name"));
-			    s.setId(results.getInt("solver_id"));
-			    s.setName(results.getString("solver_name"));
+			    jp.getStatus().setCode(results.getInt("job_pairs.status_code"));
+			    jp.getBench().setId(results.getInt("jobpair_stage_data.bench_id"));
+			    jp.getBench().setName(results.getString("jobpair_stage_data.bench_name"));
+			    c.setId(results.getInt("jobpair_stage_data.config_id"));
+			    c.setName(results.getString("jobpair_stage_data.config_name"));
+			    s.setId(results.getInt("jobpair_stage_data.solver_id"));
+			    s.setName(results.getString("jobpair_stage_data.solver_name"));
 			    jp.getSpace().setName(results.getString("name"));
 			    jp.getSpace().setId(results.getInt("job_spaces.id"));
 			    jp.setPath(results.getString("path"));
+			    int pipeId=results.getInt("pipeline_id");
+			    if (pipeId>0) {
+			    	SolverPipeline pipe=new SolverPipeline();
+			    	pipe.setName(results.getString("solver_pipelines.name"));
+			    	jp.setPipeline(pipe);
+			    } else {
+			    	jp.setPipeline(null);
+			    }
 			    returnList.add(jp);
 			}			
 			Common.safeClose(results);

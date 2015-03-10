@@ -52,17 +52,6 @@ CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 				OR		GetJobStatus(jobs.id)	LIKE	CONCAT('%', _query, '%'));
 	END //
 
-	
--- Returns the number of jobs pairs for a given job in a given space with a given configuration
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairCountByConfigInJobSpace;
-CREATE PROCEDURE GetJobPairCountByConfigInJobSpace(IN _spaceId INT, IN _configId INT)
-	BEGIN
-		SELECT COUNT(*) AS jobPairCount
-		FROM job_pairs
-		WHERE job_space_id=_spaceId AND config_id=_configId;
-	END //
-		
 -- Returns the number of jobs pairs for a given job in the given job space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairCountInJobSpace;
@@ -243,9 +232,14 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
-		SELECT job_pairs.id, path, solver_name,solver_id,config_name,config_id,bench_name,bench_id,name,status_code,job_spaces.id
+		SELECT job_pairs.id, path, jobpair_stage_data.solver_name,jobpair_stage_data.solver_id,jobpair_stage_data.config_name,
+		jobpair_stage_data.config_id,bench_name,bench_id,solver_pipelines.name
+		job_spaces.name,job_pairs.status_code,job_spaces.id, pipeline_stages.pipeline_id
 		FROM job_pairs
 		JOIN job_spaces ON job_spaces.id=job_space_id
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+		LEFT JOIN pipeline_stages ON pipeline_stages.stage_id = jobpair_stage_data.stage_id
+		LEFT JOIN solver_pipelines ON pipeline_stages.pipeline_id = solver_pipelines.id
 		WHERE job_pairs.job_id=_id;
 	END //
 

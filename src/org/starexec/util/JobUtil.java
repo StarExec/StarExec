@@ -210,6 +210,7 @@ public class JobUtil {
 					foundPrimary=true;
 				}
 				s.setPrimary(true);
+				pipeline.setPrimaryStageId(currentStage);
 			} else {
 				s.setPrimary(false);
 			}

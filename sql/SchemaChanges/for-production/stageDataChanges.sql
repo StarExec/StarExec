@@ -72,4 +72,12 @@ DROP INDEX job_space_id_3, DROP INDEX config_id_2, DROP INDEX config_id_3;
 ALTER TABLE job_pairs DROP COLUMN config_name,
 DROP COLUMN solver_name, DROP COLUMN config_id, DROP COLUMN solver_id;
 
+-- Step 8: Add primary stage column to solver_pipelines
+
+ALTER TABLE solver_pipelines ADD COLUMN primary_stage_id INT;
+
+UPDATE solver_pipelines JOIN pipeline_stages ON solver_pipelines.id = pipeline_stages.pipeline_id SET solver_pipelines.primary_stage_id = pipeline_stages.stage_id;
+
+ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
+
 COMMIT;

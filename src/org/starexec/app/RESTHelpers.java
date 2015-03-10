@@ -1086,7 +1086,7 @@ public class RESTHelpers {
 						id, // Parent space id
 						"queue" // It is a queue, not a node
 				);
-				List<JobPair> enqueuedPairs = Queues.getEnqueuedPairsDetailed(id);
+				List<JobPair> enqueuedPairs = Queues.getEnqueuedPairsShallow(id);
 				totalJobPairs = enqueuedPairs.size();
 				/**
 				 * Used to display the 'total entries' information at the bottom of
@@ -1559,7 +1559,7 @@ public class RESTHelpers {
 	}
 	
 	
-	
+	//TODO: Don't want to query for every user-- cache them in a HashMap
 	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int userId) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries

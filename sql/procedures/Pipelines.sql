@@ -36,13 +36,15 @@ CREATE PROCEDURE AddPipeline(IN _uid INT, IN _name VARCHAR(128), OUT _id INT)
 -- pipelines must be added to the database in the order that they are to be used in the pipeline
 -- to ensure that the AUTO_INCREMENT IDs are ordered
 DROP PROCEDURE IF EXISTS AddPipelineStage;
-CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _cid INT, IN _keep BOOLEAN, OUT _id INT)
+CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _cid INT, IN _keep BOOLEAN, IN _primary INT, OUT _id INT)
 	BEGIN
 		INSERT INTO pipeline_stages (pipeline_id, config_id, keep_output)
 		VALUES (_pid, _cid,_keep);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
-
+		IF _primary THEN
+			UPDATE solver_pipelines SET primary_stage_id = _id WHERE solver_pipelines.id = _pid;
+		END IF;
 	END //
 
 -- Adds a dependency for an existing stage. 
@@ -60,5 +62,16 @@ CREATE PROCEDURE DeletePipeline(IN _pid INT)
 		DELETE FROM solver_pipelines WHERE id=_pid;
 	END //
 	
+-- Gets all the pipeline IDs of pipelines referenced by the given job
+DROP PROCEDURE IF EXISTS GetPipelineIdsByJob;
+CREATE PROCEDURE GetPipelineIdsByJob(IN _jid INT)
+	BEGIN
+		SELECT DISTINCT solver_pipelines.id
+		FROM job_pairs
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		JOIN pipeline_stages ON pipeline_stages.stage_id = jobpair_stage_data.stage_id
+		JOIN solver_pipelines ON solver_pipelines.id = pipeline_stages.pipeline_id
+		WHERE job_id=_jid;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

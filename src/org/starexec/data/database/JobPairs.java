@@ -68,14 +68,18 @@ public class JobPairs {
 	 * @param con
 	 * @return
 	 */
-	private static boolean addJobPairStage(int pairId, int stageId,int stageNumber, boolean primary,Solver s, Configuration c,int jobSpaceId, Connection con) {
+	private static boolean addJobPairStage(int pairId, Integer stageId,int stageNumber, boolean primary,Solver s, Configuration c,int jobSpaceId, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			log.debug("the primary is ");
-			log.debug(primary);
+			
 			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, pairId);
-			procedure.setInt(2,stageId);
+			if (stageId!=null) {
+				procedure.setInt(2,stageId);
+
+			} else {
+				procedure.setNull(2, java.sql.Types.INTEGER);
+			}
 			procedure.setInt(3,stageNumber);
 			procedure.setBoolean(4, primary);
 			procedure.setInt(5, s.getId());
@@ -106,7 +110,6 @@ public class JobPairs {
 	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
 		CallableStatement procedure = null;
 		 try {
-			 log.debug("received a call to add a job pair with path = "+pair.getPath());
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setInt(1, pair.getJobId());
 			procedure.setInt(2, pair.getBench().getId());

@@ -1,8 +1,10 @@
 package org.starexec.util;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -16,10 +18,15 @@ import javax.xml.transform.stream.StreamResult;
 import org.starexec.constants.R;
 import org.starexec.util.Util;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Pipelines;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,6 +79,44 @@ public class JobToXMLer {
 		return file;
 		
 	}
+    //TODO: Handle noop
+    public Element getPipelineElement(SolverPipeline pipeline) {
+    	Element pipeElement= doc.createElement("SolverPipeline");
+    	for (PipelineStage stage : pipeline.getStages()) {
+    		Element stageElement= doc.createElement("PipelineStage");
+    		Attr configId=doc.createAttribute("config");
+    		Attr keepOutput=doc.createAttribute("keepoutput");
+    		Attr isPrimary = doc.createAttribute("primary");
+    		
+			configId.setValue(Integer.toString(stage.getConfigId()));
+			keepOutput.setValue(Boolean.toString(stage.doKeepOutput()));
+			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageId()));
+			
+			for (PipelineDependency dep : stage.getDependencies()) {
+				if (dep.getType()==PipelineInputType.ARTIFACT) {
+					Element depElement=doc.createElement("stageDependency");
+					Attr stageAttr = doc.createAttribute("stage");
+					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
+					depElement.setAttributeNode(stageAttr);
+					stageElement.appendChild(depElement);
+				} else if (dep.getType()==PipelineInputType.BENCHMARK) {
+					Element depElement=doc.createElement("benchmarkDependency");
+					Attr stageAttr = doc.createAttribute("input");
+					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
+					depElement.setAttributeNode(stageAttr);
+					stageElement.appendChild(depElement);
+				}
+			}
+			
+			
+		    stageElement.setAttributeNode(configId);
+    		stageElement.setAttributeNode(keepOutput);
+    		stageElement.setAttributeNode(isPrimary);
+    		pipeElement.appendChild(stageElement);
+    	}
+    	
+    	return pipeElement;
+    }
 	
     /**
      *  Will generate xml
@@ -89,6 +134,12 @@ public class JobToXMLer {
 	jobsElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchJobSchema.xsd batchJobSchema.xsd"));
 	
+	List<SolverPipeline> neededPipes = Pipelines.getPipelinesByJob(job.getId());
+	
+	//add all needed pipelines to the XML
+	for (SolverPipeline pipe : neededPipes) {
+		jobsElement.appendChild(getPipelineElement(pipe));
+	}
 	Element rootJobElement = generateJobXML(job, userId);
 	jobsElement.appendChild(rootJobElement);
 		
@@ -104,6 +155,8 @@ public class JobToXMLer {
 	 *  @param userId the id of the user making the request
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
+    
+    //TODO: Put stage attributes in here where they exist
     public Element generateJobXML(Job job, int userId){		
 	log.info("Generating Job XML for job " + job.getId());
 		
@@ -208,45 +261,56 @@ public class JobToXMLer {
 
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
 		
+		
+		
 		for (JobPair jobpair:pairs){
-			Element jp = doc.createElement("JobPair");
+			// if this job pair doesn't reference a pipeline
+			Element jp=null;
+			if (jobpair.getPipeline()==null) {
+				jp = doc.createElement("JobPair");
+				
+				Attr configID = doc.createAttribute("config-id");
+				Attr configName = doc.createAttribute("config-name");
+				configID.setValue(Integer.toString(jobpair.getPrimaryConfiguration().getId()));
+				configName.setValue(jobpair.getPrimaryConfiguration().getName());
 
+				Attr solverId=doc.createAttribute("solver-id");
+				Attr solverName=doc.createAttribute("solver-name");
+
+				solverId.setValue(Integer.toString(jobpair.getPrimarySolver().getId()));
+				solverName.setValue(jobpair.getPrimarySolver().getName());
+
+				jp.setAttributeNode(solverName);
+				jp.setAttributeNode(solverId);
+
+				jp.setAttributeNode(configName);
+				jp.setAttributeNode(configID);
+				
+			} else {
+				//this job pair references a pipeline
+				jp = doc.createElement("JobLine");
+				Attr pipeName=doc.createAttribute("pipe-name");
+				pipeName.setValue(jobpair.getPipeline().getName());
+				jp.setAttributeNode(pipeName);
+			}
+			
 			Attr benchID = doc.createAttribute("bench-id");
 			Attr benchName = doc.createAttribute("bench-name");
 			benchID.setValue(Integer.toString(jobpair.getBench().getId()));
 			benchName.setValue(jobpair.getBench().getName());
-
-			Attr configID = doc.createAttribute("config-id");
-			Attr configName = doc.createAttribute("config-name");
-			configID.setValue(Integer.toString(jobpair.getPrimaryConfiguration().getId()));
-			configName.setValue(jobpair.getPrimaryConfiguration().getName());
-			
-
-			
-			Attr solverId=doc.createAttribute("solver-id");
-			Attr solverName=doc.createAttribute("solver-name");
-			
 			Attr spaceId=doc.createAttribute("job-space-id");
 			Attr spacePath=doc.createAttribute("job-space-path");
 			spaceId.setValue(Integer.toString(jobpair.getSpace().getId()));
 			spacePath.setValue(jobpair.getPath());
 			
-			solverId.setValue(Integer.toString(jobpair.getPrimarySolver().getId()));
-			solverName.setValue(jobpair.getPrimarySolver().getName());
-			
-			
-			
-		    jp.setAttributeNode(benchID);
-			jp.setAttributeNode(benchName);
-			jp.setAttributeNode(solverId);
-			jp.setAttributeNode(solverName);
-			jp.setAttributeNode(configID);
-			jp.setAttributeNode(configName);
 			
 			jp.setAttributeNode(spaceId);
 			jp.setAttributeNode(spacePath);
-			jobElement.appendChild(jp);
+			jp.setAttributeNode(benchID);
+			jp.setAttributeNode(benchName);
 			
+			jobElement.appendChild(jp);
+
 		}
 		
 		return jobElement;

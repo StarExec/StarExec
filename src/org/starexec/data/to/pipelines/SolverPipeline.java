@@ -18,7 +18,7 @@ public class SolverPipeline extends Identifiable {
 	private String name;
 	private List<PipelineStage> stages=null;
 	private Timestamp uploadDate;	
-	
+	private int primaryStageId; //what is the id of the primary stage? Before addition to the database, stores primary stage NUMBER
 	public SolverPipeline() {
 		stages=new ArrayList<PipelineStage>();
 	}
@@ -68,6 +68,14 @@ public class SolverPipeline extends Identifiable {
 		}
 		
 		return inputs;
+	}
+
+	public int getPrimaryStageId() {
+		return primaryStageId;
+	}
+
+	public void setPrimaryStageId(int primaryStageId) {
+		this.primaryStageId = primaryStageId;
 	}
 	
 }

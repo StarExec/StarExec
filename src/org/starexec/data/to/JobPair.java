@@ -10,6 +10,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.compare.JoblineStageComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
 
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
@@ -42,11 +43,13 @@ public class JobPair extends Identifiable {
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
 							  //the job is initiated to the space the benchmark is in
-
 	
 	//the inputs to this job pair, excluding the primary benchmark (in other words, the dependencies stored in the
 	//jobpair_inputs table
 	private List<Integer> benchInputs;
+	
+	
+	private SolverPipeline pipeline = null;
 	
 	public JobPair() {
 		this.node = new WorkerNode();
@@ -433,4 +436,14 @@ public class JobPair extends Identifiable {
 		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
 			? prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
+
+	public SolverPipeline getPipeline() {
+		return pipeline;
+	}
+
+	public void setPipeline(SolverPipeline pipeline) {
+		this.pipeline = pipeline;
+	}
+
+	
 }

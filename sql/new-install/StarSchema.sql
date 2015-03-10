@@ -229,7 +229,9 @@ CREATE TABLE solver_pipelines (
 	name VARCHAR(128),
 	user_id INT NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
-	PRIMARY KEY(id)
+	primary_stage_id INT, 
+	PRIMARY KEY(id),
+	CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
 -- if config_id = -1, then that means that this is a noop entry

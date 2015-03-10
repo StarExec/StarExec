@@ -103,6 +103,7 @@ public class Pipelines {
 				pipe.setName(results.getString("name"));
 				pipe.setUploadDate(results.getTimestamp("uploaded"));
 				pipe.setUserId(results.getInt("user_id"));
+				pipe.setPrimaryStageId(results.getInt("primary_stage_id"));
 				pipe.setStages(getStagesForPipeline(id,con));
 				return pipe;
 			}
@@ -152,14 +153,15 @@ public class Pipelines {
 	public static int addPipelineStageToDatabase(PipelineStage stage, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
 			procedure.setInt(2,stage.getConfigId());
 			procedure.setBoolean(3, stage.doKeepOutput());
-			procedure.registerOutParameter(4, java.sql.Types.INTEGER);
-			log.debug("trying ot use the config id = "+stage.getConfigId());
+			procedure.setBoolean(4,stage.isPrimary());
+			procedure.registerOutParameter(5, java.sql.Types.INTEGER);
+			log.debug("trying to use the config id = "+stage.getConfigId());
 			procedure.executeUpdate();
-			int id = procedure.getInt(4);			
+			int id = procedure.getInt(5);			
 			stage.setId(id);
 			
 			for (PipelineDependency dep : stage.getDependencies()) {
@@ -197,9 +199,16 @@ public class Pipelines {
 			int id = procedure.getInt(3);			
 			pipe.setId(id);
 			
+			int number=1;
 			for (PipelineStage stage : pipe.getStages()) {
 				stage.setPipelineId(pipe.getId());
+				if (number==pipe.getPrimaryStageId()) {
+					stage.setPrimary(true);
+				} else {
+					stage.setPrimary(false);
+				}
 				addPipelineStageToDatabase(stage,con);
+				number++;
 			}
 			
 			
@@ -212,6 +221,37 @@ public class Pipelines {
 		}
 		
 		return -1;
+	}
+	
+	public static List<SolverPipeline> getPipelinesByJob(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		List<Integer> pipeIds=new ArrayList<Integer>();
+		List<SolverPipeline> pipes=new ArrayList<SolverPipeline>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL GetPipelineIdsByJob(?)");
+			procedure.setInt(1,jobId);
+			results=procedure.executeQuery();
+			while (results.next()) {
+				pipeIds.add(results.getInt("id"));
+			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return null;
+		} finally  {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		//TODO: A more complex algorithm may be needed in the future if we are getting a large number of pipelines in every job
+		for (Integer i : pipeIds) {
+			pipes.add(Pipelines.getFullPipeline(i));
+		}
+		
+		return pipes;
 	}
 	
 	/**

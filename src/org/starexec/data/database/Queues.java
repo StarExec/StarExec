@@ -18,6 +18,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
 
@@ -161,10 +162,11 @@ public class Queues {
 			Common.endTransaction(con);			
 			
 			return newQueueId;
-		} catch (Exception e){			
+		} catch (Exception e){	
+			Common.doRollback(con);			
+
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.doRollback(con);			
 			Common.safeClose(con);
 		}
 		
@@ -396,7 +398,8 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 * @throws Exception 
 	 */
-	protected static List<JobPair> getEnqueuedPairsDetailed(Connection con, int qId) throws Exception {	
+	//TODO: What do we need here?
+	protected static List<JobPair> getEnqueuedPairsShallow(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
@@ -408,22 +411,28 @@ public class Queues {
 
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
-				//jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));	
-				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-				//jp.setBench(Benchmarks.get(con, results.getInt("bench_id")));
-				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				//jp.setSolver(Solvers.getSolverByConfig(con, results.getInt("config_id")));//not passing con
+				//what node? this pair is enqueued
+				//jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				Benchmark b=new Benchmark();
+				b.setId(results.getInt("bench_id"));
+				b.setName(results.getString("bench_name"));
+				jp.setBench(b);
 				JoblineStage stage=new JoblineStage();
 				
-				stage.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-				stage.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
+				Configuration c = new Configuration();
+				c.setId(results.getInt("config_id"));
+				c.setName(results.getString("config_name"));
+				Solver solver = new Solver();
+				solver.setId(results.getInt("solver_id"));
+				solver.setName(results.getString("solver_name"));
+				stage.setSolver(solver);
+				stage.setConfiguration(c);
 				jp.addStage(stage);
 
 				Status s = new Status();
-
-				s.setCode(results.getInt("status_code"));
-				//s.setStatus(results.getString("status.status"));
-				//s.setDescription(results.getString("status.description"));
+				//enqueued by definition, so we don't want to retrieve extra data from the db
+				s.setCode(StatusCode.STATUS_ENQUEUED);
+				
 				jp.setStatus(s);
 				returnList.add(jp);
 			}			
@@ -440,18 +449,17 @@ public class Queues {
 	}
 	
 	/**
-	 * Gets all job pairs that are enqueued (up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * Gets all job pairs that are enqueued (up to limit) for the given queue 
 	 * @param qId The id of the queue to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	public static List<JobPair> getEnqueuedPairsDetailed(int qId) {
+	public static List<JobPair> getEnqueuedPairsShallow(int qId) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getEnqueuedPairsDetailed(con, qId);
+			return getEnqueuedPairsShallow(con, qId);
 		} catch (Exception e){			
 			log.error("getEnqueuedPairsDetailed for queue " + qId + " says " + e.getMessage(), e);		
 		} finally {
