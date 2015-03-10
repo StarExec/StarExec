@@ -66,7 +66,7 @@ CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
 DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;
 CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT)
 	BEGIN
-		SELECT job_pairs.id, jobpair_stage_data.config_id,jobpair_stage_data.config_name,
+		SELECT job_pairs.id,job_pairs.primary_jobpair_data,jobs.user_id,job_pairs.job_id,job_pairs.path, jobpair_stage_data.config_id,jobpair_stage_data.config_name,
 		jobpair_stage_data.solver_id, jobpair_stage_data.solver_name,enqueued.queue_id
 		FROM job_pairs
 			-- Where the job_pair is running on the input Queue

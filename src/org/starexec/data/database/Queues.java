@@ -390,15 +390,14 @@ public class Queues {
 	
 	
 	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * Gets all job pairs that are enqueued(up to limit) for the given queue
+	 * Only shallow data for the primary stage is populated
 	 * @param con The connection to make the query on 
 	 * @param qId the ID of the queue to get the enqueued pairs of
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 * @throws Exception 
 	 */
-	//TODO: What do we need here?
 	protected static List<JobPair> getEnqueuedPairsShallow(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -410,21 +409,25 @@ public class Queues {
 			List<JobPair> returnList = new LinkedList<JobPair>();
 
 			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				//what node? this pair is enqueued
-				//jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
+				JobPair jp=new JobPair();
+				jp.setPrimaryStageNumber(results.getInt("job_pairs.primary_jobpair_data")); //because we are only populating the one stage
+				jp.setPath(results.getString("job_pairs.path"));
+				jp.setJobId(results.getInt("job_pairs.job_id"));
+				jp.setId(results.getInt("job_pairs.id"));
+					
 				Benchmark b=new Benchmark();
 				b.setId(results.getInt("bench_id"));
 				b.setName(results.getString("bench_name"));
 				jp.setBench(b);
 				JoblineStage stage=new JoblineStage();
-				
+				stage.setStageNumber(jp.getPrimaryStageNumber());
 				Configuration c = new Configuration();
 				c.setId(results.getInt("config_id"));
 				c.setName(results.getString("config_name"));
 				Solver solver = new Solver();
 				solver.setId(results.getInt("solver_id"));
 				solver.setName(results.getString("solver_name"));
+				solver.addConfiguration(c);
 				stage.setSolver(solver);
 				stage.setConfiguration(c);
 				jp.addStage(stage);
@@ -440,7 +443,7 @@ public class Queues {
 			Common.safeClose(results);
 			return returnList;
 		} catch (Exception e) {
-			log.error("getEnqueuedPairsDetailed says "+e.getMessage(),e);
+			log.error("getEnqueuedPairsShallow says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -461,7 +464,7 @@ public class Queues {
 			con = Common.getConnection();		
 			return getEnqueuedPairsShallow(con, qId);
 		} catch (Exception e){			
-			log.error("getEnqueuedPairsDetailed for queue " + qId + " says " + e.getMessage(), e);		
+			log.error("getEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}

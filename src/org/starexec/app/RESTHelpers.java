@@ -1614,9 +1614,7 @@ public class RESTHelpers {
 			
     		// Create the benchmark link
     		sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append(j.getBench().getDescription()); // NULL POINTER HERE
-    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
+    		sb.append("<a href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
     		sb.append(j.getBench().getId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(j.getBench().getName());
@@ -1626,9 +1624,7 @@ public class RESTHelpers {
 			
 			// Create the solver link
     		sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append(j.getPrimarySolver().getDescription());
-    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
+    		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
     		sb.append(j.getPrimarySolver().getId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(j.getPrimarySolver().getName());
@@ -1637,9 +1633,7 @@ public class RESTHelpers {
 			
 			// Create the configuration link
     		sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append(j.getPrimarySolver().getConfigurations().get(0).getDescription());
-    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+    		sb.append("<a  href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
     		sb.append(j.getPrimarySolver().getConfigurations().get(0).getId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(j.getPrimarySolver().getConfigurations().get(0).getName());
