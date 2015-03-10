@@ -233,7 +233,7 @@ DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
 		SELECT job_pairs.id, path, jobpair_stage_data.solver_name,jobpair_stage_data.solver_id,jobpair_stage_data.config_name,
-		jobpair_stage_data.config_id,bench_name,bench_id,solver_pipelines.name
+		jobpair_stage_data.config_id,bench_name,bench_id,solver_pipelines.name,
 		job_spaces.name,job_pairs.status_code,job_spaces.id, pipeline_stages.pipeline_id
 		FROM job_pairs
 		JOIN job_spaces ON job_spaces.id=job_space_id
