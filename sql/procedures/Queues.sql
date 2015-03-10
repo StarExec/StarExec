@@ -63,28 +63,24 @@ CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
 	
 -- Retrieves basic info about enqueued job pairs for the given queue id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;
-CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT)
+DROP PROCEDURE IF EXISTS GetCountOfEnqueuedJobPairsByQueue;
+CREATE PROCEDURE GetCountOfEnqueuedJobPairsByQueue(IN _id INT)
 	BEGIN
-		SELECT job_pairs.id,job_pairs.primary_jobpair_data,jobs.user_id,job_pairs.job_id,job_pairs.path, jobpair_stage_data.config_id,jobpair_stage_data.config_name,
-		jobpair_stage_data.solver_id, jobpair_stage_data.solver_name,enqueued.queue_id
+		SELECT count(*) AS count
 		FROM job_pairs
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
-		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
-		WHERE enqueued.queue_id = _id AND job_pairs.status_code = 2 AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number
-		ORDER BY job_pairs.sge_id ASC;
+		WHERE enqueued.queue_id = _id AND job_pairs.status_code = 2;
 	END //
 	
 -- Retrieves basic info about running job pairs for the given node id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetRunningJobPairsByQueue;
-CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT)
+DROP PROCEDURE IF EXISTS GetCountOfRunningJobPairsByQueue;
+CREATE PROCEDURE GetCountOfRunningJobPairsByQueue(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT count(*) AS count
 		FROM job_pairs
-		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
-		ORDER BY sge_id ASC;
+		WHERE node_id = _id AND (status_code = 4 OR status_code = 3);
 		END //	
 
 -- Get the name of a queue given its id

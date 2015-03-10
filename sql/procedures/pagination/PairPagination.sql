@@ -597,21 +597,25 @@ CREATE PROCEDURE GetNextPageOfRunningJobPairs(IN _startingRecord INT, IN _record
 			IF (_sortASC = TRUE) THEN
 				SELECT *
 				FROM job_pairs
-				WHERE node_id = _id AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3)
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+
+				WHERE node_id = _id AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3) AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
 				ORDER BY sge_id ASC
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
 			ELSE
 				SELECT *
 				FROM job_pairs
-				WHERE node_id = _id AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3)
+				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+
+				WHERE node_id = _id AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3) AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
 				ORDER BY sge_id DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;
 	END //
 	
 
--- Gets the next page of job pairs enqueued in a given queue for a datatable
+-- Gets the next page of job pairs enqueued in a given queue for a datatable. Only gets primary stage
 DROP PROCEDURE IF EXISTS GetNextPageOfEnqueuedJobPairs;
 CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recordsPerPage INT, IN _sortASC BOOLEAN, IN _id INT)
 	BEGIN
@@ -622,7 +626,7 @@ CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recor
 					-- Where the job_pair is running on the input Queue
 						INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 						JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
-					WHERE (enqueued.queue_id = _id AND job_pairs.status_code = 2)
+					WHERE (enqueued.queue_id = _id AND job_pairs.status_code = 2 AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data)
 					ORDER BY job_pairs.sge_id ASC
 				-- Shrink the results to only those required for the next page of JobPairs
 				LIMIT _startingRecord, _recordsPerPage;
@@ -633,7 +637,7 @@ CREATE PROCEDURE GetNextPageOfEnqueuedJobPairs(IN _startingRecord INT, IN _recor
 						INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 						JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 
-					WHERE (enqueued.queue_id = _id AND job_pairs.status_code = 2)
+					WHERE (enqueued.queue_id = _id AND job_pairs.status_code = 2 AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data)
 					ORDER BY job_pairs.sge_id DESC
 				LIMIT _startingRecord, _recordsPerPage;
 			END IF;

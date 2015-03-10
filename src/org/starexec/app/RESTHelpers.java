@@ -1086,8 +1086,9 @@ public class RESTHelpers {
 						id, // Parent space id
 						"queue" // It is a queue, not a node
 				);
-				List<JobPair> enqueuedPairs = Queues.getEnqueuedPairsShallow(id);
-				totalJobPairs = enqueuedPairs.size();
+				
+				
+				totalJobPairs = Queues.getCountOfEnqueuedPairsShallow(id);
 				/**
 				 * Used to display the 'total entries' information at the bottom of
 				 * the DataTable; also indirectly controls whether or not the
@@ -1123,8 +1124,7 @@ public class RESTHelpers {
 						id, // Parent space id
 						"node" // It is a node, not a queue
 				);
-				List<JobPair> runningPairs = Queues.getRunningPairsDetailed(id);
-				totalJobPairs = runningPairs.size();
+				totalJobPairs = Queues.getCountOfRunningPairsDetailed(id);
 				/**
 				 * Used to display the 'total entries' information at the bottom of
 				 * the DataTable; also indirectly controls whether or not the

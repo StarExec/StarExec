@@ -389,66 +389,28 @@ public class Queues {
 	
 	
 	
-	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue
-	 * Only shallow data for the primary stage is populated
-	 * @param con The connection to make the query on 
-	 * @param qId the ID of the queue to get the enqueued pairs of
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 * @throws Exception 
-	 */
-	protected static List<JobPair> getEnqueuedPairsShallow(Connection con, int qId) throws Exception {	
+
+	protected static int getCountOfEnqueuedPairsShallow(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
 		try {
-			 procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByQueue(?)}");
+			 procedure = con.prepareCall("{CALL GetCountOfEnqueuedJobPairsByQueue(?)}");
 			procedure.setInt(1, qId);					
 			 results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
 
-			while(results.next()){
-				JobPair jp=new JobPair();
-				jp.setPrimaryStageNumber(results.getInt("job_pairs.primary_jobpair_data")); //because we are only populating the one stage
-				jp.setPath(results.getString("job_pairs.path"));
-				jp.setJobId(results.getInt("job_pairs.job_id"));
-				jp.setId(results.getInt("job_pairs.id"));
-					
-				Benchmark b=new Benchmark();
-				b.setId(results.getInt("bench_id"));
-				b.setName(results.getString("bench_name"));
-				jp.setBench(b);
-				JoblineStage stage=new JoblineStage();
-				stage.setStageNumber(jp.getPrimaryStageNumber());
-				Configuration c = new Configuration();
-				c.setId(results.getInt("config_id"));
-				c.setName(results.getString("config_name"));
-				Solver solver = new Solver();
-				solver.setId(results.getInt("solver_id"));
-				solver.setName(results.getString("solver_name"));
-				solver.addConfiguration(c);
-				stage.setSolver(solver);
-				stage.setConfiguration(c);
-				jp.addStage(stage);
-
-				Status s = new Status();
-				//enqueued by definition, so we don't want to retrieve extra data from the db
-				s.setCode(StatusCode.STATUS_ENQUEUED);
-				
-				jp.setStatus(s);
-				returnList.add(jp);
+			if(results.next()){
+				return results.getInt("count");
 			}			
 
-			Common.safeClose(results);
-			return returnList;
+			return -1;
 		} catch (Exception e) {
-			log.error("getEnqueuedPairsShallow says "+e.getMessage(),e);
+			log.error("getCountOfEnqueuedPairsShallow says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		return null;
+		return -1;
 	}
 	
 	/**
@@ -457,19 +419,19 @@ public class Queues {
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	public static List<JobPair> getEnqueuedPairsShallow(int qId) {
+	public static int getCountOfEnqueuedPairsShallow(int qId) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getEnqueuedPairsShallow(con, qId);
+			return getCountOfEnqueuedPairsShallow(con, qId);
 		} catch (Exception e){			
-			log.error("getEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);		
+			log.error("getCountOfEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return null;		
+		return -1;		
 	}
 	
 	public static int getIdByName(String queueName) {
@@ -538,32 +500,41 @@ public class Queues {
 			List<JobPair> returnList = new LinkedList<JobPair>();
 			
 			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
+				JobPair jp=new JobPair();
+				jp.setPrimaryStageNumber(results.getInt("job_pairs.primary_jobpair_data")); //because we are only populating the one stage
+				jp.setPath(results.getString("job_pairs.path"));
+				jp.setJobId(results.getInt("job_pairs.job_id"));
+				jp.setId(results.getInt("job_pairs.id"));
+
+				Status stat = new Status();
+				//enqueued by definition, so we don't want to retrieve extra data from the db
+				stat.setCode(StatusCode.STATUS_ENQUEUED);
+				
+				jp.setStatus(stat);
+				
 				JoblineStage stage=new JoblineStage();
+				stage.setStageNumber(jp.getPrimaryStageNumber());
 
 				jp.addStage(stage);
 
 				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
 				Benchmark b=new Benchmark();
-				b.setId(results.getInt("bench_id"));
-				b.setName(results.getString("bench_name"));
+				b.setId(results.getInt("job_pairs.bench_id"));
+				b.setName(results.getString("job_pairs.bench_name"));
 				jp.setBench(b);
 				
 				Solver s=new Solver();
-				s.setId(results.getInt("solver_id"));
-				s.setName(results.getString("solver_name"));
+				s.setId(results.getInt("jobpair_stage_data.solver_id"));
+				s.setName(results.getString("jobpair_stage_data.solver_name"));
 				stage.setSolver(s);
 				
 				Configuration c = new Configuration();
-				c.setId(results.getInt("config_id"));
-				c.setName(results.getString("config_name"));
+				c.setId(results.getInt("jobpair_stage_data.config_id"));
+				c.setName(results.getString("jobpair_stage_data.config_name"));
 				stage.setConfiguration(c);
 				jp.getPrimarySolver().addConfiguration(c);
 
-				Status stat = new Status();
-
-				stat.setCode(results.getInt("status_code"));
-				jp.setStatus(stat);
+				
 				returnList.add(jp);
 			}			
 			log.debug("the returnlist had "+returnList.size()+" items");
@@ -836,38 +807,26 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 * @throws Exception 
 	 */
-	protected static List<JobPair> getRunningPairsDetailed(Connection con, int qId) throws Exception {	
+	protected static int getCountOfRunningPairsDetailed(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			procedure = con.prepareCall("{CALL GetRunningJobPairsByQueue(?)}");
+			procedure = con.prepareCall("{CALL GetCountOfRunningJobPairsByQueue(?)}");
 			procedure.setInt(1, qId);					
 			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
 
-			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				jp.setNode(Cluster.getNodeDetails(results.getInt("node_id")));	
-				jp.setBench(Benchmarks.get(results.getInt("bench_id")));
-				JoblineStage stage=new JoblineStage();
-				stage.setSolver(Solvers.getSolverByConfig(results.getInt("config_id"),false));
-				stage.setConfiguration(Solvers.getConfiguration(results.getInt("config_id")));
-				Status s = new Status();
-
-				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
-				returnList.add(jp);
+			if(results.next()){
+				return results.getInt("count");
 			}			
 
-			Common.safeClose(results);
-			return returnList;
+			return -1;
 		} catch (Exception e) {
 			log.error("getRunningPairsDetailed says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null;
+		return -1;
 	}
 	
 	
@@ -878,19 +837,19 @@ public class Queues {
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	public static List<JobPair> getRunningPairsDetailed(int qId) {
+	public static int getCountOfRunningPairsDetailed(int qId) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getRunningPairsDetailed(con, qId);
+			return getCountOfRunningPairsDetailed(con, qId);
 		} catch (Exception e){			
 			log.error("getRunningPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return null;		
+		return -1;		
 	}
 	
 	/**
