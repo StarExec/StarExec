@@ -230,8 +230,7 @@ CREATE TABLE solver_pipelines (
 	user_id INT NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
 	primary_stage_id INT, 
-	PRIMARY KEY(id),
-	CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
+	PRIMARY KEY(id)
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
 -- if config_id = -1, then that means that this is a noop entry
@@ -691,7 +690,6 @@ CREATE TABLE system_flags (
 	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );
 
-ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 
 -- table for storing statistics for the weekly report
 CREATE TABLE report_data (
@@ -704,6 +702,11 @@ CREATE TABLE report_data (
 	PRIMARY KEY(id),
 	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
 );
+
+ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
+
+ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
+
 
 INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 

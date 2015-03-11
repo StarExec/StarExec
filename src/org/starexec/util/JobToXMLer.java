@@ -83,36 +83,42 @@ public class JobToXMLer {
     public Element getPipelineElement(SolverPipeline pipeline) {
     	Element pipeElement= doc.createElement("SolverPipeline");
     	for (PipelineStage stage : pipeline.getStages()) {
-    		Element stageElement= doc.createElement("PipelineStage");
-    		Attr configId=doc.createAttribute("config");
-    		Attr keepOutput=doc.createAttribute("keepoutput");
-    		Attr isPrimary = doc.createAttribute("primary");
+    		if (stage.isNoOp()) {
+    			Element noOpElement=doc.createElement("noop");
+    			pipeElement.appendChild(noOpElement);
+    		} else {
+    			Element stageElement= doc.createElement("PipelineStage");
+        		Attr configId=doc.createAttribute("config");
+        		Attr keepOutput=doc.createAttribute("keepoutput");
+        		Attr isPrimary = doc.createAttribute("primary");
+        		
+    			configId.setValue(Integer.toString(stage.getConfigId()));
+    			keepOutput.setValue(Boolean.toString(stage.doKeepOutput()));
+    			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageId()));
+    			
+    			for (PipelineDependency dep : stage.getDependencies()) {
+    				if (dep.getType()==PipelineInputType.ARTIFACT) {
+    					Element depElement=doc.createElement("stageDependency");
+    					Attr stageAttr = doc.createAttribute("stage");
+    					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
+    					depElement.setAttributeNode(stageAttr);
+    					stageElement.appendChild(depElement);
+    				} else if (dep.getType()==PipelineInputType.BENCHMARK) {
+    					Element depElement=doc.createElement("benchmarkDependency");
+    					Attr stageAttr = doc.createAttribute("input");
+    					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
+    					depElement.setAttributeNode(stageAttr);
+    					stageElement.appendChild(depElement);
+    				}
+    			}
+    			
+    			
+    		    stageElement.setAttributeNode(configId);
+        		stageElement.setAttributeNode(keepOutput);
+        		stageElement.setAttributeNode(isPrimary);
+        		pipeElement.appendChild(stageElement);
+    		}
     		
-			configId.setValue(Integer.toString(stage.getConfigId()));
-			keepOutput.setValue(Boolean.toString(stage.doKeepOutput()));
-			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageId()));
-			
-			for (PipelineDependency dep : stage.getDependencies()) {
-				if (dep.getType()==PipelineInputType.ARTIFACT) {
-					Element depElement=doc.createElement("stageDependency");
-					Attr stageAttr = doc.createAttribute("stage");
-					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
-					depElement.setAttributeNode(stageAttr);
-					stageElement.appendChild(depElement);
-				} else if (dep.getType()==PipelineInputType.BENCHMARK) {
-					Element depElement=doc.createElement("benchmarkDependency");
-					Attr stageAttr = doc.createAttribute("input");
-					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
-					depElement.setAttributeNode(stageAttr);
-					stageElement.appendChild(depElement);
-				}
-			}
-			
-			
-		    stageElement.setAttributeNode(configId);
-    		stageElement.setAttributeNode(keepOutput);
-    		stageElement.setAttributeNode(isPrimary);
-    		pipeElement.appendChild(stageElement);
     	}
     	
     	return pipeElement;
@@ -135,7 +141,7 @@ public class JobToXMLer {
 					   Util.url("public/batchJobSchema.xsd batchJobSchema.xsd"));
 	
 	List<SolverPipeline> neededPipes = Pipelines.getPipelinesByJob(job.getId());
-	
+	log.debug("going to add this many pipelines to the xml document = "+ neededPipes.size());
 	//add all needed pipelines to the XML
 	for (SolverPipeline pipe : neededPipes) {
 		jobsElement.appendChild(getPipelineElement(pipe));

@@ -72,7 +72,7 @@ public class JobPairs {
 		CallableStatement procedure=null;
 		try {
 			
-			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, pairId);
 			if (stageId!=null) {
 				procedure.setInt(2,stageId);

@@ -209,9 +209,9 @@ public class Jobs {
 			//depending on need, going to avoid adding pipelines for pairs that just have a single solver.
 			// in the jobpair_stage_data table, stage_id will simply be null, as it already is for all 
 			// older jobs
-			//if (!addPipelinesToDatabase(job)) {
-			//	throw new Exception("Error adding pipelines to database");
-			//}
+			if (!addPipelinesToDatabase(job)) {
+				throw new Exception("Error adding pipelines to database");
+			}
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
@@ -2347,8 +2347,8 @@ public class Jobs {
 			    jp.addStage(stage);
 			    jp.setId(results.getInt("id"));
 			    jp.getStatus().setCode(results.getInt("job_pairs.status_code"));
-			    jp.getBench().setId(results.getInt("jobpair_stage_data.bench_id"));
-			    jp.getBench().setName(results.getString("jobpair_stage_data.bench_name"));
+			    jp.getBench().setId(results.getInt("job_pairs.bench_id"));
+			    jp.getBench().setName(results.getString("job_pairs.bench_name"));
 			    c.setId(results.getInt("jobpair_stage_data.config_id"));
 			    c.setName(results.getString("jobpair_stage_data.config_name"));
 			    s.setId(results.getInt("jobpair_stage_data.solver_id"));
