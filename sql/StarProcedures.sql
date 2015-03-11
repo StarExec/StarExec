@@ -11,6 +11,7 @@ source procedures/Misc.sql;
 source procedures/Permissions.sql;
 source procedures/Processors.sql;
 source procedures/Requests.sql;
+source procedures/Reports.sql;
 source procedures/Solvers.sql;
 source procedures/Spaces.sql;
 source procedures/Users.sql;

@@ -12,8 +12,8 @@ import="org.starexec.data.database.*,
 		int userId = SessionUtil.getUserId(request);
 		User currentUser = Users.get(userId);
 		// Get all the report data.
-		List<Report> reportsNotRelatedToQueues = Reports.getAllEventsAndOccurrencesNotRelatedToQueues();
-		List<List<Report>> reportsForAllQueues = Reports.getAllEventsAndOccurrencesForAllQueues();
+		List<Report> reportsNotRelatedToQueues = Reports.getAllReportsNotRelatedToQueues();
+		List<List<Report>> reportsForAllQueues = Reports.getAllReportsForAllQueues();
 
 		String subscribeUnsubscribeButtonId = "";
 		String subscribeUnsubscribeButtonMessage = "";
@@ -25,18 +25,22 @@ import="org.starexec.data.database.*,
 			subscribeUnsubscribeButtonId = "subscribe";
 			subscribeUnsubscribeButtonMessage = "subscribe to weekly report emails";
 		}
-		request.setAttribute("eventsOccurrencesNotRelatedToQueues", eventsOccurrencesNotRelatedToQueues);
+		request.setAttribute("reportsNotRelatedToQueues", reportsNotRelatedToQueues);
+		request.setAttribute("reportsForAllQueues", reportsForAllQueues);
 		request.setAttribute("subscribeUnsubscribeButtonId", subscribeUnsubscribeButtonId);
 		request.setAttribute("subscribeUnsubscribeButtonMessage", subscribeUnsubscribeButtonMessage);
 		request.setAttribute("userId", userId);
+		
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="Reports" js="explore/reports" css="common/table, details/shared,explore/jquery.qtip, explore/common">			
+<star:template title="Reports" js="explore/reports" css="explore/reports, common/table, details/shared,explore/jquery.qtip, explore/common">			
 	<div id="mainPanel">
 		<span id="userId" value="${userId}"></span>
-		<input id="${subscribeUnsubscribeButtonId}" type="button" value="${subscribeUnsubscribeButtonMessage}">
+		<div id="subscribeUnsubscribeButtonContainer">
+			<input id="${subscribeUnsubscribeButtonId}" type="button" value="${subscribeUnsubscribeButtonMessage}">
+		</div>
 		<fieldset id="mainReports">
 			<legend>main reports</legend>
 			<table id="mainReportsTable">
@@ -54,16 +58,16 @@ import="org.starexec.data.database.*,
 			</table>
 		</fieldset>
 		<c:forEach items="${reportsForAllQueues}" var="reportsForOneQueue">
-		<fieldset id="${reportsForOneQueue.get(0).getQueueName() + \"Reports\"}">
-			<legend><c:out value="${reportsForOneQueue.get(0).getQueueName() + \" reports\"}"></legend>
-			<table id="${reportsForOneQueue.get(0).getQueueName() + \"ReportsTable\"}">
+		<fieldset>
+			<legend><c:out value="reports for ${reportsForOneQueue.get(0).getQueueName()}"/></legend>
+			<table>
 				<thead>
 					<th>event</th>
 					<th>occurrences</th>
 				</thead>
 				<tbody>
 					<c:forEach items="${reportsForOneQueue}" var="report">
-					<tr><td><c:out value="${report.getEventName()}"></td><td><c:out value="${report.getOccurrences()}"/></td></tr>
+					<tr><td><c:out value="${report.getEventName()}"/></td><td><c:out value="${report.getOccurrences()}"/></td></tr>
 					</c:forEach>
 				</tbody>
 			</table>

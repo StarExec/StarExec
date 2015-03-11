@@ -700,7 +700,7 @@ CREATE TABLE report_data (
 	queue_id INT, -- NULL if data is not associated with a queue 
 	occurrences INT NOT NULL,
 
-	UNIQUE KEY(event_name),
+	UNIQUE KEY(event_name, queue_id),
 	PRIMARY KEY(id),
 	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
 );

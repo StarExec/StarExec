@@ -26,8 +26,8 @@ CREATE PROCEDURE AddToEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _ev
 
 -- Gets all event names and occurrences for all events not related to a queue.
 -- Author: Albert Giegerich
-DROP PROCEDURE IF EXISTS GetAllEventsAndOccurrencesNotRelatedToQueue;
-CREATE PROCEDURE GetAllEventsAndOccurrencesNotRelatedToQueue()
+DROP PROCEDURE IF EXISTS GetAllEventsAndOccurrencesNotRelatedToQueues;
+CREATE PROCEDURE GetAllEventsAndOccurrencesNotRelatedToQueues()
 	BEGIN
 		SELECT event_name, occurrences 
 		FROM report_data
