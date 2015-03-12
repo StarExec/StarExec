@@ -6,7 +6,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds to the value of an event's occurrences not related to a queue.
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS AddToEventOccurrencesNotRelatedToQueue; 
-CREATE PROCEDURE AddToEventOccurrences(IN _eventName VARCHAR(64), IN _eventOccurrences INT)
+CREATE PROCEDURE AddToEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT)
 	BEGIN
 		UPDATE report_data
 		SET occurrences = occurrences + _eventOccurrences
@@ -48,7 +48,7 @@ CREATE PROCEDURE GetAllEventsAndOccurrencesForAllQueues()
 -- Gets the number of occurrences for an event not related to a queue.
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS GetEventOccurrencesNotRelatedToQueues;
-CREATE PROCEDURE GetEventOccurrences(IN _eventName VARCHAR(64))
+CREATE PROCEDURE GetEventOccurrencesNotRelatedToQueues(IN _eventName VARCHAR(64))
 	BEGIN
 		SELECT occurrences 
 		FROM report_data

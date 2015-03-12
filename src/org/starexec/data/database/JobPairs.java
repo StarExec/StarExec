@@ -130,7 +130,11 @@ public class JobPairs {
 
 			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
 				JoblineStage  stage= pair.getStageFromNumber(stageNumber);
-				addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),pair.getJobSpaceId(),con);
+				//we don't store noops in the database, as we know that they have nothing to save
+				if (!stage.isNoOp()) {
+					addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),pair.getJobSpaceId(),con);
+
+				}
 			}
 			for (int i=0;i<pair.getBenchInputs().size();i++) {
 				addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);

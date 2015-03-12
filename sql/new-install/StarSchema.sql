@@ -233,14 +233,16 @@ CREATE TABLE solver_pipelines (
 	PRIMARY KEY(id)
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
--- if config_id = -1, then that means that this is a noop entry
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
-	config_id INT NOT NULL,
+	config_id INT,
 	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
+	is_noop BOOLEAN NOT NULL DEFAULT FALSE, -- note that we cannot say that this is a noop if config_id is null, because the config
+								   -- could have just been deleted. We really do need to store this explicitly
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
 	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE
+	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL
 );
 
 

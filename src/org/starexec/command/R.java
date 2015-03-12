@@ -244,6 +244,7 @@ public class R {
 	public static String PARAM_USER="u";
 	public static String PARAM_PASSWORD="p";
 	public static String PARAM_BASEURL="addr";
+	public static String PARAM_GET_ATTRIBUTES="attr";
 	public static String PARAM_VERBOSE="verbose";
 	public static String[] PARAMS_PERMS={"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	public static String PARAM_TIME="t";

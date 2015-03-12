@@ -8,7 +8,7 @@ import org.starexec.data.to.*;
 public class PipelineStage extends Identifiable {
 
 	private int pipelineId;
-	private int configId;
+	private Integer configId;
 	private boolean keepOutput;
 	private boolean noOp;
 	//this field is not stored in the database-- it is transiently used during a job XML upload
@@ -26,10 +26,10 @@ public class PipelineStage extends Identifiable {
 	public void setPipelineId(int pipelineId) {
 		this.pipelineId = pipelineId;
 	}
-	public int getConfigId() {
+	public Integer getConfigId() {
 		return configId;
 	}
-	public void setConfigId(int configId) {
+	public void setConfigId(Integer configId) {
 		this.configId = configId;
 	}
 

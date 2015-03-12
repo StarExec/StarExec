@@ -426,12 +426,15 @@ class ArgumentParser {
 				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
 				return con.downloadJobPairs(ids, location);
 			} else { 
-				Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));			 
-
+				Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));		
+				Integer updateId=null;
+				if (commandParams.containsKey(R.PARAM_PROCID)) {
+					updateId=Integer.parseInt(commandParams.get(R.PARAM_PROCID));
+				}
 				//First, put in the request for the server to generate the desired archive			
 				return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),
 						commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(R.PARAM_INCLUDE_IDS),
-						hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED));
+						hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED),commandParams.containsKey(R.PARAM_GET_ATTRIBUTES),updateId);
 			}
 			
 

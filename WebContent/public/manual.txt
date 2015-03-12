@@ -39,6 +39,8 @@ be included when specifying parameters. Parameters are NOT case sensitive.
 
 "addr"--Specifies the base URL at which to log into Starexec. The URL should be absolute and should end with a '/'.
 
+"attr" -- Include benchmark attributes in the XML. Used for space XML downloads.
+
 "allPerm"--Indicated that all permissions should be enabled for an upload. All permissions are disabled 
 by default. allPerm has no value.
 
@@ -97,7 +99,7 @@ corresponds to a dependent bench space.
 
 "pause" -When creating a job, indicates that the job should be paused on startup.
 
-"pid" -Specifies a post processor id (used only in job creation).
+"pid" -Specifies a post processor id in job creation. Specifies an update processor when downloading space XML
 
 "preid" -Specifies a pre processor id (used only in job creation).
 
@@ -290,7 +292,7 @@ OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacexml -Downloads an XML file representing the space hierarchy.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow" "attr" "pid"
 
 --getjobxml -Downloads an XML file representing a specific job
 REQUIRED: "id" "out"

@@ -80,4 +80,15 @@ UPDATE solver_pipelines JOIN pipeline_stages ON solver_pipelines.id = pipeline_s
 
 ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
 
+
+-- Step 9: Drop not null constraint on pipelines to support noops
+
+ALTER TABLE pipeline_stages MODIFY config_id INT;
+
+UPDATE pipeline_stages LEFT JOIN configurations ON configurations.id=pipeline_stages.config_id SET pipeline_stages.config_id=null where configurations.name is null;
+
+ALTER TABLE pipeline_stages ADD CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL;
+
+ALTER TABLE pipeline_stages ADD COLUMN is_noop BOOLEAN NOT NULL DEFAULT FALSE;
+
 COMMIT;

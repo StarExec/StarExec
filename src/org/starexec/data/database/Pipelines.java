@@ -69,6 +69,7 @@ public class Pipelines {
 				stage.setPipelineId(pipeId);
 				stage.setConfigId(results.getInt("config_id"));
 				stage.setId(results.getInt("stage_id"));
+				stage.setNoOp(results.getBoolean("is_noop"));
 				stage.setDependencies(getDependenciesForStage(stage.getId(),con));
 				stages.add(stage);
 			}
@@ -153,15 +154,21 @@ public class Pipelines {
 	public static int addPipelineStageToDatabase(PipelineStage stage, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
-			procedure.setInt(2,stage.getConfigId());
+			if (!stage.isNoOp()) {
+				procedure.setInt(2,stage.getConfigId());
+
+			} else {
+				procedure.setNull(2,java.sql.Types.INTEGER);
+			}
 			procedure.setBoolean(3, stage.doKeepOutput());
 			procedure.setBoolean(4,stage.isPrimary());
-			procedure.registerOutParameter(5, java.sql.Types.INTEGER);
+			procedure.setBoolean(5, stage.isNoOp());
+			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			log.debug("trying to use the config id = "+stage.getConfigId());
 			procedure.executeUpdate();
-			int id = procedure.getInt(5);			
+			int id = procedure.getInt(6);			
 			stage.setId(id);
 			
 			for (PipelineDependency dep : stage.getDependencies()) {

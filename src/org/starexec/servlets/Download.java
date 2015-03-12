@@ -123,10 +123,10 @@ public class Download extends HttpServlet {
 				}
 				if (Util.paramExists("updates",request)) {
 				    updates=Boolean.parseBoolean(request.getParameter("updates"));
-				}
-				if (Util.paramExists("updates",request)) {
 				    upid=Integer.parseInt(request.getParameter("upid"));
+
 				}
+				
 			success = handleSpaceXML(space, u.getId(), response, includeAttributes,updates,upid);
 
 			} else if (request.getParameter("type").equals("jobXML")) {

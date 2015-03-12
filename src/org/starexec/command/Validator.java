@@ -36,6 +36,8 @@ public class Validator {
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
+	private static String[] allowedDownloadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_GET_ATTRIBUTES,R.PARAM_PROCID};
+
 	private static String[] allowedNewDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_SINCE};
 	private static String[] allowedDownloadSpaceParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_EXCLUDE_BENCHMARKS,R.PARAM_EXCLUDE_SOLVERS};
 	private static String[] allowedDownloadCSVParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_INCLUDE_IDS, R.PARAM_ONLY_COMPLETED};
@@ -273,7 +275,7 @@ public class Validator {
 	 * @return
 	 */
 	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type,Integer since) {
-		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
+		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
@@ -292,6 +294,11 @@ public class Validator {
 
 			}
 		}
+		if (commandParams.containsKey(R.PARAM_PROCID)) {
+			if (!Validator.isValidInteger(commandParams.get(R.PARAM_PROCID))) {
+				return Status.ERROR_INVALID_ID;
+			}
+		}
 		
 		//if the file exists already, make sure the user explicitly wants to overwrite the existing file
 		File testFile=new File(outputLocale);
@@ -305,7 +312,9 @@ public class Validator {
 			findUnnecessaryParams(allowedDownloadCSVParams,commandParams);
 		} else if  (type.equals("space")) {
 			findUnnecessaryParams(allowedDownloadSpaceParams,commandParams);
-		} 
+		}  else if (type.equals("spaceXML")) {
+			findUnnecessaryParams(allowedDownloadSpaceXMLParams,commandParams);
+		}
 		else {
 			if (since==null) {
 				findUnnecessaryParams(allowedDownloadParams,commandParams);

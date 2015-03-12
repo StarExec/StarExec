@@ -179,7 +179,8 @@ public class JobUtil {
 		pipeline.setUserId(userId);
 		
 		pipeline.setName(pipeElement.getAttribute("name"));
-		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
+		
+		NodeList stages= pipeElement.getChildNodes();
 		
 		//data structure for storing all of the unique benchmark inputs in this upload.
 		//We need to validate the following rule-- if there are n unique benchmark inputs,
@@ -191,79 +192,90 @@ public class JobUtil {
 		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
 		for (int i=0;i<stages.getLength();i++) {
 			int currentStage=i+1;
-			Element stage=(Element)stages.item(i);
-			PipelineStage s=new PipelineStage();
-			
-			if (stage.hasAttribute("keepoutput")) {
-				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
-			} else {
-				s.setKeepOutput(false);
-			}
-			
-			if (stage.hasAttribute("primary")) {
-				boolean currentPrimary=Boolean.parseBoolean(stage.getAttribute("primary"));
-				if (currentPrimary) {
-					if (foundPrimary) {
-						errorMessage="More than one primary stage for pipeline "+pipeline.getName();
-						return null;
-					}
-					foundPrimary=true;
+			if (stages.item(i).getNodeName().equals("PipelineStage")) {
+				Element stage=(Element)stages.item(i);
+				PipelineStage s=new PipelineStage();
+				s.setNoOp(false);
+				if (stage.hasAttribute("keepoutput")) {
+					s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
+				} else {
+					s.setKeepOutput(false);
 				}
-				s.setPrimary(true);
-				pipeline.setPrimaryStageId(currentStage);
-			} else {
-				s.setPrimary(false);
-			}
-			
-			s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
-			// make sure the user is authorized to use the solver they are trying to use
-			Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
-			if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-			    errorMessage = "You do not have permission to see the solver " + s.getId();
-			    return null;
-			}
-			
-			
-			if (stage.hasAttribute("keepoutput")) {
-				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
-			}
-			NodeList dependencies=stage.getChildNodes();
-			int inputNumber=0; 
-			for (int x=0;x<dependencies.getLength();x++) {
 				
-				Node t=dependencies.item(x);
-				if (t.getNodeType() == Node.ELEMENT_NODE) {
-					Element dependency = (Element) t;
-					PipelineDependency dep = new PipelineDependency();
-					if (dependency.getTagName().equals("stageDependency")) {
-						inputNumber++;
-						
-						dep.setType(PipelineInputType.ARTIFACT);
-						int neededStageId=Integer.parseInt(dependency.getAttribute("stage"));
-						
-						if (neededStageId<1) {
-							errorMessage = "Invalid stage dependency-- all stages are numbered 1 or greater";
+				if (stage.hasAttribute("primary")) {
+					boolean currentPrimary=Boolean.parseBoolean(stage.getAttribute("primary"));
+					if (currentPrimary) {
+						if (foundPrimary) {
+							errorMessage="More than one primary stage for pipeline "+pipeline.getName();
 							return null;
-						} else if (neededStageId>=(currentStage-1)) {
-							errorMessage="Invalid stage dependency-- stages can only depend on earlier stages, and a"
-									+ " stages implicitly depend on previous stages. Bad dependency =  Stage "+currentStage+" depends on"
-											+ " stage "+neededStageId;
-									
 						}
-						dep.setDependencyId(neededStageId);		
-					} else if (dependency.getTagName().equals("benchmarkDependency")) {
-						inputNumber++;
-						
-						dep.setType(PipelineInputType.BENCHMARK);
-						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
-						benchmarkInputs.add(dep.getDependencyId());
+						foundPrimary=true;
 					}
-					dep.setInputNumber(inputNumber);
-					s.addDependency(dep);
-					
+					s.setPrimary(true);
+					pipeline.setPrimaryStageId(currentStage);
+				} else {
+					s.setPrimary(false);
 				}
+				
+				s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
+				// make sure the user is authorized to use the solver they are trying to use
+				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
+				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
+				    errorMessage = "You do not have permission to see the solver " + s.getId();
+				    return null;
+				}
+				
+				
+				if (stage.hasAttribute("keepoutput")) {
+					s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
+				}
+				NodeList dependencies=stage.getChildNodes();
+				int inputNumber=0; 
+				for (int x=0;x<dependencies.getLength();x++) {
+					
+					Node t=dependencies.item(x);
+					if (t.getNodeType() == Node.ELEMENT_NODE) {
+						Element dependency = (Element) t;
+						PipelineDependency dep = new PipelineDependency();
+						if (dependency.getTagName().equals("stageDependency")) {
+							inputNumber++;
+							
+							dep.setType(PipelineInputType.ARTIFACT);
+							int neededStageId=Integer.parseInt(dependency.getAttribute("stage"));
+							
+							if (neededStageId<1) {
+								errorMessage = "Invalid stage dependency-- all stages are numbered 1 or greater";
+								return null;
+							} else if (neededStageId>=(currentStage-1)) {
+								errorMessage="Invalid stage dependency-- stages can only depend on earlier stages, and a"
+										+ " stages implicitly depend on previous stages. Bad dependency =  Stage "+currentStage+" depends on"
+												+ " stage "+neededStageId;
+										
+							}
+							dep.setDependencyId(neededStageId);		
+						} else if (dependency.getTagName().equals("benchmarkDependency")) {
+							inputNumber++;
+							
+							dep.setType(PipelineInputType.BENCHMARK);
+							dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
+							benchmarkInputs.add(dep.getDependencyId());
+						}
+						dep.setInputNumber(inputNumber);
+						s.addDependency(dep);
+						
+					}
+				}
+				stageList.add(s);
+			} else if (stages.item(i).getNodeName().equals("noop")) {
+				PipelineStage stage=new PipelineStage();
+				stage.setNoOp(true);
+				stage.setKeepOutput(false);
+				stage.setConfigId(null);
+				stage.setPrimary(false);
+				stageList.add(stage);
+
 			}
-			stageList.add(s);
+			
 		}
 		//ensure that benchmark inputs are ordered correctly
 		int maxSeen=Collections.max(benchmarkInputs);
@@ -534,28 +546,34 @@ public class JobUtil {
 					// add all the jobline stages to this pair
 					for (PipelineStage s : currentPipe.getStages()) {
 						JoblineStage stage = new JoblineStage();
-						
-						int configId=s.getConfigId();
-						
-						if (!configIdsToSolvers.containsKey(configId)) {
-							Solver solver = Solvers.getSolverByConfig(configId, false);
-							if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-							    errorMessage = "You do not have permission to see the solver " + s.getId();
-							    return -1;
+						if (s.isNoOp()) {
+							stage.setNoOp(true);
+
+						} else {
+							stage.setNoOp(false);
+							int configId=s.getConfigId();
+							
+							if (!configIdsToSolvers.containsKey(configId)) {
+								Solver solver = Solvers.getSolverByConfig(configId, false);
+								if (!Permissions.canUserSeeSolver(s.getId(), userId)){
+								    errorMessage = "You do not have permission to see the solver " + s.getId();
+								    return -1;
+								}
+								solver.addConfiguration(Solvers.getConfiguration(configId));
+								configIdsToSolvers.put(configId, solver);
 							}
-							solver.addConfiguration(Solvers.getConfiguration(configId));
-							configIdsToSolvers.put(configId, solver);
+							Solver solver = configIdsToSolvers.get(configId);
+							stage.setSolver(solver);
+							stage.setConfiguration(solver.getConfigurations().get(0));
+							stage.setStageId(s.getId());
+							
+							jobPair.addStage(stage);
+							// if the stage is primary, then set it as such in the job pair
+							if (s.isPrimary()) {
+								jobPair.setPrimaryStageNumber(jobPair.getStages().size());
+							}
 						}
-						Solver solver = configIdsToSolvers.get(configId);
-						stage.setSolver(solver);
-						stage.setConfiguration(solver.getConfigurations().get(0));
-						stage.setStageId(s.getId());
 						
-						jobPair.addStage(stage);
-						// if the stage is primary, then set it as such in the job pair
-						if (s.isPrimary()) {
-							jobPair.setPrimaryStageNumber(jobPair.getStages().size());
-						}
 					}
 					jobPair.setSpace(Spaces.get(spaceId));
 					job.addJobPair(jobPair);
