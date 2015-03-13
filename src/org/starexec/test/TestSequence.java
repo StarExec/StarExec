@@ -10,7 +10,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public abstract class TestSequence {
-	private static final Logger log = Logger.getLogger(TestSequence.class);	
+	protected static final Logger log = Logger.getLogger(TestSequence.class);	
 	protected String sequenceName="No Name";
 	protected TestStatus status=new TestStatus();
 	protected String message="No Message";

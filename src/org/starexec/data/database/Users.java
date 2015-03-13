@@ -259,7 +259,6 @@ public class Users {
 	 * @author Tyler Jensen
 	 */
 	public static User get(int id){
-		log.debug("Getting user with id " + id + ".");
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;

@@ -2,12 +2,16 @@ package org.starexec.data.to.compare;
 
 import java.util.Comparator;
 
+import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.test.TestSequence;
 
 public class JobPairComparator implements Comparator<JobPair> {
+	protected static final Logger log = Logger.getLogger(JobPairComparator.class);	
+
 	private int column; //will specify which field we are using to sort the job pairs
 	private int stageNumber;
 	private boolean asc;
@@ -68,6 +72,8 @@ public class JobPairComparator implements Comparator<JobPair> {
 	 */ 
 	private int compareJobPairNums(JobPair jp1, JobPair jp2) {
 		try {
+			JoblineStage stage1=jp1.getStageFromNumber(stageNumber);
+			JoblineStage stage2=jp2.getStageFromNumber(stageNumber);
 			double db1=0;
 			double db2=0;
 			if (column==6) {
@@ -77,12 +83,13 @@ public class JobPairComparator implements Comparator<JobPair> {
 				db1=jp1.getCompletionId();
 				db2=jp2.getCompletionId();
 			} else if (column==4) {
-				db1=jp1.getPrimaryWallclockTime();
-				db2=jp2.getPrimaryWallclockTime();
+				db1=stage1.getWallclockTime();
+				db2=stage2.getWallclockTime();
 				
 			} else  {
-				db1=jp1.getPrimaryCpuTime();
-				db2=jp2.getPrimaryCpuTime();
+				db1=stage1.getCpuTime();
+				db2=stage2.getCpuTime();			
+
 			}
 			
 			return Double.compare(db1, db2);
@@ -120,7 +127,7 @@ public class JobPairComparator implements Comparator<JobPair> {
 			o1=o2;
 			o2=temp;
 		}
-		if (column!=4 &&column!=6 &&column!=7) {
+		if (column!=4 &&column!=6 &&column!=7 && column!=8) {
 			return compareJobPairStrings(o1,o2);
 		} else {
 			return compareJobPairNums(o1,o2);

@@ -110,7 +110,7 @@ public class ComparatorTests extends TestSequence {
 			JobPair p2=new JobPair();
 			p1.setBench(b1);
 			p2.setBench(b2);
-			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
+			Assert.assertTrue(comp.compare(p1, p2)==a.compareToIgnoreCase(b));
 		}
 		comp=new JobPairComparator(1,0,true);
 		for (int x=0;x<100;x++) {
@@ -126,9 +126,9 @@ public class ComparatorTests extends TestSequence {
 			JoblineStage st2=new JoblineStage();
 			p1.addStage(st1);
 			p2.addStage(st2);
-			st2.setSolver(s1);
+			st1.setSolver(s1);
 			st2.setSolver(s2);
-			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
+			Assert.assertTrue(comp.compare(p1, p2)==a.compareToIgnoreCase(b));
 		}
 		comp=new JobPairComparator(2,0,true);
 		for (int x=0;x<100;x++) {
@@ -146,7 +146,7 @@ public class ComparatorTests extends TestSequence {
 			p2.addStage(s2);
 			s1.setConfiguration(c1);
 			s2.setConfiguration(c2);
-			Assert.assertTrue(comp.compare(p1, p1)==a.compareToIgnoreCase(b));
+			Assert.assertTrue(comp.compare(p1, p2)==a.compareToIgnoreCase(b));
 		}
 		
 		comp=new JobPairComparator(4,0,true);
@@ -162,7 +162,7 @@ public class ComparatorTests extends TestSequence {
 			p2.addStage(s2);
 			s1.setWallclockTime(a);
 			s2.setWallclockTime(b);
-			Assert.assertTrue(comp.compare(p1, p1)==Double.compare(a, b));
+			Assert.assertTrue(comp.compare(p1, p2)==Double.compare(a, b));
 		}
 		
 		comp=new JobPairComparator(8,0,true);
@@ -178,7 +178,7 @@ public class ComparatorTests extends TestSequence {
 			p2.addStage(s2);
 			s1.setCpuUsage(a);
 			s2.setCpuUsage(b);
-			Assert.assertTrue(comp.compare(p1, p1)==Double.compare(a, b));
+			Assert.assertTrue(comp.compare(p1, p2)==Double.compare(a, b));
 		}
 	}
 	

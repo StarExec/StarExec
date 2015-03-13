@@ -251,10 +251,11 @@ CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 				
-									JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+									
+									JOIN 	jobpair_stage_data AS jobpair_stage_data  ON jobpair_stage_data.jobpair_id=job_pairs.id
+									JOIN	configurations	AS	config	ON	jobpair_stage_data.config_id = config.id 
 									JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 									JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
-									JOIN 	jobpair_stage_data AS jobpair_stage_data  ON jobpair_stage_data.jobpair_id=job_pairs.id
 									LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 									LEFT JOIN	job_spaces 		AS  jobSpace ON jobSpace.id=job_pairs.job_space_id
 									
@@ -377,12 +378,13 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
-						JOIN	configurations	AS	config	ON	job_pairs.config_id = config.id 
+						JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
+
+						JOIN	configurations	AS	config	ON	jobpair_stage_data.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 
-					   INNER JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId
 		ORDER BY job_pairs.end_time DESC;
@@ -748,7 +750,7 @@ CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
 		SELECT COUNT(distinct job_pairs.id) AS count
 		FROM job_pairs 
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE job_pairs.job_id=_jobId and _status=status_code AND (jobpair_stage_data.wallclock=0 OR jobpair_stage_data.cpu=0);
+		WHERE job_pairs.job_id=_jobId and _status=job_pairs.status_code AND (jobpair_stage_data.wallclock=0 OR jobpair_stage_data.cpu=0);
 	END //
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor
