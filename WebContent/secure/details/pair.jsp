@@ -17,13 +17,11 @@
 			Job j = Jobs.get(jp.getJobId());
 			
 			User u = Users.get(j.getUserId());
-			String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp,100));
 			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
-			request.setAttribute("output",output);
 			request.setAttribute("log",log);
 			request.setAttribute("rerun",canRerun);
 		} else {
@@ -178,6 +176,15 @@
 				</fieldset>
 				
 				
+				
+				<fieldset id="fieldOutput">		
+						<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
+						<textarea class=contentTextarea id="jpStdout" readonly="readonly">${JobPairs.getStdOut(jp.getId(),stage.stageNumber,100)}</textarea>	
+						<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
+						<p class="caption">output may be truncated. 'popout' for the full output.</p>
+				</fieldset>
+				
+				
 			</c:forEach>
 			
 		</c:when>				
@@ -189,12 +196,7 @@
 	
 	
 	
-	<fieldset id="fieldOutput">		
-			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
-			<textarea class=contentTextarea id="jpStdout" readonly="readonly">${output}</textarea>	
-			<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
-			<p class="caption">output may be truncated. 'popout' for the full output.</p>
-	</fieldset>
+
 	
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			

@@ -149,17 +149,7 @@ public class JobPairs {
 		return false;
 	}
 	
-	  /**
-     * Finds the standard output of a job pair and returns it as a string. Null
-     * is returned if the output doesn't exist or cannot be found
-     * @param limit The max number of characters to return
-     * @param pair The pair to get output for
-     * @return All console output from a job pair run for the given pair
-     */
-    public static String getStdOut(JobPair pair, int limit) {
-    	pair = JobPairs.getPairDetailed(pair.getId());
-    	return JobPairs.getStdOut(pair.getId(),limit);
-    }
+	 
 
     /**
      * Finds the standard output of a job pair and returns it as a string. Null
@@ -170,24 +160,13 @@ public class JobPairs {
      * @param path The path to the job pair file
      * @return All console output from a job pair run for the given pair
      */
-    public static String getStdOut(int pairId,int limit) {		
-    	File stdoutFile = JobPairs.getStdOutFile(pairId);		
-    	return Util.readFileLimited(stdoutFile, limit);
+    public static String getStdOut(int pairId,int stageNumber,int limit) {		
+    	String stdoutPath= JobPairs.getFilePath(pairId,stageNumber);
+    	
+    	return Util.readFileLimited(new File(stdoutPath), limit);
     }
 
-    /**
-     * Finds the standard output of a job pair and returns its file.
-     * @param jobId The id of the job the pair is apart of
-     * @param pairId The pair to get output for
-     * @param path The space path to the job pair file
-     * @return All console output from a job pair run for the given pair
-     */
-    public static File getStdOutFile(int pairId) {	
-    	String stdoutPath=JobPairs.getFilePath(pairId);
-    	log.info("The stdoutPath is: " + stdoutPath);
-
-    	return (new File(stdoutPath));	
-    }
+    
 
 	/**
 	 * Returns all pairs that are waiting on post processing. Returns a hashmap mapping
@@ -654,7 +633,8 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Gets the path to the output file  for this pair.
+	 * Gets the path to the directory containing all output files for this job.
+	 * For jobs created before solver pipelines, returns the single output file for the job
 	 * @param pairId The id of the pair to get the filepath for
 	 * @return The string path, or null on failure
 	 * @author Eric Burns
@@ -662,8 +642,18 @@ public class JobPairs {
 	
 	public static String getFilePath(int pairId) {
 		return getFilePath(getFilePathInfo(pairId));
-
-		
+	}
+	
+	/**
+	 * Gets the path to the output file for the given job pair and stage
+	 * 
+	 * @param pairId
+	 * @param stageNumber
+	 * @return
+	 */
+	
+	public static String getFilePath(int pairId, int stageNumber) {
+		return getFilePath(getFilePathInfo(pairId),stageNumber);
 	}
 	
 	/**
@@ -751,13 +741,39 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Gets the path to the output file  for this pair. Requires that the 
-	 * jobId, path, solver name, config name, and bench names be populated
+	 * Retrieves the output of a single stage of the given job pair. Requires that the
+	 * jobId, path, solver name, config name, and bench names of the PRIMARY STAGE be populated.
+	 * The fields do NOT need to be populated for given stage, ONLY the primary stage
+	 * @param pair
+	 * @param stageNumber A number >=1 representing the stage of this pair
+	 * @return
+	 */
+	public static String getFilePath(JobPair pair, int stageNumber) {
+		String path=getFilePath(pair); //this is the path to the top level directory of the pair
+		
+		File f=new File(path);
+		if (f.isDirectory()) {
+			//means this is a job created after stages were implemented
+			return new File(f,stageNumber+".txt").getAbsolutePath();
+			
+			
+			
+		} else {
+			//if we get down here, it means that c
+			return path; 
+		}
+	}
+	
+	/**
+	 * Gets the path to the directory that contains all the output files for every stage in this pair.
+	 * For old pairs that do not have stages, simply returns the path to the single output file for this pair.
+	 * Requires that the  jobId, path, solver name, config name, and bench names be populated for the PRIMARY STAGES
 	 * @param pair The pair to get the filepath for
 	 * @return The string path, or null on failure
 	 * @author Eric Burns
 	 */
 	
+	//Note that this function tries several things due to supporting several layers of backwards compatibility
 	public static String getFilePath(JobPair pair) {
 		try {
 			File file=new File(Jobs.getDirectory(pair.getJobId()));
@@ -784,8 +800,17 @@ public class JobPairs {
 			} else if (file.isFile()) { // if it is a file, we have already got the full path
 				return file.getAbsolutePath();
 			}
-			//otherwise, we need to add the pair ID as another directory (this is the most current path to job pairs)
-			file=new File(file,pair.getId()+".txt");
+			
+			//before solver pipelines, pairs were stored as a single file titled <pairid>.txt . If that file exists, returns it
+			File testFile=new File(file,pair.getId()+".txt");
+			
+			if (testFile.exists()) {
+				return testFile.getAbsolutePath();
+			}
+			
+			//otherwise, this is a modern job, and we return a directory with the name of the pair id
+			
+			file=new File(file,String.valueOf(pair.getId()));
 
 			return file.getAbsolutePath();
 		} catch(Exception e) {
@@ -854,16 +879,12 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL GetJobPairById(?)}");
 			procedure.setInt(1, pairId);					
 			results = procedure.executeQuery();
-			Solver defaultSolver=new Solver();
-			Configuration defaultConfiguration=new Configuration();
+			
 			JobPair jp=null;
 			// first, we get the top level info from the job_pairs table
 			if(results.next()){
 				jp = JobPairs.resultToPair(results);
-				defaultSolver.setId(results.getInt("solver_id"));
-				defaultSolver.setName(results.getString("solver_name"));
-				defaultConfiguration.setId(results.getInt("config_id"));
-				defaultConfiguration.setName(results.getString("config_name"));
+				
 				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),true));
 				
@@ -885,19 +906,34 @@ public class JobPairs {
 			while (results.next()) {
 				JoblineStage stage=resultToStage(results);
 				int configId=results.getInt("config_id");
+				int solverId=results.getInt("solver_id");
+				String configName=results.getString("config_name");
+				String solverName=results.getString("solver_name");
 				//means this stage has no configuration
 				if (configId==-1) {
 					stage.setNoOp(true);
 				}else if (configId>0) {
-					stage.setSolver(Solvers.getSolverByConfig(con, configId,true));
-					stage.setConfiguration(Solvers.getConfiguration(configId));
-				} else {
-					//otherwise, this is not a noop, but we couldn't find an entry in the pipeline_stages
-					// so we want to take the default solver and config
-					stage.setSolver(defaultSolver);
-					stage.setConfiguration(defaultConfiguration);
+					Solver solver = Solvers.getSolverByConfig(con, configId,true);
+					Configuration c=Solvers.getConfiguration(configId);
+					
+					//this can happen if the pair references a deleted solver
+					if (solver==null) {
+						solver=new Solver();
+						solver.setId(solverId);
+						solver.setName(solverName);
+					}
+					
+					if (c==null) {
+						c=new Configuration();
+						c.setId(configId);
+						c.setName(configName);
+					}
+					
+					stage.setSolver(solver);
+					stage.setConfiguration(c);
+					stage.getSolver().addConfiguration(c);
 				}
-				stage.getSolver().addConfiguration(stage.getConfiguration());
+
 
 				jp.addStage(stage);
 			}

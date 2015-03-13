@@ -61,45 +61,7 @@ public class Util {
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
 
 
-    /**
-     * Finds the standard output of a job pair and returns it as a string. Null
-     * is returned if the output doesn't exist or cannot be found
-     * @param limit The max number of characters to return
-     * @param pair The pair to get output for
-     * @return All console output from a job pair run for the given pair
-     */
-    public static String getStdOut(JobPair pair, int limit) {
-    	pair = JobPairs.getPairDetailed(pair.getId());
-    	return Util.getStdOut(pair.getId(),limit);
-    }
-
-    /**
-     * Finds the standard output of a job pair and returns it as a string. Null
-     * is returned if the output doesn't exist or cannot be found
-     * @param jobId The id of the job the pair is apart of
-     * @param pairId The pair to get output for
-     * @param limit The maximum number of lines to return
-     * @param path The path to the job pair file
-     * @return All console output from a job pair run for the given pair
-     */
-    public static String getStdOut(int pairId,int limit) {		
-    	File stdoutFile = Util.getStdOutFile(pairId);		
-    	return Util.readFileLimited(stdoutFile, limit);
-    }
-
-    /**
-     * Finds the standard output of a job pair and returns its file.
-     * @param jobId The id of the job the pair is apart of
-     * @param pairId The pair to get output for
-     * @param path The space path to the job pair file
-     * @return All console output from a job pair run for the given pair
-     */
-    public static File getStdOutFile(int pairId) {	
-    	String stdoutPath=JobPairs.getFilePath(pairId);
-    	log.info("The stdoutPath is: " + stdoutPath);
-
-    	return (new File(stdoutPath));	
-    }
+  
     
     /**
      * Checks to see if the two given objects are equal without throwing any null pointers.

@@ -465,9 +465,9 @@ public class RESTServices {
 	 * @author Tyler Jensen
 	 */
 	@GET
-	@Path("/jobs/pairs/{id}/stdout")
+	@Path("/jobs/pairs/{id}/stdout/{stageNumber}")
 	@Produces("text/plain")	
-	public String getJobPairStdout(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+	public String getJobPairStdout(@PathParam("id") int id,@PathParam("stageNumber") int stageNumber, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
@@ -475,14 +475,12 @@ public class RESTServices {
 			return "not available";
 		}
 		if(jp != null) {			
-			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
-				Jobs.get(jp.getJobId());			
-				String stdout = Util.getStdOut(jp, limit);
-				if(!Util.isNullOrEmpty(stdout)) {
-					return stdout;
-				}				
+			String stdout = JobPairs.getStdOut(jp.getId(),stageNumber, limit);
+			if(!Util.isNullOrEmpty(stdout)) {
+				return stdout;
+			}				
 			
-		}
+		
 		}
 		
 		return "not available";
