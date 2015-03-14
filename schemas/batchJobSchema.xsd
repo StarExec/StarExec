@@ -68,7 +68,7 @@
     
     <complexType name="StageAttributes">
       <sequence>	
-    	<element name="stage-num" type="int" minOccurs="1" maxOccurs="1"></element> 
+    	<element name="stage-num" type="tns:intInfo" minOccurs="1" maxOccurs="1"></element> 
     	<element name="cpu-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
     	<element name="wallclock-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
     	
