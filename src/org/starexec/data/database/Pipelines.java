@@ -104,7 +104,7 @@ public class Pipelines {
 				pipe.setName(results.getString("name"));
 				pipe.setUploadDate(results.getTimestamp("uploaded"));
 				pipe.setUserId(results.getInt("user_id"));
-				pipe.setPrimaryStageId(results.getInt("primary_stage_id"));
+				pipe.setPrimaryStageNumber(results.getInt("primary_stage_id"));
 				pipe.setStages(getStagesForPipeline(id,con));
 				return pipe;
 			}
@@ -209,7 +209,7 @@ public class Pipelines {
 			int number=1;
 			for (PipelineStage stage : pipe.getStages()) {
 				stage.setPipelineId(pipe.getId());
-				if (number==pipe.getPrimaryStageId()) {
+				if (number==pipe.getPrimaryStageNumber()) {
 					stage.setPrimary(true);
 				} else {
 					stage.setPrimary(false);

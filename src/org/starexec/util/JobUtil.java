@@ -214,7 +214,7 @@ public class JobUtil {
 						foundPrimary=true;
 					}
 					s.setPrimary(true);
-					pipeline.setPrimaryStageId(currentStage);
+					pipeline.setPrimaryStageNumber(currentStage);
 				} else {
 					s.setPrimary(false);
 				}
@@ -288,6 +288,10 @@ public class JobUtil {
 		}
 		if (stageList.size()>R.MAX_STAGES_PER_PIPELINE) {
 			errorMessage="Too many stages in pipeline "+pipeline.getName()+". The maximum is "+R.MAX_STAGES_PER_PIPELINE;
+			return null;
+		}
+		if (!foundPrimary) {
+			errorMessage="No primary stage specified for pipeline "+pipeline.getName();
 			return null;
 		}
 		pipeline.setStages(stageList);
@@ -577,7 +581,7 @@ public class JobUtil {
 						JoblineStage stage = new JoblineStage();
 						if (s.isNoOp()) {
 							stage.setNoOp(true);
-
+							
 						} else {
 							stage.setNoOp(false);
 							int configId=s.getConfigId();
@@ -596,12 +600,12 @@ public class JobUtil {
 							stage.setConfiguration(solver.getConfigurations().get(0));
 							stage.setStageId(s.getId());
 							
-							jobPair.addStage(stage);
 							// if the stage is primary, then set it as such in the job pair
 							if (s.isPrimary()) {
 								jobPair.setPrimaryStageNumber(jobPair.getStages().size());
 							}
 						}
+						jobPair.addStage(stage);
 						
 					}
 					jobPair.setSpace(Spaces.get(spaceId));

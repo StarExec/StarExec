@@ -70,11 +70,11 @@ public class SolverPipeline extends Identifiable {
 		return inputs;
 	}
 
-	public int getPrimaryStageId() {
+	public int getPrimaryStageNumber() {
 		return primaryStageId;
 	}
 
-	public void setPrimaryStageId(int primaryStageId) {
+	public void setPrimaryStageNumber(int primaryStageId) {
 		this.primaryStageId = primaryStageId;
 	}
 	

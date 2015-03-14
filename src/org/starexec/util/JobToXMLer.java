@@ -93,7 +93,7 @@ public class JobToXMLer {
         		
     			configId.setValue(Integer.toString(stage.getConfigId()));
     			keepOutput.setValue(Boolean.toString(stage.doKeepOutput()));
-    			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageId()));
+    			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageNumber()));
     			
     			for (PipelineDependency dep : stage.getDependencies()) {
     				if (dep.getType()==PipelineInputType.ARTIFACT) {

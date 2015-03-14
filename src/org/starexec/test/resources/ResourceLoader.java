@@ -413,7 +413,7 @@ public class ResourceLoader {
 		SolverPipeline pipe=new SolverPipeline();
 		pipe.setName(TestUtil.getRandomAlphaString(10));
 		pipe.setUserId(userId);
-		pipe.setPrimaryStageId(1);
+		pipe.setPrimaryStageNumber(1);
 		for (Configuration c : configs) {
 			PipelineStage stage=new PipelineStage();
 			stage.setConfigId(c.getId());
