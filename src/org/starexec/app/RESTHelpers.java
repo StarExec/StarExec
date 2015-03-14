@@ -979,7 +979,7 @@ public class RESTHelpers {
 	    
 	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
 	    	
-		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock);
+		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock,stageNumber);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -1013,7 +1013,6 @@ public class RESTHelpers {
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
-		int[] totals = new int[2];
 		jobPairsToDisplay = Jobs
 				.getJobPairsForNextPageByConfigInJobSpaceHierarchy(
 						attrMap.get(STARTING_RECORD), // Record to start at
@@ -1027,16 +1026,16 @@ public class RESTHelpers {
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
 						jobId, // Parent space id
-						jobSpaceId, configId, totals,type,wallclock,stageNumber);
+						jobSpaceId, configId,type,wallclock,stageNumber);
 		
-		totalJobs = totals[0];
+		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type);
 
 		/**
     	* Used to display the 'total entries' information at the bottom of the DataTable;
     	* also indirectly controls whether or not the pagination buttons are toggle-able
     	*/
     
-       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,request.getParameter(SEARCH_QUERY)));
     	
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock,stageNumber);
 	}
@@ -1559,11 +1558,14 @@ public class RESTHelpers {
 	}
 	
 	
-	//TODO: Don't want to query for every user-- cache them in a HashMap
 	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int userId) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
+		
+		//maps job IDs to the users that own them. Used so we only need to get the user once per job
+		HashMap<Integer,User> userCache=new HashMap<Integer,User>();
+		
 		JsonArray dataTablePageEntries = new JsonArray();
 		for(JobPair j : pairs){
 			StringBuilder sb = new StringBuilder();
@@ -1590,7 +1592,15 @@ public class RESTHelpers {
     		sb = new StringBuilder();
 			String hiddenUserId;
 			
-			User user = Users.getUserByJob(j.getJobId());
+			User user=null;
+			if (userCache.containsKey(j.getJobId())) {
+				user=userCache.get(j.getJobId());
+			} else {
+				user = Users.getUserByJob(j.getJobId());
+				userCache.put(j.getJobId(), user);
+			}
+			
+			
 			// Create the hidden input tag containing the user id
 			if(user.getId() == userId) {
 				sb.append("<input type=\"hidden\" value=\"");
@@ -1664,8 +1674,7 @@ public class RESTHelpers {
 	    	return nextPage;
 		}
 	
-	//TODO: This needs to be edited to work by stage
-	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean useWallclock) {
+	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean useWallclock, int stageNumber) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1690,27 +1699,27 @@ public class RESTHelpers {
     		
     		
     		if (useWallclock) {
-    			double displayWC1 = Math.round(c.getFirstPair().getPrimaryWallclockTime()*100)/100.0;		
-    			double displayWC2 =  Math.round(c.getSecondPair().getPrimaryWallclockTime()*100)/100.0;
-    			double displayDiff =  Math.round(c.getWallclockDifference()*100)/100.0;		
+    			double displayWC1 = Math.round(c.getFirstPair().getStageFromNumber(stageNumber).getWallclockTime()*100)/100.0;		
+    			double displayWC2 =  Math.round(c.getSecondPair().getStageFromNumber(stageNumber).getWallclockTime()*100)/100.0;
+    			double displayDiff =  Math.round(c.getWallclockDifference(stageNumber)*100)/100.0;		
 
         		entry.add(new JsonPrimitive(displayWC1 + " s"));
         		entry.add(new JsonPrimitive(displayWC2 + " s"));
         		entry.add(new JsonPrimitive(displayDiff + " s"));
 
     		} else {
-    			double display1 = Math.round(c.getFirstPair().getPrimaryCpuTime()*100)/100.0;		
-    			double display2 =  Math.round(c.getSecondPair().getPrimaryCpuTime()*100)/100.0;
-    			double displayDiff =  Math.round(c.getCpuDifference()*100)/100.0;		
+    			double display1 = Math.round(c.getFirstPair().getStageFromNumber(stageNumber).getCpuTime()*100)/100.0;		
+    			double display2 =  Math.round(c.getSecondPair().getStageFromNumber(stageNumber).getCpuTime()*100)/100.0;
+    			double displayDiff =  Math.round(c.getCpuDifference(stageNumber)*100)/100.0;		
 
         		entry.add(new JsonPrimitive(display1 + " s"));
         		entry.add(new JsonPrimitive(display2 + " s"));
         		entry.add(new JsonPrimitive(displayDiff + " s"));
     		}
     		
-    		entry.add(new JsonPrimitive(c.getFirstPair().getPrimaryStarexecResult()));    	
-    		entry.add(new JsonPrimitive(c.getSecondPair().getPrimaryStarexecResult()));    		
-    		if (c.doResultsMatch()) {
+    		entry.add(new JsonPrimitive(c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult()));    	
+    		entry.add(new JsonPrimitive(c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult()));    		
+    		if (c.doResultsMatch(stageNumber)) {
         		entry.add(new JsonPrimitive(1));    		
     		} else {
         		entry.add(new JsonPrimitive(0));    		

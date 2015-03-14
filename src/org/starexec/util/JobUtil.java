@@ -189,10 +189,12 @@ public class JobUtil {
 		HashSet<Integer> benchmarkInputs=new HashSet<Integer>();
 		
 		//XML files have a stage tag for each stage
+		int currentStage=0;
 		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
 		for (int i=0;i<stages.getLength();i++) {
-			int currentStage=i+1;
+			
 			if (stages.item(i).getNodeName().equals("PipelineStage")) {
+				currentStage+=1;
 				Element stage=(Element)stages.item(i);
 				PipelineStage s=new PipelineStage();
 				s.setNoOp(false);
@@ -267,6 +269,7 @@ public class JobUtil {
 				}
 				stageList.add(s);
 			} else if (stages.item(i).getNodeName().equals("noop")) {
+				currentStage+=1;
 				PipelineStage stage=new PipelineStage();
 				stage.setNoOp(true);
 				stage.setKeepOutput(false);
@@ -281,6 +284,10 @@ public class JobUtil {
 		int maxSeen=Collections.max(benchmarkInputs);
 		if (maxSeen!=benchmarkInputs.size()) {
 			errorMessage="Invalid benchmark inputs for pipeline = "+pipeline.getName()+". Benchmark inputs must be numbered from 1 to n, where n is the total number of expected inputs";
+			return null;
+		}
+		if (stageList.size()>R.MAX_STAGES_PER_PIPELINE) {
+			errorMessage="Too many stages in pipeline "+pipeline.getName()+". The maximum is "+R.MAX_STAGES_PER_PIPELINE;
 			return null;
 		}
 		pipeline.setStages(stageList);
@@ -399,6 +406,10 @@ public class JobUtil {
 			job.setMaxMemory(memoryLimit);
 			log.info("nodelist about to be set");
 			
+			int maxStages=0;
+			for (SolverPipeline pipe : pipelines.values()) {
+				maxStages=Math.max(maxStages, pipe.getStages().size());
+			}
 			
 			//next, we set the per-stage job attributes
 			Element stageAttributes=DOMHelper.getElementByName(jobElement, "stageAttributes");
@@ -409,9 +420,8 @@ public class JobUtil {
 				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
 				
 				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
-				//TODO: Should have a max of the max number of stages in any pair
-				if (neededStageNum<=0) {
-					errorMessage="StageAttributes tag has invalid pipe-number = "+neededStageNum;
+				if (neededStageNum<=0 || neededStageNum>maxStages) {
+					errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
 					return -1;
 				}
 				attrs.setStageNumber(neededStageNum);
@@ -434,9 +444,28 @@ public class JobUtil {
 				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
 					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
 				}
+				
+				Integer stagePostProcId=null;
+				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
+					stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
+				}
+				Integer stagePreProcId=null;
+				if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
+					stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
+				}
+				
+				//validate this new set of parameters
+				ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
+				if (!status.isSuccess()) {
+					errorMessage=status.getMessage();
+					return -1;
+				}
+				
+				//also make sure the user can add both spaces and benchmarks to the given space
 				if (stageSpace!=null) {
-					if (!Permissions.get(userId, stageSpace).canAddBenchmark()) {
-						errorMessage="You do not have permission to add benchmarks to the space with id = "+stageSpace;
+					Permission p = Permissions.get(userId,stageSpace);
+					if (!p.canAddBenchmark() || !p.canAddSpace()) {
+						errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
 						return -1;
 					}
 				}

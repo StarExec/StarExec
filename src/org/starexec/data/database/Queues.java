@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.StageAttributes;
 
 
 /**
@@ -345,13 +347,12 @@ public class Queues {
 	}
 
 	/**
-	 * Gets a queue with detailed information (Id and name along with all attributes)
+	 * Gets a queue with detailed information (Id and name)
 	 * @param id The id of the queue to get detailed information for
 	 * @return A queue object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
 	
-	//TODO: Is this working correctly? It doesn't seem to get any attributes. Do we even want the attributes for any reason?
 	public static Queue getDetails(int id) {
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -599,7 +600,10 @@ public class Queues {
 		return Cluster.getNodesForQueue(id);
 	}
 	
-
+	
+	
+	
+	
 	/**
      * Gets jobs with pending job pairs for the given queue
      * @param queueId the id of the queue
@@ -630,7 +634,7 @@ public class Queues {
 				j.getQueue().setId(queueId);
 				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
 				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
-
+				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
 				jobs.add(j);				
 			}							
 			return jobs;

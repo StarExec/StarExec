@@ -1,7 +1,6 @@
 $(document).ready(function(){
 	$(".stageSelector").first(function() {
-		//TODO: Change the number below to a 2. This is jut for testing
-		if ($(this).children().size()<=1) {
+		if ($(this).children().size()<=2) {
 			hideStageSelectors();
 		}
 	});
@@ -10,6 +9,7 @@ $(document).ready(function(){
 function hideStageSelectors() {
 	$(".stageSelector").hide();
 	$(".stageSelectorLabel").hide();
+	setInputToValue(".stageSelector","1");
 }
 function showStageSelectors() {
 	$(".stageSelector").show();
@@ -39,13 +39,9 @@ function getSelectedStage() {
 
 //Sets the stages dropdown menu with all needed options
 function setMaxStagesDropdown(maximum) {
-	//TODO: Remove this line, just for testing
-	maximum=maximum+1;
-	
-	
 	$('.stageSelector').empty();
 	
-	$('.stageSelector').append($("<option></option>").attr("value","0").text("Primary")); 
+	$('.stageSelector').not(".noPrimaryStage").append($("<option></option>").attr("value","0").text("Primary")); 
 	setInputToValue(".stageSelector","0");
 	x=1;
 	while (x<=maximum) {
@@ -57,5 +53,7 @@ function setMaxStagesDropdown(maximum) {
 	} else {
 		showStageSelectors();
 	}
+	
+	
 	
 }

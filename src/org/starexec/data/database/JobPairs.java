@@ -210,15 +210,15 @@ public class JobPairs {
 	 * @param processorId The ID of the processor to use
 	 * @return True on success, false on error
 	 */
-	//TODO: This needs to be updated to make use of the stage ID.
-	public static boolean postProcessPair(int pairId,int stageId, int processorId) {
+	public static boolean postProcessPair(int pairId,int stageNumber, int processorId) {
 		Connection con=null;
 		try {
-			Properties props=runPostProcessorOnPair(pairId,processorId);
+			Properties props=runPostProcessorOnPair(pairId,stageNumber,processorId);
 			con=Common.getConnection();
 			Common.beginTransaction(con);
-			JobPairs.addJobPairAttributes(pairId,stageId, props,con);
+			JobPairs.addJobPairAttributes(pairId,stageNumber, props,con);
 			JobPairs.setPairStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(),con);
+			JobPairs.setPairStageStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(), stageNumber, con);
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
@@ -233,15 +233,15 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Runs the given post processor on the given pair and returns the properties that were obtained
+	 * Runs the given post processor on the given pair stage and returns the properties that were obtained
 	 * @param pairId The ID of the pair in question
 	 * @param processorId The ID of the processor in question
 	 * @return The properties on success, or null otherwise
 	 */
-	private static Properties runPostProcessorOnPair(int pairId, int processorId) {
+	private static Properties runPostProcessorOnPair(int pairId, int stageNumber, int processorId) {
 		try {
 			JobPair pair=JobPairs.getPairDetailed(pairId);
-			File output=new File(JobPairs.getFilePath(pair));
+			File output=new File(JobPairs.getFilePath(pair,stageNumber));
 			Processor p=Processors.get(processorId);
 			// Run the processor on the benchmark file
 			List<File> files=new ArrayList<File>();
@@ -494,7 +494,6 @@ public class JobPairs {
 	 * @author Eric burns
 	 */
 	
-	//TODO: This may need to be fixed to work by stage
 	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery) {
 		//no filtering is necessary if there's no query
 		if (searchQuery==null || searchQuery=="") {
@@ -1045,6 +1044,33 @@ public class JobPairs {
 	}
 	
 	/**
+	 * Sets the status of a given job pair stage to the given status
+	 * @param pairId
+	 * @param statusCode
+	 * @param con
+	 * @return
+	 */
+	public static boolean setPairStageStatus(int pairId, int statusCode, int stageNumber, Connection con) {
+		CallableStatement procedure= null;
+		try{
+			procedure = con.prepareCall("{CALL UpdatePairStageStatus(?, ?,?)}");
+			procedure.setInt(1, pairId);
+			procedure.setInt(2,stageNumber);
+			procedure.setInt(3, statusCode);
+
+			procedure.executeUpdate();								
+			
+			return true;
+		} catch (Exception e) {
+			log.debug("setPairStatus says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}	
+		return false;
+	}
+	
+	
+	/**
 	 * Sets the status of a given job pair to the given status
 	 * @param pairId
 	 * @param statusCode
@@ -1066,6 +1092,28 @@ public class JobPairs {
 		} finally {
 			Common.safeClose(procedure);
 		}	
+		return false;
+	}
+	
+	
+	/**
+	 * @param pairId the id of the pair to update the status of
+	 * @param statusCode the status code to set for the pair
+	 * @return True if the operation was a success, false otherwise
+	 */
+	public static boolean setPairStatus(int pairId,int stageNumber, int statusCode) {
+		Connection con = null;
+		
+		try {
+			con = Common.getConnection();
+			return setPairStageStatus(pairId,statusCode,stageNumber,con);
+			
+		} catch(Exception e) {			
+			log.error(e.getMessage(), e);
+		} finally {			
+			Common.safeClose(con);	
+		}
+
 		return false;
 	}
 	

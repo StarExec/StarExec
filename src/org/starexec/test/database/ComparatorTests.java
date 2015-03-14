@@ -184,7 +184,7 @@ public class ComparatorTests extends TestSequence {
 	
 	@Test
 	private void SolverComparisionComparatorTest() {
-		SolverComparisonComparator comp=new SolverComparisonComparator(0,false,true);
+		SolverComparisonComparator comp=new SolverComparisonComparator(0,false,true,0);
 	}
 	
 	@Override

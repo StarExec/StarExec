@@ -79,7 +79,6 @@ public class JobToXMLer {
 		return file;
 		
 	}
-    //TODO: Handle noop
     public Element getPipelineElement(SolverPipeline pipeline) {
     	Element pipeElement= doc.createElement("SolverPipeline");
     	for (PipelineStage stage : pipeline.getStages()) {

@@ -241,7 +241,7 @@ CREATE TABLE pipeline_stages (
 	is_noop BOOLEAN NOT NULL DEFAULT FALSE, -- note that we cannot say that this is a noop if config_id is null, because the config
 								   -- could have just been deleted. We really do need to store this explicitly
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
-	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE
+	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
 	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL
 );
 
@@ -267,7 +267,7 @@ CREATE TABLE jobs (
 	queue_id INT,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	completed TIMESTAMP,
-	pre_processor INT,
+	pre_processor INT,  -- TODO: might want to delete this column in favor of job_state_params?
 	post_processor INT, -- might want to delete this column in favor of job_stage_params?
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
@@ -294,6 +294,7 @@ CREATE TABLE job_stage_params (
 	maximum_memory BIGINT DEFAULT 1073741824,
 	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them?
 	post_processor INT,
+	pre_processor INT,
 	PRIMARY KEY (job_id,stage_number),
 	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,
@@ -386,8 +387,8 @@ CREATE TABLE job_attributes (
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	job_id INT NOT NULL,
-	jobpair_data INT NOT NULL,
-    PRIMARY KEY (jobpair_data, attr_key),
+	stage_number INT NOT NULL, 
+    PRIMARY KEY (pair_id,stage_number, attr_key),
     KEY (job_id),
 	CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );

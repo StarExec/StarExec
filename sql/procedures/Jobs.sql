@@ -245,9 +245,8 @@ CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
--- TODO: This gets only the primary stage right now. Is that what we want?
-DROP PROCEDURE IF EXISTS GetJobPairsByJob;
-CREATE PROCEDURE GetJobPairsByJob(IN _id INT)
+DROP PROCEDURE IF EXISTS GetJobPairsPrimaryStageByJob;
+CREATE PROCEDURE GetJobPairsPrimaryStageByJob(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 				
@@ -306,7 +305,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 			job_attributes.attr_value AS result
 			FROM job_pairs 		
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-			LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
+			LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND 
 			(jobpair_stage_data.stage_number=_stageNumber OR (_stageNumber = 0 AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number));
@@ -338,7 +337,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 		job_attributes.attr_value AS result
 		FROM job_pairs 		
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 		WHERE job_space_id=_jobSpaceId;
 	END //
 	
@@ -355,7 +354,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		LEFT JOIN job_attributes on (job_attributes.jobpair_data=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		WHERE ancestor=_jobSpaceId;
 	END //
@@ -400,14 +399,14 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 		WHERE job_id=_jobId AND status_code=_statusCode;
 	END //
 	
--- Retrieves ids for job pairs with a given status in a given job where either cpu or wallclock is 0
+-- Retrieves ids for job pairs with a given status in a given job where either cpu or wallclock is 0 for any stage
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetTimelessJobPairsByStatus;
 CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN 
 		SELECT job_pairs.id FROM job_pairs
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE job_id=_jobId AND status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
+		WHERE job_id=_jobId AND job_pairs.status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
 	END //
 	
 -- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs
@@ -767,14 +766,14 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 		jobpair_stage_data.status_code=_processingStatus
 		WHERE job_id=_jobId AND job_pairs.status_code=_completeStatus
 		AND jobpair_stage_data.status_code=_completeStatus AND 
-		(stage_number=_stageNumber);
+		(jobpair_stage_data.stage_number=_stageNumber);
 		
 	-- makes sure there is actually an entry in job_stage_params for this job / stage pair.
-	INSERT IGNORE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor)
+	INSERT IGNORE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor,pre_processor)
 	VALUES (_jobId, _stageNumber,(select cpuTimeout from jobs where jobs.id=_jobId),(select clockTimeout from jobs where jobs.id=_jobId),
-	(select maximum_memory from jobs where jobs.id=_jobId), null, _procId);
+	(select maximum_memory from jobs where jobs.id=_jobId), null, _procId,null);
 		
-	UPDATE job_stage_params SET post_processor = _procId WHERE id=_jobId AND stage_number_stageNumber;
+	UPDATE job_stage_params SET post_processor = _procId WHERE job_id=_jobId AND stage_number=_stageNumber;
 	
 	END //
 	
@@ -867,5 +866,10 @@ CREATE PROCEDURE RemoveJobFromDatabase(IN _jobId INT)
 	END //
 	
 
+DROP PROCEDURE IF EXISTS getStageParamsByJob;
+CREATE PROCEDURE getStageParamsByJob(IN _jobId INT)
+	BEGIN
+		SELECT * FROM job_stage_params WHERE job_id=_jobId;
+	END //
 	
 DELIMITER ; -- this should always be at the end of the file

@@ -87,11 +87,7 @@
 	</fieldset>		
 	<fieldset id="fieldStats">
 	<legend>run statistics</legend>	
-	<c:choose>
-		<c:when test="${pair.status.code == 'STATUS_WAIT_RESULTS'}">
-			<p>waiting for results. try again in 2 minutes.</p>
-		</c:when>
-		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
+	
 			<c:forEach var="stage" items="${pair.getStages()}">
 				
 				<table id="pairStats" class="shaded">
@@ -187,11 +183,7 @@
 				
 			</c:forEach>
 			
-		</c:when>				
-		<c:otherwise>		
-			<p>unavailable</p>
-		</c:otherwise>
-	</c:choose>		
+			
 	</fieldset>		
 	
 	

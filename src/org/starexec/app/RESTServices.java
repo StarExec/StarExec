@@ -1541,12 +1541,12 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/postprocess/job/{jobId}/{procId}/{stageId}")
+	@Path("/postprocess/job/{jobId}/{procId}/{stageNumber}")
 	@Produces("application/json")
-	public String postProcessJob(@PathParam("jobId") int jid,@PathParam("stageId") int stageId, @PathParam("procId") int pid, @Context HttpServletRequest request) {
+	public String postProcessJob(@PathParam("jobId") int jid,@PathParam("stageNumber") int stageNumber, @PathParam("procId") int pid, @Context HttpServletRequest request) {
 		
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=JobSecurity.canUserPostProcessJob(jid, userId, pid);
+		ValidatorStatusCode status=JobSecurity.canUserPostProcessJob(jid, userId, pid,stageNumber);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -1554,7 +1554,7 @@ public class RESTServices {
 		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
-		return Jobs.prepareJobForPostProcessing(jid,pid,stageId) ? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
+		return Jobs.prepareJobForPostProcessing(jid,pid,stageNumber) ? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**

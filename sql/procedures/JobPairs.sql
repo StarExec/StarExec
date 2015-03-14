@@ -75,6 +75,12 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 		END IF;
 	END //
 		
+DROP PROCEDURE IF EXISTS UpdatePairStageStatus;
+CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN _statusCode TINYINT)
+	BEGIN
+		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
+	END //
+
 -- Gets all the stages for the given job pair
 DROP PROCEDURE IF EXISTS GetJobPairStagesById;
 CREATE PROCEDURE GetJobPairStagesById( IN _id INT)

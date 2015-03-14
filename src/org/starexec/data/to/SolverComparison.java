@@ -27,12 +27,12 @@ public class SolverComparison {
 	 * Returns pair2 wallclock time minus pair1 wallclock time
 	 * @return
 	 */
-	public double getWallclockDifference() {
-		return pair2.getPrimaryWallclockTime()-pair1.getPrimaryWallclockTime();
+	public double getWallclockDifference(int stageNumber) {
+		return pair2.getStageFromNumber(stageNumber).getWallclockTime()-pair1.getStageFromNumber(stageNumber).getWallclockTime();
 	}
 	
-	public double getCpuDifference() {
-		return pair2.getPrimaryCpuTime()-pair1.getPrimaryCpuTime();
+	public double getCpuDifference(int stageNumber) {
+		return pair2.getStageFromNumber(stageNumber).getCpuTime()-pair1.getStageFromNumber(stageNumber).getCpuTime();
 	}
 	
 	public Benchmark getBenchmark() {
@@ -51,10 +51,10 @@ public class SolverComparison {
 	 * @return
 	 */
 	
-	public boolean doResultsMatch() {
+	public boolean doResultsMatch(int stageNumber) {
 		
-		String result1=pair1.getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
-		String result2=pair2.getStages().get(0).getAttributes().getProperty(R.STAREXEC_RESULT);
+		String result1=pair1.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
+		String result2=pair2.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 		if (result1==null && result2==null) {
 			return true;
 		} else if (result1== null || result2==null) {

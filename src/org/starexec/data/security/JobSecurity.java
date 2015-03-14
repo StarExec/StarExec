@@ -70,11 +70,11 @@ public class JobSecurity {
 	/**
 	 * Checks to see if the given user has permission to run a new post processor on the given job
 	 * @param jobId The ID of the job being checked
-	 * @param userId The ID of the user making the request
+	 * @param userId The ID of the user making the requests
 	 * @param pid the ID of the post processor that would be used.
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-	public static ValidatorStatusCode canUserPostProcessJob(int jobId, int userId, int pid) {
+	public static ValidatorStatusCode canUserPostProcessJob(int jobId, int userId, int pid, int stageNumber) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
@@ -91,6 +91,10 @@ public class JobSecurity {
 		
 		if (!Jobs.canJobBePostProcessed(jobId)) {
 			return new ValidatorStatusCode(false, "The job is not yet completed");
+		}
+		
+		if (stageNumber<=0) {
+			return new ValidatorStatusCode(false, "Stage numbers must be greater than 0");
 		}
 		
 		return new ValidatorStatusCode(true);

@@ -375,11 +375,11 @@ function initUI(){
 		refreshStats(curSpaceId);
 		pairTable.fnDraw(false);
 	});
-	//TODO: Redraw the pair table? Requires a different sorting algorithm
 	$(".stageSelector").change(function() {
 		//set the value of all .stageSelectors to this one to sync them.
 		//this does not trigger the change event, which is good because it would loop forever
 		$(".stageSelector").val($(this).val());
+		pairTable.fnDraw(false);
 		refreshPanels();
 		refreshStats(curSpaceId);
 		

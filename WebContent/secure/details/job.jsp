@@ -389,9 +389,8 @@
 						</c:forEach>
 					</select></p>
 					<p>
-						<label class="stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
+						<label class="noPrimaryStage stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
 						<select id="postProcessorStageSelector" class="stageSelector">
-							<option value="0">Primary</option>
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 								<option value="${i}">${i}</option>
 							</c:forEach>
