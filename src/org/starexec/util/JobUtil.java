@@ -344,40 +344,6 @@ public class JobUtil {
 			    job.setId(Integer.parseInt(jobId));
 			    
 			}
-	
-			log.info("preProcId about to be set");
-			
-			Integer preProcId = null;
-	
-			if(DOMHelper.hasElement(jobAttributes,"preproc-id")){
-			    
-			    Element preProcEle = DOMHelper.getElementByName(jobAttributes,"preproc-id");
-			    String preProc = preProcEle.getAttribute("value");
-			    preProcId = Integer.parseInt(preProc);
-			    if (preProcId != null) {
-			    	Processor p = Processors.get(preProcId);
-					if (p != null && p.getFilePath() != null) {	
-					    job.setPreProcessor(p);
-					}
-					
-			    }
-			}
-			
-			log.info("postProcId about to be set");
-	
-			Integer postProcId = null;
-			
-			if (DOMHelper.hasElement(jobAttributes,"postproc-id")){
-			    Element postProcEle = DOMHelper.getElementByName(jobAttributes,"postproc-id");
-			    String postProc = postProcEle.getAttribute("value");
-			    postProcId = Integer.parseInt(postProc);
-			    if (postProcId != null) {
-			    	Processor p = Processors.get(postProcId);
-					if (p != null && p.getFilePath() != null) {
-					    job.setPostProcessor(p);
-					}
-			    }
-			}
 			
 	
 			Element queueIdEle = DOMHelper.getElementByName(jobAttributes,"queue-id");
@@ -404,7 +370,7 @@ public class JobUtil {
 			memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit; //bounds memory limit by system max
 			
 			//validate memory limits
-			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, preProcId, postProcId);
+			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, null, null);
 			if (!status.isSuccess()) {
 				errorMessage=status.getMessage();
 				return -1;

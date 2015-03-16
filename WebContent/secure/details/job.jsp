@@ -62,7 +62,10 @@
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
-				
+				Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
+				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
+				request.setAttribute("firstPostProc",stage1PostProc);
+				request.setAttribute("firstPreProc",stage1PreProc);
 				request.setAttribute("queues", Queues.getQueuesForUser(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
@@ -70,6 +73,7 @@
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
+				
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -276,19 +280,19 @@
 						</tr>			
 						<tr title="the preprocessor that was used to process benchmarks for this job">
 							<td>preprocessor</td>
-							<c:if test="${not empty job.preProcessor}">			
-							<td title="${job.preProcessor.description}">${job.preProcessor.name}</td>
+							<c:if test="${not empty firstPreProc}">			
+							<td title="${firstPreProc.description}">${firstPreProc.name}</td>
 							</c:if>
-							<c:if test="${empty job.preProcessor}">			
+							<c:if test="${empty firstPreProc}">			
 							<td>none</td>
 							</c:if>
 						</tr>
 						<tr title="the postprocessor that was used to process output for this job">
 							<td>postprocessor</td>
-							<c:if test="${not empty job.postProcessor}">			
-							<td title="${job.postProcessor.description}">${job.postProcessor.name}</td>
+							<c:if test="${not empty firstPostProc}">			
+							<td title="${firstPostProc.description}">${firstPostProc.name}</td>
 							</c:if>
-							<c:if test="${empty job.postProcessor}">			
+							<c:if test="${empty firstPostProc}">			
 							<td>none</td>
 							</c:if>
 						</tr>

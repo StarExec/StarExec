@@ -284,34 +284,24 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
 			procedure.setInt(4, job.getQueue().getId());
-
-			// Only set pre and post processors if they're specified, else set to null
-			if(job.getPreProcessor().getId() > 0) {
-				procedure.setInt(5, job.getPreProcessor().getId());
-			} else {
-				procedure.setNull(5, java.sql.Types.INTEGER);
-			}		
-			if(job.getPostProcessor().getId() > 0) {
-				procedure.setInt(6, job.getPostProcessor().getId());
-			} else {
-				procedure.setNull(6, java.sql.Types.INTEGER);
-			}		
-			procedure.setInt(7, job.getPrimarySpace());
-			procedure.setLong(8,job.getSeed());
+		
+					
+			procedure.setInt(5, job.getPrimarySpace());
+			procedure.setLong(6,job.getSeed());
 			// The procedure will return the job's new ID in this parameter
-			procedure.setInt(9, job.getCpuTimeout());
-			procedure.setInt(10,job.getWallclockTimeout());
-			procedure.setLong(11, job.getMaxMemory());
-			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
+			procedure.setInt(7, job.getCpuTimeout());
+			procedure.setInt(8,job.getWallclockTimeout());
+			procedure.setLong(9, job.getMaxMemory());
+			procedure.registerOutParameter(10, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(12));
+			job.setId(procedure.getInt(10));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
@@ -715,10 +705,10 @@ public class Jobs {
 				j.setCpuTimeout(results.getInt("cpuTimeout"));
 				j.setWallclockTimeout(results.getInt("clockTimeout"));
 				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setPreProcessor(Processors.get(con,results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(con,results.getInt("post_processor")));
+				
 				j.setDescription(results.getString("description"));
 				j.setSeed(results.getLong("seed"));
+				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
 				return j;
 			}
 		} catch (Exception e) {
@@ -970,11 +960,12 @@ public class Jobs {
 
 				j.setPrimarySpace(results.getInt("primary_space"));
 				j.setQueue(Queues.get(con, results.getInt("queue_id")));
-				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+				
 				j.setCpuTimeout(results.getInt("cpuTimeout"));
 				j.setWallclockTimeout(results.getInt("clockTimeout"));
 				j.setMaxMemory(results.getLong("maximum_memory"));
+				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
+
 			}
 			else{
 				return null;

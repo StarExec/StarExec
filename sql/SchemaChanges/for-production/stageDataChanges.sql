@@ -29,7 +29,7 @@ ALTER TABLE job_attributes DROP PRIMARY KEY, ADD PRIMARY KEY (pair_id,stage_numb
 
 ALTER TABLE job_attributes ADD CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE;
 
--- Set 5: Add a post processor column to job_stage_params
+-- Set 5: Add post/ pre processor columns to job_stage_params
 
 ALTER TABLE job_stage_params ADD COLUMN post_processor INT;
 
@@ -38,6 +38,11 @@ ALTER TABLE job_stage_params ADD CONSTRAINT job_stage_params_post_processor FORE
 ALTER TABLE job_stage_params CHANGE stage_id stage_number INT;
 
 ALTER TABLE job_stage_params ADD COLUMN pre_processor INT;
+
+REPLACE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor,pre_processor) SELECT id,1,cpuTimeout,clockTimeout,maximum_memory,null,post_processor,pre_processor FROM jobs;
+
+ALTER TABLE jobs DROP COLUMN post_processor INT;
+ALTER TABLE jobs DROP COLUMN pre_processor INT;
 
 
 -- Step 5: Remove unnecessary pipline_stages columns
@@ -89,5 +94,8 @@ UPDATE pipeline_stages LEFT JOIN configurations ON configurations.id=pipeline_st
 ALTER TABLE pipeline_stages ADD CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL;
 
 ALTER TABLE pipeline_stages ADD COLUMN is_noop BOOLEAN NOT NULL DEFAULT FALSE;
+
+
+
 
 COMMIT;

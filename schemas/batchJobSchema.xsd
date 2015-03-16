@@ -91,8 +91,7 @@
     	
     	<!-- The default for start-paused is false -->
     	<element name="start-paused" type="tns:booleanInfo" maxOccurs="1" minOccurs="0"></element>
-    	<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
-    	<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+    
     	
     	<!-- Note: Timeouts are in seconds -->
     	<element name="cpu-timeout" type="tns:intInfo"></element>

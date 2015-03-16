@@ -267,8 +267,6 @@ CREATE TABLE jobs (
 	queue_id INT,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	completed TIMESTAMP,
-	pre_processor INT,  -- TODO: might want to delete this column in favor of job_state_params?
-	post_processor INT, -- might want to delete this column in favor of job_stage_params?
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,

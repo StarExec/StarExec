@@ -162,30 +162,7 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 				
-				//Post processor
-				Processor processor = job.getPostProcessor();
-				if (processor == null) {
-					log.debug("Postprocessor is null.");
-					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "");
-				}
-				else {
-					String path = processor.getFilePath();
-					log.debug("Postprocessor path is "+path+".");
-					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
-				}
-				//TODO: Pre processors become stages
-				//pre processor
-				processor = job.getPreProcessor();
-				if (processor == null) {
-					log.debug("Preprocessor is null.");
-					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "");
-				}
-				else {
-					String path = processor.getFilePath();
-					log.debug("Preprocessor path is "+path+".");
-					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
-				}
-
+				
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, ((nodeCount*R.NODE_MULTIPLIER)-queueSize)/joblist.size() + 1);
 				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId(),limit).iterator();
 
@@ -422,6 +399,8 @@ public abstract class JobManager {
 		List<String> configNames=new ArrayList<String>();
 		List<String> solverTimestamps=new ArrayList<String>();
 		List<String> solverPaths=new ArrayList<String>();
+		List<String> postProcessorPaths=new ArrayList<String>();
+		List<String> preProcessorPaths=new ArrayList<String>();
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
@@ -435,6 +414,20 @@ public abstract class JobManager {
 			configNames.add(stage.getConfiguration().getName());
 			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
 			solverPaths.add(stage.getSolver().getPath());
+			
+			Processor p = attrs.getPostProcessor();
+			if (p==null) {
+				postProcessorPaths.add("");
+			} else {
+				postProcessorPaths.add(p.getFilePath());
+			}
+			p=attrs.getPreProcessor();
+			if (p==null) {
+				preProcessorPaths.add("");
+			} else {
+				preProcessorPaths.add(p.getFilePath());
+			}
+			
 		}
 		
 		
@@ -444,7 +437,7 @@ public abstract class JobManager {
 		//jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
 		//jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
 		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
-		jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
+		//jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
@@ -473,6 +466,10 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$STAGE_NUMBER_ARRAY$$", numsToBashArray("STAGE_NUMBERS",stageNumbers));
 		jobScript=jobScript.replace("$$SOLVER_ID_ARRAY$$",numsToBashArray("SOLVER_IDS",solverIds));
 		jobScript=jobScript.replace("$$SOLVER_TIMESTAMP_ARRAY$$",toBashArray("SOLVER_TIMESTAMPS",solverTimestamps,false));
+		jobScript=jobScript.replace("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES",configNames,false));
+		jobScript=jobScript.replace("$$PRE_PROCESSOR_PATH_ARRAY$$",toBashArray("PRE_PROCESSOR_PATHS",preProcessorPaths,false));
+		jobScript=jobScript.replace("$$POST_PROCESSOR_PATH_ARRAY$$",toBashArray("POST_PROCESSOR_PATHS",postProcessorPaths,false));
+
 		
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
@@ -605,7 +602,8 @@ public abstract class JobManager {
 	 * @param randomSeed a seed to pass into preprocessors
 	 * @return the new job object with the specified properties
 	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed) {
+	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
+			int cpuLimit,int wallclockLimit, long memLimit) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -613,19 +611,29 @@ public abstract class JobManager {
 		j.setUserId(userId);
 		j.setName(name);		
 		j.setSeed(randomSeed);
+		j.setCpuTimeout(cpuLimit);
+		j.setWallclockTimeout(wallclockLimit);
+		j.setMaxMemory(memLimit);
 		if(description != null) {
 			j.setDescription(description);
 		}
 
 		// Get queue and processor information from the database and put it in the job
 		j.setQueue(Queues.get(queueId));
-
+		StageAttributes attrs=new StageAttributes();
+		attrs.setCpuTimeout(cpuLimit);
+		attrs.setWallclockTimeout(wallclockLimit);
+		attrs.setMaxMemory(memLimit);
+		attrs.setStageNumber(1);
+		attrs.setSpaceId(null);
 		if(preProcessorId > 0) {
-			j.setPreProcessor(Processors.get(preProcessorId));
+			attrs.setPreProcessor(Processors.get(preProcessorId));
 		}		
 		if(postProcessorId > 0) {
-			j.setPostProcessor(Processors.get(postProcessorId));		
+			attrs.setPostProcessor(Processors.get(postProcessorId));		
 		}
+		j.addStageAttributes(attrs);
+		
 		log.debug("Successfully set up job " + name);
 		return j;	
 	}

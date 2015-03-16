@@ -27,6 +27,7 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
+import org.starexec.data.to.pipelines.StageAttributes;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -79,6 +80,80 @@ public class JobToXMLer {
 		return file;
 		
 	}
+    
+    public Element getStageAttributesElement(StageAttributes attrs) {
+    	Element stageAttrs=doc.createElement("StageAttributes");
+    	
+    	Element stageNumberElement=doc.createElement("stage-num");
+    	Attr numberAttr=doc.createAttribute("value");
+    	numberAttr.setValue(Integer.toString(attrs.getStageNumber()));
+    	stageAttrs.appendChild(stageNumberElement);
+    	
+		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
+
+		Attr cpuTimeout = doc.createAttribute("value");
+		cpuTimeout.setValue(Integer.toString(attrs.getCpuTimeout()));
+		cpuTimeoutElement.setAttributeNode(cpuTimeout);
+
+		stageAttrs.appendChild(cpuTimeoutElement);
+		
+		//Wall Clock timeout (seconds) : wallclock-timeout
+
+		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
+
+		Attr wallClockTimeout = doc.createAttribute("value");
+                wallClockTimeout.setValue(Integer.toString(attrs.getWallclockTimeout()));
+		wallClockTimeoutElement.setAttributeNode(wallClockTimeout);
+
+		stageAttrs.appendChild(wallClockTimeoutElement);
+		
+		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
+
+		Element memLimitElement = doc.createElement("mem-limit");
+
+		Attr memLimit = doc.createAttribute("value");
+		memLimit.setValue(Double.toString(Util.bytesToGigabytes(attrs.getMaxMemory())));
+		memLimitElement.setAttributeNode(memLimit);
+    	
+    	stageAttrs.appendChild(memLimitElement);
+    	
+    	if (attrs.getSpaceId()!=null && attrs.getSpaceId()>0) {
+    		Element spaceIdElement = doc.createElement("space-id");
+
+    		Attr spaceIdAttr = doc.createAttribute("value");
+    		spaceIdAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getSpaceId())));
+    		spaceIdElement.setAttributeNode(spaceIdAttr);
+        	
+        	stageAttrs.appendChild(spaceIdElement);
+    	}
+    	
+    	if (attrs.getPostProcessor()!=null) {
+    		Element postProcessorElement = doc.createElement("postproc-id");
+
+    		Attr postProcessorAttr = doc.createAttribute("value");
+    		postProcessorAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getPostProcessor().getId())));
+    		postProcessorElement.setAttributeNode(postProcessorAttr);
+        	
+        	stageAttrs.appendChild(postProcessorElement);
+    	}
+    	
+    	if (attrs.getPreProcessor()!=null) {
+    		Element preProcessorElement = doc.createElement("preproc-id");
+
+    		Attr preProcessorAttr = doc.createAttribute("value");
+    		preProcessorAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getPreProcessor().getId())));
+    		preProcessorElement.setAttributeNode(preProcessorAttr);
+        	
+        	stageAttrs.appendChild(preProcessorElement);
+    	}
+    	
+    	
+    	
+    	return stageAttrs;
+    	
+    }
+    
+    
     public Element getPipelineElement(SolverPipeline pipeline) {
     	Element pipeElement= doc.createElement("SolverPipeline");
     	for (PipelineStage stage : pipeline.getStages()) {
@@ -161,7 +236,7 @@ public class JobToXMLer {
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
     
-    //TODO: Put stage attributes in here where they exist
+    
     public Element generateJobXML(Job job, int userId){		
 	log.info("Generating Job XML for job " + job.getId());
 		
@@ -206,30 +281,6 @@ public class JobToXMLer {
 
 		attrsElement.appendChild(startPausedElement);
 		
-		//Preprocessor ID : preproc-id
-		Processor pre = job.getPreProcessor();
-		if(pre != null){
-
-		    Element preprocIdElement = doc.createElement("preproc-id");
-
-		    Attr preProcID = doc.createAttribute("value");
-		    preProcID.setValue(Integer.toString(pre.getId()));
-		    preprocIdElement.setAttributeNode(preProcID);
-
-		    attrsElement.appendChild(preprocIdElement);
-		}
-		//Postprocessor ID : postproc-id
-		Processor post = job.getPostProcessor();
-		if(post != null){
-
-		    Element postprocIdElement = doc.createElement("postproc-id");
-
-		    Attr postProcID = doc.createAttribute("value");
-		    postProcID.setValue(Integer.toString(post.getId()));
-		    postprocIdElement.setAttributeNode(postProcID);
-
-		    attrsElement.appendChild(postprocIdElement);
-		}
 		
 		//CPU timeout (seconds) : cpu-timeout
 
@@ -264,6 +315,12 @@ public class JobToXMLer {
 		//add job attributes element
 		jobElement.appendChild(attrsElement);
 
+		
+		for (StageAttributes attrs : job.getStageAttributes()) {
+			jobElement.appendChild(getStageAttributesElement(attrs));
+		}
+		
+		
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
 		
 		

@@ -632,8 +632,7 @@ public class Queues {
 				j.setWallclockTimeout(results.getInt("clockTimeout"));
 				j.setMaxMemory(results.getLong("maximum_memory"));
 				j.getQueue().setId(queueId);
-				j.setPreProcessor(Processors.get(con, results.getInt("pre_processor")));
-				j.setPostProcessor(Processors.get(con, results.getInt("post_processor")));
+
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
 				jobs.add(j);				
 			}							

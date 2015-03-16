@@ -43,8 +43,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	@Expose private int primarySpace; 
 	private List<JobPair> jobPairs;
 	private HashMap<String, Integer> liteJobPairStats;
-	private Processor preProcessor;
-	private Processor postProcessor;	
+		
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
 	
@@ -54,8 +53,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
-		preProcessor = new Processor();
-		postProcessor = new Processor();
+		
 		queue = new Queue();		
 		setStageAttributes(new ArrayList<StageAttributes>());
 	}
@@ -196,34 +194,6 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 		this.queue = queue;
 	}
 
-	/**
-	 * @return the pre processor this job uses
-	 */
-	public Processor getPreProcessor() {
-		return preProcessor;
-	}
-
-	/**
-	 * @param preProcessor the preProcessor to set for this job
-	 */
-	public void setPreProcessor(Processor preProcessor) {
-		this.preProcessor = preProcessor;
-	}
-
-	/**
-	 * @return the post processor this job uses
-	 */
-	public Processor getPostProcessor() {
-		return postProcessor;
-	}
-
-	/**
-	 * @param postProcessor the post processor to set for this job
-	 */
-	public void setPostProcessor(Processor postProcessor) {
-		this.postProcessor = postProcessor;
-	}
-
 	@Override
 	public Iterator<JobPair> iterator() {
 		return this.jobPairs.iterator();
@@ -340,8 +310,8 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 		attrs.setWallclockTimeout(wallclockTimeout);
 		attrs.setJobId(this.getId());
 		attrs.setMaxMemory(maxMemory);
-		attrs.setPostProcessor(postProcessor);
-		attrs.setPreProcessor(preProcessor);
+		attrs.setPostProcessor(null);
+		attrs.setPreProcessor(null);
 		return attrs;
 	}
 

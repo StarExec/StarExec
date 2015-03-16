@@ -17,6 +17,10 @@
 			request.setAttribute("job", j);
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairStats", Statistics.getJobPairOverview(j.getId()));
+			
+			Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
+			request.setAttribute("firstPostProc",stage1PostProc);
+			
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 		}
@@ -60,10 +64,10 @@
 				</tr>						
 				<tr title="the postprocessor that was used to process output for this job">
 					<td>postprocessor</td>
-					<c:if test="${not empty job.postProcessor}">			
-					<td title="${job.postProcessor.description}">${job.postProcessor.name}</td>
+					<c:if test="${not empty firstPostProc}">			
+					<td title="${firstPostProc.description}">${firstPostProc.name}</td>
 					</c:if>
-					<c:if test="${empty job.postProcessor}">			
+					<c:if test="${empty firstPostProc}">			
 					<td>none</td>
 					</c:if>
 				</tr>
