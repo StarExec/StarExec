@@ -696,6 +696,18 @@ class ArgumentParser {
 	}
 	
 	/**
+	 * Handles requests for uploading pre-processors.
+	 * @param commandParams The key/value pairs given by the user at the command line. A file and an ID are required
+	 * @return 0 on success and a negative error code otherwise
+	 * @author Eric Burns
+	 */
+	
+	protected int uploadPreProc(HashMap<String,String> commandParams) {
+		return uploadProcessor(commandParams, "pre");
+	}
+	
+	
+	/**
 	 * Handles requests for uploading benchmark processors.
 	 * @param commandParams The key/value pairs given by the user at the command line. A file and an ID are required
 	 * @return 0 on success and a negative error code otherwise

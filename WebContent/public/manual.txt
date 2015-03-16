@@ -371,6 +371,11 @@ EXAMPLE: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 
+--pushpreproc -This command uploads a pre processor to a community. The parameter "id" refers to a 
+				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
+REQUIRED: "f" "id"
+OPTIONAL: "n" "d"
+
 --pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space 
 				ID and is required. The ID of the newly created spaces will NOT be printed, even if "returnids" has been called.
 REQUIRED: "f" "id"

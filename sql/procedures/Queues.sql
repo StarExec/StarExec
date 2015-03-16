@@ -35,7 +35,7 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
-		SELECT distinct jobs.id, user_id,name,pre_processor,post_processor,seed,primary_space,
+		SELECT distinct jobs.id, user_id,name,seed,primary_space,
 		jobs.clockTimeout,jobs.cpuTimeout,jobs.maximum_memory
 		FROM jobs
 		JOIN job_pairs ON job_pairs.job_id=jobs.id

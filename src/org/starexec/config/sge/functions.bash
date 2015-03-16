@@ -382,7 +382,8 @@ function limitExceeded {
 	exit 1
 }
 
-# processes the attributes for a pair
+# processes the attributes for a pair. Takes a file produced by a post processor as the first argument
+# and a stage number as the second argument
 # Ben McCune
 function processAttributes {
 
@@ -403,7 +404,7 @@ product=$[keySize*valueSize]
 if (( $product ))
    then
 	log "processing attribute $a (pair=$PAIR_ID, job=$JOB_STAR_ID, key='$key', value='$value')"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value')"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
 else
         log "bad post processing - cannot process attribute $a"
 fi
@@ -507,7 +508,7 @@ function copyOutput {
 		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
 		#cat $OUT_DIR/attributes.txt
-		processAttributes $OUT_DIR/attributes.txt
+		processAttributes $OUT_DIR/attributes.txt $1
 	fi
 
 	return $?	

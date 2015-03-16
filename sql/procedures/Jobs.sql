@@ -22,7 +22,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 		WHERE job_id=_jobId AND spaces.public_access=1;
 	END //
 	
--- Adds a new attribute to a job pair 
+-- Adds a new attribute to a job pair for the given stage
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJobAttr;
 CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128), IN _stage INT)
@@ -574,7 +574,7 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _status TINYINT, 
 DROP PROCEDURE IF EXISTS AddJobPairStage;
 CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber INT, IN _primary BOOLEAN, IN _solverId INT, IN _solverName VARCHAR(255), IN _configId INT, IN _configName VARCHAR (255), IN _jobSpace INT)
 	BEGIN
-		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number,solver_id,solver_name,config_id,config_name,job_space_id) VALUES (_pairId, _stageId,_stageNumber,_solverId,_solverName,_configId,_configName, _jobSpace); 
+		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number,solver_id,solver_name,config_id,config_name,job_space_id,status_code) VALUES (_pairId, _stageId,_stageNumber,_solverId,_solverName,_configId,_configName, _jobSpace,1); 
 	END //
 -- Adds a new job record to the database
 -- Author: Tyler Jensen

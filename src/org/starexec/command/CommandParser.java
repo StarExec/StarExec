@@ -172,7 +172,9 @@ class CommandParser {
 				serverStatus=parser.uploadBenchProc(commandParams);
 			} else if (c.equals(R.COMMAND_PUSHPOSTPROC)) {
 				serverStatus=parser.uploadPostProc(commandParams);
-			} else if (c.equals(R.COMMAND_PUSHSOLVER)) {
+			} else if (c.equals(R.COMMAND_PUSHPREPROC)) {
+				serverStatus=parser.uploadPreProc(commandParams);
+			}else if (c.equals(R.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
 			}  else if (c.equals(R.COMMAND_PUSHSPACEXML) || c.equals(R.COMMAND_PUSHJOBXML)) {
 				boolean isJobXML= c.equals(R.COMMAND_PUSHJOBXML);

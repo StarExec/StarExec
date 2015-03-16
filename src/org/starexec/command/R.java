@@ -171,6 +171,7 @@ public class R {
 	//Uploading commands
 	public static String COMMAND_PUSHSOLVER="pushsolver";
 	public static String COMMAND_PUSHBENCHMARKS="pushbenchmarks";
+	public static String COMMAND_PUSHPREPROC="pushpreproc";
 	public static String COMMAND_PUSHPOSTPROC="pushpostproc";
 	public static String COMMAND_PUSHBENCHPROC="pushbenchproc";
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
