@@ -442,7 +442,7 @@ public abstract class JobManager {
 		// General pair configuration
 		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
 		//jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
-		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
+		//jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
 		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
 		jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
@@ -472,7 +472,7 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$MEM_LIMIT_ARRAY$$", numsToBashArray("STAGE_MEM_LIMITS",stageMemLimits));
 		jobScript=jobScript.replace("$$STAGE_NUMBER_ARRAY$$", numsToBashArray("STAGE_NUMBERS",stageNumbers));
 		jobScript=jobScript.replace("$$SOLVER_ID_ARRAY$$",numsToBashArray("SOLVER_IDS",solverIds));
-		//jobScript=jobScript.replace("$$CONFIG_IDS$$", numsToBashArray("CONFIG_IDS",configIds));
+		jobScript=jobScript.replace("$$SOLVER_TIMESTAMP_ARRAY$$",toBashArray("SOLVER_TIMESTAMPS",solverTimestamps,false));
 		
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
