@@ -232,10 +232,6 @@ public class Jobs {
 			
 			log.debug("job associated, adding this many stage attributes "+job.getStageAttributes().size());
 			
-			for (StageAttributes attrs: job.getStageAttributes()) {
-				attrs.setJobId(job.getId());
-				Jobs.setJobStageAttributes(attrs,con);
-			}
 			
 			log.debug("adding job pairs");
 			
@@ -244,6 +240,14 @@ public class Jobs {
 				JobPairs.addJobPair(con, pair);
 			}
 			Common.endTransaction(con);
+			
+			//this times out waiting for a lock if it isn't done after the transaction.
+			for (StageAttributes attrs: job.getStageAttributes()) {
+				attrs.setJobId(job.getId());
+				Jobs.setJobStageAttributes(attrs);
+			}
+			
+			
 			log.debug("job added successfully");
 			
 			return true;
