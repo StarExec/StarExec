@@ -4385,7 +4385,7 @@ public class Jobs {
 		ResultSet results=null;
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL getStageAttrsByJob(?)}");
+			procedure=con.prepareCall("{CALL getStageParamsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results=procedure.executeQuery();
 			List<StageAttributes> attrs=new ArrayList<StageAttributes>();
