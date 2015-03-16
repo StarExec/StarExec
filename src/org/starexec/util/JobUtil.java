@@ -281,11 +281,14 @@ public class JobUtil {
 			
 		}
 		//ensure that benchmark inputs are ordered correctly
-		int maxSeen=Collections.max(benchmarkInputs);
-		if (maxSeen!=benchmarkInputs.size()) {
-			errorMessage="Invalid benchmark inputs for pipeline = "+pipeline.getName()+". Benchmark inputs must be numbered from 1 to n, where n is the total number of expected inputs";
-			return null;
+		if (benchmarkInputs.size()>0) {
+			int maxSeen=Collections.max(benchmarkInputs);
+			if (maxSeen!=benchmarkInputs.size()) {
+				errorMessage="Invalid benchmark inputs for pipeline = "+pipeline.getName()+". Benchmark inputs must be numbered from 1 to n, where n is the total number of expected inputs";
+				return null;
+			}
 		}
+		
 		if (stageList.size()>R.MAX_STAGES_PER_PIPELINE) {
 			errorMessage="Too many stages in pipeline "+pipeline.getName()+". The maximum is "+R.MAX_STAGES_PER_PIPELINE;
 			return null;

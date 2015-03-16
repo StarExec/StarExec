@@ -180,21 +180,30 @@ copyOutput ${STAGE_NUMBERS[$STAGE_INDEX]}
 JOB_ERROR="1";
 
 
+#TODO: Need to figure out how to handle the status for the entire job pair
 if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
   true 
 elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
   log "epilog detects wall clock time exceeded"
   sendStatus $EXCEED_RUNTIME
+  sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+  
 elif ( grep 'CPU time exceeded' $WATCHFILE ) then
   log "epilog detects cpu time exceeded"
   sendStatus $EXCEED_CPU
+  sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+  
 elif ( grep 'VSize exceeded' $WATCHFILE ) then
   log "epilog detects max virtual memory exceeded"
   sendStatus $EXCEED_MEM
+  sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
+  
 else
   JOB_ERROR="";
   log "execution on $HOSTNAME complete"
   sendStatus $STATUS_FINISHING
+  sendStageStatus $STATUS_FINISHING ${STAGE_NUMBERS[$STAGE_INDEX]}
+  
 fi
 
 STAGE_INDEX= $STAGE_INDEX+1

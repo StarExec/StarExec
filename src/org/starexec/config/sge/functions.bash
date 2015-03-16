@@ -352,6 +352,15 @@ function cleanWorkspace {
 	return $?
 }
 
+function sendStageStatus {
+	log "sending status for stage number $2"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)"
+    fi
+	return $?
+}
+
 function sendStatus {
     if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)" ; then
        sleep 20
