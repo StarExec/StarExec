@@ -395,12 +395,12 @@ public abstract class JobManager {
 		List<Long> stageMemLimits=new ArrayList<Long>();
 		List<Integer> solverIds=new ArrayList<Integer>();
 		List<String> solverNames=new ArrayList<String>();
-		//List<Integer> configIds=new ArrayList<Integer>();
 		List<String> configNames=new ArrayList<String>();
 		List<String> solverTimestamps=new ArrayList<String>();
 		List<String> solverPaths=new ArrayList<String>();
 		List<String> postProcessorPaths=new ArrayList<String>();
 		List<String> preProcessorPaths=new ArrayList<String>();
+		List<Integer> spaceIds = new ArrayList<Integer>();
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
@@ -410,11 +410,10 @@ public abstract class JobManager {
 			stageMemLimits.add(attrs.getMaxMemory());
 			solverIds.add(stage.getSolver().getId());
 			solverNames.add(stage.getSolver().getName());
-			//configIds.add(stage.getConfiguration().getId());
 			configNames.add(stage.getConfiguration().getName());
 			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
 			solverPaths.add(stage.getSolver().getPath());
-			
+			spaceIds.add(attrs.getSpaceId());
 			Processor p = attrs.getPostProcessor();
 			if (p==null) {
 				postProcessorPaths.add("");
@@ -469,7 +468,7 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES",configNames,false));
 		jobScript=jobScript.replace("$$PRE_PROCESSOR_PATH_ARRAY$$",toBashArray("PRE_PROCESSOR_PATHS",preProcessorPaths,false));
 		jobScript=jobScript.replace("$$POST_PROCESSOR_PATH_ARRAY$$",toBashArray("POST_PROCESSOR_PATHS",postProcessorPaths,false));
-
+		jobScript=jobScript.replace("$$SPACE_ID_ARRAY$$",numsToBashArray("SPACE_IDS",spaceIds));
 		
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
@@ -524,11 +523,22 @@ public abstract class JobManager {
 		return sb.toString();
 	}
 	
-	
+	/**
+	 * Creates a String that can be inserted into a Bash script as an array where all the given numbers
+	 * are in the array starting from index 0. Null is encoded as a blank string in the array
+	 * @param arrayName The name of the variable holding the array in Bash
+	 * @param nums The numbers to insert into the array
+	 * @return The string to insert
+	 */
 	public static <T extends Number> String numsToBashArray(String arrayName, List<T> nums){
 		List<String> strs=new ArrayList<String>();
 		for (T num : nums) {
-			strs.add(num.toString());
+			if (num!=null) {
+				strs.add(num.toString());
+
+			} else {
+				strs.add("");
+			}
 		}
 		return toBashArray(arrayName,strs,false);
 	}

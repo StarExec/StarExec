@@ -63,7 +63,11 @@ $$PRE_PROCESSOR_PATH_ARRAY$$
 
 $$POST_PROCESSOR_PATH_ARRAY$$
 
+$$SPACE_ID_ARRAY$$
+
 STAGE_INDEX=0
+
+NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 #==========================================================================
 # Signal Traps
@@ -111,6 +115,10 @@ export MAX_MEM=$NODE_MEM
 fi
 
 # THIS IS THE START OF THINGS THAT MUST BE DONE DURING EACH STAGE
+
+while [ $STAGE_INDEX -lt $NUM_STAGES ]
+do
+
 
 CURRENT_STAGE_MEMORY=$MAX_MEM   #start with the default max mem
 CURRENT_STAGE_CPU=$STAREXEC_CPU_LIMIT
@@ -253,7 +261,7 @@ fi
 
 STAGE_INDEX= $STAGE_INDEX+1
 
-
+done
 
 
 echo "Jobscript ending."

@@ -6,10 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -32,30 +28,18 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
-import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
-/**
- * This class contains tests that simply visit web pages can click around on them,
- * searching for any javascript errors and also any JSP errors that prevent
- * pages from loading
- * @author Eric Burns
- *
- */
 
 public class GetPageTests extends TestSequence {
-	
+	private Connection con; // connection of a normal user
+	private Connection adminCon;
 	private Space space1=null; //will contain both solvers and benchmarks
 	private Job job=null;
-	
 	File solverFile=null;
 	File downloadDir=null;
 
-	WebDriver driver=null;
-	Actions driverActions;
-	WebDriver adminDriver=null;
-	
 	Solver solver=null;
 	List<Integer> benchmarkIds=null;
 	Configuration config=null;
@@ -67,302 +51,228 @@ public class GetPageTests extends TestSequence {
 	Space testCommunity=null;	
 	Queue q=null;
 	@Test
-	private void getSpaceExplorerTest() throws InterruptedException{
-		driver.get(Util.url("secure/explore/spaces.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
-		WebElement treeIcon=driver.findElements(By.className("jstree-icon")).get(0);
-		treeIcon.click();
-		treeIcon.click();
-		treeIcon.click();
-		WebElement jobField=driver.findElement(By.id("jobExpd"));
-		jobField.click();
-		Thread.sleep(500); //wait for the field to open
-		WebElement tableHeader=driver.findElement(By.id("jobNameHead"));
-		tableHeader.click();
-		tableHeader.click();
-		
+	private void getSpaceExplorerTest(){
+		Assert.assertTrue(con.canGetPage("secure/explore/spaces.jsp"));
 	}
 	
 	@Test
 	private void getCommunityExplorerTest(){
-		driver.get(Util.url("secure/explore/communities.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/explore/communities.jsp"));
 	}
 	
 	@Test
 	private void getClusterTest(){
-		driver.get(Util.url("secure/explore/cluster.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/explore/cluster.jsp"));
 	}
 	
 	@Test
 	private void getSolverDetailsTest(){
-		driver.get(Util.url("secure/details/solver.jsp?id="+solver.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/solver.jsp?id="+solver.getId()));
 	}
 	
 	@Test
 	private void getSolverEditTest(){
-		driver.get(Util.url("secure/edit/solver.jsp?id="+solver.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/edit/solver.jsp?id="+solver.getId()));
 	}
 	
 	@Test
 	private void getSolverAddTest(){
-		driver.get(Util.url("secure/add/solver.jsp?sid="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/solver.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
 	private void getBatchJobAddTest(){
-		driver.get(Util.url("secure/add/batchJob.jsp?sid="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/batchJob.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
 	private void getBatchSpaceAddTest(){
-		driver.get(Util.url("secure/add/batchSpace.jsp?sid="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/batchSpace.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
 	private void getBenchmarkDetailsTest(){
-		driver.get(Util.url("secure/details/benchmark.jsp?id="+benchmarkIds.get(0)));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/benchmark.jsp?id="+benchmarkIds.get(0)));
 	}
 	
 	@Test
 	private void getBenchmarkEditTest(){
-		driver.get(Util.url("secure/edit/benchmark.jsp?id="+benchmarkIds.get(0)));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/edit/benchmark.jsp?id="+benchmarkIds.get(0)));
 	}
 	
 	@Test
 	private void getBenchAddTest(){
-		driver.get(Util.url("secure/add/benchmarks.jsp?sid="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/benchmarks.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
 	private void getConfigDetailsTest(){
-		driver.get(Util.url("secure/details/configuration.jsp?id="+config.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/configuration.jsp?id="+config.getId()));
 	}
 	
 	@Test
 	private void getConfigEditTest(){
-		driver.get(Util.url("secure/edit/configuration.jsp?id="+config.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/edit/configuration.jsp?id="+config.getId()));
 	}
 	
 	@Test
 	private void getConfigAddTest(){
-		driver.get(Util.url("secure/add/configuration.jsp?sid="+solver.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/configuration.jsp?sid="+solver.getId()));
 	}
 	
 	@Test
 	private void getPictureAddTest(){
-		driver.get(Util.url("secure/add/picture.jsp?type=solver&Id="+solver.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(con.canGetPage("secure/add/picture.jsp?type=solver&Id="+solver.getId()));
 	}
 	
 	@Test
 	private void getSpaceEditTest() {
-		driver.get(Util.url("secure/edit/space.jsp?id="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/edit/space.jsp?id="+space1.getId()));
 	}
 	
 	@Test
 	private void getJobDetailsTest(){
-		driver.get(Util.url("secure/details/job.jsp?id="+job.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/job.jsp?id="+job.getId()));
 	}
 	
 	@Test
 	private void getJobPanelViewTest(){
-		driver.get(Util.url("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()));
 	}
 	
 	@Test
 	private void getPairsInSpaceTest(){
-		driver.get(Util.url("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getPrimaryConfiguration().getId()
+		Assert.assertTrue(con.canGetPage("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getPrimaryStage().getConfiguration().getId()
 				+"&sid="+job.getPrimarySpace()+"&id="+job.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
 	}
 	
 	@Test
 	private void getPairDetailsTest(){
-		driver.get(Util.url("secure/details/pair.jsp?id="+job.getJobPairs().get(0).getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/pair.jsp?id="+job.getJobPairs().get(0).getId()));
 	}
 	
 	@Test
 	private void getJobAddTest(){
-		driver.get(Util.url("secure/add/job.jsp?sid="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
 	private void getQuickJobAddTest(){
-		driver.get(Util.url("secure/add/quickJob.jsp?sid="+space1.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/add/quickJob.jsp?sid="+space1.getId()));
 	}
 	
 	@Test
 	private void getRecycleBinTest(){
-		driver.get(Util.url("secure/details/recycleBin.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/recycleBin.jsp"));
 	}
 	
 	@Test
 	private void getUserDetailsTest(){
-		driver.get(Util.url("secure/details/user.jsp?id="+user.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/details/user.jsp?id="+user.getId()));
 	}
 	
 	@Test
 	private void getUserEditTest(){
-		driver.get(Util.url("secure/edit/account.jsp?id="+user.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/edit/account.jsp?id="+user.getId()));
 	}
 	
 	@Test
 	private void getDefaultPrimTest() {
-		driver.get(Util.url("secure/edit/defaultPrimitive.jsp?type=solver&id="+settings.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
-		driver.get(Util.url("secure/edit/defaultPrimitive.jsp?type=benchmark&id="+settings.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=solver&id="+settings.getId()));
+		Assert.assertTrue(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=benchmark&id="+settings.getId()));
 		
-		
-		driver.get(Util.url("secure/edit/defaultPrimitive.jsp?type=wrong&id="+settings.getId()));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		driver.get(Util.url("secure/edit/defaultPrimitive.jsp?type=benchmark&id=-1"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertFalse(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=wrong&id="+settings.getId()));
+		Assert.assertFalse(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=benchmark&id=-1"));
 
 
 	}
 	
 	@Test
 	private void getHelpTest(){
-		driver.get(Util.url("secure/help.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(con.canGetPage("secure/help.jsp"));
 	}
 	
 	@Test
 	private void getAdminAssocCommunityTest() {
-		adminDriver.get(Util.url("secure/admin/assocCommunity.jsp?id="+q.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/assocCommunity.jsp?id="+q.getId()));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
+		Assert.assertFalse(con.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
 
 	}
 	
 	@Test
 	private void getAdminCacheTest() {
-		
-		adminDriver.get(Util.url("secure/admin/cache.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/cache.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/cache.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/cache.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminClusterTest() {
-		
-		adminDriver.get(Util.url("secure/admin/cluster.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/cluster.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/cluster.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/cluster.jsp"));
+
 	}
 	
 	@Test
 	private void getAdminCommunityTest() {
-		adminDriver.get(Util.url("secure/admin/community.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/community.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
-	
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/community.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/community.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminJobTest() {
-		adminDriver.get(Util.url("secure/admin/job.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/job.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/job.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/job.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminLoggingTest() {
-		adminDriver.get(Util.url("secure/admin/logging.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/logging.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/logging.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/logging.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminMoveNodesTest() {
-		
-		adminDriver.get(Util.url("secure/admin/moveNodes.jsp?id="+q.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/moveNodes.jsp?id="+q.getId()));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/moveNodes.jsp?id="+q.getId()));
+		Assert.assertFalse(con.canGetPage("secure/admin/moveNodes.jsp?id="+q.getId()));
+
+	}
 	
+	@Test
+	private void getAdminNodesTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/nodes.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/nodes.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminPermanentQueueTest() {
-		adminDriver.get(Util.url("secure/admin/permanentQueue.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/permanentQueue.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/permanentQueue.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/permanentQueue.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminPermissionsTest() {
-		adminDriver.get(Util.url("secure/admin/permissions.jsp?id="+user.getId()));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/permissions.jsp?id="+user.getId()));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
+		Assert.assertFalse(con.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
 
 	}
 	
 	@Test
 	private void getAdminStarexecTest() {
-		adminDriver.get(Util.url("secure/admin/starexec.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/starexec.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/starexec.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/starexec.jsp"));
 
 	}
 	
 	@Test
 	private void getAdminTestingTest() {
-		adminDriver.get(Util.url("secure/admin/testing.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/testing.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/test.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/test.jsp"));
 
 	}
 	
@@ -370,18 +280,14 @@ public class GetPageTests extends TestSequence {
 	
 	@Test
 	private void getAdminUserTest() {
-		adminDriver.get(Util.url("secure/admin/user.jsp"));
-		Assert.assertFalse(TestUtil.isOnErrorPage(adminDriver));
-		driver.get(Util.url("secure/admin/user.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
-		
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/user.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/user.jsp"));
 
 	}
 	
 	@Test
 	private void failBadURLTest(){
-		driver.get(Util.url("secure/details/fakewebpage.jsp"));
-		Assert.assertTrue(TestUtil.isOnErrorPage(driver));
+		Assert.assertFalse(con.canGetPage("secure/details/fakewebpage.jsp"));
 	}
 	
 	@Override
@@ -390,21 +296,21 @@ public class GetPageTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		testCommunity=Communities.getTestCommunity();
 		
-		driver=ResourceLoader.getWebDriver(user.getEmail(), R.TEST_USER_PASSWORD,false);
+		//this prevents the apache http libraries from logging things. Their logs are very prolific
+		//and drown out ours
+		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
 
-		//driver=ResourceLoader.getFirefoxDriver(user.getEmail(), R.TEST_USER_PASSWORD);
-		driverActions=new Actions(driver);
-		adminDriver=ResourceLoader.getWebDriver(admin.getEmail(), R.TEST_USER_PASSWORD,false);
+		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 
-		//adminDriver=ResourceLoader.getFirefoxDriver(admin.getEmail(), R.TEST_USER_PASSWORD);
-
-	
+		int stat = con.login();
+		Assert.assertEquals(0,stat);
 		
 		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		Assert.assertNotNull(space1);
 		
-		q=Queues.getAllQ();
+		q=Queues.getAll().get(0);
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
@@ -414,9 +320,9 @@ public class GetPageTests extends TestSequence {
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		//job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
-		//settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
-		//Assert.assertNotNull(benchmarkIds);
+		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
+		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
+		Assert.assertNotNull(benchmarkIds);
 
 		
 	}
@@ -425,27 +331,15 @@ public class GetPageTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		
 		Spaces.removeSubspaces(space1.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Processors.delete(proc.getId());
-		//for (Integer i : benchmarkIds) {
-		//	Benchmarks.deleteAndRemoveBenchmark(i);
-		//}
-		
-		//Jobs.deleteAndRemove(job.getId());
-		//Settings.deleteProfile(settings.getId());
-		for (String s: driver.getWindowHandles()) {
-			driver.switchTo().window(s);
-			driver.close();
+		for (Integer i : benchmarkIds) {
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
-		driver.quit();
 		
-		for (String s: adminDriver.getWindowHandles()) {
-			adminDriver.switchTo().window(s);
-			adminDriver.close();
-		}
-		adminDriver.quit();
+		Jobs.deleteAndRemove(job.getId());
+		Settings.deleteProfile(settings.getId());
 	}
 	
 
