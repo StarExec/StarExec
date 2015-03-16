@@ -361,7 +361,7 @@
 		<form id="addPostProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
-			<input type="hidden" name="type" value="update"/>
+			<input type="hidden" name="type" value="post"/>
 			<table id="newPostProcessTbl">			
 				<tr>
 					<td><label for="processorName">name</label></td>
