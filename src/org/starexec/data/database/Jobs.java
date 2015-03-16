@@ -224,11 +224,13 @@ public class Jobs {
 			
 			Jobs.addJob(con, job);
 			
-
+			log.debug("job added, associating next");
 			//put the job in the space it was created in, assuming a space was selected
 			if (spaceId>0) {
 				Jobs.associate(con, job.getId(), spaceId);
 			}
+			
+			log.debug("job associated, adding this many stage attributes "+job.getStageAttributes().size());
 			
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				attrs.setJobId(job.getId());
