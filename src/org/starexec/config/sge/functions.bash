@@ -499,7 +499,7 @@ function createDir {
 	return $?
 }
 
-# takes in a stage number as an argumetn so we know where to put the output
+# takes in a stage number as an argument so we know where to put the output
 function copyOutput {
 	log "creating storage directory on master host"
 

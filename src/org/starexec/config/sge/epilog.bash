@@ -43,13 +43,5 @@ setEndTime
 
 cleanWorkspace 0
 
-if [ "$JOB_ERROR" = "" ]; then
-	sendStatus $STATUS_COMPLETE
-	sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
-	
-	log "STAREXEC job #$JOB_ID completed successfully"	
-else
-	log "STAREXEC job #$JOB_ID exited with errors"
-fi
 
 exit 0

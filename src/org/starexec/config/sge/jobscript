@@ -172,7 +172,7 @@ VARFILE="$OUT_DIR"/var.out
 log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
-
+# this also does post processing
 copyOutput ${STAGE_NUMBERS[$STAGE_INDEX]}
 
 
@@ -201,9 +201,16 @@ elif ( grep 'VSize exceeded' $WATCHFILE ) then
 else
   JOB_ERROR="";
   log "execution on $HOSTNAME complete"
-  sendStatus $STATUS_FINISHING
-  sendStageStatus $STATUS_FINISHING ${STAGE_NUMBERS[$STAGE_INDEX]}
+  sendStatus $STATUS_COMPLETE
+  sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
   
+fi
+
+if [ "$JOB_ERROR" = "" ]; then
+	
+	log "STAREXEC job $JOB_ID completed successfully"	
+else
+	log "STAREXEC job $JOB_ID exited with errors"
 fi
 
 STAGE_INDEX= $STAGE_INDEX+1
