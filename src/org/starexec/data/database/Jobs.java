@@ -234,7 +234,7 @@ public class Jobs {
 			
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				attrs.setJobId(job.getId());
-				Jobs.setJobStageAttributes(attrs);
+				Jobs.setJobStageAttributes(attrs,con);
 			}
 			
 			log.debug("adding job pairs");
@@ -605,17 +605,8 @@ public class Jobs {
 		return timeout;
 	}
 	
-	/**
-	 * Sets resource limits for the given job and stage pair
-	 * @param jobId
-	 * @param stageId
-	 * @param cpuTimeout
-	 * @param clockTimeout
-	 * @param maxMemory
-	 * @return
-	 */
-	public static boolean setJobStageAttributes(StageAttributes attrs) {
-		Connection con=null;
+	
+	public static boolean setJobStageAttributes(StageAttributes attrs, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
@@ -635,8 +626,23 @@ public class Jobs {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
+		}
+		return false;
+		
+	}
+	
+	
+
+	public static boolean setJobStageAttributes(StageAttributes attrs) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return setJobStageAttributes(attrs,con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
 		}
 		return false;
 		
