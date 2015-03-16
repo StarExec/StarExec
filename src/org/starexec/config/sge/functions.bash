@@ -505,6 +505,7 @@ function copyOutput {
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1"
+	log "the output path is $PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
