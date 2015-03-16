@@ -445,7 +445,8 @@ public class JobUtil {
 				}
 				long stageMemory=memoryLimit;
 				if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
-					stageMemory=Long.parseLong(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+					Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+					stageMemory=Util.gigabytesToBytes(memLimit);
 				}
 				Integer stageSpace=null;
 				if (DOMHelper.hasElement(stageAttributes, "space-id")) {

@@ -53,13 +53,6 @@ SANDBOX2_LOCK_USED='/export/starexec/sandbox2lock.active'
 # Path to local workspace for each node in cluster.
 
 
-
-#path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
-
-#whether the solver was found in the cache
-SOLVER_CACHED=0
-
 # Path to Olivier Roussel's runSolver
 RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
 
@@ -101,17 +94,12 @@ function initWorkspaceVariables {
 	
 	# The path to the benchmark on the execution host 
 	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
-
-	# The path to the config run script on the execution host
-	LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
 	
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 	
 	# Path to where the pre-processor will be copied
 	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
-	
-	
 	
 	# The path to the bin directory of the solver on the execution host
 	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
@@ -504,7 +492,7 @@ function copyOutput {
 	log "creating storage directory on master host"
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
-	PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1"
+	PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1.txt"
 	log "the output path is $PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	log "job output copy complete - now sending stats"
@@ -524,3 +512,299 @@ function copyOutput {
 
 	return $?	
 }
+
+#fills arrays from file
+function fillDependArrays {
+#separator
+sep=',,,'
+
+INDEX=0
+
+log "has depends = $HAS_DEPENDS"
+
+if [ $HAS_DEPENDS -eq 1 ]
+then
+while read line
+do
+  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+  INDEX=$((INDEX + 1))
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" 
+fi
+
+return $?
+}
+
+
+
+
+#will see if a solver is cached and change the SOLVER_PATH to the cache if so
+function checkCache {
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+			log "solver exists in cache at $SOLVER_CACHE_PATH"
+  			SOLVER_PATH=$SOLVER_CACHE_PATH	
+  			SOLVER_CACHED=1
+		fi
+	fi	
+}
+
+function copyDependencies {
+	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
+	log "solver copy complete"
+	if [ $SOLVER_CACHED -eq 0 ]; then
+		mkdir -p "$SOLVER_CACHE_PATH"
+		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
+			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+				#store solver in a cache
+				log "storing solver in cache at $SOLVER_CACHE_PATH"
+				#if the copy was successful
+				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
+					log "the solver was successfully copied into the cache"
+					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
+					rm -r "$SOLVER_CACHE_PATH/lock.lock"
+				else
+					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
+					rm -r "$SOLVER_CACHE_PATH"	
+				fi
+			fi
+		fi		
+	fi
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
+        chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "copying runSolver to execution host..."
+	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
+	log "runsolver copy complete"
+	ls -l "$LOCAL_RUNSOLVER_PATH"
+
+	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
+	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
+	log "benchmark copy complete"
+	
+	#doing benchmark preprocessing here if the pre_processor actually exists
+	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
+		log "executing pre processor"
+		log "random seed = "$RAND_SEED
+		
+		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
+		#use the processed benchmark in subsequent steps
+		rm "$LOCAL_BENCH_PATH"
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
+	fi
+	
+	
+	log "copying benchmark dependencies to execution host..."
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
+	do
+		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
+		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
+		mkdir -p $NEW_D
+		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+		
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		else
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+			
+			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		fi
+		
+		
+	done
+	log "benchmark dependencies copy complete"
+	return $?	
+}
+
+#benchmark dependencies not currently verified.
+function verifyWorkspace { 
+	# Make sure the configuration exists before we execute it
+	if ! [ -x "$LOCAL_CONFIG_PATH" ]; then
+		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
+		#get rid of the cache, as if we're here then something is probably wrong with it
+		rm -r "$SOLVER_CACHE_PATH"
+		sendStatus $ERROR_RUNSCRIPT
+	else
+		log "execution host solver configuration verified"	
+	fi	
+
+	# Make sure the benchmark exists before the job runs
+	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
+                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+                sendStatus $ERROR_BENCHMARK
+        else
+		log "execution host benchmark verified"
+	fi		
+
+	return $?
+}
+
+function sandboxWorkspace {
+
+	if [[ $WORKING_DIR == *sandbox2* ]] 
+	
+	then
+	log "sandboxing workspace with sandbox2 user"
+	sudo chown -R sandbox2 $WORKING_DIR 
+	else
+		log "sandboxing workspace with sandbox user"
+		sudo chown -R sandbox $WORKING_DIR
+	fi
+	ls -lR "$WORKING_DIR"
+	return 0
+}
+
+#will see if a solver is cached and change the SOLVER_PATH to the cache if so
+function checkCache {
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+			log "solver exists in cache at $SOLVER_CACHE_PATH"
+  			SOLVER_PATH=$SOLVER_CACHE_PATH	
+  			SOLVER_CACHED=1
+		fi
+	fi	
+}
+
+#fills arrays from file
+function fillDependArrays {
+#separator
+sep=',,,'
+
+INDEX=0
+
+log "has depends = $HAS_DEPENDS"
+
+if [ $HAS_DEPENDS -eq 1 ]
+then
+while read line
+do
+  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+  INDEX=$((INDEX + 1))
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" 
+fi
+
+return $?
+}
+
+
+
+
+
+
+function copyDependencies {
+	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
+	log "solver copy complete"
+	if [ $SOLVER_CACHED -eq 0 ]; then
+		mkdir -p "$SOLVER_CACHE_PATH"
+		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
+			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+				#store solver in a cache
+				log "storing solver in cache at $SOLVER_CACHE_PATH"
+				#if the copy was successful
+				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
+					log "the solver was successfully copied into the cache"
+					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
+					rm -r "$SOLVER_CACHE_PATH/lock.lock"
+				else
+					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
+					rm -r "$SOLVER_CACHE_PATH"	
+				fi
+			fi
+		fi		
+	fi
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
+        chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "copying runSolver to execution host..."
+	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
+	log "runsolver copy complete"
+	ls -l "$LOCAL_RUNSOLVER_PATH"
+
+	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
+	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
+	log "benchmark copy complete"
+	
+	#doing benchmark preprocessing here if the pre_processor actually exists
+	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
+		log "executing pre processor"
+		log "random seed = "$RAND_SEED
+		
+		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
+		#use the processed benchmark in subsequent steps
+		rm "$LOCAL_BENCH_PATH"
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
+	fi
+	
+	
+	log "copying benchmark dependencies to execution host..."
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
+	do
+		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
+		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
+		mkdir -p $NEW_D
+		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+		
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		else
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+			
+			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		fi
+		
+		
+	done
+	log "benchmark dependencies copy complete"
+	return $?	
+}
+
+#benchmark dependencies not currently verified.
+function verifyWorkspace { 
+	# Make sure the configuration exists before we execute it
+	if ! [ -x "$LOCAL_CONFIG_PATH" ]; then
+		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
+		#get rid of the cache, as if we're here then something is probably wrong with it
+		rm -r "$SOLVER_CACHE_PATH"
+		sendStatus $ERROR_RUNSCRIPT
+	else
+		log "execution host solver configuration verified"	
+	fi	
+
+	# Make sure the benchmark exists before the job runs
+	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
+                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+                sendStatus $ERROR_BENCHMARK
+        else
+		log "execution host benchmark verified"
+	fi		
+
+	return $?
+}
+function sandboxWorkspace {
+
+	if [[ $WORKING_DIR == *sandbox2* ]] 
+	
+	then
+	log "sandboxing workspace with sandbox2 user"
+	sudo chown -R sandbox2 $WORKING_DIR 
+	else
+		log "sandboxing workspace with sandbox user"
+		sudo chown -R sandbox $WORKING_DIR
+	fi
+	ls -lR "$WORKING_DIR"
+	return 0
+}
+

@@ -27,11 +27,17 @@
 #$ -j y
 
 # Variables in local environment.  Note that SOLVER_NAME, SOLVER_PATH, and BENCH_PATH are base64 encoded (we will decode in the prolog)
-#$ -v JOB_STAR_ID='$$JOBID$$',PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$',RAND_SEED='$$RANDSEED$$',PRE_PROCESSOR_PATH='$$PRE_PROCESSOR_PATH$$',MAX_MEM='$$MAX_MEM$$',POST_PROCESSOR_PATH='$$POST_PROCESSOR_PATH$$',USER_ID='$$USERID$$',HAS_DEPENDS='$$HAS_DEPENDS$$',SOLVER_PATH='$$SOLVER_PATH$$',SOLVER_NAME='$$SOLVER_NAME$$',CONFIG_NAME='$$CONFIG$$',BENCH_PATH='$$BENCH$$',PAIR_ID='$$PAIRID$$',STAREXEC_MAX_MEM='$$MAX_MEM$$',STAREXEC_MAX_WRITE='$$MAX_WRITE$$',STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$',STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$',REPORT_HOST='$$REPORT_HOST$$',DB_NAME='$$DB_NAME$$',SHARED_DIR='$$STAREXEC_DATA_DIR$$',SPACE_PATH='$$SPACE_PATH$$',SOLVER_ID='$$SOLVER_ID$$',SCRIPT_PATH='$$SCRIPT_PATH$$',SOLVER_TIMESTAMP='$$SOLVER_TIMESTAMP$$'
+#$ -v JOB_STAR_ID='$$JOBID$$',PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$',RAND_SEED='$$RANDSEED$$',PRE_PROCESSOR_PATH='$$PRE_PROCESSOR_PATH$$',MAX_MEM='$$MAX_MEM$$',POST_PROCESSOR_PATH='$$POST_PROCESSOR_PATH$$',USER_ID='$$USERID$$',HAS_DEPENDS='$$HAS_DEPENDS$$',SOLVER_PATH='$$SOLVER_PATH$$',SOLVER_NAME='$$SOLVER_NAME$$',CONFIG_NAME='$$CONFIG$$',BENCH_PATH='$$BENCH$$',PAIR_ID='$$PAIRID$$',STAREXEC_MAX_MEM='$$MAX_MEM$$',STAREXEC_MAX_WRITE='$$MAX_WRITE$$',STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$',STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$',REPORT_HOST='$$REPORT_HOST$$',DB_NAME='$$DB_NAME$$',SHARED_DIR='$$STAREXEC_DATA_DIR$$',SPACE_PATH='$$SPACE_PATH$$',SCRIPT_PATH='$$SCRIPT_PATH$$',SOLVER_TIMESTAMP='$$SOLVER_TIMESTAMP$$'
 
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
 
+
+# Array of secondary benchmarks starexec paths
+declare -a BENCH_DEPENDS_ARRAY
+
+# Array of secondary benchmarks execution host paths
+declare -a LOCAL_DEPENDS_ARRAY
 
 #==========================================================================
 # Arrays of stage information written from Java
@@ -46,6 +52,9 @@ $$CPU_TIMEOUT_ARRAY$$
 $$CLOCK_TIMEOUT_ARRAY$$
 
 $$MEM_LIMIT_ARRAY$$
+
+$$SOLVER_ID_ARRAY$$
+
 
 
 STAGE_INDEX=0
@@ -127,12 +136,35 @@ then
 
 fi
 
+SOLVER_ID=${SOLVER_IDS[$STAGE_INDEX]}
+
+
+#path to where cached solvers are stored
+SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+
+#whether the solver was found in the cache
+SOLVER_CACHED=0
+
+
+# The path to the config run script on the execution host
+LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+
+fillDependArrays
+checkCache
+copyDependencies
+verifyWorkspace
+sandboxWorkspace
+
+
+CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[$STAGE_INDEX]}
+
 
 log "doing stage index $STAGE_INDEX"
 log "cpu timeout : $CURRENT_STAGE_CPU"
 log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
 log "mem limit : $CURRENT_STAGE_MEMORY"
-
+log "solver id : $SOLVER_ID"
+log "stage number : $CURRENT_STAGE_NUMBER
 
 
 
@@ -173,7 +205,7 @@ log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
 # this also does post processing
-copyOutput ${STAGE_NUMBERS[$STAGE_INDEX]}
+copyOutput $CURRENT_STAGE_NUMBER
 
 
 # cleared below if no error
