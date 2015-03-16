@@ -503,7 +503,7 @@ public abstract class JobManager {
 	 * @param strs
 	 * @return
 	 */
-	public static String toBashArray(String arrayName, List<String> strs) {
+	public static String toBashArray(String arrayName, List<String> strs, boolean base64) {
 		if (strs.size()==0) {
 			return "";
 		}
@@ -514,7 +514,13 @@ public abstract class JobManager {
 			sb.append("[");
 			sb.append(index);
 			sb.append("]=\"");
-			sb.append(base64encode(s));
+			if (base64) {
+				sb.append(base64encode(s));
+
+			} else {
+				sb.append(s);
+
+			}
 			sb.append("\"\n");
 		}
 		return sb.toString();
@@ -526,7 +532,7 @@ public abstract class JobManager {
 		for (T num : nums) {
 			strs.add(num.toString());
 		}
-		return toBashArray(arrayName,strs);
+		return toBashArray(arrayName,strs,false);
 	}
 
 	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		

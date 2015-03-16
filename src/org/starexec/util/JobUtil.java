@@ -605,7 +605,7 @@ public class JobUtil {
 							
 							// if the stage is primary, then set it as such in the job pair
 							if (s.isPrimary()) {
-								jobPair.setPrimaryStageNumber(jobPair.getStages().size());
+								jobPair.setPrimaryStageNumber(jobPair.getStages().size()+1);
 							}
 						}
 						jobPair.addStage(stage);
