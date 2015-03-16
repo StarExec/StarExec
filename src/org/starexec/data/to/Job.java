@@ -317,6 +317,33 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	public void addStageAttributes(StageAttributes attrs) {
 		this.stageAttributes.add(attrs);
 	}
+	
+	/**
+	 * Returns the StageAttributes object for the given stage number.
+	 * If there is no such object, generates one using the defaults
+	 * from this job object.
+	 * @param stageNumber
+	 * @return
+	 */
+	public StageAttributes getStageAttributesByStageNumber(int stageNumber) {
+		for (StageAttributes attrs : stageAttributes) {
+			if (attrs.getStageNumber()==stageNumber) {
+				return attrs;
+				
+			}
+		}
+		
+		StageAttributes attrs=new StageAttributes();
+		attrs.setStageNumber(stageNumber);
+		attrs.setSpaceId(null);
+		attrs.setCpuTimeout(cpuTimeout);
+		attrs.setWallclockTimeout(wallclockTimeout);
+		attrs.setJobId(this.getId());
+		attrs.setMaxMemory(maxMemory);
+		attrs.setPostProcessor(postProcessor);
+		attrs.setPreProcessor(preProcessor);
+		return attrs;
+	}
 
 	
 }

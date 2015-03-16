@@ -27,10 +27,28 @@
 #$ -j y
 
 # Variables in local environment.  Note that SOLVER_NAME, SOLVER_PATH, and BENCH_PATH are base64 encoded (we will decode in the prolog)
-#$ -v JOB_STAR_ID='$$JOBID$$',PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$',PAIR_OUTPUT_PATH='$$PAIR_OUTPUT_PATH$$',RAND_SEED='$$RANDSEED$$',PRE_PROCESSOR_PATH='$$PRE_PROCESSOR_PATH$$',MAX_MEM='$$MAX_MEM$$',POST_PROCESSOR_PATH='$$POST_PROCESSOR_PATH$$',USER_ID='$$USERID$$',HAS_DEPENDS='$$HAS_DEPENDS$$',SOLVER_PATH='$$SOLVER_PATH$$',SOLVER_NAME='$$SOLVER_NAME$$',CONFIG_NAME='$$CONFIG$$',BENCH_PATH='$$BENCH$$',PAIR_ID='$$PAIRID$$',STAREXEC_MAX_MEM='$$MAX_MEM$$',STAREXEC_MAX_WRITE='$$MAX_WRITE$$',STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$',STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$',REPORT_HOST='$$REPORT_HOST$$',DB_NAME='$$DB_NAME$$',SHARED_DIR='$$STAREXEC_DATA_DIR$$',SPACE_PATH='$$SPACE_PATH$$',SOLVER_ID='$$SOLVER_ID$$',SCRIPT_PATH='$$SCRIPT_PATH$$',SOLVER_TIMESTAMP='$$SOLVER_TIMESTAMP$$'
+#$ -v JOB_STAR_ID='$$JOBID$$',PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$',RAND_SEED='$$RANDSEED$$',PRE_PROCESSOR_PATH='$$PRE_PROCESSOR_PATH$$',MAX_MEM='$$MAX_MEM$$',POST_PROCESSOR_PATH='$$POST_PROCESSOR_PATH$$',USER_ID='$$USERID$$',HAS_DEPENDS='$$HAS_DEPENDS$$',SOLVER_PATH='$$SOLVER_PATH$$',SOLVER_NAME='$$SOLVER_NAME$$',CONFIG_NAME='$$CONFIG$$',BENCH_PATH='$$BENCH$$',PAIR_ID='$$PAIRID$$',STAREXEC_MAX_MEM='$$MAX_MEM$$',STAREXEC_MAX_WRITE='$$MAX_WRITE$$',STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$',STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$',REPORT_HOST='$$REPORT_HOST$$',DB_NAME='$$DB_NAME$$',SHARED_DIR='$$STAREXEC_DATA_DIR$$',SPACE_PATH='$$SPACE_PATH$$',SOLVER_ID='$$SOLVER_ID$$',SCRIPT_PATH='$$SCRIPT_PATH$$',SOLVER_TIMESTAMP='$$SOLVER_TIMESTAMP$$'
 
-# Include common functions
+# Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
+
+
+#==========================================================================
+# Arrays of stage information written from Java
+#
+#
+#==========================================================================
+
+$$STAGE_NUMBER_ARRAY$$
+
+$$CPU_TIMEOUT_ARRAY$$
+
+$$CLOCK_TIMEOUT_ARRAY$$
+
+$$MEM_LIMIT_ARRAY$$
+
+
+STAGE_INDEX=0
 
 #==========================================================================
 # Signal Traps
@@ -56,25 +74,129 @@ trap 'handleUsrTwo' USR2
 findSandbox $JOB_ID
 
 
+# setup the memory limit for this stage
+
+#THIS ONLY NEEDS TO BE DONE ONCE
+NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
+
+#then, convert kb to mb
+NODE_MEM=$(($NODE_MEM/1024))
+
+log "node memory in megabytes = $NODE_MEM"
+
+#then, set to half the memory
+NODE_MEM=$(($NODE_MEM/2))
+
+if [ $MAX_MEM -gt $NODE_MEM ]
+then
+
+echo "truncating max memory from requested $MAX_MEM to $NODE_MEM (half max memory on the node)"
+
+export MAX_MEM=$NODE_MEM
+
+fi
+
+# THIS IS THE START OF THINGS THAT MUST BE DONE DURING EACH STAGE
+
+CURRENT_STAGE_MEMORY=$MAX_MEM   #start with the default max mem
+CURRENT_STAGE_CPU = $STAREXEC_CPU_LIMIT
+CURRENT_STAGE_WALLCLOCK = $STAREXEC_WALLCLOCK_LIMIT
+
+if [ $CURRENT_STAGE_MEMORY -gt ${STAGE_MEM_LIMITS[$STAGE_INDEX]} ]
+then
+
+CURRENT_STAGE_MEMORY = ${STAGE_MEM_LIMITS[$STAGE_INDEX]}
+
+fi
+
+if [ $CURRENT_STAGE_CPU -gt ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]} ]
+then
+
+	CURRENT_STAGE_CPU = ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}
+
+fi
+
+if [ $CURRENT_STAGE_WALLCLOCK -gt ${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]} ]
+then
+
+	CURRENT_STAGE_WALLCLOCK = ${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}
+
+fi
+
+
+log "doing stage index $STAGE_INDEX"
+log "cpu timeout : $CURRENT_STAGE_CPU"
+log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
+log "mem limit : $CURRENT_STAGE_MEMORY"
+
+
+
+
+
+
 if [ $SANDBOX -eq 1 ]
 then
 	cd /export/starexec/sandbox/solver/bin
 	pwd
 	echo "  $LOCAL_RUNSOLVER_PATH --timestamp --add-eof --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
-	sudo -u sandbox STAREXEC_MAX_MEM=$MAX_MEM STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$$MAX_CPUTIME$$ STAREXEC_WALLCLOCK_LIMIT=$$MAX_RUNTIME$$ "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" 
+	sudo -u sandbox STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" 
 	
 elif [ $SANDBOX -eq 2 ]
 then
 	cd /export/starexec/sandbox2/solver/bin
 	pwd
 	echo "  $LOCAL_RUNSOLVER_PATH --timestamp --add-eof --cores 4-7 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v "$OUT_DIR/var.out" -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-	sudo -u sandbox2 STAREXEC_MAX_MEM=$MAX_MEM STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$$MAX_CPUTIME$$ STAREXEC_WALLCLOCK_LIMIT=$$MAX_RUNTIME$$ "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 4-7 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" 
+	sudo -u sandbox2 STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" --timestamp --add-eof --cores 4-7 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" 
 
 else
 	log "no job run for pair $PAIR_ID because a sandbox was not found"
 	sendStatus $ERROR_RUNSCRIPT
 fi
+
+TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+echo $PAIR_OUTPUT_DIRECTORY > $TMP
+PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
+
+# runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
+WATCHFILE="$OUT_DIR"/watcher.out
+VARFILE="$OUT_DIR"/var.out
+
+
+
+# check for which cores we are on
+log "epilog checking for information on cores, from runsolver's watch file:"
+grep 'cores:' $WATCHFILE
+
+
+copyOutput ${STAGE_NUMBERS[$STAGE_INDEX]}
+
+
+# cleared below if no error
+JOB_ERROR="1";
+
+
+if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
+  true 
+elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
+  log "epilog detects wall clock time exceeded"
+  sendStatus $EXCEED_RUNTIME
+elif ( grep 'CPU time exceeded' $WATCHFILE ) then
+  log "epilog detects cpu time exceeded"
+  sendStatus $EXCEED_CPU
+elif ( grep 'VSize exceeded' $WATCHFILE ) then
+  log "epilog detects max virtual memory exceeded"
+  sendStatus $EXCEED_MEM
+else
+  JOB_ERROR="";
+  log "execution on $HOSTNAME complete"
+  sendStatus $STATUS_FINISHING
+fi
+
+STAGE_INDEX= $STAGE_INDEX+1
+
+
+
 
 echo "Jobscript ending."
 

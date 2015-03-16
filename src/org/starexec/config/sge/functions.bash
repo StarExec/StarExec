@@ -477,3 +477,40 @@ log "sent job stats to $REPORT_HOST"
 #echo invol context switches = $INVOL_CONTEXT_SWITCHES;
 
 }
+
+function createDir {
+	mkdir -p "$1"
+
+	# Check the directory actually does exist
+	if [ ! -d "$1" ]; then
+		mkdir "$1"
+		log "job error: cannot create directory '$1' this jobs output cannot be saved"
+	fi
+
+	return $?
+}
+
+# takes in a stage number as an argumetn so we know where to put the output
+function copyOutput {
+	log "creating storage directory on master host"
+
+	createDir "$PAIR_OUTPUT_DIRECTORY"
+	PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1"
+	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	log "job output copy complete - now sending stats"
+	updateStats $VARFILE $WATCHFILE
+	if [ "$POST_PROCESSOR_PATH" != "" ]; then
+		log "getting postprocessor"
+		mkdir $OUT_DIR/postProcessor
+		cp -r "$POST_PROCESSOR_PATH"/* $OUT_DIR/postProcessor
+		chmod -R gu+rwx $OUT_DIR/postProcessor
+		cd "$OUT_DIR"/postProcessor
+		log "executing post processor"
+		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
+		log "processing attributes"
+		#cat $OUT_DIR/attributes.txt
+		processAttributes $OUT_DIR/attributes.txt
+	fi
+
+	return $?	
+}

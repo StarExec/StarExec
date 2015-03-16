@@ -38,6 +38,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.Util;
 
 
@@ -411,7 +412,33 @@ public abstract class JobManager {
 	 */
 	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
 		String jobScript = template;		
-
+		List<Integer> stageCpuTimeouts=new ArrayList<Integer>();
+		List<Integer> stageWallclockTimeouts=new ArrayList<Integer>();
+		List<Integer> stageNumbers=new ArrayList<Integer>();
+		List<Long> stageMemLimits=new ArrayList<Long>();
+		List<Integer> solverIds=new ArrayList<Integer>();
+		List<String> solverNames=new ArrayList<String>();
+		List<Integer> configIds=new ArrayList<Integer>();
+		List<String> configNames=new ArrayList<String>();
+		List<String> solverTimestamps=new ArrayList<String>();
+		List<String> solverPaths=new ArrayList<String>();
+		for (JoblineStage stage : pair.getStages()) {
+			int stageNumber=stage.getStageNumber();
+			stageNumbers.add(stageNumber);
+			StageAttributes attrs=  job.getStageAttributesByStageNumber(stageNumber);
+			stageCpuTimeouts.add(attrs.getCpuTimeout());
+			stageWallclockTimeouts.add(attrs.getWallclockTimeout());
+			stageMemLimits.add(attrs.getMaxMemory());
+			solverIds.add(stage.getSolver().getId());
+			solverNames.add(stage.getSolver().getName());
+			configIds.add(stage.getConfiguration().getId());
+			configNames.add(stage.getConfiguration().getName());
+			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
+			solverPaths.add(stage.getSolver().getPath());
+		}
+		
+		
+		
 		// General pair configuration
 		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
 		jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
@@ -424,8 +451,6 @@ public abstract class JobManager {
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
 		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getParentFile().getAbsolutePath()));
-
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", base64encode(outputFile.getAbsolutePath()));
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{
@@ -441,7 +466,13 @@ public abstract class JobManager {
 		log.debug("the current job pair has a memory = "+job.getMaxMemory());
 		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(job.getMaxMemory()));
 		log.debug("The jobscript is: "+jobScript);
+		
+		jobScript=jobScript.replace("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
+		jobScript=jobScript.replace("$$CLOCK_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CLOCK_TIMEOUTS",stageWallclockTimeouts));
+		jobScript=jobScript.replace("$$MEM_LIMIT_ARRAY$$", numsToBashArray("STAGE_MEM_LIMITS",stageMemLimits));
+		jobScript=jobScript.replace("$$STAGE_NUMBER_ARRAY$$", numsToBashArray("STAGE_NUMBERS",stageMemLimits));
 
+		
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
 		File f = new File(scriptPath);
@@ -462,6 +493,41 @@ public abstract class JobManager {
 		
 		return scriptPath;
 	}	
+	
+	/**
+	 * Given the name of an array and a list of strings to put into the array, 
+	 * creates a string that generates the array that can be embedded into a bash script.
+	 * If strs is empty, returns an empty string. Array is 0 indexed. All strings
+	 * are base64encoded
+	 * @param arrayName
+	 * @param strs
+	 * @return
+	 */
+	public static String toBashArray(String arrayName, List<String> strs) {
+		if (strs.size()==0) {
+			return "";
+		}
+		int index=0;
+		StringBuilder sb=new StringBuilder();
+		for (String s : strs) {
+			sb.append(arrayName);
+			sb.append("[");
+			sb.append(index);
+			sb.append("]=\"");
+			sb.append(base64encode(s));
+			sb.append("\"\n");
+		}
+		return sb.toString();
+	}
+	
+	
+	public static <T extends Number> String numsToBashArray(String arrayName, List<T> nums){
+		List<String> strs=new ArrayList<String>();
+		for (T num : nums) {
+			strs.add(num.toString());
+		}
+		return toBashArray(arrayName,strs);
+	}
 
 	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
 		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);

@@ -197,8 +197,6 @@ echo "timestamp: $SOLVER_TIMESTAMP"
 echo "configuration: $CONFIG_NAME"
 echo "benchmark: ${BENCH_PATH##*/}"
 echo "execution host: $HOSTNAME"
-echo "cpu timeout: $STAREXEC_CPU_LIMIT"
-echo "wallclock timeout: $STAREXEC_WALLCLOCK_LIMIT"
 echo ""
 
 
@@ -234,25 +232,6 @@ JOB_ERROR=`grep 'job error:' "$SGE_STDOUT_PATH"`
 if [ "$JOB_ERROR" = "" ]; then
 	sendStatus $STATUS_RUNNING
 	setStartTime
-fi
-
-NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
-
-#then, convert kb to mb
-NODE_MEM=$(($NODE_MEM/1024))
-
-log "node memory in megabytes = $NODE_MEM"
-
-#then, set to half the memory
-NODE_MEM=$(($NODE_MEM/2))
-
-if [ $MAX_MEM -gt $NODE_MEM ]
-then
-
-echo "truncating max memory from requested $MAX_MEM to $NODE_MEM (half max memory on the node)"
-
-export MAX_MEM=$NODE_MEM
-
 fi
 
 log "we will run the job pair with max memory in megabytes = $MAX_MEM"
