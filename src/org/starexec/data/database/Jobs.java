@@ -87,7 +87,7 @@ public class Jobs {
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 */
-	
+	//TODO: Comment
 	public static Integer createJobSpacesForPairs(List<JobPair> pairs, int userId, Connection con, Integer parentSpaceId) {
 		Space parent=null;
 		if (parentSpaceId!=null) {
@@ -141,7 +141,9 @@ public class Jobs {
 					}
 					
 				}
-				pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
+				if (parentSpaceId==null) {
+					pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
+				}
 			}
 			return pathsToIds.get(topLevel);
 		} catch (Exception e) {
