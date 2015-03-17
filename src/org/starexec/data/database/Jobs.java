@@ -135,7 +135,7 @@ public class Jobs {
 								parentId=parent.getId();
 							}
 
-							pathsToIds.put(curPathBuilder.toString(), Spaces.add(getNewSpaceForJobCreation(name,parent), parentId, userId));
+							pathsToIds.put(curPathBuilder.toString(), Spaces.add(con,getNewSpaceForJobCreation(name,parent), parentId, userId));
 						}
 						
 					}
