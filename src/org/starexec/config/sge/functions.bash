@@ -25,7 +25,7 @@
 
 # will do a base 64 decode on all solver_names, all solver_paths, and the bench path
 function decodePathArrays {
-
+	log "decoding all base 64 encoded strings"
 	# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
 	
 	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`

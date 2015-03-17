@@ -73,6 +73,8 @@ STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
 
+decodePathArrays
+
 #==========================================================================
 # Signal Traps
 #
