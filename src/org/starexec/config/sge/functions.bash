@@ -59,8 +59,11 @@ function decodeBenchmarkName {
 	echo $BENCH_PATH > $TMP
 	BENCH_PATH=`base64 -d $TMP`
 	rm $TMP
-	
 }
+#need to make sure benchmark name is decoded in every file
+
+decodeBenchmarkName 
+
 #################################################################################
 
 # DB username and password for status reporting

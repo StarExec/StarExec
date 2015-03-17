@@ -42,8 +42,6 @@ echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
 echo ""
 
-decodeBenchmarkName
-
 sendStatus $STATUS_PREPARING
 
 initSandbox "$JOB_ID"
