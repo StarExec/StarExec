@@ -119,7 +119,7 @@ fi
 log "the number of stages is $NUM_STAGES"
 
 #while [ $STAGE_INDEX -lt $NUM_STAGES ]
-do
+#do
 
 
 CURRENT_STAGE_MEMORY=$MAX_MEM   #start with the default max mem
