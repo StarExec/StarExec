@@ -44,12 +44,23 @@ function decodePathArrays {
 		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
 	done
 	
-	echo $BENCH_PATH > $TMP
-	BENCH_PATH=`base64 -d $TMP`
+	
 	
 	rm $TMP
 }
 
+function decodeBenchmarkName {
+
+	log "decoding benchmark name"
+	
+	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	
+
+	echo $BENCH_PATH > $TMP
+	BENCH_PATH=`base64 -d $TMP`
+	rm $TMP
+	
+}
 #################################################################################
 
 # DB username and password for status reporting
