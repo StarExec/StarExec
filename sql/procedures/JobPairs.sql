@@ -74,11 +74,20 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			END IF;
 		END IF;
 	END //
-		
+	
+-- Sets the status code for the given stage of the given pair
 DROP PROCEDURE IF EXISTS UpdatePairStageStatus;
 CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
+	END //
+
+-- Sets the status code of every stage ocurring after the given stage to the given status code.
+-- We do this, for example, when an early stage times out and so later stages are never run
+DROP PROCEDURE IF EXISTS UpdateLaterStageStatuses;
+CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT, IN _statusCode TINYINT) alter
+	BEGIN
+		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
 	END //
 
 -- Gets all the stages for the given job pair

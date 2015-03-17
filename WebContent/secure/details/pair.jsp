@@ -1,8 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.apache.log4j.Logger, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
+	Logger log = Logger.getLogger(JobPair.class);			
+
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int pairId = Integer.parseInt(request.getParameter("id"));
@@ -17,20 +19,22 @@
 			Job j = Jobs.get(jp.getJobId());
 			
 			User u = Users.get(j.getUserId());
-			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
+			String pairlog=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
-			request.setAttribute("log",log);
+			request.setAttribute("log",pairlog);
 			request.setAttribute("rerun",canRerun);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to view this job pair");
 		}
 	} catch (NumberFormatException nfe) {
+		log.error(nfe.getMessage(),nfe);
+
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given pair id was in an invalid format");
 	} catch (Exception e) {
-		e.printStackTrace();
+		log.error(e.getMessage(),e);
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
