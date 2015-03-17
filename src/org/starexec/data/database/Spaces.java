@@ -535,8 +535,7 @@ public class Spaces {
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
-	public static Space get(int spaceId) {
-		Connection con = null;	
+	public static Space get(int spaceId,Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
@@ -560,9 +559,29 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a space with minimal information (only details about the space itself)
+	 * @param spaceId The id of the space to get information for
+	 * @return A space object consisting of shallow information about the space
+	 * @author Tyler Jensen
+	 */
+	public static Space get(int spaceId) {
+		Connection con = null;	
+		
+		try {			
+			con = Common.getConnection();		
+			return get(spaceId,con);												
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
 		}
 		
 		return null;
@@ -1108,6 +1127,7 @@ public class Spaces {
 		return null;
 	}
 	
+	
 	/**
 	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
 	 * @param spaceId id of parent space
@@ -1116,8 +1136,7 @@ public class Spaces {
 	 * @return subspaceId id of found subspace, or -1 if none exist
 	 * @author Benton McCune
 	 */
-	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {
-		Connection con = null;			
+	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName,Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1142,15 +1161,41 @@ public class Spaces {
 			log.debug("# of subspaces named " + subSpaceName + " = " + results.getRow() );
 			if (results.getRow() != 1) //should only be getting one result
 			{
+				log.debug("returning -1");
 				return -1;
 			}			
 			return subSpaceId;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+		return -1;
+
+	}
+	
+	
+	
+	/**
+	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
+	 * @param spaceId id of parent space
+	 * @param userId id of user making request
+	 * @param subSpaceName name of subspace that is being sought
+	 * @return subspaceId id of found subspace, or -1 if none exist
+	 * @author Benton McCune
+	 */
+	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return getSubSpaceIDbyName(spaceId,userId,subSpaceName,con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			
 		}
 		return -1;
 
@@ -1166,6 +1211,10 @@ public class Spaces {
 
 public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	return getSubSpaceIDbyName(spaceId,-1,subSpaceName);
+}
+
+public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Connection con) {
+	return getSubSpaceIDbyName(spaceId,-1,subSpaceName,con);
 }
 	
 	/**

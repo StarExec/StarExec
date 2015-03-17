@@ -53,7 +53,6 @@
     		<element name="JobLine" type="tns:JobLine" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>
     	
-    	<!-- The job name must be unique to the space -->
     	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
     	
     </complexType>

@@ -49,9 +49,8 @@ function decodePathArrays {
 	rm $TMP
 }
 
-function decodeBenchmarkName {
 
-	log "decoding benchmark name"
+function decodeBenchmarkName {
 	
 	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
 	
@@ -136,6 +135,8 @@ function initWorkspaceVariables {
 	
 	# The path to the benchmark on the execution host
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
+	
+	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
 }
 #checks to see whether the first argument is a valid integer
 function isInteger {
@@ -345,6 +346,7 @@ function cleanWorkspace {
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
+	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
 	
 	
 	#only delete the job script / lock files if we are in the epilog
@@ -521,9 +523,14 @@ function copyOutput {
 	log "creating storage directory on master host"
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
+	createDir "$SAVED_OUTPUT_DIR"
 	PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1.txt"
+	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1.txt"
+	
 	log "the output path is $PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
+	
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
 	if [ "$POST_PROCESSOR_PATH" != "" ]; then
@@ -799,6 +806,30 @@ function copyDependencies {
 	log "benchmark dependencies copy complete"
 	return $?	
 }
+
+# Saves the current output 
+function saveOutputAsBenchmark {
+	log "saving output as benchmark for stage $STAGE_NUMBER" 
+	CURRENT_OUTPUT_FILE=SAVED_OUTPUT_DIR/$STAGE_NUMBER
+	#TODO: what should the name be?
+	CURRENT_BENCH_NAME=$BENCH_NAME
+	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$CURRENT_BENCH_NAME
+	
+	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
+	
+	
+	
+	createDir $CURRENT_BENCH_PATH
+
+	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddAndAssociateBenchmark($CURRENT_BENCH_NAME,$CURRENT_BENCH_PATH,false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)" ; then
+		log "error saving output as benchmark-- benchmark was not created
+	else
+		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
+		
+	fi
+}
+
+
 
 #benchmark dependencies not currently verified.
 function verifyWorkspace { 

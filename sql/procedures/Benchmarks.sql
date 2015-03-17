@@ -15,6 +15,18 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _download
 		
 		SELECT LAST_INSERT_ID() INTO _benchId;		
 	END //	
+	
+DROP PROCEDURE IF EXISTS AddAndAssociateBenchmark;
+CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _spaceId INT, OUT _benchId INT)
+	BEGIN	
+		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
+		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
+		
+		SELECT LAST_INSERT_ID() INTO _benchId;	
+		
+		INSERT IGNORE INTO bench_assoc (space_id, bench_id) VALUES (_spaceId, _benchId);
+
+	END //	
 		
 -- Adds a new attribute to a benchmark 
 -- Author: Tyler Jensen

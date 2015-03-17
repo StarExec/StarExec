@@ -62,6 +62,22 @@ public class Jobs {
 		return path.split(R.JOB_PAIR_PATH_DELIMITER);
 	}
 	
+	/**
+	 * Creates a Space object for use during job creation for any job where benchmarks are going to be saved
+	 * @param name
+	 * @param parent
+	 * @return
+	 */
+	private static Space getNewSpaceForJobCreation(String name,Space parent) {
+		Space s=new Space();
+		s.setDescription("");
+		s.setName(name);
+		s.setStickyLeaders(parent.isStickyLeaders());
+		s.setPermission(parent.getPermission());
+		s.setLocked(parent.isLocked());
+		s.setPublic(parent.isPublic());
+		return s;
+	}
 	
 	/**
 	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
@@ -71,7 +87,14 @@ public class Jobs {
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 */
-	public static Integer createJobSpacesForPairs(List<JobPair> pairs, Connection con) {
+	
+	public static Integer createJobSpacesForPairs(List<JobPair> pairs, int userId, Connection con, Integer parentSpaceId) {
+		Space parent=null;
+		if (parentSpaceId!=null) {
+			parent=Spaces.get(parentSpaceId,con);
+			parent.setPermission(Permissions.getSpaceDefault(parentSpaceId));
+		}
+		
 		try {
 			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
 			String topLevel="";
@@ -86,15 +109,35 @@ public class Jobs {
 					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
 						topLevel=curPathBuilder.toString(); 
 					}
+					
+					
 					//if we need to create a new space
 					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
-						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
-						//associate the new space to its parent
 						String parentPath=curPathBuilder.toString();
 						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
-						if (parentPath.length()>0) {
-							Spaces.associateJobSpaces(pathsToIds.get(parentPath), pathsToIds.get(curPathBuilder.toString()),con);
+						
+						
+						if (parentSpaceId==null) {
+							pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
+							//associate the new space to its parent
+							
+							if (parentPath.length()>0) {
+								int parentId=pathsToIds.get(parentPath);
+								Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()),con);
+							}
+						} else {
+							// note that it is assumed that there are no name conflicts here. The security check is done outside this function
+							int parentId=0;
+							if (parentPath.length()>0) {
+								parentId=pathsToIds.get(parentPath);
+
+							} else {
+								parentId=parent.getId();
+							}
+
+							pathsToIds.put(curPathBuilder.toString(), Spaces.add(getNewSpaceForJobCreation(name,parent), parentId, userId));
 						}
+						
 					}
 					
 				}
@@ -121,7 +164,7 @@ public class Jobs {
 			Common.beginTransaction(con);
 
 			Job j=Jobs.getDetailed(jobId);
-			int topLevel=createJobSpacesForPairs(j.getJobPairs(),con);
+			int topLevel=createJobSpacesForPairs(j.getJobPairs(),j.getUserId(),con,null);
 			Jobs.updatePrimarySpace(jobId, topLevel,con);
 			JobPairs.updateJobSpaces(j.getJobPairs(),con);
 			Common.endTransaction(con);
@@ -205,17 +248,25 @@ public class Jobs {
 		try {			
 			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
 			
-			//depending on need, going to avoid adding pipelines for pairs that just have a single solver.
-			// in the jobpair_stage_data table, stage_id will simply be null, as it already is for all 
-			// older jobs
-			//if (!addPipelinesToDatabase(job)) {
-			//	throw new Exception("Error adding pipelines to database");
-			//}
+			
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);
 			// maps depth to name to job space id for job spaces
-			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
+			int topLevel=createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,null);
+			String rootName=job.getJobPairs().get(0).getPath();
+			if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+				rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
+			}
+			for (StageAttributes attrs: job.getStageAttributes()) {
+				if (attrs.getSpaceId()!=null) {
+					
+					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName,con)!=-1) {
+						throw new Exception("Error creating spaces for job: name conflict with space name "+rootName);
+					}
+
+				}
+			}
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID

@@ -450,8 +450,10 @@ public class JobUtil {
 				job.addStageAttributes(attrs);
 			}
 			
-			
-			
+			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
+			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
+			// to a single root space
+			HashSet<String> jobRootPaths=new HashSet<String>();
 			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 			for (int i = 0; i < jobPairs.getLength(); i++) {
 			    Node jobPairNode = jobPairs.item(i);
@@ -464,9 +466,14 @@ public class JobUtil {
 						String path = jobPairElement.getAttribute("job-space-path");
 						if (path.equals("")) {
 							path=rootName;
+							
 						}
 						jobPair.setPath(path);
-						
+						if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+							jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
+						} else {
+							jobRootPaths.add(path);
+						}
 						
 					Benchmark b = Benchmarks.get(benchmarkId);
 					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
@@ -520,7 +527,11 @@ public class JobUtil {
 						path=rootName;
 					}
 					jobPair.setPath(path);
-					
+					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
+					} else {
+						jobRootPaths.add(path);
+					}
 					
 					Benchmark b = Benchmarks.get(benchmarkId);
 					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
@@ -579,6 +590,8 @@ public class JobUtil {
 					job.addJobPair(jobPair);
 			    }
 			}
+			
+			
 			log.info("job pairs set");
 	
 			if (job.getJobPairs().size() == 0) {
@@ -586,6 +599,26 @@ public class JobUtil {
 			    errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 			    return -1;
 			}
+			
+			// pairs must have exactly 1 root space, so if there is more than one, we prepend the rootname onto every path
+			if (jobRootPaths.size()>1) {
+				for (JobPair p : job.getJobPairs()) {
+					p.setPath(rootName+R.JOB_PAIR_PATH_DELIMITER+p.getPath());
+				}
+			} else {
+				rootName=jobRootPaths.iterator().next();
+			}
+			
+			for (StageAttributes attrs: job.getStageAttributes()) {
+				if (attrs.getSpaceId()!=null) {
+					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName)!=-1) {
+						errorMessage = "Error: Can't use space id = "+attrs.getSpaceId()+" to save benchmarks because it already contains a subspace with the name "+rootName;
+						return -1;
+					}
+
+				}
+			}
+			
 			
 			log.info("job pair size nonzero");
 	
