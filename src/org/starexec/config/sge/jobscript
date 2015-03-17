@@ -116,7 +116,9 @@ fi
 
 # THIS IS THE START OF THINGS THAT MUST BE DONE DURING EACH STAGE
 
-while [ $STAGE_INDEX -lt $NUM_STAGES ]
+log "the number of stages is $NUM_STAGES"
+
+#while [ $STAGE_INDEX -lt $NUM_STAGES ]
 do
 
 
@@ -261,7 +263,7 @@ fi
 
 STAGE_INDEX= $STAGE_INDEX+1
 
-done
+#done
 
 
 echo "Jobscript ending."
