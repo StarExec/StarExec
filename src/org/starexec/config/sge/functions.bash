@@ -809,8 +809,8 @@ function copyDependencies {
 
 # Saves the current output 
 function saveOutputAsBenchmark {
-	log "saving output as benchmark for stage $STAGE_NUMBER" 
-	CURRENT_OUTPUT_FILE=SAVED_OUTPUT_DIR/$STAGE_NUMBER
+	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
+	CURRENT_OUTPUT_FILE=SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
 	#TODO: what should the name be?
 	CURRENT_BENCH_NAME=$BENCH_NAME
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$CURRENT_BENCH_NAME
@@ -821,7 +821,7 @@ function saveOutputAsBenchmark {
 	
 	createDir $CURRENT_BENCH_PATH
 
-	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddAndAssociateBenchmark($CURRENT_BENCH_NAME,$CURRENT_BENCH_PATH,false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)" ; then
+	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddAndAssociateBenchmark('$CURRENT_BENCH_NAME','$CURRENT_BENCH_PATH',false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)" ; then
 		log "error saving output as benchmark-- benchmark was not created"
 	else
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
