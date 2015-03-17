@@ -85,7 +85,7 @@ CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN
 -- Sets the status code of every stage ocurring after the given stage to the given status code.
 -- We do this, for example, when an early stage times out and so later stages are never run
 DROP PROCEDURE IF EXISTS UpdateLaterStageStatuses;
-CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT, IN _statusCode TINYINT) alter
+CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
 	END //
