@@ -233,9 +233,8 @@ grep 'cores:' $WATCHFILE
 # this also does post processing
 copyOutput $CURRENT_STAGE_NUMBER
 
-if [ "$PRE_PROCESSOR_PATH" != "" ]; then
-
-
+if [ "$SPACE_ID" != "" ]; then
+	saveOutputAsBenchmark
 fi
 
 # cleared below if no error

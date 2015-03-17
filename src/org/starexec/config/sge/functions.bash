@@ -822,7 +822,7 @@ function saveOutputAsBenchmark {
 	createDir $CURRENT_BENCH_PATH
 
 	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddAndAssociateBenchmark($CURRENT_BENCH_NAME,$CURRENT_BENCH_PATH,false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)" ; then
-		log "error saving output as benchmark-- benchmark was not created
+		log "error saving output as benchmark-- benchmark was not created"
 	else
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
 		

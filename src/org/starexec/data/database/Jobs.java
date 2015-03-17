@@ -266,6 +266,7 @@ public class Jobs {
 					}
 
 				}
+				createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,attrs.getSpaceId());
 			}
 		
 			log.debug("finished getting subspaces, adding job");
