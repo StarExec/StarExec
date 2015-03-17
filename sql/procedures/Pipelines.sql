@@ -39,7 +39,7 @@ DROP PROCEDURE IF EXISTS AddPipelineStage;
 CREATE PROCEDURE AddPipelineStage(IN _pid INT, IN _cid INT, IN _primary INT,IN _noop BOOLEAN, OUT _id INT)
 	BEGIN
 		INSERT INTO pipeline_stages (pipeline_id, config_id,is_noop)
-		VALUES (_pid, _cid,_keep,_noop);
+		VALUES (_pid, _cid,_noop);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 		IF _primary THEN
