@@ -236,8 +236,7 @@ CREATE TABLE solver_pipelines (
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
-	config_id INT,
-	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
+	config_id INT, 
 	is_noop BOOLEAN NOT NULL DEFAULT FALSE, -- note that we cannot say that this is a noop if config_id is null, because the config
 								   -- could have just been deleted. We really do need to store this explicitly
 	PRIMARY KEY (stage_id), -- pipelines can have many stages

@@ -164,7 +164,6 @@ public class Jobs {
 					for (JoblineStage line: pair.getStages()) {
 						PipelineStage newStage=new PipelineStage();
 						newStage.setConfigId(line.getConfiguration().getId());
-						newStage.setKeepOutput(false);
 						
 						pipe.addStage(newStage);
 					}
@@ -604,7 +603,7 @@ public class Jobs {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,attrs.getJobId());
 			procedure.setInt(2,attrs.getStageNumber());
 			procedure.setInt(3,attrs.getCpuTimeout());
@@ -614,6 +613,16 @@ public class Jobs {
 				procedure.setNull(6,java.sql.Types.INTEGER);
 			} else {
 				procedure.setInt(6, attrs.getSpaceId());
+			}
+			if (attrs.getPostProcessor()==null) {
+				procedure.setNull(7,java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(7,attrs.getPostProcessor().getId());
+			}
+			if (attrs.getPreProcessor()==null) {
+				procedure.setNull(8,java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(8,attrs.getPreProcessor().getId());
 			}
 			procedure.executeUpdate();
 			return true;

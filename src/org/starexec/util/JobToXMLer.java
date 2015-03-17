@@ -163,11 +163,9 @@ public class JobToXMLer {
     		} else {
     			Element stageElement= doc.createElement("PipelineStage");
         		Attr configId=doc.createAttribute("config");
-        		Attr keepOutput=doc.createAttribute("keepoutput");
         		Attr isPrimary = doc.createAttribute("primary");
         		
     			configId.setValue(Integer.toString(stage.getConfigId()));
-    			keepOutput.setValue(Boolean.toString(stage.doKeepOutput()));
     			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageNumber()));
     			
     			for (PipelineDependency dep : stage.getDependencies()) {
@@ -188,7 +186,6 @@ public class JobToXMLer {
     			
     			
     		    stageElement.setAttributeNode(configId);
-        		stageElement.setAttributeNode(keepOutput);
         		stageElement.setAttributeNode(isPrimary);
         		pipeElement.appendChild(stageElement);
     		}

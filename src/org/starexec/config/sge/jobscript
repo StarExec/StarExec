@@ -118,8 +118,8 @@ fi
 
 log "the number of stages is $NUM_STAGES"
 
-#while [ $STAGE_INDEX -lt $NUM_STAGES ]
-#do
+while [ $STAGE_INDEX -lt $NUM_STAGES ]
+do
 
 
 CURRENT_STAGE_MEMORY=$MAX_MEM   #start with the default max mem
@@ -261,9 +261,9 @@ else
 	log "STAREXEC job $JOB_ID exited with errors"
 fi
 
-STAGE_INDEX= $STAGE_INDEX+1
+STAGE_INDEX=$(($STAGE_INDEX+1))
 
-#done
+done
 
 
 echo "Jobscript ending."

@@ -198,11 +198,7 @@ public class JobUtil {
 				Element stage=(Element)stages.item(i);
 				PipelineStage s=new PipelineStage();
 				s.setNoOp(false);
-				if (stage.hasAttribute("keepoutput")) {
-					s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
-				} else {
-					s.setKeepOutput(false);
-				}
+				
 				
 				if (stage.hasAttribute("primary")) {
 					boolean currentPrimary=Boolean.parseBoolean(stage.getAttribute("primary"));
@@ -228,9 +224,6 @@ public class JobUtil {
 				}
 				
 				
-				if (stage.hasAttribute("keepoutput")) {
-					s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
-				}
 				NodeList dependencies=stage.getChildNodes();
 				int inputNumber=0; 
 				for (int x=0;x<dependencies.getLength();x++) {
@@ -272,7 +265,6 @@ public class JobUtil {
 				currentStage+=1;
 				PipelineStage stage=new PipelineStage();
 				stage.setNoOp(true);
-				stage.setKeepOutput(false);
 				stage.setConfigId(null);
 				stage.setPrimary(false);
 				stageList.add(stage);
@@ -422,10 +414,14 @@ public class JobUtil {
 				Integer stagePostProcId=null;
 				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
 					stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
+					attrs.setPostProcessor(Processors.get(stagePostProcId));
+
 				}
 				Integer stagePreProcId=null;
 				if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
 					stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
+					attrs.setPreProcessor(Processors.get(stagePreProcId));
+				
 				}
 				
 				//validate this new set of parameters
@@ -450,6 +446,7 @@ public class JobUtil {
 				attrs.setCpuTimeout(stageCpu);
 				attrs.setMaxMemory(stageMemory);
 				attrs.setSpaceId(stageSpace);
+				
 				job.addStageAttributes(attrs);
 			}
 			

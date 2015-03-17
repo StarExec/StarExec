@@ -417,7 +417,6 @@ public class ResourceLoader {
 		for (Configuration c : configs) {
 			PipelineStage stage=new PipelineStage();
 			stage.setConfigId(c.getId());
-			stage.setKeepOutput(false);
 			pipe.addStage(stage);
 		}
 		int returnValue= Pipelines.addPipelineToDatabase(pipe);

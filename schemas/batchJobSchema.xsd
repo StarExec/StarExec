@@ -24,7 +24,6 @@
     			<element name="benchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>
         <attribute name="config" type="int" use="required"></attribute>
-        <attribute name="keepoutput" type="boolean" use="optional"></attribute>
         
         <!-- Defaults to false. A maximum of a single stage per pipeline can be primary. If none is primary
         it will default to the first stage -->

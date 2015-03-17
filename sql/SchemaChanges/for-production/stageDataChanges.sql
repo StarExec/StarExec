@@ -95,7 +95,7 @@ ALTER TABLE pipeline_stages ADD CONSTRAINT pipeline_stages_config_id FOREIGN KEY
 
 ALTER TABLE pipeline_stages ADD COLUMN is_noop BOOLEAN NOT NULL DEFAULT FALSE;
 
-
+ALTER TABLE pipeline_stages DROP COLUMN keep_output;
 
 
 COMMIT;

@@ -638,9 +638,13 @@ public abstract class JobManager {
 		attrs.setSpaceId(null);
 		if(preProcessorId > 0) {
 			attrs.setPreProcessor(Processors.get(preProcessorId));
-		}		
+		} else {
+			attrs.setPreProcessor(null);
+		}
 		if(postProcessorId > 0) {
 			attrs.setPostProcessor(Processors.get(postProcessorId));		
+		} else {
+			attrs.setPostProcessor(null);
 		}
 		j.addStageAttributes(attrs);
 		
