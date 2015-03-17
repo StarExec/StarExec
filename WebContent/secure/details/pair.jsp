@@ -17,7 +17,10 @@
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	
 		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			Job j = Jobs.get(jp.getJobId());
-			
+			for (JoblineStage stage : jp.getStages()) {
+				String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100));
+				stage.setOutput(output);
+			}
 			User u = Users.get(j.getUserId());
 			String pairlog=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
@@ -179,7 +182,7 @@
 				
 				<fieldset id="fieldOutput">		
 						<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
-						<textarea class=contentTextarea id="jpStdout" readonly="readonly">${JobPairs.getStdOut(jp.getId(),stage.stageNumber,100)}</textarea>	
+						<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
 						<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
 						<p class="caption">output may be truncated. 'popout' for the full output.</p>
 				</fieldset>

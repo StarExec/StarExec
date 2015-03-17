@@ -32,6 +32,9 @@ public class JoblineStage {
 	private boolean noOp=false;
 	private Properties attributes = null;
 	private Integer stageNumber =null; //which stage is this? 1,2... etc.
+	
+	// the standard output of this pair. This is only populated for a short time in pair.jsp
+	private String output=null;
 	public JoblineStage() {
 		this.setSolver(new Solver());
 		this.setConfiguration(new Configuration());
@@ -175,6 +178,14 @@ public class JoblineStage {
 
 	public void setStageNumber(Integer stageNumber) {
 		this.stageNumber = stageNumber;
+	}
+
+	public String getOutput() {
+		return output;
+	}
+
+	public void setOutput(String output) {
+		this.output = output;
 	}
 	
 }

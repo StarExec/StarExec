@@ -27,7 +27,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 DROP PROCEDURE IF EXISTS AddJobAttr;
 CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128), IN _stage INT)
 	BEGIN
-		REPLACE INTO job_attributes (pair_id,attr_key,attr_value,job_id,jobpair_data) VALUES (_pairId, _key, _val, (select job_id from job_pairs where id=_pairId),_stage);
+		REPLACE INTO job_attributes (pair_id,attr_key,attr_value,job_id,stage_number) VALUES (_pairId, _key, _val, (select job_id from job_pairs where id=_pairId),_stage);
 	END //
 
 -- Returns the number of jobs in a given space
