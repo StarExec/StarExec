@@ -540,11 +540,11 @@ public class JobPairs {
 
 
 			while(results.next()){
-				int joblineStageId = results.getInt("jobpair_data");
-				if (!props.containsKey(joblineStageId)) {
-					props.put(joblineStageId, new Properties());
+				int joblineStageNumber = results.getInt("stage_number");
+				if (!props.containsKey(joblineStageNumber)) {
+					props.put(joblineStageNumber, new Properties());
 				}
-				props.get(joblineStageId).put(results.getString("attr_key"), results.getString("attr_value"));				
+				props.get(joblineStageNumber).put(results.getString("attr_key"), results.getString("attr_value"));				
 			}			
 
 			
