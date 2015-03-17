@@ -39,7 +39,6 @@ echo "date: `date`"
 echo "user: #$USER_ID"
 echo "sge job: #$JOB_ID"
 echo "pair id: $PAIR_ID"
-echo "benchmark: ${BENCH_PATH##*/}"
 echo "execution host: $HOSTNAME"
 echo ""
 

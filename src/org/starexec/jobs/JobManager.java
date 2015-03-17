@@ -432,10 +432,10 @@ public abstract class JobManager {
 		
 		
 		// General pair configuration
-		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
+		//jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
 		//jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
 		//jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
-		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
+		//jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
 		//jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
@@ -469,7 +469,9 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$PRE_PROCESSOR_PATH_ARRAY$$",toBashArray("PRE_PROCESSOR_PATHS",preProcessorPaths,false));
 		jobScript=jobScript.replace("$$POST_PROCESSOR_PATH_ARRAY$$",toBashArray("POST_PROCESSOR_PATHS",postProcessorPaths,false));
 		jobScript=jobScript.replace("$$SPACE_ID_ARRAY$$",numsToBashArray("SPACE_IDS",spaceIds));
-		
+		jobScript=jobScript.replace("$$SOLVER_NAME_ARRAY$$",toBashArray("SOLVER_NAMES",solverNames,true));
+		jobScript=jobScript.replace("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
+
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
 		File f = new File(scriptPath);

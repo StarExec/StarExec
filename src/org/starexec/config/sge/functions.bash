@@ -23,19 +23,33 @@
 # base64 decode some names which could otherwise have nasty characters in them
 #################################################################################
 
-# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
-TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+# will do a base 64 decode on all solver_names, all solver_paths, and the bench path
+function decodePathArrays {
 
-echo $SOLVER_NAME > $TMP
-SOLVER_NAME=`base64 -d $TMP`
+	# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
+	
+	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	
+	TEMP_ARRAY_INDEX=0
+	
+	#decode every solver name and solver path in the arrays
+	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]
+	do
+		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
+		SOLVER_NAMES[TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		
+		echo ${SOLVER_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
+		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		
+		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
+	done
+	
+	echo $BENCH_PATH > $TMP
+	BENCH_PATH=`base64 -d $TMP`
+	
+	rm $TMP
+}
 
-echo $SOLVER_PATH > $TMP
-SOLVER_PATH=`base64 -d $TMP`
-
-echo $BENCH_PATH > $TMP
-BENCH_PATH=`base64 -d $TMP`
-
-rm $TMP
 #################################################################################
 
 # DB username and password for status reporting
@@ -539,7 +553,7 @@ return $?
 
 
 
-#will see if a solver is cached and change the SOLVER_PATH to the cache if so
+#will see if a solver is cached and change the current SOLVER_PATH to the cache if so
 function checkCache {
 	if [ -d "$SOLVER_CACHE_PATH" ]; then
 		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
