@@ -2878,7 +2878,14 @@ public class Jobs {
 				    Status s = new Status();
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
+				    
+				    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId()));
 			    	pairs.put(currentJobPairId, jp);
+			    	
+			    	
+			    
+			    	
+			    	
 			    }
 
 				JoblineStage stage=new JoblineStage();

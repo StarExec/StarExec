@@ -154,7 +154,6 @@ public abstract class JobManager {
 			initMainTemplateIf();
 
 			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-			//TODO: Need to send in many different post processors
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (Job job : joblist) {
 				// jobTemplate is a version of mainTemplate customized for this job
@@ -402,6 +401,12 @@ public abstract class JobManager {
 		List<String> postProcessorPaths=new ArrayList<String>();
 		List<String> preProcessorPaths=new ArrayList<String>();
 		List<Integer> spaceIds = new ArrayList<Integer>();
+		List<String> benchInputPaths=new ArrayList<String>();
+		for (String path : pair.getBenchInputPaths()) {
+			benchInputPaths.add(path);
+		}
+		benchInputPaths.add(""); // just terminating this array with a blank string so the Bash array will always have some element
+		
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
@@ -445,11 +450,6 @@ public abstract class JobManager {
 		
 		
 		// General pair configuration
-		//jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
-		//jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
-		//jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
-		//jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
-		//jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
@@ -484,7 +484,7 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$SPACE_ID_ARRAY$$",numsToBashArray("SPACE_IDS",spaceIds));
 		jobScript=jobScript.replace("$$SOLVER_NAME_ARRAY$$",toBashArray("SOLVER_NAMES",solverNames,true));
 		jobScript=jobScript.replace("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
-
+		jobScript=jobScript.replace("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
 		File f = new File(scriptPath);

@@ -356,9 +356,11 @@ CREATE TABLE jobpair_stage_data (
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );
 
+-- Stores all inputs to a particular job pair, outside of the primary benchmark
+-- TODO: Do we want delete cascades on benchmarks? Might confuse users who accidentally delete benchmark inputs
 CREATE TABLE jobpair_inputs (
 	jobpair_id INT NOT NULL,
-	input_number SMALLINT NOT NULL,
+	input_number SMALLINT NOT NULL, -- ordered from 1 to n, with n being the number of inputs
 	bench_id INT NOT NULL,
 	PRIMARY KEY (jobpair_id,input_number),
 	CONSTRAINT jobpair_inputs_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,

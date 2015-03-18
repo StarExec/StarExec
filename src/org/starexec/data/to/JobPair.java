@@ -47,7 +47,7 @@ public class JobPair extends Identifiable {
 	//the inputs to this job pair, excluding the primary benchmark (in other words, the dependencies stored in the
 	//jobpair_inputs table
 	private List<Integer> benchInputs;
-	
+	private List<String> benchInputPaths;
 	
 	private SolverPipeline pipeline = null;
 	
@@ -443,6 +443,14 @@ public class JobPair extends Identifiable {
 
 	public void setPipeline(SolverPipeline pipeline) {
 		this.pipeline = pipeline;
+	}
+
+	public List<String> getBenchInputPaths() {
+		return benchInputPaths;
+	}
+
+	public void setBenchInputPaths(List<String> benchInputPaths) {
+		this.benchInputPaths = benchInputPaths;
 	}
 
 	

@@ -62,6 +62,56 @@ public class JobPairs {
 	}
 	
 	/**
+	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
+	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)
+	 * @param pairId
+	 * @return
+	 */
+	public static List<String> getJobPairInputPaths(int pairId, Connection con) {
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			procedure=con.prepareCall("CALL GetJobPairInputPaths(?)");
+			procedure.setInt(1,pairId);
+			results=procedure.executeQuery();
+			List<String> benchmarkPaths=new ArrayList<String>();
+			while (results.next()) {
+				benchmarkPaths.add(results.getString("path"));
+			}
+			return benchmarkPaths;
+			
+		}catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
+	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)
+	 * @param pairId
+	 * @return
+	 */
+	
+	public static List<String> getJobPairInputPaths(int pairId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getJobPairInputPaths(pairId, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Adds a stage to a given job pair in the database
 	 * @param pairId
 	 * @param stageId

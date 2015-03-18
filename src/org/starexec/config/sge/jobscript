@@ -69,11 +69,17 @@ $$SOLVER_NAME_ARRAY$$
 
 $$SOLVER_PATH_ARRAY$$
 
+$$BENCH_INPUT_ARRAY$$
+
 STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
 
+NUM_BENCH_INPUTS=${#BENCH_INPUT_PATHS[@]}
+
 decodePathArrays
+
+log ${BENCH_INPUT_PATHS[@]}
 
 #==========================================================================
 # Signal Traps
