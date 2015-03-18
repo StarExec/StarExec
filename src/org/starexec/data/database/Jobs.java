@@ -208,6 +208,8 @@ public class Jobs {
 						
 						if (parentSpaceId==null) {
 							pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
+							int id=pathsToIds.get(curPathBuilder.toString());
+							idsToMaxStages.put(id, pair.getStages().size());
 							//associate the new space to its parent
 							
 							if (parentPath.length()>0) {
