@@ -119,7 +119,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 DROP PROCEDURE IF EXISTS GetJobAttrs;
 CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
-		SELECT pair.id, attr.attr_key, attr.attr_value, attr.jobpair_data
+		SELECT pair.id, attr.attr_key, attr.attr_value, attr.stage_number
 		FROM job_pairs AS pair 
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			WHERE pair.job_id=_jobId;
@@ -439,7 +439,7 @@ CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 DROP PROCEDURE IF EXISTS GetRunningJobPairsByJob;
 CREATE PROCEDURE GetRunningJobPairsByJob(IN _id INT)
 	BEGIN
-		SELECT job_pars.id, job_pairs.sge_id
+		SELECT job_pairs.id, job_pairs.sge_id
 		FROM job_pairs
 		WHERE (job_id = _id AND status_code = 4)
 		ORDER BY sge_id ASC;

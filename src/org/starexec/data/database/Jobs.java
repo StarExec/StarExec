@@ -3662,21 +3662,21 @@ public class Jobs {
 		try {
 			HashMap<Integer,HashMap<Integer,Properties>> props=new HashMap<Integer,HashMap<Integer,Properties>>();
 			int id;
-			int stageId;
+			int stageNumber;
 			while(results.next()){
 				id=results.getInt("pair.id");
-				stageId=results.getInt("jobpair_data");
+				stageNumber=results.getInt("attr.stage_number");
 				if (!props.containsKey(id)) {
 					props.put(id,new HashMap<Integer,Properties>());
 				}
 				HashMap<Integer,Properties> pairMap=props.get(id);
-				if (!pairMap.containsKey(stageId)) {
-					pairMap.put(stageId, new Properties());
+				if (!pairMap.containsKey(stageNumber)) {
+					pairMap.put(stageNumber, new Properties());
 				}
 				String key=results.getString("attr.attr_key");
 				String value=results.getString("attr.attr_value");
 				if (key!=null && value!=null) {
-					props.get(id).get(stageId).put(key, value);	
+					props.get(id).get(stageNumber).put(key, value);	
 
 				}
 			}			

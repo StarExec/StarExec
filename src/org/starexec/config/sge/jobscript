@@ -83,6 +83,8 @@ decodePathArrays
 
 log ${BENCH_INPUT_PATHS[@]}
 
+log ${STAGE_CPU_TIMEOUTS[@]}
+
 #==========================================================================
 # Signal Traps
 #
@@ -208,6 +210,8 @@ log "cpu timeout : $CURRENT_STAGE_CPU"
 log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
 log "global cpu timeout : $STAREXEC_CPU_LIMIT"
 log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
+log "stage cpu timeout : ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}"
+log "stage wallclock timeout : ${STAGE_WALLCLOCK_TIMEOUTS[$STAGE_INDEX]}"
 log "mem limit : $CURRENT_STAGE_MEMORY"
 log "solver id : $SOLVER_ID"
 log "solver name : $SOLVER_NAME"
