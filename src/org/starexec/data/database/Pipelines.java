@@ -69,8 +69,8 @@ public class Pipelines {
 			while (results.next()) {
 				PipelineDependency dep=new PipelineDependency();
 				dep.setStageId(results.getInt("stage_id"));
-				dep.setDependencyId(results.getInt("dependency_id"));
-				dep.setType(PipelineInputType.valueOf(results.getInt("dependency_type")));
+				dep.setDependencyId(results.getInt("input_id"));
+				dep.setType(PipelineInputType.valueOf(results.getInt("input_type")));
 				dep.setInputNumber(results.getInt("input_number"));
 				
 				if (!answers.containsKey(dep.getStageId())) {

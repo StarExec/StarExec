@@ -261,14 +261,18 @@ public class Jobs {
 			if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
 				rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
 			}
+			HashSet<Integer> uniqueSpaceIds=new HashSet<Integer>();
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				if (attrs.getSpaceId()!=null) {
 					
 					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName,con)!=-1) {
 						throw new Exception("Error creating spaces for job: name conflict with space name "+rootName);
 					}
-					createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,attrs.getSpaceId());
+					uniqueSpaceIds.add(attrs.getSpaceId());
 				}
+			}
+			for (Integer i : uniqueSpaceIds) {
+				createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,i);
 			}
 		
 			log.debug("finished getting subspaces, adding job");
