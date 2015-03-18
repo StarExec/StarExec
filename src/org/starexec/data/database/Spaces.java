@@ -164,17 +164,9 @@ public class Spaces {
 		return -1;
 	}
 	
-	/**
-	 * Sets the max_stages column in the job_spaces table for the given job space to the given value
-	 * @param jobSpaceId The ID of the job space in question
-	 * @param maxStages The maximum number of stages for any pair in the hierarchy rooted at this job space
-	 * @return True on success and false otherwise
-	 */
-	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages) {
-		Connection con=null;
+	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL SetJobSpaceMaxStages(?,?)}");
 			procedure.setInt(1, jobSpaceId);
 			procedure.setInt(2,maxStages);
@@ -183,8 +175,26 @@ public class Spaces {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Sets the max_stages column in the job_spaces table for the given job space to the given value
+	 * @param jobSpaceId The ID of the job space in question
+	 * @param maxStages The maximum number of stages for any pair in the hierarchy rooted at this job space
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return setJobSpaceMaxStages(jobSpaceId,maxStages,con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
 		}
 		return false;
 	}

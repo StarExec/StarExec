@@ -244,7 +244,7 @@ public class Jobs {
 			}
 			if (parentSpaceId==null) {
 				for (Integer id : idsToMaxStages.keySet()) {
-					Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id));
+					Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id),con);
 				}
 			}
 			
