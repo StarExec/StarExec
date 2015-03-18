@@ -910,18 +910,5 @@ function verifyWorkspace {
 
 	return $?
 }
-function sandboxWorkspace {
 
-	if [[ $WORKING_DIR == *sandbox2* ]] 
-	
-	then
-	log "sandboxing workspace with sandbox2 user"
-	sudo chown -R sandbox2 $WORKING_DIR 
-	else
-		log "sandboxing workspace with sandbox user"
-		sudo chown -R sandbox $WORKING_DIR
-	fi
-	ls -lR "$WORKING_DIR"
-	return 0
-}
 

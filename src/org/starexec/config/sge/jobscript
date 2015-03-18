@@ -132,6 +132,10 @@ fillDependArrays
 
 copyBenchmarkDependencies
 copyRunsolver
+
+TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+echo $PAIR_OUTPUT_DIRECTORY > $TMP
+PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #==============================================================================
 # This is the start of the loop that runs for each stage
 #
@@ -234,10 +238,6 @@ else
 	log "no job run for pair $PAIR_ID because a sandbox was not found"
 	sendStatus $ERROR_RUNSCRIPT
 fi
-
-TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
-echo $PAIR_OUTPUT_DIRECTORY > $TMP
-PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
