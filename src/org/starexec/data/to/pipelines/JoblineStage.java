@@ -1,5 +1,6 @@
 package org.starexec.data.to.pipelines;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.starexec.constants.R;
@@ -32,6 +33,10 @@ public class JoblineStage {
 	private boolean noOp=false;
 	private Properties attributes = null;
 	private Integer stageNumber =null; //which stage is this? 1,2... etc.
+	
+	private List<PipelineDependency> dependencies;
+
+	
 	
 	// the standard output of this pair. This is only populated for a short time in pair.jsp
 	private String output=null;
@@ -186,6 +191,14 @@ public class JoblineStage {
 
 	public void setOutput(String output) {
 		this.output = output;
+	}
+
+	public List<PipelineDependency> getDependencies() {
+		return dependencies;
+	}
+
+	public void setDependencies(List<PipelineDependency> dependencies) {
+		this.dependencies = dependencies;
 	}
 	
 }

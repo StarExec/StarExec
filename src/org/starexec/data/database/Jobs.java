@@ -40,6 +40,7 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
@@ -2878,17 +2879,13 @@ public class Jobs {
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
 				    
-				    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId()));
+				    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId(),con));
 			    	pairs.put(currentJobPairId, jp);
-			    	
-			    	
-			    
-			    	
-			    	
 			    }
 
 				JoblineStage stage=new JoblineStage();
 				stage.setStageNumber(results.getInt("stage_number"));
+				stage.setStageId(results.getInt("stage_id"));
 				jp.addStage(stage);
 			    //we need to check to see if the benchId and configId are null, since they might
 			    //have been deleted while the the job is still pending
@@ -2902,7 +2899,7 @@ public class Jobs {
 	
 			    if (configId!=null) {
 					if (!configs.containsKey(configId)) {
-					    Solver s = Solvers.getSolverByConfig(configId, false);
+					    Solver s = Solvers.getSolverByConfig(con,configId, false);
 					    if (s != null) {
 							solvers.put(configId, s);
 							s.addConfiguration(c);
@@ -2918,9 +2915,18 @@ public class Jobs {
 	    }
 				
 	    Common.safeClose(results);
-	    
-	    //make sure all stages are in order
+	    	    
 	    for (JobPair jp : pairs.values()) {
+	    	//populate all the dependencies for the pair
+		    HashMap<Integer,List<PipelineDependency>> deps=Pipelines.getDependenciesForJobPair(jp.getId(), con);
+		    for (JoblineStage stage : jp.getStages()) {
+		    	if (deps.containsKey(stage.getStageId())) {
+		    		stage.setDependencies(deps.get(stage.getStageId()));
+		    	}
+		    }
+
+		    //make sure all stages are in order
+
 	    	jp.sortStages();
 	    }
 	    List<JobPair> returnList=new ArrayList<JobPair>();

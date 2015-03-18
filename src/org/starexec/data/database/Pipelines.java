@@ -3,8 +3,8 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -36,9 +36,50 @@ public class Pipelines {
 			while (results.next()) {
 				PipelineDependency dep=new PipelineDependency();
 				dep.setStageId(stageId);
+				dep.setDependencyId(results.getInt("input_id"));
+				dep.setType(PipelineInputType.valueOf(results.getInt("input_type")));
+				dep.setInputNumber(results.getInt("input_number"));
+				answers.add(dep);
+			}
+			return answers;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns all the dependencies that are associated with the given job pair
+	 * @param pairId
+	 * @param con
+	 * @return
+	 */
+	public static HashMap<Integer, List<PipelineDependency>> getDependenciesForJobPair(int pairId, Connection con) {
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		
+		try {
+			procedure=con.prepareCall("{CALL GetDependenciesForJobPair(?)}");
+			procedure.setInt(1,pairId);
+			results=procedure.executeQuery();
+			HashMap<Integer,List<PipelineDependency>> answers=new HashMap<Integer,List<PipelineDependency>>();
+			while (results.next()) {
+				PipelineDependency dep=new PipelineDependency();
+				dep.setStageId(results.getInt("stage_id"));
 				dep.setDependencyId(results.getInt("dependency_id"));
 				dep.setType(PipelineInputType.valueOf(results.getInt("dependency_type")));
-				answers.add(dep);
+				dep.setInputNumber(results.getInt("input_number"));
+				
+				if (!answers.containsKey(dep.getStageId())) {
+					answers.put(dep.getStageId(), new ArrayList<PipelineDependency>());
+				}
+				
+				
+				
+				answers.get(dep.getStageId()).add(dep);
 			}
 			return answers;
 		} catch (Exception e) {

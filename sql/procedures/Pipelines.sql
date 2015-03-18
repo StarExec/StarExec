@@ -22,6 +22,17 @@ CREATE PROCEDURE GetDependenciesForPipelineStage(IN _id INT)
 		SELECT * FROM pipeline_dependencies WHERE stage_id=_id;
 	END //
 	
+-- Given a stage ID, gets all the dependencies for the stage
+DROP PROCEDURE IF EXISTS GetDependenciesForJobPair;
+CREATE PROCEDURE GetDependenciesForJobPair(IN _pairId INT)
+	BEGIN
+		SELECT pipeline_dependencies.stage_id, pipeline_dependencies.input_type,pipeline_dependencies.input_id,
+		pipeline_dependencies.input_number
+		FROM jobpair_stage_data 
+		JOIN pipeline_dependencies ON pipeline_dependencies.stage_id=jobpair_stage_data.stage_id
+		WHERE jobpair_id=_pairId;
+	END //
+	
 -- Adds a solver pipeline to the database
 DROP PROCEDURE IF EXISTS AddPipeline;
 CREATE PROCEDURE AddPipeline(IN _uid INT, IN _name VARCHAR(128), OUT _id INT)

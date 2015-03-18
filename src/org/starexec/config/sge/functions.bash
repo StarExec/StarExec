@@ -36,7 +36,7 @@ function decodePathArrays {
 	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]
 	do
 		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
-		SOLVER_NAMES[TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		SOLVER_NAMES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
 		
 		echo ${SOLVER_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
 		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
@@ -331,6 +331,24 @@ function safeRm {
   fi
 }
 
+#cleans up files to prepare for the next stage of the job
+function cleanForNextStage {
+		# Clear the output directory	
+	safeRm output-directory "$OUT_DIR"
+
+	# Clear the local solver directory	
+	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	# Clear the local benchmark, as it will be replaced by the output of this stage
+	
+	rm "$LOCAL_BENCH_PATH"
+	
+	#TODO: don't do this step?
+	#safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
+
+
+}
+
 #takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
@@ -386,6 +404,17 @@ function sendStageStatus {
        mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)"
     fi
 	return $?
+}
+
+function sendStatusToLaterStages {
+
+	log "sending status for stage numbers greater than $2"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateLaterStageStatuses($PAIR_ID,$2, $1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateLaterStageStatuses($PAIR_ID,$2, $1)"
+    fi
+	return $?
+
 }
 
 function sendStatus {
@@ -462,6 +491,9 @@ CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
 
+STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$WALLCLOCK_TIME))
+STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$CPU_TIME))
+
 
 SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
 
@@ -501,7 +533,8 @@ fi
 log "sent job stats to $REPORT_HOST"
 
 #echo host name = $EXEC_HOST;
-#echo cpu usage = $CPU_TIME;
+log "cpu usage = $CPU_TIME"
+log "wallclock time = $WALLCLOCK_TIME"
 #echo user time = $CPU_USER_TIME;
 #echo system_time = $SYSTEM_TIME;
 #echo max virt mem = $MAX_VIRTUAL_MEMORY;
@@ -594,6 +627,41 @@ function checkCache {
 	fi	
 }
 
+function copyBenchmarkDependencies {
+
+		
+	
+	log "copying benchmark dependencies to execution host..."
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
+	do
+		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
+		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
+		mkdir -p $NEW_D
+		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+		
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		else
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+			
+			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		fi
+		
+		
+	done
+	log "benchmark dependencies copy complete"
+
+}
+
+function copyRunsolver {
+	log "copying runSolver to execution host..."
+	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
+	log "runsolver copy complete"
+	ls -l "$LOCAL_RUNSOLVER_PATH"
+	
+}
+
+
 function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
@@ -620,11 +688,6 @@ function copyDependencies {
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
         chmod -R gu+rwx $LOCAL_SOLVER_DIR
 
-	log "copying runSolver to execution host..."
-	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
-	log "runsolver copy complete"
-	ls -l "$LOCAL_RUNSOLVER_PATH"
-
 	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
 	log "benchmark copy complete"
@@ -644,26 +707,6 @@ function copyDependencies {
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
 	fi
 	
-	
-	log "copying benchmark dependencies to execution host..."
-	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
-	do
-		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
-		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
-		mkdir -p $NEW_D
-		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
-			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-		
-			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
-		else
-			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-			
-			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
-		fi
-		
-		
-	done
-	log "benchmark dependencies copy complete"
 	return $?	
 }
 

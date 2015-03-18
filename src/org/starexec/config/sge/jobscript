@@ -77,6 +77,8 @@ NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 NUM_BENCH_INPUTS=${#BENCH_INPUT_PATHS[@]}
 
+log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
+
 decodePathArrays
 
 log ${BENCH_INPUT_PATHS[@]}
@@ -126,7 +128,15 @@ export MAX_MEM=$NODE_MEM
 
 fi
 
-# THIS IS THE START OF THINGS THAT MUST BE DONE DURING EACH STAGE
+fillDependArrays
+
+copyBenchmarkDependencies
+copyRunsolver
+#==============================================================================
+# This is the start of the loop that runs for each stage
+#
+#
+#==============================================================================
 
 log "the number of stages is $NUM_STAGES"
 
@@ -178,7 +188,7 @@ SOLVER_CACHED=0
 # The path to the config run script on the execution host
 LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
 
-fillDependArrays
+
 checkCache
 copyDependencies
 verifyWorkspace
@@ -192,6 +202,8 @@ log "doing stage index $STAGE_INDEX"
 log "stage number : $CURRENT_STAGE_NUMBER"
 log "cpu timeout : $CURRENT_STAGE_CPU"
 log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
+log "global cpu timeout : $STAREXEC_CPU_LIMIT"
+log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
 log "mem limit : $CURRENT_STAGE_MEMORY"
 log "solver id : $SOLVER_ID"
 log "solver name : $SOLVER_NAME"
@@ -247,29 +259,41 @@ fi
 JOB_ERROR="1";
 
 
-#TODO: Need to figure out how to handle the status for the entire job pair
 if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
   true 
 elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
   log "epilog detects wall clock time exceeded"
   sendStatus $EXCEED_RUNTIME
   sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  break
   
 elif ( grep 'CPU time exceeded' $WATCHFILE ) then
   log "epilog detects cpu time exceeded"
   sendStatus $EXCEED_CPU
   sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  break
+  
   
 elif ( grep 'VSize exceeded' $WATCHFILE ) then
   log "epilog detects max virtual memory exceeded"
   sendStatus $EXCEED_MEM
   sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
+  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  break
   
 else
   JOB_ERROR="";
   log "execution on $HOSTNAME complete"
-  sendStatus $STATUS_COMPLETE
   sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
+  
+  if [ $STAGE_INDEX -eq $(($NUM_STAGES-1)) ]
+  then
+  	  log "job finished successfully
+  	  sendStatus $STATUS_COMPLETE
+  fi
+  
   
 fi
 
@@ -279,6 +303,13 @@ if [ "$JOB_ERROR" = "" ]; then
 else
 	log "STAREXEC job $JOB_ID exited with errors"
 fi
+
+cleanForNextStage
+
+
+# update the path to the input to the output of the last stage
+BENCH_PATH="$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER"
+
 
 STAGE_INDEX=$(($STAGE_INDEX+1))
 

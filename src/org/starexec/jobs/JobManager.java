@@ -403,6 +403,8 @@ public abstract class JobManager {
 		List<Integer> spaceIds = new ArrayList<Integer>();
 		List<String> benchInputPaths=new ArrayList<String>();
 		for (String path : pair.getBenchInputPaths()) {
+			log.debug("adding the following path to benchInputPaths ");
+			log.debug(path);
 			benchInputPaths.add(path);
 		}
 		benchInputPaths.add(""); // just terminating this array with a blank string so the Bash array will always have some element
