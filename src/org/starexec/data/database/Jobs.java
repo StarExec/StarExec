@@ -99,7 +99,7 @@ public class Jobs {
 			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
 			String topLevel="";
 			for (JobPair pair : pairs) {
-				log.debug("adding a new pair with path = " +pair.getPath());
+				log.debug("finding spaces for a new pair with path = " +pair.getPath());
 				String[] spaces=getSpaceNames(pair.getPath());
 				StringBuilder curPathBuilder=new StringBuilder();
 				for (int i=0;i<spaces.length;i++) {
@@ -266,9 +266,8 @@ public class Jobs {
 					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName,con)!=-1) {
 						throw new Exception("Error creating spaces for job: name conflict with space name "+rootName);
 					}
-
+					createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,attrs.getSpaceId());
 				}
-				createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,attrs.getSpaceId());
 			}
 		
 			log.debug("finished getting subspaces, adding job");

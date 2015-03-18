@@ -200,8 +200,8 @@ CREATE PROCEDURE AddJobPairInput(IN _pairId INT, IN _input INT, IN _benchId INT)
 		INSERT INTO jobpair_inputs (jobpair_id, input_number,bench_id) VALUES (_pairId,_input,_benchId);
 	END //
 	
-DROP PROCEDURE IF EXISTS GetJobPairInputsPaths;
-CREATE PROCEDURE GetJobPairInputsPaths(IN _pairId INT)
+DROP PROCEDURE IF EXISTS GetJobPairInputPaths;
+CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
 	BEGIN
 		SELECT path,input_number FROM jobpair_inputs 
 		JOIN benchmarks ON benchmarks.id=jobpair_inputs.bench_id
