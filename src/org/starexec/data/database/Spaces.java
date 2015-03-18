@@ -539,7 +539,6 @@ public class Spaces {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
-			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL GetSpaceById(?)}");
 			procedure.setInt(1, spaceId);					
 			 results = procedure.executeQuery();		
