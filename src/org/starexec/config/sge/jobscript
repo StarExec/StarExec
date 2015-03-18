@@ -213,6 +213,7 @@ log "config name : $CONFIG_NAME"
 log "pre processor path : $PRE_PROCESSOR_PATH"
 log "post processor path : $POST_PROCESSOR_PATH"
 log "space id : $SPACE_ID"
+log "bench path : $BENCH_PATH"
 
 if [ $SANDBOX -eq 1 ]
 then
@@ -290,7 +291,7 @@ else
   
   if [ $STAGE_INDEX -eq $(($NUM_STAGES-1)) ]
   then
-  	  log "job finished successfully
+  	  log "job finished successfully"
   	  sendStatus $STATUS_COMPLETE
   fi
   
