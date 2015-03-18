@@ -377,8 +377,9 @@ public class JobUtil {
 			}
 			
 			//next, we set the per-stage job attributes
-			Element stageAttributes=DOMHelper.getElementByName(jobElement, "StageAttributes");
-			if (stageAttributes!=null) {
+			NodeList stageAttributeElements=jobElement.getElementsByTagName("StageAttributes");
+			for (int index=0;index<stageAttributeElements.getLength();index++) {
+				Element stageAttributes= (Element) stageAttributeElements.item(index);
 				StageAttributes attrs=new StageAttributes();
 				
 				

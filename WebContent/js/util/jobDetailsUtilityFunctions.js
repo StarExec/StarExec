@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	$(".stageSelector").first(function() {
+	$(".stageSelector").first().each(function() {
 		if ($(this).children().size()<=2) {
 			hideStageSelectors();
 		}

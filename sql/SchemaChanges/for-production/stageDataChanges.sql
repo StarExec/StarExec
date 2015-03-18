@@ -7,7 +7,7 @@ ALTER TABLE jobpair_stage_data MODIFY id INT NOT NULL;
 
 ALTER TABLE jobpair_stage_data DROP PRIMARY KEY;
 
-ALTER TABLE jobpair_stage_data CHANGE id stage_number INT;
+ALTER TABLE jobpair_stage_data CHANGE id stage_number INT NOT NULL;
 
 UPDATE jobpair_stage_data SET stage_number = 1;
 
@@ -29,7 +29,7 @@ ALTER TABLE job_attributes DROP PRIMARY KEY, ADD PRIMARY KEY (pair_id,stage_numb
 
 ALTER TABLE job_attributes ADD CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE;
 
--- Set 5: Add post/ pre processor columns to job_stage_params
+-- Step 4: Add post/ pre processor columns to job_stage_params
 
 ALTER TABLE job_stage_params ADD COLUMN post_processor INT;
 
@@ -39,6 +39,9 @@ ALTER TABLE job_stage_params CHANGE stage_id stage_number INT;
 
 ALTER TABLE job_stage_params ADD COLUMN pre_processor INT;
 
+ALTER TABLE job_stage_params ADD CONSTRAINT job_stage_params_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL;
+
+-- move processors over to job_stage_params
 REPLACE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor,pre_processor) SELECT id,1,cpuTimeout,clockTimeout,maximum_memory,null,post_processor,pre_processor FROM jobs;
 
 ALTER TABLE jobs DROP COLUMN post_processor INT;
@@ -47,7 +50,7 @@ ALTER TABLE jobs DROP COLUMN pre_processor INT;
 
 -- Step 5: Remove unnecessary pipline_stages columns
 
-ALTER TABLE pipeline_stages DROP COLUMN solver_id, DROP COLUMN solver_name, DROP COLUMN config_name;
+ALTER TABLE pipeline_stages DROP COLUMN solver_id, DROP COLUMN solver_name, DROP COLUMN config_name, DROP COLUMN keep_output;
 
 -- Set 6: Add name columns to jobpair_stage_data;
 
@@ -68,10 +71,10 @@ ADD INDEX (job_space_id, solver_name),
 ADD INDEX (job_space_id, config_id);
 
 -- Step 7: Remove name columns from job_pairs
-
-ALTER TABLE job_pairs DROP INDEX job_space_id_4,
-DROP INDEX job_space_id_5, DROP INDEX job_pairs_solver_id,
-DROP INDEX job_space_id_3, DROP INDEX config_id_2, DROP INDEX config_id_3;
+-- TODO: Must uncomment this! it will not work on Stardev due to the names of indices being out of sync with Starexec
+-- ALTER TABLE job_pairs DROP INDEX job_space_id_4,
+-- DROP INDEX job_space_id_5, DROP INDEX job_pairs_solver_id,
+-- DROP INDEX job_space_id_3, DROP INDEX config_id_2, DROP INDEX config_id_3;
 
 ALTER TABLE job_pairs DROP COLUMN config_name,
 DROP COLUMN solver_name, DROP COLUMN config_id, DROP COLUMN solver_id;
@@ -95,7 +98,6 @@ ALTER TABLE pipeline_stages ADD CONSTRAINT pipeline_stages_config_id FOREIGN KEY
 
 ALTER TABLE pipeline_stages ADD COLUMN is_noop BOOLEAN NOT NULL DEFAULT FALSE;
 
-ALTER TABLE pipeline_stages DROP COLUMN keep_output;
 
 
 COMMIT;
