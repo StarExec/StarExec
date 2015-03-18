@@ -80,6 +80,92 @@ public class Jobs {
 		return s;
 	}
 	
+	
+	/**
+	 * This function makes older jobs, which have path info but no job space information
+	 * @param jobId The jobId to create the job space info for
+	 * @return The ID of the primary job  space of the job
+	 * @author Eric Burns
+	 */
+	
+	public static int setupJobSpaces(int jobId) {
+		
+		try {
+			log.debug("Setting up job space hierarchy for old job id = "+jobId);
+			List<JobPair> p=Jobs.getPairsPrimaryStageDetailed(jobId);
+			Integer primarySpaceId=null;
+			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
+			
+			//this hashmap maps every job space ID to the maximal number of stages
+			// of any pair that is in the hierarchy rooted at the job space
+			HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
+			for (JobPair jp : p) {
+				String pathString=jp.getPath();
+				if (pathString==null) {
+					pathString="job space";
+				}
+				
+				//every entry in a path is a single job space
+				String[] path=pathString.split(R.JOB_PAIR_PATH_DELIMITER);
+				String key="";
+				for (int index=0;index<path.length; index++) {
+					
+					String spaceName=path[index];
+					key=key+R.JOB_PAIR_PATH_DELIMITER+spaceName;
+					if (namesToIds.containsKey(key)) {
+						int id=namesToIds.get(key);
+						if (index==(path.length-1)) { // if this is the last space in the path
+							jp.setJobSpaceId(namesToIds.get(key));
+						}
+						
+						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), jp.getStages().size()));
+						continue; //means we've already added this space
+					}
+					
+					int newJobSpaceId=Spaces.addJobSpace(spaceName);
+					if (index==0) {
+						primarySpaceId=newJobSpaceId;
+					}
+					//otherwise, there was an error getting the new job space
+					if (newJobSpaceId>0) {
+						idsToMaxStages.put(newJobSpaceId, jp.getStages().size());
+						namesToIds.put(key, newJobSpaceId);
+						if (index==(path.length-1)) {
+							jp.setJobSpaceId(newJobSpaceId);
+						}
+						String parentKey=key.substring(0,key.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
+						if (namesToIds.containsKey(parentKey)) {
+							Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
+						}
+					}
+				}
+			}
+			for (Integer id : idsToMaxStages.keySet()) {
+				Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id));
+			}
+			//there seem to be some jobs with no pairs somehow, so this just prevents
+			//a red error screen when viewing them
+			if (p.size()==0) {
+				primarySpaceId=Spaces.addJobSpace("job space");
+				Spaces.updateJobSpaceClosureTable(primarySpaceId);
+			}
+			
+			for (int id : namesToIds.values()) {
+				Spaces.updateJobSpaceClosureTable(id);
+			}
+			log.debug("setupjobpairs-- done looking at pairs, updating the database");
+			JobPairs.updateJobSpaces(p);
+			updatePrimarySpace(jobId,primarySpaceId);
+			log.debug("returning new job space id = "+primarySpaceId);
+			return primarySpaceId;
+		} catch (Exception e) {
+			log.error("setupJobSpaces says "+e.getMessage(),e);
+		}
+		
+		return -1;
+	}
+	
+	
 	/**
 	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
 	 * they must all be rooted at the same space. Upon return, each pair will have its job space id set
@@ -95,7 +181,10 @@ public class Jobs {
 			parent=Spaces.get(parentSpaceId,con);
 			parent.setPermission(Permissions.getSpaceDefault(parentSpaceId));
 		}
-		
+		//this hashmap maps every job space ID to the maximal number of stages
+		// of any pair that is in the hierarchy rooted at the job space
+		HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
+
 		try {
 			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
 			String topLevel="";
@@ -110,7 +199,6 @@ public class Jobs {
 					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
 						topLevel=curPathBuilder.toString(); 
 					}
-					
 					
 					//if we need to create a new space
 					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
@@ -140,12 +228,24 @@ public class Jobs {
 						}
 						
 					}
+					if (parentSpaceId==null) {
+						int id=pathsToIds.get(curPathBuilder.toString());
+						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));
+					}
+					
+
 					
 				}
 				if (parentSpaceId==null) {
 					pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
 				}
 			}
+			if (parentSpaceId==null) {
+				for (Integer id : idsToMaxStages.keySet()) {
+					Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id));
+				}
+			}
+			
 			return pathsToIds.get(topLevel);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -3970,89 +4070,7 @@ public class Jobs {
 	}
 	
 	
-	/**
-	 * This function makes older jobs, which have path info but no job space information
-	 * @param jobId The jobId to create the job space info for
-	 * @return The ID of the primary job  space of the job
-	 * @author Eric Burns
-	 */
 	
-	public static int setupJobSpaces(int jobId) {
-		
-		try {
-			log.debug("Setting up job space hierarchy for old job id = "+jobId);
-			List<JobPair> p=Jobs.getPairsPrimaryStageDetailed(jobId);
-			Integer primarySpaceId=null;
-			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
-			
-			//this hashmap maps every job space ID to the maximal number of stages
-			// of any pair that is in the hierarchy rooted at the job space
-			HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
-			for (JobPair jp : p) {
-				String pathString=jp.getPath();
-				if (pathString==null) {
-					pathString="job space";
-				}
-				
-				//every entry in a path is a single job space
-				String[] path=pathString.split(R.JOB_PAIR_PATH_DELIMITER);
-				String key="";
-				for (int index=0;index<path.length; index++) {
-					
-					String spaceName=path[index];
-					key=key+R.JOB_PAIR_PATH_DELIMITER+spaceName;
-					if (namesToIds.containsKey(key)) {
-						int id=namesToIds.get(key);
-						if (index==(path.length-1)) { // if this is the last space in the path
-							jp.setJobSpaceId(namesToIds.get(key));
-						}
-						
-						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), jp.getStages().size()));
-						continue; //means we've already added this space
-					}
-					
-					int newJobSpaceId=Spaces.addJobSpace(spaceName);
-					if (index==0) {
-						primarySpaceId=newJobSpaceId;
-					}
-					//otherwise, there was an error getting the new job space
-					if (newJobSpaceId>0) {
-						idsToMaxStages.put(newJobSpaceId, jp.getStages().size());
-						namesToIds.put(key, newJobSpaceId);
-						if (index==(path.length-1)) {
-							jp.setJobSpaceId(newJobSpaceId);
-						}
-						String parentKey=key.substring(0,key.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
-						if (namesToIds.containsKey(parentKey)) {
-							Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
-						}
-					}
-				}
-			}
-			for (Integer id : idsToMaxStages.values()) {
-				Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id));
-			}
-			//there seem to be some jobs with no pairs somehow, so this just prevents
-			//a red error screen when viewing them
-			if (p.size()==0) {
-				primarySpaceId=Spaces.addJobSpace("job space");
-				Spaces.updateJobSpaceClosureTable(primarySpaceId);
-			}
-			
-			for (int id : namesToIds.values()) {
-				Spaces.updateJobSpaceClosureTable(id);
-			}
-			log.debug("setupjobpairs-- done looking at pairs, updating the database");
-			JobPairs.updateJobSpaces(p);
-			updatePrimarySpace(jobId,primarySpaceId);
-			log.debug("returning new job space id = "+primarySpaceId);
-			return primarySpaceId;
-		} catch (Exception e) {
-			log.error("setupJobSpaces says "+e.getMessage(),e);
-		}
-		
-		return -1;
-	}
 	
 	/**
 	 * Updates the primary space of a job. This should only be necessary when changing the primary space
