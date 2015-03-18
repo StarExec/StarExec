@@ -279,8 +279,13 @@ public class JobPair extends Identifiable {
 	 */
 	public JoblineStage getPrimaryStage() {
 		
-		if (primaryStageNumber!=null) {
-			return stages.get(primaryStageNumber-1);
+		if (primaryStageNumber!=null && primaryStageNumber>0) {
+			
+			for (JoblineStage stage : this.getStages()) {
+				if (stage.getStageNumber()==primaryStageNumber) {
+					return stage;
+				}
+			}			
 		}
 		
 		// if the primary stage isn't set for some reason, we simply return the first stage.

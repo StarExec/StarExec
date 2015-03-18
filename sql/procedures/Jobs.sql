@@ -227,20 +227,20 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 
 
 
--- Retrieves basic info about job pairs for the given job id (simple version)
+-- Retrieves basic info about job pairs for the given job id (simple version). Gets only the primary stage
 -- Author: Julio Cervantes
 DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
 		SELECT job_pairs.id, path, jobpair_stage_data.solver_name,jobpair_stage_data.solver_id,jobpair_stage_data.config_name,
 		jobpair_stage_data.config_id,bench_name,bench_id,solver_pipelines.name,
-		job_spaces.name,job_pairs.status_code,job_spaces.id, pipeline_stages.pipeline_id
+		job_spaces.name,job_pairs.status_code,job_spaces.id, pipeline_stages.pipeline_id, jobpair_stage_data.stage_number
 		FROM job_pairs
 		JOIN job_spaces ON job_spaces.id=job_space_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		LEFT JOIN pipeline_stages ON pipeline_stages.stage_id = jobpair_stage_data.stage_id
 		LEFT JOIN solver_pipelines ON pipeline_stages.pipeline_id = solver_pipelines.id
-		WHERE job_pairs.job_id=_id;
+		WHERE job_pairs.job_id=_id AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //
 
 -- Retrieves basic info about job pairs for the given job id
@@ -348,7 +348,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT)
 	BEGIN
 		SELECT job_pairs.id AS pair_id,jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 		jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
-		jobpair_stage_data.wallclock AS wallclock,job_pairs.id,
+		jobpair_stage_data.wallclock AS wallclock,job_pairs.id, jobpair_stage_data.stage_number,
 		bench_attributes.attr_value AS expected,
 		job_attributes.attr_value AS result
 		FROM job_pairs 		
@@ -428,7 +428,7 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByJob;
 CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT job_pairs.id,job_pairs.sge_id
 		FROM job_pairs
 		WHERE (job_id = _id AND status_code = 2)
 		ORDER BY sge_id ASC;
@@ -439,7 +439,7 @@ CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 DROP PROCEDURE IF EXISTS GetRunningJobPairsByJob;
 CREATE PROCEDURE GetRunningJobPairsByJob(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT job_pars.id, job_pairs.sge_id
 		FROM job_pairs
 		WHERE (job_id = _id AND status_code = 4)
 		ORDER BY sge_id ASC;

@@ -700,6 +700,7 @@ public abstract class JobManager {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
 				JoblineStage stage=new JoblineStage();
+				stage.setStageNumber(1);
 				pair.setPrimaryStageNumber(1);
 				stage.setNoOp(false);
 
@@ -764,7 +765,7 @@ public abstract class JobManager {
 					pair = new JobPair();
 					pair.setBench(b);
 					JoblineStage stage=new JoblineStage();
-
+					stage.setStageNumber(1);
 					stage.setSolver(clone);
 					stage.setConfiguration(c);
 					pair.addStage(stage);
@@ -813,6 +814,7 @@ public abstract class JobManager {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
 						JoblineStage stage=new JoblineStage();
+						stage.setStageNumber(1);
 						pair.setPrimaryStageNumber(1);
 						stage.setNoOp(false);
 
@@ -916,6 +918,7 @@ public abstract class JobManager {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
 						JoblineStage stage=new JoblineStage();
+						stage.setStageNumber(1);
 						stage.setSolver(solver);
 						pair.setPrimaryStageNumber(1);
 						stage.setNoOp(false);

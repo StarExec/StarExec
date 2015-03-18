@@ -90,7 +90,7 @@ public class Util {
      */
     public static String readFileLimited(File f, int lineLimit) {
 	LineIterator lineItr = null;
-		
+	log.debug("calling readFileLimited");
 	try {
 	    // Set limit to max if it's less than 0 (anything less than 0 inclusive indicates no limit)
 	    lineLimit = Math.min(lineLimit, Integer.MAX_VALUE);

@@ -1079,8 +1079,8 @@ public class Jobs {
 	}
 	
 	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * Gets all enqueued job pairs. Only populates the pair ID and the sge ID!
+
 	 * @param con The connection to make the query on 
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
@@ -1096,36 +1096,12 @@ public class Jobs {
 			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
 			//we map ID's to  primitives so we don't need to query the database repeatedly for them
-			HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
-			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
-			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+			
 			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				int nodeId=results.getInt("node_id");
-				if (!nodes.containsKey(nodeId)) {
-					nodes.put(nodeId,Cluster.getNodeDetails(con,nodeId));
-				}
-				jp.setNode(nodes.get(nodeId));	
-				int benchId=results.getInt("bench_id");
-				if (!benchmarks.containsKey(benchId)) {
-					benchmarks.put(benchId,Benchmarks.get(con,benchId,false));
-				}
-				jp.setBench(benchmarks.get(benchId));
-				int configId=results.getInt("config_id");
-				if (!configs.containsKey(configId)) {
-					configs.put(configId, Solvers.getConfiguration(con,configId));
-					solvers.put(configId, Solvers.getSolverByConfig(con,configId,false));
-				}
-				JoblineStage stage=new JoblineStage();
+				JobPair jp = new JobPair();
+				jp.setId(results.getInt("id"));
+				jp.setGridEngineId(results.getInt("sge_id"));
 				
-				stage.setSolver(solvers.get(configId));
-				stage.setConfiguration(configs.get(configId));
-				jp.addStage(stage);
-				Status s = new Status();
-
-				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
 				returnList.add(jp);
 			}			
 			log.debug("returnList = " + returnList);
@@ -1141,8 +1117,7 @@ public class Jobs {
 	
 
 	/**
-	 * Gets all job pairs that are enqueued (up to limit) for the given job and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
+	 * Gets all enqueued job pairs. Only populates the pair ID and the sge ID!
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
@@ -1711,6 +1686,7 @@ public class Jobs {
 				
 				JobPair jp=idsToPairs.get(results.getInt("job_pairs.id"));
 				JoblineStage stage=new JoblineStage();
+				stage.setStageNumber(results.getInt("stage_number"));
 				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
 				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
 				stage.setStageId(results.getInt("jobpair_stage_data.stage_id"));
@@ -2444,6 +2420,8 @@ public class Jobs {
 			while(results.next()){
 			    JobPair jp = new JobPair();
 			    JoblineStage stage=new JoblineStage();
+			    stage.setStageNumber(results.getInt("stage_number"));
+			    jp.setPrimaryStageNumber(results.getInt("stage_number"));
 			    Configuration c=new Configuration();
 			    Solver s=new Solver();
 			    stage.setConfiguration(c);
@@ -2983,37 +2961,13 @@ public class Jobs {
 			procedure.setInt(1, jobId);					
 			results = procedure.executeQuery();
 			List<JobPair> returnList = new LinkedList<JobPair>();
-			//we map ID's to  primitives so we don't need to query the database repeatedly for them
-			//HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
-			//HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-			HashMap<Integer,WorkerNode> nodes=new HashMap<Integer,WorkerNode>();
-			HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
+			
 			
 			while(results.next()){
-				JobPair jp = JobPairs.resultToPair(results);
-				int nodeId=results.getInt("node_id");
-				if (!nodes.containsKey(nodeId)) {
-					nodes.put(nodeId,Cluster.getNodeDetails(nodeId));
-				}
-				jp.setNode(nodes.get(nodeId));	
-				int benchId=results.getInt("bench_id");
-				if (!benchmarks.containsKey(benchId)) {
-					benchmarks.put(benchId,Benchmarks.get(benchId));
-				}
-				/*jp.setBench(benchmarks.get(benchId));
-				int configId=results.getInt("configId");
-				if (!configs.containsKey(configId)) {
-					configs.put(configId, Solvers.getConfiguration(configId));
-					solvers.put(configId, Solvers.getSolverByConfig(configId,false));
-				}
-				jp.setSolver(solvers.get(configId));
-				jp.setConfiguration(configs.get(configId));
-				*/
+				JobPair jp = new JobPair();
+				jp.setId(results.getInt("id"));
+				jp.setGridEngineId(results.getInt("sge_id"));
 				
-				Status s = new Status();
-
-				s.setCode(results.getInt("status_code"));
-				jp.setStatus(s);
 				returnList.add(jp);
 			}			
 
@@ -3030,7 +2984,7 @@ public class Jobs {
 	
 	
 	/**
-	 * Gets all job pairs that are running for the given job 
+	 * Gets all job pairs that are running for the given job. Populates only the pair IDs and the SGE Ids
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that are running.
 	 * @author Wyatt Kaiser
@@ -3050,11 +3004,6 @@ public class Jobs {
 		return null;		
 	}
 
-	
-	
-	
-	
-	
 	
 	/**
 	 * Returns the count of pairs with the given status code in the given job where either
@@ -3755,6 +3704,7 @@ public class Jobs {
 				//so, we simply set the primary stage of this pair to the first stage for the time being
 				jp.setPrimaryStageNumber(1);
 				JoblineStage stage=new JoblineStage();
+				stage.setStageNumber(1);
 				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
 				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
 				stage.setStageId(results.getInt("jobpair_stage_data.stage_id"));

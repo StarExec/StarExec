@@ -657,8 +657,11 @@ public class JobPairs {
 			results=procedure.executeQuery();
 			if (results.next()) {
 				JobPair pair=new JobPair();
+				
 				pair.addStage(new JoblineStage());
-				pair.setPrimaryStageNumber(1);
+				
+				pair.setPrimaryStageNumber(results.getInt("stage_number"));
+				pair.getStages().get(0).setStageNumber(pair.getPrimaryStageNumber());
 				Solver s= pair.getPrimarySolver();
 				s.setName(results.getString("solver_name"));
 				Benchmark b=pair.getBench();
@@ -890,6 +893,7 @@ public class JobPairs {
 			if(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.addStage(new JoblineStage()); // just add an empty stage that we can populate below
+				jp.getStages().get(0).setStageNumber(jp.getPrimaryStageNumber());
 				jp.getNode().setId(results.getInt("node_id"));
 				jp.getStatus().setCode(results.getInt("status_code"));
 				jp.getBench().setId(results.getInt("bench_id"));
