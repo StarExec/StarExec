@@ -536,6 +536,7 @@ public abstract class JobManager {
 
 			}
 			sb.append("\"\n");
+			index=index+1;
 		}
 		return sb.toString();
 	}
