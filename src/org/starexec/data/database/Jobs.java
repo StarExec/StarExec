@@ -656,7 +656,6 @@ public class Jobs {
 	public static boolean setJobStageAttributes(StageAttributes attrs, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,attrs.getJobId());
 			procedure.setInt(2,attrs.getStageNumber());
