@@ -414,7 +414,19 @@ public abstract class JobManager {
 			configNames.add(stage.getConfiguration().getName());
 			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
 			solverPaths.add(stage.getSolver().getPath());
-			spaceIds.add(attrs.getSpaceId());
+			
+			
+			if (attrs.getSpaceId()==null) {
+				spaceIds.add(null);
+			} else {
+				Integer spaceId= Spaces.getSubSpaceIDByPath(attrs.getSpaceId(), pair.getPath());
+				if (spaceId==null || spaceId==-1) {
+					spaceIds.add(null);
+				} else {
+					spaceIds.add(spaceId);
+				}
+			}
+			
 			Processor p = attrs.getPostProcessor();
 			if (p==null) {
 				postProcessorPaths.add("");

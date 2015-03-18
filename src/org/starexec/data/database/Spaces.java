@@ -1129,6 +1129,51 @@ public class Spaces {
 	
 	
 	/**
+	 * Given a space ID and a space path of the form "subspace1name/subspace2name/subspace3name"...
+	 * returns the ID of the space that is at the end of the path. In other words, this function searches
+	 * down through the space hierarchy using a path rooted at the given space
+	 * @param rootSpaceId
+	 * @param path
+	 * @param con
+	 * @return The ID of the space identified by the path, or -1 if it does not exist. Returns null on error
+	 */
+	public static Integer getSubSpaceIDByPath(Integer rootSpaceId, String path, Connection con) {
+		try {
+			String[] spaceNames=path.split(R.JOB_PAIR_PATH_DELIMITER);
+			int returnId = rootSpaceId;
+			
+			for (String spaceName :spaceNames) {
+				returnId = getSubSpaceIDbyName(returnId, spaceName, con);
+				if (returnId==-1) {
+					return -1; //means the space could not be found
+				}
+			}
+			
+			return returnId;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return null;
+	}
+	
+	
+	public static Integer getSubSpaceIDByPath(Integer rootSpaceId, String path) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getSubSpaceIDByPath(rootSpaceId, path,con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	
+	
+	/**
 	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
 	 * @param spaceId id of parent space
 	 * @param userId id of user making request

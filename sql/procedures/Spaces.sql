@@ -273,11 +273,9 @@ DROP PROCEDURE IF EXISTS GetSubSpaceByName;
 CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(255))
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
-			SELECT *
+			SELECT id
 			FROM spaces
-			WHERE id = 
-				(SELECT MIN(id)
-				FROM spaces);
+			ORDER BY id limit 1;
 		ELSE					-- Else find all children spaces that are an ancestor of a space the user is apart of
 			IF _userId>0 THEN
 				SELECT *
@@ -290,14 +288,10 @@ CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VAR
 						WHERE set_assoc.space_id=_spaceId)
 				AND name = _name;
 			ELSE
-				SELECT *
-				FROM spaces
-				WHERE id IN
-					(SELECT child_id 
-				 	FROM set_assoc 
-						JOIN closure ON set_assoc.child_id=closure.ancestor  
-						WHERE set_assoc.space_id=_spaceId)
-				AND name = _name;
+				SELECT child_id AS id FROM spaces
+				JOIN set_assoc ON set_assoc.child_id =spaces.id
+				WHERE space_id=_spaceId AND spaces.name=_name;
+			
 			END IF;
 		END IF;
 	END //

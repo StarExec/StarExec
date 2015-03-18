@@ -810,7 +810,7 @@ function copyDependencies {
 # Saves the current output 
 function saveOutputAsBenchmark {
 	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
-	CURRENT_OUTPUT_FILE=SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
+	CURRENT_OUTPUT_FILE=$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
 	#TODO: what should the name be?
 	CURRENT_BENCH_NAME=$BENCH_NAME
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$CURRENT_BENCH_NAME
