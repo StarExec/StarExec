@@ -36,6 +36,8 @@
 
 	<p>See <a href="machine-specs.txt">here</a> for machine specifications for the compute nodes.</p>
 
+        <p>A virtual machine for StarExec is <a href="https://www.starexec.org/vmimage/">here</a>.  It is recommended to upgrade to the latest <a href="http://www.virtualbox.org">VirtualBox</a> for this (confirmed working for version 4.3.24).</p>
+
 	<p>Use of StarExec is bound by the following 
 	<a href="STAREXEC TERMS OF SERVICE.doc">terms of service</a>.
 	</p>
