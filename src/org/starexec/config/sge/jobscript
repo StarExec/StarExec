@@ -108,6 +108,10 @@ trap 'handleUsrTwo' USR2
 
 findSandbox $JOB_ID
 
+$$STAGE_DEPENDENCY_ARRAY$$
+
+log ${STAGE_DEPENDENCIES[@]}
+
 # setup the memory limit for this stage
 
 #THIS ONLY NEEDS TO BE DONE ONCE

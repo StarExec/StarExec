@@ -38,6 +38,8 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
@@ -402,6 +404,7 @@ public abstract class JobManager {
 		List<String> preProcessorPaths=new ArrayList<String>();
 		List<Integer> spaceIds = new ArrayList<Integer>();
 		List<String> benchInputPaths=new ArrayList<String>();
+		List<String> argStrings=new ArrayList<String>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -421,7 +424,7 @@ public abstract class JobManager {
 			configNames.add(stage.getConfiguration().getName());
 			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
 			solverPaths.add(stage.getSolver().getPath());
-			
+			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
 			
 			if (attrs.getSpaceId()==null) {
 				spaceIds.add(null);
@@ -487,6 +490,7 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$SOLVER_NAME_ARRAY$$",toBashArray("SOLVER_NAMES",solverNames,true));
 		jobScript=jobScript.replace("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
 		jobScript=jobScript.replace("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
+		jobScript=jobScript.replace("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
 		File f = new File(scriptPath);
@@ -507,6 +511,27 @@ public abstract class JobManager {
 		
 		return scriptPath;
 	}	
+	
+	public static String pipelineDependenciesToArgumentString(List<PipelineDependency> deps) {
+		if (deps== null || deps.size()==0) {
+			return "";
+		}
+		StringBuilder sb=new StringBuilder();
+		for (PipelineDependency dep : deps) {
+			if (dep.getType()==PipelineInputType.ARTIFACT) {
+				sb.append("$SAVED_OUTPUT_DIR/");
+				sb.append(dep.getInputNumber());
+				sb.append(" ");
+				
+			} else if (dep.getType()==PipelineInputType.BENCHMARK) {
+				sb.append("$BENCH_INPUT_DIR/");
+				sb.append(dep.getInputNumber());
+				sb.append(" ");
+			}
+		}
+		
+		return sb.toString();
+	}
 	
 	/**
 	 * Given the name of an array and a list of strings to put into the array, 

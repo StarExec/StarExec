@@ -123,6 +123,8 @@ function initWorkspaceVariables {
 	# Path to where the benchmark will be copied
 	LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 	
+	BENCH_INPUT_DIR="$WORKING_DIR/benchinputs"
+	
 	# The benchmark's name
 	BENCH_NAME="${BENCH_PATH##*/}"
 	
@@ -146,6 +148,9 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
+	
+	
+	
 }
 #checks to see whether the first argument is a valid integer
 function isInteger {
@@ -652,6 +657,19 @@ function copyBenchmarkDependencies {
 		
 		
 	done
+	
+	BENCH_INPUT_INDEX=0
+	
+	while [ $BENCH_INPUT_INDEX -lt $(($NUM_BENCH_INPUTS-1)) ]
+	do
+		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[$BENCH_INPUT_INDEX]}
+		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$(($BENCH_INPUT_INDEX+1))"
+		BENCH_INPUT_INDEX=$(($BENCH_INPUT_INDEX+1))
+	done
+	
+	
+	
+	
 	log "benchmark dependencies copy complete"
 
 }

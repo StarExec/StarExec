@@ -2,6 +2,8 @@ USE starexec;
 
 START TRANSACTION;
 
+
+
 -- Step 1: Change the ID of jobpair_stage_data to a simple stage number
 ALTER TABLE jobpair_stage_data MODIFY id INT NOT NULL;
 
@@ -44,8 +46,11 @@ ALTER TABLE job_stage_params ADD CONSTRAINT job_stage_params_pre_processor FOREI
 -- move processors over to job_stage_params
 REPLACE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor,pre_processor) SELECT id,1,cpuTimeout,clockTimeout,maximum_memory,null,post_processor,pre_processor FROM jobs;
 
-ALTER TABLE jobs DROP COLUMN post_processor INT;
-ALTER TABLE jobs DROP COLUMN pre_processor INT;
+ALTER TABLE jobs DROP FOREIGN KEY jobs_post_processor;
+ALTER TABLE jobs DROP FOREIGN KEY jobs_pre_processor;
+
+ALTER TABLE jobs DROP COLUMN post_processor;
+ALTER TABLE jobs DROP COLUMN pre_processor;
 
 
 -- Step 5: Remove unnecessary pipline_stages columns
@@ -72,9 +77,9 @@ ADD INDEX (job_space_id, config_id);
 
 -- Step 7: Remove name columns from job_pairs
 -- TODO: Must uncomment this! it will not work on Stardev due to the names of indices being out of sync with Starexec
--- ALTER TABLE job_pairs DROP INDEX job_space_id_4,
--- DROP INDEX job_space_id_5, DROP INDEX job_pairs_solver_id,
--- DROP INDEX job_space_id_3, DROP INDEX config_id_2, DROP INDEX config_id_3;
+ALTER TABLE job_pairs DROP INDEX job_space_id_4,
+DROP INDEX job_space_id_5, DROP INDEX job_pairs_solver_id,
+DROP INDEX job_space_id_3, DROP INDEX config_id_2, DROP INDEX config_id_3;
 
 ALTER TABLE job_pairs DROP COLUMN config_name,
 DROP COLUMN solver_name, DROP COLUMN config_id, DROP COLUMN solver_id;
@@ -97,7 +102,5 @@ UPDATE pipeline_stages LEFT JOIN configurations ON configurations.id=pipeline_st
 ALTER TABLE pipeline_stages ADD CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL;
 
 ALTER TABLE pipeline_stages ADD COLUMN is_noop BOOLEAN NOT NULL DEFAULT FALSE;
-
-
 
 COMMIT;
