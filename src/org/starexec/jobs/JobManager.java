@@ -411,7 +411,7 @@ public abstract class JobManager {
 			benchInputPaths.add(path);
 		}
 		benchInputPaths.add(""); // just terminating this array with a blank string so the Bash array will always have some element
-		
+		String primaryPreprocessorPath="";
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
@@ -448,6 +448,9 @@ public abstract class JobManager {
 				preProcessorPaths.add("");
 			} else {
 				preProcessorPaths.add(p.getFilePath());
+				if (stage.getStageNumber()==pair.getPrimaryStageNumber()) {
+					primaryPreprocessorPath=p.getFilePath();
+				}
 			}
 			
 		}
@@ -458,6 +461,8 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
+		
+		jobScript = jobScript.replace("$$PRIMARY_PREPROCESSOR_PATH$$",primaryPreprocessorPath);
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
 		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));

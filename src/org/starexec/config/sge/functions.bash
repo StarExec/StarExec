@@ -50,7 +50,7 @@ function decodePathArrays {
 	
 		echo ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
 		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
-		
+		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]}"
 		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
 	done
 	
@@ -371,14 +371,18 @@ function cleanWorkspace {
 
 	# Clear the output directory	
 	safeRm output-directory "$OUT_DIR"
-
+	
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	safeRm bench-inputs "$BENCH_INPUT_DIR"
 
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
 	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
+	
+	
 	
 	
 	#only delete the job script / lock files if we are in the epilog
@@ -637,7 +641,15 @@ function checkCache {
 
 function copyBenchmarkDependencies {
 
-		
+	
+	
+	if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRIMARY_PREPROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor	
+	fi
+	
 	
 	log "copying benchmark dependencies to execution host..."
 	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
@@ -645,9 +657,9 @@ function copyBenchmarkDependencies {
 		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
-		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+		if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
 			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-		
+
 			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
@@ -659,6 +671,7 @@ function copyBenchmarkDependencies {
 	done
 	
 	BENCH_INPUT_INDEX=0
+	mkdir -p $BENCH_INPUT_DIR
 	
 	while [ $BENCH_INPUT_INDEX -lt $(($NUM_BENCH_INPUTS-1)) ]
 	do
@@ -666,10 +679,7 @@ function copyBenchmarkDependencies {
 		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$(($BENCH_INPUT_INDEX+1))"
 		BENCH_INPUT_INDEX=$(($BENCH_INPUT_INDEX+1))
 	done
-	
-	
-	
-	
+
 	log "benchmark dependencies copy complete"
 
 }
@@ -858,25 +868,7 @@ function copyDependencies {
 	fi
 	
 	
-	log "copying benchmark dependencies to execution host..."
-	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
-	do
-		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
-		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
-		mkdir -p $NEW_D
-		if [ "$PRE_PROCESSOR_PATH" != "" ]; then
-			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-		
-			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
-		else
-			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-			
-			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
-		fi
-		
-		
-	done
-	log "benchmark dependencies copy complete"
+	
 	return $?	
 }
 

@@ -172,6 +172,7 @@ public class Pipelines {
 			procedure=con.prepareCall("{CALL AddPipelineDependency(?,?,?,?)}");
 			procedure.setInt(1,dep.getStageId());
 			procedure.setInt(2,dep.getDependencyId());
+			log.debug("adding dependency with type "+dep.getType());
 			procedure.setInt(3,dep.getType().getVal());
 			procedure.setInt(4,dep.getInputNumber());
 			procedure.executeUpdate();

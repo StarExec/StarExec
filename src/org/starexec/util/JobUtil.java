@@ -232,7 +232,7 @@ public class JobUtil {
 					if (t.getNodeType() == Node.ELEMENT_NODE) {
 						Element dependency = (Element) t;
 						PipelineDependency dep = new PipelineDependency();
-						if (dependency.getTagName().equals("stageDependency")) {
+						if (dependency.getTagName().equals("StageDependency")) {
 							inputNumber++;
 							
 							dep.setType(PipelineInputType.ARTIFACT);
@@ -248,10 +248,11 @@ public class JobUtil {
 										
 							}
 							dep.setDependencyId(neededStageId);		
-						} else if (dependency.getTagName().equals("benchmarkDependency")) {
+						} else if (dependency.getTagName().equals("BenchmarkDependency")) {
 							inputNumber++;
 							
 							dep.setType(PipelineInputType.BENCHMARK);
+							
 							dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
 							benchmarkInputs.add(dep.getDependencyId());
 						}
