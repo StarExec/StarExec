@@ -404,7 +404,7 @@ function initUI(){
 					'clear cache': function() {
 						$(this).dialog("close");
 							$.post(
-									starexecRoot+"services/cache/clear/stats"+jobId+"/",
+									starexecRoot+"services/cache/clear/stats/"+jobId+"/",
 									function(returnCode) {
 										s=parseReturnCode(returnCode);	
 							});

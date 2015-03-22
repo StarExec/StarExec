@@ -426,6 +426,17 @@ function sendStatusToLaterStages {
 
 }
 
+function setRunStatsToZeroForLaterStages {
+
+	log "setting all stats to 0 for stages greater than $1"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetRunStatsForLaterStagesToZero($PAIR_ID,$1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetRunStatsForLaterStagesToZero($PAIR_ID,$1)"
+    fi
+	return $?
+
+}
+
 function sendStatus {
     if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)" ; then
        sleep 20

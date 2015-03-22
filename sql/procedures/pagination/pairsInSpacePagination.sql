@@ -19,7 +19,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						job_pairs.bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
@@ -71,7 +71,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						job_pairs.bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
@@ -116,7 +116,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						job_pairs.bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
@@ -165,7 +165,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -211,7 +211,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -260,7 +260,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -304,7 +304,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -353,7 +353,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -398,7 +398,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -449,7 +449,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						bench_attributes.attr_value AS expected,
 						job_pairs.bench_id,
 						bench_name,
@@ -494,7 +494,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -543,7 +543,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -588,7 +588,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						job_pairs.bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
@@ -636,7 +636,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,
@@ -680,7 +680,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						job_pairs.bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
@@ -729,7 +729,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 						
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
-						jobpair_stage_data.solver_name,
+						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						
 						job_pairs.bench_id,
 						bench_name,

@@ -426,8 +426,12 @@ public class JobPair extends Identifiable {
 	public JoblineStage getStageFromNumber(int stageNumber) {
 		if (stageNumber<=0) {
 			return this.getPrimaryStage();
-		} else if (stageNumber<=stages.size()) {
-			return stages.get(stageNumber-1);
+		} else {
+			for (JoblineStage stage : this.stages) {
+				if (stage.getStageNumber()==stageNumber) {
+					return stage;
+				}
+			}
 		}
 		return null;
 		

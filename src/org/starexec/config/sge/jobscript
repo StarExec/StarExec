@@ -272,6 +272,7 @@ elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
   sendStatus $EXCEED_RUNTIME
   sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
   break
   
 elif ( grep 'CPU time exceeded' $WATCHFILE ) then
@@ -279,6 +280,7 @@ elif ( grep 'CPU time exceeded' $WATCHFILE ) then
   sendStatus $EXCEED_CPU
   sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
   break
   
   
@@ -287,6 +289,7 @@ elif ( grep 'VSize exceeded' $WATCHFILE ) then
   sendStatus $EXCEED_MEM
   sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
   break
   
 else

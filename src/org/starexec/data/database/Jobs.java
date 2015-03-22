@@ -1631,7 +1631,7 @@ public class Jobs {
 		try {
 			//first, get all the completed pairs in the space
 			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber);
-			JobPairs.filterPairsByType(pairs, "complete", 1); //1 because we get only one stage above
+			pairs=JobPairs.filterPairsByType(pairs, "complete", 1); //1 because we get only one stage above
 			
 			//then, filter them down to the synced pairs
 			for (JobPair p : pairs) {
@@ -1961,7 +1961,7 @@ public class Jobs {
 				JoblineStage stage=new JoblineStage();
 				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
 				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
-				
+				stage.setStageNumber(results.getInt("jobpair_stage_data.stage_number"));
 				jp.addStage(stage);
 				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));
@@ -3699,13 +3699,8 @@ public class Jobs {
 		for (JobPair jp : pairs) {
 			
 			for (int stageNumber=0;stageNumber<=jp.getStages().size();stageNumber++) {
-				JoblineStage stage=null;
-				if (stageNumber==0) {
-					stage=jp.getPrimaryStage();
-					
-				} else if (stageNumber<=jp.getStages().size()) {
-					stage=jp.getStages().get(stageNumber-1);
-				}
+				JoblineStage stage=jp.getStageFromNumber(stageNumber);
+				
 				//we need to exclude noOp stages
 				if (stage.isNoOp()) {
 					continue;

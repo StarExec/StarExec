@@ -87,6 +87,7 @@ public class JobToXMLer {
     	Element stageNumberElement=doc.createElement("stage-num");
     	Attr numberAttr=doc.createAttribute("value");
     	numberAttr.setValue(Integer.toString(attrs.getStageNumber()));
+    	stageNumberElement.setAttributeNode(numberAttr);
     	stageAttrs.appendChild(stageNumberElement);
     	
 		Element cpuTimeoutElement = doc.createElement("cpu-timeout");

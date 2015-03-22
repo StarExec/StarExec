@@ -88,6 +88,21 @@ CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT
 	BEGIN
 		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
 	END //
+	
+-- Sets all run stats to 0 for stages that come after the given stage. This is used for 
+-- pipelines where an early stage fails, causing later stages to not run
+DROP PROCEDURE IF EXISTS SetRunStatsForLaterStagesToZero;
+CREATE PROCEDURE SetRunStatsForLaterStagesToZero(IN _jobPairId INT, IN _stageNumber INT)
+	BEGIN
+		UPDATE jobpair_stage_data
+		SET wallclock = 0,
+			cpu=0,
+			user_time=0,
+			system_time=0,
+			max_vmem=0,
+			max_res_set=0
+		WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
+	END //
 
 -- Gets all the stages for the given job pair
 DROP PROCEDURE IF EXISTS GetJobPairStagesById;
