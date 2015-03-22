@@ -272,6 +272,14 @@ public class TestManager {
 				FileUtils.deleteQuietly(file);
 				log.debug("finished calling deleteQuietly");
 				file.mkdir();
+				file=new File(R.NEW_JOB_OUTPUT_DIR);
+				log.debug("calling deleteQuietly on new output");
+
+				FileUtils.deleteQuietly(file);
+				log.debug("finished calling deleteQuietly on new output");
+
+				
+				file.mkdir();
 			}
 		});
 		
