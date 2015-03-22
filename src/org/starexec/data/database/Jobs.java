@@ -3694,66 +3694,71 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
-		Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
-		String key=null;
-		for (JobPair jp : pairs) {
-			
-			for (int stageNumber=0;stageNumber<=jp.getStages().size();stageNumber++) {
-				JoblineStage stage=jp.getStageFromNumber(stageNumber);
+		try {
+			Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
+			String key=null;
+			for (JobPair jp : pairs) {
 				
-				//we need to exclude noOp stages
-				if (stage.isNoOp()) {
-					continue;
-				}
-
-				//entries in the stats table determined by stage/configuration pairs
-				key=stageNumber+":"+String.valueOf(stage.getConfiguration().getId());
-				
-				if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
-					SolverStats newSolver=new SolverStats();
-					newSolver.setStageNumber(stageNumber);
-					newSolver.setSolver(jp.getPrimarySolver());
-					newSolver.setConfiguration(jp.getPrimaryConfiguration());
-					SolverStats.put(key, newSolver);
-				}
-				
-				
-				//update stats info for entry that current job-pair belongs to
-				SolverStats curSolver=SolverStats.get(key);
-				StatusCode statusCode=stage.getStatus().getCode();
-				
-				if ( statusCode.failed()) {
-				    curSolver.incrementFailedJobPairs();
-				} 
-				if ( statusCode.resource()) {
-					curSolver.incrementResourceOutPairs();
-				}
-				if (statusCode.incomplete()) {
-				    curSolver.incrementIncompleteJobPairs();
-				}
-				if (statusCode.complete()) {
-				    curSolver.incrementCompleteJobPairs();
-				}
-				
-				int correct=JobPairs.isPairCorrect(jp,stageNumber);
-				if (correct==0) {
+				for (JoblineStage stage : jp.getStages()) {
 					
-					curSolver.incrementWallTime(stage.getWallclockTime());
-	    			curSolver.incrementCpuTime(stage.getCpuTime());
-	    			curSolver.incrementCorrectJobPairs();
-				} else if (correct==1) {
-		   			curSolver.incrementIncorrectJobPairs();
+					//we need to exclude noOp stages
+					if (stage.isNoOp()) {
+						continue;
+					}
 
+					//entries in the stats table determined by stage/configuration pairs
+					key=stage.getStageNumber()+":"+String.valueOf(stage.getConfiguration().getId());
+					
+					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
+						SolverStats newSolver=new SolverStats();
+						newSolver.setStageNumber(stage.getStageNumber());
+						newSolver.setSolver(jp.getPrimarySolver());
+						newSolver.setConfiguration(jp.getPrimaryConfiguration());
+						SolverStats.put(key, newSolver);
+					}
+					
+					
+					//update stats info for entry that current job-pair belongs to
+					SolverStats curSolver=SolverStats.get(key);
+					StatusCode statusCode=stage.getStatus().getCode();
+					
+					if ( statusCode.failed()) {
+					    curSolver.incrementFailedJobPairs();
+					} 
+					if ( statusCode.resource()) {
+						curSolver.incrementResourceOutPairs();
+					}
+					if (statusCode.incomplete()) {
+					    curSolver.incrementIncompleteJobPairs();
+					}
+					if (statusCode.complete()) {
+					    curSolver.incrementCompleteJobPairs();
+					}
+					
+					int correct=JobPairs.isPairCorrect(jp,stage.getStageNumber());
+					if (correct==0) {
+						
+						curSolver.incrementWallTime(stage.getWallclockTime());
+		    			curSolver.incrementCpuTime(stage.getCpuTime());
+		    			curSolver.incrementCorrectJobPairs();
+					} else if (correct==1) {
+			   			curSolver.incrementIncorrectJobPairs();
+
+					}
 				}
-			}
-			}
+				}
+				
 			
-		
-		List<SolverStats> returnValues=new LinkedList<SolverStats>();
-		for (SolverStats js : SolverStats.values()) {
-			returnValues.add(js);
+			List<SolverStats> returnValues=new LinkedList<SolverStats>();
+			for (SolverStats js : SolverStats.values()) {
+				returnValues.add(js);
+			}
+			return returnValues;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
-		return returnValues;
+		return null;
+		
 	}
 	
 	/**
@@ -3768,92 +3773,99 @@ public class Jobs {
 	 */
 	
 	private static List<JobPair> processStatResults(ResultSet results, boolean includeSingleStage) throws Exception {
-		List<JobPair> returnList = new ArrayList<JobPair>();
 		
-		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
-		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-		Integer id;
-		
-		
-		Benchmark bench=null;
-		while(results.next()){
-			JobPair jp = new JobPair();
-			jp.setPrimaryStageNumber(results.getInt("primary_jobpair_data"));
-			// these are the solver and configuration defaults. If any jobpair_stage_data
-			// entry has null for a stage_id, then these are the correct primitives. 
+		try {
+			List<JobPair> returnList = new ArrayList<JobPair>();
+			
+			HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
+			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+			Integer id;
+			
+			
+			Benchmark bench=null;
+			while(results.next()){
+				JobPair jp = new JobPair();
+				jp.setPrimaryStageNumber(results.getInt("primary_jobpair_data"));
+				// these are the solver and configuration defaults. If any jobpair_stage_data
+				// entry has null for a stage_id, then these are the correct primitives. 
+					
 				
-			
-			Status s = new Status();
+				Status s = new Status();
 
-			s.setCode(results.getInt("status_code"));
-			jp.setStatus(s);
-			jp.setId(results.getInt("job_pairs.id"));
-			bench=new Benchmark();
-			bench.setId(results.getInt("bench_id"));
-			bench.setName(results.getString("bench_name"));
-			jp.setBench(bench);
+				s.setCode(results.getInt("status_code"));
+				jp.setStatus(s);
+				jp.setId(results.getInt("job_pairs.id"));
+				bench=new Benchmark();
+				bench.setId(results.getInt("bench_id"));
+				bench.setName(results.getString("bench_name"));
+				jp.setBench(bench);
 
-			jp.setCompletionId(results.getInt("completion_id"));
-			
-			
-			if (includeSingleStage) {
-				//If we are here, we are populating exactly 1 stage for purposes of filling up a table.
-				//so, we simply set the primary stage of this pair to the first stage for the time being
-				jp.setPrimaryStageNumber(1);
-				JoblineStage stage=new JoblineStage();
-				stage.setStageNumber(1);
-				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
-				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
-				stage.setStageId(results.getInt("jobpair_stage_data.stage_id"));
-				stage.getStatus().setCode(results.getInt("jobpair_stage_data.status_code"));
-				//everything below this line is in a stage
-				id=results.getInt("jobpair_stage_data.solver_id");
-				//means it was null in SQL
-				if (id==0) {
-					stage.setNoOp(true);
-					stage.setSolver(null);
-					stage.setConfiguration(null);
-				} else {
-					if (!solvers.containsKey(id)) {
+				jp.setCompletionId(results.getInt("completion_id"));
+				
+				
+				if (includeSingleStage) {
+					//If we are here, we are populating exactly 1 stage for purposes of filling up a table.
+					//so, we simply set the primary stage of this pair to the first stage for the time being
+					jp.setPrimaryStageNumber(1);
+					JoblineStage stage=new JoblineStage();
+					stage.setStageNumber(1);
+					stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
+					stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
+					stage.setStageId(results.getInt("jobpair_stage_data.stage_id"));
+					stage.getStatus().setCode(results.getInt("jobpair_stage_data.status_code"));
+					//everything below this line is in a stage
+					id=results.getInt("jobpair_stage_data.solver_id");
+					//means it was null in SQL
+					if (id==0) {
+						stage.setNoOp(true);
+						stage.setSolver(null);
+						stage.setConfiguration(null);
+					} else {
+						if (!solvers.containsKey(id)) {
+							
+							Solver solve=new Solver();
+							solve.setId(id);
+							solve.setName(results.getString("jobpair_stage_data.solver_name"));
+							solvers.put(id,solve);
+						}
+						stage.setSolver(solvers.get(id));
+
+						id=results.getInt("jobpair_stage_data.config_id");
 						
-						Solver solve=new Solver();
-						solve.setId(id);
-						solve.setName(results.getString("jobpair_stage_data.solver_name"));
-						solvers.put(id,solve);
+						
+						if (!configs.containsKey(id)) {
+							Configuration config=new Configuration();
+							config.setId(id);
+							config.setName(results.getString("jobpair_stage_data.config_name"));
+							configs.put(id, config);
+						}
+						stage.getSolver().addConfiguration(configs.get(id));
+						stage.setConfiguration(configs.get(id));
 					}
-					stage.setSolver(solvers.get(id));
-
-					id=results.getInt("jobpair_stage_data.config_id");
 					
 					
-					if (!configs.containsKey(id)) {
-						Configuration config=new Configuration();
-						config.setId(id);
-						config.setName(results.getString("jobpair_stage_data.config_name"));
-						configs.put(id, config);
+					
+					Properties p=new Properties();
+					String result=results.getString("result");
+					if (result!=null) {
+						p.put(R.STAREXEC_RESULT, result);
 					}
-					stage.getSolver().addConfiguration(configs.get(id));
-					stage.setConfiguration(configs.get(id));
+					
+					
+					stage.setAttributes(p);
+					jp.addStage(stage);
 				}
 				
+				returnList.add(jp);		
 				
-				
-				Properties p=new Properties();
-				String result=results.getString("result");
-				if (result!=null) {
-					p.put(R.STAREXEC_RESULT, result);
-				}
-				
-				
-				stage.setAttributes(p);
-				jp.addStage(stage);
 			}
-			
-			returnList.add(jp);		
-			
-		}
 
-		return returnList;	
+			return returnList;	
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+		
 	}
 
 	/**
