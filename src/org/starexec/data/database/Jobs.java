@@ -2069,11 +2069,10 @@ public class Jobs {
 			List<JobPair> filteredPairs=new ArrayList<JobPair>();
 			
 			for (JobPair jp : pairs) {
-				if (stageNumber > jp.getStages().size()) {
-					continue; //this pair does not have the needed stage
-				}
+				
 				JoblineStage stage=jp.getStageFromNumber(stageNumber);
-				if (stage.isNoOp()) {
+				
+				if (stage==null || stage.isNoOp()) {
 					continue;
 				}
 				if (stage.getConfiguration().getId()==configId) {

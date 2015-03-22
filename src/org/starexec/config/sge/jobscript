@@ -107,9 +107,6 @@ findSandbox $JOB_ID
 
 $$STAGE_DEPENDENCY_ARRAY$$
 
-log "these are the stage dependencies"
-
-log ${STAGE_DEPENDENCIES[@]}
 
 # setup the memory limit for this stage
 
@@ -186,7 +183,7 @@ SOLVER_PATH=${SOLVER_PATHS[$STAGE_INDEX]}
 SOLVER_ID=${SOLVER_IDS[$STAGE_INDEX]}
 SOLVER_TIMESTAMP=${SOLVER_TIMESTAMPS[$STAGE_INDEX]}
 SPACE_ID=${SPACE_IDS[$STAGE_INDEX]}
-
+ARGUMENT_STRING=${STAGE_DEPENDENCIES[$STAGE_INDEX]}
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 
@@ -225,6 +222,7 @@ log "pre processor path : $PRE_PROCESSOR_PATH"
 log "post processor path : $POST_PROCESSOR_PATH"
 log "space id : $SPACE_ID"
 log "bench path : $BENCH_PATH"
+log "argument string : $ARGUMENT_STRING"
 
 if [ $SANDBOX -eq 1 ]
 then
