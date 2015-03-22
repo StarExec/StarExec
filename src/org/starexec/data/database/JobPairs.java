@@ -179,7 +179,7 @@ public class JobPairs {
 			pair.setId(procedure.getInt(8));
 
 			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
-				JoblineStage  stage= pair.getStageFromNumber(stageNumber);
+				JoblineStage stage= pair.getStages().get(stageNumber-1);
 				//we don't store noops in the database, as we know that they have nothing to save
 				if (!stage.isNoOp()) {
 					addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),pair.getJobSpaceId(),con);

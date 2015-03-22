@@ -107,6 +107,8 @@ findSandbox $JOB_ID
 
 $$STAGE_DEPENDENCY_ARRAY$$
 
+log "these are the stage dependencies"
+
 log ${STAGE_DEPENDENCIES[@]}
 
 # setup the memory limit for this stage

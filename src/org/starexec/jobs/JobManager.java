@@ -521,6 +521,7 @@ public abstract class JobManager {
 		if (deps== null || deps.size()==0) {
 			return "";
 		}
+		log.debug("creating a dependency argument string with this many deps = "+deps.size());
 		StringBuilder sb=new StringBuilder();
 		for (PipelineDependency dep : deps) {
 			if (dep.getType()==PipelineInputType.ARTIFACT) {
