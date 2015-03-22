@@ -200,8 +200,7 @@ public class Util {
 	file.mkdir();
 	file=new File(R.JOB_OUTPUT_DIR);
 	file.mkdir();
-	file=new File(R.JOB_OUTPUT_DIR);
-	file.mkdir();
+	
 	file=new File(R.JOBPAIR_INPUT_DIR);
 	file.mkdir();
 	file=new File(R.BENCHMARK_PATH);

@@ -263,12 +263,14 @@ public class TestManager {
 			return; //right now, don't run anything on production
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
-
+		log.debug("trying to empty the job output directory");
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
 				File file=new File(R.JOB_OUTPUT_DIR);
+				log.debug("calling deleteQuietly");
 				FileUtils.deleteQuietly(file);
+				log.debug("finished calling deleteQuietly");
 				file.mkdir();
 			}
 		});
