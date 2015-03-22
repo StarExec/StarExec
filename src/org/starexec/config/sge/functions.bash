@@ -684,13 +684,7 @@ function copyBenchmarkDependencies {
 
 }
 
-function copyRunsolver {
-	log "copying runSolver to execution host..."
-	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
-	log "runsolver copy complete"
-	ls -l "$LOCAL_RUNSOLVER_PATH"
-	
-}
+
 
 
 function copyDependencies {

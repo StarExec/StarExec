@@ -75,7 +75,7 @@ STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
 
-NUM_BENCH_INPUTS=${#BENCH_INPUT_PATHS[@]}
+NUM_BENCH_INPUTS=$((${#BENCH_INPUT_PATHS[@]}-1)) # we terminate the array with an empty string, so the number is the size-1
 
 log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
 
@@ -133,8 +133,8 @@ fi
 
 fillDependArrays
 
+#todo: alter the way we copy runsolver over so it only happens once
 copyBenchmarkDependencies
-copyRunsolver
 
 TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
 echo $PAIR_OUTPUT_DIRECTORY > $TMP

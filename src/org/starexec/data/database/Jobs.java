@@ -1631,7 +1631,7 @@ public class Jobs {
 		try {
 			//first, get all the completed pairs in the space
 			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber);
-			JobPairs.filterPairsByType(pairs, "complete", stageNumber);
+			JobPairs.filterPairsByType(pairs, "complete", 1); //1 because we get only one stage above
 			
 			//then, filter them down to the synced pairs
 			for (JobPair p : pairs) {
@@ -1856,7 +1856,7 @@ public class Jobs {
 	
 	/**
 	 * Returns all of the job pairs in a given job space, populated with all the fields necessary
-	 * to display in a SolverStats table. All job pair stages are obtained
+	 * to display in a SolverStats table. Only the given stage is returned
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
 	 * @return A list of job pairs for the given job for which the solver is in the given space

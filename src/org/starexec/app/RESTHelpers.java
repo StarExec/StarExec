@@ -788,6 +788,7 @@ public class RESTHelpers {
 	    			jobId
 			);
 		} else {
+			log.debug("returning synchronized results");
 			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),
 					attrMap.get(RECORDS_PER_PAGE), 
 					attrMap.get(SORT_DIRECTION) == ASC ? true : false,
