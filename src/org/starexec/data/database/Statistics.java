@@ -593,12 +593,7 @@ public class Statistics {
 				continue;
 			}
 			//variable that will contain the single relevant stage for this pair, corresponding to stageNumber
-			JoblineStage stage=null;
-			if(stageNumber<=0) {
-				stage=jp.getPrimaryStage();
-			} else {
-				stage=jp.getStages().get(stageNumber-1);
-			}
+			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 			
 			Solver s=stage.getSolver();
 			if (!solvers.containsKey(s.getId())) {

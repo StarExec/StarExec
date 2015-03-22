@@ -1538,7 +1538,8 @@ public class Jobs {
 		log.debug("filtering pairs by type took "+(System.currentTimeMillis()-a));
 
 		totals[0]=pairs.size();
-		pairs=JobPairs.filterPairs(pairs, searchQuery);
+		
+		pairs=JobPairs.filterPairs(pairs, searchQuery,stageNumber);
 		log.debug("filtering pairs by query took "+(System.currentTimeMillis()-a));
 
 		totals[1]=pairs.size();
@@ -2071,12 +2072,7 @@ public class Jobs {
 				if (stageNumber > jp.getStages().size()) {
 					continue; //this pair does not have the needed stage
 				}
-				JoblineStage stage=null;
-				if (stageNumber<=0) {
-					stage=jp.getPrimaryStage();
-				} else {
-					stage=jp.getStages().get(stageNumber-1);
-				}
+				JoblineStage stage=jp.getStageFromNumber(stageNumber);
 				if (stage.isNoOp()) {
 					continue;
 				}

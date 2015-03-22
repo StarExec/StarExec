@@ -548,7 +548,7 @@ public class JobPairs {
 	 * @author Eric burns
 	 */
 	
-	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery) {
+	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery, int stageNumber) {
 		//no filtering is necessary if there's no query
 		if (searchQuery==null || searchQuery=="") {
 			return pairs;
@@ -557,10 +557,11 @@ public class JobPairs {
 		searchQuery=searchQuery.toLowerCase();
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
+			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 			try {
-				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(jp.getStatus().getCode().getVal()).equals(searchQuery)
-						|| jp.getPrimarySolver().getName().toLowerCase().contains(searchQuery) || jp.getPrimaryConfiguration().getName().toLowerCase().contains(searchQuery) ||
-						jp.getPrimaryStarexecResult().contains(searchQuery)) {
+				if (jp.getBench().getName().toLowerCase().contains(searchQuery) || String.valueOf(stage.getStatus().getCode().getVal()).equals(searchQuery)
+						|| stage.getSolver().getName().toLowerCase().contains(searchQuery) || stage.getConfiguration().getName().toLowerCase().contains(searchQuery) ||
+						stage.getStarexecResult().contains(searchQuery)) {
 						
 					filteredPairs.add(jp);
 				}
