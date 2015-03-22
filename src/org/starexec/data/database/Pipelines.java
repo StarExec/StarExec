@@ -52,7 +52,8 @@ public class Pipelines {
 	}
 	
 	/**
-	 * Returns all the dependencies that are associated with the given job pair
+	 * Returns all the dependencies that are associated with the given job pair, organized by stage number.
+	 * Dependencies are ordered by input number
 	 * @param pairId
 	 * @param con
 	 * @return
@@ -76,9 +77,7 @@ public class Pipelines {
 				if (!answers.containsKey(dep.getStageId())) {
 					answers.put(dep.getStageId(), new ArrayList<PipelineDependency>());
 				}
-				
-				
-				
+
 				answers.get(dep.getStageId()).add(dep);
 			}
 			return answers;

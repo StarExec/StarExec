@@ -526,12 +526,12 @@ public abstract class JobManager {
 		for (PipelineDependency dep : deps) {
 			if (dep.getType()==PipelineInputType.ARTIFACT) {
 				sb.append("$SAVED_OUTPUT_DIR/");
-				sb.append(dep.getInputNumber());
+				sb.append(dep.getDependencyId());
 				sb.append(" ");
 				
 			} else if (dep.getType()==PipelineInputType.BENCHMARK) {
 				sb.append("$BENCH_INPUT_DIR/");
-				sb.append(dep.getInputNumber());
+				sb.append(dep.getDependencyId());
 				sb.append(" ");
 			}
 		}

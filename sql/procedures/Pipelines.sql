@@ -30,7 +30,7 @@ CREATE PROCEDURE GetDependenciesForJobPair(IN _pairId INT)
 		pipeline_dependencies.input_number
 		FROM jobpair_stage_data 
 		JOIN pipeline_dependencies ON pipeline_dependencies.stage_id=jobpair_stage_data.stage_id
-		WHERE jobpair_id=_pairId;
+		WHERE jobpair_id=_pairId ORDER BY input_number;
 	END //
 	
 -- Adds a solver pipeline to the database
