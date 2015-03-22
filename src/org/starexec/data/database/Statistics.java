@@ -317,15 +317,9 @@ public class Statistics {
 			for (JobPair jp : pairs2) {
 				pairs2Map.put(jp.getBench().getId(), jp);
 			}
-			JoblineStage stage1=null;
-			JoblineStage stage2=null;
-			if(stageNumber<=0) {
-				stage1=pairs1.get(0).getPrimaryStage();
-				stage2=pairs2.get(0).getPrimaryStage();
-			} else {
-				stage1=pairs1.get(0).getStages().get(stageNumber-1);
-				stage2=pairs2.get(0).getStages().get(stageNumber-1);
-			}
+			JoblineStage stage1=pairs1.get(0).getStageFromNumber(stageNumber);
+			JoblineStage stage2=pairs2.get(0).getStageFromNumber(stageNumber);
+			
 			log.debug("making solver comparison chart");
 			
 			String xAxisName=stage1.getSolver().getName()+"/"+stage1.getConfiguration().getName()+" time(s)";
@@ -357,14 +351,9 @@ public class Statistics {
 						names.put(key, jp.getBench().getName());
 						item+=1;
 							
+						stage1=jp.getStageFromNumber(stageNumber);
+						stage2=jp2.getStageFromNumber(stageNumber);
 						
-						if(stageNumber<=0) {
-							stage1=jp.getPrimaryStage();
-							stage2=jp2.getPrimaryStage();
-						} else {
-							stage1=jp.getStages().get(stageNumber-1);
-							stage2=jp2.getStages().get(stageNumber-1);
-						}
 						
 						d.add(stage1.getWallclockTime(),stage2.getWallclockTime());
 						
