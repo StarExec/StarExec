@@ -414,7 +414,7 @@ public class JobPairs {
 
 		log.debug("filtering pairs by type with type = "+type);
 		List<JobPair> filteredPairs=new ArrayList<JobPair>();
-
+		
 		if (type.equals("incomplete")) {
 			for (JobPair jp : pairs) {
 				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().statIncomplete()) {
@@ -436,19 +436,24 @@ public class JobPairs {
 		} 	else if (type.equals("solved")) {
 
 			for (JobPair jp : pairs) {
-				if (JobPairs.isPairCorrect(jp,stageNumber)==0) {
+				JoblineStage stage=jp.getStageFromNumber(stageNumber);
+
+				if (JobPairs.isPairCorrect(stage)==0) {
 					filteredPairs.add(jp);
 				}
 			}
 		}  else if (type.equals("wrong")) {
 			for (JobPair jp : pairs) {
-				if (JobPairs.isPairCorrect(jp,stageNumber)==1) {
+				JoblineStage stage=jp.getStageFromNumber(stageNumber);
+				if (JobPairs.isPairCorrect(stage)==1) {
 					filteredPairs.add(jp);
 				}
 			}
 		}  else if (type.equals("unknown")) {
 			for (JobPair jp : pairs) {
-				if (JobPairs.isPairCorrect(jp,stageNumber)==2) {
+				JoblineStage stage=jp.getStageFromNumber(stageNumber);
+
+				if (JobPairs.isPairCorrect(stage)==2) {
 					filteredPairs.add(jp);
 				}
 			}
@@ -474,13 +479,12 @@ public class JobPairs {
 	 */
 	
 	
-	public static int isPairCorrect(JobPair jp,int stageNumber) {
-		log.debug("checking whether pair with id = "+jp.getId() +" is correct");
-		StatusCode statusCode=jp.getStageFromNumber(stageNumber).getStatus().getCode();
+	public static int isPairCorrect(JoblineStage stage) {
+		StatusCode statusCode=stage.getStatus().getCode();
 
 		if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
-			if (jp.getStageFromNumber(stageNumber).getAttributes()!=null) {
-			   	Properties attrs = jp.getStageFromNumber(stageNumber).getAttributes();
+			if (stage.getAttributes()!=null) {
+			   	Properties attrs = stage.getAttributes();
 			   	log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
 			   	log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
 			   	if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)){

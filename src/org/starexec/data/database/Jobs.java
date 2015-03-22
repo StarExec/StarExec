@@ -3687,6 +3687,35 @@ public class Jobs {
 		return null;
 	}
 	
+	private static void addStageToSolverStats(SolverStats stats, JoblineStage stage) {
+		StatusCode statusCode=stage.getStatus().getCode();
+		
+		if ( statusCode.failed()) {
+		    stats.incrementFailedJobPairs();
+		} 
+		if ( statusCode.resource()) {
+			stats.incrementResourceOutPairs();
+		}
+		if (statusCode.incomplete()) {
+		    stats.incrementIncompleteJobPairs();
+		}
+		if (statusCode.complete()) {
+		    stats.incrementCompleteJobPairs();
+		}
+		
+		int correct=JobPairs.isPairCorrect(stage);
+		if (correct==0) {
+			
+			stats.incrementWallTime(stage.getWallclockTime());
+			stats.incrementCpuTime(stage.getCpuTime());
+			stats.incrementCorrectJobPairs();
+		} else if (correct==1) {
+   			stats.incrementIncorrectJobPairs();
+
+		}
+	}
+	
+	
 	/**
 	 * Given a list of JobPairs, compiles them into SolverStats objects. 
 	 * @param pairs The JobPairs with their relevant fields populated
@@ -3712,38 +3741,30 @@ public class Jobs {
 					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
 						SolverStats newSolver=new SolverStats();
 						newSolver.setStageNumber(stage.getStageNumber());
-						newSolver.setSolver(jp.getPrimarySolver());
-						newSolver.setConfiguration(jp.getPrimaryConfiguration());
+						newSolver.setSolver(stage.getSolver());
+						newSolver.setConfiguration(stage.getConfiguration());
 						SolverStats.put(key, newSolver);
 					}
 					
 					
 					//update stats info for entry that current job-pair belongs to
 					SolverStats curSolver=SolverStats.get(key);
-					StatusCode statusCode=stage.getStatus().getCode();
-					
-					if ( statusCode.failed()) {
-					    curSolver.incrementFailedJobPairs();
-					} 
-					if ( statusCode.resource()) {
-						curSolver.incrementResourceOutPairs();
-					}
-					if (statusCode.incomplete()) {
-					    curSolver.incrementIncompleteJobPairs();
-					}
-					if (statusCode.complete()) {
-					    curSolver.incrementCompleteJobPairs();
-					}
-					
-					int correct=JobPairs.isPairCorrect(jp,stage.getStageNumber());
-					if (correct==0) {
+					addStageToSolverStats(curSolver,stage);
+					if (stage.getStageNumber()==jp.getPrimaryStageNumber()) {
+						//if we get here, we need to add this stage to the primary stats as well
+						key=0+":"+String.valueOf(stage.getConfiguration().getId());
+						if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
+							SolverStats newSolver=new SolverStats();
+							newSolver.setStageNumber(0);
+							newSolver.setSolver(stage.getSolver());
+							newSolver.setConfiguration(stage.getConfiguration());
+							SolverStats.put(key, newSolver);
+						}
 						
-						curSolver.incrementWallTime(stage.getWallclockTime());
-		    			curSolver.incrementCpuTime(stage.getCpuTime());
-		    			curSolver.incrementCorrectJobPairs();
-					} else if (correct==1) {
-			   			curSolver.incrementIncorrectJobPairs();
-
+						
+						//update stats info for entry that current job-pair belongs to
+						curSolver=SolverStats.get(key);
+						addStageToSolverStats(curSolver,stage);
 					}
 				}
 				}
