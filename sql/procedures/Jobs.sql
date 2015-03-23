@@ -385,7 +385,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
 
 					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
-		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId
+		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number
 		ORDER BY job_pairs.end_time DESC;
 	END //
 	
@@ -688,7 +688,8 @@ CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID 
 	BEGIN
 		SELECT path,solver_name,config_name,bench_name, complete.completion_id, id FROM job_pairs
 			JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
-		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId;
+			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
 	END //
 
 	
