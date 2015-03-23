@@ -2406,7 +2406,7 @@ public class Jobs {
 	
 	/**
 	 * For a given job, gets every job pair with the minimal amount of information required
-	 * to find the job pair output on disk
+	 * to find the job pair output on disk. Only the primary stage is required
 	 * @param jobId The ID of the job to get pairs for
 	 * @param since Only gets pairs that were finished after "completion ID"
 	 * @return A list of JobPair objects
@@ -2427,13 +2427,18 @@ public class Jobs {
 			List<JobPair> pairs=new ArrayList<JobPair>();	
 			while (results.next()) {
 				JobPair pair=new JobPair();
+				JoblineStage stage=new JoblineStage();
+				stage.setStageNumber(results.getInt("primary_jobpair_data"));
+				pair.setPrimaryStageNumber(results.getInt("primary_jobpair_data"));
 				pair.setJobId(jobId);
 				pair.setId(results.getInt("id"));
 				pair.setPath(results.getString("path"));
-				pair.getPrimarySolver().setName(results.getString("solver_name"));
-				pair.getPrimaryConfiguration().setName(results.getString("config_name"));
+				stage.getSolver().setName(results.getString("solver_name"));
+				stage.getConfiguration().setName(results.getString("config_name"));
 				pair.getBench().setName(results.getString("bench_name"));
 				pair.setCompletionId(results.getInt("completion_id"));
+				pair.addStage(stage);
+
 				pairs.add(pair);
 			}
 			return pairs;

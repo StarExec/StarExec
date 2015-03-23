@@ -130,7 +130,7 @@ CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 DROP PROCEDURE IF EXISTS GetNewJobAttrs;
 CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 	BEGIN
-		SELECT pair.id, attr.attr_key, attr.attr_value
+		SELECT pair.id, attr.attr_key, attr.attr_value, attr.stage_number
 		FROM job_pairs AS pair
 			LEFT JOIN job_attributes AS attr ON attr.pair_id=pair.id
 			INNER JOIN job_pair_completion AS complete ON pair.id=complete.pair_id
@@ -686,7 +686,7 @@ CREATE PROCEDURE SetNewColumns()
 DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfoByJob;
 CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID INT)
 	BEGIN
-		SELECT path,solver_name,config_name,bench_name, complete.completion_id, id FROM job_pairs
+		SELECT path,solver_name,config_name,bench_name, complete.completion_id, id, primary_jobpair_data FROM job_pairs
 			JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 		WHERE job_pairs.job_id=_jobID AND complete.completion_id>_completionId AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
