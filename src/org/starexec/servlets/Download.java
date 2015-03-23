@@ -645,9 +645,15 @@ public class Download extends HttpServlet {
 				}
 				File file=new File(JobPairs.getFilePath(p));
 
-				zipFileName.append(file.getName());
 				if (file.exists()) {
-					ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+					if (file.isDirectory()) {
+						ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
+					} else {
+						zipFileName.append(file.getName());
+
+						ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+					}
+					
 
 				} else {
 					//if we can't find output for the pair, just put an empty file there
