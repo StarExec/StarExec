@@ -174,7 +174,7 @@ public class Jobs {
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 */
-	//TODO: Comment
+	//TODO: Split this up so the space and teh job space versions are different functions-- they just don't overlap enough
 	public static Integer createJobSpacesForPairs(List<JobPair> pairs, int userId, Connection con, Integer parentSpaceId) {
 		Space parent=null;
 		if (parentSpaceId!=null) {
@@ -267,11 +267,11 @@ public class Jobs {
 		try {
 			con=Common.getConnection();
 			Common.beginTransaction(con);
-
-			Job j=Jobs.getDetailed(jobId);
-			int topLevel=createJobSpacesForPairs(j.getJobPairs(),j.getUserId(),con,null);
+			List<JobPair> pairs=Jobs.getPairsSimple(jobId);
+			
+			int topLevel=createJobSpacesForPairs(pairs,-1,con,null);
 			Jobs.updatePrimarySpace(jobId, topLevel,con);
-			JobPairs.updateJobSpaces(j.getJobPairs(),con);
+			JobPairs.updateJobSpaces(pairs,con);
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
@@ -1086,7 +1086,8 @@ public class Jobs {
 	}
 	
 	/**
-	 * Retrieves a job from the databas as well as its job pairs and its queue/processor info
+	 * Retrieves a job from the database as well as its job pairs and its queue/processor info
+	 * Only the primary stage of each pair is populated
 	 * @param jobId The ID of the job to get information for
 	 * @return A job object containing information about the requested job
 	 * @author Tyler Jensen
@@ -2561,7 +2562,7 @@ public class Jobs {
 	/**
 	 * Gets all job pairs for the given job non-recursively (simple version to test job xml bug)
 	 * (Worker node, status, benchmark and solver will NOT be populated) 
-	 * only populates status code id, bench id and config id
+	 *
 	 * @param jobId The id of the job to get pairs for
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Julio Cervantes
@@ -2773,9 +2774,9 @@ public class Jobs {
 	public static boolean setAllPairsToPending(int jobId) {
 
 		try {
-			Job j=Jobs.getDetailed(jobId);
+			List<JobPair> pairs=Jobs.getPairsSimple(jobId);
 			boolean success=true;
-			for (JobPair jp : j) {
+			for (JobPair jp : pairs) {
 				success = success && Jobs.rerunPair(jobId, jp.getId());
 			}
 			return success;

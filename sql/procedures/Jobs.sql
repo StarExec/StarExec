@@ -378,7 +378,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 		SELECT *
 		FROM job_pairs 
 						JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
-
+						JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 						JOIN	configurations	AS	config	ON	jobpair_stage_data.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
@@ -399,14 +399,14 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 		WHERE job_id=_jobId AND status_code=_statusCode;
 	END //
 	
--- Retrieves ids for job pairs with a given status in a given job where either cpu or wallclock is 0 for any stage
+-- Retrieves ids for job pairs in a given job where either cpu or wallclock is 0 for any stage that has the given status code
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetTimelessJobPairsByStatus;
 CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN 
-		SELECT job_pairs.id FROM job_pairs
+		SELECT DISTINCT job_pairs.id FROM job_pairs
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE job_id=_jobId AND job_pairs.status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
+		WHERE job_id=_jobId AND jobpair_stage_data.status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
 	END //
 	
 -- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs
@@ -749,7 +749,7 @@ CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
 		SELECT COUNT(distinct job_pairs.id) AS count
 		FROM job_pairs 
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE job_pairs.job_id=_jobId and _status=job_pairs.status_code AND (jobpair_stage_data.wallclock=0 OR jobpair_stage_data.cpu=0);
+		WHERE job_pairs.job_id=_jobId and _status=jobpair_stage_data.status_code AND (jobpair_stage_data.wallclock=0 OR jobpair_stage_data.cpu=0);
 	END //
 	
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor

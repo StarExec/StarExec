@@ -793,6 +793,7 @@ class CommandParser {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}
 	}

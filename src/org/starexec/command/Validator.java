@@ -51,7 +51,7 @@ public class Validator {
 
     private static String[] allowedCopySolverParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
     private static String[] allowedCopyBenchmarkParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
-	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME};
+	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME,R.PARAM_OVERWRITE};
 	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
 	private static String[] allowedPauseOrResumeParams=new String[]{R.PARAM_ID};

@@ -299,7 +299,7 @@ REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
 --polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved 
-archives will have name given plus "-info" or "-output" and an integer.
+archives will have name given plus "-info" or "-output" and an integer. Time is in seconds.
 REQUIRED: "id", "out", "t" 
 OPTIONAL: "ow"
 
