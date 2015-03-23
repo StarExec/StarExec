@@ -2808,7 +2808,7 @@ public class Jobs {
 			}
 			JobPairs.removePairFromCompletedTable(pairId);
 			JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
-			
+			JobPairs.setAllPairStageStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
 			// the cache must be cleared AFTER changing the pair status code!
 			success=success && Jobs.removeCachedJobStats(jobId);
 			

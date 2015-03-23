@@ -1128,6 +1128,77 @@ public class JobPairs {
 		return false;
 	}
 	
+	/**
+	 * Sets the status code of every stage that comes after the given stage to the given value
+	 * @param pairId
+	 * @param statusCode
+	 * @param stageNumber
+	 * @param con
+	 * @return
+	 */
+	public static boolean setLaterPairStageStatus(int pairId, int statusCode, int stageNumber, Connection con) {
+		CallableStatement procedure= null;
+		try{
+			procedure = con.prepareCall("{CALL UpdateLaterStageStatuses(?, ?,?)}");
+			procedure.setInt(1, pairId);
+			procedure.setInt(2,stageNumber);
+			procedure.setInt(3, statusCode);
+
+			procedure.executeUpdate();								
+			
+			return true;
+		} catch (Exception e) {
+			log.debug(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}	
+		return false;
+	}
+	
+	/**
+	 * Sets the status code of every stage that comes after the given stage to the given value
+	 * @param pairId
+	 * @param statusCode
+	 * @param stageNumber
+	 * @param con
+	 * @return
+	 */
+	
+	public static boolean setLaterPairStageStatus(int pairId, int statusCode, int stageNumber) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return setLaterPairStageStatus(pairId,statusCode,stageNumber,con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	/**
+	 * Sets the status code of every stage for the given pair to the given code
+	 * @param pairId
+	 * @param statusCode
+	 * @return
+	 */
+	public static boolean setAllPairStageStatus(int pairId, int statusCode) {
+		return setLaterPairStageStatus(pairId,statusCode,-1);
+	}
+	
+	/**
+	 * Sets the status code of every stage for the given pair to the given code
+	 * @param pairId
+	 * @param statusCode
+	 * @return
+	 */
+	public static boolean setAllPairStageStatus(int pairId, int statusCode, Connection con) {
+		return setLaterPairStageStatus(pairId,statusCode,-1,con);
+	}
+	
+	
 	
 	/**
 	 * Sets the status of a given job pair to the given status

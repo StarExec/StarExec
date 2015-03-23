@@ -359,7 +359,6 @@ public class BenchmarkUploader extends HttpServlet {
 					addBechmarksFromArchive(archiveFile, userId, spaceId, typeId,
 							downloadable, perm, uploadMethod, statusId,
 							hasDependencies, linked, depRootSpaceId);
-					
 				}
 				catch (Exception e){
 					log.error("upload Benchmarks says " + e);
