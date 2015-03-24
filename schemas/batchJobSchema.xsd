@@ -153,6 +153,8 @@
     	
     	<!-- Must be the name of some pipeline declared in this upload -->
     	<attribute name="pipe-name" type="tns:PrimitiveName" use="required"></attribute>
+    	
+    	<attribute name="job-space-id" type="int" use="optional"></attribute>
     	<attribute name="job-space-path" type="tns:Path" use="optional"></attribute>
     	
     </complexType>
