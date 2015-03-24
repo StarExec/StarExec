@@ -165,6 +165,45 @@ public class Jobs {
 		return -1;
 	}
 	
+	public static void createSpacesForPairs(List<JobPair> pairs, int userId, Connection con, int parentSpaceId) throws Exception {
+		Space parent=null;
+		parent=Spaces.get(parentSpaceId,con);
+		parent.setPermission(Permissions.getSpaceDefault(parentSpaceId));
+			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
+			for (JobPair pair : pairs) {
+				log.debug("finding spaces for a new pair with path = " +pair.getPath());
+				String[] spaces=getSpaceNames(pair.getPath());
+				StringBuilder curPathBuilder=new StringBuilder();
+				for (int i=0;i<spaces.length;i++) {
+					String name=spaces[i];
+					curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
+					curPathBuilder.append(name);
+					//if we need to create a new space
+					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
+						String parentPath=curPathBuilder.toString();
+						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
+						
+							// note that it is assumed that there are no name conflicts here. The security check is done outside this function
+							int parentId=0;
+							if (parentPath.length()>0) {
+								parentId=pathsToIds.get(parentPath);
+								} else {									
+									parentId=parent.getId();
+								}
+								int newId=Spaces.add(con,getNewSpaceForJobCreation(name,parent), parentId, userId);
+								if (newId==-1) {
+									throw new Exception("error adding new space-- creating spaces for job failed");
+								}
+								pathsToIds.put(curPathBuilder.toString(), newId);
+							
+							
+						}
+					}
+					
+				}
+			
+		}
+	
 	
 	/**
 	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
@@ -174,13 +213,8 @@ public class Jobs {
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 */
-	//TODO: Split this up so the space and teh job space versions are different functions-- they just don't overlap enough
-	public static Integer createJobSpacesForPairs(List<JobPair> pairs, int userId, Connection con, Integer parentSpaceId) {
-		Space parent=null;
-		if (parentSpaceId!=null) {
-			parent=Spaces.get(parentSpaceId,con);
-			parent.setPermission(Permissions.getSpaceDefault(parentSpaceId));
-		}
+	public static Integer createJobSpacesForPairs(List<JobPair> pairs,Connection con) {
+		
 		//this hashmap maps every job space ID to the maximal number of stages
 		// of any pair that is in the hierarchy rooted at the job space
 		HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
@@ -204,9 +238,6 @@ public class Jobs {
 					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
 						String parentPath=curPathBuilder.toString();
 						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
-						
-						
-						if (parentSpaceId==null) {
 							pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
 							int id=pathsToIds.get(curPathBuilder.toString());
 							idsToMaxStages.put(id, pair.getStages().size());
@@ -216,38 +247,16 @@ public class Jobs {
 								int parentId=pathsToIds.get(parentPath);
 								Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()),con);
 							}
-						} else {
-							// note that it is assumed that there are no name conflicts here. The security check is done outside this function
-							int parentId=0;
-							if (parentPath.length()>0) {
-								parentId=pathsToIds.get(parentPath);
-
-							} else {
-								parentId=parent.getId();
-							}
-
-							pathsToIds.put(curPathBuilder.toString(), Spaces.add(con,getNewSpaceForJobCreation(name,parent), parentId, userId));
-						}
-						
 					}
-					if (parentSpaceId==null) {
 						int id=pathsToIds.get(curPathBuilder.toString());
-						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));
-					}
-					
-
-					
+						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));					
 				}
-				if (parentSpaceId==null) {
 					pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
-				}
+				
 			}
-			if (parentSpaceId==null) {
 				for (Integer id : idsToMaxStages.keySet()) {
 					Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id),con);
 				}
-			}
-			
 			return pathsToIds.get(topLevel);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -269,7 +278,7 @@ public class Jobs {
 			Common.beginTransaction(con);
 			List<JobPair> pairs=Jobs.getPairsSimple(jobId);
 			
-			int topLevel=createJobSpacesForPairs(pairs,-1,con,null);
+			int topLevel=createJobSpacesForPairs(pairs,con);
 			Jobs.updatePrimarySpace(jobId, topLevel,con);
 			JobPairs.updateJobSpaces(pairs,con);
 			Common.endTransaction(con);
@@ -356,9 +365,7 @@ public class Jobs {
 			
 			con = Common.getConnection();
 			
-			Common.beginTransaction(con);
-			// maps depth to name to job space id for job spaces
-			int topLevel=createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,null);
+			//create mirror space hierarchies for saving benchmarks if the user wishes
 			String rootName=job.getJobPairs().get(0).getPath();
 			if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
 				rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
@@ -374,12 +381,22 @@ public class Jobs {
 				}
 			}
 			for (Integer i : uniqueSpaceIds) {
-				createJobSpacesForPairs(job.getJobPairs(),job.getUserId(),con,i);
+				createSpacesForPairs(job.getJobPairs(),job.getUserId(),con,i);
 			}
+			
+			// maps depth to name to job space id for job spaces
+			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
+			
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
 			job.setPrimarySpace(topLevel);
+			
+			//NOTE: By opening the transaction here, we are leaving open the possibility that some spaces
+			//will be created even if job creation fails. However, this prevents the job space and the space
+			// tables from being locked for the entire transaction, which may take a long time.
+			Common.beginTransaction(con);
+
 			
 			Jobs.addJob(con, job);
 			
@@ -2359,13 +2376,12 @@ public class Jobs {
 	
 	/**
 	 * Gets all job pairs for the given job that have been completed after a given point and also
-	 * populates its resource TOs.
+	 * populates its resource TOs. Gets only the primary stage
 	 * @param jobId The id of the job to get pairs for
 	 * @param since The completed ID after which to get all jobs
 	 * @return A list of job pair objects representing all job pairs completed after "since" for a given job
 	 * @author Eric Burns
 	 */
-	//TODO: Populates only the primary stage. Is that what we want?
 	public static List<JobPair> getNewCompletedPairsDetailed(int jobId, int since) {
 		Connection con = null;	
 		
@@ -2641,7 +2657,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
-	//TODO: Populates only the primary stage. Is that what we want?
+	
 	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId) {
 		log.debug("starting the getPairsDetailed function");
 		try {			

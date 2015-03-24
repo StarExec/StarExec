@@ -11,7 +11,7 @@ ALTER TABLE jobpair_stage_data DROP PRIMARY KEY;
 
 ALTER TABLE jobpair_stage_data CHANGE id stage_number INT NOT NULL;
 
-UPDATE jobpair_stage_data SET stage_number = 1;
+UPDATE jobpair_stage_data SET stage_number = 1; -- all current pairs have exactly one stage
 
 ALTER TABLE jobpair_stage_data ADD PRIMARY KEY (jobpair_id,stage_number);
 
@@ -76,7 +76,6 @@ ADD INDEX (job_space_id, solver_name),
 ADD INDEX (job_space_id, config_id);
 
 -- Step 7: Remove name columns from job_pairs
--- TODO: Must uncomment this! it will not work on Stardev due to the names of indices being out of sync with Starexec
 ALTER TABLE job_pairs DROP INDEX job_space_id_4,
 DROP INDEX job_space_id_5, DROP INDEX job_pairs_solver_id,
 DROP INDEX job_space_id_3, DROP INDEX config_id_2, DROP INDEX config_id_3;

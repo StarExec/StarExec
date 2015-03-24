@@ -650,7 +650,6 @@ public class Download extends HttpServlet {
 						ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
 					} else {
 						zipFileName.append(file.getName());
-
 						ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
 					}
 					

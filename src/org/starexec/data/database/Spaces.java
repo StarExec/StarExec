@@ -51,7 +51,7 @@ public class Spaces {
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, Space s, int parentId, int userId) throws Exception {			
+	protected static int add(Connection con, Space s, int parentId, int userId)  {			
 		
 		CallableStatement procAddSpace = null;
 		CallableStatement procSubspace = null;

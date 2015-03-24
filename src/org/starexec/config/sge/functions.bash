@@ -347,10 +347,6 @@ function cleanForNextStage {
 	# Clear the local benchmark, as it will be replaced by the output of this stage
 	
 	rm "$LOCAL_BENCH_PATH"
-	
-	#TODO: don't do this step?
-	#safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
-
 
 }
 
