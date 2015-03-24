@@ -394,7 +394,7 @@ public class Jobs {
 			
 			//NOTE: By opening the transaction here, we are leaving open the possibility that some spaces
 			//will be created even if job creation fails. However, this prevents the job space and the space
-			// tables from being locked for the entire transaction, which may take a long time.
+			//tables from being locked for the entire transaction, which may take a long time.
 			Common.beginTransaction(con);
 
 			
@@ -408,21 +408,21 @@ public class Jobs {
 			
 			log.debug("job associated, adding this many stage attributes "+job.getStageAttributes().size());
 			
+			//this times out waiting for a lock if it isn't done after the transaction.
+			for (StageAttributes attrs: job.getStageAttributes()) {
+				attrs.setJobId(job.getId());
+				Jobs.setJobStageAttributes(attrs,con);
+			}
+			
 			
 			log.debug("adding job pairs");
 			
+			//TODO: We should be batching the addition of pairs so we don't need to make so many SQL calls
 			for(JobPair pair : job) {
 				pair.setJobId(job.getId());
 				JobPairs.addJobPair(con, pair);
 			}
 			Common.endTransaction(con);
-			
-			//this times out waiting for a lock if it isn't done after the transaction.
-			for (StageAttributes attrs: job.getStageAttributes()) {
-				attrs.setJobId(job.getId());
-				Jobs.setJobStageAttributes(attrs);
-			}
-			
 			
 			log.debug("job added successfully");
 			
@@ -775,6 +775,12 @@ public class Jobs {
 		return timeout;
 	}
 	
+	/**
+	 * Adds the given StageAttributes to the database
+	 * @param attrs
+	 * @param con
+	 * @return
+	 */
 	
 	public static boolean setJobStageAttributes(StageAttributes attrs, Connection con) {
 		CallableStatement procedure=null;

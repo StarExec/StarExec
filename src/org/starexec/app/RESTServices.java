@@ -4033,6 +4033,25 @@ public class RESTServices {
 	}
 	
 	/**
+	 * Clears all stats from the cache for the given job
+	 * @param request
+	 * @return
+	 */
+	@POST
+	@Path("/cache/clear/stats/{jobId}")
+	@Produces("application/json")
+	public String clearCache(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		
+		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
 	 * Clears every entry from the cache
 	 * @param request
 	 * @return
