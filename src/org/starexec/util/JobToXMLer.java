@@ -158,6 +158,9 @@ public class JobToXMLer {
     public Element getPipelineElement(SolverPipeline pipeline) {
     	Element pipeElement= doc.createElement("SolverPipeline");
     	for (PipelineStage stage : pipeline.getStages()) {
+    		Attr nameAttribute=doc.createAttribute("name");
+    		nameAttribute.setValue(pipeline.getName());
+    		pipeElement.setAttributeNode(nameAttribute);
     		if (stage.isNoOp()) {
     			Element noOpElement=doc.createElement("noop");
     			pipeElement.appendChild(noOpElement);
