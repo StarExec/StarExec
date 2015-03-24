@@ -866,11 +866,20 @@ CREATE PROCEDURE RemoveJobFromDatabase(IN _jobId INT)
 		DELETE FROM jobs WHERE id=_jobId;
 	END //
 	
-
+-- Gets all entries in the job_stage_params table referencing the given job
 DROP PROCEDURE IF EXISTS getStageParamsByJob;
 CREATE PROCEDURE getStageParamsByJob(IN _jobId INT)
 	BEGIN
 		SELECT * FROM job_stage_params WHERE job_id=_jobId;
+	END //
+	
+-- Gets all benchmark inputs for all pairs in the given job
+DROP PROCEDURE IF EXISTS GetAllJobPairBenchmarkInputsByJob;
+CREATE PROCEDURE GetAllJobPairBenchmarkInputsByJob(IN _jobId INT)
+	BEGIN
+		SELECT jobpair_inputs.jobpair_id,jobpair_inputs.bench_id
+		FROM jobpair_inputs JOIN job_pairs ON job_pairs.id=jobpair_inputs.jobpair_id
+		WHERE job_pairs.job_id=_jobId ORDER BY input_number ASC;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file

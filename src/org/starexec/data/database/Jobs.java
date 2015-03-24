@@ -3046,6 +3046,69 @@ public class Jobs {
 	} 
 	return null;
     }	
+    
+    
+    
+    /**
+	 * Returns all the benchmark inputs for all pairs in this job. Format is a HashMap
+	 * that maps job pair IDs to ordered lists of benchmark IDs, where the order is the input order
+	 * of the benchmarks
+	 * @param jobId
+	 * @param con
+	 * @return
+	 */
+	public static HashMap<Integer,List<Integer>> getAllBenchmarkInputsForJob(int jobId, Connection con) {
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			procedure=con.prepareCall("{CALL GetAllJobPairBenchmarkInputsByJob(?)}");
+			procedure.setInt(1,jobId);
+			results=procedure.executeQuery();
+			HashMap<Integer,List<Integer>> inputs=new HashMap<Integer,List<Integer>>();
+			while (results.next()) {
+				int pairId=results.getInt("jobpair_id");
+				int benchId=results.getInt("bench_id");
+				if (!inputs.containsKey(pairId)) {
+					inputs.put(pairId, new ArrayList<Integer>());
+				}
+				inputs.get(pairId).add(benchId);
+			}
+			return inputs;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns all the benchmark inputs for all pairs in this job. Format is a HashMap
+	 * that maps job pair IDs to ordered lists of benchmark IDs, where the order is the input order
+	 * of the benchmarks
+	 * @param jobId
+	 * @return
+	 */
+	public static HashMap<Integer,List<Integer>> getAllBenchmarkInputsForJob(int jobId) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			
+			return getAllBenchmarkInputsForJob(jobId,con);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+    
+    
+    
+    
 	
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 

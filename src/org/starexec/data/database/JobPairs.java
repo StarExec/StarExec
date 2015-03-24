@@ -61,6 +61,8 @@ public class JobPairs {
 		return false;
 	}
 	
+	
+	
 	/**
 	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
 	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)

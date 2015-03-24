@@ -222,4 +222,5 @@ CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
 		WHERE jobpair_id=_pairId ORDER BY input_number ASC;
 	END //
 
+
 DELIMITER ; -- this should always be at the end of the file

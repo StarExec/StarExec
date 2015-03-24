@@ -171,13 +171,13 @@ public class JobToXMLer {
     			
     			for (PipelineDependency dep : stage.getDependencies()) {
     				if (dep.getType()==PipelineInputType.ARTIFACT) {
-    					Element depElement=doc.createElement("stageDependency");
+    					Element depElement=doc.createElement("StageDependency");
     					Attr stageAttr = doc.createAttribute("stage");
     					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
     					depElement.setAttributeNode(stageAttr);
     					stageElement.appendChild(depElement);
     				} else if (dep.getType()==PipelineInputType.BENCHMARK) {
-    					Element depElement=doc.createElement("benchmarkDependency");
+    					Element depElement=doc.createElement("BenchmarkDependency");
     					Attr stageAttr = doc.createAttribute("input");
     					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
     					depElement.setAttributeNode(stageAttr);
@@ -321,7 +321,7 @@ public class JobToXMLer {
 		
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
 		
-		
+		HashMap<Integer,List<Integer>> benchInputs=Jobs.getAllBenchmarkInputsForJob(job.getId());
 		
 		for (JobPair jobpair:pairs){
 			// if this job pair doesn't reference a pipeline
@@ -352,6 +352,20 @@ public class JobToXMLer {
 				Attr pipeName=doc.createAttribute("pipe-name");
 				pipeName.setValue(jobpair.getPipeline().getName());
 				jp.setAttributeNode(pipeName);
+				
+				if (benchInputs.containsKey(jobpair.getId())) {
+					List<Integer> inputs=benchInputs.get(jobpair.getId());
+					
+					for (Integer benchId : inputs) {
+						Element input=doc.createElement("BenchmarkInput");
+						Attr benchIdAttr=doc.createAttribute("bench-id");
+						benchIdAttr.setValue(benchId.toString());
+						input.setAttributeNode(benchIdAttr);
+						jp.appendChild(input);
+					}
+					
+				}
+				
 			}
 			
 			Attr benchID = doc.createAttribute("bench-id");

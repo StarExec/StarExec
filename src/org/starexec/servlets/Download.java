@@ -641,7 +641,6 @@ public class Download extends HttpServlet {
 					zipFileName.append(p.getPrimaryConfiguration().getName());
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
-					zipFileName.append(File.separator);
 				}
 				File file=new File(JobPairs.getFilePath(p));
 
@@ -649,6 +648,7 @@ public class Download extends HttpServlet {
 					if (file.isDirectory()) {
 						ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
 					} else {
+						zipFileName.append(File.separator);
 						zipFileName.append(file.getName());
 						ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
 					}
