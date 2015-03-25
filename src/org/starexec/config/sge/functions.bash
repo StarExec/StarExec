@@ -386,6 +386,7 @@ function cleanWorkspace {
 	if [ $1 -eq 0 ] ; then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
+		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 		if [ $SANDBOX -eq 1 ] 
 		then
 			safeRmLock "$SANDBOX_LOCK_DIR"

@@ -785,7 +785,7 @@ public class Jobs {
 	public static boolean setJobStageAttributes(StageAttributes attrs, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,attrs.getJobId());
 			procedure.setInt(2,attrs.getStageNumber());
 			procedure.setInt(3,attrs.getCpuTimeout());
@@ -805,6 +805,11 @@ public class Jobs {
 				procedure.setNull(8,java.sql.Types.INTEGER);
 			} else {
 				procedure.setInt(8,attrs.getPreProcessor().getId());
+			}
+			if (attrs.getBenchSuffix()==null) {
+				procedure.setNull(9, java.sql.Types.VARCHAR);
+			} else {
+				procedure.setString(9, attrs.getBenchSuffix());
 			}
 			procedure.executeUpdate();
 			return true;
@@ -4537,6 +4542,7 @@ public class Jobs {
 			}
 			attrs.setStageNumber(results.getInt("stage_number"));
 			attrs.setWallclockTimeout(results.getInt("clockTimeout"));
+			attrs.setBenchSuffix(results.getString("bench_suffix"));
 			return attrs;
 
 		} catch (Exception e) {

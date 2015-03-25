@@ -43,6 +43,8 @@ ALTER TABLE job_stage_params ADD COLUMN pre_processor INT;
 
 ALTER TABLE job_stage_params ADD CONSTRAINT job_stage_params_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL;
 
+ALTER TABLE job_stage_params ADD COLUMN bench_suffix VARCHAR(64);
+
 -- move processors over to job_stage_params
 REPLACE INTO job_stage_params (job_id,stage_number,cpuTimeout,clockTimeout,maximum_memory,space_id,post_processor,pre_processor) SELECT id,1,cpuTimeout,clockTimeout,maximum_memory,null,post_processor,pre_processor FROM jobs;
 

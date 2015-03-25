@@ -542,8 +542,7 @@ public abstract class JobManager {
 	/**
 	 * Given the name of an array and a list of strings to put into the array, 
 	 * creates a string that generates the array that can be embedded into a bash script.
-	 * If strs is empty, returns an empty string. Array is 0 indexed. All strings
-	 * are base64encoded
+	 * If strs is empty, returns an empty string. Array is 0 indexed. 
 	 * @param arrayName
 	 * @param strs
 	 * @return

@@ -287,7 +287,8 @@ CREATE TABLE job_stage_params (
 	cpuTimeout INT, 
 	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
-	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them?
+	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them? null if not keeping them
+	bench_suffix VARCHAR(64), -- if we're keeping benchmarks, what suffix? If none given, we use the suffix of the input benchmark
 	post_processor INT,
 	pre_processor INT,
 	PRIMARY KEY (job_id,stage_number),
@@ -690,7 +691,6 @@ CREATE TABLE system_flags (
 	PRIMARY KEY (integrity_keeper),
 	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );
-
 
 -- table for storing statistics for the weekly report
 CREATE TABLE report_data (

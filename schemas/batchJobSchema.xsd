@@ -73,6 +73,8 @@
     	<!-- Note: This is in Gigabytes -->
     	<element name="mem-limit" type="tns:doubleInfo" minOccurs="0" maxOccurs="1"></element>
 		<element name="space-id" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
+		<element name="bench-suffix" type="tns:nameInfo" minOccurs="0" maxOccurs="1"></element>
+		
 		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		
@@ -109,6 +111,10 @@
 
     <complexType name="descriptionInfo">
       <attribute name="value" type="tns:Description" use="required"></attribute>
+    </complexType>
+    
+    <complexType name="nameInfo">
+      <attribute name="value" type="tns:PrimitiveName" use="required"></attribute>
     </complexType>
 
     <complexType name="booleanInfo">

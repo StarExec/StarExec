@@ -412,6 +412,10 @@ public class JobUtil {
 				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
 					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
 				}
+				String stageBenchSuffix=null;
+				if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
+					stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
+				}
 				
 				Integer stagePostProcId=null;
 				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
@@ -440,7 +444,8 @@ public class JobUtil {
 						errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
 						return -1;
 					}
-				}
+				} 
+			
 				
 				//user can specify an optional space ID 
 				
@@ -448,7 +453,7 @@ public class JobUtil {
 				attrs.setCpuTimeout(stageCpu);
 				attrs.setMaxMemory(stageMemory);
 				attrs.setSpaceId(stageSpace);
-				
+				attrs.setBenchSuffix(stageBenchSuffix);
 				job.addStageAttributes(attrs);
 			}
 			

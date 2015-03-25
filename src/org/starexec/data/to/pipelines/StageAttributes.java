@@ -16,13 +16,14 @@ public class StageAttributes {
 	private Integer spaceId; // null if not given. Not required
 	private Processor preProcessor;
 	private Processor postProcessor;
+	private String benchSuffix=null;
 	public StageAttributes() {
 		jobId=-1;
 		stageNumber=-1;
 		wallclockTimeout=-1;
 		cpuTimeout=-1;
 		maxMemory=-1;
-		spaceId=-1;
+		spaceId=null;
 	}
 	
 	public int getJobId() {
@@ -76,5 +77,13 @@ public class StageAttributes {
 
 	public void setPostProcessor(Processor postProcessor) {
 		this.postProcessor = postProcessor;
+	}
+
+	public String getBenchSuffix() {
+		return benchSuffix;
+	}
+
+	public void setBenchSuffix(String benchSuffix) {
+		this.benchSuffix = benchSuffix;
 	}
 }
