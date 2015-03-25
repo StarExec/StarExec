@@ -465,6 +465,12 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$PRIMARY_PREPROCESSOR_PATH$$",primaryPreprocessorPath);
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
+		//if there is exactly 1 stage, we use the old output format
+		if (stageNumbers.size()==1) {
+			outputFile=outputFile.getParentFile();
+		}
+		
+		
 		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
@@ -525,14 +531,14 @@ public abstract class JobManager {
 		StringBuilder sb=new StringBuilder();
 		for (PipelineDependency dep : deps) {
 			if (dep.getType()==PipelineInputType.ARTIFACT) {
-				sb.append("$SAVED_OUTPUT_DIR/");
+				sb.append("\"$SAVED_OUTPUT_DIR/");
 				sb.append(dep.getDependencyId());
-				sb.append(" ");
+				sb.append("\" ");
 				
 			} else if (dep.getType()==PipelineInputType.BENCHMARK) {
-				sb.append("$BENCH_INPUT_DIR/");
+				sb.append("\"$BENCH_INPUT_DIR/");
 				sb.append(dep.getDependencyId());
-				sb.append(" ");
+				sb.append("\" ");
 			}
 		}
 		
