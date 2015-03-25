@@ -37,6 +37,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
@@ -438,12 +439,13 @@ public class Download extends HttpServlet {
 	private static boolean handleJob(Integer jobId, int userId, HttpServletResponse response, Integer since, Boolean returnIds, Boolean onlyCompleted) throws Exception {    	
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		
+			Job job=Jobs.get(jobId);
 			
-			Job job;
 			if (since==null) {
-				job = Jobs.getDetailed(jobId);
+				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace()));
 			} else {
-				job=Jobs.getDetailed(jobId,since);
+				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(),since));
+
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 
 				log.debug("found this many new job pairs "+job.getJobPairs().size());
@@ -482,11 +484,12 @@ public class Download extends HttpServlet {
 	private static String CreateJobCSV(Job job, Boolean returnIds, Boolean getOnlyCompleted) throws IOException {
 		log.debug("CreateJobCSV called with returnIds set to "+returnIds);
 		StringBuilder sb = new StringBuilder();
-		sb.delete(0, sb.length());
 		sb.append(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR);
 		sb.append(File.separator);
-		//sb.append(job.getUserId());
-		
+		int maxStageNumbers=0;
+		for (JobPair jp : job) {
+			maxStageNumbers=Math.max(maxStageNumbers, jp.getStages().size());
+		}
 		sb.append("Job");
 		sb.append(job.getId());
 		sb.append("_info");
@@ -498,6 +501,9 @@ public class Download extends HttpServlet {
 		
 		/* generate the table header */
 		sb.delete(0, sb.length());
+		if (maxStageNumbers>1) {
+			sb.append("stage number,");
+		}
 		if (!returnIds) {
 			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,memory usage,result");
 		} else {
@@ -534,73 +540,83 @@ public class Download extends HttpServlet {
 		
 		while(itr.hasNext()) {
 			JobPair pair = itr.next();
-			//users can optionally get only completed pairs
 			if (getOnlyCompleted) {
 				if (pair.getStatus().getCode().incomplete()) {
 					log.debug("found an incomplete pair to exclude!");
 					continue;
 				}
 			}
-			if (returnIds) {
-				sb.append(pair.getId());
-				sb.append(",");
-			}
-			if (pair.getPath()!=null) {
-				sb.append(pair.getPath()+"/"+pair.getBench().getName());
-			} else {
-				sb.append(pair.getBench().getName());
-			}
-			sb.append(",");
-			if (returnIds) {
-				sb.append(pair.getBench().getId());
-				sb.append(",");
-			}
-			sb.append(pair.getPrimarySolver().getName());
-			sb.append(",");
-			if (returnIds) {
-				sb.append(pair.getPrimarySolver().getId());
-				sb.append(",");
-			}
-			sb.append(pair.getPrimaryConfiguration().getName());
-			sb.append(",");
-			if (returnIds) {
-				sb.append(pair.getPrimaryConfiguration().getId());
-				sb.append(",");
-			}
-			sb.append(pair.getStatus().toString());
-
-			sb.append(",");
-			sb.append((pair.getPrimaryCpuTime()));
-
-			sb.append(",");
-			sb.append((pair.getPrimaryWallclockTime()));
-
-			sb.append(",");
-			
-			
-			sb.append(pair.getPrimaryMaxVirtualMemory());
-			sb.append(",");
-			sb.append(pair.getPrimaryStarexecResult());
-
-			if (attrNames != null) {
-				// print out attributes for this job pair
-				Properties props = pair.getPrimaryStage().getAttributes();
-
-				if (have_expected && props!=null) {
+			pair.sortStages();
+			for (JoblineStage stage : pair.getStages()) {
+				//users can optionally get only completed pairs
+				
+				if (maxStageNumbers>1) {
+					sb.append(stage.getStageNumber());
 					sb.append(",");
-					sb.append(props.getProperty(R.EXPECTED_RESULT,"-"));
 				}
-				for (Iterator<String> ita = attrNames.iterator(); ita.hasNext();) {
-					String attr = (String)ita.next();
-					if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
-						/* we skip printing the starexec-result, and starexec-expected-result attributes,
-			       because we printed them already */
+				
+				if (returnIds) {
+					sb.append(pair.getId());
+					sb.append(",");
+				}
+				if (pair.getPath()!=null) {
+					sb.append(pair.getPath()+"/"+pair.getBench().getName());
+				} else {
+					sb.append(pair.getBench().getName());
+				}
+				sb.append(",");
+				if (returnIds) {
+					sb.append(pair.getBench().getId());
+					sb.append(",");
+				}
+				sb.append(stage.getSolver().getName());
+				sb.append(",");
+				if (returnIds) {
+					sb.append(stage.getSolver().getId());
+					sb.append(",");
+				}
+				sb.append(stage.getConfiguration().getName());
+				sb.append(",");
+				if (returnIds) {
+					sb.append(stage.getConfiguration().getId());
+					sb.append(",");
+				}
+				sb.append(stage.getStatus().toString());
+
+				sb.append(",");
+				sb.append((stage.getCpuTime()));
+
+				sb.append(",");
+				sb.append((stage.getWallclockTime()));
+
+				sb.append(",");
+				
+				
+				sb.append(stage.getMaxVirtualMemory());
+				sb.append(",");
+				sb.append(stage.getStarexecResult());
+
+				if (attrNames != null) {
+					// print out attributes for this job pair
+					Properties props = stage.getAttributes();
+
+					if (have_expected && props!=null) {
 						sb.append(",");
-						sb.append(props.getProperty(attr,"-"));
+						sb.append(props.getProperty(R.EXPECTED_RESULT,"-"));
+					}
+					for (Iterator<String> ita = attrNames.iterator(); ita.hasNext();) {
+						String attr = (String)ita.next();
+						if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
+							/* we skip printing the starexec-result, and starexec-expected-result attributes,
+				       because we printed them already */
+							sb.append(",");
+							sb.append(props.getProperty(attr,"-"));
+						}
 					}
 				}
+				sb.append("\r\n");
 			}
-			sb.append("\r\n");
+			
 
 		}
 		FileUtils.write(new File(filename), sb.toString());

@@ -587,7 +587,7 @@ function copyOutput {
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
 	
-	if [ $NUM_STAGES -eq 1] 
+	if [ $NUM_STAGES -eq 1 ] 
 	then
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
 		

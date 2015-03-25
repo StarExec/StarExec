@@ -315,7 +315,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 -- Gets all the job pairs in a job space hierarchy. No stages are retrieved
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
+CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT status_code,
 		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name,
@@ -323,13 +323,13 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT)
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id
 		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
-		WHERE ancestor=_jobSpaceId;
+		WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_completionId);
 	END //
 
 -- Gets all the stages of job pairs in a particular job space
 -- TODO: This notion of expected result is not correct for any stage except the primary stage
 DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpace;
-CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
+CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT job_pairs.id AS pair_id,jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 		jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
@@ -337,8 +337,9 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 		job_attributes.attr_value AS result
 		FROM job_pairs 		
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
-		WHERE job_space_id=_jobSpaceId;
+		WHERE job_space_id=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_completionId);
 	END //
 	
 -- Gets all the stages of job pairs in a particular job space

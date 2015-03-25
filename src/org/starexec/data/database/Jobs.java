@@ -1113,18 +1113,7 @@ public class Jobs {
 		return 0;
 	}
 	
-	/**
-	 * Retrieves a job from the database as well as its job pairs and its queue/processor info
-	 * Only the primary stage of each pair is populated
-	 * @param jobId The ID of the job to get information for
-	 * @return A job object containing information about the requested job
-	 * @author Tyler Jensen
-	 */
-	
-	public static Job getDetailed(int jobId) {
-		return getDetailed(jobId,null);
-	}
-	
+
 	/**
 	 * Retrieves a job from the database as well as its job pairs that were completed after
 	 * "since" and its queue/processor info
@@ -1134,7 +1123,7 @@ public class Jobs {
 	 * @return A job object containing information about the requested job, or null on failure
 	 * @author Eric Burns
 	 */
-	public static Job getDetailed(int jobId, Integer since) {
+	public static Job getDetailed(int jobId, int since) {
 		log.info("getting detailed info for job " + jobId);
 		Connection con = null;			
 		ResultSet results=null;
@@ -1169,12 +1158,8 @@ public class Jobs {
 			}
 			
 			
-			if (since==null) {
-				
-				j.setJobPairs(Jobs.getPairsPrimaryStageDetailed(j.getId()));
-			} else  {
-				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
-			}
+			j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
+			
 				
 			
 			return j;
@@ -1926,7 +1911,6 @@ public class Jobs {
 		return null;
 	}
 	
-	
 	/**
 	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
 	 * to display in a SolverStats table. All job pair stages are obtained
@@ -1936,6 +1920,21 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId) {
+		return getJobPairsInJobSpaceHierarchy(jobSpaceId,null);
+	}
+	
+	
+	/**
+	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
+	 * to display in a SolverStats table. All job pair stages are obtained. 
+	 * @param jobId The ID of the job in question
+	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
+	 * @param since. If null, all pairs in the hierarchy are returned. Otherwise, only pairs that have a completion
+	 * ID greater than since are returned
+	 * @return A list of job pairs for the given job for which the solver is in the given space
+	 * @author Eric Burns
+	 */
+	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId, Integer since) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1944,9 +1943,14 @@ public class Jobs {
 			Spaces.updateJobSpaceClosureTable(jobSpaceId);
 
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsInJobSpaceHierarchy(?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsInJobSpaceHierarchy(?,?)}");
 			
 			procedure.setInt(1,jobSpaceId);
+			if (since==null) {
+				procedure.setNull(2, java.sql.Types.INTEGER);
+			} else  {
+				procedure.setInt(2,since);
+			}
 			results = procedure.executeQuery();
 			
 			List<JobPair> pairs=processStatResults(results,false);
@@ -1955,8 +1959,13 @@ public class Jobs {
 			
 			Common.safeClose(procedure);
 			Common.safeClose(results);
-			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpaceHierarchy(?)}");
+			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpaceHierarchy(?,?)}");
 			procedure.setInt(1,jobSpaceId);
+			if (since==null) {
+				procedure.setNull(2, java.sql.Types.INTEGER);
+			} else  {
+				procedure.setInt(2,since);
+			}
 			results=procedure.executeQuery();
 			if (populateJobPairStages(pairs,results,true)) {
 				return pairs;
