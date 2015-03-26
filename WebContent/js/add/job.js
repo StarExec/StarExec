@@ -286,28 +286,26 @@ function initUI() {
     // Hook up select all/none buttons
     $('.selectAll').click(function() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-    	$(this).parents('.dataTables_wrapper').find('input').attr('checked', 'checked');
+        $(this).parents('.dataTables_wrapper').find('input[type=checkbox]').prop('checked', true);
     });
     
     $('.selectNone').click(function() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
-    	$(this).parents('.dataTables_wrapper').find('input').removeAttr('checked');
-    });  
-    
-    $('.selectDefault').click(function() {
-    	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-    	$(this).parents('.dataTables_wrapper').find('input').removeAttr('checked');
-    	$(this).parents('.dataTables_wrapper').find('div>input:first-child').attr('checked', 'checked');
-    });
-	
+    	$(this).parents('.dataTables_wrapper').find('input[type=checkbox]').prop('checked', false);
+    }); 
     // Enable row selection
 	$("#tblSolverConfig").on( "click", "tr", function(){
-		if ( $(this).find('div>input').is(':checked')) {
-			$(this).addClass("row_selected");
-		}; 
-		if ( !$(this).find('div>input').is(':checked')) {
-			$(this).removeClass("row_selected");
-		};
+
+	    var numCheck = $(this).find('input[type=checkbox]:checked').length;
+	    if(!$(this).hasClass("row_selected"))
+	    {
+		$(this).addClass('row_selected');
+    		$(this).find('div>input[type=checkbox]').prop('checked', true);
+	    }
+	    else if (numCheck == 0) {
+		$(this).removeClass("row_selected");
+	    };
+	    
 	});
 	
 	$("#tblBenchConfig").on( "click","tr", function() {
