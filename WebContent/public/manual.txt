@@ -39,6 +39,8 @@ be included when specifying parameters. Parameters are NOT case sensitive.
 
 "addr"--Specifies the base URL at which to log into Starexec. The URL should be absolute and should end with a '/'.
 
+"attr" -- Include benchmark attributes in the XML. Used for space XML downloads.
+
 "allPerm"--Indicated that all permissions should be enabled for an upload. All permissions are disabled 
 by default. allPerm has no value.
 
@@ -97,7 +99,7 @@ corresponds to a dependent bench space.
 
 "pause" -When creating a job, indicates that the job should be paused on startup.
 
-"pid" -Specifies a post processor id (used only in job creation).
+"pid" -Specifies a post processor id in job creation. Specifies an update processor when downloading space XML
 
 "preid" -Specifies a pre processor id (used only in job creation).
 
@@ -290,14 +292,14 @@ OPTIONAL: "ow" "nosolve" "nobench"
 
 --getspacexml -Downloads an XML file representing the space hierarchy.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow" "attr" "pid"
 
 --getjobxml -Downloads an XML file representing a specific job
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
 --polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved 
-archives will have name given plus "-info" or "-output" and an integer.
+archives will have name given plus "-info" or "-output" and an integer. Time is in seconds.
 REQUIRED: "id", "out", "t" 
 OPTIONAL: "ow"
 
@@ -365,6 +367,11 @@ OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
 
 --pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a 
+				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
+REQUIRED: "f" "id"
+OPTIONAL: "n" "d"
+
+--pushpreproc -This command uploads a pre processor to a community. The parameter "id" refers to a 
 				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"

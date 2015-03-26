@@ -3,8 +3,8 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -36,9 +36,49 @@ public class Pipelines {
 			while (results.next()) {
 				PipelineDependency dep=new PipelineDependency();
 				dep.setStageId(stageId);
-				dep.setDependencyId(results.getInt("dependency_id"));
-				dep.setType(PipelineInputType.valueOf(results.getInt("dependency_type")));
+				dep.setDependencyId(results.getInt("input_id"));
+				dep.setType(PipelineInputType.valueOf(results.getInt("input_type")));
+				dep.setInputNumber(results.getInt("input_number"));
 				answers.add(dep);
+			}
+			return answers;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns all the dependencies that are associated with the given job pair, organized by stage number.
+	 * Dependencies are ordered by input number
+	 * @param pairId
+	 * @param con
+	 * @return
+	 */
+	public static HashMap<Integer, List<PipelineDependency>> getDependenciesForJobPair(int pairId, Connection con) {
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		
+		try {
+			procedure=con.prepareCall("{CALL GetDependenciesForJobPair(?)}");
+			procedure.setInt(1,pairId);
+			results=procedure.executeQuery();
+			HashMap<Integer,List<PipelineDependency>> answers=new HashMap<Integer,List<PipelineDependency>>();
+			while (results.next()) {
+				PipelineDependency dep=new PipelineDependency();
+				dep.setStageId(results.getInt("stage_id"));
+				dep.setDependencyId(results.getInt("input_id"));
+				dep.setType(PipelineInputType.valueOf(results.getInt("input_type")));
+				dep.setInputNumber(results.getInt("input_number"));
+				
+				if (!answers.containsKey(dep.getStageId())) {
+					answers.put(dep.getStageId(), new ArrayList<PipelineDependency>());
+				}
+
+				answers.get(dep.getStageId()).add(dep);
 			}
 			return answers;
 		} catch (Exception e) {
@@ -69,6 +109,7 @@ public class Pipelines {
 				stage.setPipelineId(pipeId);
 				stage.setConfigId(results.getInt("config_id"));
 				stage.setId(results.getInt("stage_id"));
+				stage.setNoOp(results.getBoolean("is_noop"));
 				stage.setDependencies(getDependenciesForStage(stage.getId(),con));
 				stages.add(stage);
 			}
@@ -103,6 +144,7 @@ public class Pipelines {
 				pipe.setName(results.getString("name"));
 				pipe.setUploadDate(results.getTimestamp("uploaded"));
 				pipe.setUserId(results.getInt("user_id"));
+				pipe.setPrimaryStageNumber(results.getInt("primary_stage_id"));
 				pipe.setStages(getStagesForPipeline(id,con));
 				return pipe;
 			}
@@ -129,6 +171,7 @@ public class Pipelines {
 			procedure=con.prepareCall("{CALL AddPipelineDependency(?,?,?,?)}");
 			procedure.setInt(1,dep.getStageId());
 			procedure.setInt(2,dep.getDependencyId());
+			log.debug("adding dependency with type "+dep.getType());
 			procedure.setInt(3,dep.getType().getVal());
 			procedure.setInt(4,dep.getInputNumber());
 			procedure.executeUpdate();
@@ -152,14 +195,20 @@ public class Pipelines {
 	public static int addPipelineStageToDatabase(PipelineStage stage, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddPipelineStage(?,?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
-			procedure.setInt(2,stage.getConfigId());
-			procedure.setBoolean(3, stage.doKeepOutput());
-			procedure.registerOutParameter(4, java.sql.Types.INTEGER);
-			log.debug("trying ot use the config id = "+stage.getConfigId());
+			if (!stage.isNoOp()) {
+				procedure.setInt(2,stage.getConfigId());
+
+			} else {
+				procedure.setNull(2,java.sql.Types.INTEGER);
+			}
+			procedure.setBoolean(3,stage.isPrimary());
+			procedure.setBoolean(4, stage.isNoOp());
+			procedure.registerOutParameter(5, java.sql.Types.INTEGER);
+			log.debug("trying to use the config id = "+stage.getConfigId());
 			procedure.executeUpdate();
-			int id = procedure.getInt(4);			
+			int id = procedure.getInt(5);			
 			stage.setId(id);
 			
 			for (PipelineDependency dep : stage.getDependencies()) {
@@ -197,9 +246,16 @@ public class Pipelines {
 			int id = procedure.getInt(3);			
 			pipe.setId(id);
 			
+			int number=1;
 			for (PipelineStage stage : pipe.getStages()) {
 				stage.setPipelineId(pipe.getId());
+				if (number==pipe.getPrimaryStageNumber()) {
+					stage.setPrimary(true);
+				} else {
+					stage.setPrimary(false);
+				}
 				addPipelineStageToDatabase(stage,con);
+				number++;
 			}
 			
 			
@@ -212,6 +268,37 @@ public class Pipelines {
 		}
 		
 		return -1;
+	}
+	
+	public static List<SolverPipeline> getPipelinesByJob(int jobId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		List<Integer> pipeIds=new ArrayList<Integer>();
+		List<SolverPipeline> pipes=new ArrayList<SolverPipeline>();
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("CALL GetPipelineIdsByJob(?)");
+			procedure.setInt(1,jobId);
+			results=procedure.executeQuery();
+			while (results.next()) {
+				pipeIds.add(results.getInt("id"));
+			}
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return null;
+		} finally  {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		//TODO: A more complex algorithm may be needed in the future if we are getting a large number of pipelines in every job
+		for (Integer i : pipeIds) {
+			pipes.add(Pipelines.getFullPipeline(i));
+		}
+		
+		return pipes;
 	}
 	
 	/**

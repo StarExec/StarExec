@@ -244,9 +244,7 @@ public class ProcessorManager extends HttpServlet {
 			archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
 			
 			processorFile.write(archiveFile);
-			newProc.setFilePath(uniqueDir.getAbsolutePath());
-
-				
+			newProc.setFilePath(uniqueDir.getAbsolutePath());				
 			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 			
@@ -256,9 +254,7 @@ public class ProcessorManager extends HttpServlet {
 				return null;
 			}
 			ProcessorManager.setAllFilesExecutable(new File(newProc.getFilePath()));
-			//if (!processorScript.setExecutable(true, false)) {			
-			//	log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
-			//}
+			
 			
 	
 			log.info(String.format("Wrote new %s processor to %s for community %d", procType, uniqueDir.getAbsolutePath(), newProc.getCommunityId()));					
@@ -289,7 +285,7 @@ public class ProcessorManager extends HttpServlet {
 		} else if(type.equals(BENCH_TYPE)) {
 			return ProcessorType.BENCH;
 		} else if(type.equals(UPDATE_PROCESS_TYPE)) {
-		        return ProcessorType.UPDATE;
+		    return ProcessorType.UPDATE;
 		}
 		
 		return ProcessorType.DEFAULT;

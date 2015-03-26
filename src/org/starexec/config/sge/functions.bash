@@ -23,19 +23,55 @@
 # base64 decode some names which could otherwise have nasty characters in them
 #################################################################################
 
-# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
-TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+# will do a base 64 decode on all solver_names, all solver_paths, and the bench path
+function decodePathArrays {
+	log "decoding all base 64 encoded strings"
+	# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
+	
+	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	
+	TEMP_ARRAY_INDEX=0
+	
+	#decode every solver name and solver path in the arrays
+	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]
+	do
+		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
+		SOLVER_NAMES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		
+		echo ${SOLVER_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
+		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		
+		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
+	done
+	
+	TEMP_ARRAY_INDEX=0
+	while [ $TEMP_ARRAY_INDEX -lt $NUM_BENCH_INPUTS ]
+	do
+	
+		echo ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
+		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]}"
+		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
+	done
+	
+	
+	rm $TMP
+}
 
-echo $SOLVER_NAME > $TMP
-SOLVER_NAME=`base64 -d $TMP`
 
-echo $SOLVER_PATH > $TMP
-SOLVER_PATH=`base64 -d $TMP`
+function decodeBenchmarkName {
+	
+	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	
 
-echo $BENCH_PATH > $TMP
-BENCH_PATH=`base64 -d $TMP`
+	echo $BENCH_PATH > $TMP
+	BENCH_PATH=`base64 -d $TMP`
+	rm $TMP
+}
+#need to make sure benchmark name is decoded in every file
 
-rm $TMP
+decodeBenchmarkName 
+
 #################################################################################
 
 # DB username and password for status reporting
@@ -52,13 +88,6 @@ SANDBOX2_LOCK_USED='/export/starexec/sandbox2lock.active'
 
 # Path to local workspace for each node in cluster.
 
-
-
-#path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
-
-#whether the solver was found in the cache
-SOLVER_CACHED=0
 
 # Path to Olivier Roussel's runSolver
 RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
@@ -94,6 +123,8 @@ function initWorkspaceVariables {
 	# Path to where the benchmark will be copied
 	LOCAL_BENCH_DIR="$WORKING_DIR/benchmark"
 	
+	BENCH_INPUT_DIR="$WORKING_DIR/benchinputs"
+	
 	# The benchmark's name
 	BENCH_NAME="${BENCH_PATH##*/}"
 	
@@ -101,17 +132,12 @@ function initWorkspaceVariables {
 	
 	# The path to the benchmark on the execution host 
 	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
-
-	# The path to the config run script on the execution host
-	LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
 	
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 	
 	# Path to where the pre-processor will be copied
 	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
-	
-	
 	
 	# The path to the bin directory of the solver on the execution host
 	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
@@ -120,6 +146,11 @@ function initWorkspaceVariables {
 	
 	# The path to the benchmark on the execution host
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
+	
+	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
+	
+	
+	
 }
 #checks to see whether the first argument is a valid integer
 function isInteger {
@@ -305,6 +336,20 @@ function safeRm {
   fi
 }
 
+#cleans up files to prepare for the next stage of the job
+function cleanForNextStage {
+		# Clear the output directory	
+	safeRm output-directory "$OUT_DIR"
+
+	# Clear the local solver directory	
+	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	# Clear the local benchmark, as it will be replaced by the output of this stage
+	
+	rm "$LOCAL_BENCH_PATH"
+
+}
+
 #takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
@@ -322,12 +367,17 @@ function cleanWorkspace {
 
 	# Clear the output directory	
 	safeRm output-directory "$OUT_DIR"
-
+	
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
 
+	safeRm bench-inputs "$BENCH_INPUT_DIR"
+
 	# Clear the local benchmark directory	
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
+	
+	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
+	
 	
 	
 	
@@ -336,6 +386,7 @@ function cleanWorkspace {
 	if [ $1 -eq 0 ] ; then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
+		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 		if [ $SANDBOX -eq 1 ] 
 		then
 			safeRmLock "$SANDBOX_LOCK_DIR"
@@ -350,6 +401,37 @@ function cleanWorkspace {
 	
 	log "execution host $HOSTNAME cleaned"
 	return $?
+}
+
+function sendStageStatus {
+	log "sending status for stage number $2"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)"
+    fi
+	return $?
+}
+
+function sendStatusToLaterStages {
+
+	log "sending status for stage numbers greater than $2"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateLaterStageStatuses($PAIR_ID,$2, $1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateLaterStageStatuses($PAIR_ID,$2, $1)"
+    fi
+	return $?
+
+}
+
+function setRunStatsToZeroForLaterStages {
+
+	log "setting all stats to 0 for stages greater than $1"
+    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetRunStatsForLaterStagesToZero($PAIR_ID,$1)" ; then
+       sleep 20
+       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetRunStatsForLaterStagesToZero($PAIR_ID,$1)"
+    fi
+	return $?
+
 }
 
 function sendStatus {
@@ -385,7 +467,8 @@ function limitExceeded {
 	exit 1
 }
 
-# processes the attributes for a pair
+# processes the attributes for a pair. Takes a file produced by a post processor as the first argument
+# and a stage number as the second argument
 # Ben McCune
 function processAttributes {
 
@@ -406,7 +489,7 @@ product=$[keySize*valueSize]
 if (( $product ))
    then
 	log "processing attribute $a (pair=$PAIR_ID, job=$JOB_STAR_ID, key='$key', value='$value')"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value')"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
 else
         log "bad post processing - cannot process attribute $a"
 fi
@@ -424,6 +507,12 @@ CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
 CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+
+ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
+ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
+
+STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$ROUNDED_WALLCLOCK_TIME))
+STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$ROUNDED_CPU_TIME))
 
 
 SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
@@ -448,9 +537,9 @@ if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES
 if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
-log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE)\""
+log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER)\""
 
-if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE)" ; then
+if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER)" ; then
 log "Error copying stats from watchfile into database. Copying varfile to log {"
 cat $1
 log "} End varfile."
@@ -464,7 +553,8 @@ fi
 log "sent job stats to $REPORT_HOST"
 
 #echo host name = $EXEC_HOST;
-#echo cpu usage = $CPU_TIME;
+log "cpu usage = $CPU_TIME"
+log "wallclock time = $WALLCLOCK_TIME"
 #echo user time = $CPU_USER_TIME;
 #echo system_time = $SYSTEM_TIME;
 #echo max virt mem = $MAX_VIRTUAL_MEMORY;
@@ -477,3 +567,370 @@ log "sent job stats to $REPORT_HOST"
 #echo invol context switches = $INVOL_CONTEXT_SWITCHES;
 
 }
+
+function createDir {
+	mkdir -p "$1"
+
+	# Check the directory actually does exist
+	if [ ! -d "$1" ]; then
+		mkdir "$1"
+		log "job error: cannot create directory '$1' this jobs output cannot be saved"
+	fi
+
+	return $?
+}
+
+# takes in a stage number as an argument so we know where to put the output
+function copyOutput {
+	log "creating storage directory on master host"
+
+	createDir "$PAIR_OUTPUT_DIRECTORY"
+	createDir "$SAVED_OUTPUT_DIR"
+	
+	if [ $NUM_STAGES -eq 1 ] 
+	then
+		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
+		
+	else
+		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1.txt"
+		
+	
+	fi
+	
+	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
+	
+	log "the output path is $PAIR_OUTPUT_PATH"
+	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
+	
+	log "job output copy complete - now sending stats"
+	updateStats $VARFILE $WATCHFILE
+	if [ "$POST_PROCESSOR_PATH" != "" ]; then
+		log "getting postprocessor"
+		mkdir $OUT_DIR/postProcessor
+		cp -r "$POST_PROCESSOR_PATH"/* $OUT_DIR/postProcessor
+		chmod -R gu+rwx $OUT_DIR/postProcessor
+		cd "$OUT_DIR"/postProcessor
+		log "executing post processor"
+		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
+		log "processing attributes"
+		#cat $OUT_DIR/attributes.txt
+		processAttributes $OUT_DIR/attributes.txt $1
+	fi
+
+	return $?	
+}
+
+#fills arrays from file
+function fillDependArrays {
+#separator
+sep=',,,'
+
+INDEX=0
+
+log "has depends = $HAS_DEPENDS"
+
+if [ $HAS_DEPENDS -eq 1 ]
+then
+while read line
+do
+  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+  INDEX=$((INDEX + 1))
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" 
+fi
+
+return $?
+}
+
+
+
+
+#will see if a solver is cached and change the current SOLVER_PATH to the cache if so
+function checkCache {
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+			log "solver exists in cache at $SOLVER_CACHE_PATH"
+  			SOLVER_PATH=$SOLVER_CACHE_PATH	
+  			SOLVER_CACHED=1
+		fi
+	fi	
+}
+
+function copyBenchmarkDependencies {
+
+	
+	
+	if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRIMARY_PREPROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor	
+	fi
+	
+	
+	log "copying benchmark dependencies to execution host..."
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
+	do
+		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
+		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
+		mkdir -p $NEW_D
+		if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+
+			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		else
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
+			
+			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+		fi
+		
+		
+	done
+	
+	BENCH_INPUT_INDEX=0
+	mkdir -p $BENCH_INPUT_DIR
+	
+	while [ $BENCH_INPUT_INDEX -lt $(($NUM_BENCH_INPUTS)) ]
+	do
+		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[$BENCH_INPUT_INDEX]}
+		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$(($BENCH_INPUT_INDEX+1))"
+		BENCH_INPUT_INDEX=$(($BENCH_INPUT_INDEX+1))
+	done
+
+	log "benchmark dependencies copy complete"
+
+}
+
+
+
+
+function copyDependencies {
+	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
+	log "solver copy complete"
+	if [ $SOLVER_CACHED -eq 0 ]; then
+		mkdir -p "$SOLVER_CACHE_PATH"
+		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
+			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+				#store solver in a cache
+				log "storing solver in cache at $SOLVER_CACHE_PATH"
+				#if the copy was successful
+				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
+					log "the solver was successfully copied into the cache"
+					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
+					rm -r "$SOLVER_CACHE_PATH/lock.lock"
+				else
+					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
+					rm -r "$SOLVER_CACHE_PATH"	
+				fi
+			fi
+		fi		
+	fi
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
+        chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
+	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
+	log "benchmark copy complete"
+	
+	#doing benchmark preprocessing here if the pre_processor actually exists
+	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
+		log "executing pre processor"
+		log "random seed = "$RAND_SEED
+		
+		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
+		#use the processed benchmark in subsequent steps
+		rm "$LOCAL_BENCH_PATH"
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
+	fi
+	
+	return $?	
+}
+
+#benchmark dependencies not currently verified.
+function verifyWorkspace { 
+	# Make sure the configuration exists before we execute it
+	if ! [ -x "$LOCAL_CONFIG_PATH" ]; then
+		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
+		#get rid of the cache, as if we're here then something is probably wrong with it
+		rm -r "$SOLVER_CACHE_PATH"
+		sendStatus $ERROR_RUNSCRIPT
+	else
+		log "execution host solver configuration verified"	
+	fi	
+
+	# Make sure the benchmark exists before the job runs
+	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
+                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+                sendStatus $ERROR_BENCHMARK
+        else
+		log "execution host benchmark verified"
+	fi		
+
+	return $?
+}
+
+function sandboxWorkspace {
+
+	if [[ $WORKING_DIR == *sandbox2* ]] 
+	
+	then
+	log "sandboxing workspace with sandbox2 user"
+	sudo chown -R sandbox2 $WORKING_DIR 
+	else
+		log "sandboxing workspace with sandbox user"
+		sudo chown -R sandbox $WORKING_DIR
+	fi
+	ls -lR "$WORKING_DIR"
+	return 0
+}
+
+#will see if a solver is cached and change the SOLVER_PATH to the cache if so
+function checkCache {
+	if [ -d "$SOLVER_CACHE_PATH" ]; then
+		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+			log "solver exists in cache at $SOLVER_CACHE_PATH"
+  			SOLVER_PATH=$SOLVER_CACHE_PATH	
+  			SOLVER_CACHED=1
+		fi
+	fi	
+}
+
+#fills arrays from file
+function fillDependArrays {
+#separator
+sep=',,,'
+
+INDEX=0
+
+log "has depends = $HAS_DEPENDS"
+
+if [ $HAS_DEPENDS -eq 1 ]
+then
+while read line
+do
+  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+  INDEX=$((INDEX + 1))
+done < "$JOB_IN_DIR/depend_$PAIR_ID.txt" 
+fi
+
+return $?
+}
+
+
+
+
+
+
+function copyDependencies {
+	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
+	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	
+	log "solver copy complete"
+	if [ $SOLVER_CACHED -eq 0 ]; then
+		mkdir -p "$SOLVER_CACHE_PATH"
+		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
+			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+				#store solver in a cache
+				log "storing solver in cache at $SOLVER_CACHE_PATH"
+				#if the copy was successful
+				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
+					log "the solver was successfully copied into the cache"
+					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
+					rm -r "$SOLVER_CACHE_PATH/lock.lock"
+				else
+					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
+					rm -r "$SOLVER_CACHE_PATH"	
+				fi
+			fi
+		fi		
+	fi
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
+        chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "copying runSolver to execution host..."
+	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
+	log "runsolver copy complete"
+	ls -l "$LOCAL_RUNSOLVER_PATH"
+
+	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
+	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
+	log "benchmark copy complete"
+	
+	#doing benchmark preprocessing here if the pre_processor actually exists
+	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
+		log "executing pre processor"
+		log "random seed = "$RAND_SEED
+		
+		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
+		#use the processed benchmark in subsequent steps
+		rm "$LOCAL_BENCH_PATH"
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
+	fi
+	
+	
+	
+	return $?	
+}
+
+# Saves the current output 
+function saveOutputAsBenchmark {
+	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
+	CURRENT_OUTPUT_FILE=$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
+	#TODO: what should the name be?
+	CURRENT_BENCH_NAME=$BENCH_NAME
+	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH
+	
+	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
+	
+	
+	
+	createDir $CURRENT_BENCH_PATH
+	
+	CURRENT_BENCH_PATH=$CURRENT_BENCH_PATH/$CURRENT_BENCH_NAME
+
+	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddAndAssociateBenchmark('$CURRENT_BENCH_NAME','$CURRENT_BENCH_PATH',false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)" ; then
+		log "error saving output as benchmark-- benchmark was not created"
+	else
+		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
+		
+	fi
+}
+
+
+
+#benchmark dependencies not currently verified.
+function verifyWorkspace { 
+	# Make sure the configuration exists before we execute it
+	if ! [ -x "$LOCAL_CONFIG_PATH" ]; then
+		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
+		#get rid of the cache, as if we're here then something is probably wrong with it
+		rm -r "$SOLVER_CACHE_PATH"
+		sendStatus $ERROR_RUNSCRIPT
+	else
+		log "execution host solver configuration verified"	
+	fi	
+
+	# Make sure the benchmark exists before the job runs
+	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
+                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+                sendStatus $ERROR_BENCHMARK
+        else
+		log "execution host benchmark verified"
+	fi		
+
+	return $?
+}
+
+

@@ -6,9 +6,10 @@ import org.starexec.data.to.Solver;
 
 public class SolverComparator implements Comparator<Solver> {
 	private int column;
-
-	public SolverComparator(int c) {
+	private boolean asc;
+	public SolverComparator(int c, boolean a) {
 		column=c;
+		asc=a;
 	}
 	
 	/**
@@ -19,6 +20,11 @@ public class SolverComparator implements Comparator<Solver> {
 	 */
 	@Override
 	public int compare(Solver o1, Solver o2) {
+		if (!asc) {
+			Solver temp=o1;
+			o1=o2;
+			o2=temp;
+		}
 		if (column==1) {
 			return o1.getDescription().compareToIgnoreCase(o2.getDescription());
 		} else if (column==2) {

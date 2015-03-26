@@ -33,7 +33,8 @@
 			        <ul class="subnav round">  
 			        	<li class="round"><a href="/${starexecRoot}/secure/explore/spaces.jsp">Explore</a></li>			            
 			            <li class="round"><a href="/${starexecRoot}/secure/explore/communities.jsp">Communities</a></li>
-				    <li class="round"><a href="/${starexecRoot}/secure/explore/statistics.jsp">Statistics</a></li> 		            
+						<li class="round"><a href="/${starexecRoot}/secure/explore/statistics.jsp">Statistics</a></li> 		            
+						<li class="round"><a href="/${starexecRoot}/secure/explore/reports.jsp">Reports</a></li> 		            
 			        </ul>  
 				</li>
 				<!-- <li class="round">

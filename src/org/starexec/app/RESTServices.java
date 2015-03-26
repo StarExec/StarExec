@@ -465,9 +465,9 @@ public class RESTServices {
 	 * @author Tyler Jensen
 	 */
 	@GET
-	@Path("/jobs/pairs/{id}/stdout")
+	@Path("/jobs/pairs/{id}/stdout/{stageNumber}")
 	@Produces("text/plain")	
-	public String getJobPairStdout(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+	public String getJobPairStdout(@PathParam("id") int id,@PathParam("stageNumber") int stageNumber, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		JobPair jp = JobPairs.getPair(id);
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
@@ -475,14 +475,12 @@ public class RESTServices {
 			return "not available";
 		}
 		if(jp != null) {			
-			if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
-				Jobs.get(jp.getJobId());			
-				String stdout = Util.getStdOut(jp, limit);
-				if(!Util.isNullOrEmpty(stdout)) {
-					return stdout;
-				}				
+			String stdout = JobPairs.getStdOut(jp.getId(),stageNumber, limit);
+			if(!Util.isNullOrEmpty(stdout)) {
+				return stdout;
+			}				
 			
-		}
+		
 		}
 		
 		return "not available";
@@ -616,7 +614,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Returns the next page of entries for a job pairs table
+	 * Returns the next page of entries for a job pairs table. This is used on the pairsInSpace page
 	 *
 	 * @param jobId the id of the job to get the next page of job pairs for
 	 * @param jobspaceid The id of the job space at the root if the hierarchy we want pairs for
@@ -628,9 +626,9 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+	public String getJobPairsInSpaceHierarchyByConfigPaginated(@PathParam("id") int jobId,@PathParam("stageNumber") int stageNumber, @PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
@@ -642,7 +640,7 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type,wallclock);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type,wallclock,stageNumber);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -683,9 +681,9 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		
+		int stageNumber=0;
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock,stageNumber);
 		log.debug("got the next data table page for the solver comparision web page ");
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -693,7 +691,7 @@ public class RESTServices {
 	
 	
 	/**
-	 * Returns the next page of entries for a job pairs table
+	 * Returns the next page of entries for a job pairs table. This is used on the job details page
 	 *
 	 * @param jobId the id of the job to get the next page of job pairs for
 	 * @param request the object containing the DataTable information
@@ -703,9 +701,9 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}")
+	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("stageNumber") int stageNumber,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		ValidatorStatusCode status = JobSecurity.canUserSeeJob(jobId, userId);
@@ -714,7 +712,7 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock,syncResults);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock,syncResults,stageNumber);
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
@@ -1543,19 +1541,20 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/postprocess/job/{jobId}/{procId}")
+	@Path("/postprocess/job/{jobId}/{procId}/{stageNumber}")
 	@Produces("application/json")
-	public String postProcessJob(@PathParam("jobId") int jid, @PathParam("procId") int pid, @Context HttpServletRequest request) {
+	public String postProcessJob(@PathParam("jobId") int jid,@PathParam("stageNumber") int stageNumber, @PathParam("procId") int pid, @Context HttpServletRequest request) {
 		
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=JobSecurity.canUserPostProcessJob(jid, userId, pid);
+		ValidatorStatusCode status=JobSecurity.canUserPostProcessJob(jid, userId, pid,stageNumber);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
+		
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
-		return Jobs.prepareJobForPostProcessing(jid,pid)? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
+		return Jobs.prepareJobForPostProcessing(jid,pid,stageNumber) ? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
@@ -4031,6 +4030,25 @@ public class RESTServices {
 		}
 		boolean success = Users.associate(user_id, space_id);
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User added successfully")) : gson.toJson(ERROR_DATABASE);
+	}
+	
+	/**
+	 * Clears all stats from the cache for the given job
+	 * @param request
+	 * @return
+	 */
+	@POST
+	@Path("/cache/clear/stats/{jobId}")
+	@Produces("application/json")
+	public String clearCache(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
+		
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		
+		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**

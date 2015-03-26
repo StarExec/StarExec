@@ -229,19 +229,19 @@ CREATE TABLE solver_pipelines (
 	name VARCHAR(128),
 	user_id INT NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
+	primary_stage_id INT, 
 	PRIMARY KEY(id)
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
-	config_id INT NOT NULL,
-	keep_output BOOLEAN DEFAULT FALSE, -- do we want to save output from this stage as a benchmark?
-	solver_name VARCHAR(128), -- These columns are redundant, but they allow us to keep stages even with deleted configs
-	config_name VARCHAR(128),
-	solver_id INT,
+	config_id INT, 
+	is_noop BOOLEAN NOT NULL DEFAULT FALSE, -- note that we cannot say that this is a noop if config_id is null, because the config
+								   -- could have just been deleted. We really do need to store this explicitly
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
-	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE
+	CONSTRAINT pipeline_stages_pipeline_id FOREIGN KEY (pipeline_id) REFERENCES solver_pipelines(id) ON DELETE CASCADE,
+	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL
 );
 
 
@@ -266,8 +266,6 @@ CREATE TABLE jobs (
 	queue_id INT,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	completed TIMESTAMP,
-	pre_processor INT,
-	post_processor INT,		
 	description TEXT,
 	deleted BOOLEAN DEFAULT FALSE,
 	paused BOOLEAN DEFAULT FALSE,
@@ -279,22 +277,26 @@ CREATE TABLE jobs (
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
-	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL,
-	CONSTRAINT jobs_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
-	CONSTRAINT jobs_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL
+	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
 );
 -- This table stores timeouts for individual pipeline stages for this job. 
 -- These are essentially overrides for the columns in the jobs table
 CREATE TABLE job_stage_params (
 	job_id INT,
-	stage_id INT,
+	stage_number INT,
 	cpuTimeout INT, 
 	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
-	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them?
-	PRIMARY KEY (job_id,stage_id),
+	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them? null if not keeping them
+	bench_suffix VARCHAR(64), -- if we're keeping benchmarks, what suffix? If none given, we use the suffix of the input benchmark
+	post_processor INT,
+	pre_processor INT,
+	PRIMARY KEY (job_id,stage_number),
 	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
-	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL
+	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,
+	CONSTRAINT job_stage_params_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
+	CONSTRAINT job_stage_params_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL
+
 );
 
 
@@ -309,11 +311,6 @@ CREATE TABLE job_pairs (
 	sge_id INT,
 	bench_id INT,
 	bench_name VARCHAR(255),
-	config_id INT,-- these represent the config and solver of the "primary" elements for this jobline. 
-				  -- They are redundant with data in other tables, but they make sorting and filtering overwhelmingly faster
-	solver_id INT,
-	config_name VARCHAR(255),
-	solver_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
 	queuesub_time TIMESTAMP DEFAULT 0,
@@ -324,13 +321,10 @@ CREATE TABLE job_pairs (
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
-	primary_jobpair_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.id
+	primary_jobpair_data INT, -- which of this pairs stages is the primary one? references jobpair_stage_data.stage_number
 	PRIMARY KEY(id),
 	KEY(sge_id),
-	KEY (job_space_id, config_id),
-	KEY (job_space_id, solver_name),
 	KEY (job_space_id, bench_name),
-	KEY (job_space_id, config_name),
 	KEY (node_id, status_code),
 --	KEY (status_code), -- TODO: Do we actually want this change?
 	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
@@ -339,9 +333,9 @@ CREATE TABLE job_pairs (
 );
 
 CREATE TABLE jobpair_stage_data (
-	id INT AUTO_INCREMENT, -- this id orders the stages
+	stage_number INT NOT NULL, -- this id orders the stages
 	jobpair_id INT NOT NULL,
-	stage_id INT, -- stages are ordered by this ID as well
+	stage_id INT, -- References pipeline_stages stages are ordered by this ID as well.
 	cpu DOUBLE,
 	wallclock DOUBLE,
 	mem_usage DOUBLE,
@@ -349,15 +343,26 @@ CREATE TABLE jobpair_stage_data (
 	max_res_set DOUBLE,
 	user_time DOUBLE,
 	system_time DOUBLE,
-	PRIMARY KEY (id),
-	KEY(jobpair_id),
+	status_code TINYINT DEFAULT 0,
+	solver_name VARCHAR(128), -- These columns are redundant, but they allow us to keep stages even with deleted configs
+	config_name VARCHAR(128),
+	solver_id INT,
+	config_id INT,
+	job_space_id INT,
+	KEY (job_space_id, config_id),
+	KEY (job_space_id, solver_name),
+	-- KEY (job_space_id, bench_name),
+	KEY (job_space_id, config_name),
+	PRIMARY KEY (jobpair_id,stage_number),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );
 
+-- Stores all inputs to a particular job pair, outside of the primary benchmark
+-- TODO: Do we want delete cascades on benchmarks? Might confuse users who accidentally delete benchmark inputs
 CREATE TABLE jobpair_inputs (
 	jobpair_id INT NOT NULL,
-	input_number SMALLINT NOT NULL,
+	input_number SMALLINT NOT NULL, -- ordered from 1 to n, with n being the number of inputs
 	bench_id INT NOT NULL,
 	PRIMARY KEY (jobpair_id,input_number),
 	CONSTRAINT jobpair_inputs_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
@@ -377,11 +382,12 @@ CREATE TABLE job_pair_completion (
 
 -- All attributes for each job pair
 CREATE TABLE job_attributes (
-	pair_id INT NOT NULL,
+	pair_id INT NOT NULL, -- This column is not strictly necessary, but it might be useful for efficiency
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	job_id INT NOT NULL,
-    PRIMARY KEY (pair_id, attr_key),
+	stage_number INT NOT NULL, 
+    PRIMARY KEY (pair_id,stage_number, attr_key),
     KEY (job_id),
 	CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
@@ -686,8 +692,6 @@ CREATE TABLE system_flags (
 	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );
 
-ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
-
 -- table for storing statistics for the weekly report
 CREATE TABLE report_data (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -695,10 +699,15 @@ CREATE TABLE report_data (
 	queue_id INT, -- NULL if data is not associated with a queue 
 	occurrences INT NOT NULL,
 
-	UNIQUE KEY(event_name),
+	UNIQUE KEY(event_name, queue_id),
 	PRIMARY KEY(id),
 	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
 );
+
+ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
+
+ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
+
 
 INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 

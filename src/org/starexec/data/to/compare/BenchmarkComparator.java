@@ -7,9 +7,10 @@ import org.starexec.data.to.Solver;
 
 public class BenchmarkComparator implements Comparator<Benchmark> {
 	private int column;
-
-	public BenchmarkComparator(int c) {
+	private boolean asc;
+	public BenchmarkComparator(int c, boolean a) {
 		column=c;
+		asc=a;
 	}
 
 	
@@ -19,6 +20,11 @@ public class BenchmarkComparator implements Comparator<Benchmark> {
 	 */
 	@Override
 	public int compare(Benchmark o1, Benchmark o2) {
+		if (!asc) {
+			Benchmark temp=o1;
+			o1=o2;
+			o2=temp;
+		}
 		if (column==1) {
 			
 			return o1.getType().getName().compareToIgnoreCase(o2.getType().getName());

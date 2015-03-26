@@ -35,7 +35,7 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
-		SELECT distinct jobs.id, user_id,name,pre_processor,post_processor,seed,primary_space,
+		SELECT distinct jobs.id, user_id,name,seed,primary_space,
 		jobs.clockTimeout,jobs.cpuTimeout,jobs.maximum_memory
 		FROM jobs
 		JOIN job_pairs ON job_pairs.job_id=jobs.id
@@ -63,26 +63,24 @@ CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
 	
 -- Retrieves basic info about enqueued job pairs for the given queue id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByQueue;
-CREATE PROCEDURE GetEnqueuedJobPairsByQueue(IN _id INT)
+DROP PROCEDURE IF EXISTS GetCountOfEnqueuedJobPairsByQueue;
+CREATE PROCEDURE GetCountOfEnqueuedJobPairsByQueue(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT count(*) AS count
 		FROM job_pairs
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
-		WHERE (enqueued.queue_id = _id AND status_code = 2)
-		ORDER BY job_pairs.sge_id ASC;
+		WHERE enqueued.queue_id = _id AND job_pairs.status_code = 2;
 	END //
 	
 -- Retrieves basic info about running job pairs for the given node id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetRunningJobPairsByQueue;
-CREATE PROCEDURE GetRunningJobPairsByQueue(IN _id INT)
+DROP PROCEDURE IF EXISTS GetCountOfRunningJobPairsByQueue;
+CREATE PROCEDURE GetCountOfRunningJobPairsByQueue(IN _id INT)
 	BEGIN
-		SELECT *
+		SELECT count(*) AS count
 		FROM job_pairs
-		WHERE node_id = _id AND (status_code = 4 OR status_code = 3)
-		ORDER BY sge_id ASC;
+		WHERE node_id = _id AND (status_code = 4 OR status_code = 3);
 		END //	
 
 -- Get the name of a queue given its id

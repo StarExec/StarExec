@@ -22,9 +22,8 @@ CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 	
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
--- TODO: This needs to be modified to work by stage! Not converting yet to avoid messing with the job scripts
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
-CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT)
+CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
 		UPDATE jobpair_stage_data
@@ -34,7 +33,7 @@ CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHA
 			system_time=_systemTime,
 			max_vmem=_maxVmem,
 			max_res_set=_maxResSet
-		WHERE jobpair_id=_jobPairId;
+		WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
 	END //
 	
 -- Updates a job pairs node Id
@@ -74,7 +73,37 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			END IF;
 		END IF;
 	END //
-		
+	
+-- Sets the status code for the given stage of the given pair
+DROP PROCEDURE IF EXISTS UpdatePairStageStatus;
+CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN _statusCode TINYINT)
+	BEGIN
+		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
+	END //
+
+-- Sets the status code of every stage ocurring after the given stage to the given status code.
+-- We do this, for example, when an early stage times out and so later stages are never run
+DROP PROCEDURE IF EXISTS UpdateLaterStageStatuses;
+CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT, IN _statusCode TINYINT)
+	BEGIN
+		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
+	END //
+	
+-- Sets all run stats to 0 for stages that come after the given stage. This is used for 
+-- pipelines where an early stage fails, causing later stages to not run
+DROP PROCEDURE IF EXISTS SetRunStatsForLaterStagesToZero;
+CREATE PROCEDURE SetRunStatsForLaterStagesToZero(IN _jobPairId INT, IN _stageNumber INT)
+	BEGIN
+		UPDATE jobpair_stage_data
+		SET wallclock = 0,
+			cpu=0,
+			user_time=0,
+			system_time=0,
+			max_vmem=0,
+			max_res_set=0
+		WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
+	END //
+
 -- Gets all the stages for the given job pair
 DROP PROCEDURE IF EXISTS GetJobPairStagesById;
 CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
@@ -85,7 +114,7 @@ CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
 		WHERE jobpair_id=_id
 		ORDER BY jobpair_stage_data.stage_id ASC;
 	END //
--- Gets the job pair with the given id
+-- Gets the job pair with the given id. Only gets the primary stage!
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetJobPairById;
 CREATE PROCEDURE GetJobPairById(IN _Id INT)
@@ -93,7 +122,8 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 		SELECT *
 		FROM job_pairs 
 		LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
-		WHERE job_pairs.id=_Id;
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+		WHERE job_pairs.id=_Id AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //
 	
 -- Retrieves all attributes for a job pair 
@@ -117,29 +147,25 @@ CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
 		WHERE id=_jobPairId;
 	END //
 	
-DROP PROCEDURE IF EXISTS GetAllPairsShallow;
-CREATE PROCEDURE GetAllPairsShallow()
-	BEGIN
-		SELECT job_id,path,solver_name,config_name,bench_name,jobs.user_id FROM job_pairs
-			JOIN jobs ON jobs.id=job_pairs.job_id;
-	END //
-	
 -- Gets back only the fields of a job pair that are necessary to determine where it is stored on disk
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
-		SELECT job_id,path,solver_name,config_name,bench_name FROM job_pairs
-		WHERE job_pairs.id=_pairId;
+		SELECT job_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+		WHERE job_pairs.id=_pairId and jobpair_stage_data.stage_number = job_pairs.primary_jobpair_data;
 	END //
 	
 -- Gets every pair_id and processor_id for pairs awiting processing
 DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
 CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 	BEGIN
-		SELECT post_processor ,job_pairs.id AS id 
-		FROM job_pairs JOIN jobs ON job_pairs.job_id=jobs.id
-		WHERE status_code=_processingStatus;
+		SELECT post_processor ,job_pairs.id, jobpair_stage_data.stage_number AS stageNumber 
+		FROM jobpair_stage_data 
+		JOIN job_pairs ON job_pairs.id = jobpair_stage_data.jobpair_id
+		JOIN job_stage_params ON (job_stage_params.job_id=job_pairs.job_id AND job_stage_params.stage_number=jobpair_stage_data.stage_number)
+		WHERE jobpair_stage_data.status_code=_processingStatus;
 	END //
 	
 DROP PROCEDURE IF EXISTS RemovePairFromCompletedTable;
@@ -188,4 +214,13 @@ CREATE PROCEDURE AddJobPairInput(IN _pairId INT, IN _input INT, IN _benchId INT)
 		INSERT INTO jobpair_inputs (jobpair_id, input_number,bench_id) VALUES (_pairId,_input,_benchId);
 	END //
 	
+DROP PROCEDURE IF EXISTS GetJobPairInputPaths;
+CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
+	BEGIN
+		SELECT path,input_number FROM jobpair_inputs 
+		JOIN benchmarks ON benchmarks.id=jobpair_inputs.bench_id
+		WHERE jobpair_id=_pairId ORDER BY input_number ASC;
+	END //
+
+
 DELIMITER ; -- this should always be at the end of the file

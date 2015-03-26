@@ -292,7 +292,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void downloadSpaceXML() {
 		File xmlFile=new File(downloadDir,TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(xmlFile.exists());
-		int result=con.downloadSpaceXML(space1.getId(), xmlFile.getAbsolutePath());
+		int result=con.downloadSpaceXML(space1.getId(), xmlFile.getAbsolutePath(),true,null);
 		Assert.assertEquals(0, result);
 		Assert.assertTrue(xmlFile.exists());
 	}

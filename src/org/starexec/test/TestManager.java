@@ -1,14 +1,17 @@
 package org.starexec.test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 
+import org.starexec.constants.R;
 import org.starexec.test.database.*;
 import org.starexec.test.security.*;
 import org.starexec.test.web.*;
@@ -53,7 +56,7 @@ public class TestManager {
 		tests.add(new BenchmarkTests());
 		tests.add(new ProcessorTests());
 		tests.add(new JobTests());
-		//tests.add(new GetPageTests());
+		tests.add(new GetPageTests());
 		tests.add(new JobPairTests());
 		tests.add(new ClusterTests());
 		tests.add(new QueueTests());
@@ -251,5 +254,37 @@ public class TestManager {
 		return null;
 	}
 	
+	/**
+	 * Completely deletes all job output. This is ONLY for use on Stardev-- we should NEVER
+	 * be running this on production!
+	 */
+	public static void emptyJobOutputDirectory() {
+		if (Util.isProduction()) {
+			return; //right now, don't run anything on production
+		}
+		final ExecutorService threadPool = Executors.newCachedThreadPool();
+		log.debug("trying to empty the job output directory");
+		threadPool.execute(new Runnable() {
+			@Override
+			public void run(){
+				File file=new File(R.JOB_OUTPUT_DIR);
+				log.debug("calling deleteQuietly");
+				FileUtils.deleteQuietly(file);
+				log.debug("finished calling deleteQuietly");
+				file.mkdir();
+				file=new File(R.NEW_JOB_OUTPUT_DIR);
+				log.debug("calling deleteQuietly on new output");
+
+				FileUtils.deleteQuietly(file);
+				log.debug("finished calling deleteQuietly on new output");
+
+				
+				file.mkdir();
+			}
+		});
+		
+		
+		
+	}
 	
 }

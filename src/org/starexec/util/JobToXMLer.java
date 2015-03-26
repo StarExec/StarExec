@@ -1,8 +1,10 @@
 package org.starexec.util;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -16,10 +18,16 @@ import javax.xml.transform.stream.StreamResult;
 import org.starexec.constants.R;
 import org.starexec.util.Util;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Pipelines;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
+import org.starexec.data.to.pipelines.StageAttributes;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,6 +80,131 @@ public class JobToXMLer {
 		return file;
 		
 	}
+    
+    public Element getStageAttributesElement(StageAttributes attrs) {
+    	Element stageAttrs=doc.createElement("StageAttributes");
+    	
+    	Element stageNumberElement=doc.createElement("stage-num");
+    	Attr numberAttr=doc.createAttribute("value");
+    	numberAttr.setValue(Integer.toString(attrs.getStageNumber()));
+    	stageNumberElement.setAttributeNode(numberAttr);
+    	stageAttrs.appendChild(stageNumberElement);
+    	
+		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
+
+		Attr cpuTimeout = doc.createAttribute("value");
+		cpuTimeout.setValue(Integer.toString(attrs.getCpuTimeout()));
+		cpuTimeoutElement.setAttributeNode(cpuTimeout);
+
+		stageAttrs.appendChild(cpuTimeoutElement);
+		
+		//Wall Clock timeout (seconds) : wallclock-timeout
+
+		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
+
+		Attr wallClockTimeout = doc.createAttribute("value");
+                wallClockTimeout.setValue(Integer.toString(attrs.getWallclockTimeout()));
+		wallClockTimeoutElement.setAttributeNode(wallClockTimeout);
+
+		stageAttrs.appendChild(wallClockTimeoutElement);
+		
+		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
+
+		Element memLimitElement = doc.createElement("mem-limit");
+
+		Attr memLimit = doc.createAttribute("value");
+		memLimit.setValue(Double.toString(Util.bytesToGigabytes(attrs.getMaxMemory())));
+		memLimitElement.setAttributeNode(memLimit);
+    	
+    	stageAttrs.appendChild(memLimitElement);
+    	
+    	if (attrs.getSpaceId()!=null && attrs.getSpaceId()>0) {
+    		Element spaceIdElement = doc.createElement("space-id");
+
+    		Attr spaceIdAttr = doc.createAttribute("value");
+    		spaceIdAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getSpaceId())));
+    		spaceIdElement.setAttributeNode(spaceIdAttr);
+        	
+        	stageAttrs.appendChild(spaceIdElement);
+    	}
+    	if (attrs.getBenchSuffix()!=null) {
+    		Element benchSuffixElement=doc.createElement("bench-suffix");
+    		Attr benchSuffixAttr=doc.createAttribute("value");
+    		benchSuffixElement.setAttributeNode(benchSuffixAttr);
+    		
+    		stageAttrs.appendChild(benchSuffixElement);
+    	}
+    	
+    	if (attrs.getPostProcessor()!=null) {
+    		Element postProcessorElement = doc.createElement("postproc-id");
+
+    		Attr postProcessorAttr = doc.createAttribute("value");
+    		postProcessorAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getPostProcessor().getId())));
+    		postProcessorElement.setAttributeNode(postProcessorAttr);
+        	
+        	stageAttrs.appendChild(postProcessorElement);
+    	}
+    	
+    	if (attrs.getPreProcessor()!=null) {
+    		Element preProcessorElement = doc.createElement("preproc-id");
+
+    		Attr preProcessorAttr = doc.createAttribute("value");
+    		preProcessorAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getPreProcessor().getId())));
+    		preProcessorElement.setAttributeNode(preProcessorAttr);
+        	
+        	stageAttrs.appendChild(preProcessorElement);
+    	}
+    	
+    	
+    	
+    	return stageAttrs;
+    	
+    }
+    
+    
+    public Element getPipelineElement(SolverPipeline pipeline) {
+    	Element pipeElement= doc.createElement("SolverPipeline");
+    	for (PipelineStage stage : pipeline.getStages()) {
+    		Attr nameAttribute=doc.createAttribute("name");
+    		nameAttribute.setValue(pipeline.getName());
+    		pipeElement.setAttributeNode(nameAttribute);
+    		if (stage.isNoOp()) {
+    			Element noOpElement=doc.createElement("noop");
+    			pipeElement.appendChild(noOpElement);
+    		} else {
+    			Element stageElement= doc.createElement("PipelineStage");
+        		Attr configId=doc.createAttribute("config");
+        		Attr isPrimary = doc.createAttribute("primary");
+        		
+    			configId.setValue(Integer.toString(stage.getConfigId()));
+    			isPrimary.setValue(Boolean.toString(stage.getId()==pipeline.getPrimaryStageNumber()));
+    			
+    			for (PipelineDependency dep : stage.getDependencies()) {
+    				if (dep.getType()==PipelineInputType.ARTIFACT) {
+    					Element depElement=doc.createElement("StageDependency");
+    					Attr stageAttr = doc.createAttribute("stage");
+    					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
+    					depElement.setAttributeNode(stageAttr);
+    					stageElement.appendChild(depElement);
+    				} else if (dep.getType()==PipelineInputType.BENCHMARK) {
+    					Element depElement=doc.createElement("BenchmarkDependency");
+    					Attr stageAttr = doc.createAttribute("input");
+    					stageAttr.setValue(String.valueOf(dep.getDependencyId()));
+    					depElement.setAttributeNode(stageAttr);
+    					stageElement.appendChild(depElement);
+    				}
+    			}
+    			
+    			
+    		    stageElement.setAttributeNode(configId);
+        		stageElement.setAttributeNode(isPrimary);
+        		pipeElement.appendChild(stageElement);
+    		}
+    		
+    	}
+    	
+    	return pipeElement;
+    }
 	
     /**
      *  Will generate xml
@@ -89,6 +222,12 @@ public class JobToXMLer {
 	jobsElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchJobSchema.xsd batchJobSchema.xsd"));
 	
+	List<SolverPipeline> neededPipes = Pipelines.getPipelinesByJob(job.getId());
+	log.debug("going to add this many pipelines to the xml document = "+ neededPipes.size());
+	//add all needed pipelines to the XML
+	for (SolverPipeline pipe : neededPipes) {
+		jobsElement.appendChild(getPipelineElement(pipe));
+	}
 	Element rootJobElement = generateJobXML(job, userId);
 	jobsElement.appendChild(rootJobElement);
 		
@@ -104,6 +243,8 @@ public class JobToXMLer {
 	 *  @param userId the id of the user making the request
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
+    
+    
     public Element generateJobXML(Job job, int userId){		
 	log.info("Generating Job XML for job " + job.getId());
 		
@@ -148,30 +289,6 @@ public class JobToXMLer {
 
 		attrsElement.appendChild(startPausedElement);
 		
-		//Preprocessor ID : preproc-id
-		Processor pre = job.getPreProcessor();
-		if(pre != null){
-
-		    Element preprocIdElement = doc.createElement("preproc-id");
-
-		    Attr preProcID = doc.createAttribute("value");
-		    preProcID.setValue(Integer.toString(pre.getId()));
-		    preprocIdElement.setAttributeNode(preProcID);
-
-		    attrsElement.appendChild(preprocIdElement);
-		}
-		//Postprocessor ID : postproc-id
-		Processor post = job.getPostProcessor();
-		if(post != null){
-
-		    Element postprocIdElement = doc.createElement("postproc-id");
-
-		    Attr postProcID = doc.createAttribute("value");
-		    postProcID.setValue(Integer.toString(post.getId()));
-		    postprocIdElement.setAttributeNode(postProcID);
-
-		    attrsElement.appendChild(postprocIdElement);
-		}
 		
 		//CPU timeout (seconds) : cpu-timeout
 
@@ -206,47 +323,78 @@ public class JobToXMLer {
 		//add job attributes element
 		jobElement.appendChild(attrsElement);
 
+		
+		for (StageAttributes attrs : job.getStageAttributes()) {
+			jobElement.appendChild(getStageAttributesElement(attrs));
+		}
+		
+		
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
 		
+		HashMap<Integer,List<Integer>> benchInputs=Jobs.getAllBenchmarkInputsForJob(job.getId());
+		
 		for (JobPair jobpair:pairs){
-			Element jp = doc.createElement("JobPair");
+			// if this job pair doesn't reference a pipeline
+			Element jp=null;
+			if (jobpair.getPipeline()==null) {
+				jp = doc.createElement("JobPair");
+				
+				Attr configID = doc.createAttribute("config-id");
+				Attr configName = doc.createAttribute("config-name");
+				configID.setValue(Integer.toString(jobpair.getPrimaryConfiguration().getId()));
+				configName.setValue(jobpair.getPrimaryConfiguration().getName());
 
+				Attr solverId=doc.createAttribute("solver-id");
+				Attr solverName=doc.createAttribute("solver-name");
+
+				solverId.setValue(Integer.toString(jobpair.getPrimarySolver().getId()));
+				solverName.setValue(jobpair.getPrimarySolver().getName());
+
+				jp.setAttributeNode(solverName);
+				jp.setAttributeNode(solverId);
+
+				jp.setAttributeNode(configName);
+				jp.setAttributeNode(configID);
+				
+			} else {
+				//this job pair references a pipeline
+				jp = doc.createElement("JobLine");
+				Attr pipeName=doc.createAttribute("pipe-name");
+				pipeName.setValue(jobpair.getPipeline().getName());
+				jp.setAttributeNode(pipeName);
+				
+				if (benchInputs.containsKey(jobpair.getId())) {
+					List<Integer> inputs=benchInputs.get(jobpair.getId());
+					
+					for (Integer benchId : inputs) {
+						Element input=doc.createElement("BenchmarkInput");
+						Attr benchIdAttr=doc.createAttribute("bench-id");
+						benchIdAttr.setValue(benchId.toString());
+						input.setAttributeNode(benchIdAttr);
+						jp.appendChild(input);
+					}
+					
+				}
+				
+			}
+			
 			Attr benchID = doc.createAttribute("bench-id");
 			Attr benchName = doc.createAttribute("bench-name");
 			benchID.setValue(Integer.toString(jobpair.getBench().getId()));
 			benchName.setValue(jobpair.getBench().getName());
-
-			Attr configID = doc.createAttribute("config-id");
-			Attr configName = doc.createAttribute("config-name");
-			configID.setValue(Integer.toString(jobpair.getPrimaryConfiguration().getId()));
-			configName.setValue(jobpair.getPrimaryConfiguration().getName());
-			
-
-			
-			Attr solverId=doc.createAttribute("solver-id");
-			Attr solverName=doc.createAttribute("solver-name");
-			
 			Attr spaceId=doc.createAttribute("job-space-id");
 			Attr spacePath=doc.createAttribute("job-space-path");
 			spaceId.setValue(Integer.toString(jobpair.getSpace().getId()));
 			spacePath.setValue(jobpair.getPath());
 			
-			solverId.setValue(Integer.toString(jobpair.getPrimarySolver().getId()));
-			solverName.setValue(jobpair.getPrimarySolver().getName());
-			
-			
-			
-		    jp.setAttributeNode(benchID);
-			jp.setAttributeNode(benchName);
-			jp.setAttributeNode(solverId);
-			jp.setAttributeNode(solverName);
-			jp.setAttributeNode(configID);
-			jp.setAttributeNode(configName);
 			
 			jp.setAttributeNode(spaceId);
 			jp.setAttributeNode(spacePath);
-			jobElement.appendChild(jp);
+			jp.setAttributeNode(benchID);
+			jp.setAttributeNode(benchName);
 			
+			jobElement.appendChild(jp);
+
 		}
 		
 		return jobElement;

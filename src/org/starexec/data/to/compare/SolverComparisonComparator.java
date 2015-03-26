@@ -3,10 +3,12 @@ import java.util.Comparator;
 
 import org.starexec.constants.R;
 import org.starexec.data.to.*;
+import org.starexec.data.to.pipelines.JoblineStage;
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
 	private int column; //will specify which field we are using to sort the job pairs
+	private boolean asc;
 	private boolean isWallclock;
-	
+	private int stageNumber;
 	/**
 	 * Creates a new object that will compare SolverComparisons on different fields based on the given 
 	 * parameters
@@ -20,9 +22,11 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	 * 6 Results-match column
 	 */
 	
-	public SolverComparisonComparator(int c, boolean w) {
+	public SolverComparisonComparator(int c, boolean w, boolean a, int s) {
 		column=c;
 		isWallclock=w;
+		asc=a;
+		stageNumber=s;
 	}
 	
 	
@@ -30,35 +34,42 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 		try {
 			double db1=0;
 			double db2=0;
+			JoblineStage stage11=c1.getFirstPair().getStageFromNumber(stageNumber);
+			JoblineStage stage12=c2.getFirstPair().getStageFromNumber(stageNumber);
+
+			
+			JoblineStage stage21=c1.getSecondPair().getStageFromNumber(stageNumber);
+			JoblineStage stage22=c2.getSecondPair().getStageFromNumber(stageNumber);
+			
 			if (column==1) {
 				if (isWallclock) {
-					db1=c1.getFirstPair().getPrimaryWallclockTime();
-					db2=c2.getFirstPair().getPrimaryWallclockTime();
+					db1=stage11.getWallclockTime();
+					db2=stage12.getWallclockTime();
 				} else {
-					db1=c1.getFirstPair().getPrimaryCpuTime();
-					db2=c2.getFirstPair().getPrimaryCpuTime();
+					db1=stage11.getCpuTime();
+					db2=stage12.getCpuTime();
 				}
 			} else if (column==2) {
 				if (isWallclock) {
-					db1=c1.getSecondPair().getPrimaryWallclockTime();
-					db2=c2.getSecondPair().getPrimaryWallclockTime();
+					db1=stage21.getWallclockTime();
+					db2=stage22.getWallclockTime();
 				} else {
-					db1=c1.getSecondPair().getPrimaryCpuTime();
-					db2=c2.getSecondPair().getPrimaryCpuTime();
+					db1=stage21.getCpuTime();
+					db2=stage22.getCpuTime();
 				}
 			} else if (column==3) {
 				if (isWallclock) {
-					db1=c1.getWallclockDifference();
-					db2=c2.getWallclockDifference();
+					db1=c1.getWallclockDifference(stageNumber);
+					db2=c2.getWallclockDifference(stageNumber);
 				} else {
-					db1=c1.getCpuDifference();
-					db2=c2.getCpuDifference();
+					db1=c1.getCpuDifference(stageNumber);
+					db2=c2.getCpuDifference(stageNumber);
 				}
 			} else {
-				if (c1.doResultsMatch()) {
+				if (c1.doResultsMatch(stageNumber)) {
 					db1=1;
 				}
-				if (c2.doResultsMatch()) {
+				if (c2.doResultsMatch(stageNumber)) {
 					db2=1;
 				}
 			}
@@ -88,15 +99,19 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 		try {
 			String str1=null;
 			String str2=null;
+			
+			
+			
+			
 			 if (column==5) {
-				str1=c1.getSecondPair().getAttributes().getProperty(R.STAREXEC_RESULT);
-				str2=c2.getSecondPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+				str1=c1.getSecondPair().getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=c2.getSecondPair().getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 			} else if (column==0) {
 				str1=c1.getBenchmark().getName();
 				str2=c2.getBenchmark().getName();
 			} else {
-				str1=c1.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
-				str2=c2.getFirstPair().getAttributes().getProperty(R.STAREXEC_RESULT);
+				str1=c1.getFirstPair().getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
+				str2=c2.getFirstPair().getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			return str1.compareToIgnoreCase(str2);
@@ -120,6 +135,11 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	
 	@Override
 	public int compare(SolverComparison o1, SolverComparison o2) {
+		if (!asc) {
+			SolverComparison temp=o1;
+			o1=o2;
+			o2=temp;
+		}
 		if (column==0 || column==4 || column==5) {
 			return compareSolverComparisonStrings(o1,o2);
 		} else {

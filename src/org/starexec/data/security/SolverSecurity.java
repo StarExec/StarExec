@@ -261,9 +261,13 @@ public class SolverSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserDeleteSolver(int solverId, int userId) {
-		Solver solver = Solvers.get(solverId);
+		Solver solver = Solvers.getIncludeDeleted(solverId);
+		
 		if (solver==null) {
 			return new ValidatorStatusCode(false, "The given solver could not be found");
+		}
+		if (solver.isDeleted()) {
+			return new ValidatorStatusCode(false, "The given solver has already been deleted");
 		}
 		if(!userOwnsSolverOrIsAdmin(solver,userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to delete this solver");

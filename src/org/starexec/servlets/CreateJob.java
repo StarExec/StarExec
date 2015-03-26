@@ -111,8 +111,7 @@ public class CreateJob extends HttpServlet {
 	 * @param sId The ID of the space to put the job in 
 	 * @return The ID of the new job, or null if there was an error
 	 */
-	public static void buildQuickJob(Job j,int cpuLimit, int wallclockLimit, long memoryLimit, int solverId,
-			int benchId, Integer sId) {
+	public static void buildQuickJob(Job j, int solverId, int benchId, Integer sId) {
 		//Setup the job's attributes
 		
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
@@ -142,9 +141,9 @@ public class CreateJob extends HttpServlet {
 				settings.getPreProcessorId(),
 				settings.getPostProcessorId(), 
 				Queues.getTestQueue(),
-				0);
+				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory());
 		
-		buildQuickJob(j, settings.getCpuTimeout(), settings.getWallclockTimeout(), settings.getMaxMemory(), solverId, settings.getBenchId(), spaceId);
+		buildQuickJob(j, solverId, settings.getBenchId(), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
 		if (submitSuccess) {
 			return j.getId();
@@ -191,10 +190,8 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
-				seed);
-		j.setCpuTimeout(cpuLimit);
-		j.setWallclockTimeout(runLimit);
-		j.setMaxMemory(memoryLimit);
+				seed,cpuLimit,runLimit,memoryLimit);
+		
 		
 		
 		String selection = request.getParameter(run);
@@ -211,7 +208,7 @@ public class CreateJob extends HttpServlet {
 			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
 			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
 			log.debug("new benchmark created for quickJob with id = "+benchId);
-			buildQuickJob(j, cpuLimit, runLimit, memoryLimit, solverId, benchId, space);
+			buildQuickJob(j, solverId, benchId, space);
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 			//Create the HashMap to be used for creating job-pair path

@@ -11,6 +11,7 @@ source procedures/Misc.sql;
 source procedures/Permissions.sql;
 source procedures/Processors.sql;
 source procedures/Requests.sql;
+source procedures/Reports.sql;
 source procedures/Solvers.sql;
 source procedures/Spaces.sql;
 source procedures/Users.sql;
@@ -22,6 +23,8 @@ source procedures/Settings.sql;
 source procedures/UploadStatus.sql;
 source procedures/Pipelines.sql;
 source procedures/pagination/PairPagination.sql;
+source procedures/pagination/pairsInSpacePagination.sql;
+
 source procedures/pagination/JobPagination.sql;
 source procedures/pagination/SolverPagination.sql;
 source procedures/pagination/BenchmarkPagination.sql;

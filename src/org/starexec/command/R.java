@@ -171,6 +171,7 @@ public class R {
 	//Uploading commands
 	public static String COMMAND_PUSHSOLVER="pushsolver";
 	public static String COMMAND_PUSHBENCHMARKS="pushbenchmarks";
+	public static String COMMAND_PUSHPREPROC="pushpreproc";
 	public static String COMMAND_PUSHPOSTPROC="pushpostproc";
 	public static String COMMAND_PUSHBENCHPROC="pushbenchproc";
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
@@ -244,6 +245,7 @@ public class R {
 	public static String PARAM_USER="u";
 	public static String PARAM_PASSWORD="p";
 	public static String PARAM_BASEURL="addr";
+	public static String PARAM_GET_ATTRIBUTES="attr";
 	public static String PARAM_VERBOSE="verbose";
 	public static String[] PARAMS_PERMS={"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	public static String PARAM_TIME="t";

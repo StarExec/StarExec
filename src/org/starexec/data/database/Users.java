@@ -70,7 +70,6 @@ public class Users {
 	 * @param newSize the number of elements in a default table page
 	 * @return
 	 */
-	
 	public static boolean setDefaultPageSize(int userId,int newSize) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -98,7 +97,6 @@ public class Users {
 	 * @param userId
 	 * @return
 	 */
-	
 	public static int getDefaultPageSize(int userId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -235,7 +233,7 @@ public class Users {
 	
 	/**
 	 * Given a ResultSet currently pointing at a row with a user in it, returns
-	 * that user
+	 * that user. 
 	 * @param results
 	 * @return
 	 * @throws SQLException
@@ -248,11 +246,11 @@ public class Users {
 		u.setLastName(results.getString("last_name"));
 		u.setInstitution(results.getString("institution"));
 		u.setCreateDate(results.getTimestamp("created"));
-		u.setRole(results.getString("role"));
 		u.setDiskQuota(results.getLong("disk_quota"));
+		u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
+		u.setRole(results.getString("role"));
 		return u;
 	}
-	
 	
 	/**
 	 * Retrieves a user from the database given the user's id
@@ -286,7 +284,7 @@ public class Users {
 		
 		return null;
 	}
-	
+
 	/**
 	 * Retrieves a user from the database given the email address
 	 * @param email The email of the user to retrieve
@@ -319,11 +317,22 @@ public class Users {
 		return null;
 	}
 
+	/**
+	 *
+	 */
+	public static List<User> getAllUsersSubscribedToReports() {
+		return getUserListFromQuery("{CALL GetAllUsersSubscribedToReports()}");
+
+	}
+
 	public static List<User> getAdmins() {
 		return getUserListFromQuery("{CALL GetAdmins()}");
 	}
 
 	/**
+	 * IMPORTANT: Make sure your your queries result-set has all the columns
+	 * 			  that resultSetToUser checks for or it will throw an
+	 * 			  exception. 
 	 * Returns a list of users based on the sql database stored procedure that is
 	 * input.
 	 * @param sql An sql statement used for calling a database stored procedure.
@@ -332,8 +341,8 @@ public class Users {
 	 */
 	private static List<User> getUserListFromQuery(String sql) {
 		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall(sql);

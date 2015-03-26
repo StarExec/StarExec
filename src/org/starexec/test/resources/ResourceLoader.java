@@ -173,7 +173,7 @@ public class ResourceLoader {
 		String name=TestUtil.getRandomJobName();
 		
 		Queue q=Queues.getAllQ();
-		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
+		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,cpuTimeout,wallclockTimeout,memory);
 		
 		
 		List<Integer> configIds=new ArrayList<Integer>();
@@ -206,7 +206,7 @@ public class ResourceLoader {
 		String name=TestUtil.getRandomJobName();
 		Queue q=Queues.getAllQ();
 
-		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0);
+		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,10,10,Util.gigabytesToBytes(1));
 		job.setPrimarySpace(rootSpaceId);
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
 		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
@@ -413,10 +413,10 @@ public class ResourceLoader {
 		SolverPipeline pipe=new SolverPipeline();
 		pipe.setName(TestUtil.getRandomAlphaString(10));
 		pipe.setUserId(userId);
+		pipe.setPrimaryStageNumber(1);
 		for (Configuration c : configs) {
 			PipelineStage stage=new PipelineStage();
 			stage.setConfigId(c.getId());
-			stage.setKeepOutput(false);
 			pipe.addStage(stage);
 		}
 		int returnValue= Pipelines.addPipelineToDatabase(pipe);

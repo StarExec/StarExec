@@ -62,7 +62,10 @@
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
-				
+				Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
+				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
+				request.setAttribute("firstPostProc",stage1PostProc);
+				request.setAttribute("firstPreProc",stage1PreProc);
 				request.setAttribute("queues", Queues.getQueuesForUser(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
@@ -70,6 +73,7 @@
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
+				
 
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -90,7 +94,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js="util/sortButtons, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
+<star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
 	<p id="displayJobID" class="accent">id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
@@ -116,7 +120,7 @@
 						<button id="collapsePanels">Collapse All</button>
 						<button id="openPanels">Open All</button>
 						<button class="changeTime">Use CPU Time</button>
-						<label for="subspaceSummaryStageSelector">Stage: </label>
+						<label class="stageSelectorLabel" for="subspaceSummaryStageSelector">Stage: </label>
 						<select id="subspaceSummaryStageSelector" class="stageSelector">
 							<option value="0">Primary</option>
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
@@ -131,7 +135,7 @@
 			<legend>solver summary</legend>
 			<fieldset id="statActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
-				<label for="solverSummaryStageSelector">Stage: </label>
+				<label class="stageSelectorLabel" for="solverSummaryStageSelector">Stage: </label>
 				<select id="solverSummaryStageSelector" class="stageSelector">
 						<option value="0">Primary</option>
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
@@ -205,6 +209,14 @@
 					<button title="sorts pairs by their ids, which is the order they are submitted to be run" asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
 					<button title="sorts pairs in the order they finished running" asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
 					<button title="show only job pairs that have been solved by every solver/configuration combination in this space" id="syncResults">synchronize results</button>
+					<label class="stageSelectorLabel" for="subspaceSummaryStageSelector">Stage: </label>
+						<select id="pairTableStageSelector" class="stageSelector">
+							<option value="0">Primary</option>
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>
+							
+						</select> 
 				</fieldset>
 				<table id="pairTbl" class="shaded">
 					<thead>
@@ -268,19 +280,19 @@
 						</tr>			
 						<tr title="the preprocessor that was used to process benchmarks for this job">
 							<td>preprocessor</td>
-							<c:if test="${not empty job.preProcessor}">			
-							<td title="${job.preProcessor.description}">${job.preProcessor.name}</td>
+							<c:if test="${not empty firstPreProc}">			
+							<td title="${firstPreProc.description}">${firstPreProc.name}</td>
 							</c:if>
-							<c:if test="${empty job.preProcessor}">			
+							<c:if test="${empty firstPreProc}">			
 							<td>none</td>
 							</c:if>
 						</tr>
 						<tr title="the postprocessor that was used to process output for this job">
 							<td>postprocessor</td>
-							<c:if test="${not empty job.postProcessor}">			
-							<td title="${job.postProcessor.description}">${job.postProcessor.name}</td>
+							<c:if test="${not empty firstPostProc}">			
+							<td title="${firstPostProc.description}">${firstPostProc.name}</td>
 							</c:if>
-							<c:if test="${empty job.postProcessor}">			
+							<c:if test="${empty firstPostProc}">			
 							<td>none</td>
 							</c:if>
 						</tr>
@@ -373,12 +385,24 @@
 				<div id="dialog-postProcess" title="run new postprocessor">
 					<p><span id="dialog-postProcess-txt"></span></p><br/>
 					
-					<p><select id="postProcessorSelection">
+					<p>
+					<label for="postProcessorSelection">Post Processor</label>
+					<select id="postProcessorSelection">
 						<c:forEach var="proc" items="${postProcs}">
 							<option value="${proc.id}">${proc.name} (${proc.id})</option>
 						</c:forEach>
 					</select></p>
+					<p>
+						<label class="noPrimaryStage stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
+						<select id="postProcessorStageSelector" class="stageSelector">
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
+							</c:forEach>
+							
+						</select> 
 					
+					
+					</p>
 				</div>
 				<div id="dialog-changeQueue" title="change queue">
 					<p><span id="dialog-changeQueue-txt"></span></p><br/>

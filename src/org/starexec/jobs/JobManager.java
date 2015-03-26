@@ -38,6 +38,10 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
 
@@ -152,7 +156,6 @@ public abstract class JobManager {
 			initMainTemplateIf();
 
 			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-			
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (Job job : joblist) {
 				// jobTemplate is a version of mainTemplate customized for this job
@@ -160,31 +163,8 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
 				
-				//Post processor
-				Processor processor = job.getPostProcessor();
-				if (processor == null) {
-					log.debug("Postprocessor is null.");
-					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", "");
-				}
-				else {
-					String path = processor.getFilePath();
-					log.debug("Postprocessor path is "+path+".");
-					jobTemplate = jobTemplate.replace("$$POST_PROCESSOR_PATH$$", path);
-				}
-				
-				//pre processor
-				processor = job.getPreProcessor();
-				if (processor == null) {
-					log.debug("Preprocessor is null.");
-					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", "");
-				}
-				else {
-					String path = processor.getFilePath();
-					log.debug("Preprocessor path is "+path+".");
-					jobTemplate = jobTemplate.replace("$$PRE_PROCESSOR_PATH$$", path);
-				}
-
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, ((nodeCount*R.NODE_MULTIPLIER)-queueSize)/joblist.size() + 1);
 				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId(),limit).iterator();
 
@@ -411,21 +391,87 @@ public abstract class JobManager {
 	 */
 	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
 		String jobScript = template;		
-
+		List<Integer> stageCpuTimeouts=new ArrayList<Integer>();
+		List<Integer> stageWallclockTimeouts=new ArrayList<Integer>();
+		List<Integer> stageNumbers=new ArrayList<Integer>();
+		List<Long> stageMemLimits=new ArrayList<Long>();
+		List<Integer> solverIds=new ArrayList<Integer>();
+		List<String> solverNames=new ArrayList<String>();
+		List<String> configNames=new ArrayList<String>();
+		List<String> solverTimestamps=new ArrayList<String>();
+		List<String> solverPaths=new ArrayList<String>();
+		List<String> postProcessorPaths=new ArrayList<String>();
+		List<String> preProcessorPaths=new ArrayList<String>();
+		List<Integer> spaceIds = new ArrayList<Integer>();
+		List<String> benchInputPaths=new ArrayList<String>();
+		List<String> argStrings=new ArrayList<String>();
+		for (String path : pair.getBenchInputPaths()) {
+			log.debug("adding the following path to benchInputPaths ");
+			log.debug(path);
+			benchInputPaths.add(path);
+		}
+		benchInputPaths.add(""); // just terminating this array with a blank string so the Bash array will always have some element
+		String primaryPreprocessorPath="";
+		for (JoblineStage stage : pair.getStages()) {
+			int stageNumber=stage.getStageNumber();
+			stageNumbers.add(stageNumber);
+			StageAttributes attrs=  job.getStageAttributesByStageNumber(stageNumber);
+			stageCpuTimeouts.add(attrs.getCpuTimeout());
+			stageWallclockTimeouts.add(attrs.getWallclockTimeout());
+			stageMemLimits.add(attrs.getMaxMemory());
+			solverIds.add(stage.getSolver().getId());
+			solverNames.add(stage.getSolver().getName());
+			configNames.add(stage.getConfiguration().getName());
+			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
+			solverPaths.add(stage.getSolver().getPath());
+			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
+			
+			if (attrs.getSpaceId()==null) {
+				spaceIds.add(null);
+			} else {
+				Integer spaceId= Spaces.getSubSpaceIDByPath(attrs.getSpaceId(), pair.getPath());
+				if (spaceId==null || spaceId==-1) {
+					spaceIds.add(null);
+				} else {
+					spaceIds.add(spaceId);
+				}
+			}
+			
+			Processor p = attrs.getPostProcessor();
+			if (p==null) {
+				postProcessorPaths.add("");
+			} else {
+				postProcessorPaths.add(p.getFilePath());
+			}
+			p=attrs.getPreProcessor();
+			if (p==null) {
+				preProcessorPaths.add("");
+			} else {
+				preProcessorPaths.add(p.getFilePath());
+				if (stage.getStageNumber()==pair.getPrimaryStageNumber()) {
+					primaryPreprocessorPath=p.getFilePath();
+				}
+			}
+			
+		}
+		
+		
+		
 		// General pair configuration
-		jobScript = jobScript.replace("$$SOLVER_PATH$$", base64encode(pair.getPrimarySolver().getPath()));
-		jobScript = jobScript.replace("$$SOLVER_ID$$",String.valueOf(pair.getPrimarySolver().getId()));
-		jobScript = jobScript.replace("$$SOLVER_TIMESTAMP$$", pair.getPrimarySolver().getMostRecentUpdate());
-		jobScript = jobScript.replace("$$SOLVER_NAME$$", base64encode(pair.getPrimarySolver().getName()));
-		jobScript = jobScript.replace("$$CONFIG$$", pair.getPrimarySolver().getConfigurations().get(0).getName());
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
 		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
+		
+		jobScript = jobScript.replace("$$PRIMARY_PREPROCESSOR_PATH$$",primaryPreprocessorPath);
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getParentFile().getAbsolutePath()));
-
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_PATH$$", base64encode(outputFile.getAbsolutePath()));
+		//if there is exactly 1 stage, we use the old output format
+		if (stageNumbers.size()==1) {
+			outputFile=outputFile.getParentFile();
+		}
+		
+		
+		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
 		//Dependencies
 		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
 		{
@@ -441,7 +487,21 @@ public abstract class JobManager {
 		log.debug("the current job pair has a memory = "+job.getMaxMemory());
 		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(job.getMaxMemory()));
 		log.debug("The jobscript is: "+jobScript);
-
+		
+		jobScript=jobScript.replace("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
+		jobScript=jobScript.replace("$$CLOCK_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CLOCK_TIMEOUTS",stageWallclockTimeouts));
+		jobScript=jobScript.replace("$$MEM_LIMIT_ARRAY$$", numsToBashArray("STAGE_MEM_LIMITS",stageMemLimits));
+		jobScript=jobScript.replace("$$STAGE_NUMBER_ARRAY$$", numsToBashArray("STAGE_NUMBERS",stageNumbers));
+		jobScript=jobScript.replace("$$SOLVER_ID_ARRAY$$",numsToBashArray("SOLVER_IDS",solverIds));
+		jobScript=jobScript.replace("$$SOLVER_TIMESTAMP_ARRAY$$",toBashArray("SOLVER_TIMESTAMPS",solverTimestamps,false));
+		jobScript=jobScript.replace("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES",configNames,false));
+		jobScript=jobScript.replace("$$PRE_PROCESSOR_PATH_ARRAY$$",toBashArray("PRE_PROCESSOR_PATHS",preProcessorPaths,false));
+		jobScript=jobScript.replace("$$POST_PROCESSOR_PATH_ARRAY$$",toBashArray("POST_PROCESSOR_PATHS",postProcessorPaths,false));
+		jobScript=jobScript.replace("$$SPACE_ID_ARRAY$$",numsToBashArray("SPACE_IDS",spaceIds));
+		jobScript=jobScript.replace("$$SOLVER_NAME_ARRAY$$",toBashArray("SOLVER_NAMES",solverNames,true));
+		jobScript=jobScript.replace("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
+		jobScript=jobScript.replace("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
+		jobScript=jobScript.replace("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
 		File f = new File(scriptPath);
@@ -462,6 +522,80 @@ public abstract class JobManager {
 		
 		return scriptPath;
 	}	
+	
+	public static String pipelineDependenciesToArgumentString(List<PipelineDependency> deps) {
+		if (deps== null || deps.size()==0) {
+			return "";
+		}
+		log.debug("creating a dependency argument string with this many deps = "+deps.size());
+		StringBuilder sb=new StringBuilder();
+		for (PipelineDependency dep : deps) {
+			if (dep.getType()==PipelineInputType.ARTIFACT) {
+				sb.append("\"$SAVED_OUTPUT_DIR/");
+				sb.append(dep.getDependencyId());
+				sb.append("\" ");
+				
+			} else if (dep.getType()==PipelineInputType.BENCHMARK) {
+				sb.append("\"$BENCH_INPUT_DIR/");
+				sb.append(dep.getDependencyId());
+				sb.append("\" ");
+			}
+		}
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Given the name of an array and a list of strings to put into the array, 
+	 * creates a string that generates the array that can be embedded into a bash script.
+	 * If strs is empty, returns an empty string. Array is 0 indexed. 
+	 * @param arrayName
+	 * @param strs
+	 * @return
+	 */
+	public static String toBashArray(String arrayName, List<String> strs, boolean base64) {
+		if (strs.size()==0) {
+			return "";
+		}
+		int index=0;
+		StringBuilder sb=new StringBuilder();
+		for (String s : strs) {
+			sb.append(arrayName);
+			sb.append("[");
+			sb.append(index);
+			sb.append("]=\"");
+			if (base64) {
+				sb.append(base64encode(s));
+
+			} else {
+				sb.append(s);
+
+			}
+			sb.append("\"\n");
+			index=index+1;
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Creates a String that can be inserted into a Bash script as an array where all the given numbers
+	 * are in the array starting from index 0. Null is encoded as a blank string in the array
+	 * @param arrayName The name of the variable holding the array in Bash
+	 * @param nums The numbers to insert into the array
+	 * @return The string to insert
+	 */
+	public static <T extends Number> String numsToBashArray(String arrayName, List<T> nums){
+		List<String> strs=new ArrayList<String>();
+		for (T num : nums) {
+			if (num!=null) {
+				strs.add(num.toString());
+
+			} else {
+				strs.add("");
+			}
+		}
+		return toBashArray(arrayName,strs,false);
+	}
 
 	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
 		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
@@ -532,7 +666,8 @@ public abstract class JobManager {
 	 * @param randomSeed a seed to pass into preprocessors
 	 * @return the new job object with the specified properties
 	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed) {
+	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
+			int cpuLimit,int wallclockLimit, long memLimit) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -540,19 +675,33 @@ public abstract class JobManager {
 		j.setUserId(userId);
 		j.setName(name);		
 		j.setSeed(randomSeed);
+		j.setCpuTimeout(cpuLimit);
+		j.setWallclockTimeout(wallclockLimit);
+		j.setMaxMemory(memLimit);
 		if(description != null) {
 			j.setDescription(description);
 		}
 
 		// Get queue and processor information from the database and put it in the job
 		j.setQueue(Queues.get(queueId));
-
+		StageAttributes attrs=new StageAttributes();
+		attrs.setCpuTimeout(cpuLimit);
+		attrs.setWallclockTimeout(wallclockLimit);
+		attrs.setMaxMemory(memLimit);
+		attrs.setStageNumber(1);
+		attrs.setSpaceId(null);
 		if(preProcessorId > 0) {
-			j.setPreProcessor(Processors.get(preProcessorId));
-		}		
-		if(postProcessorId > 0) {
-			j.setPostProcessor(Processors.get(postProcessorId));		
+			attrs.setPreProcessor(Processors.get(preProcessorId));
+		} else {
+			attrs.setPreProcessor(null);
 		}
+		if(postProcessorId > 0) {
+			attrs.setPostProcessor(Processors.get(postProcessorId));		
+		} else {
+			attrs.setPostProcessor(null);
+		}
+		j.addStageAttributes(attrs);
+		
 		log.debug("Successfully set up job " + name);
 		return j;	
 	}
@@ -587,8 +736,9 @@ public abstract class JobManager {
 				JobPair pair = new JobPair();
 				pair.setBench(bench);
 				JoblineStage stage=new JoblineStage();
-				//TODO: This will need to change if we make preprocessors stages
+				stage.setStageNumber(1);
 				pair.setPrimaryStageNumber(1);
+				stage.setNoOp(false);
 
 				stage.setSolver(solver);
 				stage.setConfiguration(solver.getConfigurations().get(0));
@@ -651,13 +801,13 @@ public abstract class JobManager {
 					pair = new JobPair();
 					pair.setBench(b);
 					JoblineStage stage=new JoblineStage();
-
+					stage.setStageNumber(1);
 					stage.setSolver(clone);
 					stage.setConfiguration(c);
 					pair.addStage(stage);
 					
-					//TODO: This will need to change if we make preprocessors stages
 					pair.setPrimaryStageNumber(1);
+					stage.setNoOp(false);
 					
 					pair.setSpace(space);
 					//we are running pairs in a single space, so the path is flat
@@ -700,8 +850,10 @@ public abstract class JobManager {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
 						JoblineStage stage=new JoblineStage();
-						//TODO: This will need to change if we make preprocessors stages
+						stage.setStageNumber(1);
 						pair.setPrimaryStageNumber(1);
+						stage.setNoOp(false);
+
 						stage.setSolver(solver);
 						pair.addStage(stage);			
 						
@@ -802,9 +954,11 @@ public abstract class JobManager {
 						JobPair pair = new JobPair();
 						pair.setBench(bench);
 						JoblineStage stage=new JoblineStage();
+						stage.setStageNumber(1);
 						stage.setSolver(solver);
-						//TODO: This will need to change if we make preprocessors stages
 						pair.setPrimaryStageNumber(1);
+						stage.setNoOp(false);
+
 						pair.addStage(stage);				
 						
 						pair.setPath(SP.get(s.getId()));

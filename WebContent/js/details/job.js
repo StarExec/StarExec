@@ -22,30 +22,9 @@ $(document).ready(function(){
 		refreshPanels();
 	},30000);
 	
-	
-	
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
 });
-
-
-//gets the selected stage. If there is not one, defaults to 0
-function getSelectedStage() {
-	value = $("#subspaceSummaryStageSelector").val();
-	if (!stringExists(value)) {
-		return "0";
-	}
-	
-	return value;
-}
-
-function setTimeButtonText(){
-	if (useWallclock){
-		$(".changeTime .ui-button-text").html("use CPU time");
-	} else {
-		$(".changeTime .ui-button-text").html("use wall time");
-	}
-}
 
 function setSyncResultsText() {
 	if (syncResults) {
@@ -137,19 +116,6 @@ function initSpaceExplorer() {
 		$("#displayJobSpaceID").text("id  = "+id);
 		reloadTables(id);
 	}).on( "click", "a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
-}
-//Sets the stages dropdown menu with all needed options
-function setMaxStagesDropdown(maximum) {
-	$('.stageSelector').empty();
-	
-	$('.stageSelector').append($("<option></option>").attr("value","0").text("Primary")); 
-	setInputToValue(".stageSelector","0");
-	x=1;
-	while (x<=maximum) {
-		$('.stageSelector').append($("<option></option>").attr("value",x).text(x)); 
-		x=x+1;
-	}
-	
 }
 
 function clearPanels() {
@@ -409,11 +375,11 @@ function initUI(){
 		refreshStats(curSpaceId);
 		pairTable.fnDraw(false);
 	});
-	//TODO: Redraw the pair table? Requires a different sorting algorithm
 	$(".stageSelector").change(function() {
 		//set the value of all .stageSelectors to this one to sync them.
 		//this does not trigger the change event, which is good because it would loop forever
 		$(".stageSelector").val($(this).val());
+		pairTable.fnDraw(false);
 		refreshPanels();
 		refreshStats(curSpaceId);
 		
@@ -438,7 +404,7 @@ function initUI(){
 					'clear cache': function() {
 						$(this).dialog("close");
 							$.post(
-									starexecRoot+"services/cache/clear/stats"+jobId+"/",
+									starexecRoot+"services/cache/clear/stats/"+jobId+"/",
 									function(returnCode) {
 										s=parseReturnCode(returnCode);	
 							});
@@ -497,7 +463,7 @@ function initUI(){
 					$('#dialog-postProcess').dialog('close');
 					showMessage("info","Beginning job pair processing. ",3000);
 					$.post(
-							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val(),
+							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
 							function(returnCode) {
 								parseReturnCode(returnCode);
 								
@@ -1004,7 +970,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults,
+			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request

@@ -226,19 +226,19 @@
 								<input type="hidden" name="solver" value="${s.id}"/>
 								<star:solver value='${s}'/></td>
 							<td>
-								<div class="selectConfigs">
+								 <div class="selectConfigs">
 									<c:forEach var="c" items="${s.configurations}">
 										<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
-									</c:forEach>
-								</div>
+									</c:forEach> 
+								</div> 
 							</td>
 					</tr>
 				</c:forEach>			
 				</tbody>						
 			</table>				
-			<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectDefault"><span class="ui-icon ui-icon-circlesmall-plus"></span>all default</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-			</div>
+		   	<div class="selectWrap">
+				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+			</div> 
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>
 		<%--<fieldset id="fieldStep4"> --%>

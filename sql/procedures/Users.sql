@@ -417,7 +417,18 @@ CREATE PROCEDURE GetUserByJob(IN _jobId INT)
 
 		WHERE owner.id = _jobId;
 	END //
-	
+
+-- Gets every user subscribed to the weekly reports
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToReports;
+CREATE PROCEDURE GetAllUsersSubscribedToReports()
+	BEGIN
+		SELECT *
+		FROM users
+			INNER JOIN user_roles AS roles on users.email = roles.email
+		WHERE subscribed_to_reports = TRUE;
+	END //
+
 -- Gets every user whose role is 'admin'
 DROP PROCEDURE IF EXISTS GetAdmins;
 CREATE PROCEDURE GetAdmins()

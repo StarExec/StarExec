@@ -1,7 +1,9 @@
 package org.starexec.data.to.pipelines;
 
+import java.util.List;
 import java.util.Properties;
 
+import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Identifiable;
@@ -15,7 +17,7 @@ import org.starexec.data.to.WorkerNode;
  * @author Eric
  *
  */
-public class JoblineStage extends Identifiable {
+public class JoblineStage {
 	private Solver solver = null;
 	private Integer stageId=null;
 	private Integer jobpairId=null;
@@ -23,15 +25,26 @@ public class JoblineStage extends Identifiable {
 	private double cpuTime;
 	private double userTime;
 	private double systemTime;
-
+	private Status status = null;
 	private double memoryUsage;
 	private double maxVirtualMemory;
 	private double maxResidenceSetSize;
 	private Configuration configuration = null;
-	//private boolean primary=false;
+	private boolean noOp=false;
+	private Properties attributes = null;
+	private Integer stageNumber =null; //which stage is this? 1,2... etc.
+	
+	private List<PipelineDependency> dependencies;
+
+	
+	
+	// the standard output of this pair. This is only populated for a short time in pair.jsp
+	private String output=null;
 	public JoblineStage() {
 		this.setSolver(new Solver());
 		this.setConfiguration(new Configuration());
+		status=new Status();
+		this.attributes=new Properties();
 		
 		
 	}
@@ -116,13 +129,6 @@ public class JoblineStage extends Identifiable {
 		this.stageId = stageId;
 	}
 
-	/*public boolean isPrimary() {
-		return primary;
-	}
-
-	public void setPrimary(boolean primary) {
-		this.primary = primary;
-	}*/
 
 	public Integer getJobpairId() {
 		return jobpairId;
@@ -131,4 +137,68 @@ public class JoblineStage extends Identifiable {
 	public void setJobpairId(Integer jobpairId) {
 		this.jobpairId = jobpairId;
 	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public boolean isNoOp() {
+		return noOp;
+	}
+
+	public void setNoOp(boolean noOp) {
+		this.noOp = noOp;
+	}
+	
+	/**
+	 * @return the attributes for this job pair
+	 */
+	public Properties getAttributes() {
+		return attributes;
+	}
+
+	/**
+	 * @param attributes the attributes to set for this job pair
+	 */
+	public void setAttributes(Properties attributes) {
+		this.attributes = attributes;
+	}
+	
+	/**
+	 * @return the starexec-result value from attributes list
+	 */
+	public String getStarexecResult() {
+		Properties prop = this.getAttributes();
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
+			? prop.getProperty(R.STAREXEC_RESULT) : "--";
+	}
+
+	public Integer getStageNumber() {
+		return stageNumber;
+	}
+
+	public void setStageNumber(Integer stageNumber) {
+		this.stageNumber = stageNumber;
+	}
+
+	public String getOutput() {
+		return output;
+	}
+
+	public void setOutput(String output) {
+		this.output = output;
+	}
+
+	public List<PipelineDependency> getDependencies() {
+		return dependencies;
+	}
+
+	public void setDependencies(List<PipelineDependency> dependencies) {
+		this.dependencies = dependencies;
+	}
+	
 }

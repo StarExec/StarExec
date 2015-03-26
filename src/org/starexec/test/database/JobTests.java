@@ -60,13 +60,7 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(user.getId(),u.getId());
 	}
 	
-	@Test
-	private void GetDetailedTest() {
-		Job testJob=Jobs.getDetailed(job.getId());
-		Assert.assertNotNull(testJob);
-		Assert.assertEquals(testJob.getName(),job.getName());
-		Assert.assertEquals(benchmarkIds.size(),testJob.getJobPairs().size()); //job is supposed to have one pair per benchmark
-	}
+	
 	
 	@Test
 	private void GetByUserTest() {

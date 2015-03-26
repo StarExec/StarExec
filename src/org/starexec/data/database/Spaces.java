@@ -51,7 +51,7 @@ public class Spaces {
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, Space s, int parentId, int userId) throws Exception {			
+	protected static int add(Connection con, Space s, int parentId, int userId)  {			
 		
 		CallableStatement procAddSpace = null;
 		CallableStatement procSubspace = null;
@@ -164,17 +164,9 @@ public class Spaces {
 		return -1;
 	}
 	
-	/**
-	 * Sets the max_stages column in the job_spaces table for the given job space to the given value
-	 * @param jobSpaceId The ID of the job space in question
-	 * @param maxStages The maximum number of stages for any pair in the hierarchy rooted at this job space
-	 * @return True on success and false otherwise
-	 */
-	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages) {
-		Connection con=null;
+	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL SetJobSpaceMaxStages(?,?)}");
 			procedure.setInt(1, jobSpaceId);
 			procedure.setInt(2,maxStages);
@@ -183,8 +175,26 @@ public class Spaces {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Sets the max_stages column in the job_spaces table for the given job space to the given value
+	 * @param jobSpaceId The ID of the job space in question
+	 * @param maxStages The maximum number of stages for any pair in the hierarchy rooted at this job space
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return setJobSpaceMaxStages(jobSpaceId,maxStages,con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
 		}
 		return false;
 	}
@@ -535,12 +545,10 @@ public class Spaces {
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
-	public static Space get(int spaceId) {
-		Connection con = null;	
+	public static Space get(int spaceId,Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
-			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL GetSpaceById(?)}");
 			procedure.setInt(1, spaceId);					
 			 results = procedure.executeQuery();		
@@ -560,9 +568,29 @@ public class Spaces {
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a space with minimal information (only details about the space itself)
+	 * @param spaceId The id of the space to get information for
+	 * @return A space object consisting of shallow information about the space
+	 * @author Tyler Jensen
+	 */
+	public static Space get(int spaceId) {
+		Connection con = null;	
+		
+		try {			
+			con = Common.getConnection();		
+			return get(spaceId,con);												
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
 		}
 		
 		return null;
@@ -1108,6 +1136,52 @@ public class Spaces {
 		return null;
 	}
 	
+	
+	/**
+	 * Given a space ID and a space path of the form "subspace1name/subspace2name/subspace3name"...
+	 * returns the ID of the space that is at the end of the path. In other words, this function searches
+	 * down through the space hierarchy using a path rooted at the given space
+	 * @param rootSpaceId
+	 * @param path
+	 * @param con
+	 * @return The ID of the space identified by the path, or -1 if it does not exist. Returns null on error
+	 */
+	public static Integer getSubSpaceIDByPath(Integer rootSpaceId, String path, Connection con) {
+		try {
+			String[] spaceNames=path.split(R.JOB_PAIR_PATH_DELIMITER);
+			int returnId = rootSpaceId;
+			
+			for (String spaceName :spaceNames) {
+				returnId = getSubSpaceIDbyName(returnId, spaceName, con);
+				if (returnId==-1) {
+					return -1; //means the space could not be found
+				}
+			}
+			
+			return returnId;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return null;
+	}
+	
+	
+	public static Integer getSubSpaceIDByPath(Integer rootSpaceId, String path) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return getSubSpaceIDByPath(rootSpaceId, path,con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	
+	
 	/**
 	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
 	 * @param spaceId id of parent space
@@ -1116,8 +1190,7 @@ public class Spaces {
 	 * @return subspaceId id of found subspace, or -1 if none exist
 	 * @author Benton McCune
 	 */
-	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {
-		Connection con = null;			
+	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName,Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1142,15 +1215,41 @@ public class Spaces {
 			log.debug("# of subspaces named " + subSpaceName + " = " + results.getRow() );
 			if (results.getRow() != 1) //should only be getting one result
 			{
+				log.debug("returning -1");
 				return -1;
 			}			
 			return subSpaceId;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+		return -1;
+
+	}
+	
+	
+	
+	/**
+	 * returns id of subspace with a particular name (-1 if more or less than 1 found)
+	 * @param spaceId id of parent space
+	 * @param userId id of user making request
+	 * @param subSpaceName name of subspace that is being sought
+	 * @return subspaceId id of found subspace, or -1 if none exist
+	 * @author Benton McCune
+	 */
+	public static Integer getSubSpaceIDbyName(Integer spaceId, Integer userId, String subSpaceName) {
+		Connection con = null;			
+		
+		try {
+			con = Common.getConnection();		
+			return getSubSpaceIDbyName(spaceId,userId,subSpaceName,con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			
 		}
 		return -1;
 
@@ -1166,6 +1265,10 @@ public class Spaces {
 
 public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	return getSubSpaceIDbyName(spaceId,-1,subSpaceName);
+}
+
+public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Connection con) {
+	return getSubSpaceIDbyName(spaceId,-1,subSpaceName,con);
 }
 	
 	/**

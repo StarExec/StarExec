@@ -354,7 +354,7 @@ CREATE PROCEDURE GetSolversAssociatedWithSpaces()
 DROP PROCEDURE IF EXISTS GetSolversAssociatedWithPairs;
 CREATE PROCEDURE GetSolversAssociatedWithPairs()
 	BEGIN
-		SELECT DISTINCT solver_id AS id from job_pairs;
+		SELECT DISTINCT solver_id AS id from jobpair_stage_data;
 	END //
 	
 -- Gets the solver ids of all deleted solvers

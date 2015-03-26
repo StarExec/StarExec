@@ -7,7 +7,12 @@
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		int configId=Integer.parseInt(request.getParameter("configid"));
-		
+		String stageCheck=request.getParameter("stagenum");
+		int stageId=0;
+		// this validates that the stage is an integer
+		if (stageCheck!=null) {
+			stageId=Integer.parseInt(stageCheck);
+		}
 		String type=request.getParameter("type");
 		Job j=null;
 		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
@@ -18,12 +23,10 @@
 		
 		
 		if(j != null && JobSecurity.isValidGetPairType(type)) {	
-			Space s=Spaces.getJobSpace(jobSpaceId);
-			request.setAttribute("space",s);
-			request.setAttribute("configId",configId);
+			JobSpace s=Spaces.getJobSpace(jobSpaceId);
+			request.setAttribute("jobspace",s);
 			Solver solver =Solvers.getSolverByConfig(configId,true);
 			request.setAttribute("solver",solver);
-			request.setAttribute("jobId", jobId);
 			request.setAttribute("pairType",type);
 			
 		} else {
@@ -40,17 +43,21 @@
 	}
 %>
 
-<star:template title="Job Pairs for ${solver.name} in ${space.name} hierarchy" js="util/sortButtons, lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
-	<span style="display:none" id="jobId" value="${jobId}" > </span>
-	<span style="display:none" id="spaceId" value="${space.id}" > </span>
-	<span style="display:none" id="configId" value="${configId}" > </span>
-	<span style="display:none" id="pairType" value="${pairType}" > </span>
+<star:template title="Job Pairs for ${solver.name} in ${jobspace.name} hierarchy" js="util/sortButtons, util/jobDetailsUtilityFunctions, lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<fieldset id="#pairTblField">	
 	<legend>job pairs</legend>	
 	<fieldset id="pairActions" class="tableActions">
 		<button class="changeTime">Use CPU Time</button>
 		<button asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
 		<button asc="true" class="sortButton" id="collapsePanels" value="7">sort by completion order</button>
+		<label class="stageSelectorLabel" for="subspaceSummaryStageSelector">Stage: </label>
+			<select id="subspaceSummaryStageSelector" class="stageSelector">
+				<option value="0">Primary</option>
+				<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+					<option value="${i}">${i}</option>
+				</c:forEach>
+							
+			</select> 
 		<label for="pairFilter">filter pairs by:</label>
 		<select id="pairFilter">
 			<option value="all">all</option>

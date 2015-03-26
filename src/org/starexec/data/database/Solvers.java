@@ -2181,8 +2181,8 @@ public class Solvers {
 		solvers=Solvers.filterSolvers(solvers, searchQuery);
 
 		totals[1]=solvers.size();
-		SolverComparator compare=new SolverComparator(indexOfColumnSortedBy);
-		return Util.handlePagination(solvers, compare, startingRecord, recordsPerPage, isSortedASC);
+		SolverComparator compare=new SolverComparator(indexOfColumnSortedBy,isSortedASC);
+		return Util.handlePagination(solvers, compare, startingRecord, recordsPerPage);
 
 	}
 }

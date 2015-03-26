@@ -179,7 +179,8 @@ public class JobUtil {
 		pipeline.setUserId(userId);
 		
 		pipeline.setName(pipeElement.getAttribute("name"));
-		NodeList stages= pipeElement.getElementsByTagName("PipelineStage");
+		
+		NodeList stages= pipeElement.getChildNodes();
 		
 		//data structure for storing all of the unique benchmark inputs in this upload.
 		//We need to validate the following rule-- if there are n unique benchmark inputs,
@@ -188,86 +189,105 @@ public class JobUtil {
 		HashSet<Integer> benchmarkInputs=new HashSet<Integer>();
 		
 		//XML files have a stage tag for each stage
+		int currentStage=0;
 		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
 		for (int i=0;i<stages.getLength();i++) {
-			int currentStage=i+1;
-			Element stage=(Element)stages.item(i);
-			PipelineStage s=new PipelineStage();
 			
-			if (stage.hasAttribute("keepoutput")) {
-				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
-			} else {
-				s.setKeepOutput(false);
-			}
-			
-			if (stage.hasAttribute("primary")) {
-				boolean currentPrimary=Boolean.parseBoolean(stage.getAttribute("primary"));
-				if (currentPrimary) {
-					if (foundPrimary) {
-						errorMessage="More than one primary stage for pipeline "+pipeline.getName();
-						return null;
-					}
-					foundPrimary=true;
-				}
-				s.setPrimary(true);
-			} else {
-				s.setPrimary(false);
-			}
-			
-			s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
-			// make sure the user is authorized to use the solver they are trying to use
-			Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
-			if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-			    errorMessage = "You do not have permission to see the solver " + s.getId();
-			    return null;
-			}
-			
-			
-			if (stage.hasAttribute("keepoutput")) {
-				s.setKeepOutput(Boolean.parseBoolean(stage.getAttribute("keepoutput")));
-			}
-			NodeList dependencies=stage.getChildNodes();
-			int inputNumber=0; 
-			for (int x=0;x<dependencies.getLength();x++) {
+			if (stages.item(i).getNodeName().equals("PipelineStage")) {
+				currentStage+=1;
+				Element stage=(Element)stages.item(i);
+				PipelineStage s=new PipelineStage();
+				s.setNoOp(false);
 				
-				Node t=dependencies.item(x);
-				if (t.getNodeType() == Node.ELEMENT_NODE) {
-					Element dependency = (Element) t;
-					PipelineDependency dep = new PipelineDependency();
-					if (dependency.getTagName().equals("stageDependency")) {
-						inputNumber++;
-						
-						dep.setType(PipelineInputType.ARTIFACT);
-						int neededStageId=Integer.parseInt(dependency.getAttribute("stage"));
-						
-						if (neededStageId<1) {
-							errorMessage = "Invalid stage dependency-- all stages are numbered 1 or greater";
+				
+				if (stage.hasAttribute("primary")) {
+					boolean currentPrimary=Boolean.parseBoolean(stage.getAttribute("primary"));
+					if (currentPrimary) {
+						if (foundPrimary) {
+							errorMessage="More than one primary stage for pipeline "+pipeline.getName();
 							return null;
-						} else if (neededStageId>=(currentStage-1)) {
-							errorMessage="Invalid stage dependency-- stages can only depend on earlier stages, and a"
-									+ " stages implicitly depend on previous stages. Bad dependency =  Stage "+currentStage+" depends on"
-											+ " stage "+neededStageId;
-									
 						}
-						dep.setDependencyId(neededStageId);		
-					} else if (dependency.getTagName().equals("benchmarkDependency")) {
-						inputNumber++;
-						
-						dep.setType(PipelineInputType.BENCHMARK);
-						dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
-						benchmarkInputs.add(dep.getDependencyId());
+						foundPrimary=true;
 					}
-					dep.setInputNumber(inputNumber);
-					s.addDependency(dep);
-					
+					s.setPrimary(true);
+					pipeline.setPrimaryStageNumber(currentStage);
+				} else {
+					s.setPrimary(false);
 				}
+				
+				s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
+				// make sure the user is authorized to use the solver they are trying to use
+				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
+				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
+				    errorMessage = "You do not have permission to see the solver " + s.getId();
+				    return null;
+				}
+				
+				
+				NodeList dependencies=stage.getChildNodes();
+				int inputNumber=0; 
+				for (int x=0;x<dependencies.getLength();x++) {
+					
+					Node t=dependencies.item(x);
+					if (t.getNodeType() == Node.ELEMENT_NODE) {
+						Element dependency = (Element) t;
+						PipelineDependency dep = new PipelineDependency();
+						if (dependency.getTagName().equals("StageDependency")) {
+							inputNumber++;
+							
+							dep.setType(PipelineInputType.ARTIFACT);
+							int neededStageId=Integer.parseInt(dependency.getAttribute("stage"));
+							
+							if (neededStageId<1) {
+								errorMessage = "Invalid stage dependency-- all stages are numbered 1 or greater";
+								return null;
+							} else if (neededStageId>=(currentStage-1)) {
+								errorMessage="Invalid stage dependency-- stages can only depend on earlier stages, and a"
+										+ " stages implicitly depend on previous stages. Bad dependency =  Stage "+currentStage+" depends on"
+												+ " stage "+neededStageId;
+										
+							}
+							dep.setDependencyId(neededStageId);		
+						} else if (dependency.getTagName().equals("BenchmarkDependency")) {
+							inputNumber++;
+							
+							dep.setType(PipelineInputType.BENCHMARK);
+							
+							dep.setDependencyId(Integer.parseInt(dependency.getAttribute("input")));
+							benchmarkInputs.add(dep.getDependencyId());
+						}
+						dep.setInputNumber(inputNumber);
+						s.addDependency(dep);
+						
+					}
+				}
+				stageList.add(s);
+			} else if (stages.item(i).getNodeName().equals("noop")) {
+				currentStage+=1;
+				PipelineStage stage=new PipelineStage();
+				stage.setNoOp(true);
+				stage.setConfigId(null);
+				stage.setPrimary(false);
+				stageList.add(stage);
+
 			}
-			stageList.add(s);
+			
 		}
 		//ensure that benchmark inputs are ordered correctly
-		int maxSeen=Collections.max(benchmarkInputs);
-		if (maxSeen!=benchmarkInputs.size()) {
-			errorMessage="Invalid benchmark inputs for pipeline = "+pipeline.getName()+". Benchmark inputs must be numbered from 1 to n, where n is the total number of expected inputs";
+		if (benchmarkInputs.size()>0) {
+			int maxSeen=Collections.max(benchmarkInputs);
+			if (maxSeen!=benchmarkInputs.size()) {
+				errorMessage="Invalid benchmark inputs for pipeline = "+pipeline.getName()+". Benchmark inputs must be numbered from 1 to n, where n is the total number of expected inputs";
+				return null;
+			}
+		}
+		
+		if (stageList.size()>R.MAX_STAGES_PER_PIPELINE) {
+			errorMessage="Too many stages in pipeline "+pipeline.getName()+". The maximum is "+R.MAX_STAGES_PER_PIPELINE;
+			return null;
+		}
+		if (!foundPrimary) {
+			errorMessage="No primary stage specified for pipeline "+pipeline.getName();
 			return null;
 		}
 		pipeline.setStages(stageList);
@@ -317,40 +337,6 @@ public class JobUtil {
 			    job.setId(Integer.parseInt(jobId));
 			    
 			}
-	
-			log.info("preProcId about to be set");
-			
-			Integer preProcId = null;
-	
-			if(DOMHelper.hasElement(jobAttributes,"preproc-id")){
-			    
-			    Element preProcEle = DOMHelper.getElementByName(jobAttributes,"preproc-id");
-			    String preProc = preProcEle.getAttribute("value");
-			    preProcId = Integer.parseInt(preProc);
-			    if (preProcId != null) {
-			    	Processor p = Processors.get(preProcId);
-					if (p != null && p.getFilePath() != null) {	
-					    job.setPreProcessor(p);
-					}
-					
-			    }
-			}
-			
-			log.info("postProcId about to be set");
-	
-			Integer postProcId = null;
-			
-			if (DOMHelper.hasElement(jobAttributes,"postproc-id")){
-			    Element postProcEle = DOMHelper.getElementByName(jobAttributes,"postproc-id");
-			    String postProc = postProcEle.getAttribute("value");
-			    postProcId = Integer.parseInt(postProc);
-			    if (postProcId != null) {
-			    	Processor p = Processors.get(postProcId);
-					if (p != null && p.getFilePath() != null) {
-					    job.setPostProcessor(p);
-					}
-			    }
-			}
 			
 	
 			Element queueIdEle = DOMHelper.getElementByName(jobAttributes,"queue-id");
@@ -377,7 +363,7 @@ public class JobUtil {
 			memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit; //bounds memory limit by system max
 			
 			//validate memory limits
-			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, preProcId, postProcId);
+			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, null, null);
 			if (!status.isSuccess()) {
 				errorMessage=status.getMessage();
 				return -1;
@@ -386,26 +372,26 @@ public class JobUtil {
 			job.setMaxMemory(memoryLimit);
 			log.info("nodelist about to be set");
 			
+			int maxStages=0;
+			for (SolverPipeline pipe : pipelines.values()) {
+				maxStages=Math.max(maxStages, pipe.getStages().size());
+			}
 			
 			//next, we set the per-stage job attributes
-			Element stageAttributes=DOMHelper.getElementByName(jobElement, "stageAttributes");
-			if (stageAttributes!=null) {
+			NodeList stageAttributeElements=jobElement.getElementsByTagName("StageAttributes");
+			for (int index=0;index<stageAttributeElements.getLength();index++) {
+				Element stageAttributes= (Element) stageAttributeElements.item(index);
 				StageAttributes attrs=new StageAttributes();
 				
 				
 				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
-				String pipeName=DOMHelper.getElementByName(stageAttributes, "pipe-name").getAttribute("value");
-				if (!pipelines.containsKey(pipeName)) {
-					errorMessage="the pipeline with name = "+pipeName+" is not declared as a pipeline in this file";
-					return -1;
-				}
-				SolverPipeline currentPipe=pipelines.get(pipeName);
+				
 				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
-				if (neededStageNum<=0 || neededStageNum>currentPipe.getStages().size()) {
-					errorMessage="StageAttributes tag has invalid pipe-number = "+neededStageNum;
+				if (neededStageNum<=0 || neededStageNum>maxStages) {
+					errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
 					return -1;
 				}
-				attrs.setStageId(currentPipe.getStages().get(neededStageNum-1).getId());
+				attrs.setStageNumber(neededStageNum);
 
 				
 				// all timeouts are optional-- they default to job timeouts if not given
@@ -419,18 +405,47 @@ public class JobUtil {
 				}
 				long stageMemory=memoryLimit;
 				if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
-					stageMemory=Long.parseLong(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+					Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+					stageMemory=Util.gigabytesToBytes(memLimit);
 				}
 				Integer stageSpace=null;
 				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
 					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
 				}
+				String stageBenchSuffix=null;
+				if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
+					stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
+				}
+				
+				Integer stagePostProcId=null;
+				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
+					stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
+					attrs.setPostProcessor(Processors.get(stagePostProcId));
+
+				}
+				Integer stagePreProcId=null;
+				if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
+					stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
+					attrs.setPreProcessor(Processors.get(stagePreProcId));
+				
+				}
+				
+				//validate this new set of parameters
+				ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
+				if (!status.isSuccess()) {
+					errorMessage=status.getMessage();
+					return -1;
+				}
+				
+				//also make sure the user can add both spaces and benchmarks to the given space
 				if (stageSpace!=null) {
-					if (!Permissions.get(userId, stageSpace).canAddBenchmark()) {
-						errorMessage="You do not have permission to add benchmarks to the space with id = "+stageSpace;
+					Permission p = Permissions.get(userId,stageSpace);
+					if (!p.canAddBenchmark() || !p.canAddSpace()) {
+						errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
 						return -1;
 					}
-				}
+				} 
+			
 				
 				//user can specify an optional space ID 
 				
@@ -438,11 +453,14 @@ public class JobUtil {
 				attrs.setCpuTimeout(stageCpu);
 				attrs.setMaxMemory(stageMemory);
 				attrs.setSpaceId(stageSpace);
+				attrs.setBenchSuffix(stageBenchSuffix);
 				job.addStageAttributes(attrs);
 			}
 			
-			
-			
+			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
+			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
+			// to a single root space
+			HashSet<String> jobRootPaths=new HashSet<String>();
 			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 			for (int i = 0; i < jobPairs.getLength(); i++) {
 			    Node jobPairNode = jobPairs.item(i);
@@ -455,9 +473,14 @@ public class JobUtil {
 						String path = jobPairElement.getAttribute("job-space-path");
 						if (path.equals("")) {
 							path=rootName;
+							
 						}
 						jobPair.setPath(path);
-						
+						if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+							jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
+						} else {
+							jobRootPaths.add(path);
+						}
 						
 					Benchmark b = Benchmarks.get(benchmarkId);
 					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
@@ -511,7 +534,11 @@ public class JobUtil {
 						path=rootName;
 					}
 					jobPair.setPath(path);
-					
+					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
+					} else {
+						jobRootPaths.add(path);
+					}
 					
 					Benchmark b = Benchmarks.get(benchmarkId);
 					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
@@ -537,33 +564,41 @@ public class JobUtil {
 					// add all the jobline stages to this pair
 					for (PipelineStage s : currentPipe.getStages()) {
 						JoblineStage stage = new JoblineStage();
-						
-						int configId=s.getConfigId();
-						
-						if (!configIdsToSolvers.containsKey(configId)) {
-							Solver solver = Solvers.getSolverByConfig(configId, false);
-							if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-							    errorMessage = "You do not have permission to see the solver " + s.getId();
-							    return -1;
+						if (s.isNoOp()) {
+							stage.setNoOp(true);
+							
+						} else {
+							stage.setNoOp(false);
+							int configId=s.getConfigId();
+							
+							if (!configIdsToSolvers.containsKey(configId)) {
+								Solver solver = Solvers.getSolverByConfig(configId, false);
+								if (!Permissions.canUserSeeSolver(s.getId(), userId)){
+								    errorMessage = "You do not have permission to see the solver " + s.getId();
+								    return -1;
+								}
+								solver.addConfiguration(Solvers.getConfiguration(configId));
+								configIdsToSolvers.put(configId, solver);
 							}
-							solver.addConfiguration(Solvers.getConfiguration(configId));
-							configIdsToSolvers.put(configId, solver);
+							Solver solver = configIdsToSolvers.get(configId);
+							stage.setSolver(solver);
+							stage.setConfiguration(solver.getConfigurations().get(0));
+							stage.setStageId(s.getId());
+							
+							// if the stage is primary, then set it as such in the job pair
+							if (s.isPrimary()) {
+								jobPair.setPrimaryStageNumber(jobPair.getStages().size()+1);
+							}
 						}
-						Solver solver = configIdsToSolvers.get(configId);
-						stage.setSolver(solver);
-						stage.setConfiguration(solver.getConfigurations().get(0));
-						stage.setStageId(s.getId());
-						
 						jobPair.addStage(stage);
-						// if the stage is primary, then set it as such in the job pair
-						if (s.isPrimary()) {
-							jobPair.setPrimaryStageNumber(jobPair.getStages().size());
-						}
+						
 					}
 					jobPair.setSpace(Spaces.get(spaceId));
 					job.addJobPair(jobPair);
 			    }
 			}
+			
+			
 			log.info("job pairs set");
 	
 			if (job.getJobPairs().size() == 0) {
@@ -571,6 +606,26 @@ public class JobUtil {
 			    errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 			    return -1;
 			}
+			
+			// pairs must have exactly 1 root space, so if there is more than one, we prepend the rootname onto every path
+			if (jobRootPaths.size()>1) {
+				for (JobPair p : job.getJobPairs()) {
+					p.setPath(rootName+R.JOB_PAIR_PATH_DELIMITER+p.getPath());
+				}
+			} else {
+				rootName=jobRootPaths.iterator().next();
+			}
+			
+			for (StageAttributes attrs: job.getStageAttributes()) {
+				if (attrs.getSpaceId()!=null) {
+					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName)!=-1) {
+						errorMessage = "Error: Can't use space id = "+attrs.getSpaceId()+" to save benchmarks because it already contains a subspace with the name "+rootName;
+						return -1;
+					}
+
+				}
+			}
+			
 			
 			log.info("job pair size nonzero");
 	

@@ -2,12 +2,15 @@ package org.starexec.data.to;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import org.starexec.constants.R;
+import org.starexec.data.to.compare.JoblineStageComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
 
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
@@ -25,17 +28,11 @@ public class JobPair extends Identifiable {
 	private WorkerNode node = null;
 	private Benchmark bench = null;	//this is the input benchmark to the jobline
 	private Status status = null;
-	private Properties attributes = null;
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;	
 	private int exitStatus;
 	private List<JoblineStage> stages=null; // this is an ordered list of all the stages in this jobline
-	
-	// this is the jobpair_stage_data.id for the primary stage. However, before job creation,
-	// this field stores the pipeline_stages id as no jobpair_stage_data entry has yet been created
-	private int primaryStageId;
-	
 	
 	// this field says what the primary stage is by stage number. It is used during job construction,
 	// before the job is loaded into the database, as before thta there are no ids. This is not necessary
@@ -47,22 +44,19 @@ public class JobPair extends Identifiable {
 	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
 							  //the job is initiated to the space the benchmark is in
 	
-	//these defaults are only used temporarily when there is some stage without a set solver and configuration
-	private Solver defaultSolver=null;
-	private Configuration defaultConfiguration=null;
-	
 	//the inputs to this job pair, excluding the primary benchmark (in other words, the dependencies stored in the
 	//jobpair_inputs table
 	private List<Integer> benchInputs;
+	private List<String> benchInputPaths;
+	
+	private SolverPipeline pipeline = null;
 	
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
 		this.status = new Status();		
-		this.attributes=new Properties();
 		this.space=new Space();
 		setStages(new ArrayList<JoblineStage>());
-		primaryStageId=-1;
 		setBenchInputs(new ArrayList<Integer>());
 	}
 	
@@ -88,19 +82,7 @@ public class JobPair extends Identifiable {
 		this.completionId=completionId;
 	}
 	
-	/**
-	 * @return the attributes for this job pair
-	 */
-	public Properties getAttributes() {
-		return attributes;
-	}
-
-	/**
-	 * @param attributes the attributes to set for this job pair
-	 */
-	public void setAttributes(Properties attributes) {
-		this.attributes = attributes;
-	}
+	
 
 	/**
 	 * @return the actual job id of this pair in the grid engine
@@ -133,14 +115,7 @@ public class JobPair extends Identifiable {
 	}
 	
 	
-	/**
-	 * @return the starexec-result value from attributes list
-	 */
-	public String getStarexecResult() {
-		Properties prop = this.getAttributes();
-		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
-			? prop.getProperty(R.STAREXEC_RESULT) : "--";
-	}
+	
 	
 	/**
 	 * @return the benchmark used in this pair
@@ -277,28 +252,45 @@ public class JobPair extends Identifiable {
 	}
 	
 	/**
-	 * Adds a stage to the end of this job pairs stage list
+	 * Adds a stage to the END of this job pairs stage list.
 	 * @param stage
 	 */
 	public void addStage(JoblineStage stage) {
 		this.stages.add(stage);
 	}
 	
+	/**
+	 * Arranges all the stages in this job pair in order of their stage_number.
+	 * In other words, after calling this function, calling getStages().get(0)
+	 * will return the stage with the lowest stage number, then the second lowest,
+	 * and so on
+	 */
+	
+	public void sortStages() {
+		JoblineStageComparator comp= new JoblineStageComparator();
+		Collections.sort(stages, comp);
+	}
+	
+	/**
+	 * Returns the primary stage of this job pair, as determined by the 
+	 * primaryStageNumber field. If that field is not set, returns the first stage.
+	 * If no stages are set, returns null
+	 * @return
+	 */
 	public JoblineStage getPrimaryStage() {
 		
-		if (primaryStageNumber!=null) {
-			return stages.get(primaryStageNumber-1);
+		if (primaryStageNumber!=null && primaryStageNumber>0) {
+			
+			for (JoblineStage stage : this.getStages()) {
+				if (stage.getStageNumber()==primaryStageNumber) {
+					return stage;
+				}
+			}			
 		}
 		
-		for (JoblineStage s : stages) {
-			if (primaryStageId>0 && s.getId()==primaryStageId) {
-				return s;
-			}
-		}
+		// if the primary stage isn't set for some reason, we simply return the first stage.
 		if (stages.size()>0){
-			// if we get down here, it means that there are no stages currently added. For convenience,
-			// we simply add an empty stage, which prevents null from being returned by many of the functions
-			// below
+			
 			return stages.get(0);
 
 		}
@@ -395,14 +387,7 @@ public class JobPair extends Identifiable {
 		return sb.toString();
 	}
 
-	public int getPrimaryStageId() {
-		return primaryStageId;
-	}
-
-	public void setPrimaryStageId(int primaryStageId) {
-		this.primaryStageId = primaryStageId;
-	}
-
+	
 	public int getSandboxNum() {
 		return sandboxNum;
 	}
@@ -411,21 +396,7 @@ public class JobPair extends Identifiable {
 		this.sandboxNum = sandboxNum;
 	}
 
-	public Solver getDefaultSolver() {
-		return defaultSolver;
-	}
-
-	public void setDefaultSolver(Solver defaultSolver) {
-		this.defaultSolver = defaultSolver;
-	}
-
-	public Configuration getDefaultConfiguration() {
-		return defaultConfiguration;
-	}
-
-	public void setDefaultConfiguration(Configuration defaultConfiguration) {
-		this.defaultConfiguration = defaultConfiguration;
-	}
+	
 
 	public List<Integer> getBenchInputs() {
 		return benchInputs;
@@ -445,4 +416,51 @@ public class JobPair extends Identifiable {
 	public void setPrimaryStageNumber(Integer primaryStageNumber) {
 		this.primaryStageNumber = primaryStageNumber;
 	}
+	/**
+	 * Returns a stage based on the number. 
+	 * If given <=0, returns the primary stage
+	 * if given 1...n where there are n stages, returns the stage
+	 * if given >n returns null;
+	 * @param stageNumber
+	 */
+	public JoblineStage getStageFromNumber(int stageNumber) {
+		if (stageNumber<=0) {
+			return this.getPrimaryStage();
+		} else {
+			for (JoblineStage stage : this.stages) {
+				if (stage.getStageNumber()==stageNumber) {
+					return stage;
+				}
+			}
+		}
+		return null;
+		
+	}
+	
+	/**
+	 * @return the starexec-result value from attributes list
+	 */
+	public String getPrimaryStarexecResult() {
+		Properties prop = this.getPrimaryStage().getAttributes();
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
+			? prop.getProperty(R.STAREXEC_RESULT) : "--";
+	}
+
+	public SolverPipeline getPipeline() {
+		return pipeline;
+	}
+
+	public void setPipeline(SolverPipeline pipeline) {
+		this.pipeline = pipeline;
+	}
+
+	public List<String> getBenchInputPaths() {
+		return benchInputPaths;
+	}
+
+	public void setBenchInputPaths(List<String> benchInputPaths) {
+		this.benchInputPaths = benchInputPaths;
+	}
+
+	
 }

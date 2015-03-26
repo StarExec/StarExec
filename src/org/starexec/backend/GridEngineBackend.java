@@ -180,7 +180,8 @@ public class GridEngineBackend implements Backend{
     	try {
     		// Execute the SGE command to get the node list
     		String nodeResults = BackendUtil.executeCommand(GridEngineR.NODE_LIST_COMMAND);
-    	
+    		log.debug("getWorkerNodes got the following results");
+    		log.debug(nodeResults);
     		return nodeResults.split(System.getProperty("line.separator"));
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);

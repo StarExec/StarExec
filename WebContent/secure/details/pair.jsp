@@ -1,8 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.apache.log4j.Logger, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
+	Logger log = Logger.getLogger(JobPair.class);			
+
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int pairId = Integer.parseInt(request.getParameter("id"));
@@ -15,23 +17,27 @@
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	
 		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			Job j = Jobs.get(jp.getJobId());
-			
+			for (JoblineStage stage : jp.getStages()) {
+				String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100));
+				stage.setOutput(output);
+			}
 			User u = Users.get(j.getUserId());
-			String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp,100));
-			String log=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
+			String pairlog=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
-			request.setAttribute("output",output);
-			request.setAttribute("log",log);
+			request.setAttribute("log",pairlog);
 			request.setAttribute("rerun",canRerun);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to view this job pair");
 		}
 	} catch (NumberFormatException nfe) {
+		log.error(nfe.getMessage(),nfe);
+
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given pair id was in an invalid format");
 	} catch (Exception e) {
+		log.error(e.getMessage(),e);
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
@@ -88,11 +94,7 @@
 	</fieldset>		
 	<fieldset id="fieldStats">
 	<legend>run statistics</legend>	
-	<c:choose>
-		<c:when test="${pair.status.code == 'STATUS_WAIT_RESULTS'}">
-			<p>waiting for results. try again in 2 minutes.</p>
-		</c:when>
-		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
+	
 			<c:forEach var="stage" items="${pair.getStages()}">
 				
 				<table id="pairStats" class="shaded">
@@ -142,54 +144,58 @@
 						</tr>
 					</tbody>
 				</table>
+				
+			<fieldset id="fieldAttrs">
+				<legend>stage attributes</legend>	
+					<c:choose>
+						<c:when test="${stage.status.code == 'STATUS_WAIT_RESULTS'}">
+							<p>waiting for results. try again in 2 minutes.</p>
+						</c:when>
+						<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
+							<p>none</p>
+						</c:when>
+						<c:when test="${stage.status.code == 'STATUS_COMPLETE'}">
+							<table id="pairAttrs" class="shaded">
+								<thead>
+									<tr>
+										<th>key</th>
+										<th>value</th>				
+									</tr>		
+								</thead>	
+								<tbody>
+									<c:forEach var="entry" items="${stage.attributes}">
+									<tr>
+										<td>${entry.key}</td>
+										<td>${entry.value}</td>
+									</tr>
+								</c:forEach>
+								</tbody>
+							</table>
+						</c:when>				
+						<c:otherwise>		
+							<p>unavailable</p>
+						</c:otherwise>
+					</c:choose>		
+				</fieldset>
+				
+				
+				
+				<fieldset id="fieldOutput">		
+						<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
+						<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
+						<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
+						<p class="caption">output may be truncated. 'popout' for the full output.</p>
+				</fieldset>
+				
+				
 			</c:forEach>
 			
-		</c:when>				
-		<c:otherwise>		
-			<p>unavailable</p>
-		</c:otherwise>
-	</c:choose>		
+			
 	</fieldset>		
 	
-	<fieldset id="fieldAttrs">
-	<legend>pair attributes</legend>	
-	<c:choose>
-		<c:when test="${pair.status.code == 'STATUS_WAIT_RESULTS'}">
-			<p>waiting for results. try again in 2 minutes.</p>
-		</c:when>
-		<c:when test="${pair.status.code == 'STATUS_COMPLETE' && empty pair.attributes}">
-			<p>none</p>
-		</c:when>
-		<c:when test="${pair.status.code == 'STATUS_COMPLETE'}">
-			<table id="pairAttrs" class="shaded">
-				<thead>
-					<tr>
-						<th>key</th>
-						<th>value</th>				
-					</tr>		
-				</thead>	
-				<tbody>
-					<c:forEach var="entry" items="${pair.attributes}">
-					<tr>
-						<td>${entry.key}</td>
-						<td>${entry.value}</td>
-					</tr>
-				</c:forEach>
-				</tbody>
-			</table>
-		</c:when>				
-		<c:otherwise>		
-			<p>unavailable</p>
-		</c:otherwise>
-	</c:choose>		
-	</fieldset>
 	
-	<fieldset id="fieldOutput">		
-			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
-			<textarea class=contentTextarea id="jpStdout" readonly="readonly">${output}</textarea>	
-			<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout?limit=-1" target="_blank" class="popoutLink">popout</a>
-			<p class="caption">output may be truncated. 'popout' for the full output.</p>
-	</fieldset>
+	
+
 	
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			

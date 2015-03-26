@@ -14,15 +14,6 @@ $(document).ready(function(){
 	setTimeButtonText();	
 });
 
-function setTimeButtonText(){
-	if (useWallclock){
-		$(".changeTime .ui-button-text").html("use CPU time");
-	} else {
-		$(".changeTime .ui-button-text").html("use wall time");
-	}
-}
-
-
 /**
  * Initializes the user-interface
  */

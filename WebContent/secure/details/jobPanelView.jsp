@@ -12,7 +12,7 @@
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			j=Jobs.get(jobId);
 			
-			Space s=Spaces.getJobSpace(jobSpaceId);
+			JobSpace s=Spaces.getJobSpace(jobSpaceId);
 			User u=Users.get(j.getUserId());	
 			request.setAttribute("job", j);
 			request.setAttribute("jobspace",s);
@@ -31,7 +31,7 @@
 	}
 %>
 
-<star:template title="${job.name}" js=" lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/jobPanelView, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/jobPanelView">			
+<star:template title="${job.name}" js=" lib/jquery.jstree, util/jobDetailsUtilityFunctions, lib/jquery.dataTables.min, details/shared, details/jobPanelView, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, explore/common, details/shared, details/jobPanelView">			
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
 	<div id="mainPanel">

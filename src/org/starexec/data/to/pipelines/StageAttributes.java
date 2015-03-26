@@ -1,5 +1,7 @@
 package org.starexec.data.to.pipelines;
 
+import org.starexec.data.to.Processor;
+
 /**
  * This class wraps the data we store in the job_stage_params SQL table
  * @author Eric
@@ -7,19 +9,21 @@ package org.starexec.data.to.pipelines;
  */
 public class StageAttributes {
 	private int jobId;
-	private int stageId;
+	private int stageNumber;
 	private int wallclockTimeout;
 	private int cpuTimeout;
 	private long maxMemory;
 	private Integer spaceId; // null if not given. Not required
-	
+	private Processor preProcessor;
+	private Processor postProcessor;
+	private String benchSuffix=null;
 	public StageAttributes() {
 		jobId=-1;
-		stageId=-1;
+		stageNumber=-1;
 		wallclockTimeout=-1;
 		cpuTimeout=-1;
 		maxMemory=-1;
-		spaceId=-1;
+		spaceId=null;
 	}
 	
 	public int getJobId() {
@@ -28,11 +32,11 @@ public class StageAttributes {
 	public void setJobId(int jobId) {
 		this.jobId = jobId;
 	}
-	public int getStageId() {
-		return stageId;
+	public int getStageNumber() {
+		return stageNumber;
 	}
-	public void setStageId(int stageId) {
-		this.stageId = stageId;
+	public void setStageNumber(int stageId) {
+		this.stageNumber = stageId;
 	}
 	public int getWallclockTimeout() {
 		return wallclockTimeout;
@@ -57,5 +61,29 @@ public class StageAttributes {
 	}
 	public void setSpaceId(Integer spaceId) {
 		this.spaceId = spaceId;
+	}
+
+	public Processor getPreProcessor() {
+		return preProcessor;
+	}
+
+	public void setPreProcessor(Processor preProcessor) {
+		this.preProcessor = preProcessor;
+	}
+
+	public Processor getPostProcessor() {
+		return postProcessor;
+	}
+
+	public void setPostProcessor(Processor postProcessor) {
+		this.postProcessor = postProcessor;
+	}
+
+	public String getBenchSuffix() {
+		return benchSuffix;
+	}
+
+	public void setBenchSuffix(String benchSuffix) {
+		this.benchSuffix = benchSuffix;
 	}
 }

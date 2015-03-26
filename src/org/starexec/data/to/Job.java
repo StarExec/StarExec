@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.jfree.util.Log;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.Util;
 
@@ -42,8 +43,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	@Expose private int primarySpace; 
 	private List<JobPair> jobPairs;
 	private HashMap<String, Integer> liteJobPairStats;
-	private Processor preProcessor;
-	private Processor postProcessor;	
+		
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
 	
@@ -53,8 +53,7 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
-		preProcessor = new Processor();
-		postProcessor = new Processor();
+		
 		queue = new Queue();		
 		setStageAttributes(new ArrayList<StageAttributes>());
 	}
@@ -158,11 +157,14 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	    Iterator<JobPair> itr = jobPairs.iterator();
 	    while(itr.hasNext()) {
 	    	JobPair pair = itr.next();
-	    	Properties props = pair.getAttributes();
+	    	for (JoblineStage stage : pair.getStages()) {
+	    		Properties props = stage.getAttributes();
+		    	
+		    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
+		    		attrs.addAll(props.stringPropertyNames());
+		    		
+	    	}
 	    	
-	    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
-	    		attrs.addAll(props.stringPropertyNames());
-	    		
 	    }
 	    Log.debug("Returning "+attrs.size()+" unique attr names");
 	    return attrs;
@@ -190,34 +192,6 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	 */
 	public void setQueue(Queue queue) {
 		this.queue = queue;
-	}
-
-	/**
-	 * @return the pre processor this job uses
-	 */
-	public Processor getPreProcessor() {
-		return preProcessor;
-	}
-
-	/**
-	 * @param preProcessor the preProcessor to set for this job
-	 */
-	public void setPreProcessor(Processor preProcessor) {
-		this.preProcessor = preProcessor;
-	}
-
-	/**
-	 * @return the post processor this job uses
-	 */
-	public Processor getPostProcessor() {
-		return postProcessor;
-	}
-
-	/**
-	 * @param postProcessor the post processor to set for this job
-	 */
-	public void setPostProcessor(Processor postProcessor) {
-		this.postProcessor = postProcessor;
 	}
 
 	@Override
@@ -312,6 +286,33 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 	
 	public void addStageAttributes(StageAttributes attrs) {
 		this.stageAttributes.add(attrs);
+	}
+	
+	/**
+	 * Returns the StageAttributes object for the given stage number.
+	 * If there is no such object, generates one using the defaults
+	 * from this job object.
+	 * @param stageNumber
+	 * @return
+	 */
+	public StageAttributes getStageAttributesByStageNumber(int stageNumber) {
+		for (StageAttributes attrs : stageAttributes) {
+			if (attrs.getStageNumber()==stageNumber) {
+				return attrs;
+				
+			}
+		}
+		
+		StageAttributes attrs=new StageAttributes();
+		attrs.setStageNumber(stageNumber);
+		attrs.setSpaceId(null);
+		attrs.setCpuTimeout(cpuTimeout);
+		attrs.setWallclockTimeout(wallclockTimeout);
+		attrs.setJobId(this.getId());
+		attrs.setMaxMemory(maxMemory);
+		attrs.setPostProcessor(null);
+		attrs.setPreProcessor(null);
+		return attrs;
 	}
 
 	
