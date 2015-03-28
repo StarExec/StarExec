@@ -123,7 +123,8 @@ public abstract class JobManager {
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
 			// Impose resource limits
-			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	 
+			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
+			mainTemplate = mainTemplate.replace("$$BENCH_NAME_LENGTH_MAX$$", String.valueOf(R.BENCH_NAME_LEN));
 		}
 	}
 
@@ -405,6 +406,7 @@ public abstract class JobManager {
 		List<Integer> spaceIds = new ArrayList<Integer>();
 		List<String> benchInputPaths=new ArrayList<String>();
 		List<String> argStrings=new ArrayList<String>();
+		List<String> benchSuffixes=new ArrayList<String>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -417,6 +419,7 @@ public abstract class JobManager {
 			stageNumbers.add(stageNumber);
 			StageAttributes attrs=  job.getStageAttributesByStageNumber(stageNumber);
 			stageCpuTimeouts.add(attrs.getCpuTimeout());
+			benchSuffixes.add(attrs.getBenchSuffix());
 			stageWallclockTimeouts.add(attrs.getWallclockTimeout());
 			stageMemLimits.add(attrs.getMaxMemory());
 			solverIds.add(stage.getSolver().getId());
@@ -502,6 +505,7 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
 		jobScript=jobScript.replace("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
 		jobScript=jobScript.replace("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
+		jobScript=jobScript.replace("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
 		File f = new File(scriptPath);
@@ -855,6 +859,7 @@ public abstract class JobManager {
 						stage.setNoOp(false);
 
 						stage.setSolver(solver);
+						stage.setConfiguration(solver.getConfigurations().get(0));
 						pair.addStage(stage);			
 						
 						pair.setPath(path);
@@ -956,6 +961,7 @@ public abstract class JobManager {
 						JoblineStage stage=new JoblineStage();
 						stage.setStageNumber(1);
 						stage.setSolver(solver);
+						stage.setConfiguration(solver.getConfigurations().get(0));
 						pair.setPrimaryStageNumber(1);
 						stage.setNoOp(false);
 

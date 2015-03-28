@@ -132,6 +132,7 @@ public class Processors {
 			procedure = con.prepareCall("{CALL GetProcessorById(?)}");
 			procedure.setInt(1, processorId);
 			results = procedure.executeQuery();
+			
 			if(results.next()){							
 				Processor t = Processors.resultSetToProcessor(results, "");
 				
@@ -143,7 +144,6 @@ public class Processors {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		log.debug("returning a null processor");			
 		
 		return null;
 	}
