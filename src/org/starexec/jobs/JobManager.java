@@ -564,6 +564,9 @@ public abstract class JobManager {
 		int index=0;
 		StringBuilder sb=new StringBuilder();
 		for (String s : strs) {
+			if (s==null) {
+				s="";
+			}
 			sb.append(arrayName);
 			sb.append("[");
 			sb.append(index);
