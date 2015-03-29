@@ -511,6 +511,11 @@ CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
 
+log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
+log "temp line: the var file was"
+cat $1
+log "end varfile"
+
 ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
 ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
 
