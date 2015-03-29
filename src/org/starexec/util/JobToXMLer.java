@@ -134,13 +134,7 @@ public class JobToXMLer {
     		benchSuffixElement.setAttributeNode(benchSuffixAttr);
     		stageAttrs.appendChild(benchSuffixElement);
     	}
-    	if (attrs.getBenchSuffix()!=null) {
-    		Element benchSuffixElement=doc.createElement("bench-suffix");
-    		Attr benchSuffixAttr=doc.createAttribute("value");
-    		benchSuffixElement.setAttributeNode(benchSuffixAttr);
-    		
-    		stageAttrs.appendChild(benchSuffixElement);
-    	}
+    	
     	
     	if (attrs.getPostProcessor()!=null) {
     		Element postProcessorElement = doc.createElement("postproc-id");
