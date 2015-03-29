@@ -122,10 +122,17 @@ public class JobToXMLer {
     		Element spaceIdElement = doc.createElement("space-id");
 
     		Attr spaceIdAttr = doc.createAttribute("value");
-    		spaceIdAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getSpaceId())));
+    		spaceIdAttr.setValue(attrs.getSpaceId().toString());
     		spaceIdElement.setAttributeNode(spaceIdAttr);
         	
         	stageAttrs.appendChild(spaceIdElement);
+    	}
+    	if (attrs.getBenchSuffix()!=null) {
+    		Element benchSuffixElement=doc.createElement("bench-suffix");
+    		Attr benchSuffixAttr=doc.createAttribute("value");
+    		benchSuffixAttr.setValue(attrs.getBenchSuffix());
+    		benchSuffixElement.setAttributeNode(benchSuffixAttr);
+    		stageAttrs.appendChild(benchSuffixElement);
     	}
     	if (attrs.getBenchSuffix()!=null) {
     		Element benchSuffixElement=doc.createElement("bench-suffix");
