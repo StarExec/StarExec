@@ -348,7 +348,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _sin
 	BEGIN
 		SELECT job_pairs.id AS pair_id,jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 		jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
-		jobpair_stage_data.wallclock AS wallclock,job_pairs.id, jobpair_stage_data.stage_number,
+		jobpair_stage_data.wallclock AS wallclock,job_pairs.id, jobpair_stage_data.stage_number, jobpair_stage_data.max_vmem,
 		bench_attributes.attr_value AS expected,
 		job_attributes.attr_value AS result
 		FROM job_pairs 		

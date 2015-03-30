@@ -1808,6 +1808,7 @@ public class Jobs {
 				stage.setWallclockTime(results.getDouble("jobpair_stage_data.wallclock"));
 				stage.setStageId(results.getInt("jobpair_stage_data.stage_id"));
 				stage.getStatus().setCode(results.getInt("jobpair_stage_data.status_code"));
+				stage.setMaxVirtualMemory(results.getDouble("max_vmem"));
 				//everything below this line is in a stage
 				id=results.getInt("jobpair_stage_data.solver_id");
 				//means it was null in SQL
