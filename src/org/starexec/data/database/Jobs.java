@@ -3751,10 +3751,29 @@ public class Jobs {
 		return false;
 	}
 	
+	/**
+	 * Given a set of pairs and a mapping from pair IDs, to stage numbers to properties, loads the properties into the
+	 * appropriate pairs
+	 * @param pairs
+	 * @param attrs
+	 */
+	public static void loadPropertiesIntoPairs(List<JobPair> pairs, HashMap<Integer,HashMap<Integer,Properties>> attrs) {
+		for (JobPair jp : pairs) {
+			HashMap<Integer,Properties> stageAttrs= attrs.get(jp.getId());
+			if (stageAttrs!=null) {
+				for (JoblineStage stage : jp.getStages()) {
+					if (stageAttrs.containsKey(stage.getStageNumber())) {
+						stage.setAttributes(stageAttrs.get(stage.getStageNumber()));
+					}
+				}
+			}
+		}
+	}
+	
 
 	/**
 	 * Given a resultset containing the results of a query for job pair attrs,
-	 * returns a hashmap mapping job pair ids to attributes
+	 * returns a hashmap mapping job pair ids to maps of stage number to properties
 	 * @param results The ResultSet containing the attrs
 	 * @return A mapping from pair ids to Properties
 	 * @author Eric Burns

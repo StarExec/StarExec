@@ -440,12 +440,13 @@ public class Download extends HttpServlet {
 		log.info("Request for job " + jobId + " csv from user " + userId);
 		
 			Job job=Jobs.get(jobId);
-			
+			HashMap<Integer,HashMap<Integer, Properties>> props= null;
 			if (since==null) {
 				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace()));
+				props=Jobs.getJobAttributes(jobId);
 			} else {
 				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(),since));
-
+				props= Jobs.getNewJobAttributes(jobId, since);
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 
 				log.debug("found this many new job pairs "+job.getJobPairs().size());
@@ -465,7 +466,7 @@ public class Download extends HttpServlet {
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
 				
 			}
-
+			Jobs.loadPropertiesIntoPairs(job.getJobPairs(), props);
 			log.debug("about to create a job CSV with "+job.getJobPairs().size()+" pairs");
 			String jobFile = CreateJobCSV(job, returnIds,onlyCompleted);
 			ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(),"",false);
