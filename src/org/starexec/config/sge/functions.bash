@@ -32,7 +32,7 @@ function decodePathArrays {
 	
 	TEMP_ARRAY_INDEX=0
 	
-	#decode every solver name and solver path in the arrays
+	#decode every solver name, solver path, and benchmark suffix in the arrays
 	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]
 	do
 		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
@@ -40,6 +40,9 @@ function decodePathArrays {
 		
 		echo ${SOLVER_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
 		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		
+		echo ${BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]} > $TMP
+		BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
 		
 		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
 	done
@@ -363,7 +366,7 @@ function cleanWorkspace {
 	sudo chown -R `whoami` $WORKING_DIR 
 	chmod -R gu+rxw $WORKING_DIR
 
-        ls -l $WORKING_DIR
+    
 
 	# Clear the output directory	
 	safeRm output-directory "$OUT_DIR"
@@ -507,6 +510,11 @@ CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
 CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+
+log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
+log "temp line: the var file was"
+cat $1
+log "end varfile"
 
 ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
 ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
@@ -888,8 +896,20 @@ function copyDependencies {
 function saveOutputAsBenchmark {
 	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
 	CURRENT_OUTPUT_FILE=$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
-	#TODO: what should the name be?
-	CURRENT_BENCH_NAME=$BENCH_NAME
+	
+	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
+	
+		CURRENT_BENCH_NAME=$BENCH_NAME
+		
+	
+	else
+		#TODO: Pass in bench length here from Java
+		CURRENT_BENCH_NAME=${BENCH_NAME%%.*}
+		MAX_BENCH_NAME_LENGTH=$(($BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
+		CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
+		CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
+	fi
+	
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH
 	
 	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
