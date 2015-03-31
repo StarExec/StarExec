@@ -1,0 +1,78 @@
+<h1>Solver Pipelines</h1>
+
+<h2>Pipeline Basics</h2>
+
+<p>Usually, each job pair in a job consists of a single solver configuration that executes
+on a single benchmark. However, it is also possible to define an ordered sequence of
+solver configurations that will execute one after the other in a job pair. Such a sequence
+is called a "solver pipeline," and each individual solver configuration that makes up
+the pipeline is called a "stage."</p>
+
+<p>When a job pair uses a solver pipeline, there is the following control flow. The first stage
+in the pipeline receives the job pair's benchmark as input, exactly as any other job pair. From 
+then on, each stage receives the stdout of the previous stage as input. In this way, solvers can
+be chained together. Each stage may have its own preprocessor and postprocessor, and each stage
+will have its output and run statistics saved individually. </p>
+
+<p>When using solver pipelines, job results will be displayed by stage number. The stage number
+of a stage is simply the 1 indexed number indicating the order of the stage. So, the first stage
+has a stage number of 1, the second of 2, and so on.</p>
+
+<h2>Creating a Pipeline</h2>
+
+<p>Currently, solver pipeline functionality is supported only through creating job XML documents.
+Solver pipelines are defined at the same time as a job XML is uploaded to create a new job,
+and pairs in the new job may reference any declared pipelines.</p>
+
+<p>Pipelines must be defined with a name attribute, which is referred to when creating job pairs.
+Pipelines consist of an ordered list of PipelineStage elements, where each PipelineStage defines
+a configuration to use. Exactly one PipelineStage per pipeline must be the "primary" stage--
+this is the stage that is used when determining the file path to place pair results at, among other things.
+The attribute "primary" defines the primary stage, and creating a pipeline with no primary stage
+or multiple primary stages will result in an error.</p>
+
+<p>A pipeline may also contain noops. Noops are not executed and will not affect how the pipeline runs in any way,
+but they are useful for synchronizing stage numbers across different pipelines. Job pair results will be displayed
+by stage number in the job details page, so if you want results to be displayed together across multiple pipelines,
+then you may use noops to ensure that stage numbers match across different pipelines. Noops cannot be the primary
+stage.</p>
+
+<p>Lastly, a pipeline may also define extra dependencies. Each dependency will be passed in as an extra
+argument in whatever order the dependencies are defined. There are two types of dependencies-- dependencies
+on earlier stages and dependencies on other benchmarks.</p>
+
+
+<p>Creating a dependency on an earlier stage means the output of that stage will be given. 
+Note that because a stage will always receive the output of the stage immediately prior, stage dependencies 
+may only be for stages at least 2 away. For example, stage 4 may have a dependency on stage 1 and 2, but not stage 3,4,5, 
+and so on.</p>
+
+<p>Benchmark dependencies work a bit differently. When specifying a benchmark dependency, you do not give
+a concrete benchmark-- this is done at pair creation time. Instead, you specifying benchmark dependencies
+by input number. Input numbers go from 1 to n, where n is the total number of different benchmark inputs
+the pipeline expects. To help understand this, think of pipelines as functions that take n different parameters.
+Each stage is dependent on some of these parameters, and the values of the parameters are unique for each job pair
+that uses the pipeline.</p>
+
+<p>An example job XML document that contains pipelines can be found here.</p>
+
+
+<h2>Using Pipelines in Job Pairs</h2>
+
+<p>Once you have defined pipelines, you can use them to create job pairs in your XML. Job pairs
+that do not use pipelines are created with a JobPair element, but job pairs that do use pipelines
+are created with a JobLine element. The JobLine element must define a pipe-name that matches
+a pipeline name for some pipeline created in the same document. Other than that, they are 
+just like JobPair elements -- they can specify a benchmark, a space path, and so on.</p>
+
+<p>As alluded to in the section on defining pipelines, JobLine elements must specify benchmarks
+to use as inputs to the pipeline. A JobLine must provide exactly the same number of benchmarks that
+are expected by the solver pipeline being used, but reusing the same benchmark for multiple inputs
+is acceptable.</p>
+
+<h2>Gettings results for solver pipelines</h2>
+
+<p>If a pair uses a solver pipeline, then the pair's output will be stored in a directory that contains
+one output file per stage, where the output file is named <stagenumber>.txt. So, for example, a directory might contain 
+files like {1.txt, 3.txt ,4.txt}. Note that the numbers may have gaps due to the use of noops. On the job details
+page, all pair data is aggregated by stage, including the statistical views shown at the top of the page.</p>
