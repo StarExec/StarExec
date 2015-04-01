@@ -2100,7 +2100,6 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
 	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
-		
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("copy", request)
