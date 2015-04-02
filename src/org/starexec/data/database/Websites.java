@@ -11,13 +11,13 @@ import org.apache.log4j.Logger;
 import org.owasp.esapi.ESAPI;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for user-defined websites
  */
 public class Websites {
-	public static enum WebsiteType { USER, SOLVER, SPACE }
 	private static final Logger log = Logger.getLogger(Websites.class);;
 	
 	/**
@@ -101,36 +101,20 @@ public class Websites {
 	/**
 	 * Deletes the website associated with the given website ID.
 	 * @param websiteId the ID of the website to delete
-	 * @param entityId the ID of the entity that the website belongs to (user, solver, space)
-	 * @param webType the type of entity the website belongs to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean delete(int websiteId, int entityId, WebsiteType webType) {
+	public static boolean delete(int websiteId) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection(); 			
-			
-			switch(webType) {
-				case USER:
-					procedure = con.prepareCall("{CALL DeleteUserWebsite(?, ?)}");
-					break;
-				case SPACE:
-					procedure = con.prepareCall("{CALL DeleteSpaceWebsite(?, ?)}");
-					break;
-				case SOLVER:
-					procedure = con.prepareCall("{CALL DeleteSolverWebsite(?, ?)}");
-					break;
-				default:
-					throw new Exception("Unhandled value for WebsiteType");
-			}
+			procedure = con.prepareCall("{CALL DeleteWebsite(?)}");
+
 			
 			procedure.setInt(1, websiteId);
-			procedure.setInt(2, entityId);
 			
 			procedure.executeUpdate();					
-			log.info(String.format("Website [%d] deleted from entity [%d]", websiteId, entityId));
 			return true;			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -170,6 +154,53 @@ public class Websites {
 		return answer;
 	}
 	
+	public static Website getWebsite(int websiteId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetWebsiteById(?)}");
+			procedure.setInt(1,websiteId);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				Website w = resultToWebsite(results);
+				return w;
+			}
+
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	private static Website resultToWebsite(ResultSet results) {
+		try {
+			Website w = new Website();
+			w.setId(results.getInt("id"));
+			w.setName(results.getString("name"));
+			w.setUrl(results.getString("url"));
+			if (results.getInt("solver_id")>0) {
+				w.setPrimId(results.getInt("solver_id"));
+				w.setType(WebsiteType.SOLVER);
+			} else if (results.getInt("user_id")>0) {
+				w.setPrimId(results.getInt("user_id"));
+				w.setType(WebsiteType.USER);
+			} else if (results.getInt("space_id")>0) {
+				w.setPrimId(results.getInt("space_id"));
+				w.setType(WebsiteType.SPACE);
+			}
+			return w;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+	}
+	
 	
 	/**
 	 * Returns a list of websites associated with the given entity based on its type
@@ -207,10 +238,8 @@ public class Websites {
 			List<Website> websites = new LinkedList<Website>();
 			
 			while (results.next()) {
-				Website w = new Website();
-				w.setId(results.getInt("id"));
-				w.setName(results.getString("name"));
-				w.setUrl(results.getString("url"));
+				Website w = resultToWebsite(results);
+				
 				websites.add(w);				
 
 				

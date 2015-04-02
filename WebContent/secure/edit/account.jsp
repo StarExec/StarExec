@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -28,7 +28,7 @@
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
-				request.setAttribute("sites", Websites.getAllForHTML(userId, Websites.WebsiteType.USER));
+				request.setAttribute("sites", Websites.getAllForHTML(userId, WebsiteType.USER));
 				request.setAttribute("settings",listOfDefaultSettings);
 				
 				List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);

@@ -53,6 +53,8 @@ public class JobSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+	
+	
 	/**
 	 * Checks whether a given string is a valid type for the pairsInSpace page
 	 * @param type The string to check
@@ -66,6 +68,7 @@ public class JobSecurity {
 		return false;
 		
 	}
+	
 	
 	/**
 	 * Checks to see if the given user has permission to run a new post processor on the given job

@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
-import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.Validator;
 public class UserSecurity {
 	
@@ -38,6 +38,7 @@ public class UserSecurity {
 		List<Website> websites=Websites.getAll(userId,WebsiteType.USER);
 		boolean websiteInSpace=false;
 		for (Website w : websites) {
+			
 			if (w.getId()==websiteId) {
 				websiteInSpace=true;
 				break;

@@ -15,7 +15,6 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
-import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
@@ -25,6 +24,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
 

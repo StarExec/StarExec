@@ -207,7 +207,7 @@ function attachWebsiteMonitor(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/websites/delete/solver/" + getParameterByName("id") + "/" + id,
+							starexecRoot+"services/websites/delete/" + id,
 							function(returnData){
 								s=parseReturnCode(returnData);
 								if (s) {
