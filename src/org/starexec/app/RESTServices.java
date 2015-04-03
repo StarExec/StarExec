@@ -61,7 +61,7 @@ import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
-
+import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestManager;
 import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
@@ -114,7 +114,7 @@ public class RESTServices {
 	public String recompileJobSpaces(@PathParam("jobid") int jobId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		ValidatorStatusCode status=JobSecurity.canUserRecompileJob(jobId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -129,6 +129,7 @@ public class RESTServices {
 	 * with the given id
 	 * @author Eric Burns
 	 */
+	//TODO: Document these pagination functions?
 	@GET
 	@Path("/space/{jobid}/jobspaces/{spaceTree}")
 	@Produces("application/json")	
@@ -175,6 +176,7 @@ public class RESTServices {
 	@Path("/nodes/dates/pagination/{string_date}")
 	@Produces("application/json")
 	//TODO: This needs to be refactored
+	//TODO: Document these pagination functions?
 	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
@@ -244,7 +246,8 @@ public class RESTServices {
 	 */
 	@GET
 	@Path("/space/subspaces")
-	@Produces("application/json")	
+	@Produces("application/json")
+	//TODO: Document web?
 	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		log.debug("parentId = " + parentId);
@@ -262,6 +265,7 @@ public class RESTServices {
 	@GET
 	@Path("/communities/all")
 	@Produces("application/json")	
+	//TODO: Document web?
 	public String getAllCommunities() {								
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
@@ -296,6 +300,7 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues")
 	@Produces("application/json")	
+	//TODO: Document web?
 	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
 		if(id <= 0 && Users.isAdmin(userId)) {
@@ -308,14 +313,13 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a text string that holds the result of running qstat 0f
+	 * @return a text string that holds the result of running qstat -f
 	 * @author Tyler Jensen
 	 */
 	@GET
 	@Path("/cluster/qstat")
 	@Produces("text/plain")		
 	public String getQstatOutput(@Context HttpServletRequest request) {		
-		int userId = SessionUtil.getUserId(request);
 		String qstat=R.BACKEND.getRunningJobsStatus(R.SGE_ROOT);
 		if(!Util.isNullOrEmpty(qstat)) {
 			return qstat;
@@ -490,6 +494,7 @@ public class RESTServices {
 	 * @return a string representing all attributes of the node with the given id
 	 * @author Tyler Jensen
 	 */
+	//TODO: Document?
 	@GET
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
@@ -501,6 +506,8 @@ public class RESTServices {
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Tyler Jensen
 	 */
+	//TODO: Document?
+
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")	
@@ -513,6 +520,8 @@ public class RESTServices {
 	 * @return a json string representing all communities within starexec
 	 * @author Tyler Jensen
 	 */
+	//TODO: Document?
+
 	@GET
 	@Path("/communities/details/{id}")
 	@Produces("application/json")	
@@ -523,7 +532,7 @@ public class RESTServices {
 			community.setUsers(Spaces.getUsers(id));
 			Permission p = SessionUtil.getPermission(request, id);
 			List<User> leaders = Spaces.getLeaders(id);
-			List<Website> sites = Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE);
+			List<Website> sites = Websites.getAllForJavascript(id, WebsiteType.SPACE);
 			
 			return gson.toJson(new RESTHelpers.CommunityDetails(community, p, leaders, sites,Users.isMemberOfCommunity(userId, id)));
 		}
@@ -535,6 +544,8 @@ public class RESTServices {
 	/**
 	 * @return a 
 	 */
+	//TODO: Document?
+
 	@GET
 	@Path("/space/community/{spaceId}")
 	@Produces("application/json")
@@ -546,6 +557,8 @@ public class RESTServices {
 	 * @return a json string representing permissions within a particular space for a user
 	 * @author Tyler Jensen
 	 */
+	//TODO: Document?
+
 	@GET
 	@Path("/permissions/details/{id}/{spaceId}")
 	@Produces("application/json")	
@@ -569,6 +582,8 @@ public class RESTServices {
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen & Todd Elvers
 	 */
+	//TODO: Document?
+
 	@POST
 	@Path("/space/{id}")
 	@Produces("application/json")	
@@ -592,7 +607,7 @@ public class RESTServices {
 	 * @param request
 	 * @return
 	 */
-	
+
 	@POST
 	@Path("/jobs/pairs/rerun/{pairid}")
 	@Produces("application/json")	
@@ -625,6 +640,7 @@ public class RESTServices {
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Eric Burns
 	 */
+	//TODO: Document?
 	@POST
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
 	@Produces("application/json")	
@@ -645,6 +661,8 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
+	//TODO: Document?
+
 	@POST
 	@Path("/users/solvers/pagination")
 	@Produces("application/json")	
@@ -657,7 +675,8 @@ public class RESTServices {
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolversByUser(userId, request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	
+	//TODO: Document?
+
 	@POST
 	@Path("/users/benchmarks/pagination")
 	@Produces("application/json")	
@@ -670,7 +689,8 @@ public class RESTServices {
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfBenchmarksByUser(userId, request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	
+	//TODO: Document?
+
 	@POST
 	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
 	@Produces("application/json")	
@@ -700,6 +720,8 @@ public class RESTServices {
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Todd Elvers
 	 */
+	//TODO: Document?
+
 	@POST
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
 	@Produces("application/json")	
@@ -720,7 +742,7 @@ public class RESTServices {
 		}
 		return gson.toJson(nextDataTablesPage); 
 	}
-	
+	//TODO: Document?
 	/**
 	 * Handles a request to get a space overview graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -770,6 +792,7 @@ public class RESTServices {
 
 
 
+	//TODO: Document?
 
     /**
      * Handles a request to get a community statistical overview
@@ -835,6 +858,7 @@ public class RESTServices {
 	}
 
   
+	//TODO: Document?
 	/**
 	 * Handles a request to get a solver comparison graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -876,7 +900,8 @@ public class RESTServices {
 	
 	
 	
-	
+	//TODO: Document?
+
 	/**
 	 * Returns the next page of stats for the given job and job space
 	 * @param jobID the id of the job to get the next page of solver stats for
@@ -900,6 +925,8 @@ public class RESTServices {
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
 	}
+
+	//TODO: Document?
 
 	/**
 	 * @return a string representing all attributes of the node with the given id
@@ -934,6 +961,8 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
+	//TODO: Document?
+
 	/**
 	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL)
 	 * @param primType the type of primitive
@@ -967,6 +996,7 @@ public class RESTServices {
 	}
 	
 	
+	//TODO: Document?
 	/**
 	 * Returns the next page of entries in a given DataTable
 	 *
@@ -1015,7 +1045,8 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
-	
+	//TODO: Document?
+
 	/**
 	 * Gets the permissions a given user has in a given space
 	 * 
@@ -1072,18 +1103,19 @@ public class RESTServices {
 	 * the current user/space/solver
 	 * @author Skylar Stark and Todd Elvers
 	 */
+	//TODO: Document?
 	@GET
 	@Path("/websites/{type}/{id}")
 	@Produces("application/json")
 	public String getWebsites(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
-			return gson.toJson(Websites.getAllForJavascript(userId, Websites.WebsiteType.USER));
+			return gson.toJson(Websites.getAllForJavascript(userId, WebsiteType.USER));
 		} else if(type.equals("space")){
 			//SolverSecurity.canAssociateWebsite(solverId, userId, name)
-			return gson.toJson(Websites.getAllForJavascript(id, Websites.WebsiteType.SPACE));
+			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
 		} else if (type.equals("solver")) {
-			return gson.toJson(Websites.getAllForJavascript(id, Websites.WebsiteType.SOLVER));
+			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
@@ -1108,7 +1140,7 @@ public class RESTServices {
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
-			success = Websites.add(userId, url, name, Websites.WebsiteType.USER);
+			success = Websites.add(userId, url, name,WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
 			ValidatorStatusCode status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
@@ -1117,7 +1149,7 @@ public class RESTServices {
 			}
 					
 			log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
-			success = Websites.add(id, url, name, Websites.WebsiteType.SPACE);
+			success = Websites.add(id, url, name, WebsiteType.SPACE);
 			
 		} else if (type.equals("solver")) {
 			//Make sure this user is the solver owner
@@ -1126,7 +1158,7 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			
-			success = Websites.add(id, url, name, Websites.WebsiteType.SOLVER);
+			success = Websites.add(id, url, name, WebsiteType.SOLVER);
 			
 		}
 		
@@ -1146,36 +1178,41 @@ public class RESTServices {
 	 * @author Todd Elvers
 	 */
 	@POST
-	@Path("/websites/delete/{type}/{id}/{websiteId}")
+	@Path("/websites/delete/{websiteId}")
 	@Produces("application/json")
-	public String deleteWebsite(@PathParam("type") String type, @PathParam("id") int id, @PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
+	public String deleteWebsite(@PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		if(type.equals("user")){
+		Website w = Websites.getWebsite(websiteId);
+		if (w==null) {
+			return gson.toJson(new ValidatorStatusCode(false, "The given website could not be found"));
+		}
+		if(w.getType()==WebsiteType.USER){
 			ValidatorStatusCode status=UserSecurity.canDeleteWebsite(userId, websiteId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
-			return Websites.delete(websiteId, SessionUtil.getUserId(request), Websites.WebsiteType.USER) ? gson.toJson(new ValidatorStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
-		} else if (type.equals("space")){
+		} else if (w.getType()==WebsiteType.SPACE){
 			// Permissions check; ensures the user deleting the website is a leader
-			ValidatorStatusCode status=SpaceSecurity.canDeleteWebsite(id,websiteId, userId);
+			ValidatorStatusCode status=SpaceSecurity.canDeleteWebsite(w.getPrimId(),websiteId, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			
-			return Websites.delete(websiteId, id, Websites.WebsiteType.SPACE) ? gson.toJson(new ValidatorStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
-		} else if (type.equals("solver")) {
+		} else if (w.getType()==WebsiteType.SOLVER) {
 			
-			ValidatorStatusCode status=SolverSecurity.canDeleteWebsite(id,websiteId, userId);
+			ValidatorStatusCode status=SolverSecurity.canDeleteWebsite(w.getPrimId(),websiteId, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			
-			return Websites.delete(websiteId, id, Websites.WebsiteType.SOLVER) ? gson.toJson(new ValidatorStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
 			
-		} 
+		} else  {
+			return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
+
+		}
+		return Websites.delete(websiteId) ? gson.toJson(new ValidatorStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
+
 		
-		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 	
 	/**
@@ -1555,31 +1592,6 @@ public class RESTServices {
 		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
 		
 		return Jobs.prepareJobForPostProcessing(jid,pid,stageNumber) ? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
-	}
-	
-	/**
-	 * Removes a benchmark type from a given space
-	 * 
-	 * @return a json string containing '0' if the deletion was successful, else
-	 *         a json string containing '1' if there was a failure, '2' for
-	 *         insufficient permissions
-	 * @author Todd Elvers
-	 */
-	@POST
-	@Path("/delete/processor/{procId}")
-	@Produces("application/json")
-	public String deleteProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		// Permissions check; ensures user is the leader of the community that owns the processor
-		ValidatorStatusCode status=ProcessorSecurity.canUserDeleteProcessor(pid, userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		
-		String answer= Processors.delete(pid) ? gson.toJson(new ValidatorStatusCode(true,"Processor deleted successfully")) : gson.toJson(ERROR_DATABASE);
-		
-		
-		return answer;
 	}
 	
 	/**
@@ -2100,7 +2112,6 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/add/benchmark")
 	@Produces("application/json")
 	public String copyBenchToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
-		
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("copy", request)

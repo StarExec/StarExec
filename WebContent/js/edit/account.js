@@ -284,7 +284,7 @@ function attachWebsiteMonitor(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/websites/delete/" + "user" + "/" + -1 + "/" + id,
+							starexecRoot+"services/websites/delete/"+ id,
 							function(returnData){
 								s=parseReturnCode(returnData);
 								if (s) {

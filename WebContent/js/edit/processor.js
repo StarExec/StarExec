@@ -64,10 +64,10 @@ function initUI(){
 			var name = $("#name").val();
 			var description = $("#description").val();
 			var cid=$("#cid").attr("value");
-			
+			var tempProcId = [getParameterByName("id")];
 			$.post(
-					starexecRoot+"services/delete/processor/" + getParameterByName("id"),
-					{},
+					starexecRoot+"services/delete/processor",
+					{selectedIds: tempProcId},
 					function(returnCode) {
 						s=parseReturnCode(returnCode);
 						if (s) {

@@ -131,7 +131,7 @@ function attachWebsiteMonitor(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/websites/delete/space/" +$('#comId').val() + "/" + id,
+							starexecRoot+"services/websites/delete/"+ id,
 							function(returnData){
 								s=parseReturnCode(returnData);
 								if (s) {

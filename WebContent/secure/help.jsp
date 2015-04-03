@@ -52,6 +52,7 @@
   <li class="topicHeader">Jobs</li>
   <li class="subject"><a href="/${starexecRoot}/secure/add/job.help">Running jobs</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/details/job.help">Viewing results</a></li>
+  <li class="subject"><a href="/${starexecRoot}/secure/details/solverPipeline.help">Solver pipelines</a></li>
   <li class="topicHeader">Users</li>
   <li class="subject"><a href="/${starexecRoot}/secure/edit/account.help">Managing your account</a></li>
   <li class="subject"><a href="/${starexecRoot}/secure/edit/spacePermissions.help">Editing permissions</a></li>

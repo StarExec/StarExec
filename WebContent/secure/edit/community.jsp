@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -15,7 +15,7 @@
 		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
 
 		int id = Integer.parseInt((String)request.getParameter("cid"));
-		request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.SPACE));
+		request.setAttribute("sites", Websites.getAllForHTML(id, WebsiteType.SPACE));
 		
 		Space com = Communities.getDetails(id);
 		Permission perm = SessionUtil.getPermission(request, id);

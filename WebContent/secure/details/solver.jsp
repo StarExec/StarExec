@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.util.Util, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.util.Util,org.starexec.data.to.Website.WebsiteType, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -16,7 +16,7 @@
 		if(s != null) {
 			request.setAttribute("usr", Users.get(s.getUserId()));
 			request.setAttribute("solver", s);
-			List<Website> sites=Websites.getAll(solverId,Websites.WebsiteType.SOLVER);
+			List<Website> sites=Websites.getAll(solverId,WebsiteType.SOLVER);
 			//we need two versions of every website URL-- one for insertion into an attribute and
 			//one for insertion into the HTML body. This data structure represents every site with 3 strings
 			//first the name, then the attribute URL, then the body URL

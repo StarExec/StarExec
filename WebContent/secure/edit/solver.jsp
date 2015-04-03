@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*,org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -19,7 +19,7 @@
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this solver can edit details about it.");
 			} else {
 				request.setAttribute("solver", s);
-				request.setAttribute("sites", Websites.getAllForHTML(solverId, Websites.WebsiteType.SOLVER));
+				request.setAttribute("sites", Websites.getAllForHTML(solverId, WebsiteType.SOLVER));
 				if(s.isDownloadable()){
 					request.setAttribute("isDownloadable", "checked");
 					request.setAttribute("isNotDownloadable", "");

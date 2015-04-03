@@ -3,17 +3,16 @@ package org.starexec.test.database;
 import java.util.List;
 
 import org.junit.Assert;
-
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
-import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
@@ -34,7 +33,7 @@ public class WebsiteTests extends TestSequence {
 		
 		Assert.assertNotNull(id);
 		
-		Assert.assertTrue(Websites.delete(id, solver.getId(), WebsiteType.SOLVER));
+		Assert.assertTrue(Websites.delete(id));
 		sites=Websites.getAll(solver.getId(), WebsiteType.SOLVER);
 
 		id=websitesHaveName(sites,name);
@@ -50,7 +49,7 @@ public class WebsiteTests extends TestSequence {
 		
 		Assert.assertNotNull(id);
 		
-		Assert.assertTrue(Websites.delete(id, user.getId(), WebsiteType.USER));
+		Assert.assertTrue(Websites.delete(id));
 		sites=Websites.getAll(user.getId(), WebsiteType.USER);
 
 		id=websitesHaveName(sites,name);
@@ -72,7 +71,7 @@ public class WebsiteTests extends TestSequence {
 		
 		Assert.assertNotNull(id);
 		
-		Assert.assertTrue(Websites.delete(id, space.getId(), WebsiteType.SPACE));
+		Assert.assertTrue(Websites.delete(id));
 		sites=Websites.getAll(space.getId(), WebsiteType.SPACE);
 
 		id=websitesHaveName(sites,name);

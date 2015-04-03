@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.*, org.starexec.util.*, java.util.List"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -20,7 +20,7 @@
 			request.setAttribute("userId", id);
 			boolean owner = true;
 			String userFullName = t_user.getFullName();
-			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
+			request.setAttribute("sites", Websites.getAllForHTML(id, WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
 			if( (visiting_userId != id) && (!Users.isAdmin(visiting_userId))  ){
 				owner = false;
@@ -38,7 +38,7 @@
 				}
 			}
 			request.setAttribute("owner", owner);	
-			request.setAttribute("sites", Websites.getAllForHTML(id, Websites.WebsiteType.USER));
+			request.setAttribute("sites", Websites.getAllForHTML(id,WebsiteType.USER));
 
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");

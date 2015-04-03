@@ -32,32 +32,14 @@ CREATE PROCEDURE AddSpaceWebsite(IN _spaceId INT, IN _url TEXT, IN _name VARCHAR
 		VALUES(_spaceId, _url, _name);
 	END //
 
--- Deletes the solver website with the given website id
--- Author: Skylar Stark	
-DROP PROCEDURE IF EXISTS DeleteSolverWebsite;
-CREATE PROCEDURE DeleteSolverWebsite(IN _id INT, IN _solverId INT)
+-- Deletes the website with the given website id
+-- Author: Eric Burns
+DROP PROCEDURE IF EXISTS DeleteWebsite;
+CREATE PROCEDURE DeleteWebsite(IN _id INT)
 	BEGIN
 		DELETE FROM website
-		WHERE id = _id AND solver_id = _solverId;
+		WHERE id = _id;
 	END // 
-	
--- Deletes the space website with the given website id
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS DeleteSpaceWebsite;
-CREATE PROCEDURE DeleteSpaceWebsite(IN _id INT, IN _spaceId INT)
-	BEGIN
-		DELETE FROM website
-		WHERE id = _id AND space_id = _spaceId;
-	END //
-	
--- Deletes the user website with the given website id
--- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS DeleteUserWebsite;
-CREATE PROCEDURE DeleteUserWebsite(IN _id INT, IN _userId INT)
-	BEGIN
-		DELETE FROM website
-		WHERE id = _id AND user_id = _userId;
-	END //
 
 	
 -- Returns all websites associated with the user with the given user id
@@ -65,7 +47,7 @@ CREATE PROCEDURE DeleteUserWebsite(IN _id INT, IN _userId INT)
 DROP PROCEDURE IF EXISTS GetWebsitesByUserId;
 CREATE PROCEDURE GetWebsitesByUserId(IN _userid INT)
 	BEGIN
-		SELECT id, name, url
+		SELECT *
 		FROM website
 		WHERE website.user_id = _userid
 		ORDER BY name;
@@ -76,7 +58,7 @@ CREATE PROCEDURE GetWebsitesByUserId(IN _userid INT)
 DROP PROCEDURE IF EXISTS GetWebsitesBySolverId;
 CREATE PROCEDURE GetWebsitesBySolverId(IN _id INT)
 	BEGIN
-		SELECT id, name, url
+		SELECT *
 		FROM website
 		WHERE website.solver_id = _id
 		ORDER BY name;
@@ -87,11 +69,18 @@ CREATE PROCEDURE GetWebsitesBySolverId(IN _id INT)
 DROP PROCEDURE IF EXISTS GetWebsitesBySpaceId;
 CREATE PROCEDURE GetWebsitesBySpaceId(IN _id INT)
 	BEGIN
-		SELECT id, name, url
+		SELECT *
 		FROM website
 		WHERE website.space_id = _id
 		ORDER BY name;
 	END //	
 
+DROP PROCEDURE IF EXISTS GetWebsiteById;
+CREATE PROCEDURE GetWebsiteById(IN _id INT)
+BEGIN
+	SELECT * FROM website WHERE id = _id;
+END //
+
+	
 
 DELIMITER ; -- This should always be at the end of this file

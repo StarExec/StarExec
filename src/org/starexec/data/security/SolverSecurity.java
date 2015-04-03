@@ -10,11 +10,11 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
-import org.starexec.data.database.Websites.WebsiteType;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Website;
+import org.starexec.data.to.Website.WebsiteType;
 
 public class SolverSecurity {
 	/**

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
@@ -275,7 +276,12 @@ public class JobToXMLer {
 
 		//Id of queue : queue-id
 		Attr queueID = doc.createAttribute("value");
-		queueID.setValue(Integer.toString(job.getQueue().getId()));
+		org.starexec.data.to.Queue q = job.getQueue();
+		if (q!=null) {
+			queueID.setValue(Integer.toString(q.getId()));
+		}  else {
+			queueID.setValue("-1"); // there isn't any queue
+		}
 		queueIdElement.setAttributeNode(queueID);
 
 		attrsElement.appendChild(queueIdElement);
