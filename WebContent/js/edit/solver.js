@@ -105,7 +105,8 @@ function attachButtonActions(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/recycle/solver/" + getParameterByName("id"),
+							starexecRoot+"services/recycle/solver",
+							{selectedIds: [getParameterByName("id")]},
 							function(returnCode) {
 								s=parseReturnCode(returnCode);
 								if (s) {

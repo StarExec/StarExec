@@ -46,11 +46,11 @@ CREATE PROCEDURE LeaveSpace(IN _userId INT, IN _spaceId INT)
 -- Removes every association a user has with every space in the hierarchy rooted at the given spacew
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS LeaveHierarchy;
-CREATE PROCEDURE LeaveHierarchy(IN _userId INT, IN _commId INT)
+CREATE PROCEDURE LeaveHierarchy(IN _userId INT, IN _spaceId INT)
 	BEGIN
 		DELETE user_assoc FROM user_assoc
 		JOIN closure ON closure.descendant=user_assoc.space_id
-		WHERE closure.ancestor=_commId AND user_id=_userId;
+		WHERE closure.ancestor=_spaceId AND user_id=_userId;
 	END //
 
 DROP PROCEDURE IF EXISTS DropCommunityAssoc;

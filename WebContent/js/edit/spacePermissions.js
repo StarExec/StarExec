@@ -691,8 +691,7 @@ function makeDemoteData(){
 			removeSolver    : true,
 			removeSpace	: true,
 			removeUser	: true,
-			isLeader        : false,
-			leaderStatusChange : true
+			isLeader        : false
 	};
     return data;
 }
@@ -709,8 +708,7 @@ function makePromoteData(){
 			removeSolver    : true,
 			removeSpace	: true,
 			removeUser	: true,
-			isLeader        : true,
-			leaderStatusChange : true
+			isLeader        : true
 	};
     return data;
 }
@@ -744,8 +742,7 @@ function changePermissions(hier,changingLeadership){
 			removeSpace	: $("#removeSpace").is(':checked'),
 			removeUser	: $("#removeUser").is(':checked'),
 			//isLeader 	: $("#leaderStatus").is(':checked'),
-			isLeader        : ($("#leaderStatus").attr("value") == "demote"),
-			leaderStatusChange : false
+			isLeader        : ($("#leaderStatus").attr("value") == "demote")
 	    };
     }
     else{

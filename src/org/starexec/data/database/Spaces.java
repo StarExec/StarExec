@@ -684,6 +684,36 @@ public class Spaces {
 	}
 	
 	/**
+	 * Removes a user's association to every space within the hierarchy rooted at the given space
+	 * @param userId the id of the user to remove from the space
+	 * @param spaceId the id of the space to remove the user from
+	 * @return true iff the user was successfully removed from the community referenced by 'commId',
+	 * false otherwise
+	 * @author Todd Elvers
+	 */
+	
+	public static boolean leave(int userId, int spaceId) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL LeaveHierarchy(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, spaceId);
+			
+			procedure.executeUpdate();			
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Gets the number of  subspaces of a given job space
 	 * 
 	 * @param jobSpaceId the id of the job space to count the Spaces in

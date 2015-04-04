@@ -124,9 +124,9 @@ public class BenchmarkSecurityTests extends TestSequence {
 	private void canEditBenchmarkTest() {
 		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
-		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), user1.getId()).isSuccess());
-		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(), admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(), user2.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(),b1.getType().getId(), user1.getId()).isSuccess());
+		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(),b1.getType().getId(), admin.getId()).isSuccess());
+		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(),b1.getType().getId(), user2.getId()).isSuccess());
 	}
 	
 	@Test

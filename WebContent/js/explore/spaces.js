@@ -932,12 +932,12 @@ function removeJobs(selectedJobs,ownsAll){
  * Handles removal of subspace(s) from a space
  * @author Todd Elvers
  */
-function removeSubspaces(selectedSubspaces,deletePrims){
+function removeSubspaces(selectedSubspaces,recyclePrims){
 	log('user confirmed (in quickremove dialog) subspace deletion');
 
 	$.post(  
-			starexecRoot+"services/remove/subspace/" + spaceId,
-			{selectedIds : selectedSubspaces, deletePrims : deletePrims},					
+			starexecRoot+"services/remove/subspace",
+			{selectedIds : selectedSubspaces, recyclePrims : recyclePrims},					
 			function(returnCode) {
 				parseReturnCode(returnCode);
 				
@@ -970,7 +970,7 @@ function quickRemove(selectedSubspaces){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/quickRemove/subspace/" + spaceId,
+						starexecRoot+"services/quickRemove/subspace",
 						{selectedIds : selectedSubspaces},
 						function(returnCode) {
 							s=parseReturnCode(returnCode);
@@ -993,7 +993,7 @@ function quickRemove(selectedSubspaces){
 				$('#dialog-confirm-delete').dialog('close');
 
 				$.post(  
-						starexecRoot+"services/quickRemove/subspace/" + spaceId,
+						starexecRoot+"services/quickRemove/subspace",
 						{selectedIds : selectedSubspaces},
 						function(returnCode) {
 							s=parseReturnCode(returnCode);
