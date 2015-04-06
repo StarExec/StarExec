@@ -330,9 +330,9 @@ public class Users {
 	}
 
 	/**
-	 * IMPORTANT: Make sure your your queries result-set has all the columns
-	 * 			  that resultSetToUser checks for or it will throw an
-	 * 			  exception. 
+	 * NOTE: Make sure your your queries result-set has all the columns
+	 * 		 that resultSetToUser checks for or it will throw an
+	 * 		 exception. 
 	 * Returns a list of users based on the sql database stored procedure that is
 	 * input.
 	 * @param sql An sql statement used for calling a database stored procedure.

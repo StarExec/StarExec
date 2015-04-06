@@ -2,9 +2,13 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.NullPointerException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -13,10 +17,12 @@ import org.apache.commons.mail.SimpleEmail;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
+import org.starexec.data.database.Reports;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.QueueRequest;
+import org.starexec.data.to.Report;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.servlets.PasswordReset;
@@ -304,6 +310,133 @@ public class Mail {
 		
 		log.info(String.format("Password reset email sent to user [%s].", user.getFullName()));
 	}
-    
-    
+
+	/**
+	 * Checks whether or not a report was already emailed today based on if the corresponding file exists.
+	 * @return true if a report was already emailed today, else false
+	 * @author Albert Giegerich
+	 */
+	public static boolean reportsEmailedToday() {
+		log.debug("Checking if a report was already emailed today...");
+		SimpleDateFormat yearMonthDay = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date today = new java.util.Date();
+		String todaysDate = yearMonthDay.format(today);
+		
+		File reportsEmailsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
+		
+		Iterator<File> reportsIter = FileUtils.iterateFiles(reportsEmailsDirectory, new String[] {"txt"}, false);
+
+		while (reportsIter.hasNext()) {
+			// check every report file to see if there is one that was created today
+			File reports = reportsIter.next();
+			String filename = reports.getName();
+			log.debug("Found report file with name: " + filename);
+			if (filename.matches(todaysDate + ".txt")) {
+				log.debug("A report was already emailed today.");
+				return true;
+			}
+		}
+		log.debug("A report was not already emailed today.");
+		return false;
+	}
+	
+	/**
+	 * Emails reports to subscribed users.
+	 * @param recipients the subscribed users to send reports to.
+	 * @param email the reports email
+	 * @author Albert Giegerich
+	 */
+	public static void sendReports(List<User> recipients, String email) throws IOException {
+		for (User user : recipients) {
+			String finalEmail = email.replace("$$USER$$", user.getFullName());	
+			Mail.mail(finalEmail, "STAREXEC - REPORT", new String[] { user.getEmail() });
+			try {
+				// wait a while before sending the next email
+				TimeUnit.SECONDS.sleep(R.WAIT_TIME_BETWEEN_EMAILING_REPORTS);
+			} catch (InterruptedException e) {
+				log.debug("Interrupted while waiting between sending reports", e);
+			}
+		}
+	}
+
+	/**
+	 * Generates the reports email from the report data.
+	 * Does not replace $$USER$$ with any users name.
+	 * @author Albert Giegerich
+	 * @return the String representation of the email.
+	 */
+	public static String generateGenericReportsEmail() throws IOException {
+		String email = null;
+		try {
+			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reports_email.txt"));
+		} catch (IOException e) {
+			throw new IOException("Could not open reports_email.txt", e);
+		}
+
+		SimpleDateFormat yearMonthDay = new SimpleDateFormat("MMMMM dd, yyyy");
+		Calendar calendar = Calendar.getInstance();
+		java.util.Date today = calendar.getTime();
+		calendar.add(Calendar.DAY_OF_MONTH, -7);
+
+		java.util.Date lastWeek = calendar.getTime();
+		
+		String todaysDate = yearMonthDay.format(today); 
+		String lastWeeksDate = yearMonthDay.format(lastWeek);
+
+		email = email.replace("$$DATE$$", lastWeeksDate + " to " + todaysDate);
+
+		List<Report> mainReports = Reports.getAllReportsNotRelatedToQueues();
+		List<List<Report>> reportsByQueue = Reports.getAllReportsForAllQueues();
+
+		if (mainReports == null || reportsByQueue == null) {
+			throw new NullPointerException("Reports are null.");
+		}
+
+		StringBuilder reportBuilder = new StringBuilder();
+
+		// build the main reports string
+		for (Report report : mainReports) {
+			reportBuilder.append(report.getEventName() + ": " + report.getOccurrences() + "\n");
+		}
+
+		email = email.replace("$$MAIN_REPORTS$$", reportBuilder.toString());
+
+		// clear the report builder
+		reportBuilder = reportBuilder.delete(0, reportBuilder.length()); 
+
+		// build the queue reports string
+		for (List<Report> reportsForOneQueue : reportsByQueue) {
+			String currentQueueName = reportsForOneQueue.get(0).getQueueName();
+			reportBuilder.append("queue: " + currentQueueName + "\n");
+			for (Report report : reportsForOneQueue) {
+				reportBuilder.append("  " + report.getEventName() + ": " + report.getOccurrences() + "\n");
+			}
+			reportBuilder.append("\n");
+		}
+
+		email = email.replace("$$QUEUE_REPORTS$$", reportBuilder.toString());
+
+		return email;
+	}
+
+	/**
+	 * Stores the reports email as a text file.
+	 * @param email the reports email.
+	 * @author Albert Giegerich
+	 */
+	public static void storeReportsEmail(String email)  throws IOException {
+		email = email.replace("$$USER$$", "");
+
+		SimpleDateFormat yearMonthDay = new SimpleDateFormat("yyyy-MM-dd");
+		java.util.Date currentTime = new java.util.Date();
+		
+		// save the reports as todays date yyyy-MM-dd.txt
+		String todaysDate = yearMonthDay.format(currentTime); 
+		String filename = todaysDate + ".txt";
+		File todaysReport = new File(R.STAREXEC_DATA_DIR + "/reports/", filename);
+
+		log.debug("Storing reports email as " + R.STAREXEC_DATA_DIR + "/reports/" +  filename);
+		todaysReport.createNewFile();
+		FileUtils.writeStringToFile(todaysReport, email, "UTF8", false); 
+	}
 }

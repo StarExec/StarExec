@@ -41,6 +41,8 @@ fi
 
 setEndTime
 
+recordJobPairRun
+
 cleanWorkspace 0
 
 

@@ -458,6 +458,12 @@ function setEndTime {
 	return $?
 }
 
+function recordJobPairRun {
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddToEventOccurrencesNotRelatedToQueue('job pairs run', 1); CALL AddToEventOccurrencesForJobPairsQueue('job pairs run', 1, $PAIR_ID)"
+	return $?
+}
+
+
 function sendNode {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, '$1', '$2' )"
 	log "sent Node Id $1 to $REPORT_HOST in sandbox $2"

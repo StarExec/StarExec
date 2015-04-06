@@ -1,8 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" 
-import="org.starexec.data.database.*, 
+import="org.apache.commons.io.FileUtils,
+		org.starexec.data.database.*, 
 		org.starexec.data.to.*,
 		org.starexec.constants.*, 
 		org.starexec.util.*, 
+		java.io.File,
 		java.util.*" 
 %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
@@ -14,6 +16,9 @@ import="org.starexec.data.database.*,
 		// Get all the report data.
 		List<Report> reportsNotRelatedToQueues = Reports.getAllReportsNotRelatedToQueues();
 		List<List<Report>> reportsForAllQueues = Reports.getAllReportsForAllQueues();
+		
+		File pastReportsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
+		List<File> pastReports = (List)FileUtils.listFiles(pastReportsDirectory, new String[]{"txt"}, false);
 
 		String subscribeUnsubscribeButtonId = "";
 		String subscribeUnsubscribeButtonMessage = "";
@@ -30,6 +35,7 @@ import="org.starexec.data.database.*,
 		request.setAttribute("subscribeUnsubscribeButtonId", subscribeUnsubscribeButtonId);
 		request.setAttribute("subscribeUnsubscribeButtonMessage", subscribeUnsubscribeButtonMessage);
 		request.setAttribute("userId", userId);
+		request.setAttribute("pastReports", pastReports);
 		
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -38,7 +44,7 @@ import="org.starexec.data.database.*,
 <star:template title="Reports" js="explore/reports" css="explore/reports, common/table, details/shared,explore/jquery.qtip, explore/common">			
 	<div id="mainPanel">
 		<span id="userId" value="${userId}"></span>
-		<div id="subscribeUnsubscribeButtonContainer">
+		<div id="subscribeUnsubscribeButtonContainer" class="center">
 			<input id="${subscribeUnsubscribeButtonId}" type="button" value="${subscribeUnsubscribeButtonMessage}">
 		</div>
 		<fieldset id="mainReports">
@@ -73,5 +79,23 @@ import="org.starexec.data.database.*,
 			</table>
 		</fieldset>
 		</c:forEach>
+		
+		<div id="pastReports">
+			<fieldset>
+				<legend>past reports</legend>
+				<table>
+					<thead>
+						<th>file</th>
+					</thead>
+					<tbody>
+						<c:forEach items="${pastReports}" var="report">
+						<tr class="center">
+							<td><a href="/${starexecRoot}/services/reports/past/${report.getName()}"><c:out value="${report.getName()}"/></a></td>
+						</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</fieldset>
+		</div>
 	</div>	
 </star:template>

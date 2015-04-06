@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Common;
+import org.starexec.data.database.Reports;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
@@ -76,6 +77,8 @@ public class SessionFilter implements Filter {
 		
 		// Also save in the database to maintain a historical record
 		Common.addLoginRecord(user.getId(), ip, rawBrowser);
+		// Also save in the weekly reports table
+		Reports.addToEventOccurrencesNotRelatedToQueue("logins", 1);
 	}
 
 	@Override

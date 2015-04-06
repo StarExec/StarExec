@@ -19,9 +19,39 @@ DROP PROCEDURE IF EXISTS AddToEventOccurrencesForQueue;
 CREATE PROCEDURE AddToEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _queueName VARCHAR(64))
 	BEGIN
 		SET @queueId := (SELECT id FROM queues WHERE name=_queueName);
-		UPDATE report_data
-		SET occurrences = occurrences + _eventOccurrences
-		WHERE event_name = _eventName AND queue_id = @queueId;
+		-- make sure the queue exists
+		IF @queueId IS NOT NULL THEN
+			-- check if the event already exists for this queue and add to it if it does 
+			IF EXISTS (SELECT 1 FROM report_data WHERE queue_id=@queueId) AND EXISTS (SELECT 1 FROM report_data WHERE event_name=_eventName) THEN
+				UPDATE report_data
+				SET occurrences = occurrences + _eventOccurrences
+				WHERE event_name = _eventName AND queue_id = @queueId;
+			-- otherwise create the event with the given number of occurrences
+			ELSE 
+				INSERT INTO report_data (event_name, queue_id, occurrences)
+				VALUES (_eventName, @queueId, _eventOccurrences);
+			END IF;
+		END IF;
+	END //
+
+-- Add to the value of an event's occurrences for a specific queue related to a specific job pair.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS AddToEventOccurrencesForJobPairsQueue;
+CREATE PROCEDURE AddToEventOccurrencesForJobPairsQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _pairId INT)
+	BEGIN
+		 SET @queueId := (SELECT queue_id
+			 			  FROM job_pairs
+			 			  INNER JOIN jobs
+			 			  ON job_pairs.job_id=jobs.id
+			 			  WHERE job_pairs.id=_pairId);
+
+		IF @queueId IS NOT NULL THEN
+			INSERT IGNORE INTO report_data (event_name, occurrences, queue_id) VALUES (_eventName, 0, @queueId);
+
+			SET @queueName := (SELECT name FROM queues WHERE id=@queueId);
+
+			CALL AddToEventOccurrencesForQueue(_eventName, _eventOccurrences, @queueName);	
+		END IF;
 	END //
 
 -- Gets all event names and occurrences for all events not related to a queue.
@@ -65,6 +95,18 @@ CREATE PROCEDURE GetEventOccurrencesForQueue(IN _eventName VARCHAR(64), _queueNa
 		SELECT occurrences
 		FROM report_data
 		WHERE event_name = _eventName AND queue_id = @queueId;
+	END //
+
+-- Resets all report data by setting all occurrences to 0 and deleting queue related rows
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS ResetReports;
+CREATE PROCEDURE ResetReports()
+	BEGIN
+		UPDATE report_data
+		SET occurrences = 0
+		WHERE queue_id IS NULL;
+		DELETE FROM report_data
+		WHERE queue_id IS NOT NULL;
 	END //
 
 DELIMITER ; -- this should always be at the end of the file

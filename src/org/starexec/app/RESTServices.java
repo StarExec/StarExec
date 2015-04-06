@@ -4000,9 +4000,11 @@ public class RESTServices {
 
 	
 	//TODO: These subscription functions seem to not be using the correct security. 
-	//TODO: Document?
 	/**
 	 * Subscribes a user to the e-mail report system.
+	 * @param userId id of the user to subscribe.
+	 * @param request HTTP request sent to the server.
+	 * @return JSON object containing information about whether the subscription attempt succeeded or failed.
 	 * @author Albert Giegerich
 	 */
 	@POST
@@ -4010,8 +4012,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String subscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status = UserSecurity.canUserSuspendOrReinstateUser(id);
-		if (!status.isSuccess()) {
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUser(id);
+		// Users can always subscribe themselves.
+		if (!status.isSuccess() && id != userId) {
 			return gson.toJson(status);
 		}
 
@@ -4021,6 +4024,9 @@ public class RESTServices {
 
 	/**
 	 * Unsubscribes a user from the e-mail report system.
+	 * @param userId the user to be unsubscribed from the system.
+	 * @param request HTTP request sent to the server.
+	 * @return JSON object containing information about whether the unsubscription attempt succeeded or failed.
 	 * @author Albert Giegerich
 	 */
 	@POST
@@ -4028,14 +4034,37 @@ public class RESTServices {
 	@Produces("application/json")
 	public String unsubscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status = UserSecurity.canUserSuspendOrReinstateUser(id);
-		if (!status.isSuccess()) {
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUser(id);
+		// Users can always unsubscribe themselves.
+		if (!status.isSuccess() && id != userId) {
 			return gson.toJson(status);
 		}
 
 		boolean success = Users.unsubscribeFromReports(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
+
+	/**
+	 * Sends the requested past report text file contents.
+	 * @param reportName the file name of the past report.
+	 * @param request HTTP request sent to the server.
+	 * @return the contents of the requested file.
+	 * @author Albert Giegerich	
+	 */
+	@GET
+	@Path("/reports/past/{reportName}")
+	@Produces("text/plain")	
+	public String getPastReport(@PathParam("reportName") String reportName, @Context HttpServletRequest request) {
+		try {
+			File pastReport = new File(R.STAREXEC_DATA_DIR, "/reports/" + reportName);
+			String pastReportContents = FileUtils.readFileToString(pastReport, "UTF8");
+			return pastReportContents;
+		} catch (IOException e) {
+			return "Could not get file.";
+		}
+	}
+
+
 	
 	@POST
 	@Path("/admin/pauseAll")

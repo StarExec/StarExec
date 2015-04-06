@@ -1,4 +1,5 @@
 package org.starexec.constants;
+import java.util.Calendar;
 import java.util.HashMap;
 import org.starexec.backend.*;
 
@@ -156,6 +157,10 @@ public class R {
     public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
     public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
+	public static final int EMAIL_REPORTS_PERIOD = 7;						  // How often (in days) to send StarExec reports to subscribed users
+	public static final int MAX_NUMBER_OF_REPORTS_TO_SEND = 30;               // Maximum number of StarExec report emails to send every period
+	public static final int WAIT_TIME_BETWEEN_EMAILING_REPORTS = 2;           // Number of seconds to wait between reports being sent
+	public static final int EMAIL_REPORTS_DAY = Calendar.MONDAY;              // Day of the week to email reports
     public static HashMap<Integer,HashMap<String,Long>> COMM_INFO_MAP = null;
     public static Long COMM_ASSOC_LAST_UPDATE = null;    //last time community_assoc table was updated (milliseconds)
     public static long COMM_ASSOC_UPDATE_PERIOD = 21600000;  //how much time we should wait before requerying for community_assoc table, currentely set to a 10 seconds (milliseconds)

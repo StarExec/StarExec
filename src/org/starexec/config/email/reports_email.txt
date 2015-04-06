@@ -1,0 +1,7 @@
+$$USER$$
+
+Reports for $$DATE$$:
+
+$$MAIN_REPORTS$$
+$$QUEUE_REPORTS$$
+-STAREXEC TEAM

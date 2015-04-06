@@ -362,7 +362,6 @@ public class Jobs {
 		try {			
 			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
 			
-			
 			con = Common.getConnection();
 			
 			//create mirror space hierarchies for saving benchmarks if the user wishes
@@ -399,6 +398,11 @@ public class Jobs {
 
 			
 			Jobs.addJob(con, job);
+			// record the job being added in the reports table
+			Reports.addToEventOccurrencesNotRelatedToQueue("jobs initiated", 1);
+			// record the job being added for the queue it was added to
+			Reports.addToEventOccurrencesForQueue("jobs initiated", 1, job.getQueue().getName());
+			
 			
 			log.debug("job added, associating next");
 			//put the job in the space it was created in, assuming a space was selected

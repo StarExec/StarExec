@@ -1,6 +1,11 @@
 package org.starexec.app;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,13 +21,17 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestManager;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.ConfigUtil;
+import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -224,6 +233,35 @@ public class Starexec implements ServletContextListener {
 				
 			}
 		};
+
+		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
+			@Override
+			protected void dorun() {
+				log.info("weeklyReportsTask (periodic)");
+				List<User> subscribedUsers = Users.getAllUsersSubscribedToReports();
+				try {
+					if (subscribedUsers.size() > Users.getCount()) {
+						// make sure that we're not sending unnecessary emails
+						throw new Exception("There are more users subscribed to reports than users in the system!");
+					}
+
+					Calendar today = Calendar.getInstance();
+					// check if it's the day to email reports and check if reports were already sent today
+					if (today.get(Calendar.DAY_OF_WEEK) == R.EMAIL_REPORTS_DAY && !Mail.reportsEmailedToday()) {
+						String reportsEmail = Mail.generateGenericReportsEmail();
+						log.info("Storing reports and sending reports to subscribed users.");
+						Mail.storeReportsEmail(reportsEmail);
+						Mail.sendReports(subscribedUsers, reportsEmail);
+						// set all the events occurrences in the reports table back to 0
+						Reports.resetReports();
+					}
+				} catch (IOException e) {
+					log.error("Issue while storing reports email as text file.", e);
+				} catch (Exception e) {
+					log.error("Exception while trying to send reports.", e);
+				}
+			}
+		};
 		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
@@ -238,6 +276,9 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
 
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
+
+			// checks if reports need to be sent every day 
+			taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
 
 		    // this task seems to have a number of problems currently, such as leaving jobs paused after it runs
 		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
