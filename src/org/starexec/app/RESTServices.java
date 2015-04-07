@@ -3999,7 +3999,6 @@ public class RESTServices {
 	}
 
 	
-	//TODO: These subscription functions seem to not be using the correct security. 
 	/**
 	 * Subscribes a user to the e-mail report system.
 	 * @param userId id of the user to subscribe.
