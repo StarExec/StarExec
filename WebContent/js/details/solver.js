@@ -97,8 +97,7 @@ function attachButtonActions() {
 					$(this).dialog("close");
 					createDialog("Processing your download request, please wait. This will take some time for large solvers.");
 					token=Math.floor(Math.random()*100000000);
-					window.location.href = starexecRoot+"secure/download?token=" + token + "&type=reupload&id="+$("#solverId").attr("value");
-					//$('#downLink3').attr('href', starexecRoot+"secure/download?token=" + token + "&type=reupload&id=" + $("#solverId").attr("value"));
+					window.location.href = starexecRoot+"secure/download?token=" + token + "&reupload=true&type=solver&id="+$("#solverId").attr("value");
 					destroyOnReturn(token);
 				},
 				"cancel": function() {

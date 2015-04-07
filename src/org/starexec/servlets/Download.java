@@ -57,7 +57,10 @@ public class Download extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
-
+	
+	private static String PARAM_TYPE = "type";
+	private static String PARAM_ID = "id";
+	private static String PARAM_REUPLOAD = "reupload";
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		User u = SessionUtil.getUser(request);
@@ -82,37 +85,35 @@ public class Download extends HttpServlet {
 				response.addCookie(newCookie);
 			}
 			
-			if (request.getParameter("type").equals("solver")) {
-				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
+			if (request.getParameter(PARAM_TYPE).equals("solver")) {
+				Solver s = Solvers.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName=s.getName();
+				boolean reupload = false;
+				if (Util.paramExists(PARAM_REUPLOAD, request)) {
+					reupload = Boolean.parseBoolean(request.getParameter(PARAM_REUPLOAD));
+				}
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleSolver(s, u.getId(), response, false);
-			} else if (request.getParameter("type").equals("reupload")) {
-				Solver s = Solvers.get(Integer.parseInt(request.getParameter("id")));
-				shortName=s.getName();
-				shortName=shortName.replaceAll("\\s+",""); 
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleSolver(s, u.getId(), response, true);
-			} else if (request.getParameter("type").equals("bench")) {
-				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter("id")));
+				success = handleSolver(s, u.getId(), response, reupload);
+			}  else if (request.getParameter(PARAM_TYPE).equals("bench")) {
+				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName=b.getName();
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleBenchmark(b, u.getId(), response);
-			} else if (request.getParameter("type").equals("jp_output")) {
-				int id =Integer.parseInt(request.getParameter("id"));
+			} else if (request.getParameter(PARAM_TYPE).equals("jp_output")) {
+				int id =Integer.parseInt(request.getParameter(PARAM_ID));
 				shortName="Pair_"+id;
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handlePairOutput(id, u.getId(), response);				
-			} else if (request.getParameter("type").equals("jp_outputs")) {
+			} else if (request.getParameter(PARAM_TYPE).equals("jp_outputs")) {
 				List<Integer> ids=Validator.convertToIntList(request.getParameter("id[]"));
 				shortName="Pair_Output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success=handlePairOutputs(ids,u.getId(),response);
-			} else if (request.getParameter("type").equals("spaceXML")) {
+			} else if (request.getParameter(PARAM_TYPE).equals("spaceXML")) {
 
-				Space space = Spaces.get(Integer.parseInt(request.getParameter("id")));
+				Space space = Spaces.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName=space.getName()+"_XML";
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
@@ -130,16 +131,17 @@ public class Download extends HttpServlet {
 				
 			success = handleSpaceXML(space, u.getId(), response, includeAttributes,updates,upid);
 
-			} else if (request.getParameter("type").equals("jobXML")) {
-				Job job = Jobs.get(Integer.parseInt(request.getParameter("id")));
+			} else if (request.getParameter(PARAM_TYPE).equals("jobXML")) {
+				Job job = Jobs.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 
 				shortName="Job"+ job.getId() + "_XML";
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJobXML(job, u.getId(), response);
-
-			} else if (request.getParameter("type").equals("job")) {
-				Integer jobId = Integer.parseInt(request.getParameter("id"));
+				
+				// this next condition is for the CSV file
+			} else if (request.getParameter(PARAM_TYPE).equals("job")) {
+				Integer jobId = Integer.parseInt(request.getParameter(PARAM_ID));
 				String lastSeen=request.getParameter("since");
 				String returnids=request.getParameter("returnids");
 				String getCompleted=request.getParameter("getcompleted");
@@ -160,8 +162,8 @@ public class Download extends HttpServlet {
 				shortName="Job"+jobId+"_info";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJob(jobId, u.getId(), response, since,ids,complete);
-			}  else if (request.getParameter("type").equals("space")) {
-				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter("id")), u.getId());
+			}  else if (request.getParameter(PARAM_TYPE).equals("space")) {
+				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter(PARAM_ID)), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
 				//to get both solvers and benchmarks
 				boolean includeSolvers=true;
@@ -184,27 +186,27 @@ public class Download extends HttpServlet {
 				}
 
 			  
-			} else if (request.getParameter("type").equals("proc")) {
+			} else if (request.getParameter(PARAM_TYPE).equals("proc")) {
 				List<Processor> proc=null;
 				shortName="Processor";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				if (request.getParameter("procClass").equals("post")) {
 					
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.POST);
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.POST);
 				} else if (request.getParameter("procClass").equals("pre")){
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.PRE);
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.PRE);
 				}
 				else {
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter("id")), Processor.ProcessorType.BENCH);
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.BENCH);
 				}
 				if (proc.size()>0) {
-					success= handleProc(proc,u.getId(),Integer.parseInt(request.getParameter("id")) , response);
+					success= handleProc(proc,u.getId(),Integer.parseInt(request.getParameter(PARAM_ID)) , response);
 				} else {
 					response.sendError(HttpServletResponse.SC_NO_CONTENT,"There are no processors to download");
 					return;
 				}
-			} else if (request.getParameter("type").equals("j_outputs")) {
-				int jobId=Integer.parseInt(request.getParameter("id"));
+			} else if (request.getParameter(PARAM_TYPE).equals("j_outputs")) {
+				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
 				
 				String lastSeen=request.getParameter("since");
 				Integer since=null;
@@ -842,14 +844,13 @@ public class Download extends HttpServlet {
 	 */
 	public static ValidatorStatusCode validateRequest(HttpServletRequest request) {
 		try {
-			if (!Util.paramExists("type", request)) {
+			if (!Util.paramExists(PARAM_TYPE, request)) {
 				return new ValidatorStatusCode(false, "A download type was not specified");
 			}
-			String type=request.getParameter("type");
+			String type=request.getParameter(PARAM_TYPE);
 			
 
 			if (!(type.equals("solver") ||
-					type.equals("reupload") ||
 					type.equals("bench") ||
 					type.equals("spaceXML") ||
 			        type.equals("jobXML") ||
@@ -866,12 +867,12 @@ public class Download extends HttpServlet {
 			
 			int userId=SessionUtil.getUserId(request);
 			if (!type.equals("jp_outputs")) {
-				if (!Validator.isValidInteger(request.getParameter("id"))) {
+				if (!Validator.isValidInteger(request.getParameter(PARAM_ID))) {
 					new ValidatorStatusCode(false, "The given id was not a valid integer");
 				}
-				int id=Integer.parseInt(request.getParameter("id"));
+				int id=Integer.parseInt(request.getParameter(PARAM_ID));
 				ValidatorStatusCode status=null;
-				if (type.equals("solver") || type.equals("reupload")) {
+				if (type.equals("solver")) {
 					status=SolverSecurity.canUserDownloadSolver(id,userId);
 					if (!status.isSuccess()) {
 						return status;

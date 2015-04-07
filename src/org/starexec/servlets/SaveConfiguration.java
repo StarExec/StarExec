@@ -59,8 +59,12 @@ public class SaveConfiguration extends HttpServlet {
 			
 			// Redirect user based on how the configuration handling went
 			if(result == -1) {
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, "Failed to save new configuration."));
+
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to save new configuration.");	
 			} else {
+				response.addCookie(new Cookie("New_ID", String.valueOf(result)));
+
 			    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)request.getParameter(SOLVER_ID))));	
 			}									
     	} catch (Exception e) {

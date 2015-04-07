@@ -42,7 +42,6 @@ public class UploadSpaceXML extends HttpServlet {
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     private static final String SPACE_ID = "space";
     private static final String UPLOAD_FILE = "f";
-	private static final String users = "users";
 
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
