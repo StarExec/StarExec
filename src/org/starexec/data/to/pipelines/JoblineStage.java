@@ -26,7 +26,6 @@ public class JoblineStage {
 	private double userTime;
 	private double systemTime;
 	private Status status = null;
-	private double memoryUsage;
 	private double maxVirtualMemory;
 	private double maxResidenceSetSize;
 	private Configuration configuration = null;
@@ -73,13 +72,6 @@ public class JoblineStage {
 		this.maxVirtualMemory = maxVirtualMemory;
 	}
 
-	public double getMemoryUsage() {
-		return memoryUsage;
-	}
-
-	public void setMemoryUsage(double memoryUsage) {
-		this.memoryUsage = memoryUsage;
-	}
 
 	public double getSystemTime() {
 		return systemTime;

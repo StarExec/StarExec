@@ -1052,7 +1052,6 @@ public class JobPairs {
 		stage.setCpuUsage(result.getDouble("jobpair_stage_data.cpu"));
 		stage.setUserTime(result.getDouble("jobpair_stage_data.user_time"));
 		stage.setSystemTime(result.getDouble("jobpair_stage_data.system_time"));		
-		stage.setMemoryUsage(result.getDouble("jobpair_stage_data.mem_usage"));
 		stage.setMaxVirtualMemory(result.getDouble("jobpair_stage_data.max_vmem"));
 		stage.setMaxResidenceSetSize(result.getDouble("jobpair_stage_data.max_res_set"));
 		stage.setStageId(result.getInt("jobpair_stage_data.stage_id"));

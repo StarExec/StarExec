@@ -338,7 +338,6 @@ CREATE TABLE jobpair_stage_data (
 	stage_id INT, -- References pipeline_stages stages are ordered by this ID as well.
 	cpu DOUBLE,
 	wallclock DOUBLE,
-	mem_usage DOUBLE,
 	max_vmem DOUBLE,
 	max_res_set DOUBLE,
 	user_time DOUBLE,

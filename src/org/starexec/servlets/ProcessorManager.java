@@ -134,48 +134,6 @@ public class ProcessorManager extends HttpServlet {
 	}
 	
 	/**
-	 * Attempts to copy a processor in the old format over to the new format
-	 * @param p the processor to copy over
-	 * @return true on success, false on failure. Failure will occur for a processor that is already in the new format
-	 * @throws Exception
-	 */
-	private static boolean copyProcessorToNewFormat(Processor p) throws Exception {
-		
-		File curFile=new File(p.getFilePath());
-		if (curFile.exists() && !curFile.isDirectory()) {
-			File newDirectory=getProcessorDirectory(p.getCommunityId(),p.getName());
-			if (newDirectory.exists()) {
-				File destination=new File(newDirectory,R.PROCESSOR_RUN_SCRIPT);
-				FileUtils.copyFile(curFile,destination);
-				return Processors.updateFilePath(p.getId(), newDirectory.getAbsolutePath());
-			}
-			
-			
-		}
-		return true; //we didn't need to do anything, so this is a success
-	}
-	
-	/**
-	 * One time task for copying all existing processors over into the new format.
-	 */
-	public static void copyAllProcessorsToNewFormat() {
-		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
-		for (ProcessorType type : types) {
-			List<Processor> procs=Processors.getAll(type);
-			for (Processor p : procs) {
-				try {
-					if (!copyProcessorToNewFormat(p)) {
-						log.error("error when trying to copy processor id = "+p.getId());
-					}
-				} catch(Exception e ){
-					log.error("got an error when trying to copy processor id = "+p.getId());
-					log.error(e.getMessage(),e);
-				}
-				
-			}
-		}
-	}
-	/**
 	 * Given a directory, recursively sets all files in the directory as executable
 	 * @param directory The directory in quesiton
 	 */
