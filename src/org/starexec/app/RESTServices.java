@@ -2708,6 +2708,7 @@ public class RESTServices {
 	@Path("/remove/subspace")
 	@Produces("application/json")
 	public String removeSubspacesFromSpace(@Context HttpServletRequest request) {
+		
 		int userId=SessionUtil.getUserId(request);
 		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
 				
@@ -2777,7 +2778,6 @@ public class RESTServices {
 	 * Only removes a subspace's association with a space, thereby removing the subspace
 	 * from the space
 	 * 
-	 * @param parentSpaceId the id the space to remove the subspace from
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters,<br>
 	 * 			2: insufficient permissions,<br>
@@ -2787,10 +2787,9 @@ public class RESTServices {
 	@POST
 	@Path("/quickRemove/subspace")
 	@Produces("application/json")
-	public String quickRemoveSubspacesFromSpace(@PathParam("spaceId") int parentSpaceId, @Context HttpServletRequest request) {
+	public String quickRemoveSubspacesFromSpace(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
-		log.debug("quickRemove called from " + parentSpaceId);
 		try{
 			// Extract the String subspace id's and convert them to Integers
 			for(String id : request.getParameterValues("selectedIds[]")){
