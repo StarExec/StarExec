@@ -520,7 +520,6 @@ public class RESTServices {
 	 * @return a json string representing all communities within starexec
 	 * @author Tyler Jensen
 	 */
-	//TODO: Document?
 
 	@GET
 	@Path("/communities/details/{id}")
@@ -996,7 +995,6 @@ public class RESTServices {
 	}
 	
 	
-	//TODO: Document?
 	/**
 	 * Returns the next page of entries in a given DataTable
 	 *
@@ -1021,7 +1019,6 @@ public class RESTServices {
 
 		ValidatorStatusCode status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
 		if (!status.isSuccess()) {
-			log.debug("attempted unauthorized access");
 			return gson.toJson(status);
 		}
 		

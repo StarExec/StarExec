@@ -100,7 +100,7 @@ public class CommunityRequester extends HttpServlet {
 	 * that the user's message is between 1 and 300 characters in length
 	 */
 	private ValidatorStatusCode validateParameters(HttpServletRequest request, int userId){
-		if(Util.paramExists(Registration.USER_COMMUNITY, request)) {
+		if(!Util.paramExists(Registration.USER_COMMUNITY, request)) {
 					return new ValidatorStatusCode(false, "You need to provide a community ID");
 		}
 		
