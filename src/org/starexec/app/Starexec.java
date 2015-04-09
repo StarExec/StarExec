@@ -21,6 +21,7 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
@@ -252,8 +253,10 @@ public class Starexec implements ServletContextListener {
 						log.info("Storing reports and sending reports to subscribed users.");
 						Mail.storeReportsEmail(reportsEmail);
 						Mail.sendReports(subscribedUsers, reportsEmail);
-						// set all the events occurrences in the reports table back to 0
+						// Set all the events occurrences in the reports table back to 0.
 						Reports.resetReports();
+						// Erase all data from the logins table.
+						Logins.resetLogins();
 					}
 				} catch (IOException e) {
 					log.error("Issue while storing reports email as text file.", e);

@@ -19,6 +19,9 @@ import="org.apache.commons.io.FileUtils,
 		
 		File pastReportsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
 		List<File> pastReports = (List)FileUtils.listFiles(pastReportsDirectory, new String[]{"txt"}, false);
+		// Get the list into the correct order so most recent reports will be on top on the page.
+		Collections.sort(pastReports);
+		Collections.reverse(pastReports);
 
 		String subscribeUnsubscribeButtonId = "";
 		String subscribeUnsubscribeButtonMessage = "";

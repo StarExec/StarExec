@@ -708,5 +708,5 @@ ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primar
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 
 
-INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('logins', NULL, 0), ('jobs initiated', NULL, 0),
+INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 

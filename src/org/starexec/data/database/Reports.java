@@ -21,6 +21,28 @@ import org.starexec.data.to.Report;
 public class Reports {
 	private static final Logger log = Logger.getLogger(Reports.class);
 
+
+	/**
+	 * Set the number of occurrences for an event not related to a queue.
+	 * @param eventName the name of the event.
+	 * @param occurrences the number of times the event occurred.
+	 * @author Albert Giegerich
+	 */
+	public static void setEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
+		setEventOccurrences(eventName, occurrences, null);
+	}
+
+	/**
+	 * Set the number of occurrences for an event related to a queue.
+	 * @param eventName the name of the event.
+	 * @param occurrences the number of times the event occurred.
+	 * @param queueName the name of the queue related to the event.
+	 * @author Albert Giegerich
+	 */
+	public static void setEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
+		setEventOccurrences(eventName, occurrences, queueName);
+	}
+
 	/**
 	 * Add occurrences to an event not related to a queue.
 	 * @param eventName the name of the event.
@@ -40,6 +62,7 @@ public class Reports {
 	public static void addToEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
 		addToEventOccurrences(eventName, occurrences, queueName);
 	}
+
 
 	/**
 	 * Get the number of times an event has occurred.
@@ -142,6 +165,36 @@ public class Reports {
 		try {
 			con = Common.getConnection();
 			CallableStatement procedure = con.prepareCall("{CALL ResetReports()}");
+			procedure.executeQuery();
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	/**
+	 * Inner method that sets the number of event occurrences not related to a queue if queueName is null
+	 * otherwise sets the number of event occurrences related to the specified queue.
+	 * @param eventName the name of the event to set the number of occurrences for
+	 * @param occurrences the number of times the event occurred
+	 * @param queueName the name of the queue for which the event occurred. Null the event is unrelated to a queue.
+	 * @author Albert Giegerich
+	 */
+	private static void setEventOccurrences(String eventName, int occurrences, String queueName) {
+		Connection con = null;
+		CallableStatement procedure = null;
+
+		try {
+			con = Common.getConnection();
+			if (queueName == null) {
+				procedure = con.prepareCall("{CALL SetEventOccurrencesNotRelatedToQueue(?, ?)}");
+			} else {
+				procedure = con.prepareCall("{CALL SetEventOccurrencesForQueue(?, ?, ?)}");
+				procedure.setString(3, queueName);
+			}
+			procedure.setString(1, eventName);
+			procedure.setInt(2, occurrences);
 			procedure.executeQuery();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

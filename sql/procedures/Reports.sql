@@ -3,6 +3,40 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
+
+
+-- Set the value of an event's occurrences not related to a queue.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS SetEventOccurrencesNotRelatedToQueue;
+CREATE PROCEDURE SetEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT)
+	BEGIN
+		UPDATE report_data
+		SET occurrences = _eventOccurrences
+		WHERE event_name = _eventName AND queue_id IS NULL;
+	END //
+
+-- Set the value of an event's occurrences not related to a queue.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS SetEventOccurrencesForQueue;
+CREATE PROCEDURE SetEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _queueName VARCHAR(64))
+	BEGIN
+		SET @queueId := (SELECT id FROM queues WHERE name=_queueName);
+		-- make sure the queue exists
+		IF @queueId IS NOT NULL THEN
+			-- check if the event already exists for this queue and set it if it does 
+			IF EXISTS (SELECT 1 FROM report_data WHERE queue_id=@queueId) AND EXISTS (SELECT 1 FROM report_data WHERE event_name=_eventName) THEN
+				UPDATE report_data
+				SET occurrences = _eventOccurrences
+				WHERE event_name = _eventName AND queue_id = @queueId;
+			-- otherwise create the event with the given number of occurrences
+			ELSE 
+				INSERT INTO report_data (event_name, queue_id, occurrences)
+				VALUES (_eventName, @queueId, _eventOccurrences);
+			END IF;
+		END IF;
+	END //
+
+
 -- Adds to the value of an event's occurrences not related to a queue.
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS AddToEventOccurrencesNotRelatedToQueue; 
@@ -97,6 +131,7 @@ CREATE PROCEDURE GetEventOccurrencesForQueue(IN _eventName VARCHAR(64), _queueNa
 		WHERE event_name = _eventName AND queue_id = @queueId;
 	END //
 
+
 -- Resets all report data by setting all occurrences to 0 and deleting queue related rows
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS ResetReports;
@@ -107,6 +142,23 @@ CREATE PROCEDURE ResetReports()
 		WHERE queue_id IS NULL;
 		DELETE FROM report_data
 		WHERE queue_id IS NOT NULL;
+	END //
+
+
+-- Gets the number of unique user logins in the logins table.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetNumberOfUniqueLogins;
+CREATE PROCEDURE GetNumberOfUniqueLogins()
+	BEGIN
+		SELECT COUNT(*) FROM (SELECT DISTINCT user_id FROM logins) AS T;
+	END //
+
+-- Delete all information in the logins table.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS ResetLogins;
+CREATE PROCEDURE ResetLogins()
+	BEGIN
+		DELETE FROM logins;
 	END //
 
 DELIMITER ; -- this should always be at the end of the file
