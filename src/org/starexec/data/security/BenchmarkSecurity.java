@@ -199,6 +199,7 @@ public class BenchmarkSecurity {
 	public static ValidatorStatusCode canUserEditBenchmark(int benchId, String name,String desc,int typeId, int userId) {
 		// Ensure the parameters are valid
 		if(!Validator.isValidBenchName(name)) { 
+			
 			return new ValidatorStatusCode(false, "The new name is not valid. Please refer to the help pages to find format for benchmark names");
 		}
 		
@@ -223,18 +224,7 @@ public class BenchmarkSecurity {
 		} else if (p.getType()!=ProcessorType.BENCH) {
 			return new ValidatorStatusCode(false, "The given type is not a benchmark processor type");
 		}
-		boolean hasTypeAccess = false;
-		for (Processor proc : Processors.getByUser(userId, ProcessorType.BENCH)) {
-			if (proc.getId()==typeId) {
-				hasTypeAccess = true;
-				break;
-			}
-		}
-		if (!hasTypeAccess) {
-			return new ValidatorStatusCode(false, "You do not have permission to use the given type");
-		}
-		
-		return new ValidatorStatusCode(true);
+		return ProcessorSecurity.canUserSeeProcessor(typeId, userId);
 	}
 	
 	/**

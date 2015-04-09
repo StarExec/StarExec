@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.BenchmarkSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -124,7 +124,8 @@ public class BenchmarkSecurityTests extends TestSequence {
 	private void canEditBenchmarkTest() {
 		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
-		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(),b1.getType().getId(), user1.getId()).isSuccess());
+		ValidatorStatusCode code = BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(),b1.getType().getId(), user1.getId());
+		Assert.assertEquals(true,code.isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b1.getDescription(),b1.getType().getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(),b1.getType().getId(), user2.getId()).isSuccess());
 	}
