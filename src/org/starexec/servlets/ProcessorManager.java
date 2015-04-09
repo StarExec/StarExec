@@ -65,7 +65,7 @@ public class ProcessorManager extends HttpServlet {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}	
 	
-	@GET
+	
 	@Path("/update")
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 		try {			
