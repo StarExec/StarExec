@@ -5,6 +5,7 @@ import="org.apache.commons.io.FileUtils,
 		org.starexec.constants.*, 
 		org.starexec.util.*, 
 		java.io.File,
+		java.text.ParseException,
 		java.util.*" 
 %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
@@ -19,9 +20,25 @@ import="org.apache.commons.io.FileUtils,
 		
 		File pastReportsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
 		List<File> pastReports = (List)FileUtils.listFiles(pastReportsDirectory, new String[]{"txt"}, false);
+
 		// Get the list into the correct order so most recent reports will be on top on the page.
 		Collections.sort(pastReports);
 		Collections.reverse(pastReports);
+
+		// Get the name of the last report and remove the file ending to get a string representation of the last
+		// reports date. 
+		String lastReportDay = "";
+		if (!pastReports.isEmpty()) { 
+			File lastReport = pastReports.get(0);
+			lastReportDay = lastReport.getName().replace(".txt", "");
+		}
+
+
+		// Only add "since" to the title suffix if their is a last report.	
+		String titleSuffix = "";
+		if (!lastReportDay.equals("")) {
+			titleSuffix = "since " + lastReportDay;
+		}
 
 		String subscribeUnsubscribeButtonId = "";
 		String subscribeUnsubscribeButtonMessage = "";
@@ -39,12 +56,13 @@ import="org.apache.commons.io.FileUtils,
 		request.setAttribute("subscribeUnsubscribeButtonMessage", subscribeUnsubscribeButtonMessage);
 		request.setAttribute("userId", userId);
 		request.setAttribute("pastReports", pastReports);
+		request.setAttribute("titleSuffix", titleSuffix);
 		
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="Reports" js="explore/reports" css="explore/reports, common/table, details/shared,explore/jquery.qtip, explore/common">			
+<star:template title="Reports ${titleSuffix}" js="explore/reports" css="explore/reports, common/table, details/shared,explore/jquery.qtip, explore/common">			
 	<div id="mainPanel">
 		<span id="userId" value="${userId}"></span>
 		<div id="subscribeUnsubscribeButtonContainer" class="center">
