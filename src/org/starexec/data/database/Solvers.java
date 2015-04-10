@@ -1976,11 +1976,11 @@ public class Solvers {
 	 * Updates a solver's disk_size attribute on an existing transaction
 	 * 
 	 * @param con the database transaction to use while updating the solver's disk size
-	 * @param solver the solver object containing the new disk size to set
+	 * @param s the solver object containing the new disk size to set
 	 * @return true iff the solver's size was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	private static void updateSolverDiskSize(Connection con, Solver s) throws Exception {
+	private static boolean updateSolverDiskSize(Connection con, Solver s) throws Exception {
 		CallableStatement procedure = null;
 		try {
 			// Get the size of the solver's directory
@@ -1993,11 +1993,13 @@ public class Solvers {
 			procedure.setLong(2, s.getDiskSize());
 			
 			procedure.executeUpdate();
+			return true;
 		} catch (Exception e) {
 			log.error("updateSolverDiskSize says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 		}
+		return false;
 	}
 	/**
 	 * Updates a solver's disk_size attribute

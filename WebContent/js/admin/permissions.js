@@ -189,7 +189,8 @@ function initUI(userId, spaceId){
 				'OK': function() {
 					$('#dialog-confirm-update').dialog('close');
 					$.post(
-							starexecRoot+"services/space/" + spaceId + "/add/user/" + userId,
+							starexecRoot+"services/spaces/" + spaceId + "/add/user",
+							{selectedIds: [userId], copyToSubspaces: false},
 							function(returnCode) {
 								s=parseReturnCode(returnCode);
 								if (s) {

@@ -38,7 +38,8 @@ function initButtons(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(  
-						starexecRoot+"services/delete/configuration/" + getParameterByName("id"),
+						starexecRoot+"services/delete/configuration",
+						{selectedIds: [getParameterByName("id")]},
 						function(returnCode) {
 							s=parseReturnCode(returnCode);
 							if (s) {

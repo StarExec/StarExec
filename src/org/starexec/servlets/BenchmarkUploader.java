@@ -25,11 +25,13 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Reports;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -236,6 +238,7 @@ public class BenchmarkUploader extends HttpServlet {
 			log.info("Extraction Complete");
 			//update upload status
 			Uploads.fileExtractComplete(statusId);
+
 			
 			
 			
@@ -359,8 +362,17 @@ public class BenchmarkUploader extends HttpServlet {
 					addBechmarksFromArchive(archiveFile, userId, spaceId, typeId,
 							downloadable, perm, uploadMethod, statusId,
 							hasDependencies, linked, depRootSpaceId);
-				}
-				catch (Exception e){
+
+					BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
+
+					if (status.isFileUploadComplete()) {
+						// if the benchmarks archive was successfully uploaded record that in the weekly reports table
+						Reports.addToEventOccurrencesNotRelatedToQueue("benchmark archives uploaded", 1);
+						// Record the total number of benchmarks uploaded in the weekly reports data table
+						int totalBenchmarksUploaded = status.getTotalBenchmarks();
+						Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);				
+					}
+				} catch (Exception e){
 					log.error("upload Benchmarks says " + e);
 					Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
 				}

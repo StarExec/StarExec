@@ -26,8 +26,12 @@
 		</li>
 		<li>
 			<a href="http://wiki.uiowa.edu/display/stardev/Home">Public Developers Wiki</a>, 
-			for those intestered in development aspects
-			<br>
+			for those interested in development aspects
+			<br><br>
+		</li>
+		<li>
+			<a href="/${starexecRoot}/public/WebInterface.pdf">Web Interface Documentation</a> for making direct HTTP calls to Starexec
+			<br><br>
 		</li>
   </ul>
  </div>

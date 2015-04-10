@@ -32,6 +32,9 @@ public class PasswordReset extends HttpServlet {
 	private static final Logger log = Logger.getLogger(PasswordReset.class);
 	public static final String PASS_RESET = "reset";		// Param string for password reset codes
 	
+	/**
+	 * This is the second half of the procedure -- the user has already requested a password reset and received an email
+	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if(Util.paramExists(PasswordReset.PASS_RESET, request)) {

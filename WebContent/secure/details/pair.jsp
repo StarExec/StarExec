@@ -130,10 +130,7 @@
 							<td>${stage.systemTime}</td>
 						</tr>
 						
-						<tr title="the integral memory usage in Gbyte seconds">
-							<td>memory usage</td>
-							<td>${stage.memoryUsage}</td>
-						</tr>
+						
 						<tr title="the maximum vmem size in bytes">
 							<td>max virtual memory</td>
 							<td>${stage.maxVirtualMemory}</td>

@@ -457,37 +457,7 @@ public class Communities {
 		return false;
 	}
 	
-	/**
-	 * Removes a user's association to every space within the given community
-	 * @param userId the id of the user to remove from the space
-	 * @param commId the id of the space to remove the user from
-	 * @return true iff the user was successfully removed from the community referenced by 'commId',
-	 * false otherwise
-	 * @author Todd Elvers
-	 */
 	
-	public static boolean leave(int userId, int commId) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL LeaveHierarchy(?, ?)}");
-			procedure.setInt(1, userId);
-			procedure.setInt(2, commId);
-			
-			procedure.executeUpdate();			
-			log.debug(String.format("User [id=%d] successfully left community [id=%d].", userId, commId));
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		log.debug(String.format("User [id=%d] failed to leave community [id=%d].", userId, commId));
-		return false;
-	}
 	
 	public static Space getTestCommunity() {
 		Space s=Communities.getDetails(R.TEST_COMMUNITY_ID);

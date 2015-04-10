@@ -74,6 +74,7 @@ public class UploadConfiguration extends HttpServlet {
 				
 				// Redirect user based on how the configuration handling went
 				if(!result.isSuccess()) {
+					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
 
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.getMessage());	
 				} else {

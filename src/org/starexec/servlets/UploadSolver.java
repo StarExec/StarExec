@@ -29,6 +29,7 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -371,6 +372,13 @@ public class UploadSolver extends HttpServlet {
 					log.error(e.getMessage(),e);
 				}
 			}
+
+			// if the solver was uploaded successfully log the upload in the weekly report table
+			if (solver_Success>0) {
+				Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
+			}
+
+
 			returnArray[0] = solver_Success;
 			
 			return returnArray;

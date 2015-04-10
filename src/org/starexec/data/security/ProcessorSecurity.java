@@ -2,6 +2,7 @@ package org.starexec.data.security;
 
 import java.util.List;
 
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
@@ -95,7 +96,7 @@ public class ProcessorSecurity {
 			return new ValidatorStatusCode(false, "The given processor could not be found");
 		}
 		
-		if (!Users.isAdmin(userId) && !Users.isMemberOfCommunity(userId, p.getCommunityId())) {
+		if (!Users.isAdmin(userId) && procId!=R.NO_TYPE_PROC_ID && !Users.isMemberOfCommunity(userId, p.getCommunityId())) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the given processor");
 		}
 		

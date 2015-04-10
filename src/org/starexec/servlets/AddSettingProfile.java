@@ -137,6 +137,7 @@ public class AddSettingProfile extends HttpServlet {
 		if (!success) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
+		
 	}
 	
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {

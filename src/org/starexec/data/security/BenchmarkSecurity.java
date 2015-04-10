@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
-
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.Validator;
 
 public class BenchmarkSecurity {
@@ -189,13 +191,15 @@ public class BenchmarkSecurity {
 	 * @param benchId The ID of the benchmark being checked
 	 * @param name The name that the benchmark will be given upon editing
 	 * @param desc the description that will be given to the benchmark upon editing
+	 * @param typeId The new benchmark type to assign to the benchmark
 	 * @param userId The ID of the user making the request
 	 * @return 0 if allowed, or a status code from ValidatorStatusCodes if not allowed.
 	 */
 	
-	public static ValidatorStatusCode canUserEditBenchmark(int benchId, String name,String desc, int userId) {
+	public static ValidatorStatusCode canUserEditBenchmark(int benchId, String name,String desc,int typeId, int userId) {
 		// Ensure the parameters are valid
 		if(!Validator.isValidBenchName(name)) { 
+			
 			return new ValidatorStatusCode(false, "The new name is not valid. Please refer to the help pages to find format for benchmark names");
 		}
 		
@@ -214,9 +218,13 @@ public class BenchmarkSecurity {
 			return new ValidatorStatusCode(false, "The benchmark has been deleted");
 		}
 		
-		
-		
-		return new ValidatorStatusCode(true);
+		Processor p = Processors.get(typeId);
+		if (p==null) {
+			return new ValidatorStatusCode(false, "The given type could not be found");
+		} else if (p.getType()!=ProcessorType.BENCH) {
+			return new ValidatorStatusCode(false, "The given type is not a benchmark processor type");
+		}
+		return ProcessorSecurity.canUserSeeProcessor(typeId, userId);
 	}
 	
 	/**

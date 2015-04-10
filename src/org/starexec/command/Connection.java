@@ -1141,13 +1141,13 @@ public class Connection {
 	 * Removes the given subspaces from the given space.
 	 * @param subspaceIds The IDs of the subspaces to remove
 	 * @param spaceID The ID of the space
-	 * @param deletePrims If true, all primitives owned by the calling user that are present in any
+	 * @param recyclePrims If true, all primitives owned by the calling user that are present in any
 	 * space being removed will be deleted (or moved to the recycle bin, if applicable)
 	 * @return 0 on success, or a negative integer status code on failure
 	 */
 	
-	public int removeSubspace(List<Integer> subspaceIds, Integer spaceID, Boolean deletePrims) {
-		return removePrimitives(subspaceIds, spaceID,"subspace", deletePrims);
+	public int removeSubspace(List<Integer> subspaceIds, Integer spaceID, Boolean recyclePrims) {
+		return removePrimitives(subspaceIds, spaceID,"subspace", recyclePrims);
 	}
 	
 	/**
@@ -1157,7 +1157,7 @@ public class Connection {
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
 	 */
-	protected int removePrimitives(List<Integer> primIDs,Integer spaceID,String type, Boolean deletePrims) {
+	protected int removePrimitives(List<Integer> primIDs,Integer spaceID,String type, Boolean recyclePrims) {
 		try {
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
@@ -1168,7 +1168,7 @@ public class Connection {
 				params.add(new BasicNameValuePair(key, id.toString()));
 			}
 			
-			params.add(new BasicNameValuePair("deletePrims",deletePrims.toString()));
+			params.add(new BasicNameValuePair("recyclePrims",recyclePrims.toString()));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			HttpResponse response=client.execute(post);

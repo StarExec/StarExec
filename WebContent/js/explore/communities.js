@@ -168,7 +168,6 @@ function getCommunityDetails(id) {
  */
 function populateDetails(jsonData) {
 	commName = jsonData.space.name;
-
 	// Populate space defaults
 	$('#commName').fadeOut('fast', function(){
 		$('#commName').text(jsonData.space.name).fadeIn('fast');
@@ -176,7 +175,6 @@ function populateDetails(jsonData) {
 	$('#commDesc').fadeOut('fast', function(){
 		$('#commDesc').text(jsonData.space.description).fadeIn('fast');
 	});	
-	
 	// Populate members table
 	
 	$('#memberField legend').children('span:first-child').text(jsonData.space.users.length);
@@ -195,7 +193,6 @@ function populateDetails(jsonData) {
 			}
 		
 	});
-	
 	// Populate leaders table
 	$('#leaderField legend').children('span:first-child').text(jsonData.leaders.length);
 	leaderTable.fnClearTable();	
@@ -206,11 +203,9 @@ function populateDetails(jsonData) {
 		leaderTable.fnAddData([userLink, user.institution, emailLink]);
 	});
 
-
 	
 	// Check the new permissions for the loaded space
 	checkPermissions(jsonData.perm,jsonData.isMember);	
-	
 	// Done loading, hide the loader
 	$('#loader').hide();	
 }
@@ -226,11 +221,16 @@ function checkPermissions(perms,isMember) {
 		$('#downloadPostProcessors').fadeOut('fast');
 		$('#downloadBenchProcessors').fadeOut('fast');
 		$('#downloadPreProcessors').fadeOut('fast');
-		return;
+		//return;
 	} else {
 		$('#downloadPostProcessors').fadeIn('fast');
 		$('#downloadBenchProcessors').fadeIn('fast');
 		$('#downloadPreProcessors').fadeIn('fast');
+		if(perms.isLeader) {
+			$('#editComm').fadeIn('fast');
+		} else {
+			$('#editComm').fadeOut('fast');
+		}
 	}
 	if (!isMember) {
 		$('#joinComm').fadeIn('fast');
@@ -239,11 +239,7 @@ function checkPermissions(perms,isMember) {
 		$('#joinComm').fadeOut('fast');
 		$('#leaveComm').fadeIn('fast');
 	}
-	if(perms.isLeader) {
-		$('#editComm').fadeIn('fast');
-	} else {
-		$('#editComm').fadeOut('fast');
-	}
+	
 }
 
 /**

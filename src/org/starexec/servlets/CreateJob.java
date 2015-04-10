@@ -72,12 +72,9 @@ public class CreateJob extends HttpServlet {
 	private static final String name = "name";
 	private static final String description = "desc";
 	private static final String postProcessor = "postProcess";
-	private static final String benchProcessor = "benchProcess";
-	private static final String benchName = "benchName";
 	private static final String preProcessor = "preProcess";
 	private static final String workerQueue = "queue";
 	private static final String configs = "configs";
-	private static final String solver = "solver";
 	private static final String run = "runChoice";
 	private static final String benchChoice = "benchChoice";
 	private static final String benchmarks = "bench";
@@ -88,6 +85,13 @@ public class CreateJob extends HttpServlet {
 	private static final String pause = "pause";
 	private static final String maxMemory="maxMem";
 	private static final String randSeed="seed";
+	
+	//unique to quick jobs
+	private static final String benchProcessor = "benchProcess";
+	private static final String benchName = "benchName";
+	private static final String solver = "solver";
+
+
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

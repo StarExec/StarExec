@@ -431,7 +431,8 @@ function initUI(){
 					$('#dialog-confirm-delete').dialog('close');
 					
 					$.post(
-							starexecRoot+"services/delete/job/" + getParameterByName("id"),
+							starexecRoot+"services/delete/job",
+							{selectedIds: [getParameterByName("id")]},
 							function(returnCode) {
 								s=parseReturnCode(returnCode);
 								if (s) {

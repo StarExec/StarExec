@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.database.Common;
+import org.starexec.data.database.Logins;
+import org.starexec.data.database.Reports;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
@@ -76,6 +78,15 @@ public class SessionFilter implements Filter {
 		
 		// Also save in the database to maintain a historical record
 		Common.addLoginRecord(user.getId(), ip, rawBrowser);
+		// Get the number of unique logins that have occurred since the last report was sent and
+		// record it in the reports table.
+		Integer uniqueLogins = Logins.getNumberOfUniqueLogins();
+		if (uniqueLogins != null) {
+			log.debug("Number of unique logins: " + uniqueLogins);
+			Reports.setEventOccurrencesNotRelatedToQueue("unique logins", uniqueLogins);
+		} else {
+			log.error("Could not get number of unique logins from logins table.");
+		}
 	}
 
 	@Override

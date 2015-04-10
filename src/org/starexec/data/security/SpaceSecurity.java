@@ -215,17 +215,17 @@ public class SpaceSecurity {
 	 */
 	
 	//TODO: What are the permissions for removing a space hierarchy?
-	public static ValidatorStatusCode canUserRemoveSpace(int spaceId, int userId, List<Integer> subspaceIds) {
-		Permission perm = Permissions.get(userId, spaceId);		
-		if(null == perm || !perm.canRemoveSpace()) {
-			return new ValidatorStatusCode(false, "You do not have permission to remove subspaces from this space");
-		}
-		
+	public static ValidatorStatusCode canUserRemoveSpace(int userId, List<Integer> subspaceIds) {
 		for (Integer sid : subspaceIds) {
 			Space subspace=Spaces.get(sid);
+			if (subspace==null) {
+				return new ValidatorStatusCode(false, "The space with the following ID could not be found: "+sid);
+			}
+			
 			Integer parent=Spaces.getParentSpace(sid);
-			if (parent>0 && parent!=spaceId) {
-				return new ValidatorStatusCode(false, "One or more of the given subspaces does not belong to the given parent space");
+			Permission perm = Permissions.get(userId, parent);
+			if(null == perm || !perm.canRemoveSpace()) {
+				return new ValidatorStatusCode(false, "You do not have permission to remove subspaces from this space");
 			}
 			if(!Permissions.get(userId, subspace.getId()).isLeader()){
 				return new ValidatorStatusCode(false, "You cannot remove spaces that you are not a leader of");
@@ -897,45 +897,43 @@ public class SpaceSecurity {
      * @param spaceId The ID of the space in question
      * @param userIdBeingUpdated The ID of the user who would have their permissions updated
      * @param requestUserId The Id of the user making the request
-     * @param leaderStatusChange Whether the user being updated would have their leader status changed
      * @return list of spaces where permissions can be changed
      */
-    public static List<Integer> getUpdatePermissionSpaces(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange){
-	//TODO :  make more efficient? (right now querying database for every space in hierarchy to check permissions)
-	
-	
-	List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
-	spaceIds.add(spaceId);
-	
-	
-	List<Space> subspaces = Spaces.trimSubSpaces(userIdBeingUpdated, Spaces.getSubSpaceHierarchy(spaceId, userIdBeingUpdated));
-	
-	for (Space s : subspaces) {
-	    spaceIds.add(s.getId());
-
-	}
+    public static List<Integer> getUpdatePermissionSpaces(int spaceId, int userIdBeingUpdated, int requestUserId){
+		//TODO :  make more efficient? (right now querying database for every space in hierarchy to check permissions)
 		
-	ValidatorStatusCode status;
-    
-	List<Integer> permittedSpaceIds = new ArrayList<Integer>();
-	for (Integer sid : spaceIds) {
-	    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId,leaderStatusChange);
-	    if (status.isSuccess()) {
-		permittedSpaceIds.add(sid);
-	    }
-	}
-
-	return permittedSpaceIds;
+		
+		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		spaceIds.add(spaceId);
+		
+		
+		List<Space> subspaces = Spaces.trimSubSpaces(userIdBeingUpdated, Spaces.getSubSpaceHierarchy(spaceId, userIdBeingUpdated));
+		
+		for (Space s : subspaces) {
+		    spaceIds.add(s.getId());
+	
+		}
+			
+		ValidatorStatusCode status;
+	    
+		List<Integer> permittedSpaceIds = new ArrayList<Integer>();
+		for (Integer sid : spaceIds) {
+		    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
+		    if (status.isSuccess()) {
+		    	permittedSpaceIds.add(sid);
+		    }
+		}
+	
+		return permittedSpaceIds;
     }
     /**
      * Checks to see whether the permissions of one user in a particular space can be updated by another user
      * @param spaceId The ID of the space in question
      * @param userIdBeingUpdated The ID of the user who would have their permissions updated
      * @param requestUserId The Id of the user making the request
-     * @param leaderStatusChange Whether the user having their permissions updated will have their leader status changed
      * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
      */
-    public static ValidatorStatusCode canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId,boolean leaderStatusChange) {
+    public static ValidatorStatusCode canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId) {
 
 
 	Permission perm = Permissions.get(requestUserId, spaceId);
@@ -946,8 +944,8 @@ public class SpaceSecurity {
 	
 	// Ensure the user to edit the permissions of isn't themselves a leader
 	perm = Permissions.get(userIdBeingUpdated, spaceId);
-
-	if(perm.isLeader() && !Users.isAdmin(requestUserId) && !leaderStatusChange){
+	//TODO: When exactly are we allowed to modify the status of other leaders?
+	if(perm.isLeader() && !Users.isAdmin(requestUserId)){
 		return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
 	}	
 	
