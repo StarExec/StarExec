@@ -55,16 +55,12 @@ CREATE PROCEDURE AddToEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _ev
 		SET @queueId := (SELECT id FROM queues WHERE name=_queueName);
 		-- make sure the queue exists
 		IF @queueId IS NOT NULL THEN
-			-- check if the event already exists for this queue and add to it if it does 
-			IF EXISTS (SELECT 1 FROM report_data WHERE queue_id=@queueId) AND EXISTS (SELECT 1 FROM report_data WHERE event_name=_eventName) THEN
-				UPDATE report_data
-				SET occurrences = occurrences + _eventOccurrences
-				WHERE event_name = _eventName AND queue_id = @queueId;
-			-- otherwise create the event with the given number of occurrences
-			ELSE 
-				INSERT INTO report_data (event_name, queue_id, occurrences)
-				VALUES (_eventName, @queueId, _eventOccurrences);
-			END IF;
+			
+			INSERT IGNORE INTO report_data (event_name, queue_id, occurrences) VALUES (_eventName, @queueId, 0);
+
+			UPDATE report_data
+			SET occurrences = occurrences + _eventOccurrences
+			WHERE event_name = _eventName AND queue_id = @queueId;
 		END IF;
 	END //
 
