@@ -333,7 +333,6 @@ public abstract class JobManager {
 			//log.debug("submitScript - Set Native Specification for  " + pair.getId());
 
 			// Tell the job where it will deal with files
-			//TODO: This is not correct-- what should we do about this line? It does not seem to break anything
 			sgeTemplate.setWorkingDirectory("/export/starexec/sandbox");
 			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
 
@@ -392,6 +391,8 @@ public abstract class JobManager {
 	 */
 	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
 		String jobScript = template;		
+		
+		// all of these arrays are for containing individual attributes ordered by state number for all the stages in the pair.
 		List<Integer> stageCpuTimeouts=new ArrayList<Integer>();
 		List<Integer> stageWallclockTimeouts=new ArrayList<Integer>();
 		List<Integer> stageNumbers=new ArrayList<Integer>();
@@ -440,6 +441,8 @@ public abstract class JobManager {
 				}
 			}
 			
+			// for processors, we still need one entry per stage even though not all stages have processors
+			// in the Bash scripts, an empty string will be interpreted as "no processor"
 			Processor p = attrs.getPostProcessor();
 			if (p==null) {
 				postProcessorPaths.add("");
@@ -484,13 +487,14 @@ public abstract class JobManager {
 		else{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
 		}
-		// Resource limits
+		// global Resource limits
 		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, job.getWallclockTimeout())); 
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));		
 		log.debug("the current job pair has a memory = "+job.getMaxMemory());
 		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(job.getMaxMemory()));
 		log.debug("The jobscript is: "+jobScript);
 		
+		// all arrays from above. Note that we are base64 encoding some for safety
 		jobScript=jobScript.replace("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
 		jobScript=jobScript.replace("$$CLOCK_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CLOCK_TIMEOUTS",stageWallclockTimeouts));
 		jobScript=jobScript.replace("$$MEM_LIMIT_ARRAY$$", numsToBashArray("STAGE_MEM_LIMITS",stageMemLimits));
@@ -527,6 +531,15 @@ public abstract class JobManager {
 		return scriptPath;
 	}	
 	
+	
+	/**
+	 * Given a list of pipeline dependencies, this creates a single string containing all of the relevant arguments
+	 * so that all the dependencies can be passed to the configuration.
+	 * 
+	 *  
+	 * @param deps The dependencies. Must be ordered by input number to get the correct order
+	 * @return The argument string.
+	 */
 	public static String pipelineDependenciesToArgumentString(List<PipelineDependency> deps) {
 		if (deps== null || deps.size()==0) {
 			return "";
@@ -534,6 +547,7 @@ public abstract class JobManager {
 		log.debug("creating a dependency argument string with this many deps = "+deps.size());
 		StringBuilder sb=new StringBuilder();
 		for (PipelineDependency dep : deps) {
+			// SAVED_OUTPUT_DIR and BENCH_INPUT_DIR are variables defined in the jobscript
 			if (dep.getType()==PipelineInputType.ARTIFACT) {
 				sb.append("\"$SAVED_OUTPUT_DIR/");
 				sb.append(dep.getDependencyId());
@@ -553,9 +567,10 @@ public abstract class JobManager {
 	 * Given the name of an array and a list of strings to put into the array, 
 	 * creates a string that generates the array that can be embedded into a bash script.
 	 * If strs is empty, returns an empty string. Array is 0 indexed. 
-	 * @param arrayName
-	 * @param strs
-	 * @return
+	 * @param arrayName The name to give the array
+	 * @param strs The strings to include, in order.
+	 * @param base64 True to base64 encode all the strings and false otherwise
+	 * @return The array as a String that can be embedded directly into the jobscript.
 	 */
 	public static String toBashArray(String arrayName, List<String> strs, boolean base64) {
 		if (strs.size()==0) {
@@ -604,6 +619,14 @@ public abstract class JobManager {
 		return toBashArray(arrayName,strs,false);
 	}
 
+	/**
+	 * Writes a file containing benchmark dependencies ( note: these are NOT related to any of the pipeline dependencies)
+	 * to the jobin directory for the given pair and benchmark.
+	 * @param pairId
+	 * @param benchId
+	 * @return
+	 * @throws Exception
+	 */
 	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
 		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
 		StringBuilder sb = new StringBuilder();

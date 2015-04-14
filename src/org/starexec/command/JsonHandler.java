@@ -83,6 +83,12 @@ class JsonHandler {
 
 	}
 	
+	/**
+	 * Attempts to get a Json object given an HTTP response that has a Json object
+	 * in its content
+	 * @param response
+	 * @return The object, or null if none existed
+	 */
 	protected static JsonObject getJsonObject(HttpResponse response) {
 		try {
 
@@ -94,6 +100,8 @@ class JsonHandler {
 			return null;
 		}
 	}
+	
+	
 	
 	protected static HashMap<String,String> getJsonAttributes(JsonObject obj) {
 		Iterator<Entry<String, JsonElement>> iterator=obj.entrySet().iterator();

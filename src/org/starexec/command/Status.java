@@ -2,13 +2,13 @@ package org.starexec.command;
 
 import java.util.HashMap;
 /**
- * This class defines the codes taht are used by StarexecCommand. All codes are integers--
+ * This class defines the codes that are used by StarexecCommand. All codes are integers--
  * all codes that indicate errors are less than 0. 0 is the code used for success.
  * @author Eric
  *
  */
 public class Status {
-	//Error codes for command parsing
+	//Error codes for command parsing. The messages below give descriptions of each code suitable for presenting ot users.
 	public static int STATUS_SUCCESS;
 	public static int ERROR_BAD_COMMAND=-1;
 	public static int ERROR_BAD_ARGS=-2;

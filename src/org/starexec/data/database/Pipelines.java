@@ -21,7 +21,7 @@ public class Pipelines {
 	
 	/**
 	 * Returns a list of dependencies that go with the pipeline stage with the given ID
-	 * @param stageId The stage to get dependencies before
+	 * @param stageId The ID of a pipeline_stage
 	 * @param con An open SQL connection to make the call on 
 	 * @return A list of all the dependencies for the given stage
 	 */
@@ -53,10 +53,10 @@ public class Pipelines {
 	
 	/**
 	 * Returns all the dependencies that are associated with the given job pair, organized by stage number.
-	 * Dependencies are ordered by input number
-	 * @param pairId
-	 * @param con
-	 * @return
+	 * Dependencies in each list are ordered by input number
+	 * @param pairId The pair to get dependencies for.
+	 * @param con The open connection make the call on.
+	 * @return A HashMap that maps stage numbers to lists of pipeline dependencies.
 	 */
 	public static HashMap<Integer, List<PipelineDependency>> getDependenciesForJobPair(int pairId, Connection con) {
 		CallableStatement procedure=null;
@@ -126,7 +126,7 @@ public class Pipelines {
 	/**
 	 * Gets a solver pipeline from the database, including all the pipeline's stages
 	 * and dependencies
-	 * @param id
+	 * @param id The ID of the pipeline 
 	 * @return
 	 */
 	public static SolverPipeline getFullPipeline(int id) {
@@ -270,6 +270,11 @@ public class Pipelines {
 		return -1;
 	}
 	
+	/**
+	 * Returns all of the solver pipelines that are used in the given job. 
+	 * @param jobId
+	 * @return
+	 */
 	public static List<SolverPipeline> getPipelinesByJob(int jobId) {
 		Connection con=null;
 		CallableStatement procedure=null;

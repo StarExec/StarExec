@@ -1,10 +1,14 @@
 package org.starexec.command;
 
 /**
- * This class is responsible for communicating with the Starexec server 
- * Its functions generally take HashMap objects mapping String keys 
- * to String values and use the keys and values to create
- * HTTP GET and POST requests to StarExec
+ * This class is responsible for taking in the shell arguments from users, formatted as 
+ * HashMaps of keys to values, and using those arguments to make calls in the Connection 
+ * API, which takes care of actually making request to Starexec. In other words, this
+ * class is a midpoint between the shell interface and the StarexecCommand Java API, which is housed
+ * in Connection
+ * 
+ * This class also makes calls to a validator to ensure that shell arguments are appropriate for the desired
+ * calls
  */
 
 import java.io.File;
@@ -53,6 +57,9 @@ class ArgumentParser {
 		}
 	}
 	
+	/**
+	 * Creates a new Connection that uses the same username and password as the current connection.
+	 */
 	protected void refreshConnection() {
 		con=new Connection(con);
 	}

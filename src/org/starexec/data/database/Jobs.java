@@ -364,26 +364,33 @@ public class Jobs {
 			
 			con = Common.getConnection();
 			
-			//create mirror space hierarchies for saving benchmarks if the user wishes
+			// gets the name of the root job space for this job
 			String rootName=job.getJobPairs().get(0).getPath();
 			if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
 				rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
 			}
+			//start a transaction that encapsulates making new spaces for mirrored hierarchies
+			Common.beginTransaction(con);
+			//get all the different space IDs for the places we need to created mirrors of the job space heirarchy
 			HashSet<Integer> uniqueSpaceIds=new HashSet<Integer>();
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				if (attrs.getSpaceId()!=null) {
-					
+					//make sure that there are no name conflicts when creating the mirrored space hierarchies.
 					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName,con)!=-1) {
 						throw new Exception("Error creating spaces for job: name conflict with space name "+rootName);
 					}
 					uniqueSpaceIds.add(attrs.getSpaceId());
 				}
 			}
+			//create mirror space hierarchies for saving benchmarks if the user wishes
 			for (Integer i : uniqueSpaceIds) {
 				createSpacesForPairs(job.getJobPairs(),job.getUserId(),con,i);
 			}
-			
-			// maps depth to name to job space id for job spaces
+			//we end the first transaction here so that we don't end up keeping a lock on the space tables
+			// for the entire duration of job creation
+			Common.endTransaction(con);
+
+			//creates the job space hierarchy for the job and returns the ID of the top level job space
 			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
 			
 		

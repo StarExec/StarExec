@@ -81,6 +81,8 @@ public class R {
 	//constants and regular expressions from StarExec for validation
 	
 	 //maximum length properties
+	//TODO: These are already specified in constants/R.java, and they should not be duplicated here.
+	//they're being duplicated because they need to be included in the StarexecCommand build, but we need a better way
     public static int SPACE_NAME_LEN=255;
     public static int SPACE_DESC_LEN=1024;
     public static int USER_FIRST_LEN=32;

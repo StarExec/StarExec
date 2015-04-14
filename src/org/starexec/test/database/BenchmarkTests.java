@@ -33,9 +33,6 @@ public class BenchmarkTests extends TestSequence {
 		for (Benchmark b : benches) {
 			Assert.assertTrue(containsBenchmark(benchmarks,b));
 		}
-		
-		
-		
 	}
 	
 	@Test

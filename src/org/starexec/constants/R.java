@@ -42,7 +42,7 @@ public class R {
     public static int CONFIGURATION_DESC_LEN=1024;
     public static int SOLVER_NAME_LEN=64;
     public static int WEBSITE_NAME_LEN=64;
-
+    public static int PIPELINE_NAME_LEN=128;
     public static int SETTINGS_NAME_LEN=32;
     public static int SOLVER_DESC_LEN=1024;
     public static int JOB_NAME_LEN=64;
