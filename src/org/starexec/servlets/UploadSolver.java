@@ -7,7 +7,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -173,6 +176,22 @@ public class UploadSolver extends HttpServlet {
     	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
     }
     
+    /**
+     * Attempts to copy the file at the end of the given URL to the given file, using a proxy
+     * @param url
+     * @param archiveFile
+     */
+    private void copyFileFromURL(URL url, File archiveFile) {
+    	try {
+    		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.divms.uiowa.edu", 8888));
+        	URLConnection connection = url.openConnection(proxy);
+        	FileUtils.copyInputStreamToFile(connection.getInputStream(), archiveFile);
+    	} catch (Exception e) {
+    		log.error(e.getMessage(),e);
+    	}
+    	
+    }
+    
 	/**
 	 * This method is responsible for uploading a solver to
 	 * the appropriate location and updating the database to reflect
@@ -200,6 +219,7 @@ public class UploadSolver extends HttpServlet {
 				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
 			} else {
 				try {
+					
 					url=new URL((String)form.get(UploadSolver.FILE_URL));
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -242,7 +262,8 @@ public class UploadSolver extends HttpServlet {
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
-				FileUtils.copyURLToFile(url, archiveFile);
+				
+				copyFileFromURL(url,archiveFile);
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
