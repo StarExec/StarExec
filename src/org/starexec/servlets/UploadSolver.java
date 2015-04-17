@@ -176,21 +176,7 @@ public class UploadSolver extends HttpServlet {
     	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
     }
     
-    /**
-     * Attempts to copy the file at the end of the given URL to the given file, using a proxy
-     * @param url
-     * @param archiveFile
-     */
-    private void copyFileFromURL(URL url, File archiveFile) {
-    	try {
-    		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy.divms.uiowa.edu", 8888));
-        	URLConnection connection = url.openConnection(proxy);
-        	FileUtils.copyInputStreamToFile(connection.getInputStream(), archiveFile);
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
-    	}
-    	
-    }
+    
     
 	/**
 	 * This method is responsible for uploading a solver to
@@ -262,8 +248,9 @@ public class UploadSolver extends HttpServlet {
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
-				
-				copyFileFromURL(url,archiveFile);
+				if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
+					throw new Exception("Unable to copy file from URL");
+				}
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			

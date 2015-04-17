@@ -13,6 +13,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -888,6 +892,23 @@ public class Util {
     		log.error(e.getMessage(),e);
     
     	}
+    }
+    /**
+     * Attempts to copy the file at the end of the given URL to the given file, using a proxy
+     * @param url
+     * @param archiveFile
+     * @return True on success and false otherwise
+     */
+    public static boolean copyFileFromURLUsingProxy(URL url, File archiveFile) {
+    	try {
+    		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(R.PROXY_ADDRESS, R.PROXY_PORT));
+        	URLConnection connection = url.openConnection(proxy);
+        	FileUtils.copyInputStreamToFile(connection.getInputStream(), archiveFile);
+        	return true;
+    	} catch (Exception e) {
+    		log.error(e.getMessage(),e);
+    	}
+    	return false;
     }
     
     

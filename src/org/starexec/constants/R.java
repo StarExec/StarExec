@@ -215,4 +215,8 @@ public class R {
     public static String TEST_ROLE_NAME="test";
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
+    
+    //some proxy data
+    public static String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
+    public static int PROXY_PORT = 8888;
 }	
