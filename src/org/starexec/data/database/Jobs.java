@@ -3947,6 +3947,7 @@ public class Jobs {
 				s.setCode(results.getInt("status_code"));
 				jp.setStatus(s);
 				jp.setId(results.getInt("job_pairs.id"));
+				jp.setPath("job_pairs.path");
 				bench=new Benchmark();
 				bench.setId(results.getInt("bench_id"));
 				bench.setName(results.getString("bench_name"));
