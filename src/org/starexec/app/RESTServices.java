@@ -461,7 +461,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a string that holds the std out of job pair with the given id
+	 * @return a string that holds the stdout of job pair with the given id
 	 * @author Tyler Jensen
 	 */
 	@GET
