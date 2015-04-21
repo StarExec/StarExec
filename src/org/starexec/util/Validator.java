@@ -123,6 +123,10 @@ public class Validator {
     	return isValidPrimName(name,R.JOB_NAME_LEN);
     }
     
+    public static boolean isValidPipelineName(String name) {
+    	return isValidPrimName(name, R.PIPELINE_NAME_LEN);
+    }
+    
     public static boolean isValidProcessorName(String name) {
     	return isValidPrimName(name,R.PROCESSOR_NAME_LEN);
     }

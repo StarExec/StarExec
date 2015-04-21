@@ -42,7 +42,7 @@ public class R {
     public static int CONFIGURATION_DESC_LEN=1024;
     public static int SOLVER_NAME_LEN=64;
     public static int WEBSITE_NAME_LEN=64;
-
+    public static int PIPELINE_NAME_LEN=128;
     public static int SETTINGS_NAME_LEN=32;
     public static int SOLVER_DESC_LEN=1024;
     public static int JOB_NAME_LEN=64;
@@ -215,4 +215,8 @@ public class R {
     public static String TEST_ROLE_NAME="test";
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
+    
+    //some proxy data
+    public static String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
+    public static int PROXY_PORT = 8888;
 }	

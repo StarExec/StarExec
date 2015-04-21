@@ -47,16 +47,14 @@ import com.google.gson.JsonPrimitive;
 
 /**
  * This class is responsible for communicating with the Starexec server 
- * Its functions generally take HashMap objects mapping String keys 
- * to String values and use the keys and values to create
- * HTTP GET and POST requests to StarExec
+ * It is designed to be a useful Starexec API, which makes it very important
+ * to keep this file well documented.
  * @author Eric
  *
  */
 public class Connection {
 	private String baseURL;
 	private String sessionID=null;
-	//private boolean testMode=false;
 	HttpClient client=null;
 	private String username,password;
 	private String lastError;

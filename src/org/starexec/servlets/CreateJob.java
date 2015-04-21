@@ -359,8 +359,6 @@ public class CreateJob extends HttpServlet {
 		return new ValidatorStatusCode(true);
 	}
 	
-	//TODO: Refactor this and use it for the JobUtil file
-
 	/**
 	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
 	 * and content length requirements to ensure it is not malicious.

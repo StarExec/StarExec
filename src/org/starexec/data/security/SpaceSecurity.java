@@ -934,24 +934,23 @@ public class SpaceSecurity {
      * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
      */
     public static ValidatorStatusCode canUpdatePermissions(int spaceId, int userIdBeingUpdated, int requestUserId) {
-
-
-	Permission perm = Permissions.get(requestUserId, spaceId);
-	if(perm == null || !perm.isLeader()) {
-		return new ValidatorStatusCode(false, "You do not have permission to update permissions here");
-	}
-
-	
-	// Ensure the user to edit the permissions of isn't themselves a leader
-	perm = Permissions.get(userIdBeingUpdated, spaceId);
-	//TODO: When exactly are we allowed to modify the status of other leaders?
-	if(perm.isLeader() && !Users.isAdmin(requestUserId)){
-		return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
-	}	
 	
 	
+		Permission perm = Permissions.get(requestUserId, spaceId);
+		if(perm == null || !perm.isLeader()) {
+			return new ValidatorStatusCode(false, "You do not have permission to update permissions here");
+		}
 		
-	return new ValidatorStatusCode(true);
+		
+		// Ensure the user to edit the permissions of isn't themselves a leader
+		perm = Permissions.get(userIdBeingUpdated, spaceId);
+		if(perm.isLeader() && !Users.isAdmin(requestUserId) && Communities.isCommunity(spaceId)){
+			return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
+		}	
+		
+		
+			
+		return new ValidatorStatusCode(true);
     }
     
     

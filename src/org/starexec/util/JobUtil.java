@@ -104,9 +104,7 @@ public class JobUtil {
 		if (listOfJobLines.getLength()+listOfJobPairs.getLength()==0) {
 			errorMessage="Every job must have at least one job pair or job line to be created";
 			return null;
-		}
-		String name = "";//name variable to check
-		
+		}		
 		
 		//validate all solver pipelines
 		
@@ -115,6 +113,10 @@ public class JobUtil {
 		for (int i=0; i< listOfPipelines.getLength(); i++) {
 			Node pipeline = listOfPipelines.item(i);
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
+			if (pipe==null) {
+				return null; // this means there was some error. The error message should have been set already 
+							// the call to createPipelineFromElement
+			}
 			if (pipelineNames.containsKey(pipe.getName())) {
 				errorMessage=" Duplicate pipline name = "+pipe.getName()+". All pipelines in this upload must have unique names";
 				return null;
@@ -127,16 +129,16 @@ public class JobUtil {
 			Node jobNode = listOfJobs.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
-				name = jobElement.getAttribute("name");
+				String name = jobElement.getAttribute("name");
 				if (name == null) {
 					log.info("Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
 					return null;
 				}
 				log.debug("Job Name = " + name);
-				if (name.length()<1){
-					log.info("Name was not long enough");
-					errorMessage = name + "is not a valid name.  It must have one characters.";
+				
+				if (!org.starexec.util.Validator.isValidJobName(name)){
+					errorMessage = name + "is not a valid job name";
 					return null;
 				}
 				
@@ -169,16 +171,22 @@ public class JobUtil {
 	/**
 	 * Creates a single solver pipeline from a SolverPipeline XML element. If there are any errors,
 	 * returns null
-	 * @param userId
-	 * @param pipeElement
-	 * @return
+	 * @param userId The ID of the user who is doing this upload
+	 * @param pipeElement The XML element corresponding to the <SolverPipeline> tag.
+	 * @return The SolverPipeline object, where the pipeline will already have been added to the database.
+	 * On error, null is returned, and the errorMessage string will be set
 	 */
 	private SolverPipeline createPipelineFromElement(int userId, Element pipeElement) {
 		boolean foundPrimary=false;
 		SolverPipeline pipeline=new SolverPipeline();
 		pipeline.setUserId(userId);
+		String name = pipeElement.getAttribute("name");
 		
-		pipeline.setName(pipeElement.getAttribute("name"));
+		if (!org.starexec.util.Validator.isValidPipelineName(name)) {
+			errorMessage = name + " is not a valid pipeline name";
+			return null;
+		}
+		pipeline.setName(name);
 		
 		NodeList stages= pipeElement.getChildNodes();
 		
@@ -245,7 +253,7 @@ public class JobUtil {
 								errorMessage="Invalid stage dependency-- stages can only depend on earlier stages, and a"
 										+ " stages implicitly depend on previous stages. Bad dependency =  Stage "+currentStage+" depends on"
 												+ " stage "+neededStageId;
-										
+								return null;
 							}
 							dep.setDependencyId(neededStageId);		
 						} else if (dependency.getTagName().equals("BenchmarkDependency")) {
@@ -273,7 +281,8 @@ public class JobUtil {
 			}
 			
 		}
-		//ensure that benchmark inputs are ordered correctly
+		//ensure that benchmark inputs are ordered correctly. Benchmark inputs must be ordered from 
+		//1 to n, where n is the total number of inputs. 
 		if (benchmarkInputs.size()>0) {
 			int maxSeen=Collections.max(benchmarkInputs);
 			if (maxSeen!=benchmarkInputs.size()) {
@@ -293,6 +302,7 @@ public class JobUtil {
 		pipeline.setStages(stageList);
 		int id=Pipelines.addPipelineToDatabase(pipeline);
 		if (id<=0) { //if there was a database error
+			errorMessage = " Internal database error adding a pipeline";
 			return null;
 		}
 		return pipeline;
@@ -325,12 +335,8 @@ public class JobUtil {
 			    job.setDescription("no description");
 			}
 		    
-		    
-			//job.setDescription(jobElement.getAttribute("description"));
-			log.info("description set");
 			job.setUserId(userId);
 			
-			log.info("job id about to be set");
 			String jobId = jobElement.getAttribute("id");
 			if(jobId != "" && jobId != null){
 			    log.info("job id set: " + jobId);
@@ -387,6 +393,7 @@ public class JobUtil {
 				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
 				
 				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
+				// the stage number needs to be between 1 and n if there are a maximum of n stages in any pipeline in this job
 				if (neededStageNum<=0 || neededStageNum>maxStages) {
 					errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
 					return -1;
@@ -406,17 +413,22 @@ public class JobUtil {
 				long stageMemory=memoryLimit;
 				if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
 					Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
-					stageMemory=Util.gigabytesToBytes(memLimit);
+					stageMemory=Util.gigabytesToBytes(gigMem);
 				}
+				
+				//the space to put new benchmarks created from the job output into
 				Integer stageSpace=null;
 				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
 					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
 				}
+				
+				// if no suffix is given, benchmarks will retain their old suffixes when they are created
 				String stageBenchSuffix=null;
 				if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
 					stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
 				}
 				
+				// If processors are not given in the stage attributes, that means they are not used for this ttage
 				Integer stagePostProcId=null;
 				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
 					stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
@@ -432,8 +444,8 @@ public class JobUtil {
 				
 				//validate this new set of parameters
 				ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
-				if (!status.isSuccess()) {
-					errorMessage=status.getMessage();
+				if (!stageStatus.isSuccess()) {
+					errorMessage=stageStatus.getMessage();
 					return -1;
 				}
 				
@@ -445,10 +457,7 @@ public class JobUtil {
 						return -1;
 					}
 				} 
-			
-				
-				//user can specify an optional space ID 
-				
+							
 				attrs.setWallclockTimeout(stageWallclock);
 				attrs.setCpuTimeout(stageCpu);
 				attrs.setMaxMemory(stageMemory);
@@ -462,26 +471,29 @@ public class JobUtil {
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
 			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
+			
+			//we now iterate through all the job pair elements and add them all to the job
 			for (int i = 0; i < jobPairs.getLength(); i++) {
 			    Node jobPairNode = jobPairs.item(i);
 			    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
 					Element jobPairElement = (Element)jobPairNode;
 						
-						JobPair jobPair = new JobPair();
-						int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-						int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-						String path = jobPairElement.getAttribute("job-space-path");
-						if (path.equals("")) {
-							path=rootName;
-							
-						}
-						jobPair.setPath(path);
-						if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
-							jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
-						} else {
-							jobRootPaths.add(path);
-						}
+					JobPair jobPair = new JobPair();
+					int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
+					int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
+					String path = jobPairElement.getAttribute("job-space-path");
+					if (path.equals("")) {
+						path=rootName;
 						
+					}
+					jobPair.setPath(path);
+					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
+					} else {
+						jobRootPaths.add(path);
+					}
+						
+					//permissions check on the benchmark for this job pair
 					Benchmark b = Benchmarks.get(benchmarkId);
 					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
 					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
@@ -489,6 +501,8 @@ public class JobUtil {
 					}
 					jobPair.setBench(b);
 					if (!configIdsToSolvers.containsKey(configId)) {
+						//permissions check on the solver for the pair. Configurations do
+						//not have permissions by themselves-- their permissions are identical to the solver permissions
 						Solver s = Solvers.getSolverByConfig(configId, false);
 						if (!Permissions.canUserSeeSolver(s.getId(), userId)){
 						    errorMessage = "You do not have permission to see the solver " + s.getId();
@@ -500,8 +514,8 @@ public class JobUtil {
 					}
 					Solver s = configIdsToSolvers.get(configId);
 					
-					//no actual pipeline yet exists for this stage-- one will be created 
-					// when the job is added
+					//JobPair elements are for pairs with exactly one stage, so we create a stage
+					//to house the solver and benchmark
 					JoblineStage stage=new JoblineStage();
 					stage.setSolver(s);
 					stage.setConfiguration(s.getConfigurations().get(0));
@@ -515,6 +529,9 @@ public class JobUtil {
 					job.addJobPair(jobPair);
 			    }
 			}
+			
+			//JobLine elements are still job pairs, but they are how multi-stage pairs are denoted
+			//in the XML
 			NodeList jobLines = jobElement.getElementsByTagName("JobLine");
 			for (int i = 0; i < jobLines.getLength(); i++) {
 			    Node jobLineNode = jobLines.item(i);
@@ -523,17 +540,23 @@ public class JobUtil {
 					
 					JobPair jobPair = new JobPair();
 					int benchmarkId = Integer.parseInt(jobLineElement.getAttribute("bench-id"));
+					
+					//JobLine elements must reference some pipeline that was created in this file
 					String pipeName = jobLineElement.getAttribute("pipe-name");
 					if (!pipelines.containsKey(pipeName)) {
 						errorMessage="the pipeline with name = "+pipeName+" is not declared as a pipeline in this file";
 						return -1;
 					}
 					SolverPipeline currentPipe=pipelines.get(pipeName);
+					
+					//get the path of the job space for this pair. If empty, just use the root space
 					String path = jobLineElement.getAttribute("job-space-path");
 					if (path.equals("")) {
-						path=rootName;
+						path=rootName; 
 					}
 					jobPair.setPath(path);
+					
+					//add the top level space of this path to the set of all top level spaces
 					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
 						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
 					} else {
@@ -547,6 +570,7 @@ public class JobUtil {
 					}
 					jobPair.setBench(b);
 					
+					//the benchmark inputs for the pair.
 					NodeList inputs=jobLineElement.getElementsByTagName("BenchmarkInput");
 					for (int inputIndex=0;inputIndex<inputs.getLength();inputIndex++) {
 						Element inputElement=(Element)inputs.item(inputIndex);
@@ -557,11 +581,16 @@ public class JobUtil {
 						}
 						jobPair.addBenchInput(benchmarkInput);
 					}
+					
+					//make sure that if the pipeline requires n inputs, this pair actually has n specified inputs
 					if (currentPipe.getRequiredNumberOfInputs()!=jobPair.getBenchInputs().size()) {
 						errorMessage="Job pairs have invalid inputs. Given inputs = "+jobPair.getBenchInputs().size()+", but "
 								+ "required inputs = "+currentPipe.getRequiredNumberOfInputs();
 					}
-					// add all the jobline stages to this pair
+					
+					
+					// add all the jobline stages to this pair, generating the jobline stages from the pipeline stages
+					// of the pipeline being referenced.
 					for (PipelineStage s : currentPipe.getStages()) {
 						JoblineStage stage = new JoblineStage();
 						if (s.isNoOp()) {
@@ -616,6 +645,8 @@ public class JobUtil {
 				rootName=jobRootPaths.iterator().next();
 			}
 			
+			//check to make sure that, for all spaces where we will be creating mirrored hierarchies to store new benchmarks,
+			//that we actually can create the mirrored hierarchy without name collisions.
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				if (attrs.getSpaceId()!=null) {
 					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName)!=-1) {

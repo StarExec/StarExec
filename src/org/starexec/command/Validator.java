@@ -1,7 +1,8 @@
 package org.starexec.command;
 
 /**
- * This class is responsible for validating the arguments given to functions in a Connection
+ * This class is responsible for validating the arguments given to functions in the ArgumentParser.
+ * These arguments ultimately come from user input at the command line or through a file
  */
 
 
@@ -17,7 +18,10 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 
 public class Validator {
 	
+	//which archives can we download from Starexec
 	public static String[] VALID_ARCHIVETYPES={"zip"};
+	
+	
 	public static Pattern patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
 	public static Pattern patternInteger = Pattern.compile(R.LONG_PATTERN);
 	public static Pattern patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
@@ -45,7 +49,6 @@ public class Validator {
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
-	private static String[] allowedCopyParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
 	private static String[] allowedCopyUserParams=new String[]{R.PARAM_TO,R.PARAM_ID};
 	private static String[] allowedCopySpaceParams=new String[]{R.PARAM_TO,R.PARAM_ID, R.PARAM_FROM};
 
@@ -82,7 +85,11 @@ public class Validator {
 		return missingParam;
 	}
 	
-	
+	/**
+	 * Checks whether the incoming arguments satisfy a request to remove a primitive
+	 * @param commandParams Arguments given by teh user
+	 * @return An integer status code as defined in Status.
+	 */
 	public static int isValidRemoveRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -114,6 +121,11 @@ public class Validator {
 		return 0;
 	}
 	
+	/**
+	 * Checks to see whether the given string is a valid integer, which can inclue long integers
+	 * @param str The string to check
+	 * @return the boolean answer
+	 */
 	public static boolean isValidInteger(String str) {
 		try {
 			Long.parseLong(str);
@@ -178,6 +190,11 @@ public class Validator {
 		}
 	}
 	
+	/**
+	 * Checks to see if the given name is valid on Starexec for a solver, benchmark, or job na,e
+	 * @param name The name to check
+	 * @return True if valid and false otherwise
+	 */
 	public static boolean isValidPrimName(String name){    	
     	return patternPrimName.matcher(name).matches();    	
     }
@@ -272,7 +289,7 @@ public class Validator {
 	 * @param commandParams Params given by the user
 	 * @param type The type of the download ("solver", "benchmark", or so on)
 	 * @param since If the download type is new job output, since is the completion ID to retrieve results after
-	 * @return
+	 * @return A status code as defined in Status.java
 	 */
 	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type,Integer since) {
 		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
@@ -687,6 +704,11 @@ public class Validator {
 		return 0;
 	}
 	
+	/**
+	 * Validates an incoming request to log into starexec
+	 * @param commandParams The user-provided arguments
+	 * @return A status code as defined in Status.java
+	 */
 	public static int isValidLoginRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[]{R.PARAM_USER},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -701,6 +723,11 @@ public class Validator {
 		return 0;
 	}
 	
+	/**
+	 * Validates an incoming request to pause or resume a job
+	 * @param commandParams The user-provided arguments
+	 * @return A status code as defined in Status.java
+	 */
 	public static int isValidPauseOrResumeRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[]{R.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -714,6 +741,11 @@ public class Validator {
 		
 	}
 	
+	/**
+	 * Validates an incoming request to rerun a pair
+	 * @param commandParams The user-provided arguments
+	 * @return A status code as defined in Status.java
+	 */
 	public static int isValidRerunRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[]{R.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -807,6 +839,11 @@ public class Validator {
 		return 0;
 	}
 	
+	/**
+	 * Validates a request to print out a benchmark upload status summary string
+	 * @param commandParams The arguments to validate
+	 * @return A status code as defined in Status.java
+	 */
 	public static int isValidPrintBenchUploadStatusRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -821,6 +858,11 @@ public class Validator {
 		return 0;
 	}
 	
+	/**
+	 * Validates a request to get a jSON-encoded primitive from Starexec
+ 	 * @param commandParams The arguments to validate
+	 * @return A status code as defined in Status
+	 */
 	public static int isValidGetPrimitiveAttributesRequest(HashMap<String,String> commandParams) {
 		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -874,7 +916,7 @@ public class Validator {
 	}
 	
 	/**
-	 * @return A list of parameters that were not usable by the command that was last validated
+	 * @return A list of parameters that were not usable by the command that was last validated.
 	 */
 	public static List<String> getUnnecessaryParams() {
 		return unnecessaryParams;
@@ -882,8 +924,8 @@ public class Validator {
 	
 	/**
 	 * Attempts to parse the given string as an integer and return it. On failure, returns -1
-	 * @param str
-	 * @return
+	 * @param str The string to use
+	 * @return The numeric value of the string, or -1 if the string is not a number
 	 */
 	public static Integer getIdOrMinusOne(String str) {
 		try {
@@ -896,7 +938,9 @@ public class Validator {
 	
 	
 	/**
-	 *Checks to see if the given zip file is valid
+	 * Checks to see if the given zip file is valid, meaning that it is not corrupted, is actually a ZIP, etc.
+	 * @param file The file to check
+	 * @return True if the file is a valid zip-formatted file.
 	 */
 	 public static boolean isValidZip(File file) {
 		    ZipFile zipfile = null;

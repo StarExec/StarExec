@@ -2,6 +2,7 @@ package org.starexec.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.SecurityException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -239,6 +240,21 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 				log.info("weeklyReportsTask (periodic)");
+				// create the reports directory in the starexec data directory if it does not already exist
+				String dataDirectory = R.STAREXEC_DATA_DIR;
+				File reportsDirectory = new File(dataDirectory, "/reports/");
+				if (!reportsDirectory.exists()) {
+					try {
+						log.debug("Attempting to create reports directory " + dataDirectory + "/reports/");
+						boolean reportsDirectoryCreated = reportsDirectory.mkdir();
+						if (!reportsDirectoryCreated) {
+							log.error("Starexec does not have permission to create the reports directory in " + dataDirectory);
+						}
+					} catch (SecurityException e) {
+						log.error("Starexec does not have permission to create the reports directory in " + dataDirectory, e);
+					}
+				}
+
 				List<User> subscribedUsers = Users.getAllUsersSubscribedToReports();
 				try {
 					if (subscribedUsers.size() > Users.getCount()) {

@@ -129,7 +129,6 @@ public class RESTServices {
 	 * with the given id
 	 * @author Eric Burns
 	 */
-	//TODO: Document these pagination functions?
 	@GET
 	@Path("/space/{jobid}/jobspaces/{spaceTree}")
 	@Produces("application/json")	
@@ -176,13 +175,13 @@ public class RESTServices {
 	@Path("/nodes/dates/pagination/{string_date}")
 	@Produces("application/json")
 	//TODO: This needs to be refactored
-	//TODO: Document these pagination functions?
 	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+	
 		//Get todays date
 		Date today = new Date();
 
@@ -247,7 +246,6 @@ public class RESTServices {
 	@GET
 	@Path("/space/subspaces")
 	@Produces("application/json")
-	//TODO: Document web?
 	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
 		log.debug("parentId = " + parentId);
@@ -265,7 +263,6 @@ public class RESTServices {
 	@GET
 	@Path("/communities/all")
 	@Produces("application/json")	
-	//TODO: Document web?
 	public String getAllCommunities() {								
 		return gson.toJson(RESTHelpers.toCommunityList(Communities.getAll()));
 	}	
@@ -300,7 +297,6 @@ public class RESTServices {
 	@GET
 	@Path("/cluster/queues")
 	@Produces("application/json")	
-	//TODO: Document web?
 	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
 		if(id <= 0 && Users.isAdmin(userId)) {
@@ -465,7 +461,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * @return a string that holds the std out of job pair with the given id
+	 * @return a string that holds the stdout of job pair with the given id
 	 * @author Tyler Jensen
 	 */
 	@GET
@@ -494,7 +490,6 @@ public class RESTServices {
 	 * @return a string representing all attributes of the node with the given id
 	 * @author Tyler Jensen
 	 */
-	//TODO: Document?
 	@GET
 	@Path("/cluster/nodes/details/{id}")
 	@Produces("application/json")	
@@ -506,7 +501,6 @@ public class RESTServices {
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Tyler Jensen
 	 */
-	//TODO: Document?
 
 	@GET
 	@Path("/cluster/queues/details/{id}")
@@ -543,7 +537,6 @@ public class RESTServices {
 	/**
 	 * @return a 
 	 */
-	//TODO: Document?
 
 	@GET
 	@Path("/space/community/{spaceId}")
@@ -556,7 +549,6 @@ public class RESTServices {
 	 * @return a json string representing permissions within a particular space for a user
 	 * @author Tyler Jensen
 	 */
-	//TODO: Document?
 
 	@GET
 	@Path("/permissions/details/{id}/{spaceId}")
@@ -581,7 +573,6 @@ public class RESTServices {
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen & Todd Elvers
 	 */
-	//TODO: Document?
 
 	@POST
 	@Path("/space/{id}")
@@ -639,7 +630,6 @@ public class RESTServices {
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Eric Burns
 	 */
-	//TODO: Document?
 	@POST
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
 	@Produces("application/json")	
@@ -660,7 +650,6 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
-	//TODO: Document?
 
 	@POST
 	@Path("/users/solvers/pagination")
@@ -674,7 +663,6 @@ public class RESTServices {
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolversByUser(userId, request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	//TODO: Document?
 
 	@POST
 	@Path("/users/benchmarks/pagination")
@@ -688,7 +676,6 @@ public class RESTServices {
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfBenchmarksByUser(userId, request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	//TODO: Document?
 
 	@POST
 	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
@@ -719,7 +706,6 @@ public class RESTServices {
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Todd Elvers
 	 */
-	//TODO: Document?
 
 	@POST
 	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
@@ -741,7 +727,6 @@ public class RESTServices {
 		}
 		return gson.toJson(nextDataTablesPage); 
 	}
-	//TODO: Document?
 	/**
 	 * Handles a request to get a space overview graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -791,7 +776,6 @@ public class RESTServices {
 
 
 
-	//TODO: Document?
 
     /**
      * Handles a request to get a community statistical overview
@@ -857,7 +841,6 @@ public class RESTServices {
 	}
 
   
-	//TODO: Document?
 	/**
 	 * Handles a request to get a solver comparison graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -899,7 +882,6 @@ public class RESTServices {
 	
 	
 	
-	//TODO: Document?
 
 	/**
 	 * Returns the next page of stats for the given job and job space
@@ -925,7 +907,6 @@ public class RESTServices {
 		
 	}
 
-	//TODO: Document?
 
 	/**
 	 * @return a string representing all attributes of the node with the given id
@@ -960,7 +941,6 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
-	//TODO: Document?
 
 	/**
 	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL)
@@ -1042,7 +1022,6 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
-	//TODO: Document?
 
 	/**
 	 * Gets the permissions a given user has in a given space
@@ -1100,7 +1079,6 @@ public class RESTServices {
 	 * the current user/space/solver
 	 * @author Skylar Stark and Todd Elvers
 	 */
-	//TODO: Document?
 	@GET
 	@Path("/websites/{type}/{id}")
 	@Produces("application/json")
@@ -3307,7 +3285,6 @@ public class RESTServices {
 	 * 		   1: The get job procedure fails.
 	 * @author Ruoyu Zhang
 	 */
-	//TODO: Document?
 	@POST
 	@Path("/users/{id}/jobs/pagination")
 	@Produces("application/json")	
@@ -3380,7 +3357,6 @@ public class RESTServices {
 	 * 		   1: The get solver procedure fails.
 	 * @author Wyatt Kaiser
 	 */
-	//TODO: Document?
 	@POST
 	@Path("/users/{id}/solvers/pagination/")
 	@Produces("application/json")	
@@ -3404,7 +3380,6 @@ public class RESTServices {
 	 * 		   1: The get benchmark procedure fails.
 	 * @author Wyatt Kaiser
 	 */
-	//TODO: Document?
 	@POST
 	@Path("/users/{id}/benchmarks/pagination")
 	@Produces("application/json")	
@@ -3428,7 +3403,6 @@ public class RESTServices {
 	 * 		   1: The get solver procedure fails.
 	 * @author Eric Burns
 	 */
-	//TODO: Document?
 	@POST
 	@Path("/users/{id}/rsolvers/pagination/")
 	@Produces("application/json")	
@@ -3452,7 +3426,6 @@ public class RESTServices {
 	 * 		   1: The get benchmark procedure fails.
 	 * @author Eric Burns
 	 */
-	//TODO: Document?
 	@POST
 	@Path("/users/{id}/rbenchmarks/pagination")
 	@Produces("application/json")	
@@ -3512,7 +3485,6 @@ public class RESTServices {
 			return gson.toJson(0);
 	}
 	
-	//TODO: Document?
 	@POST
 	@Path("/queues/pending/pagination/")
 	@Produces("application/json")
@@ -4122,7 +4094,6 @@ public class RESTServices {
 		
 		return Queues.removeGlobal(queue_id) ? gson.toJson(new ValidatorStatusCode(true,"Queue no longer global")) : gson.toJson(ERROR_DATABASE);
 	}
-	//TODO: Document?
 	@GET
 	@Path("/details/{type}/{id}")
 	@Produces("application/json")

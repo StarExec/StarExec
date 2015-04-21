@@ -2,6 +2,7 @@ package org.starexec.command;
 
 /**
  * This class reads HTML strings from StarExec and parses out necessary information from them.
+ * HTML parsing is really to be avoided as much as possible due to how fragile it can be.
  */
 
 import java.util.HashMap;
@@ -161,6 +162,12 @@ public class HTMLParser {
 		return null;
 	}
 	
+	/**
+	 * Extracts all the values of a comma-separated cookie as a list of strings.
+	 * @param headers
+	 * @param cookieName
+	 * @return
+	 */
 	public static String[] extractMultipartCookie(Header[] headers, String cookieName) {
 		String value=extractCookie(headers,cookieName);
 		if (value==null){

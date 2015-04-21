@@ -301,7 +301,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 			job_pairs.id, job_pairs.bench_id, job_pairs.bench_name,
 			completion_id, jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 			jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
-			jobpair_stage_data.wallclock, primary_jobpair_data,
+			jobpair_stage_data.wallclock, primary_jobpair_data, job_pairs.path,
 			job_attributes.attr_value AS result
 			FROM job_pairs 		
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
@@ -318,7 +318,7 @@ DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT status_code,
-		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name,
+		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name, job_pairs.path,
 		completion_id,primary_jobpair_data
 		FROM job_pairs 		
 		JOIN job_space_closure ON descendant=job_space_id

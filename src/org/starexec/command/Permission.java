@@ -3,6 +3,8 @@ package org.starexec.command;
 import java.util.ArrayList;
 import java.util.List;
 
+
+//TODO: This class should not be duplicated from Starexec-- we need to just include it in the distribution
 /**
  * Represents a permission between a user and a space, or a default permission
  * on a space. All fields are false by default.

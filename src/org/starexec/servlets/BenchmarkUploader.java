@@ -356,7 +356,10 @@ public class BenchmarkUploader extends HttpServlet {
 						fileToUpload.write(archiveFile);
 					} else {
 						archiveFile=new File(uniqueDir,name);
-						FileUtils.copyURLToFile(url,archiveFile);
+						if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
+							throw new Exception("Unable to copy file from URL");
+						}
+						
 					}
 					
 					addBechmarksFromArchive(archiveFile, userId, spaceId, typeId,

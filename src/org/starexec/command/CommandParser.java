@@ -1,7 +1,9 @@
 package org.starexec.command;
 
 /**
- * This class handles the commands given by the user at the command line
+ * This class is responsible for taking in a String command given by the user through the shell interface
+ * (or in a file), generating a HashMap of the arguments, and passing off the command to the correct function
+ * in the ArgumentParser class.
  */
 
 import java.io.BufferedReader;
