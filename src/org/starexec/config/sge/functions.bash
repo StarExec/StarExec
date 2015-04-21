@@ -906,7 +906,7 @@ function saveOutputAsBenchmark {
 	
 	# if no suffix is give, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
-		CURRENT_BENCH_SUFFIX=$([[ "$CURRENT_BENCH_SUFFIX" = *.* ]] && echo ".${CURRENT_BENCH_SUFFIX##*.}" || echo '')
+		CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
 	fi
 	
 	CURRENT_BENCH_NAME=${BENCH_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
