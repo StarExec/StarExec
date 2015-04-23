@@ -36,6 +36,8 @@ public class Logins {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -56,6 +58,7 @@ public class Logins {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 	}
 }
