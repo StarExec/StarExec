@@ -82,6 +82,12 @@ public class JobToXMLer {
 		
 	}
     
+    
+    /**
+     * Given a StageAttributes object, creates an XML element to represent it.
+     * @param attrs The attributes to convert to XML
+     * @return The XML element
+     */
     public Element getStageAttributesElement(StageAttributes attrs) {
     	Element stageAttrs=doc.createElement("StageAttributes");
     	
@@ -99,7 +105,6 @@ public class JobToXMLer {
 
 		stageAttrs.appendChild(cpuTimeoutElement);
 		
-		//Wall Clock timeout (seconds) : wallclock-timeout
 
 		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
 
@@ -109,7 +114,6 @@ public class JobToXMLer {
 
 		stageAttrs.appendChild(wallClockTimeoutElement);
 		
-		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
 
 		Element memLimitElement = doc.createElement("mem-limit");
 
@@ -119,6 +123,8 @@ public class JobToXMLer {
     	
     	stageAttrs.appendChild(memLimitElement);
     	
+    	
+    	//all of the following attributes are optional, and so they are included only if they are not null.
     	if (attrs.getSpaceId()!=null && attrs.getSpaceId()>0) {
     		Element spaceIdElement = doc.createElement("space-id");
 
