@@ -317,7 +317,6 @@ CREATE TABLE job_pairs (
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
 	exit_status INT,
-	wallclock DOUBLE,-- will store the total time this pair took, which might be greater than the sum of stages
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,

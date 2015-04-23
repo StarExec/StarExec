@@ -906,9 +906,12 @@ function saveOutputAsBenchmark {
 	
 	# if no suffix is give, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
-		CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
+		if [[ "$BENCH_NAME" = *.* ]]
+			CURRENT_BENCH_SUFFIX=".${BENCH_NAME##*.}"
+		fi
+		#CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
 	fi
-	
+	 
 	CURRENT_BENCH_NAME=${BENCH_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
 	MAX_BENCH_NAME_LENGTH=$(($BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
 	CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
@@ -929,7 +932,7 @@ function saveOutputAsBenchmark {
 		log "error saving output as benchmark-- benchmark was not created"
 	else
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
-		
+		log "benchmark $CURRENT_BENCH_NAME copied to $CURRENT_BENCH_PATH"
 	fi
 }
 
