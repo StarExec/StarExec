@@ -114,6 +114,8 @@ public class Reports {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -152,6 +154,8 @@ public class Reports {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -162,14 +166,16 @@ public class Reports {
 	 */
 	public static void resetReports() {
 		Connection con = null;
+		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
-			CallableStatement procedure = con.prepareCall("{CALL ResetReports()}");
-			procedure.executeQuery();
+		    con = Common.getConnection();
+		    procedure = con.prepareCall("{CALL ResetReports()}");
+		    procedure.executeQuery();
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+		    log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
+		    Common.safeClose(con);
+		    Common.safeClose(procedure);
 		}
 	}
 
@@ -200,6 +206,7 @@ public class Reports {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 	}
 
@@ -233,6 +240,7 @@ public class Reports {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 	}
 
@@ -270,6 +278,8 @@ public class Reports {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return null;
 	}
