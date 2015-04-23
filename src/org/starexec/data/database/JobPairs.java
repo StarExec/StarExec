@@ -1338,7 +1338,6 @@ public class JobPairs {
 	public static boolean updateJobSpaces(List<JobPair> jobPairs,Connection con) {
 		
 		try {
-			con = Common.getConnection();
 			for (JobPair jp : jobPairs) {
 				UpdateJobSpaces(jp.getId(),jp.getJobSpaceId(),con);
 			}

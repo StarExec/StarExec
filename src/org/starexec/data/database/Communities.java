@@ -256,9 +256,7 @@ public class Communities {
 				    
 				}
 	
-				Common.safeClose(con);
-				Common.safeClose(results);
-				Common.safeClose(procedure);
+				
 	
 				
 				dropCommunityAssoc();

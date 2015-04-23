@@ -1224,7 +1224,6 @@ public class Spaces {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
 			 procedure = con.prepareCall("{CALL GetSubSpaceByName(?,?,?)}");
 
 			log.debug("Space ID = " + spaceId);

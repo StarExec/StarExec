@@ -9,7 +9,6 @@ import java.util.Properties;
 import org.starexec.constants.R;
 import org.starexec.data.to.compare.JoblineStageComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 
 /**
