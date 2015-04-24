@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.starexec.constants.R;
+import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.Util;
 
 /**
@@ -194,6 +195,17 @@ public class Common {
 	}
 	
 	protected static void safeClose(CallableStatement statement) {
+		try {
+			if (statement!=null) {
+				statement.close();
+			}
+		
+		} catch (Exception e) {
+			log.error("safeClose statement says "+e.getMessage(),e);
+		}	
+	}
+	
+	protected static void safeClose(NamedParameterStatement statement) {
 		try {
 			if (statement!=null) {
 				statement.close();

@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CacheType;
@@ -44,6 +45,8 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
 
 /**
@@ -1702,6 +1705,28 @@ public class Jobs {
 		return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,"all",wallclock,stageNumber,totals);
 	}
 	
+	private static String getJobPairOrderColumn(int orderIndex, boolean wallclock) {
+		if (orderIndex==0) {
+			return "job_pairs.bench_name";
+		} else if (orderIndex==1) {
+			return "jobpair_stage_data.solver_name";
+		} else if (orderIndex==2) {
+			return "jobpair_stage_data.config_name";
+		} else if (orderIndex==3) {
+			return "jobpair_stage_data.status_code";
+		} else if (orderIndex==4) {
+			if (wallclock) {
+				return "jobpair_stage_data.wallclock";
+			} else {
+				return "jobpair_stage_data.cpu";
+			}
+		} else if (orderIndex==5) {
+			return "result";
+		}
+		
+		return "job_pairs.benchmark_name";
+	}
+	
 	/**
 	 * Gets the minimal number of Job Pairs necessary in order to service the client's
 	 * request for the next page of Job Pairs in their DataTables object
@@ -1716,6 +1741,55 @@ public class Jobs {
 	 * @author Todd Elvers
 	 */
 	
+	public static List<JobPair> newGetJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock,int jobId) {
+		Connection con = null;	
+		NamedParameterStatement procedure = null;
+		ResultSet results = null;
+		if (searchQuery==null) {
+			searchQuery="";
+		}
+		try {
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_ENQUEUED_PAIRS_QUERY, startingRecord, recordsPerPage, getJobPairOrderColumn(indexOfColumnSortedBy,wallclock), isSortedASC);
+			con = Common.getConnection();
+			procedure = new NamedParameterStatement(con, builder.getSQL());
+			procedure.setString("query", searchQuery);
+			procedure.setInt("stageNumber",stageNumber);
+			procedure.setInt("jobSpaceId",jobSpaceId);
+			results = procedure.executeQuery();
+			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
+			
+			return jobPairs;
+		} catch (Exception e){			
+			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Gets the minimal number of Job Pairs necessary in order to service the client's
+	 * request for the next page of Job Pairs in their DataTables object
+	 * 
+	 * @param startingRecord the record to start getting the next page of Job Pairs from
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
+	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
+	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param jobId the id of the Job to get the Job Pairs of
+	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
+	 * @author Todd Elvers
+	 */
+	//TODO: Wallclock parameter not working
+	//TODO: decide whether to use this version or the new version
 	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock,int jobId) {
 		Connection con = null;	
 		CallableStatement procedure = null;

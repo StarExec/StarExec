@@ -775,7 +775,7 @@ public class RESTHelpers {
 		int[] totals = new int[2];
 
 		if (!syncResults) {
-			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
+			jobPairsToDisplay = Jobs.newGetJobPairsForNextPageInJobSpace(
 	    			attrMap.get(STARTING_RECORD),						// Record to start at  
 	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
