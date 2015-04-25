@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-/*
+/**
 * @author adam_crume
 */
 public class NamedParameterStatement {

@@ -364,7 +364,7 @@ public class Jobs {
 		PreparedStatement procedure=null;
 		try {			
 			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
-			
+			long a = System.currentTimeMillis();
 			con = Common.getConnection();
 			
 			// gets the name of the root job space for this job
@@ -392,7 +392,7 @@ public class Jobs {
 			//we end the first transaction here so that we don't end up keeping a lock on the space tables
 			// for the entire duration of job creation
 			Common.endTransaction(con);
-
+			log.debug("end of first transaction took " + (System.currentTimeMillis() - a));
 			//creates the job space hierarchy for the job and returns the ID of the top level job space
 			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
 			
@@ -412,7 +412,8 @@ public class Jobs {
 			Reports.addToEventOccurrencesNotRelatedToQueue("jobs initiated", 1);
 			// record the job being added for the queue it was added to
 			Reports.addToEventOccurrencesForQueue("jobs initiated", 1, job.getQueue().getName());
-			
+			log.debug("to add job report took " + (System.currentTimeMillis() - a));
+
 			
 			log.debug("job added, associating next");
 			//put the job in the space it was created in, assuming a space was selected
@@ -427,7 +428,8 @@ public class Jobs {
 				attrs.setJobId(job.getId());
 				Jobs.setJobStageAttributes(attrs,con);
 			}
-			
+			log.debug("to add stage attrs took " + (System.currentTimeMillis() - a));
+
 			
 			log.debug("adding job pairs");
 			
@@ -436,6 +438,8 @@ public class Jobs {
 				pair.setJobId(job.getId());
 				JobPairs.addJobPair(con, pair);
 			}
+			log.debug("to add pairs took " + (System.currentTimeMillis() - a));
+
 			Common.endTransaction(con);
 			
 			log.debug("job added successfully");

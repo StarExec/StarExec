@@ -803,6 +803,8 @@ public abstract class JobManager {
 	public static List<JobPair> addJobPairsFromSpace(int userId, int spaceId, String path) {
 		Space space = Spaces.get(spaceId);
 		log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
+		log.debug("the path for the pairs will be ");
+		log.debug(path);
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		// Get the benchmarks and solvers from this space
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
