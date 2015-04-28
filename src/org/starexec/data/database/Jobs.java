@@ -373,7 +373,7 @@ public class Jobs {
 				rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
 			}
 			//start a transaction that encapsulates making new spaces for mirrored hierarchies
-			//Common.beginTransaction(con);
+			Common.beginTransaction(con);
 			//get all the different space IDs for the places we need to created mirrors of the job space heirarchy
 			HashSet<Integer> uniqueSpaceIds=new HashSet<Integer>();
 			for (StageAttributes attrs: job.getStageAttributes()) {
@@ -391,7 +391,7 @@ public class Jobs {
 			}
 			//we end the first transaction here so that we don't end up keeping a lock on the space tables
 			// for the entire duration of job creation
-			//Common.endTransaction(con);
+			Common.endTransaction(con);
 			log.debug("end of first transaction took " + (System.currentTimeMillis() - a));
 			//creates the job space hierarchy for the job and returns the ID of the top level job space
 			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
@@ -405,7 +405,7 @@ public class Jobs {
 			//NOTE: By opening the transaction here, we are leaving open the possibility that some spaces
 			//will be created even if job creation fails. However, this prevents the job space and the space
 			//tables from being locked for the entire transaction, which may take a long time.
-			//Common.beginTransaction(con);
+			Common.beginTransaction(con);
 
 			
 			Jobs.addJob(con, job);
@@ -442,14 +442,14 @@ public class Jobs {
 
 			log.debug("to add pairs took " + (System.currentTimeMillis() - a));
 
-			//Common.endTransaction(con);
+			Common.endTransaction(con);
 			
 			log.debug("job added successfully");
 			Jobs.resume(job.getId(), con); // now that the job has been added, we can resume
 			return true;
 		} catch(Exception e) {
 			log.error("add says " + e.getMessage(), e);
-			//Common.doRollback(con);
+			Common.doRollback(con);
 			
 		} finally {			
 			Common.safeClose(con);	

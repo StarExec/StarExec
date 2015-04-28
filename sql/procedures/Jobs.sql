@@ -566,10 +566,11 @@ CREATE PROCEDURE ChangeQueue(IN _jobId INT, IN _queueId INT)
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns
 DROP PROCEDURE IF EXISTS AddJobPair;
-CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _status TINYINT, IN _path VARCHAR(2048),IN _jobSpaceId INT, IN _benchName VARCHAR(256), IN _stageNumber INT)
+CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _status TINYINT, IN _path VARCHAR(2048),IN _jobSpaceId INT, IN _benchName VARCHAR(256), IN _stageNumber INT, OUT _id INT)
 	BEGIN
 		INSERT INTO job_pairs (job_id, bench_id, status_code, path,job_space_id,bench_name,primary_jobpair_data)
 		VALUES (_jobId, _benchId, _status, _path, _jobSpaceId,  _benchName,_stageNumber);
+		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	
 DROP PROCEDURE IF EXISTS AddJobPairStage;
