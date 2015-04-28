@@ -802,28 +802,26 @@ public abstract class JobManager {
 	 */
 	public static List<JobPair> addJobPairsFromSpace(int userId, int spaceId, String path) {
 		Space space = Spaces.get(spaceId);
-		log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
-		log.debug("the path for the pairs will be ");
-		log.debug(path);
+		//log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
+		//log.debug("the path for the pairs will be ");
+		//log.debug(path);
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		// Get the benchmarks and solvers from this space
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
-		log.debug("found this many benchmarks in the space = "+benchmarks.size());
+		//log.debug("found this many benchmarks in the space = "+benchmarks.size());
 		List<Solver> solvers = Solvers.getBySpace(spaceId);
-		
-		List<Configuration> configs;
+		for (Solver s : solvers) {
+			List<Configuration> configs = Solvers.getConfigsForSolver(s.getId());
+			for (Configuration c : configs) {
+				s.addConfiguration(c);
+			}
+			   
+		}
 		JobPair pair;
 		for (Benchmark b : benchmarks) {
 			for (Solver s : solvers) {
 				// Get the configurations for the current solver
-				configs = Solvers.getConfigsForSolver(s.getId());
-				if (configs.size() == 0) {
-					continue;
-					//we shouldn't be failing on this-- we should just continue on with the other solvers
-					//return null;
-				}
-				   
-				for (Configuration c : configs) {
+				for (Configuration c : s.getConfigurations()) {
 
 					Solver clone = JobManager.cloneSolver(s);
 					// Now we're going to work with this solver with this configuration
