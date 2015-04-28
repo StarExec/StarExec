@@ -395,7 +395,8 @@ public class Jobs {
 			log.debug("end of first transaction took " + (System.currentTimeMillis() - a));
 			//creates the job space hierarchy for the job and returns the ID of the top level job space
 			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
-			
+			log.debug("adding job spaces took " + (System.currentTimeMillis() - a));
+
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
@@ -408,6 +409,8 @@ public class Jobs {
 
 			
 			Jobs.addJob(con, job);
+			log.debug("adding job took " + (System.currentTimeMillis() - a));
+
 			// record the job being added in the reports table
 			Reports.addToEventOccurrencesNotRelatedToQueue("jobs initiated", 1);
 			// record the job being added for the queue it was added to
@@ -434,10 +437,9 @@ public class Jobs {
 			log.debug("adding job pairs");
 			
 			//TODO: We should be batching the addition of pairs so we don't need to make so many SQL calls
-			for(JobPair pair : job) {
-				pair.setJobId(job.getId());
-				JobPairs.addJobPair(con, pair);
-			}
+			
+			JobPairs.addJobPairs(con, job.getId(),job.getJobPairs());
+
 			log.debug("to add pairs took " + (System.currentTimeMillis() - a));
 
 			Common.endTransaction(con);

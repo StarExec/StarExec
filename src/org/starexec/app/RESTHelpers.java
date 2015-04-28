@@ -775,7 +775,7 @@ public class RESTHelpers {
 		int[] totals = new int[2];
 
 		if (!syncResults) {
-			long a = System.currentTimeMillis();
+			//long a = System.currentTimeMillis();
 			
 			
 			
@@ -792,9 +792,9 @@ public class RESTHelpers {
 	    			wallclock,
 	    			jobId
 			);
-			long b = System.currentTimeMillis();
+			//long b = System.currentTimeMillis();
 			//TODO: This is a timing test-- remove
-			Jobs.getJobPairsForNextPageInJobSpace(
+			/*Jobs.getJobPairsForNextPageInJobSpace(
 	    			attrMap.get(STARTING_RECORD),						// Record to start at  
 	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
@@ -805,10 +805,10 @@ public class RESTHelpers {
 	    			stageNumber,
 	    			wallclock,
 	    			jobId
-			);
-			long c = System.currentTimeMillis();
-			log.debug("the old technique took this many millis = "+ (c-b));
-			log.debug("the new technique took this many millis = " +(b-a));
+			);*/
+			//long c = System.currentTimeMillis();
+			//log.debug("the old technique took this many millis = "+ (c-b));
+			//log.debug("the new technique took this many millis = " +(b-a));
 			
 		} else {
 			log.debug("returning synchronized results");

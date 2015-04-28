@@ -825,7 +825,6 @@ public abstract class JobManager {
 				   
 				for (Configuration c : configs) {
 
-				    log.debug("configuration = " + c.getName());
 					Solver clone = JobManager.cloneSolver(s);
 					// Now we're going to work with this solver with this configuration
 					clone.addConfiguration(c);
@@ -844,7 +843,6 @@ public abstract class JobManager {
 					pair.setSpace(space);
 					//we are running pairs in a single space, so the path is flat
 					pair.setPath(path);
-					log.debug("pair path = " + pair.getPath());
 					pairs.add(pair);
 
 					

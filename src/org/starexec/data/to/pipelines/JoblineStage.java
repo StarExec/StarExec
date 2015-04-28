@@ -19,7 +19,7 @@ import org.starexec.data.to.WorkerNode;
  */
 public class JoblineStage {
 	private Solver solver = null;
-	private Integer stageId=null;
+	private Integer stageId=null; // This is the ID of the PipelineStage that this JoblineStage refers to 
 	private Integer jobpairId=null;
 	private double wallclockTime;
 	private double cpuTime;
