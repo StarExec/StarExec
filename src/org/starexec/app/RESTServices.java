@@ -607,13 +607,12 @@ public class RESTServices {
 		if (pair==null) {
 			return gson.toJson(new ValidatorStatusCode(false, "The pair could not be found"));
 		}
-		int jobId=pair.getJobId();
-		ValidatorStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserRerunPairs(pair.getJobId(), userId);
 		
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		boolean success=Jobs.rerunPair(jobId, pairId);
+		boolean success=Jobs.rerunPair(pairId);
 		
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Rerunning of pair began successfully")) : gson.toJson(ERROR_DATABASE);
 	}

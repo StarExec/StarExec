@@ -817,7 +817,7 @@ public class RESTHelpers {
 					attrMap.get(SORT_DIRECTION) == ASC ? true : false,
 							attrMap.get(SORT_COLUMN),
 							request.getParameter(SEARCH_QUERY),
-							jobId, jobSpaceId, 
+							jobSpaceId, 
 							wallclock,
 							stageNumber,
 							totals);
@@ -1052,14 +1052,14 @@ public class RESTHelpers {
 						jobId, // Parent space id
 						jobSpaceId, configId,type,wallclock,stageNumber);
 		
-		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type);
+		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber);
 
 		/**
     	* Used to display the 'total entries' information at the bottom of the DataTable;
     	* also indirectly controls whether or not the pagination buttons are toggle-able
     	*/
     
-       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,request.getParameter(SEARCH_QUERY)));
+       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,request.getParameter(SEARCH_QUERY),stageNumber));
     	
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock,stageNumber);
 	}
