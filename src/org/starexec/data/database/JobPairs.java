@@ -51,7 +51,7 @@ public class JobPairs {
 					
 					procedure.addBatch();
 					batchCounter++;
-					if (batchCounter > 1000) {
+					if (batchCounter > 4000) {
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
@@ -191,7 +191,7 @@ public class JobPairs {
 					procedure.addBatch();
 					
 					batchCounter++;
-					if (batchCounter > 1000) {
+					if (batchCounter > 4000) {
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
@@ -260,10 +260,14 @@ public class JobPairs {
 	 * @param pair The pair to add
 	 * @return True if the operation was successful
 	 */
+	
+	//TODO: Is it possible to start running pairs before they are actually fully inserted into the database?
+	//we should be pausing jobs by default when they are added to the database and unpausing them on completion
 	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws Exception {
 		CallableStatement procedure = null;
+		int batchCounter = 0; 
 		 try {
-			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?)}");
 			
 			//TODO: It is not possible to do batch processing when we are using out parameters
 			//Should we rework this do avoid needing an out parameter? Like doing an insert followed by a select to get a 
@@ -279,11 +283,17 @@ public class JobPairs {
 				procedure.setString(6,pair.getBench().getName());
 				// The procedure will return the pair's new ID in this parameter
 				procedure.setInt(7,pair.getPrimaryStageNumber());
-				procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
-				procedure.executeUpdate();			
+				//procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+				procedure.addBatch();
+				batchCounter++;
+				if (batchCounter > 4000) {
+					procedure.executeBatch();
+					batchCounter = 0;
+				}
+				//procedure.executeUpdate();			
 				
 				// Update the pair's ID so it can be used outside this method
-				pair.setId(procedure.getInt(8));
+				//pair.setId(procedure.getInt(8));
 
 				/*for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
 					JoblineStage stage= pair.getStages().get(stageNumber-1);
@@ -297,9 +307,21 @@ public class JobPairs {
 					addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);
 				}*/
 			}
+			if (batchCounter > 0) {
+				procedure.executeBatch();
+			}
+			
+			//TODO: This makes me nervous about getting things out of sync. Is there a better way to do this
+			// that doesn't involve an out parameter above? Maybe using IDs we generate in Java?
+			//populate the pair IDs
+			
+			List<Integer> ids = Jobs.getPairsByStatus(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			for (int i=0;i<ids.size();i++) {
+				pairs.get(i).setId(ids.get(i));
+			}
+			
 			addJobPairStages(pairs,con);
 			addJobPairInputs(pairs,con);
-			
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPair says "+e.getMessage(),e);

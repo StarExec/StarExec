@@ -2994,6 +2994,13 @@ public class Jobs {
 		return null;
 	}
 	
+	
+	/**
+	 * Gets all job pair IDs of pairs that have the given status code in the given job, ordered by ID
+	 * @param jobId
+	 * @param statusCode
+	 * @return
+	 */
 	public static List<Integer> getPairsByStatus(int jobId, int statusCode) {
 		Connection con=null;
 		
