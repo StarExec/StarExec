@@ -160,6 +160,8 @@ public class CreateJob extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		// Make sure the request is valid
+		long a = System.currentTimeMillis();
+		log.debug("starting job post");
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {
 			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
@@ -168,7 +170,7 @@ public class CreateJob extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}		
-		
+		log.debug("job validation took this long " + (System.currentTimeMillis() - a));
 		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
 		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
 		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
@@ -196,7 +198,8 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(workerQueue)),
 				seed,cpuLimit,runLimit,memoryLimit);
 		
-		
+		log.debug("job setup took this long " + (System.currentTimeMillis() - a));
+
 		
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
@@ -295,7 +298,8 @@ public class CreateJob extends HttpServlet {
 			return;
 		}
 		
-		
+		log.debug("jobpair creation took this long " + (System.currentTimeMillis() - a));
+
 		
 
 		boolean submitSuccess = Jobs.add(j, space);

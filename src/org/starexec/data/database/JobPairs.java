@@ -316,6 +316,7 @@ public class JobPairs {
 			//populate the pair IDs
 			
 			List<Integer> ids = Jobs.getPairsByStatus(jobId, StatusCode.STATUS_PENDING_SUBMIT.getVal());
+			log.debug("found this many ids = "+ids.size()+" for this many pairs = "+pairs.size());
 			for (int i=0;i<ids.size();i++) {
 				pairs.get(i).setId(ids.get(i));
 			}
