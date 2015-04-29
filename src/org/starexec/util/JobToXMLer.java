@@ -147,7 +147,7 @@ public class JobToXMLer {
     		Element postProcessorElement = doc.createElement("postproc-id");
 
     		Attr postProcessorAttr = doc.createAttribute("value");
-    		postProcessorAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getPostProcessor().getId())));
+    		postProcessorAttr.setValue(String.valueOf(attrs.getPostProcessor().getId()));
     		postProcessorElement.setAttributeNode(postProcessorAttr);
         	
         	stageAttrs.appendChild(postProcessorElement);
@@ -157,7 +157,7 @@ public class JobToXMLer {
     		Element preProcessorElement = doc.createElement("preproc-id");
 
     		Attr preProcessorAttr = doc.createAttribute("value");
-    		preProcessorAttr.setValue(Double.toString(Util.bytesToGigabytes(attrs.getPreProcessor().getId())));
+    		preProcessorAttr.setValue(String.valueOf(attrs.getPreProcessor().getId()));
     		preProcessorElement.setAttributeNode(preProcessorAttr);
         	
         	stageAttrs.appendChild(preProcessorElement);
