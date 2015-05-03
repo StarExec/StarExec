@@ -878,6 +878,7 @@ public class JobPairs {
 	 * @param pair
 	 * @return
 	 */
+    //TODO: Is backward compatibility even desired? It can probably be removed for code simplicity
 	public static String getLogFilePath(JobPair pair) {
 		try {
 			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
@@ -898,7 +899,17 @@ public class JobPairs {
 			}
 			file=new File(file,pair.getId()+".txt");
 			
-			//log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
+			// this is the most recent older path
+			if (file.exists()) {
+				return file.getAbsolutePath();
+			}
+			
+			//if we are down here, it means the log is in the new format. 
+			
+			file=new File(Jobs.getLogDirectory(pair.getJobId()));
+			file = new File(file,String.valueOf(pair.getJobSpaceId()));
+			file = new File(file,pair.getId()+".txt");
+			
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);
