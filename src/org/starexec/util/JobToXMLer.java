@@ -236,7 +236,7 @@ public class JobToXMLer {
 	for (SolverPipeline pipe : neededPipes) {
 		jobsElement.appendChild(getPipelineElement(pipe));
 	}
-	Element rootJobElement = generateJobXML(job, userId);
+	Element rootJobElement = generateJobXML(job, userId, neededPipes.size()==0);
 	jobsElement.appendChild(rootJobElement);
 		
 	
@@ -249,11 +249,12 @@ public class JobToXMLer {
 	 *  @author Julio Cervantes
 	 *  @param job The job for which we want an xml representation.
 	 *  @param userId the id of the user making the request
+	 *  @param containsPipelines True if this job has pipelines and false otherwise
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
     
     
-    public Element generateJobXML(Job job, int userId){		
+    public Element generateJobXML(Job job, int userId, boolean containsPipelines){		
 	log.info("Generating Job XML for job " + job.getId());
 		
 		Element jobElement = doc.createElement("Job");
@@ -338,12 +339,12 @@ public class JobToXMLer {
 		//add job attributes element
 		jobElement.appendChild(attrsElement);
 
-		
-		for (StageAttributes attrs : job.getStageAttributes()) {
-			jobElement.appendChild(getStageAttributesElement(attrs));
+		if (containsPipelines) {
+			for (StageAttributes attrs : job.getStageAttributes()) {
+				jobElement.appendChild(getStageAttributesElement(attrs));
+			}
 		}
-		
-		
+
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
 		
 		HashMap<Integer,List<Integer>> benchInputs=Jobs.getAllBenchmarkInputsForJob(job.getId());
