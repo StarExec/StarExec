@@ -19,7 +19,9 @@
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
-			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
+			List<Solver> solvers = Solvers.getBySpaceDetailed(spaceId);
+			Solvers.makeDefaultConfigsFirst(solvers);
+			request.setAttribute("solvers", solvers);
 			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
 			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
@@ -221,14 +223,19 @@
 				</thead>
 				<tbody>
 				<c:forEach var="s" items="${solvers}">
-					<tr id="solver_${s.id}">
+					<tr id="solver_${s.id}" class="solverRow">
 							<td>
 								<input type="hidden" name="solver" value="${s.id}"/>
-								<star:solver value='${s}'/></td>
+								<star:solver value='${s}'/>
+							</td>
 							<td>
 								 <div class="selectConfigs">
+									<div class="selectWrap configSelectWrap">
+										<p class="selectAll selectAllConfigs"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | 
+										<p class="selectNone selectNoneConfigs"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+									</div><br />
 									<c:forEach var="c" items="${s.configurations}">
-										<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
+									<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
 									</c:forEach> 
 								</div> 
 							</td>
@@ -236,8 +243,8 @@
 				</c:forEach>			
 				</tbody>						
 			</table>				
-		   	<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+		   	<div class="selectWrap solverSelectWrap">
+				<p class="selectAll selectAllSolvers"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone selectNoneSolvers"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div> 
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>

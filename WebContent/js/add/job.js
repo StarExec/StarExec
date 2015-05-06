@@ -195,10 +195,10 @@ function initUI() {
     });
 	
 	// Place the select all/none buttons in the datatable footer
-	/*$('#fieldStep3 div.selectWrap').detach().prependTo('#fieldStep3 div.bottom');
-	$('#fieldStep4 div.selectWrap').detach().prependTo('#fieldStep4 div.bottom');*/
-	$('#fieldSelectBenchSpace div.selectWrap').detach().prependTo('#fieldSelectBenchSpace div.bottom');
-	$('#fieldSolverSelection div.selectWrap').detach().prependTo('#fieldSolverSelection div.bottom');
+	/*$('#fieldStep3 div.solverSelectWrap').detach().prependTo('#fieldStep3 div.bottom');
+	$('#fieldStep4 div.solverSelectWrap').detach().prependTo('#fieldStep4 div.bottom');*/
+	$('#fieldSelectBenchSpace div.solverSelectWrap').detach().prependTo('#fieldSelectBenchSpace div.bottom');
+	$('#fieldSolverSelection div.solverSelectWrap').detach().prependTo('#fieldSolverSelection div.bottom');
 	
 	$('#btnBack').button({
 		icons: {
@@ -283,27 +283,63 @@ function initUI() {
  		createDialog("Creating your job, please wait. This will take some time for large jobs.");
     });
     
-    // Hook up select all/none buttons
-    $('.selectAll').click(function() {
+    // Hook up select all/none buttons for solvers
+    $('.selectAllSolvers').click(function() {
+		// Select all default configurations when select all solvers is clicked.
+        var defaults = $(this).parents('.dataTables_wrapper').find('.default');
+		$.each(defaults, function(i, defaultCheckbox) {
+			if ( !$(defaultCheckbox).closest('.solverRow').hasClass('row_selected') ) 
+			{
+				// Only check the default checkbox if there is not already a checkbox selected in that row.
+				// We don't want to mess up anyones selected configurations.
+				$(defaultCheckbox).prop('checked', true);
+			}
+		});
+		// Give every row the row_selected class so they are highlighted.
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-        $(this).parents('.dataTables_wrapper').find('input[type=checkbox]').prop('checked', true);
     });
+
     
-    $('.selectNone').click(function() {
+    $('.selectNoneSolvers').click(function() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
     	$(this).parents('.dataTables_wrapper').find('input[type=checkbox]').prop('checked', false);
     }); 
+
+	// Hook up select all/none config buttons
+	$('.selectAllConfigs').click(function() {
+		$(this).parent().siblings('.config').prop('checked', true);
+	});
+	$('.selectNoneConfigs').click(function(e) {
+		$(this).parent().siblings('.config').prop('checked', false);
+
+		var numCheck = $(this).closest('tr').find('input[type=checkbox]:checked').length;
+
+		if (numCheck == 0) {
+			$(this).closest('tr').removeClass('row_selected');
+		}
+
+		// Don't allow a click event to fire for the ancestor elements
+		e.stopPropagation();
+	});
     // Enable row selection
-	$("#tblSolverConfig").on( "click", "tr", function(){
+	$("#tblSolverConfig").on( "click", "tr", function() {
 
 	    var numCheck = $(this).find('input[type=checkbox]:checked').length;
-	    if(!$(this).hasClass("row_selected"))
-	    {
-		$(this).addClass('row_selected');
-    		$(this).find('div>input[type=checkbox]').prop('checked', true);
-	    }
-	    else if (numCheck == 0) {
-		$(this).removeClass("row_selected");
+
+	    if(!$(this).hasClass("row_selected")) {
+
+			$(this).addClass('row_selected');
+			
+			if (numCheck != 1) {
+				// Only check the default checkbox if the user clicked on the row,
+				// and not another checkbox
+				$(this).find('.default').prop('checked', true);
+			}
+
+    		//$(this).find('div>input[type=checkbox]').prop('checked', true);
+			
+	    } else if (numCheck == 0) {
+			$(this).removeClass("row_selected");
 	    };
 	    
 	});
