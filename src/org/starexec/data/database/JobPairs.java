@@ -173,6 +173,12 @@ public class JobPairs {
 			
 			for (JobPair pair : pairs) {
 				for (JoblineStage stage : pair.getStages()) {
+					if (stage.isNoOp()) {
+						continue;
+					}
+					
+					
+					
 					procedure.setInt(1, pair.getId());
 					if (stage.getStageId()!=null) {
 						procedure.setInt(2,stage.getStageId());
