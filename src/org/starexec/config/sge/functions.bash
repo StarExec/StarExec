@@ -906,7 +906,7 @@ function saveOutputAsBenchmark {
 	
 	# if no suffix is give, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
-		if [[ "$BENCH_NAME" = *.* ]]
+		if [[ "$BENCH_NAME" = *.* ]] ; then
 			CURRENT_BENCH_SUFFIX=".${BENCH_NAME##*.}"
 		fi
 		#CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
