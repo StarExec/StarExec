@@ -16,13 +16,16 @@
 			request.setAttribute("space", Spaces.get(spaceId));
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
-			List<Processor> ListOfPostProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.POST);
-			List<Processor> ListOfPreProcessors = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.PRE);
+			int communityId = Spaces.getCommunityOfSpace(spaceId);
+			
+			List<Processor> ListOfPostProcessors = Processors.getByCommunity(communityId,ProcessorType.POST);
+			List<Processor> ListOfPreProcessors = Processors.getByCommunity(communityId,ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
-			request.setAttribute("solvers", Solvers.getBySpaceDetailed(spaceId));
-			request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
+			List<Solver> solvers = Solvers.getBySpaceDetailed(spaceId);
+			Solvers.makeDefaultConfigsFirst(solvers);
+			request.setAttribute("solvers", solvers);
+			//request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
-			//request.setAttribute("allBenchs", Benchmarks.getMinForHierarchy(spaceId, userId));
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
@@ -49,7 +52,7 @@
 	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
 	
 	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
-		<input type="hidden" name="sid" value="${space.id}"/>
+		<input type="hidden" name="sid" id="spaceIdInput" value="${space.id}"/>
 		<fieldset id="fieldStep1">
 			<legend>configure job</legend>
 			<table id="tblConfig" class="shaded contentTbl">
@@ -221,14 +224,19 @@
 				</thead>
 				<tbody>
 				<c:forEach var="s" items="${solvers}">
-					<tr id="solver_${s.id}">
+					<tr id="solver_${s.id}" class="solverRow">
 							<td>
 								<input type="hidden" name="solver" value="${s.id}"/>
-								<star:solver value='${s}'/></td>
+								<star:solver value='${s}'/>
+							</td>
 							<td>
 								 <div class="selectConfigs">
+									<div class="selectWrap configSelectWrap">
+										<p class="selectAll selectAllConfigs"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | 
+										<p class="selectNone selectNoneConfigs"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+									</div><br />
 									<c:forEach var="c" items="${s.configurations}">
-										<input type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
+									<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
 									</c:forEach> 
 								</div> 
 							</td>
@@ -236,8 +244,8 @@
 				</c:forEach>			
 				</tbody>						
 			</table>				
-		   	<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+		   	<div class="selectWrap solverSelectWrap">
+				<p class="selectAll selectAllSolvers"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone selectNoneSolvers"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div> 
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>
@@ -252,7 +260,7 @@
 					</tr>
 				</thead>	
 				<tbody>
-				<c:forEach var="b" items="${benchs}">
+				<!-- <c:forEach var="b" items="${benchs}">
 					<tr id="bench_${b.id}">
 						<td>
 							<input type="hidden" name="bench" value="${b.id}"/>
@@ -261,7 +269,7 @@
 							<p>${b.type.name}</p>							
 						</td>																		
 					</tr>
-				</c:forEach>
+				</c:forEach>-->
 				</tbody>					
 			</table>	
 			<div class="selectWrap">

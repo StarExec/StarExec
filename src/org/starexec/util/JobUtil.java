@@ -517,6 +517,7 @@ public class JobUtil {
 					//JobPair elements are for pairs with exactly one stage, so we create a stage
 					//to house the solver and benchmark
 					JoblineStage stage=new JoblineStage();
+					stage.setStageNumber(1);
 					stage.setSolver(s);
 					stage.setConfiguration(s.getConfigurations().get(0));
 					
@@ -591,8 +592,11 @@ public class JobUtil {
 					
 					// add all the jobline stages to this pair, generating the jobline stages from the pipeline stages
 					// of the pipeline being referenced.
+					int stageNumber = 0;
 					for (PipelineStage s : currentPipe.getStages()) {
+						stageNumber++;
 						JoblineStage stage = new JoblineStage();
+						stage.setStageNumber(stageNumber);
 						if (s.isNoOp()) {
 							stage.setNoOp(true);
 							

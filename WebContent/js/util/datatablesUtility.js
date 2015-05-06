@@ -15,3 +15,4 @@ function getSelectedRows(dataTable){
 	});
 	return idArray;
 }
+

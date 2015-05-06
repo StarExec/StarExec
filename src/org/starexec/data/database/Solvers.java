@@ -2187,4 +2187,26 @@ public class Solvers {
 		return Util.handlePagination(solvers, compare, startingRecord, recordsPerPage);
 
 	}
+
+	/**
+	 * Rearranges configurations for all input solvers so that there default config
+	 * appears first.
+	 * @param solvers The list of solvers to rearrange configurations for.
+	 * @author Albert Giegerich
+	 */
+	public static void makeDefaultConfigsFirst(List<Solver> solvers) {
+		for (int i = 0; i < solvers.size(); i++) {
+			Solver s = solvers.get(i);
+			List<Configuration> configs = s.getConfigurations();
+			for (int j = 0; j < configs.size(); j++) {
+				Configuration c = configs.get(j);
+				if (c.getName().equals("default")) {
+					// This modifies the list but will maintain the ordering so every configuration
+					// is visited
+					configs.remove(j);
+					configs.add(0, c);
+				}
+			}
+		}
+	}
 }

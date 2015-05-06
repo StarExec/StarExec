@@ -775,7 +775,12 @@ public class RESTHelpers {
 		int[] totals = new int[2];
 
 		if (!syncResults) {
-			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
+			//long a = System.currentTimeMillis();
+			
+			
+			
+			
+			jobPairsToDisplay = Jobs.newGetJobPairsForNextPageInJobSpace(
 	    			attrMap.get(STARTING_RECORD),						// Record to start at  
 	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
@@ -787,6 +792,24 @@ public class RESTHelpers {
 	    			wallclock,
 	    			jobId
 			);
+			//long b = System.currentTimeMillis();
+			//TODO: This is a timing test-- remove
+			/*Jobs.getJobPairsForNextPageInJobSpace(
+	    			attrMap.get(STARTING_RECORD),						// Record to start at  
+	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
+	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
+	    			attrMap.get(SORT_COLUMN), 							// Column sorted on
+	    			request.getParameter(SEARCH_QUERY), 				// Search query
+	    															
+	    			jobSpaceId,
+	    			stageNumber,
+	    			wallclock,
+	    			jobId
+			);*/
+			//long c = System.currentTimeMillis();
+			//log.debug("the old technique took this many millis = "+ (c-b));
+			//log.debug("the new technique took this many millis = " +(b-a));
+			
 		} else {
 			log.debug("returning synchronized results");
 			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),
@@ -794,7 +817,7 @@ public class RESTHelpers {
 					attrMap.get(SORT_DIRECTION) == ASC ? true : false,
 							attrMap.get(SORT_COLUMN),
 							request.getParameter(SEARCH_QUERY),
-							jobId, jobSpaceId, 
+							jobSpaceId, 
 							wallclock,
 							stageNumber,
 							totals);
@@ -1029,14 +1052,14 @@ public class RESTHelpers {
 						jobId, // Parent space id
 						jobSpaceId, configId,type,wallclock,stageNumber);
 		
-		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type);
+		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber);
 
 		/**
     	* Used to display the 'total entries' information at the bottom of the DataTable;
     	* also indirectly controls whether or not the pagination buttons are toggle-able
     	*/
     
-       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,request.getParameter(SEARCH_QUERY)));
+       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,request.getParameter(SEARCH_QUERY),stageNumber));
     	
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock,stageNumber);
 	}

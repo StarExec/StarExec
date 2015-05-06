@@ -15,7 +15,7 @@ public class TestUtil {
 	 * @return
 	 */
 	public static String getRandomSpaceName() {
-		return getRandomAlphaString(R.SPACE_NAME_LEN-1);
+		return getRandomAlphaString(32); // longer space names are a bit harder to deal with
 	}
 	public static String getRandomQueueName() {
 		return getRandomAlphaString(R.QUEUE_NAME_LEN-5)+".q";

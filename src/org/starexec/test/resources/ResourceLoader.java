@@ -211,7 +211,7 @@ public class ResourceLoader {
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
 		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
 		for (Space s : spaces) {
-			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getName()));
+			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
 			spaceToPairs.put(s.getId(), pairs);
 		}
 		JobManager.addJobPairsDepthFirst(job, spaceToPairs);

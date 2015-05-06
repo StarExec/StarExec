@@ -20,6 +20,7 @@ import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
@@ -31,6 +32,8 @@ import org.starexec.data.to.Status.StatusCode;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 */
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 
 /**
  * Handles all database interaction for spaces
@@ -1112,6 +1115,15 @@ public class Spaces {
 		return null;
 	}
 	
+	private static String getSpaceOrderColumn(int orderIndex) {
+		if (orderIndex==0) {
+			return "name";
+		} else if (orderIndex==1) {
+			return "description";
+		}
+		return "name";
+	}
+	
 	/**
 	 * Gets the minimal number of Spaces necessary in order to service the client's
 	 * request for the next page of Spaces in their DataTables object
@@ -1128,19 +1140,17 @@ public class Spaces {
 	 */
 	public static List<Space> getSpacesForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId, int userId) {
 		Connection con = null;			
-		CallableStatement procedure = null;
+		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfSpaces(?, ?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
-			procedure.setInt(6, userId);
-			procedure.setString(7, searchQuery);			
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SUBSPACES_IN_SPACE_QUERY, startingRecord, recordsPerPage, getSpaceOrderColumn(indexOfColumnSortedBy), isSortedASC);
+
+			procedure = new NamedParameterStatement(con, builder.getSQL());
+			;
+			procedure.setInt("spaceId", spaceId);
+			procedure.setInt("userId", userId);
+			procedure.setString("query", searchQuery);			
 			 results = procedure.executeQuery();
 			List<Space> spaces = new LinkedList<Space>();
 			

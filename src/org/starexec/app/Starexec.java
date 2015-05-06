@@ -17,12 +17,14 @@ import javax.servlet.ServletContextListener;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.ggf.drmaa.Session;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Logins;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
@@ -189,12 +191,12 @@ public class Starexec implements ServletContextListener {
 			}
 		};	
 		
-		/*  Create a task that deletes job logs older than 3 days */
+		/*  Create a task that deletes job logs older than 7 days */
 		final Runnable clearJobLogTask = new RobustRunnable("clearJobLogTask") {			
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 30,true);
+				Util.clearOldFiles(R.JOB_LOG_DIR, 7,true);
 			}
 		};
 		/*  Create a task that deletes job logs older than 3 days */
@@ -306,7 +308,13 @@ public class Starexec implements ServletContextListener {
 		    
 		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
-		
+		try {
+			PaginationQueries.loadPaginationQueries();
+
+		} catch (Exception e) {
+			log.error("unable to correctly load pagination queries");
+			log.error(e.getMessage(),e);
+		}
 	}
 	
 }

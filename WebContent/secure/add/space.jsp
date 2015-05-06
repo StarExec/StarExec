@@ -102,7 +102,7 @@
 						<input style="display:none" type="radio" name="sticky" value="false" checked="checked"/>
 					</c:if>
 					<tr>
-						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
+						<td colspan="1"><button id="btnPrev" type="button">Cancel</button></td>						
 						<td colspan="1"><button id="btnCreate">create</button></td>
 					</tr>
 				</tbody>

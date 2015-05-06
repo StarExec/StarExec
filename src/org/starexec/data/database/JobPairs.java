@@ -1,6 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
 import java.sql.CallableStatement;
@@ -30,6 +29,52 @@ import org.starexec.util.Util;
 
 public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
+	
+	/**
+	 * 
+	 * @param pairs
+	 * @param con
+	 * @return
+	 */
+	private static boolean addJobPairInputs(List<JobPair> pairs, Connection con) {
+		CallableStatement procedure=null;
+		int batchCounter = 0;
+		try {
+			procedure=con.prepareCall("{CALL AddJobPairInput(?,?,?)}");
+
+			for (JobPair pair : pairs) {
+				for (int i=0;i<pair.getBenchInputs().size();i++) {
+
+					procedure.setInt(1, pair.getId());
+					procedure.setInt(2,i+1);
+					procedure.setInt(3, pair.getBenchInputs().get(i));
+					
+					procedure.addBatch();
+					batchCounter++;
+					if (batchCounter > 1000) {
+						procedure.executeBatch();
+						batchCounter = 0;
+					}
+				}
+				
+			}
+			if (batchCounter>0) {
+				procedure.executeBatch();
+			}
+			
+
+			//procedure.executeUpdate();
+			
+
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * Saves a job pair input in the database
@@ -113,6 +158,68 @@ public class JobPairs {
 		return null;
 	}
 	
+	
+	/**
+	 * Adds all the jobline stages for all of the given pairs to the database
+	 * @param pairs The pairs to add the stages of
+	 * @param con The open connection to make the call on
+	 * @return
+	 */
+	private static boolean addJobPairStages(List<JobPair> pairs, Connection con) {
+		CallableStatement procedure=null;
+		try {
+			int batchCounter = 0;
+			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?,?)}");
+			
+			for (JobPair pair : pairs) {
+				for (JoblineStage stage : pair.getStages()) {
+					if (stage.isNoOp()) {
+						continue;
+					}
+					
+					
+					
+					procedure.setInt(1, pair.getId());
+					if (stage.getStageId()!=null) {
+						procedure.setInt(2,stage.getStageId());
+
+					} else {
+						procedure.setNull(2, java.sql.Types.INTEGER);
+					}
+					procedure.setInt(3,stage.getStageNumber());
+					procedure.setBoolean(4, pair.getPrimaryStageNumber()==stage.getStageNumber());
+					procedure.setInt(5, stage.getSolver().getId());
+					procedure.setString(6,stage.getSolver().getName());
+					procedure.setInt(7,stage.getConfiguration().getId());
+					procedure.setString(8,stage.getConfiguration().getName());
+					procedure.setInt(9,pair.getJobSpaceId());
+					// Update the pair's ID so it can be used outside this method
+					procedure.addBatch();
+					
+					batchCounter++;
+					if (batchCounter > 1000) {
+						procedure.executeBatch();
+						batchCounter = 0;
+					}
+					//procedure.executeUpdate();
+				}
+				
+			}
+			if (batchCounter > 0) {
+				procedure.executeBatch();
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+		
+	}
+	
+	
+	
 	/**
 	 * Adds a stage to a given job pair in the database
 	 * @param pairId
@@ -159,38 +266,35 @@ public class JobPairs {
 	 * @param pair The pair to add
 	 * @return True if the operation was successful
 	 */
-	protected static boolean addJobPair(Connection con, JobPair pair) throws Exception {
+	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws Exception {
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, pair.getJobId());
-			procedure.setInt(2, pair.getBench().getId());
-			procedure.setInt(3, StatusCode.STATUS_PENDING_SUBMIT.getVal());
 			
-			procedure.setString(4, pair.getPath());
-			procedure.setInt(5,pair.getJobSpaceId());
+			//TODO: It is not possible to do batch processing when we are using out parameters
+			//Should we rework this do avoid needing an out parameter? Generating ids would be one possibility
+			for (JobPair pair : pairs) {
+				procedure.setInt(1, jobId);
+				procedure.setInt(2, pair.getBench().getId());
+				procedure.setInt(3, StatusCode.STATUS_PENDING_SUBMIT.getVal());
+				
+				procedure.setString(4, pair.getPath());
+				procedure.setInt(5,pair.getJobSpaceId());
+				
+				procedure.setString(6,pair.getBench().getName());
+				// The procedure will return the pair's new ID in this parameter
+				procedure.setInt(7,pair.getPrimaryStageNumber());
+				procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
+				procedure.executeUpdate();			
+				
+				// Update the pair's ID so it can be used outside this method
+				pair.setId(procedure.getInt(8));
+
+				
+			}
+			addJobPairStages(pairs,con);
+			addJobPairInputs(pairs,con);
 			
-			procedure.setString(6,pair.getBench().getName());
-			// The procedure will return the pair's new ID in this parameter
-			procedure.setInt(7,pair.getPrimaryStageNumber());
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);	
-		
-			procedure.executeUpdate();			
-
-			// Update the pair's ID so it can be used outside this method
-			pair.setId(procedure.getInt(8));
-
-			for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
-				JoblineStage stage= pair.getStages().get(stageNumber-1);
-				//we don't store noops in the database, as we know that they have nothing to save
-				if (!stage.isNoOp()) {
-					addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),pair.getJobSpaceId(),con);
-
-				}
-			}
-			for (int i=0;i<pair.getBenchInputs().size();i++) {
-				addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);
-			}
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPair says "+e.getMessage(),e);
@@ -677,6 +781,7 @@ public class JobPairs {
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
+				pair.setJobSpaceId(results.getInt("job_space_id"));
 				
 				pair.setId(pairId);
 				return pair;
@@ -772,25 +877,11 @@ public class JobPairs {
 	 */
 	public static String getLogFilePath(JobPair pair) {
 		try {
+			
 			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
-			log.debug("trying to find log at path = "+file.getAbsolutePath());
-			String[] pathSpaces=pair.getPath().split("/");
-			for (String space : pathSpaces) {
-				file=new File(file,space);
-			}
-
-			file=new File(file,pair.getPrimarySolver().getName()+"___"+pair.getPrimaryConfiguration().getName());
-
-			file=new File(file,pair.getBench().getName());
-			
-			//this is the old path--return it if it is the log file
-			if (file.exists() && file.isFile()) {
-				
-				return file.getAbsolutePath();
-			}
-			file=new File(file,pair.getId()+".txt");
-			
-			log.debug("found the path "+file.getAbsolutePath()+" for the job pair");
+			file = new File(file,String.valueOf(pair.getJobSpaceId()));
+			file = new File(file,pair.getId()+".txt");
+			log.debug("found this log path "+file.getAbsolutePath());
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);

@@ -7,7 +7,7 @@
 			<property key="MYSQL_DATABASE" value="prod_starexec" />
 			<property key="MYSQL_USERNAME" value="prod_star_app" />
 			<property key="MYSQL_PASSWORD" value="g4qC867ByQ3736i7" />
-			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<property key="SPACE_XML_SCHEMA_RELATIVE_LOC" value="public/batchSpaceSchema.xsd" /> 
@@ -90,7 +90,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_astump" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_astump"/>
@@ -111,7 +111,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_rmccleeary" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_rmccleeary?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_rmccleeary?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_rmccleeary"/>
@@ -132,7 +132,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_tinelli" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tinelli?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tinelli?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 		<property key="SANDBOX_DIRECTORY" value="/home/tinelli/starexec_tinelli_data/sandbox"/>
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
@@ -155,7 +155,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_jccervantes_temp" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_jccervantes_temp?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_jccervantes_temp?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_jccervantes"/>
@@ -176,7 +176,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_eaburns" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_eaburns?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_eaburns?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_eaburns"/>
@@ -197,7 +197,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_agiegerich" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_agiegerich?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_agiegerich?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_agiegerich"/>
@@ -232,7 +232,7 @@
   		<property key="MYSQL_DATABASE" value="starexec" /> 
 		<property key="MYSQL_USERNAME" value="tomcat" /> 
 		<property key="MYSQL_PASSWORD" value="tomcat" /> 
-		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" /> 
+		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 
@@ -261,7 +261,7 @@
   		<property key="MYSQL_DATABASE" value="starexec" /> 
 		<property key="MYSQL_USERNAME" value="root" /> 
 		<property key="MYSQL_PASSWORD" value="ceufpxj1" /> 
-		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull" /> 
+		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 

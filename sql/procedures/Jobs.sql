@@ -398,7 +398,7 @@ DROP PROCEDURE IF EXISTS GetJobPairsByStatus;
 CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN 
 		SELECT id FROM job_pairs
-		WHERE job_id=_jobId AND status_code=_statusCode;
+		WHERE job_id=_jobId AND status_code=_statusCode ORDER BY id ASC;
 	END //
 	
 -- Retrieves ids for job pairs in a given job where either cpu or wallclock is 0 for any stage that has the given status code
@@ -583,8 +583,8 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber
 DROP PROCEDURE IF EXISTS AddJob;
 CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory)
-		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem);
+		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused)
+		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	

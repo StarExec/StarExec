@@ -152,7 +152,7 @@ CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
 DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
-		SELECT job_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
+		SELECT job_id,job_pairs.job_space_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		WHERE job_pairs.id=_pairId and jobpair_stage_data.stage_number = job_pairs.primary_jobpair_data;
 	END //

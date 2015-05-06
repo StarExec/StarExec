@@ -20,7 +20,7 @@
 			<br><br>
 		</li>		
 		<li>
-			<a href="http://starexec.forumotion.com">StarExec Forum</a>, 
+			<a href="http://starexec.lefora.com">StarExec Forum</a>, 
 			for questions, bug reports, feature requests
 			<br><br>
 		</li>

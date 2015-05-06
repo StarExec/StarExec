@@ -777,7 +777,7 @@ CREATE PROCEDURE GetNextPageOfJobPairsInJobSpaceHierarchy(IN _startingRecord INT
 	
 -- Counts the total number of job pairs that satisfy GetNextPageOfJobPairsInJobSpaceHierarchy
 DROP PROCEDURE IF EXISTS CountJobPairsInJobSpaceHierarchyByType;
-CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _configId INT, IN _type VARCHAR(16), IN _query TEXT)
+CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _configId INT, IN _type VARCHAR(16), IN _query TEXT, IN _stageNumber INT)
 
 	BEGIN
 		SELECT COUNT(*) as count FROM job_pairs
@@ -789,7 +789,7 @@ CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _c
 		JOIN job_space_closure ON descendant=job_pairs.job_space_id
 		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
 		
-		WHERE ancestor=_jobSpaceId AND jobpair_stage_data.config_id=_configId AND 
+		WHERE ancestor=_jobSpaceId AND jobpair_stage_data.config_id=_configId AND jobpair_stage_data.stage_number = _stageNumber AND
 				((_type = "all") OR
 				(_type="resource" AND job_pairs.status_code>=14 AND job_pairs.status_code<=17) OR
 				(_type = "incomplete" AND job_pairs.status_code!=7 AND !(job_pairs.status_code>=14 AND job_pairs.status_code<=17)) OR

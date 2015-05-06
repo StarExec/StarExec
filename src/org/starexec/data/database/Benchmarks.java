@@ -11,11 +11,8 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,17 +23,18 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.compare.BenchmarkComparator;
-import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DependValidator;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Timer;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -46,8 +44,7 @@ import org.starexec.util.Validator;
  */
 public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
-	public static final int NO_TYPE = 1;
-	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
+	
 
 	/**
 	 * Adds a single benchmark to the database under the given spaceId
@@ -56,7 +53,7 @@ public class Benchmarks {
 	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
 	 * @return The new benchmark ID on success, -1 otherwise
 	 * @author Tyler Jensen
-	 * @throws Exception 
+	 * @throws Exception Any database error that gets thrown
 	 */
     public static int add(Benchmark benchmark, Integer spaceId, Integer statusId) throws Exception{
     if (Benchmarks.isBenchValid(benchmark.getAttributes())){
@@ -101,8 +98,8 @@ public class Benchmarks {
 	 * Deletes a benchmark and permanently removes it from the database. This is NOT
 	 * the normal procedure for deleting a benchmark. It is used for testing. Calling "delete"
 	 * is typically what is desired
-	 * @param id
-	 * @return
+	 * @param id The ID of the benchmark
+	 * @return True on success and false otherwise
 	 */
 	
 	public static boolean deleteAndRemoveBenchmark(int id) {
@@ -124,7 +121,12 @@ public class Benchmarks {
 		return false;
 	}
 	
-	
+	/**
+	 * Recycles all benchmarks that are owned by the given user in the given collection
+	 * @param benchmarks The benchmarks to potentially recycle
+	 * @param userId The user who owns the benchmarks to recycle
+	 * @return True on success and false on any error
+	 */
 	public static boolean recycleAllOwnedByUser(Collection<Benchmark> benchmarks, int userId) {
 		boolean success=true;
 		for (Benchmark b : benchmarks) {
@@ -196,7 +198,7 @@ public class Benchmarks {
 			procedure.setBoolean(3, benchmark.isDownloadable());
 			procedure.setInt(4, benchmark.getUserId());			
 			//an ID of 0 or less is invalid, and can come from copying
-			procedure.setInt(5, (Benchmarks.isBenchValid(attrs) && benchmark.getType().getId()>0) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
+			procedure.setInt(5, (Benchmarks.isBenchValid(attrs) && benchmark.getType().getId()>0) ? benchmark.getType().getId() : R.NO_TYPE_PROC_ID);
 			procedure.setLong(6, FileUtils.sizeOf(new File(benchmark.getPath())));		
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 
@@ -411,7 +413,7 @@ public class Benchmarks {
 			procedure.setString(2, benchmark.getPath());
 			procedure.setBoolean(3, benchmark.isDownloadable());
 			procedure.setInt(4, benchmark.getUserId());			
-			procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : Benchmarks.NO_TYPE);
+			procedure.setInt(5, Benchmarks.isBenchValid(attrs) ? benchmark.getType().getId() : R.NO_TYPE_PROC_ID);
 			procedure.setLong(6, FileUtils.sizeOf(new File(benchmark.getPath())));
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
 
@@ -638,6 +640,15 @@ public class Benchmarks {
 			
 	}
 	
+	
+	/**
+	 * Associates a list of benchmarks with the given space, keeping track of these associations
+	 * in the correct Upload Status object for this upload
+	 * @param benchIds The IDs of the benchmarks to associate
+	 * @param spaceId The ID of the space to add benchmarks to
+	 * @param XMLUploadId The ID of the UploadStatus object to track things in
+	 * @return True on success and false otherwise.
+	 */
 	public static boolean associate(List<Integer> benchIds, int spaceId, int XMLUploadId) {
 		Connection con = null;			
 		int uploadCounter=0;
@@ -854,10 +865,10 @@ public class Benchmarks {
 	}
 	/**
 	 * Copies a list of benchmarks into a new space, making the given user the new owner
-	 * @param benchmarks
-	 * @param userId
-	 * @param spaceId
-	 * @return
+	 * @param benchmarks The benchmarks to copy
+	 * @param userId The Id of the new owner
+	 * @param spaceId The ID of the space to associate the new benchmarks with
+	 * @return A list of IDs of all the new benchmarks
 	 */
 	public static List<Integer> copyBenchmarks(List<Benchmark> benchmarks,int userId, int spaceId) {
 		List<Integer> ids=new ArrayList<Integer>();
@@ -1013,7 +1024,7 @@ public class Benchmarks {
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given directory.
 	 * 
 	 * @author Wyatt Kaiser
-	 * @throws Exception 
+	 * @throws Exception Any exception with the description file, with an error message contained
 	 */
 	@SuppressWarnings("deprecation")
 	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) throws Exception {
@@ -1243,11 +1254,20 @@ public class Benchmarks {
 
 		return null;
 	}
-	
+	/**
+	 * Gets a list of benchmarks given a list of benchmark IDs
+	 * @param benchIds The IDs of the benchmarks to retrieve.
+	 * @return The benchmarks on success or null on failure. Attributes are not returned
+	 */
 	public static List<Benchmark> get(List<Integer> benchIds) {
 		return get(benchIds,false);
 	}
 	
+	/**
+	 * Checks to see if the given benchmark is owned by the test user
+	 * @param benchId The ID of the benchmark to check
+	 * @return True if the benchmark is owned by the test user and false otherwise
+	 */
 	public static boolean isTestBenchmark(int benchId) {
 		return Users.isTestUser(Benchmarks.get(benchId).getUserId());
 	}
@@ -1586,19 +1606,17 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
 		Connection con = null;			
-		CallableStatement procedure=null;
+		NamedParameterStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_BY_USER_QUERY, startingRecord, recordsPerPage, getBenchmarkOrderColumn(indexOfColumnSortedBy), isSortedASC);
+
+			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfUserBenchmarks(?, ?, ?, ?, ?, ?,?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-			procedure.setBoolean(7, recycled); 
+			procedure.setInt("userId", userId);
+			procedure.setString("query", searchQuery);
+			procedure.setBoolean("recycled", recycled); 
 			
 			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
@@ -1635,20 +1653,42 @@ public class Benchmarks {
 
 		return null;
 	}
+	
+	private static String getBenchmarkOrderColumn(int indexOfColumn) {
+		if (indexOfColumn==0) {
+			return "benchmarks.name";
+		} else if (indexOfColumn==1) {
+			return "processors.name";
+		} else if (indexOfColumn==2) {
+			return "bench_assoc.order_id";
+		}
+		return "benchmarks.name";
+
+	}
+	
+	/**
+	 * Retrieves benchmarks for the next page of a table on the space explorer
+	 * @param startingRecord The index of the first benchmark to retrieve
+	 * @param recordsPerPage The maximum number of benchmarks to retrieve
+	 * @param isSortedASC True or false to sort ascending or descending
+	 * @param indexOfColumnSortedBy The index of the datatable column to sort on
+	 * @param searchQuery A query for filtering the benchmarks
+	 * @param spaceId The ID of the space the benchmarks to retrieve are in
+	 * @return A list of benchmarks on success or null on failure
+	 */
 	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
 		Connection con = null;			
-		CallableStatement procedure=null;
+		NamedParameterStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfBenchmarks(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
-			procedure.setString(6, searchQuery);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getBenchmarkOrderColumn(indexOfColumnSortedBy), isSortedASC);
+
+			procedure = new NamedParameterStatement(con, builder.getSQL());
+
+			procedure.setInt("spaceId", spaceId);
+			procedure.setString("query", searchQuery);
 
 			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
@@ -2544,8 +2584,8 @@ public class Benchmarks {
 	}
 	/**
 	 * Returns the ID of every benchmark a user owns that is orphaned
-	 * @param userId
-	 * @return
+	 * @param userId The ID of the user who owns all the benchmarks to be returned
+	 * @return A list of orphaned benchmark IDs owned by the given user, or null on error.
 	 */
 	public static List<Integer> getOrphanedBenchmarks(int userId) {
 		Connection con=null;
@@ -2576,7 +2616,7 @@ public class Benchmarks {
 	/**
 	 * Recycles all of the benchmarks a user has that are not in any spaces
 	 * @param userId The ID of the user who will have their benchmarks recycled
-	 * @return
+	 * @return True on success or false otherwise
 	 */
 	public static boolean recycleOrphanedBenchmarks(int userId) {
 		List<Integer> ids=getOrphanedBenchmarks(userId);
@@ -2634,7 +2674,7 @@ public class Benchmarks {
 	
 	/**
 	 * Gets every Benchmark that shares a space with the given user
-	 * @param userId
+	 * @param userId The ID of the user
 	 * @return The list of Benchmarks, or null on error
 	 */
 	public static List<Benchmark> getBenchmarksInSharedSpaces(int userId) {
@@ -2700,8 +2740,8 @@ public class Benchmarks {
 	 * Retrieves a list of every Benchmark the given user is allowed to use. Used for quick jobs.
 	 * Benchmarks a user can see include Benchmarks they own, Benchmarks in public spaces,
 	 * and Benchmarks in spaces the user is also in
-	 * @param userId
-	 * @return
+	 * @param userId The user to get benchmarks for
+	 * @return A list of benchmarks that the given user can see
 	 */
 	public static List<Benchmark> getByUser(int userId) {
 		try {
@@ -2766,12 +2806,12 @@ public class Benchmarks {
 	 * @param startingRecord Index of Benchmark to start at
 	 * @param recordsPerPage Number of Benchmarks to return. May return fewer if recordsPerPage is greater than the total number of Benchmarks
 	 * @param isSortedASC True if sorted ascending, false otherwise
-	 * @param indexOfColumnSortedBy 
+	 * @param indexOfColumnSortedBy  The column index of the datatable column to sort on
 	 * @param searchQuery Query to filter Benchmarks by. Filter examines name and description
 	 * @param userId ID of user to get Benchmarks for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
 	 * and the total number of elements after filtering as the second element
-	 * @return
+	 * @return The list of benchmarks to display in the table
 	 */
 	public static List<Benchmark> getBenchmarksForNextPageByUser(int startingRecord, int recordsPerPage, boolean isSortedASC, 
 			int indexOfColumnSortedBy, String searchQuery, int userId,int[] totals) {

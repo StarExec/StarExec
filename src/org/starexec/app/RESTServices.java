@@ -607,13 +607,12 @@ public class RESTServices {
 		if (pair==null) {
 			return gson.toJson(new ValidatorStatusCode(false, "The pair could not be found"));
 		}
-		int jobId=pair.getJobId();
-		ValidatorStatusCode status=JobSecurity.canUserRerunPairs(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserRerunPairs(pair.getJobId(), userId);
 		
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		boolean success=Jobs.rerunPair(jobId, pairId);
+		boolean success=Jobs.rerunPair(pairId);
 		
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Rerunning of pair began successfully")) : gson.toJson(ERROR_DATABASE);
 	}
@@ -974,6 +973,25 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 	
+	@POST
+	@Path("/job/{spaceId}/allbench/pagination/")
+	@Produces("application/json")	
+	public String getPrimitiveDetailsPaginated(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) throws Exception {	
+		log.debug("got a request to getPrimitiveDetailsPaginated!");
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		// Ensure user can view the space containing the primitive(s)
+		log.debug("reached part two with space id = "+spaceId);
+
+		ValidatorStatusCode status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		List<Benchmark> benches = Benchmarks.getBySpace(spaceId);
+		nextDataTablesPage= RESTHelpers.convertBenchmarksToJsonObject(benches, benches.size(), benches.size(), -1);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
 	
 	/**
 	 * Returns the next page of entries in a given DataTable

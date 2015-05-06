@@ -127,7 +127,7 @@ public class Pipelines {
 	 * Gets a solver pipeline from the database, including all the pipeline's stages
 	 * and dependencies
 	 * @param id The ID of the pipeline 
-	 * @return
+	 * @return The pipeline, with everything populated, or null on error
 	 */
 	public static SolverPipeline getFullPipeline(int id) {
 		Connection con=null;
@@ -272,8 +272,8 @@ public class Pipelines {
 	
 	/**
 	 * Returns all of the solver pipelines that are used in the given job. 
-	 * @param jobId
-	 * @return
+	 * @param jobId The ID of the job to get all pipelines for
+	 * @return A list of Solver Pipelines that are referenced by the job, or null on error
 	 */
 	public static List<SolverPipeline> getPipelinesByJob(int jobId) {
 		Connection con=null;
@@ -310,7 +310,7 @@ public class Pipelines {
 	 * Deletes a pipeline from the database, including deletion of all stages
 	 * and pipeline_dependencies entries
 	 * @param pipelineId The ID of the pipeline being deleted
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean deletePipelineFromDatabase(int pipelineId) {
 		Connection con=null;
