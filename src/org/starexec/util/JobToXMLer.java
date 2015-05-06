@@ -236,7 +236,7 @@ public class JobToXMLer {
 	for (SolverPipeline pipe : neededPipes) {
 		jobsElement.appendChild(getPipelineElement(pipe));
 	}
-	Element rootJobElement = generateJobXML(job, userId, neededPipes.size()==0);
+	Element rootJobElement = generateJobXML(job, userId, neededPipes.size()!=0);
 	jobsElement.appendChild(rootJobElement);
 		
 	

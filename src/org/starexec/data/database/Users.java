@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.DefaultSettings;
@@ -17,6 +18,8 @@ import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.Hash;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 
 /**
  * Handles all database interaction for users
@@ -639,6 +642,18 @@ public class Users {
 		return null;
 	}
 	
+	private static String getUserOrderColumn(int columnIndex) {
+		if (columnIndex==0) {
+			return "full_name";
+		} else if (columnIndex==1) {
+			return "institution";
+		} else if (columnIndex==2) {
+			return "email";
+		}
+		
+		return "full_name";
+	}
+	
 	/**
 	 * Gets the minimal number of Users necessary in order to service the client's
 	 * request for the next page of Users in their DataTables object
@@ -654,18 +669,15 @@ public class Users {
 	 */
 	public static List<User> getUsersForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
 		Connection con = null;			
-		CallableStatement procedure= null;
+		NamedParameterStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsers(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
-			procedure.setString(6, searchQuery);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getUserOrderColumn(indexOfColumnSortedBy), isSortedASC);
+
+			procedure = new NamedParameterStatement(con,builder.getSQL());
+			procedure.setInt("spaceId", spaceId);
+			procedure.setString("query", searchQuery);
 			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			

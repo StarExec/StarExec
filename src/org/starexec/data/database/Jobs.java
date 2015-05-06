@@ -2258,6 +2258,24 @@ public class Jobs {
 		return -1;
 	}
 	
+	//TODO: Is there a reason we show different things on the space explorer versus the user page?
+	private static String getJobOrderColumn(int orderIndex) {
+		if (orderIndex==0) {
+			return "jobs.name";
+		} else if (orderIndex==1) {
+			return "status";
+		} else if (orderIndex==2) {
+			return "completePairs";
+		} else if (orderIndex==3) {
+			return "totalPairs";
+		} else if (orderIndex==4) {
+			return "errorPairs";
+		} else if (orderIndex==5) {
+			return "created";
+		}
+		return "jobs.name";
+	}
+	
 	/**
 	 * Get next page of the jobs belong to a specific user
 	 * @param startingRecord specifies the number of the entry where should the querry start
@@ -2270,23 +2288,65 @@ public class Jobs {
 	 * @author Ruoyu Zhang
 	 */
 	public static List<Job> getJobsByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId) {
-		return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, userId,"GetNextPageOfUserJobs");
+		Connection con = null;
+		NamedParameterStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con =Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_JOBS_BY_USER_QUERY, startingRecord, recordsPerPage, getJobOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			procedure = new NamedParameterStatement(con,builder.getSQL());
+			procedure.setString("query",searchQuery);
+			procedure.setInt("userId",userId);
+			results = procedure.executeQuery();
+			return getJobsForNextPage(results);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(con);
+		}
+		return null;
+		
+		
+		
+		//return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, userId,"GetNextPageOfUserJobs");
 	}
 	
 	/**
-	 * Get next page of the jobs belong to a space
+	 * Get next page of the jobs belong to a space, or in the whole system if the ID is -1
 	 * @param startingRecord specifies the number of the entry where should the querry start
 	 * @param recordsPerPage specifies how many records are going to be on one page
 	 * @param isSortedASC specifies whether the sorting is in ascending order
 	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
 	 * @param searchQuery the search query provided by the client
-	 * @param spaceId Id of the space we are looking for
+	 * @param spaceId Id of the space we are looking for. If -1, all jobs in the entire system are returned (for admin page)
 	 * @return a list of Jobs belong to the user
 	 * @author Ruoyu Zhang
 	 */
 	
 	public static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
-		return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, spaceId,"GetNextPageOfJobs");
+		Connection con = null;
+		NamedParameterStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con =Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_JOBS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getJobOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			procedure = new NamedParameterStatement(con,builder.getSQL());
+			procedure.setString("query",searchQuery);
+			procedure.setInt("spaceId",spaceId);
+			results = procedure.executeQuery();
+			return getJobsForNextPage(results);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(con);
+		}
+		return null;
+		
+		//return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, spaceId,"GetNextPageOfJobs");
 	}
 
 	/**
@@ -2302,21 +2362,10 @@ public class Jobs {
 	 * @return a list of 10, 25, 50, or 100 Jobs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	private static List<Job> getJobsForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String procedureName) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
+	private static List<Job> getJobsForNextPage(ResultSet results) {
+		
 		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL "+procedureName+"(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, id);
-			procedure.setString(6, searchQuery);
-
-			 results = procedure.executeQuery();
+			
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
@@ -2354,9 +2403,7 @@ public class Jobs {
 		} catch (Exception e){			
 			log.error("getJobsForNextPageSays " + e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
+			
 		}
 
 		return null;
@@ -2375,6 +2422,9 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 **/
 	public static List<Job> getJobsForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
+		return getJobsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,-1);
+		
+		/*
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -2437,7 +2487,7 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		
-		return null;
+		return null;*/
 	}
 	
     

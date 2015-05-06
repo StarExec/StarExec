@@ -121,7 +121,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td colspan="1"><button id="btnPrev">Cancel</button></td>						
+						<td colspan="1"><button id="btnPrev" type="button">Cancel</button></td>						
 						<td colspan="1"><button id="btnUpload" type="submit">upload</button></td>
 					</tr>
 					

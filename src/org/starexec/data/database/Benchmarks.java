@@ -23,6 +23,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
@@ -32,6 +33,8 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DependValidator;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Timer;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -1603,19 +1606,17 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
 		Connection con = null;			
-		CallableStatement procedure=null;
+		NamedParameterStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_BY_USER_QUERY, startingRecord, recordsPerPage, getBenchmarkOrderColumn(indexOfColumnSortedBy), isSortedASC);
+
+			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfUserBenchmarks(?, ?, ?, ?, ?, ?,?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-			procedure.setBoolean(7, recycled); 
+			procedure.setInt("userId", userId);
+			procedure.setString("query", searchQuery);
+			procedure.setBoolean("recycled", recycled); 
 			
 			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
@@ -1653,6 +1654,18 @@ public class Benchmarks {
 		return null;
 	}
 	
+	private static String getBenchmarkOrderColumn(int indexOfColumn) {
+		if (indexOfColumn==0) {
+			return "benchmarks.name";
+		} else if (indexOfColumn==1) {
+			return "processors.name";
+		} else if (indexOfColumn==2) {
+			return "bench_assoc.order_id";
+		}
+		return "benchmarks.name";
+
+	}
+	
 	/**
 	 * Retrieves benchmarks for the next page of a table on the space explorer
 	 * @param startingRecord The index of the first benchmark to retrieve
@@ -1665,18 +1678,17 @@ public class Benchmarks {
 	 */
 	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
 		Connection con = null;			
-		CallableStatement procedure=null;
+		NamedParameterStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfBenchmarks(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
-			procedure.setString(6, searchQuery);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getBenchmarkOrderColumn(indexOfColumnSortedBy), isSortedASC);
+
+			procedure = new NamedParameterStatement(con, builder.getSQL());
+
+			procedure.setInt("spaceId", spaceId);
+			procedure.setString("query", searchQuery);
 
 			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();

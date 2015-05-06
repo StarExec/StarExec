@@ -1,4 +1,6 @@
 // Variables for keeping state in the multi-step process of job creation
+
+
 var progress = 0;
 /*
 0 = first page with basic job parameters
@@ -9,13 +11,15 @@ var progress = 0;
 5 = choose the benchmarks from the hierarchy - this is currently disabled so this step should never be reached.  some code is left
 in case we find a need for this option and an efficient table for large #s of rows
 */
+solverUndo = [];
 var solverUndo = [];
 var benchUndo = [];
 
 var benchMethodVal = 0;  //1 if choose from space, 2 if choose from hier, 0 otherwise
-
+var benchTable = null;
+var curSpaceId = null;
 $(document).ready(function(){
-	
+	curSpaceId = $("#spaceIdInput").attr("value");
 	initUI();
 	attachFormValidation();
 	
@@ -31,6 +35,8 @@ $(document).ready(function(){
 		$('#tblBenchMethodSelection tbody').children('tr').not('.row_selected').find('input').remove();
 	  	return true;
 	});
+	
+	
 	
 });
 
@@ -187,8 +193,19 @@ function initUI() {
 		$("#preProcess").find("option").last().prop("selected",true);
 	}
 	
+	
+	
+	
+	$("#tblBenchConfig").dataTable({
+		"sDom": 'rt<"bottom"f><"clear">',        
+        "bPaginate": false,        
+        "bSort": true,
+        "sAjaxSource"	: starexecRoot+"services/job/"+curSpaceId+"/allbench/pagination",
+        "sServerMethod" : "POST",
+        "fnServerData" : fnBenchPaginationHandler
+	});
 	// Set up datatables
-	$('#tblSolverConfig, #tblBenchConfig').dataTable( {
+	$('#tblSolverConfig').dataTable( {
         "sDom": 'rt<"bottom"f><"clear">',        
         "bPaginate": false,        
         "bSort": true        
@@ -470,4 +487,22 @@ function updateProgress() {
 			$('#btnDone').fadeIn('fast');
 			break;
 	}
+}
+
+function fnBenchPaginationHandler(sSource, aoData, fnCallback) {
+	$.post(  
+			sSource,
+			aoData,
+			function(nextDataTablePage){
+				
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);		
+				}
+
+			},  
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error populating data table",5000);
+	});
 }

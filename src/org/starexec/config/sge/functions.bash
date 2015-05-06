@@ -718,7 +718,7 @@ function copyBenchmarkDependencies {
 
 
 
-
+#todo write a safeCp function
 function copyDependencies {
 	log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
 	cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"	

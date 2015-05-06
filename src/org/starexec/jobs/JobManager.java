@@ -492,7 +492,6 @@ public abstract class JobManager {
 		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));		
 		log.debug("the current job pair has a memory = "+job.getMaxMemory());
 		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(job.getMaxMemory()));
-		log.debug("The jobscript is: "+jobScript);
 		
 		// all arrays from above. Note that we are base64 encoding some for safety
 		jobScript=jobScript.replace("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));

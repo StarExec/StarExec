@@ -159,6 +159,21 @@ method is non-private so JUnit code can
             statement.setInt(x, value);
         }
     }
+    
+    /**
+     * Sets a parameter.
+     * @param name  parameter name
+     * @param value parameter value
+     * @throws SQLException if an error occurred
+     * @throws IllegalArgumentException if the parameter does not exist
+     * @see PreparedStatement#setInt(int, int)
+     */
+    public void setBoolean(String name, boolean value) throws SQLException {
+        
+        for(Integer x : getIndexes(name)) {
+            statement.setBoolean(x, value);
+        }
+    }
 
 
     /**

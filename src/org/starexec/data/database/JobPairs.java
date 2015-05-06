@@ -284,17 +284,7 @@ public class JobPairs {
 				// Update the pair's ID so it can be used outside this method
 				pair.setId(procedure.getInt(8));
 
-				/*for (int stageNumber=1;stageNumber<=pair.getStages().size();stageNumber++) {
-					JoblineStage stage= pair.getStages().get(stageNumber-1);
-					//we don't store noops in the database, as we know that they have nothing to save
-					if (!stage.isNoOp()) {
-						addJobPairStage(pair.getId(),stage.getStageId(),stageNumber,pair.getPrimaryStageNumber()==stageNumber,stage.getSolver(),stage.getConfiguration(),pair.getJobSpaceId(),con);
-
-					}
-				}
-				for (int i=0;i<pair.getBenchInputs().size();i++) {
-					addJobPairInput(pair.getId(),i+1,pair.getBenchInputs().get(i),con);
-				}*/
+				
 			}
 			addJobPairStages(pairs,con);
 			addJobPairInputs(pairs,con);
@@ -785,6 +775,7 @@ public class JobPairs {
 				c.setName(results.getString("config_name"));
 				pair.setJobId(results.getInt("job_id"));
 				pair.setPath(results.getString("path"));
+				pair.setJobSpaceId(results.getInt("job_space_id"));
 				
 				pair.setId(pairId);
 				return pair;
@@ -878,38 +869,13 @@ public class JobPairs {
 	 * @param pair
 	 * @return
 	 */
-    //TODO: Is backward compatibility even desired? It can probably be removed for code simplicity
 	public static String getLogFilePath(JobPair pair) {
 		try {
+			
 			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
-			//log.debug("trying to find log at path = "+file.getAbsolutePath());
-			String[] pathSpaces=pair.getPath().split("/");
-			for (String space : pathSpaces) {
-				file=new File(file,space);
-			}
-
-			file=new File(file,pair.getPrimarySolver().getName()+"___"+pair.getPrimaryConfiguration().getName());
-
-			file=new File(file,pair.getBench().getName());
-			
-			//this is the old path--return it if it is the log file
-			if (file.exists() && file.isFile()) {
-				
-				return file.getAbsolutePath();
-			}
-			file=new File(file,pair.getId()+".txt");
-			
-			// this is the most recent older path
-			if (file.exists()) {
-				return file.getAbsolutePath();
-			}
-			
-			//if we are down here, it means the log is in the new format. 
-			
-			file=new File(Jobs.getLogDirectory(pair.getJobId()));
 			file = new File(file,String.valueOf(pair.getJobSpaceId()));
 			file = new File(file,pair.getId()+".txt");
-			
+			log.debug("found this log path "+file.getAbsolutePath());
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);
