@@ -173,9 +173,9 @@
 					<tr>
 						<th>name</th>
 						<th>status</th>
-						<th>complete</th>
-						<th>pending</th>
-						<th>error</th>
+						<th>completed</th>
+						<th>total</th>
+						<th>failed</th>
 						<th>time</th>
 					</tr>
 				</thead>			

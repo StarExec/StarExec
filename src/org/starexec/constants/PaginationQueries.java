@@ -14,6 +14,9 @@ public class PaginationQueries {
 	public static String GET_JOBS_BY_USER_QUERY = "";
 	public static String GET_USERS_IN_SPACE_QUERY = "";
 	public static String GET_SUBSPACES_IN_SPACE_QUERY = "";
+	public static String GET_INCOMPLETE_JOBS_QUERY = "";
+	public static String GET_SOLVERS_IN_SPACE_QUERY = "";
+	public static String GET_SOLVERS_BY_USER_QUERY = "";
 
 	/**
 	 * Reads in the queries stored in the config/pagination package
@@ -27,6 +30,9 @@ public class PaginationQueries {
 		GET_JOBS_BY_USER_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/pagination/JobForUserPagination.sql"));
 		GET_USERS_IN_SPACE_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/pagination/UserInSpacePagination.sql"));
 		GET_SUBSPACES_IN_SPACE_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/pagination/SubspacesInSpacePagination.sql"));
+		GET_INCOMPLETE_JOBS_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/pagination/IncompleteJobPagination.sql"));
+		GET_SOLVERS_IN_SPACE_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/pagination/SolverInSpacePagination.sql"));
+		GET_SOLVERS_BY_USER_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/pagination/SolverForUserPagination.sql"));
 
 
 	}

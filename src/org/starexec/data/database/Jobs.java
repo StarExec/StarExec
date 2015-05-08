@@ -2422,72 +2422,24 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 **/
 	public static List<Job> getJobsForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
-		return getJobsForNextPage(startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,-1);
-		
-		/*
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
+		Connection con = null;
+		NamedParameterStatement procedure = null;
+		ResultSet results = null;
 		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfAllJobs(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setString(5, searchQuery);
+			con =Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_INCOMPLETE_JOBS_QUERY, startingRecord, recordsPerPage, getJobOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			procedure = new NamedParameterStatement(con,builder.getSQL());
+			procedure.setString("query",searchQuery);
 			results = procedure.executeQuery();
-			
-			List<Job> jobs = new LinkedList<Job>();
-			
-			while(results.next()){
-
-				if (results.getString("status").equals("incomplete")) {
-					// Grab the relevant job pair statistics; this prevents a secondary set of queries
-					// to the database in RESTHelpers.java
-					HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
-					liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
-					liteJobPairStats.put("completePairs", results.getInt("completePairs"));
-					liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
-					liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
-	
-					Integer completionPercentage = Math.round(100*(float)(results.getInt("completePairs"))/((float)results.getInt("totalPairs")));
-					liteJobPairStats.put("completionPercentage", completionPercentage);
-	
-					Integer errorPercentage = Math.round(100*(float)(results.getInt("errorPairs"))/((float)results.getInt("totalPairs")));
-					liteJobPairStats.put("errorPercentage", errorPercentage);
-	
-					Job j = new Job();
-					j.setId(results.getInt("id"));
-					j.setPrimarySpace(results.getInt("primary_space"));
-					j.setUserId(results.getInt("user_id"));
-					j.setName(results.getString("name"));	
-					if (results.getBoolean("deleted")) {
-						j.setName(j.getName()+" (deleted)");
-					}
-					j.setDescription(results.getString("description"));	
-
-					j.setCreateTime(results.getTimestamp("created"));
-					j.setCompleteTime(results.getTimestamp("completed"));
-
-					j.setLiteJobPairStats(liteJobPairStats);
-					jobs.add(j);	
-				}
-				
-							
-			}	
-			
-			return jobs;
-		} catch (Exception e){			
-			log.error("GetNextPageOfRunningJobsAdmin says " + e.getMessage(), e);
+			return getJobsForNextPage(results);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
 			Common.safeClose(procedure);
+			Common.safeClose(con);
 		}
-		
-		return null;*/
+		return null;
 	}
 	
     

@@ -5,7 +5,6 @@
 -- Author: Todd Elvers + Eric Burns
 
 -- vars 
--- spaceId The ID of the space to get jobs in, or -1 for all jobs
 -- query The query to filter jobs by
 				SELECT 	id, 
 						name, 
@@ -30,5 +29,5 @@
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', :query, '%'))
 											
 				-- Exclude Jobs that aren't in the specified space
-				AND (assoc.space_id=:spaceId)
+				AND (GetJobStatus(id)="incomplete")
 	
