@@ -343,6 +343,30 @@ public class JobToXMLer {
 			for (StageAttributes attrs : job.getStageAttributes()) {
 				jobElement.appendChild(getStageAttributesElement(attrs));
 			}
+		} else {
+			// if we have no pipelines, then we can add the pre processor and post processor elements to the job attributes
+			for (StageAttributes attrs : job.getStageAttributes()) {
+				if (attrs.getPostProcessor()!=null) {
+		    		Element postProcessorElement = doc.createElement("postproc-id");
+
+		    		Attr postProcessorAttr = doc.createAttribute("value");
+		    		postProcessorAttr.setValue(String.valueOf(attrs.getPostProcessor().getId()));
+		    		postProcessorElement.setAttributeNode(postProcessorAttr);
+		        	
+		        	attrsElement.appendChild(postProcessorElement);
+		    	}
+		    	if (attrs.getPreProcessor()!=null) {
+		    		Element preProcessorElement = doc.createElement("preproc-id");
+		    		Attr preProcessorAttr = doc.createAttribute("value");
+		    		preProcessorAttr.setValue(String.valueOf(attrs.getPreProcessor().getId()));
+		    		preProcessorElement.setAttributeNode(preProcessorAttr);	
+		        	attrsElement.appendChild(preProcessorElement);
+		    	}
+				
+			}
+		
+			
+			
 		}
 
 		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());

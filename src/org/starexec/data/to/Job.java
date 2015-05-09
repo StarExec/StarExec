@@ -288,6 +288,15 @@ public class Job extends Identifiable implements Iterable<JobPair> {
 		this.stageAttributes.add(attrs);
 	}
 	
+	public boolean containsStageOneAttributes() {
+		for (StageAttributes attrs : this.stageAttributes) {
+			if (attrs.getStageNumber()==1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Returns the StageAttributes object for the given stage number.
 	 * If there is no such object, generates one using the defaults

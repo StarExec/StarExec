@@ -99,7 +99,10 @@
     	
     	<!-- Note: This is in Gigabytes -->
     	<element name="mem-limit" type="tns:doubleInfo"></element>
-	
+    	
+    	<!-- These are used only if there is no StageAttributes tag with stage-num = 1 -->
+		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
       </all>
       
     </complexType>
