@@ -2253,7 +2253,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-			Common.safeClose(con);
+			Common.safeClose(results);
 		}
 		return null;
 		
@@ -2291,7 +2291,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-			Common.safeClose(con);
+			Common.safeClose(results);
 		}
 		return null;
 		
@@ -2386,7 +2386,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-			Common.safeClose(con);
+			Common.safeClose(results);
 		}
 		return null;
 	}
