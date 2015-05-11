@@ -780,7 +780,7 @@ public class RESTHelpers {
 			
 			
 			
-			jobPairsToDisplay = Jobs.newGetJobPairsForNextPageInJobSpace(
+			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
 	    			attrMap.get(STARTING_RECORD),						// Record to start at  
 	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
 	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
@@ -1581,15 +1581,10 @@ public class RESTHelpers {
 		return null;
 	}
 	
-	
+	/**
+	 * Generate the HTML for the next DataTable page of entries
+	 */
 	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int userId) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
-		 */
-		
-		//maps job IDs to the users that own them. Used so we only need to get the user once per job
-		HashMap<Integer,User> userCache=new HashMap<Integer,User>();
-		
 		JsonArray dataTablePageEntries = new JsonArray();
 		for(JobPair j : pairs){
 			StringBuilder sb = new StringBuilder();
@@ -1602,12 +1597,12 @@ public class RESTHelpers {
 			hiddenJobPairId = sb.toString();
 			
 			// Create the job link
-			Job job = Jobs.get(j.getJobId());
+			//Job job = Jobs.get(j.getJobId());
     		sb = new StringBuilder();
     		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
-    		sb.append(job.getId());
+    		sb.append(j.getJobId());
     		sb.append("\" target=\"_blank\">");
-    		sb.append(job.getName());
+    		sb.append(j.getOwningJob().getName());
     		RESTHelpers.addImg(sb);
     		sb.append(hiddenJobPairId);
 			String jobLink = sb.toString();
@@ -1616,13 +1611,8 @@ public class RESTHelpers {
     		sb = new StringBuilder();
 			String hiddenUserId;
 			
-			User user=null;
-			if (userCache.containsKey(j.getJobId())) {
-				user=userCache.get(j.getJobId());
-			} else {
-				user = Users.getUserByJob(j.getJobId());
-				userCache.put(j.getJobId(), user);
-			}
+			User user=j.getOwningUser();
+			
 			
 			
 			// Create the hidden input tag containing the user id

@@ -50,6 +50,12 @@ public class JobPair extends Identifiable {
 	
 	private SolverPipeline pipeline = null;
 	
+	
+	// these are usually not populated-- only a pagination query uses them so that we can get all the necessary data at once
+	private Job owningJob = null;
+	private User owningUser = null;
+	
+	
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
@@ -459,6 +465,22 @@ public class JobPair extends Identifiable {
 
 	public void setBenchInputPaths(List<String> benchInputPaths) {
 		this.benchInputPaths = benchInputPaths;
+	}
+
+	public Job getOwningJob() {
+		return owningJob;
+	}
+
+	public void setOwningJob(Job owningJob) {
+		this.owningJob = owningJob;
+	}
+
+	public User getOwningUser() {
+		return owningUser;
+	}
+
+	public void setOwningUser(User owningUser) {
+		this.owningUser = owningUser;
 	}
 
 	

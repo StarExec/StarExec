@@ -354,6 +354,7 @@ public class JobUtil {
 			
 			String rootName=Spaces.getName(spaceId);
 	
+			// this attributes object will be ignored if there is an explicit StageAttributes tag for stage 1
 			StageAttributes stageOneAttributes = new StageAttributes();
 			stageOneAttributes.setStageNumber(1);
 

@@ -1723,6 +1723,11 @@ public class Jobs {
 			}
 		} else if (orderIndex==5) {
 			return "result";
+		} else if (orderIndex==6) {
+			return "job_pairs.id";
+		} else if (orderIndex==7) {
+			// the - sign is because we want null values last, so we reverse the ASC/ DESC sign and add a -
+			return "-completion_id";
 		}
 		
 		return "job_pairs.benchmark_name";
@@ -1745,7 +1750,7 @@ public class Jobs {
 	 * @author Todd Elvers
 	 */
 	
-	public static List<JobPair> newGetJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock,int jobId) {
+	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock,int jobId) {
 		Connection con = null;	
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
@@ -1753,7 +1758,7 @@ public class Jobs {
 			searchQuery="";
 		}
 		try {
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_ENQUEUED_PAIRS_QUERY, startingRecord, recordsPerPage, getJobPairOrderColumn(indexOfColumnSortedBy,wallclock), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getJobPairOrderColumn(indexOfColumnSortedBy,wallclock), isSortedASC);
 			con = Common.getConnection();
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 			procedure.setString("query", searchQuery);
@@ -1774,64 +1779,6 @@ public class Jobs {
 		return null;
 	}
 	
-	
-	
-	
-	
-	
-	/**
-	 * Gets the minimal number of Job Pairs necessary in order to service the client's
-	 * request for the next page of Job Pairs in their DataTables object
-	 * 
-	 * @param startingRecord the record to start getting the next page of Job Pairs from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param jobId the id of the Job to get the Job Pairs of
-	 * @param jobSpaceId The ID of the job space containing the relevant pairs
-	 * @param stageNumber The stage number to get data for
-	 * @param wallclock True to use wallclock time and false to use CPU time
-	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
-	 * @author Todd Elvers
-	 */
-	//TODO: Wallclock parameter not working
-	//TODO: decide whether to use this version or the new version
-	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock,int jobId) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		if (searchQuery==null) {
-			searchQuery="";
-		}
-		try {
-			
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpace(?, ?, ?, ?, ?,?,?)}");
-				
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setBoolean(3, isSortedASC);
-			procedure.setString(4, searchQuery);
-			procedure.setInt(5,jobSpaceId);
-			procedure.setInt(6,indexOfColumnSortedBy);
-			procedure.setInt(7,stageNumber);
-			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
-			
-				
-			
-			return jobPairs;
-		} catch (Exception e){			
-			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return null;
-	}
 	
 	/**
 	 * Gets benchmarks attributes with a specific key for all benchmarks used by a given job
@@ -2159,7 +2106,7 @@ public class Jobs {
 	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobId,int jobSpaceId,int startingRecord,int recordsPerPage,
 			boolean isSortedASC, String searchQuery, int indexOfColumnSortedBy,int configId, int stageNumber,String type) {
 		Connection con = null;	
-		CallableStatement procedure = null;
+		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		if (searchQuery==null) {
 			searchQuery="";
@@ -2167,17 +2114,19 @@ public class Jobs {
 		try {
 			
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNextPageOfJobPairsInJobSpaceHierarchy(?, ?, ?, ?, ?,?,?,?,?)}");
+			if (indexOfColumnSortedBy == 7) {
+				isSortedASC = !isSortedASC;
+			}
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_IN_SPACE_HIERARCHY_QUERY, startingRecord, recordsPerPage, getJobPairOrderColumn(indexOfColumnSortedBy,false), isSortedASC);
+			
+			procedure = new NamedParameterStatement(con,builder.getSQL());
 				
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setBoolean(3, isSortedASC);
-			procedure.setString(4, searchQuery);
-			procedure.setInt(5,jobSpaceId);
-			procedure.setInt(6,indexOfColumnSortedBy);
-			procedure.setInt(7,stageNumber);
-			procedure.setInt(8,configId);
-			procedure.setString(9,type);
+			
+			procedure.setString("query", searchQuery);
+			procedure.setInt("jobSpaceId",jobSpaceId);
+			procedure.setInt("stageNumber",stageNumber);
+			procedure.setInt("configId",configId);
+			procedure.setString("pairType",type);
 			results = procedure.executeQuery();
 			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
 
