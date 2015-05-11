@@ -333,7 +333,7 @@ function safeCp {
     	log "Unsafe cp -r detected for $1"
   	else
     	log "Doing safeCp on $1"
-   		cp -r $2 $3
+   		cp -r "$2" "$3"
  	fi
 
 }

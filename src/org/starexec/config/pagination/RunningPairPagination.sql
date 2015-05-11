@@ -11,6 +11,7 @@
 		   jobpair_stage_data.solver_name,
 		   jobpair_stage_data.config_id,
 		   jobpair_stage_data.config_name,
+		   jobs.id,
 		   jobs.name,
 		   users.id,
 		   users.first_name,
