@@ -329,7 +329,7 @@ function safeRmLock {
 #call "safeRm description source destination" to do cp -r source destination,
 #unless source is empty, *, or /*, in which case an error message is printed
 function safeCp {
-	if [ "$x" == "*" ] || [ "$x" == "/*" ] || [ "$x" == "" ]; then 
+	if [ "$2" == "*" ] || [ "$2" == "/*" ] || [ "$2" == "" ]; then 
     	log "Unsafe cp -r detected for $1"
   	else
     	log "Doing safeCp on $1"

@@ -2295,7 +2295,6 @@ public class Jobs {
 		}
 		return null;
 		
-		//return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, spaceId,"GetNextPageOfJobs");
 	}
 
 	/**
@@ -2334,6 +2333,7 @@ public class Jobs {
 				liteJobPairStats.put("errorPercentage", errorPercentage);
 
 				Job j = new Job();
+				
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));	

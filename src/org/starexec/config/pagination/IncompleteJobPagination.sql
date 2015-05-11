@@ -14,7 +14,6 @@
 						description, 
 						deleted,
 						user_id,
-						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,
