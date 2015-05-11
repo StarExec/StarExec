@@ -23,7 +23,7 @@
     	    	<element name="StageDependency" minOccurs="0" maxOccurs="unbounded"></element>
     			<element name="BenchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>
-        <attribute name="config" type="int" use="required"></attribute>
+        <attribute name="config-id" type="int" use="required"></attribute>
         
         <!-- Defaults to false. A maximum of a single stage per pipeline can be primary. If none is primary
         it will default to the first stage -->

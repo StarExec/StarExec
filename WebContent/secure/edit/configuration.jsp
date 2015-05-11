@@ -28,7 +28,7 @@ try {
 		if(configFile.exists()){
 			con.setDescription(GeneralSecurity.getHTMLSafeString(con.getDescription()));
 			String contents=GeneralSecurity.getHTMLSafeString(FileUtils.readFileToString(configFile));
-			request.setAttribute("config", con);
+			request.setAttribute("config-id", con);
 			request.setAttribute("solver", solver);
 			request.setAttribute("contents", contents);
 		} else {

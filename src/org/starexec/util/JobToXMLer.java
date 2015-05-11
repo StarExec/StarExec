@@ -181,7 +181,7 @@ public class JobToXMLer {
     			pipeElement.appendChild(noOpElement);
     		} else {
     			Element stageElement= doc.createElement("PipelineStage");
-        		Attr configId=doc.createAttribute("config");
+        		Attr configId=doc.createAttribute("config-id");
         		Attr isPrimary = doc.createAttribute("primary");
         		
     			configId.setValue(Integer.toString(stage.getConfigId()));

@@ -223,11 +223,11 @@ public class JobUtil {
 					s.setPrimary(false);
 				}
 				
-				s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
+				s.setConfigId(Integer.parseInt(stage.getAttribute("config-id")));
 				// make sure the user is authorized to use the solver they are trying to use
 				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
 				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-				    errorMessage = "You do not have permission to see the solver " + s.getId();
+				    errorMessage = "You do not have permission to see the solver " + solver.getId();
 				    return null;
 				}
 				
@@ -629,8 +629,8 @@ public class JobUtil {
 							
 							if (!configIdsToSolvers.containsKey(configId)) {
 								Solver solver = Solvers.getSolverByConfig(configId, false);
-								if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-								    errorMessage = "You do not have permission to see the solver " + s.getId();
+								if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
+								    errorMessage = "You do not have permission to see the solver " + solver.getId();
 								    return -1;
 								}
 								solver.addConfiguration(Solvers.getConfiguration(configId));
