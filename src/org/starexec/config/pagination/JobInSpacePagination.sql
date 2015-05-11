@@ -15,13 +15,12 @@
 						description, 
 						deleted,
 						user_id,
-						COUNT(job_pairs.id) AS totalPairs,
-						COUNT(CASE WHEN job_pairs.status_code=7 THEN 1 END) 	AS completePairs,	
-						COUNT(CASE WHEN job_pairs.status_code BETWEEN 1 AND 6 THEN 1 END) AS pendingPairs,
-						COUNT(CASE WHEN job_pairs.status_code BETWEEN 8 AND 17 OR job_pairs.status_code=0 THEN 1 END) AS errorPairs
+						GetTotalPairs(id) 		AS totalPairs,
+						GetCompletePairs(id) 	AS completePairs,
+						GetPendingPairs(id) 	AS pendingPairs,
+						GetErrorPairs(id) 		AS errorPairs
 				
 				FROM	jobs
-				JOIN job_pairs ON job_pairs.job_id = jobs.id
 				INNER JOIN job_assoc AS assoc ON assoc.job_id=jobs.id
 	
 					
@@ -31,5 +30,4 @@
 											
 				-- Exclude Jobs that aren't in the specified space
 				AND (assoc.space_id=:spaceId)
-				GROUP BY jobs.id
 	
