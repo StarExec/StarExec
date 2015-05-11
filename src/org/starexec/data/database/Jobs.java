@@ -2207,12 +2207,17 @@ public class Jobs {
 		return -1;
 	}
 	
-	//TODO: Is there a reason we show different things on the space explorer versus the user page?
+	/**
+	 * Gets the name of the SQL column to sort on given an index of a dataTables column
+	 * from the front end
+	 * @param orderIndex
+	 * @return
+	 */
 	private static String getJobOrderColumn(int orderIndex) {
 		if (orderIndex==0) {
 			return "jobs.name";
 		} else if (orderIndex==1) {
-			return "status";
+			return "pendingPairs"; // this is the same as ordering by status, as the status is determined by whether a job has pending pairs
 		} else if (orderIndex==2) {
 			return "completePairs";
 		} else if (orderIndex==3) {
