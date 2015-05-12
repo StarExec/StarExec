@@ -1157,8 +1157,14 @@ public class Connection {
 	 */
 	protected int removePrimitives(List<Integer> primIDs,Integer spaceID,String type, Boolean recyclePrims) {
 		try {
-			
-			HttpPost post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
+			HttpPost post = null;
+			if (type.equalsIgnoreCase("subspace")) {
+				post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type);
+
+			} else {
+				post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
+
+			}
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
 			String key="selectedIds[]";

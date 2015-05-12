@@ -49,6 +49,8 @@ initSandbox "$JOB_ID"
 
 if ! isInteger $SANDBOX ; then
 	sendStatus $ERROR_RUNSCRIPT
+	sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+	
 	log "unable to secure any sandbox for this job!"
 	exit 0
 fi
@@ -56,6 +58,8 @@ fi
 if [ $SANDBOX -eq -1 ] 
 then
 	sendStatus $ERROR_RUNSCRIPT
+	sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+	
 	log "unable to secure any sandbox for this job!"
 	exit 0
 fi

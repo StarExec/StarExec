@@ -792,6 +792,7 @@ function verifyWorkspace {
 		#get rid of the cache, as if we're here then something is probably wrong with it
 		rm -r "$SOLVER_CACHE_PATH"
 		sendStatus $ERROR_RUNSCRIPT
+		
 	else
 		log "execution host solver configuration verified"	
 	fi	
