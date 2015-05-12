@@ -729,58 +729,7 @@ function copyBenchmarkDependencies {
 }
 
 
-function copyDependencies {
-	safeCp "copying solver" "$SOLVER_PATH/*" "$LOCAL_SOLVER_DIR"	
-	log "solver copy complete"
-	if [ $SOLVER_CACHED -eq 0 ]; then
-		mkdir -p "$SOLVER_CACHE_PATH"
-		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
-			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
-				#store solver in a cache
-				log "storing solver in cache at $SOLVER_CACHE_PATH"
-				#if the copy was successful
-				#local solver dir can never be empty, so safeCp is not necessary
-				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
-					log "the solver was successfully copied into the cache"
-					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
-					rm -r "$SOLVER_CACHE_PATH/lock.lock"
-				else
-					#if we failed to copy the solver, remove the cache entry for the solver
-					log "the solver could not be copied into the cache successfully"
-					rm -r "$SOLVER_CACHE_PATH"	
-				fi
-			fi
-		fi		
-	fi
-        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
-        chmod -R gu+rwx $LOCAL_SOLVER_DIR
 
-	log "copying runSolver to execution host..."
-	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
-	log "runsolver copy complete"
-	ls -l "$LOCAL_RUNSOLVER_PATH"
-
-	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
-	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
-	log "benchmark copy complete"
-	
-	#doing benchmark preprocessing here if the pre_processor actually exists
-	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
-		mkdir $OUT_DIR/preProcessor
-		safeCp "copying pre processor" "$PRE_PROCESSOR_PATH/*" "$OUT_DIR/preProcessor"
-		chmod -R gu+rwx $OUT_DIR/preProcessor
-		cd "$OUT_DIR"/preProcessor
-		log "executing pre processor"
-		log "random seed = "$RAND_SEED
-		
-		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
-		#use the processed benchmark in subsequent steps
-		rm "$LOCAL_BENCH_PATH"
-		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
-	fi
-
-	return $?	
-}
 
 
 
@@ -856,6 +805,66 @@ fi
 return $?
 }
 
+
+
+
+
+
+function copyDependencies {
+log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
+cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
+log "solver copy complete"
+	if [ $SOLVER_CACHED -eq 0 ]; then
+		mkdir -p "$SOLVER_CACHE_PATH"
+		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
+			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
+				#store solver in a cache
+				log "storing solver in cache at $SOLVER_CACHE_PATH"
+				#if the copy was successful
+				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
+					log "the solver was successfully copied into the cache"
+					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
+					rm -r "$SOLVER_CACHE_PATH/lock.lock"
+				else
+					#if we failed to copy the solver, remove the cache entry for the solver
+					log "the solver could not be copied into the cache successfully"
+					rm -r "$SOLVER_CACHE_PATH"	
+				fi
+			fi
+		fi		
+	fi
+        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
+        chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "copying runSolver to execution host..."
+	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
+	log "runsolver copy complete"
+	ls -l "$LOCAL_RUNSOLVER_PATH"
+
+	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
+	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
+	log "benchmark copy complete"
+	
+	#doing benchmark preprocessing here if the pre_processor actually exists
+	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
+		mkdir $OUT_DIR/preProcessor
+		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		chmod -R gu+rwx $OUT_DIR/preProcessor
+		cd "$OUT_DIR"/preProcessor
+		log "executing pre processor"
+		log "random seed = "$RAND_SEED
+		
+		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
+		#use the processed benchmark in subsequent steps
+		rm "$LOCAL_BENCH_PATH"
+		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
+	fi
+	
+	
+	
+	return $?	
+}
+
 # Saves the current output 
 function saveOutputAsBenchmark {
 	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
@@ -919,4 +928,14 @@ function verifyWorkspace {
 	return $?
 }
 
+#feRm description source destination" to do cp -r source destination,
+#unless source is empty, *, or /*, in which case an error message is printed
+function safeCp {
+	if [ "$2" == "*" ] || [ "$2" == "/*" ] || [ "$2" == "" ]; then 
+    	log "Unsafe cp -r detected for $1"
+  	else
+    	log "Doing safeCp on $1"
+   		cp -r $2 $3
+ 	fi
 
+}
