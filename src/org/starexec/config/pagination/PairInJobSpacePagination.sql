@@ -1,3 +1,9 @@
+-- gets jobs pairs for the next page of a datatables table on the job space explorer
+-- vars
+-- stageNumber The stage number to get data for
+-- query The query to filter pairs by
+-- jobSpaceId The ID of the job space to get pairs in
+
 				SELECT  job_pairs.id,
 						jobpair_stage_data.config_id,
 						jobpair_stage_data.config_name,

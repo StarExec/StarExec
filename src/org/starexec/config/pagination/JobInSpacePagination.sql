@@ -7,7 +7,7 @@
 -- vars 
 -- spaceId The ID of the space to get jobs in, or -1 for all jobs
 -- query The query to filter jobs by
-				SELECT 	id, 
+				SELECT 	jobs.id, 
 						name, 
 						user_id, 
 						created, 
@@ -15,7 +15,6 @@
 						description, 
 						deleted,
 						user_id,
-						GetJobStatus(id)		AS status,
 						GetTotalPairs(id) 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,
@@ -27,8 +26,8 @@
 					
 				-- Exclude Jobs whose name and status don't contain the query string
 				WHERE 	(name				LIKE	CONCAT('%', :query, '%')
-				OR		GetJobStatus(id)	LIKE	CONCAT('%', :query, '%'))
+				OR		GetJobStatus(jobs.id)	LIKE	CONCAT('%', :query, '%'))
 											
 				-- Exclude Jobs that aren't in the specified space
-				AND (assoc.space_id=:spaceId OR :spaceId = 1)
+				AND (assoc.space_id=:spaceId)
 	

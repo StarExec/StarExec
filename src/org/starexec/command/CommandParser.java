@@ -344,6 +344,7 @@ class CommandParser {
 				serverStatus=parser.removePrimitive(commandParams, "job");
 			} else if (c.equals(R.COMMAND_REMOVESUBSPACE)) {
 				serverStatus=parser.removePrimitive(commandParams,"subspace");
+			
 			}
 			else {
 				return Status.ERROR_BAD_COMMAND;
@@ -428,6 +429,7 @@ class CommandParser {
 				
 			} else if(c.equals(R.COMMAND_LISTUSERS)) {
 				type="users";
+				
 			} else if(c.equals(R.COMMAND_LISTSUBSPACES)) {
 				type="spaces";
 			} else if (c.equals(R.COMMAND_LISTPRIMITIVES)) {

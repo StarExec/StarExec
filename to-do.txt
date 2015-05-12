@@ -1,0 +1,7 @@
+-- better error message when uploading a solver containing symbolic links.
+
+-- better error message when a benchmark processor fails to run (e.g., due
+   to dynamic dependencies that are not met on StarExec)
+
+-- better error message when uploading job XML, when the archive contains
+   a directory rather than just a single XML file.

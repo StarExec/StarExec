@@ -23,7 +23,7 @@
     	    	<element name="StageDependency" minOccurs="0" maxOccurs="unbounded"></element>
     			<element name="BenchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
     	</sequence>
-        <attribute name="config" type="int" use="required"></attribute>
+        <attribute name="config-id" type="int" use="required"></attribute>
         
         <!-- Defaults to false. A maximum of a single stage per pipeline can be primary. If none is primary
         it will default to the first stage -->
@@ -99,7 +99,10 @@
     	
     	<!-- Note: This is in Gigabytes -->
     	<element name="mem-limit" type="tns:doubleInfo"></element>
-	
+    	
+    	<!-- These are used only if there is no StageAttributes tag with stage-num = 1 -->
+		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
       </all>
       
     </complexType>

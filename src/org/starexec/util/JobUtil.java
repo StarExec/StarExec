@@ -223,11 +223,11 @@ public class JobUtil {
 					s.setPrimary(false);
 				}
 				
-				s.setConfigId(Integer.parseInt(stage.getAttribute("config")));
+				s.setConfigId(Integer.parseInt(stage.getAttribute("config-id")));
 				// make sure the user is authorized to use the solver they are trying to use
 				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
 				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-				    errorMessage = "You do not have permission to see the solver " + s.getId();
+				    errorMessage = "You do not have permission to see the solver " + solver.getId();
 				    return null;
 				}
 				
@@ -354,19 +354,39 @@ public class JobUtil {
 			
 			String rootName=Spaces.getName(spaceId);
 	
-	
+			// this attributes object will be ignored if there is an explicit StageAttributes tag for stage 1
+			StageAttributes stageOneAttributes = new StageAttributes();
+			stageOneAttributes.setStageNumber(1);
+
 			Element wallclockEle = DOMHelper.getElementByName(jobAttributes,"wallclock-timeout");
 			int wallclock = Integer.parseInt(wallclockEle.getAttribute("value"));
 			job.setWallclockTimeout(wallclock);
-	
+			stageOneAttributes.setWallclockTimeout(wallclock);
+			
 			Element cpuTimeoutEle = DOMHelper.getElementByName(jobAttributes, "cpu-timeout");
 			int cpuTimeout = Integer.parseInt(cpuTimeoutEle.getAttribute("value"));
 			job.setCpuTimeout(cpuTimeout);
-	
+			stageOneAttributes.setCpuTimeout(cpuTimeout);
+			
 			Element memLimitEle = DOMHelper.getElementByName(jobAttributes, "mem-limit");
 			double memLimit = Double.parseDouble(memLimitEle.getAttribute("value"));
 			long memoryLimit=Util.gigabytesToBytes(memLimit);
 			memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit; //bounds memory limit by system max
+			job.setMaxMemory(memoryLimit);
+			stageOneAttributes.setMaxMemory(memoryLimit);
+			
+			// If processors are not given in the stage attributes, that means they are not used for this ttage
+			Integer postProcId=null;
+			if (DOMHelper.hasElement(jobAttributes, "postproc-id")) {
+				postProcId=Integer.parseInt(DOMHelper.getElementByName(jobAttributes, "postproc-id").getAttribute("value"));
+				stageOneAttributes.setPostProcessor(Processors.get(postProcId));
+
+			}
+			Integer preProcId=null;
+			if (DOMHelper.hasElement(jobAttributes, "preproc-id")) {
+				preProcId=Integer.parseInt(DOMHelper.getElementByName(jobAttributes, "preproc-id").getAttribute("value"));
+				stageOneAttributes.setPreProcessor(Processors.get(preProcId));
+			}			
 			
 			//validate memory limits
 			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, null, null);
@@ -375,7 +395,6 @@ public class JobUtil {
 				return -1;
 			}
 			
-			job.setMaxMemory(memoryLimit);
 			log.info("nodelist about to be set");
 			
 			int maxStages=0;
@@ -464,6 +483,10 @@ public class JobUtil {
 				attrs.setSpaceId(stageSpace);
 				attrs.setBenchSuffix(stageBenchSuffix);
 				job.addStageAttributes(attrs);
+			}
+			
+			if (!job.containsStageOneAttributes()) {
+				job.addStageAttributes(stageOneAttributes);
 			}
 			
 			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
@@ -606,8 +629,8 @@ public class JobUtil {
 							
 							if (!configIdsToSolvers.containsKey(configId)) {
 								Solver solver = Solvers.getSolverByConfig(configId, false);
-								if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-								    errorMessage = "You do not have permission to see the solver " + s.getId();
+								if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
+								    errorMessage = "You do not have permission to see the solver " + solver.getId();
 								    return -1;
 								}
 								solver.addConfiguration(Solvers.getConfiguration(configId));

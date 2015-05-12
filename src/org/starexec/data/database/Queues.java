@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -20,9 +21,12 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 
 
 /**
@@ -461,6 +465,24 @@ public class Queues {
 			return -1;				
 	}
 	
+	private static String getPairOrderColumnForClusterPage(int indexOrder) {
+		if (indexOrder==0) {
+			return "jobs.name";
+		} else if (indexOrder==1) {
+			return "users.first_name, users.last_name";
+		} else if (indexOrder==2) {
+			return "bench_name";
+		} else if (indexOrder==3) {
+			return "solver_name";
+		} else if (indexOrder==4) {
+			return "config_name";
+		} else if (indexOrder==5) {
+			return "path";
+		}
+		
+		return "jobs.name";
+	}
+	
 	/**
 	 * Gets all the necessary job pairs for populating a datatables page on the cluster status page
 	 * @param startingRecord The first desired records
@@ -474,27 +496,27 @@ public class Queues {
 	 */
 	
 	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
-		String sqlQuery=null;
-		if (type == "queue") {
-			sqlQuery="GetNextPageOfEnqueuedJobPairs";
+		PaginationQueryBuilder builder = null;
 
+		if (type == "queue") {
+			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_ENQUEUED_QUERY, startingRecord, recordsPerPage, getPairOrderColumnForClusterPage(indexOfColumnSortedBy), isSortedASC);
 		} else if (type == "node") {
-			sqlQuery="GetNextPageOfRunningJobPairs";
+			
+			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_RUNNING_QUERY, startingRecord, recordsPerPage, getPairOrderColumnForClusterPage(indexOfColumnSortedBy), isSortedASC);
+
 		} else {
 			return null;
 		}
 		
 		Connection con = null;		
-		CallableStatement procedure = null;
+		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();	
 			
-			procedure = con.prepareCall("{CALL "+sqlQuery+"(?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setBoolean(3, isSortedASC);
-			procedure.setInt(4, id);
+			procedure = new NamedParameterStatement(con, builder.getSQL());
+			
+			procedure.setInt("id", id);
 			
 			
 			 results = procedure.executeQuery();
@@ -534,7 +556,18 @@ public class Queues {
 				c.setName(results.getString("jobpair_stage_data.config_name"));
 				stage.setConfiguration(c);
 				jp.getPrimarySolver().addConfiguration(c);
-
+				
+				User u=new User();
+				u.setId(results.getInt("users.id"));
+				u.setFirstName(results.getString("users.first_name"));
+				u.setLastName(results.getString("users.last_name"));
+				jp.setOwningUser(u);
+				
+				Job j = new Job();
+				j.setId(results.getInt("jobs.id"));
+				j.setName(results.getString("jobs.name"));
+				
+				jp.setOwningJob(j);
 				
 				returnList.add(jp);
 			}			

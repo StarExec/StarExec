@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
@@ -29,6 +30,8 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Timer;
 import org.starexec.util.Util;
 
@@ -1363,18 +1366,15 @@ public class Solvers {
 	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
 		Connection con = null;			
 		ResultSet results=null;
-		CallableStatement procedure = null;
+		NamedParameterStatement procedure = null;
 		try {
 			con = Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SOLVERS_BY_USER_QUERY, startingRecord, recordsPerPage, getSolverOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfUserSolvers(?, ?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, userId);
-			procedure.setString(6, searchQuery);
-			procedure.setBoolean(7, recycled);
+			procedure.setInt("userId", userId);
+			procedure.setString("query", searchQuery);
+			procedure.setBoolean("recycled", recycled);
 				
 			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
@@ -1408,22 +1408,40 @@ public class Solvers {
 		return null;
 	}
 	
+	private static String getSolverOrderColumn(int orderIndex) {
+		if (orderIndex==0) {
+			return "name";
+		}else if (orderIndex==1) {
+			return "description";
+		} else if (orderIndex==2) {
+			return "type_name";
+		}
+		
+		return "name";
+	}
 	
-	
+	/**
+	 * Returns the solvers needed to populate the DataTables page of solvers on the space explorer
+	 * @param startingRecord The index of the first solver to get
+	 * @param recordsPerPage the number of solvers to get
+	 * @param isSortedASC Whether to sort ascending or descending
+	 * @param indexOfColumnSortedBy The index of the datatables column to sort on
+	 * @param searchQuery The query to filter solvers by
+	 * @param spaceId The ID of the space to get solvers for
+	 * @return A list of solvers, or null on error
+	 */
 	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
 		Connection con = null;			
 		ResultSet results=null;
-		CallableStatement procedure = null;
+		NamedParameterStatement procedure = null;
 		try {
 			con = Common.getConnection();
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SOLVERS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getSolverOrderColumn(indexOfColumnSortedBy), isSortedASC);
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfSolvers(?, ?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setInt(5, spaceId);
-			procedure.setString(6, searchQuery);
+			procedure = new NamedParameterStatement(con, builder.getSQL());
+			
+			procedure.setInt("spaceId", spaceId);
+			procedure.setString("query", searchQuery);
 				
 			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
