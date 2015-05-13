@@ -326,7 +326,7 @@ function safeRmLock {
 	fi
 }
 
-#call "safeRm description source destination" to do cp -r source destination,
+#call "safeCp description source destination" to do cp -r source destination,
 #unless source is empty, *, or /*, in which case an error message is printed
 function safeCp {
 	if [ "$2" == "*" ] || [ "$2" == "/*" ] || [ "$2" == "" ]; then 
@@ -926,16 +926,4 @@ function verifyWorkspace {
 	fi		
 
 	return $?
-}
-
-#feRm description source destination" to do cp -r source destination,
-#unless source is empty, *, or /*, in which case an error message is printed
-function safeCp {
-	if [ "$2" == "*" ] || [ "$2" == "/*" ] || [ "$2" == "" ]; then 
-    	log "Unsafe cp -r detected for $1"
-  	else
-    	log "Doing safeCp on $1"
-   		cp -r $2 $3
- 	fi
-
 }
