@@ -2363,7 +2363,7 @@ public class RESTHelpers {
 			StringBuilder sb = new StringBuilder();
 			
 			// Create the hidden input tag containing the benchmark id
-			sb.append("<input type=\"hidden\" value=\"");
+			sb.append("<input name=\"bench\" type=\"hidden\" value=\"");
 			sb.append(bench.getId());
 			sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"  deleted=\""+bench.isDeleted()+"\" recycled=\""+bench.isRecycled()+"\"/>");
 			String hiddenBenchId = sb.toString();
