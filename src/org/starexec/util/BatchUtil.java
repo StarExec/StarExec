@@ -743,9 +743,24 @@ public class BatchUtil {
 				    //Grab information and store it into temp structure.
 				    Update u = new Update();
 				    
+				    if (!childElement.hasAttribute("id")) {
+					errorMessage = "An update element is missing the required id attribute.";
+					return -1;
+				    }
 				    u.id = Integer.parseInt(childElement.getAttribute("id"));
+
+				    if (!childElement.hasAttribute("pid")) {
+					errorMessage = ("The update element for benchmark id " + u.id + 
+							" is missing the required pid element.");
+					return -1;
+				    }
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
-				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+
+				    if (!childElement.hasAttribute("bid"))
+					u.bid = R.NO_TYPE_PROC_ID;
+				    else
+					u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+
 				    u.name = childElement.getAttribute("name");
 				    
 				    NodeList updateChildList = childElement.getChildNodes();

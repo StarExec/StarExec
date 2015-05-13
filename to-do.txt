@@ -5,3 +5,7 @@
 
 -- better error message when uploading job XML, when the archive contains
    a directory rather than just a single XML file.
+
+-- add an option to job creation to suppress the timestamps produced
+   by runsolver.  Geoff says it should just be a matter of calling
+   runsolver without the --timestamp flag.
