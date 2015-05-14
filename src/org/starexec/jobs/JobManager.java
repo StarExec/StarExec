@@ -294,10 +294,10 @@ public abstract class JobManager {
 							} else{
 							    JobPairs.setPairStatus(pair.getId(),errorCode);
 							}
-
-							count++;
+							count++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
+							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}	
 				} // end iterating once through the schedule
