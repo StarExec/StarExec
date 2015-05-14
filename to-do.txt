@@ -1,3 +1,18 @@
+Bugs:
+
+-- The "all" and "none" buttons do not work for benchmarks when creating
+   a job using the "choose" and then "choose in X" options (where X is the
+   space).
+
+----------------------------------------------------------------------
+Features:
+
+-- add an option to job creation to suppress the timestamps produced
+   by runsolver.  Geoff says it should just be a matter of calling
+   runsolver without the --timestamp flag.
+----------------------------------------------------------------------
+Error reporting
+
 -- better error message when uploading a solver containing symbolic links.
 
 -- better error message when a benchmark processor fails to run (e.g., due
@@ -6,6 +21,3 @@
 -- better error message when uploading job XML, when the archive contains
    a directory rather than just a single XML file.
 
--- add an option to job creation to suppress the timestamps produced
-   by runsolver.  Geoff says it should just be a matter of calling
-   runsolver without the --timestamp flag.
