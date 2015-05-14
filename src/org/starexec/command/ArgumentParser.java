@@ -223,14 +223,18 @@ class ArgumentParser {
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
 	protected int linkPrimitives(HashMap<String,String> commandParams, String type) {
+
 		try {
 			int valid=Validator.isValidCopyRequest(commandParams, type);
+
 			if (valid<0) {
 				return valid;
 			}
 			
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
-			return con.linkPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
+
+			return con.linkPrimitives(ids,getParamFrom(commandParams),
+						  Integer.parseInt(commandParams.get(R.PARAM_TO)),
 					commandParams.containsKey(R.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
@@ -238,7 +242,17 @@ class ArgumentParser {
 		}
 	}
 
-	
+    /**
+     * This handles the case where the from parameter is missing, which is allowed in link or copy commands.
+     * @param commandParams The parameters given by the user at the command line.
+     * @return the from parameter's integer value, or null if there is no such parameter. */     
+    protected Integer getParamFrom(HashMap<String,String> commandParams) {
+	String sfrom = commandParams.get(R.PARAM_FROM);
+	Integer ifrom = null;
+	if (sfrom != null)
+	    ifrom = Integer.parseInt(sfrom);
+	return ifrom;
+    }
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
 	 * indicating the result of the request
@@ -256,14 +270,15 @@ class ArgumentParser {
 				return fail;
 			}
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
-			return con.copyPrimitives(ids,Integer.parseInt(commandParams.get(R.PARAM_FROM)),Integer.parseInt(commandParams.get(R.PARAM_TO)),
-					commandParams.containsKey(R.PARAM_HIERARCHY),type);
+			return con.copyPrimitives(ids,getParamFrom(commandParams),
+						  Integer.parseInt(commandParams.get(R.PARAM_TO)),
+						  commandParams.containsKey(R.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
 			fail.add(Status.ERROR_INTERNAL);
-			return fail;		}
+			return fail;		
+		}
 	}
-	
 	
 	/**
 	 * Creates a subspace of an existing space on StarExec

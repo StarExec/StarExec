@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class R {
 	
-	public static String VERSION="05/11/2015-1";
+	public static String VERSION="May 14, 2015";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +

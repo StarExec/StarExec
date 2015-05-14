@@ -14,5 +14,7 @@ pushsolver f=spinsolver.zip id=2 n=spinsolver
 logout
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks.zip bt=2 hier=
+sleep t=4
+linkuser id=4 to=4 hier=
 logout
 exit
