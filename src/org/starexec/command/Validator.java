@@ -49,7 +49,7 @@ public class Validator {
 	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
 	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
-	private static String[] allowedCopyUserParams=new String[]{R.PARAM_TO,R.PARAM_ID};
+    private static String[] allowedCopyUserParams=new String[]{R.PARAM_TO,R.PARAM_ID,R.PARAM_HIERARCHY};
 	private static String[] allowedCopySpaceParams=new String[]{R.PARAM_TO,R.PARAM_ID, R.PARAM_FROM};
 
     private static String[] allowedCopySolverParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};

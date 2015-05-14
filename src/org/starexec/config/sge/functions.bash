@@ -327,13 +327,13 @@ function safeRmLock {
 }
 
 #call "safeCp description source destination" to do cp -r source destination,
-#unless source is empty, *, or /*, in which case an error message is printed
-function safeCp {
-	if [ "$2" == "*" ] || [ "$2" == "/*" ] || [ "$2" == "" ]; then 
+#unless source is empty, in which case an error message is printed
+function safeCpAll {
+	if [ "$2" == "" ]; then 
     	log "Unsafe cp -r detected for $1"
   	else
-    	log "Doing safeCp on $1"
-   		cp -r "$2" "$3"
+    	log "Doing safeCpAll on $2"
+   		cp -r "$2"/* "$3"
  	fi
 
 }
@@ -634,7 +634,7 @@ function copyOutput {
 	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"
 		mkdir $OUT_DIR/postProcessor
-		safeCp "copying post processor" "$POST_PROCESSOR_PATH/*" "$OUT_DIR/postProcessor"
+		safeCpAll "copying post processor" "$POST_PROCESSOR_PATH" "$OUT_DIR/postProcessor"
 		chmod -R gu+rwx $OUT_DIR/postProcessor
 		cd "$OUT_DIR"/postProcessor
 		log "executing post processor"
@@ -689,7 +689,7 @@ function copyBenchmarkDependencies {
 	
 	if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
 		mkdir $OUT_DIR/preProcessor
-		safeCp "copying pre processor" "$PRIMARY_PREPROCESSOR_PATH/*" "$OUT_DIR/preProcessor"
+		safeCpAll "copying pre processor" "$PRIMARY_PREPROCESSOR_PATH" "$OUT_DIR/preProcessor"
 		chmod -R gu+rwx $OUT_DIR/preProcessor
 		cd "$OUT_DIR"/preProcessor	
 	fi
