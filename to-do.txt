@@ -4,6 +4,8 @@ Bugs:
    a job using the "choose" and then "choose in X" options (where X is the
    space).
 
+-- Dragging benchmarks to the recycle bin in the space explorer should
+   ask if you want to remove them from the space or recycle them.
 ----------------------------------------------------------------------
 Features:
 
