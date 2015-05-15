@@ -20,4 +20,9 @@ Error reporting
 
 -- better error message when uploading job XML, when the archive contains
    a directory rather than just a single XML file.
+----------------------------------------------------------------------
+Debugging by StarExec team:
 
+-- add a developer role that allows read-only access to all of StarExec,
+   but no admin functions.  This will help us in trying to investigate
+   reported problems on StarExec.
