@@ -89,6 +89,20 @@
 							<input type="radio" name="users" value="false"/> no
 						</td>
 					</tr>
+					<tr>
+						<td class="label"> <p>Inherit-Solvers</p></td>
+						<td>
+							<input type="radio" name="solvers" value="true" checked="checked"/> yes
+							<input type="radio" name="solvers" value="false"/> no
+						</td>
+					</tr>
+					<tr>
+						<td class="label"> <p>Inherit-Benchmarks</p></td>
+						<td>
+							<input type="radio" name="benchmarks" value="true" checked="checked"/> yes
+							<input type="radio" name="benchmarks" value="false"/> no
+						</td>
+					</tr>
 					<c:if test="${!isRoot}">
 						<tr>
 							<td class="label"> <p>Sticky-Leaders</p> </td>

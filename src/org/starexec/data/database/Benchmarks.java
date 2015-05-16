@@ -611,6 +611,27 @@ public class Benchmarks {
 
 		return null;
 	}	
+
+	/**
+	 * Associates a single benchmark with a single space.
+	 * @param benchId The ID of the benchmark to put in a space. 
+	 * @param spaceId The ID of the space to add the benchmark to
+	 * @return True on success and false otherwise
+	 * @author Albert Giegerich
+	 */
+	public static boolean associate(int benchId, int spaceId) {
+		Connection con = null;			
+		try {
+			con = Common.getConnection();	
+			return associate(benchId, spaceId, con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);	
+			Common.doRollback(con);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
 	
 	/**
 	 * Associates a single benchmark with a single space
