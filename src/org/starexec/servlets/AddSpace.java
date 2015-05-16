@@ -123,7 +123,7 @@ public class AddSpace extends HttpServlet {
 		}
 
 		boolean inheritSolvers = Boolean.parseBoolean((String)request.getParameter(solvers));
-		log.debug("inheritSovers = " + inheritSolvers);
+		log.debug("inheritSolvers = " + inheritSolvers);
 		if (inheritSolvers) {
 			log.debug("Adding inherited solvers");
 			List<Solver> solvers = Solvers.getBySpace(spaceId);
@@ -137,7 +137,7 @@ public class AddSpace extends HttpServlet {
 
 		boolean inheritBenchmarks = Boolean.parseBoolean((String)request.getParameter(benchmarks));
 		log.debug("inheritBenchmarks = " + inheritBenchmarks);
-		if (inheritSolvers) {
+		if (inheritBenchmarks) {
 			log.debug("Adding inherited benchmarks");
 			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 			log.debug("parent benchmarks = " + benchmarks);
