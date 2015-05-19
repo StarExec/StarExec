@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
@@ -169,20 +170,27 @@ public class BenchmarkUploader extends HttpServlet {
     public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId,
 					    boolean downloadable)
         {
-	    try {
-	    File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
-	    FileUtils.copyFileToDirectory(benchFile, uniqueDir);
-	    
-	    List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-	    log.debug("found this many benchmarks to add from text "+bench.size());
-	    //add the benchmark to the database, but don't put it in any spaces
-			
-	    return Benchmarks.add(bench, null, null).get(0);
-	    }
-	    catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-	    return null;
+			try {
+				File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
+				FileUtils.copyFileToDirectory(benchFile, uniqueDir);
+
+				String[] filesInUniqueDir = uniqueDir.list();
+				log.debug("Files in uniqueDir: ");
+				for (String s : filesInUniqueDir) {
+					log.debug("    " + s);
+				}
+				
+				List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+				log.debug("found this many benchmarks to add from text "+bench.size());
+				//add the benchmark to the database, but don't put it in any spaces
+					
+				List<Integer> benchIds = Benchmarks.add(bench, null, null);
+
+				return benchIds.get(0);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
+			return null;
         }
 	
 	/**

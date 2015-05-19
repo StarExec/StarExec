@@ -371,7 +371,7 @@ public class BatchUtil {
 
 		try {
 			String schemaLoc = R.STAREXEC_ROOT + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
-			System.out.println("THIS IS THE SCHEMA LOCATION "+schemaLoc);
+			log.debug("THIS IS THE SCHEMA LOCATION "+schemaLoc);
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -555,6 +555,7 @@ public class BatchUtil {
 		Element spaceAttributes = DOMHelper.getElementByName(spaceElement, "SpaceAttributes");
 		
 		log.info("SpaceAttributes element created");
+		log.debug("SPACEATTRIBUTES: " + spaceAttributes);
 		// Check for description attribute
 
 		if(DOMHelper.hasElement(spaceAttributes,"description")){
@@ -618,7 +619,6 @@ public class BatchUtil {
 		    perm = ele.getAttribute("value");
 		    permission.setRemoveBench(Boolean.valueOf(perm));
 		}
-   
    
    
 		if(DOMHelper.hasElement(spaceAttributes,"rem-job-perm")){
@@ -744,22 +744,23 @@ public class BatchUtil {
 				    Update u = new Update();
 				    
 				    if (!childElement.hasAttribute("id")) {
-					errorMessage = "An update element is missing the required id attribute.";
-					return -1;
+						errorMessage = "An update element is missing the required id attribute.";
+						return -1;
 				    }
 				    u.id = Integer.parseInt(childElement.getAttribute("id"));
 
 				    if (!childElement.hasAttribute("pid")) {
-					errorMessage = ("The update element for benchmark id " + u.id + 
-							" is missing the required pid element.");
-					return -1;
+						errorMessage = ("The update element for benchmark id " + u.id + 
+								" is missing the required pid element.");
+						return -1;
 				    }
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 
-				    if (!childElement.hasAttribute("bid"))
-					u.bid = R.NO_TYPE_PROC_ID;
-				    else
-					u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+				    if (!childElement.hasAttribute("bid")) {
+						u.bid = R.NO_TYPE_PROC_ID;
+					} else {
+						u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+					}
 
 				    u.name = childElement.getAttribute("name");
 				    
@@ -770,17 +771,18 @@ public class BatchUtil {
 					    Node updateChildNode = updateChildList.item(j);
 					    log.debug(updateChildNode.getNodeType() + " = " + Node.ELEMENT_NODE);
 					    if (updateChildNode.getNodeType() == Node.ELEMENT_NODE){	
-						log.debug("found a new element = "+childNode.toString());
-						Element updateChildElement = (Element)updateChildNode;
-						String updateElementType = updateChildElement.getTagName();
-						log.debug("Element type = " + updateElementType);
-						if (updateElementType.equals("Text")){
-						    log.debug("Found text = " + updateChildElement.getTextContent());
-						    u.text = updateChildElement.getTextContent();
-						}
+							log.debug("found a new Update element = "+childNode.toString());
+							Element updateChildElement = (Element)updateChildNode;
+							String updateElementType = updateChildElement.getTagName();
+							log.debug("Element type = " + updateElementType);
+							if (updateElementType.equals("Text")){
+								log.debug("Found text = " + updateChildElement.getTextContent());
+								u.text = updateChildElement.getTextContent();
+							}
 					    }
-					    
 					}
+
+					log.debug("Adding update " + u);
 				    updates.add(u);
 				}
 				
@@ -803,6 +805,7 @@ public class BatchUtil {
 		{
 		    //Add the updates to the database and system.
 		    updateIds = addUpdates(updates);
+			log.debug("updateIds: " + updateIds);
 		    //assocaite new updates with the space given.
 		    Benchmarks.associate(updateIds, spaceId, statusId);
 		}
@@ -819,125 +822,127 @@ public class BatchUtil {
 	 * 
 	 */
     private List<Integer> addUpdates(List<Update> updates)
-        {
-	    //For each update.
-	    List<Integer> updateIds = new ArrayList<Integer>();
-	    for(Update update : updates)
+	{
+		//For each update.
+		List<Integer> updateIds = new ArrayList<Integer>();
+		for(Update update : updates)
 		{
-		    log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
-		    //Get the information out of the update.
-		    Benchmark b = Benchmarks.get(update.id);
-		    Processor up = Processors.get(update.pid);
-		    Processor bp = Processors.get(update.bid);
-		    //Get the files.
-		    File bf = new File(b.getPath());
-		    File upf = new File(up.getFilePath());
-		    File ubp = new File(bp.getFilePath());
-		    List<File> files = new ArrayList<File>();
-		    log.debug("Update name = " + update.name);
-		    log.debug("Update name = empty " + (update.name == ""));
-		    String name = "";
-		    if(update.name == "")
-			name = b.getName();
-		    else
-			name = update.name;
-		    log.debug("name = " + name);
-		    files.add(bf);
-		    files.add(upf);
-		    files.add(ubp);
-		    try
+			log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
+			//Get the information out of the update.
+			Benchmark b = Benchmarks.get(update.id);
+			Processor up = Processors.get(update.pid);
+			Processor bp = Processors.get(update.bid);
+			//Get the files.
+			File bf = new File(b.getPath());
+			File upf = new File(up.getFilePath());
+			File ubp = new File(bp.getFilePath());
+			List<File> files = new ArrayList<File>();
+			log.debug("Update name = " + update.name);
+			log.debug("Update name = empty " + (update.name == ""));
+			String name = "";
+			if(update.name.equals("")) {
+				name = b.getName();
+			} else {
+				name = update.name;
+			}
+			log.debug("name = " + name);
+			files.add(bf);
+			files.add(upf);
+			files.add(ubp);
+			try
 			{
-			    //Place files into sandbox.
-			    File sb = Util.copyFilesToNewSandbox(files);
-			    //Create text file.
-			    File text = new File(sb, "text.txt");
+				//Place files into sandbox.
+				File sb = Util.copyFilesToNewSandbox(files);
+				//Create text file.
+				File text = new File(sb, "text.txt");
 			   
-			    if(!text.exists()){
-				text.createNewFile();
-			    }
-			    //Write text to a file.
-			    String textPath = text.getAbsolutePath();
-			    FileWriter w = new FileWriter(text);
-			    log.debug("Got here writing text to text.txt" + update.text);
-			    w.write(update.text);
-			    w.flush();
+				if(!text.exists()){
+					text.createNewFile();
+				}
+				//Write text to a file.
+				String textPath = text.getAbsolutePath();
+				FileWriter w = new FileWriter(text);
+				log.debug("Got here writing text to text.txt" + update.text);
+				w.write(update.text);
+				w.flush();
 
-			    
-			    String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
-			    File processFile = new File(sb, new File(up.getFilePath()).getName());
-			    //log.debug("Process Path = " + processPath);
-			    String [] procCmd = new String[3];
-			    
-			    //Run proc command on text file and on benchmark given.
-			     
-			    procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
-			    procCmd[1] = textPath;
-			    procCmd[2] = benchPath;
-			    
-			    String message = null;
-			    message = Util.executeSandboxCommand(procCmd, null, processFile);
-			    
-			    if(message != null)
+				
+				String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
+				File processFile = new File(sb, new File(up.getFilePath()).getName());
+				//log.debug("Process Path = " + processPath);
+				String [] procCmd = new String[3];
+				
+				//Run proc command on text file and on benchmark given.
+				 
+				procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
+				procCmd[1] = textPath;
+				procCmd[2] = benchPath;
+				
+				String message = null;
+				message = Util.executeSandboxCommand(procCmd, null, processFile);
+				
+				if(message != null)
 				{
-				    errorMessage = message;
-				    log.warn("User script generated following message " + message);
+					errorMessage = message;
+					log.warn("User script generated following message " + message);
 				}
 
-			    //Upload the new benchmark created by the command to the system.
-			    File outputFile = new File(processFile, "output");
-			    if(!outputFile.exists()){
-				errorMessage = "Output file failed to create";
-				log.error("Update Processor failed to create an output");
-			    }
+				//Upload the new benchmark created by the command to the system.
+				File outputFile = new File(processFile, "output");
+				if(!outputFile.exists()){
+					errorMessage = "Output file failed to create";
+					log.error("Update Processor failed to create an output");
+				}
 
-			    
+				log.debug("outputFile contents: %n"  + FileUtils.readFileToString(outputFile));
+
+				
 			   
 
-			    //Rename the the output file to correct name
+				//Rename the the output file to correct name
 
-			    
+				
 
-			    File newSb = Util.getRandomSandboxDirectory();
-			    File renamedFile = new File(newSb, name);
+				File newSb = Util.getRandomSandboxDirectory();
+				File renamedFile = new File(newSb, name);
 
-			    String [] renameCmd = new String[3];
-			    renameCmd[0] = "mv";
-			    renameCmd[1] = outputFile.getAbsolutePath();
-			    renameCmd[2] = renamedFile.getAbsolutePath();
+				log.debug("Renamed file: " + renamedFile.getAbsolutePath());
+				log.debug("Output file: " + outputFile.getAbsolutePath());
 
-			    Util.executeSandboxCommand(renameCmd, null, newSb);
+				String [] renameCmd = new String[3];
+				renameCmd[0] = "mv";
+				renameCmd[1] = outputFile.getAbsolutePath();
+				renameCmd[2] = renamedFile.getAbsolutePath();
 
-			    if(!renamedFile.exists()){
-				errorMessage = "Renamed file failed to created";
-				log.error("Failed renaming output file");
-			    }
+				Util.executeSandboxCommand(renameCmd, null, newSb);
 
-			   
-			    
-			    
+				if(!renamedFile.exists()){
+					errorMessage = "Renamed file failed to created";
+					log.error("Failed renaming output file");
+				}
 
-			    
-			    int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
+				
+				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
 										   b.isDownloadable());
 
-			    FileUtils.deleteQuietly(newSb);
-			    FileUtils.deleteQuietly(sb);
-			    FileUtils.deleteQuietly(renamedFile);
-			    
-			    updateIds.add(newBenchID);
+				FileUtils.deleteQuietly(newSb);
+				FileUtils.deleteQuietly(sb);
+				FileUtils.deleteQuietly(renamedFile);
+				
+				updateIds.add(newBenchID);
 			  
-			    
+				
 			}
-		    catch(IOException e)
+			catch(IOException e)
 			{
-			    errorMessage = "Creating Updated Benchmarks Failed";
-			    log.warn("Sandbox creation failed: "+e.toString(), e);
+				errorMessage = "Creating Updated Benchmarks Failed";
+				log.warn("Sandbox creation failed: "+e.toString(), e);
 			}
 			
 		}
-	    
-	    return updateIds;
-        }
+	
+		return updateIds;
+	}
 	/**
 	 * @return doc the document object
 	 */
@@ -979,12 +984,14 @@ public class BatchUtil {
        Basic struct class to store all the id's needed for an update.
      */
     private class Update {
-	public String name = "";
-	public int id; //Benchmark ID
-	public int pid; //Processor ID
-	public int bid; //Benchmark Processor ID
-	public String text;
+		public String name = "";
+		public int id; //Benchmark ID
+		public int pid; //Processor ID
+		public int bid; //Benchmark Processor ID
+		public String text;
+		public String toString() {
+			return String.format("(name: %s, id: %d, pid: %d, bid: %d, text: %s)",
+					name, id, pid, bid, text);
+		}
     }
-	
-	
 }
