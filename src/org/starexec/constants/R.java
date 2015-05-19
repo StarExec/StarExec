@@ -149,7 +149,7 @@ public class R {
     public static String STAREXEC_APPNAME = null;
     public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
     public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
-    public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss";			// Which datetime format is used to create unique directory names
+    public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";		// Which datetime format is used to create unique directory names
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
     public static boolean IS_FULL_STAREXEC_INSTANCE = true;  // should we run SGE tasks (see app/Starexec.java)
