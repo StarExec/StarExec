@@ -7,6 +7,22 @@ Bugs:
 -- Dragging benchmarks to the recycle bin in the space explorer should
    ask if you want to remove them from the space or recycle them.
 
+-- We are seeing a failure of a sudo chmod (to change permissions), in
+   the SGE epilog for when a job script completes.  Part of a sample
+   log file showing this is:
+
+tomcat
+05/19/15 11:27:03 AM CDT: trying to find sandbox for pair ID = 2154122
+05/19/15 11:27:03 AM CDT: sandbox 1 contents:
+2154122
+05/19/15 11:27:03 AM CDT: sandbox 2 contents:
+2154063
+05/19/15 11:27:03 AM CDT: found that the sandbox is 1 for job 2154122
+05/19/15 11:27:03 AM CDT: set start time for pair id = 91980720
+05/19/15 11:27:03 AM CDT: cleaning execution host workspace...
+chmod: changing permissions of `/export/starexec/sandbox': Operation not permitted
+chmod: changing permissions of `/export/starexec/sandbox': Operation not permitted
+
 ----------------------------------------------------------------------
 Making StarExec more robust:
 
