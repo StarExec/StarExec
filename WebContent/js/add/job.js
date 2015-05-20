@@ -303,15 +303,7 @@ function initUI() {
     // Hook up select all/none buttons for solvers
     $('.selectAllSolvers').click(function() {
 		// Select all default configurations when select all solvers is clicked.
-        var defaults = $(this).parents('.dataTables_wrapper').find('.default');
-		$.each(defaults, function(i, defaultCheckbox) {
-			if ( !$(defaultCheckbox).closest('.solverRow').hasClass('row_selected') ) 
-			{
-				// Only check the default checkbox if there is not already a checkbox selected in that row.
-				// We don't want to mess up anyones selected configurations.
-				$(defaultCheckbox).prop('checked', true);
-			}
-		});
+		$('.config').prop('checked', true);
 		// Give every row the row_selected class so they are highlighted.
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
     });
@@ -351,11 +343,21 @@ function initUI() {
 				// Only check the default checkbox if the user clicked on the row,
 				// and not another checkbox
 				$(this).find('.default').prop('checked', true);
+
+				var numberOfConfigsNamedDefault = $(this).find('.default').length;
+				console.log("numberOfConfigsNamedDefault: " + numberOfConfigsNamedDefault);
+				if ( numberOfConfigsNamedDefault > 0 ) {
+					// Add the number of boxes that were checked to numCheck.
+					numCheck += numberOfConfigsNamedDefault;
+				}
+
+
 			}
 
     		//$(this).find('div>input[type=checkbox]').prop('checked', true);
 			
-	    } else if (numCheck == 0) {
+	    }
+		if (numCheck == 0) {
 			$(this).removeClass("row_selected");
 	    };
 	    
