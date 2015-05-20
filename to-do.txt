@@ -7,6 +7,12 @@ Bugs:
 -- Dragging benchmarks to the recycle bin in the space explorer should
    ask if you want to remove them from the space or recycle them.
 ----------------------------------------------------------------------
+Making StarExec more robust:
+
+-- Check that the quick job feature is still working when logged in
+   as guest (I saw an exception in the log file).
+
+----------------------------------------------------------------------
 Features:
 
 -- add an option to job creation to suppress the timestamps produced
