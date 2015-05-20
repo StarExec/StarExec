@@ -6,6 +6,7 @@ Bugs:
 
 -- Dragging benchmarks to the recycle bin in the space explorer should
    ask if you want to remove them from the space or recycle them.
+
 ----------------------------------------------------------------------
 Making StarExec more robust:
 
@@ -18,6 +19,8 @@ Features:
 -- add an option to job creation to suppress the timestamps produced
    by runsolver.  Geoff says it should just be a matter of calling
    runsolver without the --timestamp flag.
+
+-- matrix view of jobs
 ----------------------------------------------------------------------
 Error reporting
 
