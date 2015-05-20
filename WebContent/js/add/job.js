@@ -308,6 +308,13 @@ function initUI() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
     });
 
+	$('.selectAllBenchmarks').click(function() {
+		$('#tblBenchConfig tbody tr').addClass('row_selected');
+	});
+	$('.selectNoneBenchmarks').click(function() {
+		$('#tblBenchConfig tbody tr').removeClass('row_selected');
+	});
+
     
     $('.selectNoneSolvers').click(function() {
     	$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');

@@ -273,7 +273,7 @@
 				</tbody>					
 			</table>	
 			<div class="selectWrap">
-				<p class="selectAll"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+				<p class="selectAll selectAllBenchmarks"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNoneBenchmarks"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 			</div>	
 		</fieldset>
 	
