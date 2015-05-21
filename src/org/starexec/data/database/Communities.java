@@ -56,6 +56,25 @@ public class Communities {
 		return null;
 	}
 
+	/**
+	 * Gets every community a user is in.
+	 * @param userId The id of the user.
+	 * @return All the community Space's that the user is in. 
+	 * @author Albert Giegerich
+	 */
+	public static List<Space> getAllCommunitiesUserIsIn(int userId) {
+		List<Space> allCommunities = Communities.getAll();
+		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		for (Space community : allCommunities) {
+			int communityId = community.getId();
+			if (Users.isMemberOfCommunity(userId, communityId)) {
+				// If user is in community add community to list of communities user is in
+				communitiesUserIsIn.add(community);
+			}
+		}
+		return communitiesUserIsIn;
+	}
+
 
     public static boolean commAssocExpired(){
 		long timeNow = System.currentTimeMillis();
