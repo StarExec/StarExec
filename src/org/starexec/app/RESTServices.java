@@ -3639,6 +3639,57 @@ public class RESTServices {
 		}
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Logging updated successfully")) : gson.toJson(ERROR_INVALID_PARAMS);
 	}
+
+	//Allows the administrator to set the current logging level for a specific class an turn off logging for all other classes.
+	@POST
+	@Path("/logging/allOffExcept/{level}/{className}")
+	@Produces("application/json")
+	public String setLoggingLevelOffForAllExceptClass(@PathParam("level") String inputLevel, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=GeneralSecurity.canUserChangeLogging(userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+
+		
+		Level level = null; 
+
+		boolean success=false;
+		log.debug("Attempting to turn off logging for all classes except " +  className + " at level " + inputLevel + ".");
+		if (inputLevel.equalsIgnoreCase("trace")) {
+			level = Level.TRACE;
+		} else if (inputLevel.equalsIgnoreCase("debug")) {
+			level = Level.DEBUG;
+		} else if (inputLevel.equalsIgnoreCase("info")) {
+			level = Level.INFO;
+		} else if (inputLevel.equalsIgnoreCase("error")) {
+			level = Level.ERROR;
+		} else if(inputLevel.equalsIgnoreCase("fatal")) {
+			level = Level.FATAL;
+		} else if (inputLevel.equalsIgnoreCase("off")) {
+			level = Level.OFF;
+		} else if (inputLevel.equalsIgnoreCase("warn")) {
+			level = Level.WARN;
+		} else if (inputLevel.equalsIgnoreCase("clear")) {
+			level = null;
+		} else {
+			return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+
+		// Attempt to set logging level for class.
+		success = LoggingManager.setLoggingLevelForClass(level, className);
+
+
+		if (!success) {
+			log.debug("could not find logger for class "+className);
+		} else {
+			// Set all levels to off.
+			LoggingManager.setLoggingLevel(Level.OFF);
+			// Set logging level for class again.
+			LoggingManager.setLoggingLevelForClass(level, className);
+		}
+		return success ? gson.toJson(new ValidatorStatusCode(true,"Logging updated successfully")) : gson.toJson(ERROR_INVALID_PARAMS);
+	}
 	
 	//Allows the administrator to set the current logging level across the entire system.
 	@POST
