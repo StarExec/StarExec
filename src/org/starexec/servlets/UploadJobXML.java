@@ -116,6 +116,15 @@ public class UploadJobXML extends HttpServlet {
 			List<Integer> jobIds=new ArrayList<Integer>();
 			List<Integer> current=new ArrayList<Integer>();
 
+			// Makes sure there are no directories in archive file.
+			for (File file:uniqueDir.listFiles()) 
+			{
+				if (file.isDirectory()) {
+					jobUtil.setErrorMessage("No directories allowed in archive file. Only XML files allowed.");
+					return null;
+				}
+			}
+
 			for (File file:uniqueDir.listFiles())
 			{
 				current=jobUtil.createJobsFromFile(file, userId, spaceId);

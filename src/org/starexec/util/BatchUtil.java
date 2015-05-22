@@ -371,7 +371,7 @@ public class BatchUtil {
 
 		try {
 			String schemaLoc = R.STAREXEC_ROOT + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
-			System.out.println("THIS IS THE SCHEMA LOCATION "+schemaLoc);
+			log.debug("THIS IS THE SCHEMA LOCATION "+schemaLoc);
 			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -486,6 +486,12 @@ public class BatchUtil {
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
 				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId,statusId);
+
+				// Check if an error occured in createSpaceFromElement
+				if (spaceId == -1) {
+					return null;
+				}
+
 				spaceIds.add(spaceId);
 				spaceCounter++;
 				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
@@ -545,7 +551,6 @@ public class BatchUtil {
 	 * @param parentId id of parent space
 	 * @param userId id of user making request
 	 * @return Integer the id of the new space or -1 on error
-	 * @return
 	 */
 	public Integer createSpaceFromElement(Element spaceElement, int parentId, int userId, Integer statusId){
 		Space space = new Space();
@@ -553,158 +558,168 @@ public class BatchUtil {
 		Permission permission = new Permission(true);//default permissions
 		
 		Element spaceAttributes = DOMHelper.getElementByName(spaceElement, "SpaceAttributes");
-		
+
 		log.info("SpaceAttributes element created");
+		log.debug("spaceAttributes: " + spaceAttributes);
 		// Check for description attribute
 
-		if(DOMHelper.hasElement(spaceAttributes,"description")){
-		    Element description = DOMHelper.getElementByName(spaceAttributes,"description");
-		    space.setDescription(description.getAttribute("value"));
-		}
-		else{
-		    space.setDescription("no description");
-		}
+		Element ele = null;
 
-		log.info("description set");
+		space.setDescription("no description");
+		if (spaceAttributes != null) {
+			if(DOMHelper.hasElement(spaceAttributes,"description")){
+				Element description = DOMHelper.getElementByName(spaceAttributes,"description");
+				space.setDescription(description.getAttribute("value"));
+			} 
 
-		// Check for permission attributes in XML and set permissions accordingly
+			log.info("description set");
+
+			// Check for permission attributes in XML and set permissions accordingly
 
 
-		String perm;
-		Element ele;
+			String perm;
 
-		if(DOMHelper.hasElement(spaceAttributes,"add-benchmark-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"add-benchmark-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setAddBenchmark(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"add-job-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"add-job-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setAddJob(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"add-solver-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"add-solver-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setAddSolver(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"add-space-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"add-space-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setAddSpace(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"add-user-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"add-user-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setAddUser(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"rem-benchmark-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-benchmark-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setRemoveBench(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"rem-job-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-job-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setRemoveJob(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"rem-solver-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-solver-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setRemoveSolver(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"rem-space-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-space-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setRemoveSpace(Boolean.valueOf(perm));
-		}
-   
-   
-   
-		if(DOMHelper.hasElement(spaceAttributes,"rem-user-perm")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"rem-user-perm");
-		    perm = ele.getAttribute("value");
-		    permission.setRemoveUser(Boolean.valueOf(perm));
-		}
+			if(DOMHelper.hasElement(spaceAttributes,"add-benchmark-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"add-benchmark-perm");
+				perm = ele.getAttribute("value");
+				permission.setAddBenchmark(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"add-job-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"add-job-perm");
+				perm = ele.getAttribute("value");
+				permission.setAddJob(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"add-solver-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"add-solver-perm");
+				perm = ele.getAttribute("value");
+				permission.setAddSolver(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"add-space-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"add-space-perm");
+				perm = ele.getAttribute("value");
+				permission.setAddSpace(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"add-user-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"add-user-perm");
+				perm = ele.getAttribute("value");
+				permission.setAddUser(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"rem-benchmark-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"rem-benchmark-perm");
+				perm = ele.getAttribute("value");
+				permission.setRemoveBench(Boolean.valueOf(perm));
+			}
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"rem-job-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"rem-job-perm");
+				perm = ele.getAttribute("value");
+				permission.setRemoveJob(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"rem-solver-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"rem-solver-perm");
+				perm = ele.getAttribute("value");
+				permission.setRemoveSolver(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"rem-space-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"rem-space-perm");
+				perm = ele.getAttribute("value");
+				permission.setRemoveSpace(Boolean.valueOf(perm));
+			}
+	   
+	   
+	   
+			if(DOMHelper.hasElement(spaceAttributes,"rem-user-perm")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"rem-user-perm");
+				perm = ele.getAttribute("value");
+				permission.setRemoveUser(Boolean.valueOf(perm));
+			}
+
    
 		
-		space.setPermission(permission);
+			// Look for a sticky leaders attribute. If it's there, set sticky leaders
+
+			if(DOMHelper.hasElement(spaceAttributes, "sticky-leaders")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"sticky-leaders");
+				Boolean stickyLeaders = Boolean.valueOf(ele.getAttribute("value"));
+				space.setStickyLeaders(stickyLeaders);
+			}
 		
+			
+			// Check for the locked attribute
+
+			if(DOMHelper.hasElement(spaceAttributes, "locked")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"locked");
+				Boolean isLocked = Boolean.valueOf(ele.getAttribute("value"));
+				log.info("locked: " + isLocked);
+				space.setLocked(isLocked);
+			}
+		}
+
 		Random rand=new Random();
 		String baseSpaceName=space.getName();
-		
-		// Look for a sticky leaders attribute. If it's there, set sticky leaders
 
-		if(DOMHelper.hasElement(spaceAttributes, "sticky-leaders")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"sticky-leaders");
-		    Boolean stickyLeaders = Boolean.valueOf(ele.getAttribute("value"));
-		    space.setStickyLeaders(stickyLeaders);
-		}
-	
-		
-		// Check for the locked attribute
 
-		if(DOMHelper.hasElement(spaceAttributes, "locked")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"locked");
-		    Boolean isLocked = Boolean.valueOf(ele.getAttribute("value"));
-		    log.info("locked: " + isLocked);
-		    space.setLocked(isLocked);
-		}
+		space.setPermission(permission);
 		
 		//------------------------------------------------------------------------
 		
 		//Is appending a random number to the name what we want?
 		//Also, this will hang if there are too many spaces with the given name
 		//seems unrealistic to run into that, but just in case, we'll count attempts
+		// TODO Perhaps we should use the timestamp?
 		int attempt=0;
 		while (Spaces.notUniquePrimitiveName(space.getName(), parentId)) {
 			int appendInt=rand.nextInt();
 			space.setName(baseSpaceName+appendInt);
 			if (attempt>1000) {
 				//give up
+				log.error("Could not generate a unique space name.");
+				errorMessage = "Internal error.";	
 				return -1;
+				
 			}
 			attempt++;
 		}
 		Integer spaceId = Spaces.add(space, parentId, userId);
 		
-		// Check for inherit users attribute. If it is true, make the users the same as the parent
-		if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
-		    ele = DOMHelper.getElementByName(spaceAttributes,"inherit-users");
-		    Boolean inheritUsers = Boolean.valueOf(ele.getAttribute("value"));
-		    log.info("inherit = " + inheritUsers);
-		    if(inheritUsers){
-			List<User> users = Spaces.getUsers(parentId);
-			for (User u : users) {
-			    log.debug("users = " + u.getFirstName());
-			    int tempId = u.getId();
-			    Users.associate(tempId, spaceId);
+
+		if (spaceAttributes != null) {
+			// Check for inherit users attribute. If it is true, make the users the same as the parent
+			if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"inherit-users");
+				Boolean inheritUsers = Boolean.valueOf(ele.getAttribute("value"));
+				log.info("inherit = " + inheritUsers);
+				if(inheritUsers){
+					List<User> users = Spaces.getUsers(parentId);
+					for (User u : users) {
+						log.debug("users = " + u.getFirstName());
+						int tempId = u.getId();
+						Users.associate(tempId, spaceId);
+					}
+				}
 			}
-		    }
 		}
 
 		
@@ -743,9 +758,49 @@ public class BatchUtil {
 				    //Grab information and store it into temp structure.
 				    Update u = new Update();
 				    
+				    if (!childElement.hasAttribute("id")) {
+						errorMessage = "An update element is missing the required id attribute.";
+						return -1;
+				    }
 				    u.id = Integer.parseInt(childElement.getAttribute("id"));
+
+				    if (!childElement.hasAttribute("pid")) {
+						errorMessage = ("The update element for benchmark id " + u.id + 
+								" is missing the required pid element.");
+						return -1;
+				    }
 				    u.pid = Integer.parseInt(childElement.getAttribute("pid"));
-				    u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+
+				    if (!childElement.hasAttribute("bid")) {
+						u.bid = R.NO_TYPE_PROC_ID;
+					} else {
+						u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+					}
+
+					// Make sure that a benchmark with the given ID exists.
+					if (!Benchmarks.benchmarkExists(u.id)) {
+						log.debug("User attempted to provide a nonexistent benchmark id " + u.id + " in a space XML Update element.");
+						errorMessage = "A benchmark with id " + u.id + " does not exist.";
+						return -1;
+					}
+
+					// Make sure that an update processor with the given ID exists.
+					if (!Processors.processorExists(u.pid)) {
+						log.debug("User attempted to provide a nonexistent update processor id " + u.pid + " in a space XML Update element.");
+						errorMessage = "An update processor with id " + u.pid + " does not exist.";
+						return -1;
+					}
+
+
+					// Make sure that a benchmark processor with the given ID exists if it was
+					// provided by the user.
+					if (u.bid != R.NO_TYPE_PROC_ID && !Processors.processorExists(u.bid)) {
+						log.debug("User attempted to provide a nonexistent benchmark processor id " + u.bid + " in a space XML Update element.");
+						errorMessage = "A benchmark processor with id " + u.bid + " does not exist.";
+						return -1;
+					}
+
+
 				    u.name = childElement.getAttribute("name");
 				    
 				    NodeList updateChildList = childElement.getChildNodes();
@@ -755,17 +810,18 @@ public class BatchUtil {
 					    Node updateChildNode = updateChildList.item(j);
 					    log.debug(updateChildNode.getNodeType() + " = " + Node.ELEMENT_NODE);
 					    if (updateChildNode.getNodeType() == Node.ELEMENT_NODE){	
-						log.debug("found a new element = "+childNode.toString());
-						Element updateChildElement = (Element)updateChildNode;
-						String updateElementType = updateChildElement.getTagName();
-						log.debug("Element type = " + updateElementType);
-						if (updateElementType.equals("Text")){
-						    log.debug("Found text = " + updateChildElement.getTextContent());
-						    u.text = updateChildElement.getTextContent();
-						}
+							log.debug("found a new Update element = "+childNode.toString());
+							Element updateChildElement = (Element)updateChildNode;
+							String updateElementType = updateChildElement.getTagName();
+							log.debug("Element type = " + updateElementType);
+							if (updateElementType.equals("Text")){
+								log.debug("Found text = " + updateChildElement.getTextContent());
+								u.text = updateChildElement.getTextContent();
+							}
 					    }
-					    
 					}
+
+					log.debug("Adding update " + u);
 				    updates.add(u);
 				}
 				
@@ -788,11 +844,13 @@ public class BatchUtil {
 		{
 		    //Add the updates to the database and system.
 		    updateIds = addUpdates(updates);
+			log.debug("updateIds: " + updateIds);
 		    //assocaite new updates with the space given.
 		    Benchmarks.associate(updateIds, spaceId, statusId);
 		}
 		return spaceId;
 	}
+
 
 
          /**
@@ -804,125 +862,127 @@ public class BatchUtil {
 	 * 
 	 */
     private List<Integer> addUpdates(List<Update> updates)
-        {
-	    //For each update.
-	    List<Integer> updateIds = new ArrayList<Integer>();
-	    for(Update update : updates)
+	{
+		//For each update.
+		List<Integer> updateIds = new ArrayList<Integer>();
+		for(Update update : updates)
 		{
-		    log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
-		    //Get the information out of the update.
-		    Benchmark b = Benchmarks.get(update.id);
-		    Processor up = Processors.get(update.pid);
-		    Processor bp = Processors.get(update.bid);
-		    //Get the files.
-		    File bf = new File(b.getPath());
-		    File upf = new File(up.getFilePath());
-		    File ubp = new File(bp.getFilePath());
-		    List<File> files = new ArrayList<File>();
-		    log.debug("Update name = " + update.name);
-		    log.debug("Update name = empty " + (update.name == ""));
-		    String name = "";
-		    if(update.name == "")
-			name = b.getName();
-		    else
-			name = update.name;
-		    log.debug("name = " + name);
-		    files.add(bf);
-		    files.add(upf);
-		    files.add(ubp);
-		    try
+			log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
+			//Get the information out of the update.
+			Benchmark b = Benchmarks.get(update.id);
+			Processor up = Processors.get(update.pid);
+			Processor bp = Processors.get(update.bid);
+			//Get the files.
+			File bf = new File(b.getPath());
+			File upf = new File(up.getFilePath());
+			File ubp = new File(bp.getFilePath());
+			List<File> files = new ArrayList<File>();
+			log.debug("Update name = " + update.name);
+			log.debug("Update name = empty " + (update.name == ""));
+			String name = "";
+			if(update.name.equals("")) {
+				name = b.getName();
+			} else {
+				name = update.name;
+			}
+			log.debug("name = " + name);
+			files.add(bf);
+			files.add(upf);
+			files.add(ubp);
+			try
 			{
-			    //Place files into sandbox.
-			    File sb = Util.copyFilesToNewSandbox(files);
-			    //Create text file.
-			    File text = new File(sb, "text.txt");
+				//Place files into sandbox.
+				File sb = Util.copyFilesToNewSandbox(files);
+				//Create text file.
+				File text = new File(sb, "text.txt");
 			   
-			    if(!text.exists()){
-				text.createNewFile();
-			    }
-			    //Write text to a file.
-			    String textPath = text.getAbsolutePath();
-			    FileWriter w = new FileWriter(text);
-			    log.debug("Got here writing text to text.txt" + update.text);
-			    w.write(update.text);
-			    w.flush();
+				if(!text.exists()){
+					text.createNewFile();
+				}
+				//Write text to a file.
+				String textPath = text.getAbsolutePath();
+				FileWriter w = new FileWriter(text);
+				log.debug("Got here writing text to text.txt" + update.text);
+				w.write(update.text);
+				w.flush();
 
-			    
-			    String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
-			    File processFile = new File(sb, new File(up.getFilePath()).getName());
-			    //log.debug("Process Path = " + processPath);
-			    String [] procCmd = new String[3];
-			    
-			    //Run proc command on text file and on benchmark given.
-			     
-			    procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
-			    procCmd[1] = textPath;
-			    procCmd[2] = benchPath;
-			    
-			    String message = null;
-			    message = Util.executeSandboxCommand(procCmd, null, processFile);
-			    
-			    if(message != null)
+				
+				String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
+				File processFile = new File(sb, new File(up.getFilePath()).getName());
+				//log.debug("Process Path = " + processPath);
+				String [] procCmd = new String[3];
+				
+				//Run proc command on text file and on benchmark given.
+				 
+				procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
+				procCmd[1] = textPath;
+				procCmd[2] = benchPath;
+				
+				String message = null;
+				message = Util.executeSandboxCommand(procCmd, null, processFile);
+				
+				if(message != null)
 				{
-				    errorMessage = message;
-				    log.warn("User script generated following message " + message);
+					errorMessage = message;
+					log.warn("User script generated following message " + message);
 				}
 
-			    //Upload the new benchmark created by the command to the system.
-			    File outputFile = new File(processFile, "output");
-			    if(!outputFile.exists()){
-				errorMessage = "Output file failed to create";
-				log.error("Update Processor failed to create an output");
-			    }
+				//Upload the new benchmark created by the command to the system.
+				File outputFile = new File(processFile, "output");
+				if(!outputFile.exists()){
+					errorMessage = "Output file failed to create";
+					log.error("Update Processor failed to create an output");
+				}
 
-			    
+				log.debug("outputFile contents: %n"  + FileUtils.readFileToString(outputFile));
+
+				
 			   
 
-			    //Rename the the output file to correct name
+				//Rename the the output file to correct name
 
-			    
+				
 
-			    File newSb = Util.getRandomSandboxDirectory();
-			    File renamedFile = new File(newSb, name);
+				File newSb = Util.getRandomSandboxDirectory();
+				File renamedFile = new File(newSb, name);
 
-			    String [] renameCmd = new String[3];
-			    renameCmd[0] = "mv";
-			    renameCmd[1] = outputFile.getAbsolutePath();
-			    renameCmd[2] = renamedFile.getAbsolutePath();
+				log.debug("Renamed file: " + renamedFile.getAbsolutePath());
+				log.debug("Output file: " + outputFile.getAbsolutePath());
 
-			    Util.executeSandboxCommand(renameCmd, null, newSb);
+				String [] renameCmd = new String[3];
+				renameCmd[0] = "mv";
+				renameCmd[1] = outputFile.getAbsolutePath();
+				renameCmd[2] = renamedFile.getAbsolutePath();
 
-			    if(!renamedFile.exists()){
-				errorMessage = "Renamed file failed to created";
-				log.error("Failed renaming output file");
-			    }
+				Util.executeSandboxCommand(renameCmd, null, newSb);
 
-			   
-			    
-			    
+				if(!renamedFile.exists()){
+					errorMessage = "Renamed file failed to created";
+					log.error("Failed renaming output file");
+				}
 
-			    
-			    int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
+				
+				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
 										   b.isDownloadable());
 
-			    FileUtils.deleteQuietly(newSb);
-			    FileUtils.deleteQuietly(sb);
-			    FileUtils.deleteQuietly(renamedFile);
-			    
-			    updateIds.add(newBenchID);
+				FileUtils.deleteQuietly(newSb);
+				FileUtils.deleteQuietly(sb);
+				FileUtils.deleteQuietly(renamedFile);
+				
+				updateIds.add(newBenchID);
 			  
-			    
+				
 			}
-		    catch(IOException e)
+			catch(IOException e)
 			{
-			    errorMessage = "Creating Updated Benchmarks Failed";
-			    log.warn("Sandbox creation failed: "+e.toString(), e);
+				errorMessage = "Creating Updated Benchmarks Failed";
+				log.warn("Sandbox creation failed: "+e.toString(), e);
 			}
 			
 		}
-	    
-	    return updateIds;
-        }
+	
+		return updateIds;
+	}
 	/**
 	 * @return doc the document object
 	 */
@@ -964,12 +1024,14 @@ public class BatchUtil {
        Basic struct class to store all the id's needed for an update.
      */
     private class Update {
-	public String name = "";
-	public int id; //Benchmark ID
-	public int pid; //Processor ID
-	public int bid; //Benchmark Processor ID
-	public String text;
+		public String name = "";
+		public int id; //Benchmark ID
+		public int pid; //Processor ID
+		public int bid; //Benchmark Processor ID
+		public String text;
+		public String toString() {
+			return String.format("(name: %s, id: %d, pid: %d, bid: %d, text: %s)",
+					name, id, pid, bid, text);
+		}
     }
-	
-	
 }

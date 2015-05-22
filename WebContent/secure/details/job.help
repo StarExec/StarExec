@@ -25,11 +25,7 @@ a tool tip description.
 <p>If the job pair was run successfully, you will have the option to view its 
 output. Click the output list to have the job pair's combined stdout/stderr 
 contents displayed in the browser. 
-<!--This preview shows at most 100 lines of output. 
-To get the full output, select the popout button.  
--->
 </p>
-
 
 <h2>Downloading job info</h2>
 

@@ -1,0 +1,2 @@
+ALTER TABLE logins DROP FOREIGN KEY logins_user_id;
+ALTER TABLE logins ADD CONSTRAINT logins_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;

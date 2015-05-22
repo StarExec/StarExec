@@ -14,10 +14,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.util.SessionUtil;
@@ -38,6 +42,8 @@ public class AddSpace extends HttpServlet {
 	private static final String description = "desc";
 	private static final String locked = "locked";	
 	private static final String users = "users";
+	private static final String solvers = "solvers";
+	private static final String benchmarks = "benchmarks";
 	private static final String addSolver = "addSolver";
 	private static final String addBench = "addBench";
 	private static final String addUser = "addUser";
@@ -103,9 +109,9 @@ public class AddSpace extends HttpServlet {
 		int newSpaceId = Spaces.add(s, spaceId, userId);
 		
 		//Inherit Users
-		boolean inherit = Boolean.parseBoolean((String)request.getParameter(users));
-		log.debug("inherit = " + inherit);
-		if (inherit) {
+		boolean inheritUsers = Boolean.parseBoolean((String)request.getParameter(users));
+		log.debug("inheritUsers = " + inheritUsers);
+		if (inheritUsers) {
 			log.debug("Adding inherited users");
 			List<User> users = Spaces.getUsers(spaceId);
 			log.debug("parent users = " + users);
@@ -115,6 +121,35 @@ public class AddSpace extends HttpServlet {
 				Users.associate(tempId, newSpaceId);
 			}
 		}
+
+		boolean inheritSolvers = Boolean.parseBoolean((String)request.getParameter(solvers));
+		log.debug("inheritSolvers = " + inheritSolvers);
+		if (inheritSolvers) {
+			log.debug("Adding inherited solvers");
+			List<Solver> solvers = Solvers.getBySpace(spaceId);
+			log.debug("parent solvers = " + solvers);
+			log.debug("parent solvers size = " + solvers.size());
+			for (Solver solver : solvers) {
+				log.debug("solvers = " + solver.getName());
+				Solvers.associate(solver.getId(), newSpaceId);
+			}
+		}
+
+		boolean inheritBenchmarks = Boolean.parseBoolean((String)request.getParameter(benchmarks));
+		log.debug("inheritBenchmarks = " + inheritBenchmarks);
+		if (inheritBenchmarks) {
+			log.debug("Adding inherited benchmarks");
+			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+			log.debug("parent benchmarks = " + benchmarks);
+			log.debug("parent benchmarks size = " + benchmarks.size());
+			for (Benchmark benchmark : benchmarks) {
+				log.debug("benchmarks = " + benchmark.getName());
+				Benchmarks.associate(benchmark.getId(), newSpaceId);
+			}
+		}
+		
+
+
 		//adds sticky users from ancestor spaces
 		log.debug("adding leaders from parent spaces");
 		Set<Integer> users=Spaces.getStickyLeaders(newSpaceId);

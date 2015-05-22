@@ -43,6 +43,7 @@
 			<input id="className" type="text"/>
 			<button id="applyAll">Apply Level</button>	
 			<button id="applyToClass">Apply Level to Class</button>
+			<button id="applyToClassAllOthersOff">Apply Level to Class And Turn Off All Other Classes</button>
 		</fieldset>		
 	
 </star:template>

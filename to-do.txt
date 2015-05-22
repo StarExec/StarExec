@@ -1,3 +1,45 @@
+Bugs:
+
+-- The "all" and "none" buttons do not work for benchmarks when creating
+   a job using the "choose" and then "choose in X" options (where X is the
+   space).
+
+-- Dragging benchmarks to the recycle bin in the space explorer should
+   ask if you want to remove them from the space or recycle them.
+
+-- We are seeing a failure of a sudo chmod (to change permissions), in
+   the SGE epilog for when a job script completes.  Part of a sample
+   log file showing this is:
+
+tomcat
+05/19/15 11:27:03 AM CDT: trying to find sandbox for pair ID = 2154122
+05/19/15 11:27:03 AM CDT: sandbox 1 contents:
+2154122
+05/19/15 11:27:03 AM CDT: sandbox 2 contents:
+2154063
+05/19/15 11:27:03 AM CDT: found that the sandbox is 1 for job 2154122
+05/19/15 11:27:03 AM CDT: set start time for pair id = 91980720
+05/19/15 11:27:03 AM CDT: cleaning execution host workspace...
+chmod: changing permissions of `/export/starexec/sandbox': Operation not permitted
+chmod: changing permissions of `/export/starexec/sandbox': Operation not permitted
+
+----------------------------------------------------------------------
+Making StarExec more robust:
+
+-- Check that the quick job feature is still working when logged in
+   as guest (I saw an exception in the log file).
+
+----------------------------------------------------------------------
+Features:
+
+-- add an option to job creation to suppress the timestamps produced
+   by runsolver.  Geoff says it should just be a matter of calling
+   runsolver without the --timestamp flag.
+
+-- matrix view of jobs
+----------------------------------------------------------------------
+Error reporting
+
 -- better error message when uploading a solver containing symbolic links.
 
 -- better error message when a benchmark processor fails to run (e.g., due
@@ -5,3 +47,9 @@
 
 -- better error message when uploading job XML, when the archive contains
    a directory rather than just a single XML file.
+----------------------------------------------------------------------
+Debugging by StarExec team:
+
+-- add a developer role that allows read-only access to all of StarExec,
+   but no admin functions.  This will help us in trying to investigate
+   reported problems on StarExec.

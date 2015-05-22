@@ -19,12 +19,17 @@ function initUI(){
 			primary: "ui-icon-check"
 		}
 	});
+	$("#applyToClassAllOthersOff").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
 
 	
 	$("#applyAll").click(function() {
-		value=getSelectedRow(levelTable);
+		value=getSelectedRowValue(levelTable);
 		$.post(
-				starexecRoot+"services/logging/"+value[0],
+				starexecRoot+"services/logging/"+value,
 				{},
 				function(returnCode) {
 					parseReturnCode(returnCode);
@@ -35,9 +40,21 @@ function initUI(){
 	});
 	
 	$("#applyToClass").click(function() {
-		value=getSelectedRow(levelTable);
+		value=getSelectedRowValue(levelTable);
 		$.post(
-			starexecRoot+"services/logging/"+value[0]+"/"+$("#className").val(),
+			starexecRoot+"services/logging/"+value+"/"+$("#className").val(),
+			{},
+			function(returnCode) {
+				parseReturnCode(returnCode);
+
+			},
+			"json"
+		);
+	});
+	$("#applyToClassAllOthersOff").click(function() {
+		value=getSelectedRowValue(levelTable);
+		$.post(
+			starexecRoot+"services/logging/allOffExcept/"+value+"/"+$("#className").val(),
 			{},
 			function(returnCode) {
 				parseReturnCode(returnCode);
@@ -66,22 +83,9 @@ function initUI(){
 
 }
 
-
-/**
- * For a given dataTable, this extracts the id's of the rows that have been
- * selected by the user
- * 
- * @param dataTable the particular dataTable to extract the id's from
- * @returns {Array} list of id values for the selected rows
- * @author Todd Elvers
- */
-function getSelectedRow(dataTable){
-	var valArray = new Array();
-	var rows = $(dataTable).children('tbody').children('tr.row_selected');
-	$.each(rows, function(i, row) {
-		valArray.push($(this).attr("value"));
-	});
-	return valArray;
+function getSelectedRowValue() {
+	console.log($('.row_selected').attr('value'));
+	return $('.row_selected').attr('value');
 }
 
 function unselectAllRows(dataTable) {

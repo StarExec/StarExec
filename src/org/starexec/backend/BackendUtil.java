@@ -82,13 +82,13 @@ public class BackendUtil{
 		@Override
 		    public void run() {
 		    try {
-				if (drainInputStream(b,p.getErrorStream()))
-					
-				    log.error("The process produced stderr output.");
-					log.error(b.toString());
-			    }
+			if (drainInputStream(b,p.getErrorStream())) {
+			    log.error("The process produced stderr output (suppressed).");
+			    //log.error(b.toString());
+			}
+		    }
 		    catch(Exception e) {
-				log.error("Error draining stderr from process: "+e.toString());
+			log.error("Error draining stderr from process: "+e.toString());
 		    }
 		}
 	    });

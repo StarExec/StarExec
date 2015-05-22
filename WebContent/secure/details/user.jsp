@@ -18,6 +18,7 @@
 		if(t_user != null) {
 			request.setAttribute("t_user", t_user);
 			request.setAttribute("userId", id);
+			request.setAttribute("communitiesUserIsIn", Communities.getAllCommunitiesUserIsIn(id));
 			boolean owner = true;
 			String userFullName = t_user.getFullName();
 			request.setAttribute("sites", Websites.getAllForHTML(id, WebsiteType.USER));
@@ -108,6 +109,23 @@
 			</tr>
 		</table>
 	</fieldset>	
+	<fieldset>
+		<legend>communities</legend>
+		<table id="member of communities" class="shaded">
+			<thead>
+				<tr>
+					<th>communites</th>
+				</tr>
+			</thead>
+			<tbody>
+				<c:forEach var="community" items="${communitiesUserIsIn}">
+				<tr>
+					<td class="community">${community.getName()}</td>
+				</tr>
+				</c:forEach>
+			</tbody>			
+		</table>
+	</fieldset>
 	<c:if test="${owner}">
 		<fieldset>
 			<legend>user disk quota</legend>

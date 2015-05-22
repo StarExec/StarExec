@@ -1381,12 +1381,13 @@ public class Connection {
 	 * @param ids The IDs of the primitives to link
 	 * @param oldSpaceId A space where the primitives currently reside, or null if there is no old space
 	 * @param newSpaceID The ID of the space to put all the primitives in
-	 * @param hierarchy (only for solvers) True if linking the primitives to each space in a hierarchy (only 1 new prim is created per ID)
+	 * @param hierarchy (only for solvers and users) True if linking the primitives to each space in a hierarchy (only 1 new prim is created per ID)
 	 * @param type The type of the primitives
 	 * @return 0 on success or a negative error code on failure
 	 */
 	
 	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
+
 		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, type).get(0);
 	}
 	
