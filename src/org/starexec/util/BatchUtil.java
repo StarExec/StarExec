@@ -486,6 +486,12 @@ public class BatchUtil {
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
 				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId,statusId);
+
+				// Check if an error occured in createSpaceFromElement
+				if (spaceId == -1) {
+					return null;
+				}
+
 				spaceIds.add(spaceId);
 				spaceCounter++;
 				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
@@ -682,13 +688,17 @@ public class BatchUtil {
 		//Is appending a random number to the name what we want?
 		//Also, this will hang if there are too many spaces with the given name
 		//seems unrealistic to run into that, but just in case, we'll count attempts
+		// TODO Perhaps we should use the timestamp?
 		int attempt=0;
 		while (Spaces.notUniquePrimitiveName(space.getName(), parentId)) {
 			int appendInt=rand.nextInt();
 			space.setName(baseSpaceName+appendInt);
 			if (attempt>1000) {
 				//give up
+				log.error("Could not generate a unique space name.");
+				errorMessage = "Internal error.";	
 				return -1;
+				
 			}
 			attempt++;
 		}
@@ -767,6 +777,30 @@ public class BatchUtil {
 						u.bid = Integer.parseInt(childElement.getAttribute("bid"));
 					}
 
+					// Make sure that a benchmark with the given ID exists.
+					if (!Benchmarks.benchmarkExists(u.id)) {
+						log.debug("User attempted to provide a nonexistent benchmark id " + u.id + " in a space XML Update element.");
+						errorMessage = "A benchmark with id " + u.id + " does not exist.";
+						return -1;
+					}
+
+					// Make sure that an update processor with the given ID exists.
+					if (!Processors.processorExists(u.pid)) {
+						log.debug("User attempted to provide a nonexistent update processor id " + u.pid + " in a space XML Update element.");
+						errorMessage = "An update processor with id " + u.pid + " does not exist.";
+						return -1;
+					}
+
+
+					// Make sure that a benchmark processor with the given ID exists if it was
+					// provided by the user.
+					if (u.bid != R.NO_TYPE_PROC_ID && !Processors.processorExists(u.bid)) {
+						log.debug("User attempted to provide a nonexistent benchmark processor id " + u.bid + " in a space XML Update element.");
+						errorMessage = "A benchmark processor with id " + u.bid + " does not exist.";
+						return -1;
+					}
+
+
 				    u.name = childElement.getAttribute("name");
 				    
 				    NodeList updateChildList = childElement.getChildNodes();
@@ -816,6 +850,7 @@ public class BatchUtil {
 		}
 		return spaceId;
 	}
+
 
 
          /**

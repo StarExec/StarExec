@@ -2100,6 +2100,17 @@ public class Benchmarks {
 		}
 		return false;
 	}
+
+	/**
+	 * Makes sure that a benchmark with the gived id exists.
+	 * @param benchmarkId The id of a benchmark.
+	 * @return true if the benchmark exists, otherwise false.
+	 * @author Albert Giegerich
+	 */
+	public static boolean benchmarkExists(int benchmarkId) {
+		Benchmark benchmark = Benchmarks.get(benchmarkId);
+		return (benchmark != null);
+	}	
 	
 	
 

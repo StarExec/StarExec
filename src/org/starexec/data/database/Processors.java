@@ -308,6 +308,18 @@ public class Processors {
 		
 		return false;
 	}
+
+	/**
+	 * Makes sure that a processor with the given id exists.
+	 * @param processorId The id of a processor.
+	 * @return true if the the processor exists, otherwise false.
+	 * @author Albert Giegerich
+	 */
+	public static boolean processorExists(int processorId) {
+		Processor processor = Processors.get(processorId);
+		return (processor != null);
+	}
+
 	
 	/**
 	 * Updates the file path of a processor with the given processor id
