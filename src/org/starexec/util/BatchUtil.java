@@ -869,14 +869,13 @@ public class BatchUtil {
 		if (!updates.isEmpty())
 		{
 		    //Add the updates to the database and system.
-		    updateIds = addUpdates(updates);
+		    updateIds = addUpdates(updates, statusId);
 			log.debug("updateIds: " + updateIds);
 		    //assocaite new updates with the space given.
 		    Benchmarks.associate(updateIds, spaceId, statusId);
 		}
 		return spaceId;
 	}
-
 
 
          /**
@@ -887,7 +886,7 @@ public class BatchUtil {
 	 * @return List of new benchmark ID's corresponding to the updates.
 	 * 
 	 */
-    private List<Integer> addUpdates(List<Update> updates)
+    private List<Integer> addUpdates(List<Update> updates, Integer statusId)
 	{
 		//For each update.
 		List<Integer> updateIds = new ArrayList<Integer>();
@@ -988,14 +987,22 @@ public class BatchUtil {
 				}
 
 				
-				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
-										   b.isDownloadable());
+				// Set the benchmark processor of the benchmark to the bid attribute of the Update element.
+				int benchmarkProcessorId = bp.getId();
+				log.debug("addUpdates - Benchmark processor ID of original benchmark: " + b.getType().getId());
+				log.debug("addUpdates - Benchmark processor ID of updated benchmark: " + benchmarkProcessorId);
+				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), benchmarkProcessorId,
+										   b.isDownloadable(), statusId);
+				
 
 				FileUtils.deleteQuietly(newSb);
 				FileUtils.deleteQuietly(sb);
 				FileUtils.deleteQuietly(renamedFile);
 				
-				updateIds.add(newBenchID);
+				if (newBenchID != -1) {
+					// An error occurred, such as the benchmark was not valid
+					updateIds.add(newBenchID);
+				}
 			  
 				
 			}

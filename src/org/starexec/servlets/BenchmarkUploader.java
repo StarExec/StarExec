@@ -168,7 +168,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @return The ID of the newly created benchmark
 	 */
     public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId,
-					    boolean downloadable)
+					    boolean downloadable, Integer statusId)
         {
 			try {
 				File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
@@ -184,9 +184,13 @@ public class BenchmarkUploader extends HttpServlet {
 				log.debug("found this many benchmarks to add from text "+bench.size());
 				//add the benchmark to the database, but don't put it in any spaces
 					
-				List<Integer> benchIds = Benchmarks.add(bench, null, null);
+				List<Integer> benchIds = Benchmarks.add(bench, null, statusId);
 
-				return benchIds.get(0);
+				if (benchIds != null) {
+					return benchIds.get(0);
+				} else {
+					return -1;
+				}
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
 			}
