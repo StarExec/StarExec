@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -474,8 +475,14 @@ public class BatchUtil {
 			}
 		}
 		//Verify user has access to benchmarks and update benchmarks.
-		if(!verifyBenchmarks(listOfBenchmarks, userId)) return null;
-		if(!verifyBenchmarks(listOfUpdates,userId)) return null;
+		if (!verifyBenchmarks(listOfBenchmarks, userId)) {
+			errorMessage = "You do not have access one of the input benchmarks.";
+		   	return null;
+		}
+		if (!verifyBenchmarks(listOfUpdates,userId)) { 
+			errorMessage = "You do not have access to one of the update benchmarks.";
+			return null;
+		}
 
 		//Create Space Hierarchies as children of parent space	
 		this.spaceCreationSuccess = true;
@@ -485,6 +492,7 @@ public class BatchUtil {
 			Node spaceNode = listOfRootSpaceElements.item(i);
 			if (spaceNode.getNodeType() == Node.ELEMENT_NODE){
 				Element spaceElement = (Element)spaceNode;
+				
 				int spaceId=createSpaceFromElement(spaceElement, parentSpaceId, userId,statusId);
 
 				// Check if an error occured in createSpaceFromElement
@@ -702,27 +710,14 @@ public class BatchUtil {
 			}
 			attempt++;
 		}
-		Integer spaceId = Spaces.add(space, parentId, userId);
-		
-
-		if (spaceAttributes != null) {
-			// Check for inherit users attribute. If it is true, make the users the same as the parent
-			if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
-				ele = DOMHelper.getElementByName(spaceAttributes,"inherit-users");
-				Boolean inheritUsers = Boolean.valueOf(ele.getAttribute("value"));
-				log.info("inherit = " + inheritUsers);
-				if(inheritUsers){
-					List<User> users = Spaces.getUsers(parentId);
-					for (User u : users) {
-						log.debug("users = " + u.getFirstName());
-						int tempId = u.getId();
-						Users.associate(tempId, spaceId);
-					}
-				}
-			}
-		}
 
 		
+
+
+		
+		// Space elements that are children of spaceElement
+		List<Element> childSpaces = new LinkedList<Element>();
+
 		List<Integer> benchmarks = new ArrayList<Integer>();
 		List<Integer> solvers = new ArrayList<Integer>();
 		List<Update> updates = new ArrayList<Update>();
@@ -751,8 +746,8 @@ public class BatchUtil {
 					
 				}
 				else if (elementType.equals("Space")){
-					createSpaceFromElement(childElement, spaceId, userId,statusId);
-					Uploads.incrementXMLCompletedSpaces(statusId, 1);
+					childSpaces.add(childElement);
+					
 				}
 				else if(elementType.equals("Update")){
 				    //Grab information and store it into temp structure.
@@ -832,6 +827,37 @@ public class BatchUtil {
 			}
 		}
 		
+
+
+		Integer spaceId = Spaces.add(space, parentId, userId);
+
+		for (Element childSpaceElement : childSpaces) {
+			int errorCode = createSpaceFromElement(childSpaceElement, spaceId, userId,statusId);
+			// If the recursive call returns an error code pass the error on.
+			if (errorCode == -1) {
+				return -1;
+			}
+			Uploads.incrementXMLCompletedSpaces(statusId, 1);
+		}
+
+		if (spaceAttributes != null) {
+			// Check for inherit users attribute. If it is true, make the users the same as the parent
+			if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
+				ele = DOMHelper.getElementByName(spaceAttributes,"inherit-users");
+				Boolean inheritUsers = Boolean.valueOf(ele.getAttribute("value"));
+				log.info("inherit = " + inheritUsers);
+				if(inheritUsers){
+					List<User> users = Spaces.getUsers(parentId);
+					for (User u : users) {
+						log.debug("users = " + u.getFirstName());
+						int tempId = u.getId();
+						Users.associate(tempId, spaceId);
+					}
+				}
+			}
+		}
+		
+
 		if (!benchmarks.isEmpty()){
 			Benchmarks.associate(benchmarks, spaceId,statusId);
 		}
@@ -843,14 +869,13 @@ public class BatchUtil {
 		if (!updates.isEmpty())
 		{
 		    //Add the updates to the database and system.
-		    updateIds = addUpdates(updates);
+		    updateIds = addUpdates(updates, statusId);
 			log.debug("updateIds: " + updateIds);
 		    //assocaite new updates with the space given.
 		    Benchmarks.associate(updateIds, spaceId, statusId);
 		}
 		return spaceId;
 	}
-
 
 
          /**
@@ -861,7 +886,7 @@ public class BatchUtil {
 	 * @return List of new benchmark ID's corresponding to the updates.
 	 * 
 	 */
-    private List<Integer> addUpdates(List<Update> updates)
+    private List<Integer> addUpdates(List<Update> updates, Integer statusId)
 	{
 		//For each update.
 		List<Integer> updateIds = new ArrayList<Integer>();
@@ -962,14 +987,22 @@ public class BatchUtil {
 				}
 
 				
-				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), b.getType().getId(),
-										   b.isDownloadable());
+				// Set the benchmark processor of the benchmark to the bid attribute of the Update element.
+				int benchmarkProcessorId = bp.getId();
+				log.debug("addUpdates - Benchmark processor ID of original benchmark: " + b.getType().getId());
+				log.debug("addUpdates - Benchmark processor ID of updated benchmark: " + benchmarkProcessorId);
+				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), benchmarkProcessorId,
+										   b.isDownloadable(), statusId);
+				
 
 				FileUtils.deleteQuietly(newSb);
 				FileUtils.deleteQuietly(sb);
 				FileUtils.deleteQuietly(renamedFile);
 				
-				updateIds.add(newBenchID);
+				if (newBenchID != -1) {
+					// An error occurred, such as the benchmark was not valid
+					updateIds.add(newBenchID);
+				}
 			  
 				
 			}

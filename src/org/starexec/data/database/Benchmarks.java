@@ -90,6 +90,7 @@ public class Benchmarks {
 	    }
 	} else {
 	    log.debug("Add called on invalid benchmark, no additions will be made to the database");
+		Uploads.setXMLErrorMessage(statusId, "Benchmark validation failed for benchmark " + benchmark.getName() + ".");
 	}
 	return -1;
     }
@@ -270,7 +271,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 */
 	public static List<Integer> add(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) {
-		log.info("adding list of benchmarks to space " + spaceId);
+		log.info("add - adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
 		{
@@ -282,7 +283,7 @@ public class Benchmarks {
 				log.info(benchmarks.size() + " benchmarks being added to space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
-				log.debug("found the following processor ID for the new benchmark " +p.getId());
+				log.debug("add - found the following processor ID for the new benchmark " +p.getId());
 				Common.endTransaction(con);
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				//We do not actually do any processing if it is the no-type, as it is not necessary 
