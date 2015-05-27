@@ -248,7 +248,12 @@ public class ArchiveUtil {
 
 				/* by default, tar applies (supposedly) the user's umask when setting
 				   permissions for extracted files.  So we do not need to do anything
-				   further with that. */
+				   further with that.  
+
+				   This does mean that the default umask for tomcat should allow
+				   group read and execute permissions for files, because elsewhere,
+				   we try to copy these files as the sandbox user, and hence need
+				   to be able to read them.*/
 				String[] tarCmd = new String[5];
 				tarCmd[0] = "tar";
 				tarCmd[1] = "-xf";
