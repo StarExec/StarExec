@@ -265,6 +265,11 @@ public class ArchiveUtil {
 				log.debug("command was executed, results = " + results);
 				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
+
+				// now chmod the directory so sandbox can access it
+
+				Util.chmodDirectory(destination,true);
+
 				lsCmd[2] = destination;
 				results = Util.executeCommand(lsCmd);
 				log.debug("command was executed - ls -l destination results = " + results);

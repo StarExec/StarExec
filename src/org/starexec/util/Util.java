@@ -845,6 +845,21 @@ public class Util {
 		}
     }
     
+    public static void chmodDirectory(String dir,boolean group) throws IOException {
+	String[] chmod=new String[4];
+	chmod[0]="chmod";
+	chmod[1]="-R";
+	if (group) {
+	    chmod[2]="g+rwx";	
+
+	} else {
+	    chmod[2]="u+rwx";	
+
+	}
+	chmod[3]=dir;
+	Util.executeCommand(chmod);
+    }
+
     /**
      * Copies all of the given files to a single, newly created sandbox directory
      * and returns the sandbox directory. The sandbox user will be the owner and

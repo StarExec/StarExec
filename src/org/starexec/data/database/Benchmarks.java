@@ -768,6 +768,7 @@ public class Benchmarks {
 				// Load results into a properties file
 				Properties prop = new Properties();
 				prop.load(new StringReader(propstr));							
+				log.debug("read this string from the processor: " + propstr);
 				log.debug("read "+prop.size()+" properties");
 
 				// Attach the attributes to the benchmark
