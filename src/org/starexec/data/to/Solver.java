@@ -15,7 +15,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Solver extends Identifiable implements Iterable<Configuration> {
+public class Solver extends Identifiable implements Iterable<Configuration>, Nameable{
 	
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)

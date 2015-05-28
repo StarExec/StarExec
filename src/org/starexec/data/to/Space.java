@@ -14,7 +14,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Space extends Identifiable implements Iterable<Space> {	
+public class Space extends Identifiable implements Iterable<Space>, Nameable {	
 	@Expose	private String name;
 	@Expose private String description = "no description";
 	private boolean locked;

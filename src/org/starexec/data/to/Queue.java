@@ -11,7 +11,7 @@ import com.google.gson.annotations.Expose;
  * Represents an SGE queue which has a collection of worker nodes that belong to it
  * @author Tyler Jensen
  */
-public class Queue extends Identifiable implements Iterable<WorkerNode> {
+public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameable{
 	@Expose private String name;
 	@Expose private String status;
 	@Expose private int slotsUsed;

@@ -4,7 +4,7 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 
 import com.google.gson.annotations.Expose;
 
-public class Website extends Identifiable {
+public class Website extends Identifiable implements Nameable {
 	
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)

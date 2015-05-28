@@ -13,7 +13,7 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
  *
  */
 
-public class SolverPipeline extends Identifiable {
+public class SolverPipeline extends Identifiable implements Nameable {
 	private int userId;
 	private String name;
 	private List<PipelineStage> stages=null;

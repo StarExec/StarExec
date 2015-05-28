@@ -1,6 +1,6 @@
 package org.starexec.data.to;
 
-public class JobSpace extends Identifiable {
+public class JobSpace extends Identifiable implements Nameable{
 	private String name;
 	private Integer parentSpace;
 	private Integer maxStages;
