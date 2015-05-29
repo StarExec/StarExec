@@ -565,7 +565,7 @@ public class BatchUtil {
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
 		
-		Element spaceAttributes = DOMHelper.getElementByName(spaceElement, "SpaceAttributes");
+		Element spaceAttributes = DOMHelper.getChildElementByName(spaceElement, "SpaceAttributes");
 
 		log.info("SpaceAttributes element created");
 		log.debug("spaceAttributes: " + spaceAttributes);

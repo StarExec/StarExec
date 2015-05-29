@@ -43,7 +43,7 @@ public class DOMHelper{
      * are no such descendants, returns null
      *@param e the parent element
      *@param name the element name
-     *@return The child element with the given name.
+     *@return The descendant element with the given name.
      *@author Julio Cervantes
      **/
     public static Element getElementByName(Element e, String name){
@@ -53,8 +53,31 @@ public class DOMHelper{
     	return null;
     }
 
+	/**
+	 * Helper function, gets the first child Element of another Element that has a given tagname.
+	 * If there are no child elements with the given tag name returns null.
+	 * @param e the parent element
+	 * @param name the element name
+	 * @return The child element with the given name.
+	 * @author Albert Giegerich
+	 */
+	public static Element getChildElementByName(Element e, String name) {
+		NodeList childNodes = e.getChildNodes();
+		for (int i = 0; i < childNodes.getLength(); i++) {
+			Node child = childNodes.item(i);
+			if (child instanceof Element) {
+				Element childElement = (Element)child;
+				if (childElement.getTagName().equals(name)) {
+					return childElement;
+				}
+			}	
+		}
+		return null;
+	}
+
     public static boolean hasElement(Element e, String name){
     	return (e.getElementsByTagName(name).getLength() > 0);
     }
+
 
 }
