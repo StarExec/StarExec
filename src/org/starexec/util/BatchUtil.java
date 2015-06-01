@@ -831,15 +831,6 @@ public class BatchUtil {
 
 		Integer spaceId = Spaces.add(space, parentId, userId);
 
-		for (Element childSpaceElement : childSpaces) {
-			int errorCode = createSpaceFromElement(childSpaceElement, spaceId, userId,statusId);
-			// If the recursive call returns an error code pass the error on.
-			if (errorCode == -1) {
-				return -1;
-			}
-			Uploads.incrementXMLCompletedSpaces(statusId, 1);
-		}
-
 		if (spaceAttributes != null) {
 			// Check for inherit users attribute. If it is true, make the users the same as the parent
 			if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
@@ -856,6 +847,16 @@ public class BatchUtil {
 				}
 			}
 		}
+
+		for (Element childSpaceElement : childSpaces) {
+			int errorCode = createSpaceFromElement(childSpaceElement, spaceId, userId,statusId);
+			// If the recursive call returns an error code pass the error on.
+			if (errorCode == -1) {
+				return -1;
+			}
+			Uploads.incrementXMLCompletedSpaces(statusId, 1);
+		}
+
 		
 
 		if (!benchmarks.isEmpty()){
