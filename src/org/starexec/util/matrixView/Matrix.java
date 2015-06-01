@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -25,9 +26,13 @@ import org.starexec.data.to.compare.NameableComparators;
  * @author Albert Giegerich
  */
 public class Matrix {
+
 	private ArrayList<String> rowHeaders;
 	private ArrayList<String> columnHeaders;
 	private ArrayList<ArrayList<MatrixElement>> matrix;
+
+	private static final Logger log = Logger.getLogger(Matrix.class);
+
 
 
 	// for testing purposes
@@ -67,8 +72,8 @@ public class Matrix {
 		Set<Pair<Solver, Benchmark>> keys = solverBenchmarkToMatrixElementMap.keySet();
 
 		// Build a set of each unique solver and a set of each unique benchmark.
-		Set<Solver> uniqueSolvers = new HashSet();
-		Set<Benchmark> uniqueBenchmarks = new HashSet();
+		Set<Solver> uniqueSolvers = new HashSet<Solver>();
+		Set<Benchmark> uniqueBenchmarks = new HashSet<Benchmark>();
 		for (Pair<Solver, Benchmark> solverBenchmark : keys) {
 			uniqueSolvers.add(solverBenchmark.getLeft());
 			uniqueBenchmarks.add(solverBenchmark.getRight());
@@ -84,7 +89,6 @@ public class Matrix {
 		Benchmark[] uniqueBenchmarkArray = uniqueBenchmarks.toArray(new Benchmark[0]);
 		ArrayList<Benchmark> orderedUniqueBenchmarks = new ArrayList<Benchmark>(Arrays.asList(uniqueBenchmarkArray));
 		Collections.sort(orderedUniqueBenchmarks, NameableComparators.caseInsensitiveAlphabeticalComparator()); 
-
 
 		initializeMatrixFields();
 
@@ -121,7 +125,9 @@ public class Matrix {
 			Solver solver = solvers.get(i);
 			for (int j = 0; j < benchmarks.size(); j++) {
 				Benchmark benchmark = benchmarks.get(j);
-				Pair<Solver, Benchmark> solverBenchmark = new ImmutablePair(solver, benchmark);
+				Pair<Solver, Benchmark> solverBenchmark = new ImmutablePair<Solver, Benchmark>(solver, benchmark);
+				// Add a new MatrixElement to the Matrix if there is data in the map related to the current
+				// solver-benchmark pair.
 				if (solverBenchmarkToMatrixElementMap.containsKey(solverBenchmark)) {
 					currentRow.add(solverBenchmarkToMatrixElementMap.get(solverBenchmark));
 				} else {
@@ -156,6 +162,7 @@ public class Matrix {
 	 */
 	public static Matrix buildMatrixFromJob(Job job) {
 		List<JobPair> jobPairs = job.getJobPairs();
+		log.debug("(buildMatrixFromJob) - number of job pairs in job input: " + jobPairs.size());
 		// Build a mapping of solver-benchmarks pairs to MatrixElement data so we can quickly retrieve the
 		// data when we need to fill the Matrix.
 		HashMap<Pair<Solver, Benchmark>, MatrixElement> pairToDataMap = buildPairToDataMap(jobPairs);
