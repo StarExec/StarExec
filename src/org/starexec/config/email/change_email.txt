@@ -2,10 +2,10 @@ Greetings,
 
 This is an automatically generated email from the Starexec team.
 
-A user has requested to change their account email to this email address.
+A user has requested to change their email to this email address.
 
-Visit the link below to validate this request, otherwise ignore this email.
+Log into StarExec and then visit the link below to validate this request, otherwise ignore this email.
 
-$$VALIDATION_LINK$$
+$$LINK$$
 
 -STAREXEC TEAM
