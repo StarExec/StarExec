@@ -85,12 +85,13 @@ function initUI(){
 	});	
 	$('#new_website').hide();
 	
-	// Allow the client to edit their first name, last name, and institution name
+	// Allow the client to edit their first name, last name,institution name and email
 	editable("firstname");
 	editable("lastname");
 	editable("institution");
 	editable("diskquota");
 	editable("pagesize");
+	editable("email");
 	// If the client's picture is clicked on, pop it up in a JQuery modal window
 	$('#showPicture').click(function(event){
 		popUp($(this).attr('enlarge'));

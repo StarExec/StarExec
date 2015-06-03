@@ -14,7 +14,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Benchmark extends Identifiable implements Iterable<Entry<Object, Object>>{
+public class Benchmark extends Identifiable implements Iterable<Entry<Object, Object>>, Nameable{
 	private int userId = -1;	
 	@Expose private String name;	
 	@Expose private String description = "no description";	

@@ -36,7 +36,7 @@
 			<property key="DEPENDFILE_FORMAT" value="depend_%d.txt" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
-			<property key="DEFAULT_USER_QUOTA" value="1073741824" />	
+			<property key="DEFAULT_USER_QUOTA" value="5368709120" />	
 	  									
                         <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             			<!-- SGE Configuration -->

@@ -82,9 +82,12 @@ public class UploadSolver extends HttpServlet {
     	int userId = SessionUtil.getUserId(request);
     	try {	
     		// If we're dealing with an upload request...
+	    log.info("doPost begins");
 			if (ServletFileUpload.isMultipartContent(request)) {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
+	                        log.debug("Parsed multipart request");
+
 				// Make sure the request is valid
 				
 				
@@ -96,6 +99,8 @@ public class UploadSolver extends HttpServlet {
 					return;
 				}
 				
+	                        log.debug("Validated the request");
+
 				boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
 				
 				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
@@ -188,6 +193,8 @@ public class UploadSolver extends HttpServlet {
 	 */
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		try {
+		    log.info("handleSolver begins");
+
 			boolean build=false;
 			String buildstr=null;
 			int[] returnArray = new int[2];
@@ -225,6 +232,8 @@ public class UploadSolver extends HttpServlet {
 			newSolver.setUserId(userId);
 			newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
 			newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
+
+		        log.info("Handling upload of solver" + newSolver.getName());
 			
 			//Set up the unique directory to store the solver
 			//The directory is (base path)/user's ID/solver name/date/
@@ -245,12 +254,14 @@ public class UploadSolver extends HttpServlet {
 				archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
+		                log.info("handleSolver just wrote archive to disk");
 			} else {
 				archiveFile=new File(uniqueDir, name);
 				new File(archiveFile.getParent()).mkdir();
 				if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
 					throw new Exception("Unable to copy file from URL");
 				}
+		                log.info("handleSolver just downloaded solver from url " + url);
 			}
 			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 			
@@ -293,7 +304,7 @@ public class UploadSolver extends HttpServlet {
 				}
 				
 				//give sandbox full permissions over the solver directory
-				Util.sandboxChmodDirectory(sandboxDir, false);
+				Util.sandboxChmodDirectory(sandboxDir);
 				
 				
 			
@@ -310,7 +321,7 @@ public class UploadSolver extends HttpServlet {
 				log.debug("got back the output "+buildstr);
 			}
 			
-			Util.sandboxChmodDirectory(sandboxDir, true);
+			Util.sandboxChmodDirectory(sandboxDir);
 
 			for (File f : sandboxDir.listFiles()) {
 				if (f.isDirectory()) {

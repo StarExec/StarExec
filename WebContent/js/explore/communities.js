@@ -10,6 +10,7 @@ $(document).ready(function(){
 	 
 	 var id = -1;
 	 
+
 	// Initialize the jstree plugin for the community list
 	jQuery("#exploreList").jstree({  
 		"json_data" : { 
@@ -17,6 +18,11 @@ $(document).ready(function(){
 				"url" : starexecRoot+"services/communities/all"	// Where we will be getting json data from 				
 			} 
 		}, 
+		 // comparator between two nodes that defines how the jstree will be sorted.
+		 // Must return 1 or -1
+		"sort" : function(a, b) {
+			return this.get_text(a).toLowerCase() > this.get_text(b).toLowerCase() ? 1 : -1;
+		},
 		"themes" : { 
 			"theme" : "default", 					
 			"dots" : false, 
@@ -35,7 +41,7 @@ $(document).ready(function(){
 				}
 			}
 		},
-		"plugins" : ["types", "themes", "json_data", "ui", "cookies"] ,
+		"plugins" : ["types", "themes", "json_data", "ui", "cookies", "sort"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane		

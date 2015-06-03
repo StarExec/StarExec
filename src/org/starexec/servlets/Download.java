@@ -176,15 +176,13 @@ public class Download extends HttpServlet {
 				}
 				shortName=space.getName();
 				shortName=shortName.replaceAll("\\s+","");
-				if(request.getParameter("hierarchy").equals("false")){
-					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-					success = handleSpace(space, u.getId(), response,false,includeBenchmarks,includeSolvers);
-				} else {
-					shortName=shortName+"_Hierarchy";
-					response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-					success = handleSpace(space, u.getId(), response,true,includeBenchmarks,includeSolvers);
-				}
-
+				boolean hierarchy=request.getParameter("hierarchy").equals("true");
+				if(hierarchy)
+				    shortName=shortName+"_Hierarchy";
+				
+				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+				success = handleSpace(space, u.getId(), response,hierarchy,includeBenchmarks,includeSolvers);
+				
 			  
 			} else if (request.getParameter(PARAM_TYPE).equals("proc")) {
 				List<Processor> proc=null;

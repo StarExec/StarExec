@@ -178,16 +178,18 @@ public class Starexec implements ServletContextListener {
 		};
 
 		// Create a task that deletes download files older than 1 day
-		final Runnable clearDownloadsTask = new RobustRunnable("clearDownloadsTask") {			
+		final Runnable clearTemporaryFilesTask = new RobustRunnable("clearTemporaryFilesTask") {			
 			@Override
 			protected void dorun() {
-			    log.info("clearDownloadsTask (periodic)");
+			    log.info("clearTemporaryFilesTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
 				Util.clearOldCachedFiles(14);
 				//even though we're clearing unused cache files, they still might build up for a variety
 				//of reasons. To stay robust, we should probably still clear out very old ones
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR).getAbsolutePath(), 60,false);
-				Util.clearOldSandboxFiles(Util.getSandboxDirectory().getAbsolutePath(), 10, true);
+
+				// clear sandbox files older than one day old
+				Util.clearOldSandboxFiles(Util.getSandboxDirectory().getAbsolutePath(), 1, true);
 			}
 		};	
 		
@@ -219,14 +221,6 @@ public class Starexec implements ServletContextListener {
 				Solvers.cleanOrphanedDeletedSolvers();
 				Benchmarks.cleanOrphanedDeletedBenchmarks();
 				Jobs.cleanOrphanedDeletedJobs();
-			}
-		};
-		
-		final Runnable checkQueueReservations = new RobustRunnable("checkQueueReservations") {
-			@Override
-			protected void dorun() {
-				log.info("checkQueueReservationsTask (periodic)");
-				//Not currently doing anything
 			}
 		};
 		
@@ -292,21 +286,19 @@ public class Starexec implements ServletContextListener {
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(clearDownloadsTask, 0, 1, TimeUnit.HOURS);
+		    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
 
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 
-			// checks if reports need to be sent every day 
-			taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
-
-		    // this task seems to have a number of problems currently, such as leaving jobs paused after it runs
-		    //taskScheduler.scheduleAtFixedRate(checkQueueReservations, 0, 30, TimeUnit.SECONDS);
+		    // checks every day if reports need to be sent 
+		    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
 
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
-		    taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
+		    // we are not doing anything for this task currently:
+		    //taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
 		}
 		try {
 			PaginationQueries.loadPaginationQueries();

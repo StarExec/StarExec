@@ -12,7 +12,7 @@ import com.google.gson.annotations.Expose;
  * input and produces output. This is used at various stages in the job pipeline
  * @author Tyler Jensen 
  */
-public class Processor extends Identifiable {
+public class Processor extends Identifiable implements Nameable {
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */

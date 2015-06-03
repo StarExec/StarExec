@@ -2386,8 +2386,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	protected static List<Integer> traverse(Space space, int parentId, int userId, int statusId) throws Exception {
 		// Add the new space to the database and get it's ID		
 		log.info("traversing space without deps for user " + userId);
-		if (space == null)
+		if (space == null) {
 		    log.error("traverse(): space is null.");
+		}
 		Connection con = null;
 		
 		ArrayList<Integer> ids=new ArrayList<Integer>();
@@ -2400,12 +2401,22 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			for(Space s : space.getSubspaces()) {
 				// Recursively go through and add all of it's subspaces with itself as the parent
 				log.info("about to traverse space " + spaceId);
-				ids.addAll(Spaces.traverse(s, spaceId, userId, statusId));
+				List<Integer> newIds = Spaces.traverse(s, spaceId, userId, statusId);
+				if (newIds == null) {
+					return null; // pass up the error
+				}
+				ids.addAll(newIds);
 			}			
 		
 			// Finally, add the benchmarks in the space to the database
 			//not really using connection parameter right now due to problems
-			ids.addAll(Benchmarks.add(space.getBenchmarks(), spaceId, statusId));
+			List<Integer> newIds = Benchmarks.add(space.getBenchmarks(), spaceId, statusId);
+
+			if (newIds == null) {
+				return null; // pass up the error
+			}
+			
+			ids.addAll(newIds);
 			//TODO: Consider refactoring this to reduce the number of calls that get made
 			Uploads.incrementCompletedSpaces(statusId,1);		
 			return ids;

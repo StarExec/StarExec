@@ -939,7 +939,7 @@ public class Users {
 	 * @param newValue what the email address will be updated to
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
-	 *
+	 */
 	public static boolean updateEmail(int userId, String newValue){
 		Connection con = null;			
 		CallableStatement procedure= null;
@@ -960,7 +960,7 @@ public class Users {
 		}
 		
 		return false;
-	}*/
+	}
 	
 	/**
 	 * Updates the first name of a user in the database with the 

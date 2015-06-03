@@ -27,7 +27,7 @@ CREATE TABLE user_roles (
 	email  VARCHAR(64) NOT NULL,
 	role VARCHAR(24) NOT NULL,
 	PRIMARY KEY (email, role),
-	CONSTRAINT user_roles_email FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
+	CONSTRAINT user_roles_email FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- A history record of all logins to the system
@@ -479,6 +479,15 @@ CREATE TABLE community_requests (
 	UNIQUE KEY (code),
 	CONSTRAINT community_requests_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT community_requests_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
+);
+
+CREATE TABLE change_email_requests (
+	user_id INT NOT NULL,
+	new_email VARCHAR(64) NOT NULL,
+	code VARCHAR(36) NOT NULL,
+	PRIMARY KEY (user_id),
+	UNIQUE KEY (code),
+	CONSTRAINT change_email_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 

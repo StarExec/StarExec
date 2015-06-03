@@ -565,7 +565,7 @@ public class BatchUtil {
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
 		
-		Element spaceAttributes = DOMHelper.getElementByName(spaceElement, "SpaceAttributes");
+		Element spaceAttributes = DOMHelper.getChildElementByName(spaceElement, "SpaceAttributes");
 
 		log.info("SpaceAttributes element created");
 		log.debug("spaceAttributes: " + spaceAttributes);
@@ -813,6 +813,8 @@ public class BatchUtil {
 								log.debug("Found text = " + updateChildElement.getTextContent());
 								u.text = updateChildElement.getTextContent();
 							}
+							else
+							    u.text = "";
 					    }
 					}
 
@@ -831,15 +833,6 @@ public class BatchUtil {
 
 		Integer spaceId = Spaces.add(space, parentId, userId);
 
-		for (Element childSpaceElement : childSpaces) {
-			int errorCode = createSpaceFromElement(childSpaceElement, spaceId, userId,statusId);
-			// If the recursive call returns an error code pass the error on.
-			if (errorCode == -1) {
-				return -1;
-			}
-			Uploads.incrementXMLCompletedSpaces(statusId, 1);
-		}
-
 		if (spaceAttributes != null) {
 			// Check for inherit users attribute. If it is true, make the users the same as the parent
 			if(DOMHelper.hasElement(spaceAttributes, "inherit-users")){
@@ -856,6 +849,16 @@ public class BatchUtil {
 				}
 			}
 		}
+
+		for (Element childSpaceElement : childSpaces) {
+			int errorCode = createSpaceFromElement(childSpaceElement, spaceId, userId,statusId);
+			// If the recursive call returns an error code pass the error on.
+			if (errorCode == -1) {
+				return -1;
+			}
+			Uploads.incrementXMLCompletedSpaces(statusId, 1);
+		}
+
 		
 
 		if (!benchmarks.isEmpty()){
@@ -914,10 +917,12 @@ public class BatchUtil {
 			files.add(bf);
 			files.add(upf);
 			files.add(ubp);
+			File sb = null;
+			File newSb = null;
 			try
 			{
 				//Place files into sandbox.
-				File sb = Util.copyFilesToNewSandbox(files);
+				sb = Util.copyFilesToNewSandbox(files);
 				//Create text file.
 				File text = new File(sb, "text.txt");
 			   
@@ -962,13 +967,9 @@ public class BatchUtil {
 				log.debug("outputFile contents: %n"  + FileUtils.readFileToString(outputFile));
 
 				
-			   
-
 				//Rename the the output file to correct name
 
-				
-
-				File newSb = Util.getRandomSandboxDirectory();
+				newSb = Util.getRandomSandboxDirectory();
 				File renamedFile = new File(newSb, name);
 
 				log.debug("Renamed file: " + renamedFile.getAbsolutePath());
@@ -995,9 +996,6 @@ public class BatchUtil {
 										   b.isDownloadable(), statusId);
 				
 
-				FileUtils.deleteQuietly(newSb);
-				FileUtils.deleteQuietly(sb);
-				FileUtils.deleteQuietly(renamedFile);
 				
 				if (newBenchID != -1) {
 					// An error occurred, such as the benchmark was not valid
@@ -1010,6 +1008,11 @@ public class BatchUtil {
 			{
 				errorMessage = "Creating Updated Benchmarks Failed";
 				log.warn("Sandbox creation failed: "+e.toString(), e);
+			}
+			finally {
+				FileUtils.deleteQuietly(newSb);
+				FileUtils.deleteQuietly(sb);
+			    
 			}
 			
 		}

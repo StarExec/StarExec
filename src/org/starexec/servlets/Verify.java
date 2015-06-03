@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.constants.R;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
@@ -16,7 +17,9 @@ import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.Mail;
+import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
 /**
@@ -39,7 +42,11 @@ public class Verify extends HttpServlet {
     
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	if(Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
+		if (Util.paramExists(Mail.CHANGE_EMAIL_CODE, request)) { 
+			// Handle change email request
+			handleEmailChange(request, response);
+
+		} else if(Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
     		// Handle user activation request
     		handleActivation(request, response);
     	} else if(Util.paramExists(Mail.EMAIL_CODE, request) && Util.paramExists(Mail.LEADER_RESPONSE, request)) {
@@ -49,6 +56,44 @@ public class Verify extends HttpServlet {
     		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
     	}
     }
+
+	/**
+	 * Deals with email change request verification.
+	 *
+     * @param request the servlet containing the incoming GET request
+     * @param response the servlet that handles redirection
+	 * @throws IOException if any redirect fails
+	 */
+    private void handleEmailChange(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		int userId = SessionUtil.getUserId(request);
+		log.debug("(handleEmailChange) User with id="+userId+" visited change email verification page.");
+		String codeParam = (String)request.getParameter(Mail.CHANGE_EMAIL_CODE);
+		Pair<String, String> emailAndCode = null;
+		try {
+			if (Requests.changeEmailRequestExists(userId)) {
+					emailAndCode = Requests.getChangeEmailRequest(userId);
+			} else {
+				// The email change request does not exist in the database.
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+				return;
+			}
+			String newEmail = emailAndCode.getLeft();
+			String codeInDb = emailAndCode.getRight();
+			if (codeInDb.equals(codeParam)) {
+				Users.updateEmail(userId, newEmail); 
+				Requests.deleteChangeEmailRequest(userId);
+				response.sendRedirect(Util.docRoot("public/messages/email_changed.jsp?email="+newEmail));
+				return;
+			} else {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+				return;
+			}
+		} catch (StarExecDatabaseException e) {
+			log.error("Database error while trying to change users email.", e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return;
+		}
+	}
     
     /**
      * Deals with acceptance email responses from leaders of a group

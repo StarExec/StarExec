@@ -1,0 +1,37 @@
+#wrapper {
+	width: 100%;
+}
+
+#pageHeader {
+	width: 1020px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#pageFooter {
+	width: 1024px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.jobMatrix {
+	overflow: scroll;
+	width: 100%;
+}
+
+.success {
+	background-color: #006400;
+}
+
+.failure {
+	background-color: #ae0000;
+}
+
+.benchmarkHeader {
+	text-align: center;
+	vertical-align: middle;
+}
+
+.DTFC_LeftBodyWrapper {
+	background-color: #222;
+}

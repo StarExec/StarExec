@@ -90,14 +90,14 @@
 				</tr>
 				<tr>
 					<td>email </td>
-					<td>${user.email}</td>
+					<td id="editemail">${user.email}</td>
 				</tr>
 			</tbody>
 		</table>
 		</td>
 		</tr>
 		</table>
-		<h6>(click the current value of an attribute to edit it; email addresses are currently not editable)</h6>
+		<h6>(click the current value of an attribute to edit it)</h6>
 	</fieldset>
 	<c:if test="${isadmin}">
 		<fieldset>

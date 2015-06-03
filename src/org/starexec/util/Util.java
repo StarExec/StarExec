@@ -609,8 +609,7 @@ public class Util {
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 	    // Remove them all
 	    for(File f : outdatedFiles) {
-	    	sandboxChmodDirectory(f,true);
-	    	//FileUtils.deleteQuietly(f);
+	    	sandboxChmodDirectory(f);
 	    	FileUtils.deleteDirectory(f);
 	    }					
 	} catch (Exception e) {
@@ -819,12 +818,9 @@ public class Util {
      * Recursively grants full permission to the owner of everything in the given
      * directory. The top level directory is not affected, only everything inside
      * @param dir
-     * @param group If true, does chmod g+rwx. If false, does chmod u+rwx. The former is used
-     * to give Tomcat permission to work with files owned by Sandbox, and the latter is used
-     * to allow Sandbox to access its own files.
      * @throws IOException
      */
-    public static void sandboxChmodDirectory(File dir,boolean group) throws IOException {
+    public static void sandboxChmodDirectory(File dir) throws IOException {
     	//give sandbox full permissions over the solver directory
 		String[] chmod=new String[7];
 		chmod[0]="sudo";
@@ -832,19 +828,28 @@ public class Util {
 		chmod[2]="sandbox";
 		chmod[3]="chmod";
 		chmod[4]="-R";
-		if (group) {
-			chmod[5]="g+rwx";	
-
-		} else {
-			chmod[5]="u+rwx";	
-
-		}
+		chmod[5]="u+rwx,g+rwx";	
 		for (File f : dir.listFiles()) {
 			chmod[6]=f.getAbsolutePath();
 			Util.executeCommand(chmod);
 		}
     }
     
+    public static void chmodDirectory(String dir,boolean group) throws IOException {
+	String[] chmod=new String[4];
+	chmod[0]="chmod";
+	chmod[1]="-R";
+	if (group) {
+	    chmod[2]="g+rwx";	
+
+	} else {
+	    chmod[2]="u+rwx";	
+
+	}
+	chmod[3]=dir;
+	Util.executeCommand(chmod);
+    }
+
     /**
      * Copies all of the given files to a single, newly created sandbox directory
      * and returns the sandbox directory. The sandbox user will be the owner and
@@ -854,35 +859,40 @@ public class Util {
      * @throws IOException
      */
     public static File copyFilesToNewSandbox(List<File> files) throws IOException {
-    	File sandbox=getRandomSandboxDirectory();
-    	File sandbox2=getRandomSandboxDirectory();
-    	String[] cpCmd=new String[4];
-    	cpCmd[0]="cp";
-    	cpCmd[1]="-r";
-    	cpCmd[3]=sandbox.getAbsolutePath();
-    	for (File f : files) {
+    	File sandbox=null;
+    	File sandbox2=null;
+	try {
+	    sandbox=getRandomSandboxDirectory();
+	    sandbox2=getRandomSandboxDirectory();
+	    String[] cpCmd=new String[4];
+	    cpCmd[0]="cp";
+	    cpCmd[1]="-r";
+	    cpCmd[3]=sandbox.getAbsolutePath();
+	    for (File f : files) {
     		cpCmd[2]=f.getAbsolutePath();
     		Util.executeCommand(cpCmd);
-    	}
-    	log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
-    	log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
+	    }
+	    //log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
+	    //log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
 
-    	//next, copy the files over so they are owned by sandbox
-    	String[] sudoCpCmd=new String[4];
+	    //next, copy the files over so they are owned by sandbox
+	    String[] sudoCpCmd=new String[4];
     	
-    	sudoCpCmd[0]="cp";
-    	sudoCpCmd[1]="-r";
-    	sudoCpCmd[3]=sandbox2.getAbsolutePath();
-    	for (File f : sandbox.listFiles()) {
+	    sudoCpCmd[0]="cp";
+	    sudoCpCmd[1]="-r";
+	    sudoCpCmd[3]=sandbox2.getAbsolutePath();
+	    for (File f : sandbox.listFiles()) {
     		sudoCpCmd[2]=f.getAbsolutePath();
     		Util.executeSandboxCommand(sudoCpCmd);
-    	}
-    	log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
-    	log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
+	    }
+	    //log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
+	    //log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
 
-    	
-    	sandboxChmodDirectory(sandbox2,false);
-    	FileUtils.deleteQuietly(sandbox);
+	    sandboxChmodDirectory(sandbox2);
+	}
+	finally {
+	    FileUtils.deleteQuietly(sandbox);
+	}
     	return sandbox2;
     }
     

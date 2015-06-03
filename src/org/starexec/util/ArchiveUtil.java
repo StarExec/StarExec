@@ -179,11 +179,7 @@ public class ArchiveUtil {
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz") || fileName.endsWith(".tar")) {
 				// First rename it if it's a .tgz
 
-			
-				/* by default, tar applies (supposedly) the user's umask when setting
-				   permissions for extracted files.  So we do not need to do anything
-				   further with that. */
-				String[] tarCmd = new String[8];
+			        String[] tarCmd = new String[8];
 				tarCmd[0] = "sudo";
 				tarCmd[1] = "-u";
 				tarCmd[2] = "sandbox";
@@ -195,6 +191,7 @@ public class ArchiveUtil {
 				log.debug("about to execute command tar command");
 				Util.executeCommand(tarCmd);
 				ArchiveUtil.removeArchive(fileName);
+				Util.chmodDirectory(destination,false);
 
 			} else {
 				// No valid file type found :(
@@ -246,9 +243,10 @@ public class ArchiveUtil {
 				results = Util.executeCommand(lsCmd);
 				log.debug("ls -l destination results = " + results);
 
-				/* by default, tar applies (supposedly) the user's umask when setting
-				   permissions for extracted files.  So we do not need to do anything
-				   further with that. */
+				/* it appears that the permissions are not set correctly by tar for tomcat.
+				   We need group read permissions for files, because elsewhere,
+				   we try to copy these files as the sandbox user, and hence need
+				   to be able to read them.  So we do an explicit chmod*/
 				String[] tarCmd = new String[5];
 				tarCmd[0] = "tar";
 				tarCmd[1] = "-xf";
@@ -260,6 +258,11 @@ public class ArchiveUtil {
 				log.debug("command was executed, results = " + results);
 				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
+
+				// now chmod the directory so sandbox can access it
+
+				Util.chmodDirectory(destination,true);
+
 				lsCmd[2] = destination;
 				results = Util.executeCommand(lsCmd);
 				log.debug("command was executed - ls -l destination results = " + results);

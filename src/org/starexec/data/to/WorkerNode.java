@@ -8,7 +8,7 @@ import com.google.gson.annotations.Expose;
  * Represents a worker node in the database
  * @author Tyler Jensen
  */
-public class WorkerNode extends Identifiable {
+public class WorkerNode extends Identifiable implements Nameable{
 	@Expose private String name;
 	@Expose private String status;
 	@Expose private HashMap<String, String> attributes;
