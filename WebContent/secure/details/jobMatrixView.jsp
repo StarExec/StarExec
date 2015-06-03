@@ -17,67 +17,10 @@ import="java.util.ArrayList,
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		int stageNumber = Integer.parseInt(request.getParameter("stage"));
 		Job job = MatrixViewUtil.getJobIfAvailableToUser(jobId, userId, response);
+		request.setAttribute("job", job);
 		Matrix matrix = Matrix.buildMatrixFromJob(job);
 
 		request.setAttribute("matrix", matrix);
-		/*
-		List<JobPair> jobPairs = null;
-		HashSet<Solver> uniqueSolvers = new HashSet<Solver>();
-		HashSet<String> uniqueBenchmarks = new HashSet<String>();
-		ArrayList<Solver> orderedSolvers = null;	
-		ArrayList<Benchmark> orderedBenchmarks = null; 
-		HashMap<Pair<Solver, Benchmark>, MatrixElement> jobPairToDataMap = null;
-
-		// Build a hashmap that maps the names of the solver and benchmark in a job pair to the data contained by the job pair.
-		//jobPairToDataMap = buildPairToDataMap(jobPairs);
-
-		// convert uniqueSolvers and uniqueBenchmarks to ArrayLists so that they have a consistent order
-		//orderedSolvers = new ArrayList<Solver>(Arrays.asList(uniqueSolvers.toArray(new Solver[1])));
-		//orderedBenchmarks = new ArrayList<Benchmark>(Arrays.asList(uniqueBenchmarks.toArray(new Benchmark[1])));
-
-		// insert the data stored in the data map at the locations in the matrix where the corresponding solver's row and
-		// benchmark's column intersect
-		
-		matrix = new String[orderedSolvers.size()][orderedBenchmarks.size()];
-		for (int i = 0; i < orderedSolvers.size(); i++ ) {
-			Solver solver = orderedSolvers.get(i);
-			for (int j = 0; j < orderedBenchmarks.size(); j++) {
-				Benchmark benchmark = orderedBenchmarks.get(j);
-				Pair<Solver, Benchmark> solverBenchmark = new ImmutablePair<Solver, Benchmark>(solver, benchmark);
-				if (jobPairToDataMap.containsKey(solverBenchmark)) {
-					matrix[i][j] = jobPairToDataMap.get(solverBenchmark);
-				} else {
-					matrix[i][j] = "";
-				}
-			}
-		}
-
-		int benchmarkNumber = 50;
-		int solverNumber = 20;
-		matrix = new MatrixElement[benchmarkNumber][solverNumber];
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[i].length; j++) {
-				String success = "success";
-				if ((i+j)%5 == 0) {
-					success = "failure";
-				}
-				matrix[i][j] = new MatrixElement(success, "0.0s", "0KB", "0.0s");
-			}
-		}
-		benchmarkNames = new String[benchmarkNumber];
-		solverNames = new String[solverNumber];
-		for (int i = 0; i < solverNumber; i++) {
-			solverNames[i] = "Solver" + String.valueOf(i);	
-		}
-		for (int i = 0; i < benchmarkNumber; i++) {
-			benchmarkNames[i] = "Benchmark" + String.valueOf(i);
-		}
-
-		request.setAttribute("jobPairs", jobPairs);
-		request.setAttribute("jobPairMatrix", matrix);
-		request.setAttribute("solverNames", solverNames);
-		request.setAttribute("benchmarkNames", benchmarkNames);
-		*/
 
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
