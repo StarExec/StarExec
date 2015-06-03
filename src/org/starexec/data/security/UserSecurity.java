@@ -91,6 +91,10 @@ public class UserSecurity {
 			if (!Validator.isValidInstitution(newVal)) {
 				return new ValidatorStatusCode(false, "The new institution is not in the proper format. Please refer to the help pages to see the correct format");
 			}
+		} else if (attribute.equals("email")) {
+			if (!Validator.isValidEmail(newVal)) {
+				return new ValidatorStatusCode(false, "The new email is not in the proper format.");
+			}
 		} else if (attribute.equals("diskquota")) {
 			if (!admin) {
 				return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
