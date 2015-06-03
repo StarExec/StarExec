@@ -11,10 +11,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecDatabaseException;
 
 /**
  * Handles all database interaction for the various requests throughout the system. This includes
@@ -302,6 +306,7 @@ public class Requests {
 		
 		return false;
 	}
+
 	
 	
 	/**
@@ -1102,4 +1107,112 @@ public class Requests {
 		}
 	}
 
+	/**
+	 * Adds a change email request to the database.
+	 * @param userId The id of the user making the request.
+	 * @param newEmail The new email the user wants to change their account's email to.
+	 * @author Albert Giegerich
+	 */
+	public static void addChangeEmailRequest(int userId, String newEmail, String code) throws StarExecDatabaseException{
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL AddChangeEmailRequest(?, ?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setString(2, newEmail);
+			procedure.setString(3, code);
+			procedure.executeQuery();
+		} catch (Exception e) {
+			throw new StarExecDatabaseException(
+					"There was an error while trying to add a change email request for user with id="+userId+ 
+					" newEmail="+newEmail+" and code="+code, e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Pair<String, String> getChangeEmailRequest(int userId) throws StarExecDatabaseException {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		String newEmail = null;
+		String emailChangeCodeAssociatedWithUser = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetChangeEmailRequest(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+
+			// There should only be 1 result since the user id is the primary
+			// key.
+			results.first();
+			newEmail = results.getString("new_email");
+			emailChangeCodeAssociatedWithUser = results.getString("code");
+		} catch (Exception e) {
+			throw new StarExecDatabaseException(
+					"There was an error while trying to get a change email request for user with id="+userId+".", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		Pair<String, String> emailAndCode = new ImmutablePair<String, String>(newEmail, emailChangeCodeAssociatedWithUser);
+		return emailAndCode;
+	}
+
+	/**
+	 * Deletes a change email request.
+	 * @param userId the id of the user associated with the change email request.
+	 * @throws StarExecDatabaseException if an error occurs in the database.
+	 * @author Albert Giegerich
+	 */
+	public static void deleteChangeEmailRequest(int userId) throws StarExecDatabaseException {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL DeleteChangeEmailRequest(?)}");
+			procedure.setInt(1, userId);
+			procedure.executeQuery();
+		} catch (Exception e) {
+			throw new StarExecDatabaseException(
+					"There was an error while trying to delete a change email requests for user with id="+userId+".", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static boolean changeEmailRequestExists(int userId) throws StarExecDatabaseException {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		boolean changeEmailRequestExists = false;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetChangeEmailRequest(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			// results.next() will be true if there is at least one result
+			if (results.next()) {
+				changeEmailRequestExists = true;
+			} 
+
+			log.debug("(changeEmailRequestExists) Change email request does"+(changeEmailRequestExists?" ":" not ")+
+					"exist for user with id="+userId);
+		} catch (Exception e) {
+			throw new StarExecDatabaseException(
+					"There was an error while trying to get a change email requests for user with id="+userId+".", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+
+		return changeEmailRequestExists;
+	}
 }
