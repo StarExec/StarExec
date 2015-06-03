@@ -1,6 +1,7 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.data.security.*,org.starexec.util.*, org.starexec.data.to.*, org.starexec.data.database.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <star:template title="account activation">	
 	<p> You have successfully activated your account!</p><br/>	
