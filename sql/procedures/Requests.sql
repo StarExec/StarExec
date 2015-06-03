@@ -319,6 +319,35 @@ CREATE PROCEDURE DecreaseNodeCount(IN _queueId INT)
 		WHERE queue_id = _queueId
 		AND node_count > 0;
 	END //
-	
-	
+
+-- Creates a change email request for user with _userId.
+-- The email the the user is requesting to change to is _newEmail.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS AddChangeEmailRequest;
+CREATE PROCEDURE AddChangeEmailRequest(IN _userId INT, IN _newEmail VARCHAR(64), IN _code VARCHAR(36))
+	BEGIN
+		INSERT INTO change_email_requests (user_id, new_email, code)
+		VALUES (_userId, _newEmail, _code)
+		ON DUPLICATE KEY UPDATE user_id=_userId, new_email=_newEmail, code=_code;
+	END //
+
+
+-- Gets a change email request for user with id _userId
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetChangeEmailRequest;
+CREATE PROCEDURE GetChangeEmailRequest(IN _userId INT)
+	BEGIN
+		SELECT * FROM change_email_requests
+		WHERE user_id=_userId;
+	END //
+
+-- Deletes the change email request associated with the user with id _userId.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS DeleteChangeEmailRequest;
+CREATE PROCEDURE DeleteChangeEmailRequest(IN _userId INT)
+	BEGIN
+		DELETE FROM change_email_requests
+		WHERE user_id=_userId;
+	END //
+
 DELIMITER ; -- This should always be at the end of this file
