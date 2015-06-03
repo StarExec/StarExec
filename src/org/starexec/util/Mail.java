@@ -33,6 +33,7 @@ import org.starexec.servlets.PasswordReset;
 public class Mail {
 	private static final Logger log = Logger.getLogger(Mail.class);
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
+	public static final String CHANGE_EMAIL_CODE = "changeEmail";
 	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
 	public static final String ADMIN_RESPONSE = "admin";
 	
@@ -130,6 +131,12 @@ public class Mail {
 		Mail.mail(email, "STAREXEC - Verify your account", new String[] { user.getEmail() });
 		
 		log.info(String.format("Sent activation email to user [%s] at [%s]", user.getFullName(), user.getEmail()));
+	}
+
+	public static void sendEmailChangeValidation(String newEmail, String code) throws IOException {
+		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/change_email.txt"));
+		email = email.replace("$$LINK$$", Util.url(String.format("public/verification/email?%s=%s", Mail.CHANGE_EMAIL_CODE, code)));
+		Mail.mail(email, "STAREXEC - Change Email", new String[] { newEmail });
 	}
 
 	

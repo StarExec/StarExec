@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -59,6 +60,7 @@ import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
+import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
@@ -1307,7 +1309,6 @@ public class RESTServices {
 	@Path("/edit/user/{attr}/{userId}/{val}")
 	@Produces("application/json")
 	public String editUserInfo(@PathParam("attr") String attribute, @PathParam("userId") int userId, @PathParam("val") String newValue,  @Context HttpServletRequest request,@Context HttpServletResponse response) {	
-		boolean success = false;
 		int requestUserId=SessionUtil.getUserId(request);
 		log.debug("requestUserId" + requestUserId);
 		ValidatorStatusCode status=UserSecurity.canUpdateData(userId, requestUserId, attribute, newValue);
@@ -1315,8 +1316,11 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+
 		
 		
+		boolean success = false;
+		String messageToUser = null;
 		// Go through all the cases, depending on what attribute we are changing.
 		// First, validate that it is in legal form. Then, try to update the database.
 		// Finally, update the current session data
@@ -1325,16 +1329,38 @@ public class RESTServices {
 			success = Users.updateFirstName(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setFirstName(newValue);
+				messageToUser = "Edit successful.";
 			}
 		} else if (attribute.equals("lastname")) {
 			success = Users.updateLastName(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setLastName(newValue);
+				messageToUser = "Edit successful.";
 			}
 		} else if (attribute.equals("institution")) {
 			success = Users.updateInstitution(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setInstitution(newValue);
+				messageToUser = "Edit successful.";
+			}
+		} else if (attribute.equals("email")) {
+			log.info("User with id="+userId+" has requested to change their email to "+newValue);
+			success = true;
+			try {
+				// Send a validation email to the new email address. using a unique 
+				// code to safely reference this user's entry in verification hyperlinks
+				String code = UUID.randomUUID().toString();
+				Mail.sendEmailChangeValidation(newValue, code);
+				log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
+				// If an IOException wasn't thrown then add the request to the database.
+				Requests.addChangeEmailRequest(userId, newValue, code);
+				messageToUser = "A verification email has been sent to the new email address.";
+			} catch (IOException e) {
+				messageToUser = "Could not send verification email.";
+				success = false;
+			} catch (StarExecDatabaseException e) {
+				messageToUser = "Internal error.";
+				success = false;
 			}
 		} else if (attribute.equals("diskquota")) {
 			log.debug("diskquota");
@@ -1342,13 +1368,25 @@ public class RESTServices {
 			log.debug("success = " + success);
 			if (success) {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
+				messageToUser = "Edit successful.";
 			}
 		} else if (attribute.equals("pagesize")) {
 			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
+			if (success) {
+				messageToUser = "Edit successful.";
+			}
 		}
 
-		// Passed validation AND Database update successful
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Edit successful")) : gson.toJson(ERROR_DATABASE);
+		String json = null;
+		if (success) {
+			json = gson.toJson(new ValidatorStatusCode(true, messageToUser)); 
+		} else if (messageToUser != null) {
+			json = gson.toJson(new ValidatorStatusCode(false, messageToUser));
+		} else {
+			json = gson.toJson(ERROR_DATABASE);
+		}
+
+		return json;
 	}
 	
 	
