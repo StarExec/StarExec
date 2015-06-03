@@ -915,10 +915,12 @@ public class BatchUtil {
 			files.add(bf);
 			files.add(upf);
 			files.add(ubp);
+			File sb = null;
+			File newSb = null;
 			try
 			{
 				//Place files into sandbox.
-				File sb = Util.copyFilesToNewSandbox(files);
+				sb = Util.copyFilesToNewSandbox(files);
 				//Create text file.
 				File text = new File(sb, "text.txt");
 			   
@@ -963,13 +965,9 @@ public class BatchUtil {
 				log.debug("outputFile contents: %n"  + FileUtils.readFileToString(outputFile));
 
 				
-			   
-
 				//Rename the the output file to correct name
 
-				
-
-				File newSb = Util.getRandomSandboxDirectory();
+				newSb = Util.getRandomSandboxDirectory();
 				File renamedFile = new File(newSb, name);
 
 				log.debug("Renamed file: " + renamedFile.getAbsolutePath());
@@ -996,9 +994,6 @@ public class BatchUtil {
 										   b.isDownloadable(), statusId);
 				
 
-				FileUtils.deleteQuietly(newSb);
-				FileUtils.deleteQuietly(sb);
-				FileUtils.deleteQuietly(renamedFile);
 				
 				if (newBenchID != -1) {
 					// An error occurred, such as the benchmark was not valid
@@ -1011,6 +1006,11 @@ public class BatchUtil {
 			{
 				errorMessage = "Creating Updated Benchmarks Failed";
 				log.warn("Sandbox creation failed: "+e.toString(), e);
+			}
+			finally {
+				FileUtils.deleteQuietly(newSb);
+				FileUtils.deleteQuietly(sb);
+			    
 			}
 			
 		}

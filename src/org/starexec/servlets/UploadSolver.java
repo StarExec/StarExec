@@ -293,7 +293,7 @@ public class UploadSolver extends HttpServlet {
 				}
 				
 				//give sandbox full permissions over the solver directory
-				Util.sandboxChmodDirectory(sandboxDir, false);
+				Util.sandboxChmodDirectory(sandboxDir);
 				
 				
 			
@@ -310,7 +310,7 @@ public class UploadSolver extends HttpServlet {
 				log.debug("got back the output "+buildstr);
 			}
 			
-			Util.sandboxChmodDirectory(sandboxDir, true);
+			Util.sandboxChmodDirectory(sandboxDir);
 
 			for (File f : sandboxDir.listFiles()) {
 				if (f.isDirectory()) {
