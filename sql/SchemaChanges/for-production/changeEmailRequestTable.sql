@@ -1,3 +1,5 @@
+USE starexec;
+
 CREATE TABLE change_email_requests (
 	user_id INT NOT NULL,
 	new_email VARCHAR(64) NOT NULL,
