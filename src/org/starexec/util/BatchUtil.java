@@ -813,6 +813,8 @@ public class BatchUtil {
 								log.debug("Found text = " + updateChildElement.getTextContent());
 								u.text = updateChildElement.getTextContent();
 							}
+							else
+							    u.text = "";
 					    }
 					}
 
