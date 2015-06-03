@@ -1126,7 +1126,7 @@ public class Jobs {
 				return null;
 			}
 			
-			
+			log.debug("(getDetailed) - Getting job pairs for job with id="+jobId+" since completionID="+since);	
 			j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
 			
 				
