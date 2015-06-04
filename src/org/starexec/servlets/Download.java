@@ -193,8 +193,9 @@ public class Download extends HttpServlet {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.POST);
 				} else if (request.getParameter("procClass").equals("pre")){
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.PRE);
-				}
-				else {
+				} else if (request.getParameter("procClass").equals("update")) {
+					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.UPDATE);
+				} else {
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.BENCH);
 				}
 				if (proc.size()>0) {
