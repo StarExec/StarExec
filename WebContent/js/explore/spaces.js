@@ -217,7 +217,7 @@ function onTrashDrop(event, ui){
 		if(ui.draggable.data('type')[1] == 'o'){
 			removeSolvers(ids,ownsAll);
 		} else {
-			quickRemove(ids);//actual Remove called within here
+			removeSubspaces(ids);//actual Remove called within here
 		}
 		break;
 	case 'b':
@@ -932,33 +932,8 @@ function removeJobs(selectedJobs,ownsAll){
  * Handles removal of subspace(s) from a space
  * @author Todd Elvers
  */
-function removeSubspaces(selectedSubspaces,recyclePrims){
-	log('user confirmed (in quickremove dialog) subspace deletion');
-
-	$.post(  
-			starexecRoot+"services/remove/subspace",
-			{selectedIds : selectedSubspaces, recyclePrims : recyclePrims},					
-			function(returnCode) {
-				parseReturnCode(returnCode);
-				
-			},
-			"json"
-	).error(function(){
-		log('remove subspace error');
-	});
-}
-
-
-
-
-/**
- * Quickly removes association between spaces so actual
- * removal can go on behind the scenes without delay to user.
- * @author Ben McCune
- */
-function quickRemove(selectedSubspaces){
-	$('#dialog-confirm-delete-txt').text('Do you want to recycle the solvers and benchmarks, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?');
-	// Display the confirmation dialog
+function removeSubspaces(selectedSubspaces){
+	$('#dialog-confirm-delete-txt').text('Do you want to recycle the solvers and benchmarks, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?'); // Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		height: 400,
@@ -968,54 +943,45 @@ function quickRemove(selectedSubspaces){
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
-
-				$.post(  
-						starexecRoot+"services/quickRemove/subspace",
-						{selectedIds : selectedSubspaces},
-						function(returnCode) {
-							s=parseReturnCode(returnCode);
-							if (s) {
-								updateTable(spaceTable);
-								initSpaceExplorer();
-								removeSubspaces(selectedSubspaces,false);
-							}
-							
-						},
-						"json"
-				).error(function(){
-					log('quick remove subspace error');
-					window.location.reload(true);
-				});
+				makeRemoveSubspacesPost(selectedSubspaces, false);
+				selectedSubspaces.forEach(function(subspace) {
+					$('#exploreList').jstree("remove", "#"+subspace);
+				}); 
+				$('#exploreList').jstree("refresh");
 			},
 			'remove subspace(s), and recycle primitives': function() {
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
-
-				$.post(  
-						starexecRoot+"services/quickRemove/subspace",
-						{selectedIds : selectedSubspaces},
-						function(returnCode) {
-							s=parseReturnCode(returnCode);
-							if (s) {
-								updateTable(spaceTable);
-								initSpaceExplorer();
-								removeSubspaces(selectedSubspaces,true);
-							}
-						},
-						"json"
-				).error(function(){
-					log('quick remove subspace error');
-					window.location.reload(true);
-				});
+				makeRemoveSubspacesPost(selectedSubspaces, true);
+				selectedSubspaces.forEach(function(subspace) {
+					$('#exploreList').jstree("remove", "#"+subspace);
+				}); 
+				$('#exploreList').jstree("refresh");
+				
 			},
-			
 			"cancel": function() {
 				log('user canceled subspace deletion');
 				$(this).dialog("close");
 			}
 		}		
 	});		
+}
+
+
+
+function makeRemoveSubspacesPost(selectedSubspaces, recyclePrims) {
+	log('user confirmed (in quickremove dialog) subspace deletion');
+	$.post(  starexecRoot+"services/remove/subspace",
+			{selectedIds : selectedSubspaces, recyclePrims : recyclePrims},					
+			function(returnCode) {
+				parseReturnCode(returnCode);
+				
+			},
+			"json"
+	).error(function(){
+		log('remove subspace error');
+	});
 }
 
 /**

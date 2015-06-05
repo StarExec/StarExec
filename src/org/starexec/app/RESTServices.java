@@ -2748,10 +2748,10 @@ public class RESTServices {
 	@POST
 	@Path("/remove/subspace")
 	@Produces("application/json")
-	public String removeSubspacesFromSpace(@Context HttpServletRequest request) {
-		
-		int userId=SessionUtil.getUserId(request);
-		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+	public String removeSubspacesFromSpace(@Context final HttpServletRequest request) {
+			
+		final int userId=SessionUtil.getUserId(request);
+		final ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
 				
 		try{
 			// Extract the String subspace id's and convert them to Integers
@@ -2771,47 +2771,50 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		boolean recycleAllAllowed=false;
-		if (Util.paramExists("recyclePrims", request)) {
-			if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
-				log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
-				recycleAllAllowed=true;
-			}
-			
-		}
-		Set<Solver> solvers=new HashSet<Solver>();
-		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
-		if (recycleAllAllowed) {
-			for (int sid : selectedSubspaces) {
-				solvers.addAll(Solvers.getBySpace(sid));
-				benchmarks.addAll(Benchmarks.getBySpace(sid));
-				for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
-					solvers.addAll(Solvers.getBySpace(s.getId()));
-					benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+		// Fork a new thread to delete the subspaces so the user's browser doesn't hang.
+		Runnable removeSubspacesProcess = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					boolean recycleAllAllowed=false;
+					if (Util.paramExists("recyclePrims", request)) {
+						if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
+							log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
+							recycleAllAllowed=true;
+						}
+					}
+					Set<Solver> solvers=new HashSet<Solver>();
+					Set<Benchmark> benchmarks=new HashSet<Benchmark>();
+					if (recycleAllAllowed) {
+						for (int sid : selectedSubspaces) {
+							solvers.addAll(Solvers.getBySpace(sid));
+							benchmarks.addAll(Benchmarks.getBySpace(sid));
+							for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
+								solvers.addAll(Solvers.getBySpace(s.getId()));
+								benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+							}
+						}
+					}
+					log.debug("found the following benchmarks");
+					for (Benchmark b : benchmarks) {
+						log.debug(b.getId());
+					}
+					// Remove the subspaces from the space
+					boolean success=true;
+					if (Spaces.removeSubspaces(selectedSubspaces)) {
+						if (recycleAllAllowed) {
+							log.debug("Space removed successfully, recycling primitives");
+							success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
+							success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
+						}
+					}
+				} catch (Exception e) {
+					log.warn("Error occurred while removing subspaces.", e);
 				}
 			}
-		}
-		log.debug("found the following benchmarks");
-		for (Benchmark b : benchmarks) {
-			log.debug(b.getId());
-		}
-		// Remove the subspaces from the space
-		boolean success=true;
-		if (Spaces.removeSubspaces(selectedSubspaces)) {
-			if (recycleAllAllowed) {
-				log.debug("Space removed successfully, recycling primitives");
-				success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
-				success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
-			}
-			if (success) {
-				return gson.toJson(new ValidatorStatusCode(true,"Subspace(s) removed successfully"));
-			} else {
-				return gson.toJson(ERROR_NOT_ALL_DELETED);
-			}
-			
-		} else {
-			return gson.toJson(ERROR_DATABASE);
-		}
+		};
+		Util.threadPoolExecute(removeSubspacesProcess);
+		return gson.toJson(new ValidatorStatusCode(true, "Subspaces are being deleted."));
 	}
 
 	
