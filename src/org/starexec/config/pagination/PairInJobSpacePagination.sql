@@ -10,6 +10,7 @@
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
 						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
+						completion_id,
 						bench_id,
 						bench_name,
 						job_attributes.attr_value AS result,
@@ -18,6 +19,7 @@
 						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs	
+				LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.stage_number=jobpair_stage_data.stage_number AND job_attributes.attr_key="starexec-result")
