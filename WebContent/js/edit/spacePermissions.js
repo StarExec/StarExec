@@ -243,6 +243,11 @@ function addUsersPaginationHandler(sSource, aoData, fnCallback) {
 	// Extract the id of the currently selected space from the DOM
 	var idOfSelectedSpace = getIdOfSelectedSpace();
 
+	// If we can't find the id of the space selected from the DOM, just do not populate the table
+	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
+		return;
+	}
+
 	$.get(starexecRoot + 'services/space/community/' + idOfSelectedSpace, function(communityIdOfSelectedSpace) {
 		fillTableWithPaginatedPrimitives(tableName, 'users', communityIdOfSelectedSpace, sSource, aoData, fnCallback);
 	});
