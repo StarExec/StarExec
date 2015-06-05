@@ -1346,20 +1346,27 @@ public class RESTServices {
 		} else if (attribute.equals("email")) {
 			log.info("User with id="+userId+" has requested to change their email to "+newValue);
 			success = true;
-			try {
-				// Send a validation email to the new email address. using a unique 
-				// code to safely reference this user's entry in verification hyperlinks
-				String code = UUID.randomUUID().toString();
-				Mail.sendEmailChangeValidation(newValue, code);
-				log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
-				// If an IOException wasn't thrown then add the request to the database.
-				Requests.addChangeEmailRequest(userId, newValue, code);
-				messageToUser = "A verification email has been sent to the new email address.";
-			} catch (IOException e) {
-				messageToUser = "Could not send verification email.";
-				success = false;
-			} catch (StarExecDatabaseException e) {
-				messageToUser = "Internal error.";
+			if (!Users.getUserByEmail(newValue)) {
+				try {
+					String code = UUID.randomUUID().toString();
+					// Add the request to the database.
+					Requests.addChangeEmailRequest(userId, newValue, code);
+					// Send a validation email to the new email address. using a unique 
+					// code to safely reference this user's entry in verification hyperlinks
+					Mail.sendEmailChangeValidation(newValue, code);
+					log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
+					messageToUser = "A verification email has been sent to the new email address.";
+				} catch (IOException e) {
+					log.warn("(editUserInfo) an error occurred while trying to send a change email verification email.", e);
+					messageToUser = "Could not send verification email.";
+					success = false;
+				} catch (StarExecDatabaseException e) {
+					log.error("(editUserInfo) an error occurred while trying to add a change email request.", e);
+					messageToUser = "Internal error: could not complete email change request.";
+					success = false;
+				}
+			} else {
+				messageToUser = "A user with that email already exists.";
 				success = false;
 			}
 		} else if (attribute.equals("diskquota")) {
