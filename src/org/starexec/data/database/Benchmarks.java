@@ -663,14 +663,14 @@ public class Benchmarks {
 	}
 	
 	
-	/**
+	/*
 	 * Associates a list of benchmarks with the given space, keeping track of these associations
 	 * in the correct Upload Status object for this upload
 	 * @param benchIds The IDs of the benchmarks to associate
 	 * @param spaceId The ID of the space to add benchmarks to
 	 * @param XMLUploadId The ID of the UploadStatus object to track things in
 	 * @return True on success and false otherwise.
-	 */
+	 *
 	public static boolean associate(List<Integer> benchIds, int spaceId, int XMLUploadId) {
 		Connection con = null;			
 		int uploadCounter=0;
@@ -703,6 +703,7 @@ public class Benchmarks {
 
 		return false;
 	}	
+	*/
 
 	/**
 	 * Associates the benchmarks with the given ids to the given space
