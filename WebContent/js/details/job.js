@@ -290,6 +290,12 @@ function initUI(){
 		}
 	
 	});
+
+	$("#matrixViewButton").button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	});
 	
 	$("#syncResults").button({
 		icons: {

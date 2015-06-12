@@ -51,6 +51,8 @@ public class R {
     public static int PROCESSOR_NAME_LEN=64;
     public static int PROCESSOR_DESC_LEN=1024;
     public static int QUEUE_NAME_LEN=64;
+
+	public static final int MATRIX_VIEW_COLUMN_HEADER = 20;
     
     //the number of increments we should accumulate in an upload status field before actually committing to the database
     //public static int UPLOAD_STATUS_UPDATE_THRESHOLD=100;

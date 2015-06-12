@@ -167,11 +167,13 @@
 				</table>
 			</fieldset>
 			
-				<fieldset id="graphField">
+			<fieldset id="graphField">
 			<legend>graphs</legend> 
 			<img id="spaceOverview" src="/${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
 				
 				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
+				<br>
+				<a href="/${starexecRoot}/secure/details/jobMatrixView.jsp?id=${job.id}&stage=1" target="_blank"><button id="matrixViewButton" type="button">Matrix View</button></a>
 				<fieldset id="optionField">
 				<legend>options</legend> 
 					<fieldset id="spaceOverviewOptionField">
