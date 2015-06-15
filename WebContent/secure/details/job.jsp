@@ -108,6 +108,8 @@
 			<h3 id="spaceName">${jobspace.name}</h3>
 			<p id="displayJobSpaceID" class="accent">id  = ${job.primarySpace}</p>
 			
+			<a href="/${starexecRoot}/secure/details/jobMatrixView.jsp?id=${job.id}&stage=1" target="_blank"><button id="matrixViewButton" type="button">Matrix View</button></a>
+			
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
@@ -173,7 +175,6 @@
 				
 				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
 				<br>
-				<a href="/${starexecRoot}/secure/details/jobMatrixView.jsp?id=${job.id}&stage=1" target="_blank"><button id="matrixViewButton" type="button">Matrix View</button></a>
 				<fieldset id="optionField">
 				<legend>options</legend> 
 					<fieldset id="spaceOverviewOptionField">
