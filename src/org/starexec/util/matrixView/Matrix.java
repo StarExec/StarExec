@@ -111,6 +111,101 @@ public class Matrix {
 		return hasMultipleStages;
 	}
 
+	/**
+	 * Gets a column header and truncates and adds an ellipsis to the end depending on the
+	 * max size of matrix headers in R.java
+	 * 
+	 * @author Albert Giegerich
+	 */
+	public String getTruncatedColumnHeader(int column) {
+		String solverName = solverConfigsByColumn.get(column).getLeft().getName();
+		String truncatedSolverName = truncateAddEllipsisIfGreaterThanMax(solverName);
+
+		String configName = solverConfigsByColumn.get(column).getRight().getName();
+		String truncatedConfigName = truncateAddEllipsisIfGreaterThanMax(configName);
+
+		return String.format("%s (%s)", truncatedSolverName, truncatedConfigName);
+	}
+
+	/**
+	 * Adds a new element or replaces an old one at the given location.
+	 * This method will fill in all empty spaces with null if the matrix
+	 * is smaller than the specified dimensions.
+	 * @param row the row to insert the new element.
+	 * @param column the column to insert the new element.
+	 * @param element the new element.
+	 * @author Albert Giegerich
+	 */
+	public void set(int row, int column, MatrixElement element) {
+		// Make sure there are enough rows to accommodate the new row.
+		while (matrix.size() <= row) {
+			matrix.add(new ArrayList<MatrixElement>());
+		}
+		// Make sure there are enough columns to accommodate the new column.
+		// Fill in all ragged edges as well.
+		for (ArrayList<MatrixElement> currentRow : matrix) {
+			while (currentRow.size() <= column) {
+				currentRow.add(null);
+			}
+		}
+		matrix.get(row).set(column, element);
+	}
+
+
+	/**
+	 * Gets all the headers for the rows of the Matrix.
+	 * @return The row headers for the Matrix.
+	 * @author Albert Giegerich
+	 */
+	public ArrayList<Benchmark> getBenchmarksByRow() {
+		return benchmarksByRow;
+	}
+
+	/**
+	 * Gets all the headers for the columns of the Matrix.
+	 * @return The column headers for the Matrix.
+	 * @author Albert Giegerich
+	 */
+	public ArrayList<Pair<Solver,Configuration>> getSolverConfigsByColumn() {
+		return solverConfigsByColumn;
+	}
+
+	/**
+	 * Gets the internal ArrayList<ArrayList> representation of the matrix for use with the JSP foreach element.
+	 * @return the matrix field of the Matrix.
+	 * @author Albert Giegerich
+	 */
+	public ArrayList<ArrayList<MatrixElement>> getInternalMatrixRepresentation() {
+		return matrix;
+	}
+
+	/**
+	 * Populates the row and column headers from two given lists.
+	 * @author Albert Giegerich
+	 */
+	private void populateRowAndColumnHeaders(List<Benchmark> rowElements, List<Pair<Solver,Configuration>> columnElements) {
+		for (Benchmark bench : rowElements) {
+			this.benchmarksByRow.add(bench);
+		}
+
+		for (Pair<Solver,Configuration> solverConfig : columnElements) {
+			this.solverConfigsByColumn.add(solverConfig);
+		}
+	}
+
+	/**
+	 * Truncate a String if it it greater than R.MATRIX_VIEW_COLUMN_HEADER and adds
+	 * and ellipsis.
+	 * @author Albert Giegerich
+	 */
+	private String truncateAddEllipsisIfGreaterThanMax(String original) {
+		boolean originalLongerThanMax = original.length() > R.MATRIX_VIEW_COLUMN_HEADER;
+		String truncatedName = StringUtils.left(original, R.MATRIX_VIEW_COLUMN_HEADER);
+		if (originalLongerThanMax) {
+			truncatedName += "...";
+		}
+		return truncatedName;
+	}	
 
 	/**
 	 * Builds a Set of Benchmarks and a Set of solver-configs and a mapping form benchmark-solverConfig pairs
@@ -148,107 +243,6 @@ public class Matrix {
 			// at that point.
 			vectorIntersectionToCellDataMap.put(vectorIntersectionPoint, jobPairCellData);
 		}
-	}
-
-	/**
-	 *
-	 */ 
-	private boolean testForMultipleStages(JobPair pair) {
-		if (pair.getStages().size() > 1) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-
-	/**
-	 * Populates the matrix by checking if each benchmark - solver-config intersection has cell data associated with it
-	 * and adding it to the matrix if it does. 
-	 * @author Albert Giegerich
-	 */
-	private void populateMatrixData(List<Benchmark> uniqueBenchmarkList, List<Pair<Solver,Configuration>> uniqueSolverConfigList, 
-			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>, MatrixElement> vectorIntersectionToCellDataMap) 
-	{
-		for (int i = 0; i < uniqueBenchmarkList.size(); i++) {
-			Benchmark bench = uniqueBenchmarkList.get(i);
-			for (int j = 0; j < uniqueSolverConfigList.size(); j++) {
-				Pair<Solver,Configuration> solverConfig = uniqueSolverConfigList.get(j);
-				Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
-					new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
-				MatrixElement cellData = vectorIntersectionToCellDataMap.get(vectorIntersectionPoint);
-				this.set(i, j, cellData);
-			}
-		}
-	}
-
-	/**
-	 * Gets a column header and truncates and adds an ellipsis to the end depending on the
-	 * max size of matrix headers in R.java
-	 * 
-	 * @author Albert Giegerich
-	 */
-	public String getTruncatedColumnHeader(int column) {
-		String solverName = solverConfigsByColumn.get(column).getLeft().getName();
-		String truncatedSolverName = truncateAddEllipsisIfGreaterThanMax(solverName);
-
-		String configName = solverConfigsByColumn.get(column).getRight().getName();
-		String truncatedConfigName = truncateAddEllipsisIfGreaterThanMax(configName);
-
-		return String.format("%s (%s)", truncatedSolverName, truncatedConfigName);
-	}
-
-	/**
-	 * Populates the row and column headers from two given lists.
-	 * @author Albert Giegerich
-	 */
-	private void populateRowAndColumnHeaders(List<Benchmark> rowElements, List<Pair<Solver,Configuration>> columnElements) {
-		for (Benchmark bench : rowElements) {
-			this.benchmarksByRow.add(bench);
-		}
-
-		for (Pair<Solver,Configuration> solverConfig : columnElements) {
-			this.solverConfigsByColumn.add(solverConfig);
-		}
-	}
-
-	/**
-	 * Truncate a String if it it greater than R.MATRIX_VIEW_COLUMN_HEADER and adds
-	 * and ellipsis.
-	 * @author Albert Giegerich
-	 */
-	private String truncateAddEllipsisIfGreaterThanMax(String original) {
-		boolean originalLongerThanMax = original.length() > R.MATRIX_VIEW_COLUMN_HEADER;
-		String truncatedName = StringUtils.left(original, R.MATRIX_VIEW_COLUMN_HEADER);
-		if (originalLongerThanMax) {
-			truncatedName += "...";
-		}
-		return truncatedName;
-	}	
-
-
-	/**
-	 * Adds a new element or replaces an old one at the given location.
-	 * This method will fill in all empty spaces with null if the matrix
-	 * is smaller than the specified dimensions.
-	 * @param row the row to insert the new element.
-	 * @param column the column to insert the new element.
-	 * @param element the new element.
-	 * @author Albert Giegerich
-	 */
-	public void set(int row, int column, MatrixElement element) {
-		// Make sure there are enough rows to accommodate the new row.
-		while (matrix.size() <= row) {
-			matrix.add(new ArrayList<MatrixElement>());
-		}
-		// Make sure there are enough columns to accommodate the new column.
-		// Fill in all ragged edges as well.
-		for (ArrayList<MatrixElement> currentRow : matrix) {
-			while (currentRow.size() <= column) {
-				currentRow.add(null);
-			}
-		}
-		matrix.get(row).set(column, element);
 	}
 
 	/**
@@ -311,29 +305,35 @@ public class Matrix {
 	}
 
 	/**
-	 * Gets all the headers for the rows of the Matrix.
-	 * @return The row headers for the Matrix.
-	 * @author Albert Giegerich
-	 */
-	public ArrayList<Benchmark> getBenchmarksByRow() {
-		return benchmarksByRow;
+	 *
+	 */ 
+	private boolean testForMultipleStages(JobPair pair) {
+		if (pair.getStages().size() > 1) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	/**
-	 * Gets all the headers for the columns of the Matrix.
-	 * @return The column headers for the Matrix.
-	 * @author Albert Giegerich
-	 */
-	public ArrayList<Pair<Solver,Configuration>> getSolverConfigsByColumn() {
-		return solverConfigsByColumn;
-	}
 
 	/**
-	 * Gets the internal ArrayList<ArrayList> representation of the matrix for use with the JSP foreach element.
-	 * @return the matrix field of the Matrix.
+	 * Populates the matrix by checking if each benchmark - solver-config intersection has cell data associated with it
+	 * and adding it to the matrix if it does. 
 	 * @author Albert Giegerich
 	 */
-	public ArrayList<ArrayList<MatrixElement>> getInternalMatrixRepresentation() {
-		return matrix;
+	private void populateMatrixData(List<Benchmark> uniqueBenchmarkList, List<Pair<Solver,Configuration>> uniqueSolverConfigList, 
+			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>, MatrixElement> vectorIntersectionToCellDataMap) 
+	{
+		for (int i = 0; i < uniqueBenchmarkList.size(); i++) {
+			Benchmark bench = uniqueBenchmarkList.get(i);
+			for (int j = 0; j < uniqueSolverConfigList.size(); j++) {
+				Pair<Solver,Configuration> solverConfig = uniqueSolverConfigList.get(j);
+				Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
+					new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
+				MatrixElement cellData = vectorIntersectionToCellDataMap.get(vectorIntersectionPoint);
+				this.set(i, j, cellData);
+			}
+		}
 	}
+
 }
