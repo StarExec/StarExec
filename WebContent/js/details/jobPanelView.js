@@ -2,9 +2,20 @@ var jobSpaceId; //stores the ID of the job space that is currently selected from
 var jobId; //the ID of the job being viewed
 var panelArray=null;
 var useWallclock=true;
+var stageNumber;
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");	
 	jobSpaceId=$("#spaceId").attr("value");
+	stageNumber=$("#stageNumber").attr("value");
+
+	$('#selectStageButton').click(function() {
+		var stageToRedirectTo = $('#selectStageInput').val();
+		if (isInt(stageToRedirectTo)) {
+			window.location.replace(starexecRoot + '/secure/details/jobPanelView.jsp?jobid='+jobId+'&spaceid='+jobSpaceId+'&stage='+stageToRedirectTo);
+		} else {
+			$('#selectStageError').show();
+		}
+	});
 
 	//update the tables every 5 seconds
 	setInterval(function() {
@@ -13,6 +24,12 @@ $(document).ready(function(){
 	initUI();
 	initializePanels();
 });
+
+function isInt(value) {
+	var intRegex = /^[1-9]{1}[0-9]*$/;
+
+	return intRegex.test(value);
+}
 
 function refreshPanels(){
 	for (i=0;i<panelArray.length;i++) {
@@ -116,7 +133,7 @@ function initializePanels() {
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(  
-			sSource+useWallclock,
+			sSource+useWallclock+'/'+stageNumber,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these

@@ -352,7 +352,8 @@ function initUI(){
 	});
 	
 	$("#popoutPanels").click(function() {
-		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId);
+		// default to primary stage
+		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId+"&stage=1");
 	});
 	$("#collapsePanels").click(function() {
 		$(".panelField").each(function() {
