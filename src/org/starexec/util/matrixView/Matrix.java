@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,9 +25,11 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.compare.NameableComparators;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.Util;
 
 
@@ -40,8 +43,12 @@ public class Matrix {
 	private ArrayList<Pair<Solver,Configuration>> solverConfigsByColumn;
 	private ArrayList<ArrayList<MatrixElement>> matrix;
 	private boolean hasMultipleStages;
+	private String jobSpaceName;
+	private Integer jobSpaceId;
+
 
 	private static final Logger log = Logger.getLogger(Matrix.class);
+
 
 	/**
 	 * Builds a Matrix for the job matrix display page given a Job and a stageNumber.
@@ -49,15 +56,16 @@ public class Matrix {
 	 * @param stageNumber filter the job pairs to view by this stage.
 	 * @author Albert Giegerich
 	 */
-	public Matrix(Job job, int stageNumber) {
+	private Matrix(List<JobPair> jobPairs, final int stageNumber, final String jobSpaceName, final Integer jobSpaceId) {
+		final String method = "Matrix constructor";
 		try {
-			log.debug("Entering Matrix constructor.");
-			initializeMatrixFields();
+			log.debug("Entering " + method);
+			initializeMatrixFields(jobSpaceName, jobSpaceId);
 
-			List<JobPair> jobPairs = job.getJobPairs();
 
 			Set<Benchmark> uniqueBenchmarks = new HashSet<Benchmark>();
 			Set<Pair<Solver,Configuration>> uniqueSolverConfigs = new HashSet<Pair<Solver,Configuration>>();
+
 			// Maps benchmark and solver-configuration vectors to the data that should appear in the cell where the two
 			// vectors intersect.
 			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement> vectorIntersectionToCellDataMap =
@@ -72,7 +80,7 @@ public class Matrix {
 			}
 
 
-			log.debug("(Matrix) sorting benchmarks and solver-config pairs.");
+			log.debug("("+method+") sorting benchmarks and solver-config pairs.");
 			// Sort the benchmarks alphabetically by name ignoring case.
 			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<Benchmark>(uniqueBenchmarks);
 			Collections.sort(uniqueBenchmarkList, NameableComparators.getCaseInsensitiveAlphabeticalComparator());
@@ -82,6 +90,7 @@ public class Matrix {
 			// Names of solver config will be "solver (config)", sort the solverConfigs
 			// alphabetically by name, ignore case.
 			Collections.sort(uniqueSolverConfigList, new Comparator<Pair<Solver,Configuration>>() {
+				@Override
 				public int compare(Pair<Solver,Configuration> sc1, Pair<Solver,Configuration> sc2) {
 					String solverName1 = sc1.getLeft().getName();
 					String solverName2 = sc2.getLeft().getName();
@@ -101,6 +110,81 @@ public class Matrix {
 			log.warn("Error in constructing matrix for matrix view page.", e);
 		}
 	}
+
+
+	/**
+	 * Gets a list of matrices from a job. One matrix per job space in the job.
+	 * @author Albert Giegerich
+	 */
+	public static List<Matrix> getMatricesByJobSpaceFromJobStage(Job job, int stageNumber) throws StarExecException {
+		final String method = "getMatricesByJobSpaceFromJobStage";
+		log.debug("Entering method " + method);
+		List<Matrix> matricesByJobSpace = new LinkedList<Matrix>();
+		try {
+			// Get a list of the job spaces that occur in the job, ordered alphabetically.
+			List<Pair<String,Integer>> orderedSpaces = getSpacesInJobOrderedAlphabetically(job);
+			HashMap<Integer, List<JobPair>> jobPairsByJobSpaceId = getJobPairsBySpaceIdMapFromJob(job);
+			
+			// Generate the matrices in alphabetical order.
+			for (Pair<String,Integer> spaceNameAndId : orderedSpaces) {
+				String jobSpaceName = spaceNameAndId.getLeft();
+				Integer jobSpaceId = spaceNameAndId.getRight();
+				List<JobPair> jobPairsAssociatedWithJobSpaceId = jobPairsByJobSpaceId.get(jobSpaceId);
+				Matrix matrix = new Matrix(jobPairsAssociatedWithJobSpaceId, stageNumber, jobSpaceName, jobSpaceId);
+				matricesByJobSpace.add(matrix);
+			}
+		} catch (Exception e) {
+			log.warn("Error encountered while attempting to generate matrices for job matrix display.", e);
+			throw new StarExecException("Error encountered while attempting to generate matrices for job matrix display.");
+		}
+		return matricesByJobSpace;
+	}
+
+	/**
+	 * Takes a Job and creates a HashMap that maps all of the ids of the job Spaces in the map to a list
+	 * of the JobPairs in that job Space.
+	 * @param job the job to build a map from.
+	 * @return a HashMap that maps all the job pairs associated with a job space ID to a list in the map.
+	 * @author Albert Giegerich
+	 */
+	private static HashMap<Integer, List<JobPair>> getJobPairsBySpaceIdMapFromJob(Job job) {
+		HashMap<Integer, List<JobPair>> jobPairsBySpaceIdMap = new HashMap<Integer, List<JobPair>>();
+		List<JobPair> jobPairs = job.getJobPairs();
+		for (JobPair pair : jobPairs) {
+			Integer jobSpaceId = pair.getJobSpaceId();
+			if (jobPairsBySpaceIdMap.containsKey(jobSpaceId)) {
+				// If the map already contains a list of job pairs associated with this id then add this
+				// pair to the list.
+				List<JobPair> jobPairsAssociatedWithJobSpaceId = jobPairsBySpaceIdMap.get(jobSpaceId);
+				jobPairsAssociatedWithJobSpaceId.add(pair);
+			} else {
+				// Otherwise add a new list associated with the id to the map containing the pair.
+				List<JobPair> newListOfJobPairs = new LinkedList<JobPair>();
+				newListOfJobPairs.add(pair);
+				jobPairsBySpaceIdMap.put(jobSpaceId, newListOfJobPairs);
+			}
+		}
+		return jobPairsBySpaceIdMap;
+	}
+
+	/**
+	 * Gets the job space name associated with the matrix. 
+	 * @return the job space name associated with the matrix.
+	 * @author Albert Giegerich
+	 */
+	public String getJobSpaceName() {
+		return jobSpaceName;
+	}	
+
+	/**
+	 * Gets the job space id associated with the matrix.
+	 * @return the job space id associated with the matrix.
+	 * @author Albert Giegerich
+	 */
+	public Integer getJobSpaceId() {
+		return jobSpaceId;
+	}
+
 
 	/**
 	 * Getter for hasMultipleStagesField
@@ -198,7 +282,7 @@ public class Matrix {
 	 * and ellipsis.
 	 * @author Albert Giegerich
 	 */
-	private String truncateAddEllipsisIfGreaterThanMax(String original) {
+	private static String truncateAddEllipsisIfGreaterThanMax(String original) {
 		boolean originalLongerThanMax = original.length() > R.MATRIX_VIEW_COLUMN_HEADER;
 		String truncatedName = StringUtils.left(original, R.MATRIX_VIEW_COLUMN_HEADER);
 		if (originalLongerThanMax) {
@@ -212,7 +296,7 @@ public class Matrix {
 	 * to the the data associated with them.
 	 * @author Albert Giegerich
 	 */
-	private void addToUniqueVectorListsAndIntersectionMap(
+	private static void addToUniqueVectorListsAndIntersectionMap(
 		Set<Benchmark> uniqueBenchmarks, 
 		Set<Pair<Solver,Configuration>> uniqueSolverConfigs, 
 		HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement> vectorIntersectionToCellDataMap, 
@@ -250,7 +334,7 @@ public class Matrix {
 	 * @param stage the stage 
 	 * @author Albert Giegerich
 	 */
-	private MatrixElement getCellDataFromStageAndJobPairId(JoblineStage stage, Integer jobPairId) {
+	private static MatrixElement getCellDataFromStageAndJobPairId(JoblineStage stage, Integer jobPairId) {
 		// Replace spaces with _ to make the status usable as a css class.
 		String status = getStatusFromStage(stage);
 		String cpuTime = String.valueOf(stage.getCpuTime());
@@ -272,7 +356,7 @@ public class Matrix {
 	 * @return the status code of the input stage.
 	 * @author Albert Giegerich
 	 */
-	private String getStatusFromStage(JoblineStage stage) {
+	private static String getStatusFromStage(JoblineStage stage) {
 		// 0 for solved 1 for wrong
 		int correctCode = JobPairs.isPairCorrect(stage);
 		StatusCode statusCode = stage.getStatus().getCode();
@@ -296,8 +380,10 @@ public class Matrix {
 	 * Initializes the matrices private fields.
 	 * @author Albert Giegerich
 	 */
-	private void initializeMatrixFields() {
+	private void initializeMatrixFields(String jobSpaceName, Integer jobSpaceId) {
 		// Initialize the Matrices' fields
+		this.jobSpaceName = jobSpaceName;
+		this.jobSpaceId = jobSpaceId;
 		matrix = new ArrayList<ArrayList<MatrixElement>>();
 		benchmarksByRow = new ArrayList<Benchmark>();
 		solverConfigsByColumn = new ArrayList<Pair<Solver,Configuration>>();
@@ -305,9 +391,10 @@ public class Matrix {
 	}
 
 	/**
-	 *
+	 * Takes a job pair and returns true if it has more than one stage.
+	 * @author Albert Giegerich
 	 */ 
-	private boolean testForMultipleStages(JobPair pair) {
+	private static boolean testForMultipleStages(JobPair pair) {
 		if (pair.getStages().size() > 1) {
 			return true;
 		} else {
@@ -334,6 +421,54 @@ public class Matrix {
 				this.set(i, j, cellData);
 			}
 		}
+	}
+
+	/**
+	 * Gets a list of Pairs with the name and ID of each jobspace that the given job
+	 * has in it.
+	 * @author Albert Giegerich
+	 */
+	private static List<Pair<String, Integer>> getSpacesInJobOrderedAlphabetically(Job job) {
+		final String method = "getSpacesInJobOrderedAlphabetically";
+		log.debug("Entering method "+method);
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		Set<Pair<String,Integer>> uniqueSpaces = new HashSet<Pair<String,Integer>>();
+
+		// Build a set of all the spaces that exist for this job.
+		for (JobPair pair : jobPairs) {
+			String jobSpaceName = pair.getJobSpaceName();
+			Integer jobSpaceId = pair.getJobSpaceId();
+			Pair<String,Integer> jobSpaceNameAndId = new ImmutablePair<String,Integer>(jobSpaceName, jobSpaceId);
+			uniqueSpaces.add(jobSpaceNameAndId);	
+		}
+
+		List<Pair<String, Integer>> orderedSpaces = new ArrayList<Pair<String,Integer>>(uniqueSpaces);
+		Collections.sort(orderedSpaces, new Comparator<Pair<String, Integer>>() {
+			@Override
+			public int compare(Pair<String,Integer> jobSpaceA, Pair<String,Integer> jobSpaceB) {
+				// Try sorting alphabetically insensitive to case.
+				String jobSpaceNameA = jobSpaceA.getLeft();
+				String jobSpaceNameB = jobSpaceB.getLeft();
+				int alphabeticalComparison = jobSpaceNameA.compareToIgnoreCase(jobSpaceNameB);
+
+				if (alphabeticalComparison != 0) {
+					return alphabeticalComparison;
+				} 
+
+				// If two elements are equal sort them by the value of their ID.
+				Integer jobSpaceIdA = jobSpaceA.getRight();
+				Integer jobSpaceIdB = jobSpaceB.getRight();
+				return jobSpaceIdA.compareTo(jobSpaceIdB);
+			}
+		});
+
+		log.debug("(getSpacesInJobOrderedAlphabetically) Number of spaces in job = "+orderedSpaces.size());
+		for (Pair<String, Integer> jobSpace : uniqueSpaces) {
+			log.debug("    Name="+jobSpace.getLeft()+"  ID="+jobSpace.getRight());
+		}
+
+		return orderedSpaces;
 	}
 
 }

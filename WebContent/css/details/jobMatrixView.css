@@ -16,7 +16,7 @@
 	margin: 10px 0 0 0;
 }
 
-.dataTables_scrollBody #jobMatrix thead {
+.dataTables_scrollBody .jobMatrix thead {
 	display: none;
 }
 
@@ -47,6 +47,13 @@ div.dataTables_scrollBody {
 	word-wrap: break-word;
 }
 
+.jobSpaceName {
+	font-size: 26px;
+	margin-top: 50px;
+	margin-left: 20px;
+	margin-bottom: 10px;
+	word-wrap: break-word;
+}
 
 td.jobMatrixCell {
 	padding: 0 0 20px;
@@ -61,11 +68,9 @@ td.jobMatrixCell {
 }
 
 
-/*
 table.dataTable tbody td {
 	padding: 0;
 }
-*/
 
 #wrapper {
 	width: 100%;
@@ -82,12 +87,6 @@ table.dataTable tbody td {
 	margin-left: auto;
 	margin-right: auto;
 }
-
-.jobMatrix {
-	overflow: scroll;
-	width: 100%;
-}
-
 
 .legendColorTable {
 	margin: 5px 0 0 0;

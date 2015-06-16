@@ -22,20 +22,26 @@ $(document).ready(function() {
 
 	removeHeader();
 
-	var table = $('#jobMatrix').dataTable({
-		/*
-		'columnDefs': [
-			{ 'width': '120px', 'targets': '_all' }
-		],
-		*/
-		'bSort': false,
-		'scrollY': '300px',
-		'scrollX': '100%',
-		'scrollCollapse': true,
-		'paging': false
+	$('.jobMatrix').each(function(index, matrix) {;
+		var table = $(matrix).dataTable({
+			/*
+			'columnDefs': [
+				{ 'width': '120px', 'targets': '_all' }
+			],
+			*/
+			'bSort': false,
+			'scrollY': '300px',
+			'scrollX': '100%',
+			'scrollCollapse': true,
+			'paging': false
+		});
+
+		table.fnAdjustColumnSizing();
+
+
+		new $.fn.dataTable.FixedColumns(table);
 	});
 
-	new $.fn.dataTable.FixedColumns(table);
 
 	$('#selectStageButton').click(function() {
 		console.log('Select stage button clicked.');
