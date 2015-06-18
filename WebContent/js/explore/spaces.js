@@ -1742,11 +1742,12 @@ function updateButtonIds(id) {
 		// Display the confirmation dialog
 		$('#dialog-download-space-txt').text('do you want to download the single space or the hierarchy?');
 		$("#downloadBoth").prop("checked","checked");
+		$('#noIdDirectories').prop('checked','checked');
 
 		$('#dialog-download-space').dialog({
 			modal: true,
 			width: 380,
-			height: 250,
+			height: 400,
 			buttons: {
 				'space': function(){
 					createDownloadSpacePost(false,id);
@@ -1779,12 +1780,15 @@ function createDownloadSpaceXMLRequest(includeAttrs,updates,upid,id) {
 }
 
 function createDownloadSpacePost(hierarchy,id) {
-	downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
+	var downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
 	
-	downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
+	var downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
+	var useIdDirectories = $('#yesIdDirectories').prop('checked');
+	console.log("useIdDirectories: " + useIdDirectories);
 	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 	token=Math.floor(Math.random()*100000000);
-	window.location.href=starexecRoot+"secure/download?includesolvers="+downloadSolvers+"&includebenchmarks="+downloadBenchmarks+"&token="+token+"&type=space&hierarchy="+hierarchy+"&id="+id;
+	window.location.href=starexecRoot+"secure/download?includesolvers="+downloadSolvers+"&includebenchmarks="+downloadBenchmarks+
+		"&useIdDirectories="+useIdDirectories+"&token="+token+"&type=space&hierarchy="+hierarchy+"&id="+id;
 	destroyOnReturn(token);
 }
 

@@ -174,6 +174,7 @@ public class Download extends HttpServlet {
 				if (Util.paramExists("includebenchmarks", request)) {
 					includeBenchmarks=Boolean.parseBoolean(request.getParameter("includebenchmarks"));
 				}
+				boolean useIdDirectories = Boolean.parseBoolean(request.getParameter("useIdDirectories"));
 				shortName=space.getName();
 				shortName=shortName.replaceAll("\\s+","");
 				boolean hierarchy=request.getParameter("hierarchy").equals("true");
@@ -181,7 +182,7 @@ public class Download extends HttpServlet {
 				    shortName=shortName+"_Hierarchy";
 				
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleSpace(space, u.getId(), response,hierarchy,includeBenchmarks,includeSolvers);
+				success = handleSpace(space, u.getId(), response,hierarchy,includeBenchmarks,includeSolvers, useIdDirectories);
 				
 			  
 			} else if (request.getParameter(PARAM_TYPE).equals("proc")) {
@@ -743,18 +744,20 @@ public class Download extends HttpServlet {
 	 * @param response The servlet response sent back
 	 * @param includeBenchmarks Whether to include benchmarks in the directory
 	 * @param includeSolvers Whether to include solvers in the directory
+	 * @param useIdDirectories whether to put each primitive in a directory that has the name of it's id.
 	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
-	 * @author Ruoyu Zhang + Eric Burns
+	 * @author Ruoyu Zhang + Eric Burns + Albert Giegerich
 	 */
 	
-	private boolean handleSpace(Space space, int uid, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,boolean includeSolvers) throws Exception {
+	private boolean handleSpace(Space space, int uid, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,
+								boolean includeSolvers, boolean useIdDirectories) throws Exception {
 		// If we can see this space AND the space is downloadable...
 		try {
 				//String baseFileName=space.getName();
 				ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
 
-				storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks,includeSolvers,hierarchy,stream);
+				storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks,includeSolvers,hierarchy,stream, useIdDirectories);
 				stream.close();
 
 				return true;
@@ -776,20 +779,43 @@ public class Download extends HttpServlet {
 	 * @param  includeSolvers Whether to include solvers in the directory
 	 * @param recursive Whether to include subspaces or not
 	 * @param solverPath The path to the directory containing solvers, where they are stored in a folder
-	 * with the name <solverName><solverId>. If null, the solvers are not stored anywhere. Used to create
-	 * links to solvers and prevent downloading them repeatedly. 
+	 *        with the name <solverName><solverId>. If null, the solvers are not stored anywhere. Used to create
+	 *        links to solvers and prevent downloading them repeatedly. 
+	 * @param useIdDirectories set to true if we want every primitive to be contained in a directory that is named
+	 *        after the primitives id.
 	 * @throws IOException
-	 * @author Ruoyu Zhang + Eric Burns
+	 * @author Ruoyu Zhang + Eric Burns + Albert Giegerich
 	 */
-	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive,ZipOutputStream stream) throws Exception {
+	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, 
+									 boolean recursive, ZipOutputStream stream, boolean useIdDirectories) throws Exception {
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			if (includeBenchmarks) {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 
+				// Get a list of the names of the benchmarks in benchList
+				List<String> benchNameList = new LinkedList<String>();
+				for (Benchmark bench : benchList) {
+					benchNameList.add(bench.getName());
+				}
+				// Create a map that maps names of benchmarks to whether or not that name is a duplicate in the list.
+				HashMap<String,Boolean> benchmarkNameDuplicateMap = createNameDuplicateMap(benchNameList);
+
 				for(Benchmark b: benchList){
 					if(b.isDownloadable() || b.getUserId()==uid ){
-						ArchiveUtil.addFileToArchive(stream, new File(b.getPath()), dest+File.separator+b.getId()+File.separator+b.getName());					
+						File benchmarkFile = new File(b.getPath());
+						/*ArchiveUtil.addFileToArchive(stream, benchmarkFile, dest+File.separator+b.getId()+File.separator+b.getName());*/
+						String zipFileName;
+						if (useIdDirectories) { 
+							zipFileName = dest+File.separator+b.getId()+File.separator+b.getName();
+						} else {
+							boolean isDuplicate = benchmarkNameDuplicateMap.get(b.getName());
+							zipFileName = dest+File.separator+b.getName();
+							if (isDuplicate) {
+								zipFileName += "_id_" + b.getId();
+							}
+						}
+						ArchiveUtil.addFileToArchive(stream, benchmarkFile, zipFileName);
 					}
 				}
 			}
@@ -804,14 +830,35 @@ public class Download extends HttpServlet {
 					solverList=Solvers.getBySpace(space.getId());
 				}
 
+
+				// Create a list of the names of the solvers in solverList
+				List<String> solverNames = new LinkedList<String>();
+				for (Solver solver: solverList) {
+					solverNames.add(solver.getName());
+				}
+				// Create a map that maps the names of solvers to whether or not they are duplicates in solverList.
+				HashMap<String,Boolean> solverNameDuplicateMap = createNameDuplicateMap(solverNames);
+
 					
 				for (Solver s : solverList) {
 					if (s.isDownloadable() || s.getUserId()==uid) {
-						ArchiveUtil.addDirToArchive(stream, new File(s.getPath()), dest+File.separator+"solvers"+File.separator+s.getId());
-						
+						File solverFile = new File(s.getPath());
+						String zipFileName;
+						// Use a different file structure based on whether we're using id directories or not
+						if (useIdDirectories) { 
+							zipFileName = dest+File.separator+"solvers"+File.separator+s.getId();
+						} else {
+							boolean isDuplicate = solverNameDuplicateMap.get(s.getName());
+							zipFileName = dest+File.separator+"solvers"+File.separator+s.getName();
+							if (isDuplicate) {
+								// Since the id directory is not being used we have to check to see if there are
+								// solvers with the same name. Append their unique ids if there are.
+								zipFileName += "_id_" + s.getId();
+							}
+						}
+						ArchiveUtil.addDirToArchive(stream, solverFile, zipFileName);
 					}
 				}
-				 
 			}
 			
 			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest+File.separator+R.DESC_PATH);
@@ -828,11 +875,30 @@ public class Download extends HttpServlet {
 			for(Space s: subspaceList){
 				String subDir = dest + File.separator + s.getName();
 				//include solvers is always false except at the top level
-				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,false,recursive,stream);
+				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks,false,recursive,stream, useIdDirectories);
 			}
 			return;
 		}
 		return;
+	}
+
+	/**
+	 * Using a list of Solvers map each solver name to whether or not that solver name is duplicated in the
+	 * solver list.
+	 * @author Albert Giegerich
+	 */
+	private static HashMap<String,Boolean> createNameDuplicateMap(List<String> names) {
+		HashMap<String,Boolean> nameDuplicateMap = new HashMap<String,Boolean>();
+		for (String name : names) {
+			if (nameDuplicateMap.containsKey(name)) {
+				// If the name already exists in the map there is a duplication so map this name to true.
+				nameDuplicateMap.put(name, true);	
+			} else {
+				// This is the first occurence of a solver with this name.
+				nameDuplicateMap.put(name, false);
+			}
+		}
+		return nameDuplicateMap;
 	}
 	
 	/**
