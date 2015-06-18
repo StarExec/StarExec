@@ -1627,7 +1627,7 @@ public class RESTServices {
 		}
 		
 		
-		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
+		log.info("post process request with jobId = "+jid+" and processor id = "+pid);
 		
 		return Jobs.prepareJobForPostProcessing(jid,pid,stageNumber) ? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
 	}
