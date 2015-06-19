@@ -61,6 +61,7 @@ import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
@@ -3306,20 +3307,24 @@ public class RESTServices {
 		// Add the subSpaces to the destination space
 		if (!copyHierarchy) {
 			for (int id : selectedSubSpaces) {
-				int newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
-				
-				if (newSpaceId == 0){
-					return gson.toJson(ERROR_DATABASE);
+				int newSpaceId;
+				try {
+					newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
+				} catch (StarExecException e) {
+					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
+
 				newSpaceIds.add(newSpaceId);
 
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
 				//TODO: Should this return a list of ids of every space in the hierarchy?
-				int newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
-				if (newSpaceId == 0){
-					return gson.toJson(ERROR_DATABASE);
+				int newSpaceId;
+				try {
+					newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
+				} catch (StarExecException e) {
+					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
 				newSpaceIds.add(newSpaceId);
 

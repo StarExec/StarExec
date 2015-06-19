@@ -35,10 +35,12 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.dataStructures.TreeNode;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -2884,12 +2886,13 @@ public class RESTHelpers {
 	 * @param usrId
 	 *            The Id of the user doing the copy.
 	 * @return The Id of the new copy of the space.
+	 * @throws StarExecException if space copy fails.
 	 * @author Ruoyu Zhang
 	 */
 
-	protected static int copySpace(int srcId, int desId, int usrId) {
+	protected static int copySpace(int srcId, int desId, int usrId) throws StarExecException {
 		if (srcId == desId) {
-			return 0;
+			throw new StarExecException("A space can't be copied into itself.");
 		}
 
 		Space sourceSpace = Spaces.getDetails(srcId, usrId);
@@ -2908,8 +2911,8 @@ public class RESTHelpers {
 		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
 
 		if (newSpaceId <= 0) {
-			// If it failed, notify an error
-			return 0;
+			throw new StarExecException( "Copying space with name '"+sourceSpace.getName()+"' to space with id '"+
+					                     desId+"' failed for user with id '"+usrId+"'");
 		}
 
 		if (Permissions.canUserSeeSpace(srcId, usrId)) {
@@ -2950,6 +2953,12 @@ public class RESTHelpers {
 			Jobs.associate(jobIds, newSpaceId);
 		}
 
+
+		if (newSpaceId == 0) {
+			throw new StarExecException( "Copying space with name '"+sourceSpace.getName()+"' to space with id '"+
+					                     desId+"' failed for user with id '"+usrId+"'");
+		}
+
 		return newSpaceId;
 	}
 
@@ -2965,27 +2974,80 @@ public class RESTHelpers {
 	 * @return The Id of the root space of the copied hierarchy.
 	 * @author Ruoyu Zhang
 	 */
-	protected static int copyHierarchy(int srcId, int desId, int usrId) {
+	protected static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
 		if (srcId == desId) {
-			return 0;
+			throw new StarExecException("You can't copy a space into itself.");
 		}
 
-		int newSpaceId = copySpace(srcId, desId, usrId);
-		if (newSpaceId == 0) {
-			return 0;
-		} else {
-			List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
-			if (subSpaces == null) {
-				return newSpaceId;
-			} else {
-				for (Space space : subSpaces) {
-					if (copyHierarchy(space.getId(), newSpaceId, usrId) == 0)
-						return 0;
-				}
-				return newSpaceId;
+
+		Space sourceSpace = Spaces.get(srcId);
+		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
+		TreeNode<Space> spaceTree = buildSpaceTree(sourceSpace, usrId);
+		log.debug("Space tree built during space hierarchy copy:");
+		logSpaceTree(spaceTree);
+
+		return copySpaceTree(spaceTree, desId, usrId);
+	}
+
+	private static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId) throws StarExecException {
+		Space rootSpace = spaceTree.getData();
+		int newSpaceId = copySpace(rootSpace.getId(), desId, usrId);
+		for (TreeNode<Space> child : spaceTree) {
+			// Recursively copy each child into the newly created space.
+			copySpaceTree(child, newSpaceId, usrId);
+		}
+		return newSpaceId;
+	}
+
+	/**
+	 * Builds a tree hierarchy of the spaces.
+	 * @param rootSpace the root space of the space tree
+	 * @param usrId the id of the user who wants to use the spaces
+	 * @return a tree of spaces with rootSpace at the root
+	 * @author Albert Giegerich
+	 */
+	private static TreeNode<Space> buildSpaceTree(Space rootSpace, int usrId) throws StarExecException {
+		List<Space> subSpaces;
+		try {
+			subSpaces = Spaces.getSubSpaces(rootSpace.getId(), usrId);
+		} catch (Exception e) {
+			throw new StarExecException("Could not get subspaces for space with id="+rootSpace.getId()+" for user with id="+usrId, e);
+		}
+		// Base case for when rootSpace is a leaf.
+		if (subSpaces == null) {
+			return null;
+		}
+		TreeNode<Space> spaceTree = new TreeNode<Space>(rootSpace);
+		for (Space space : subSpaces) {
+			TreeNode<Space> child = buildSpaceTree(space, usrId);
+			if (child != null) {
+				spaceTree.addChild(child);	
 			}
 		}
+		return spaceTree;
 	}
+
+
+	private static void logSpaceTree(TreeNode<Space> tree) {
+		logSpaceTreeHelper(tree, "");
+	}
+
+	private static void logSpaceTreeHelper(TreeNode<Space> tree, String indent) {
+		StringBuilder childrenMessage = new StringBuilder();
+		childrenMessage.append(tree.getData().getName() + ": ");
+		for (TreeNode<Space> child : tree) {
+			childrenMessage.append(child.getData().getName() + " ");
+		}
+
+		log.debug(indent + "Descendants of space " + childrenMessage.toString()); 
+
+		for (TreeNode<Space> child : tree) {
+			logSpaceTreeHelper(child, indent+"    ");
+		}
+	}
+
+
+
 
 	/**
 	 * Get the result table for all the jobs in a space.

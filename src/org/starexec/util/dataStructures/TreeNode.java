@@ -2,11 +2,14 @@ package org.starexec.util.dataStructures;
 
 import java.lang.IndexOutOfBoundsException;
 import java.lang.NullPointerException;
+import java.lang.Iterable;
+import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
-public class TreeNode<T> {
+public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	private T data;
 	private TreeNode<T> parent;
 	private List<TreeNode<T>> children;
@@ -75,6 +78,8 @@ public class TreeNode<T> {
 	public void addChild(TreeNode<T> newChild) {
 		if (newChild == null) {
 			throw new NullPointerException("The new child to add cannot be null.");
+		} else if (this.hasChild(newChild)) {
+			return;
 		} else {
 			children.add(newChild);
 			newChild.setParent(this);
@@ -87,7 +92,6 @@ public class TreeNode<T> {
 	 * @author Albert Giegerich
 	 */
 	public boolean removeChild(TreeNode<T> childToDelete) {
-		childToDelete.setParent(null);
 		boolean childRemoved  = children.remove(childToDelete);
 		childToDelete.setParent(null);
 		return childRemoved;
@@ -117,8 +121,36 @@ public class TreeNode<T> {
 	 * @param possibleChild the TreeNode to test if it is a child.
 	 * @return true if possibleChild is a child of this TreeNode
 	 */
-	public boolean isChild(TreeNode<T> possibleChild) {
+	public boolean hasChild(TreeNode<T> possibleChild) {
+		if (possibleChild == null) {
+			return false;
+		}
 		return children.contains(possibleChild);
+	}
+
+	@Override
+	public Iterator<TreeNode<T>> iterator() {
+		Iterator<TreeNode<T>> iterator = new Iterator<TreeNode<T>>() {
+			private int currentIndex = 0;
+			
+			@Override
+			public boolean hasNext() {
+				return currentIndex < getNumberOfChildren();
+			}
+
+			@Override
+			public TreeNode<T> next() {
+				TreeNode<T> child = children.get(currentIndex);
+				currentIndex += 1;
+				return child;
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+		return iterator;
 	}
 
 	/**
@@ -131,4 +163,6 @@ public class TreeNode<T> {
 			newParent.addChild(this);
 		}
 	}
+
+	
 }
