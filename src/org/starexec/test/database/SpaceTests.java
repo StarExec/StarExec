@@ -1,11 +1,14 @@
-package org.starexec.test.database;
-
+package org.starexec.test.database; 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
@@ -14,13 +17,17 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.test.Test;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.dataStructures.TreeNode;
 
 public class SpaceTests extends TestSequence {
 	
@@ -120,7 +127,95 @@ public class SpaceTests extends TestSequence {
 		Assert.assertFalse(Spaces.isLeaf(community.getId()));
 		Assert.assertTrue(Spaces.isLeaf(subspace.getId()));
 	}
-	
+
+	@Test
+	private void CopyHierarchyTest() {
+		TreeNode<Space> spaceTree;
+		try {
+			Spaces.copyHierarchy(community.getId(), subspace3.getId(), admin.getId());
+		} catch (StarExecException e) {
+			Assert.fail("Something went wrong while copying space hierarchy.");
+		}
+		try {
+			spaceTree = Spaces.buildDetailedSpaceTree(subspace3, admin.getId());
+		} catch (StarExecException e) {
+			Assert.fail("Something went wrong while building space tree.");
+			return;
+		}
+		for (TreeNode<Space> communityNode : spaceTree) {
+			assertSpacesAreCopies(communityNode.getData(), community);
+			for (TreeNode<Space> communityChildNode: communityNode) {
+				Space communityChildSpace = communityChildNode.getData();
+				if (communityChildSpace.getName().equals(subspace.getName())) {
+					assertSpacesAreCopies(communityChildSpace, subspace);
+				} else if (communityChildSpace.getName().equals(subspace2.getName())) {
+					assertSpacesAreCopies(communityChildSpace, subspace2);
+					TreeNode<Space> subspace3Copy = communityChildNode.getChild(0);
+					assertSpacesAreCopies(subspace3Copy.getData(), subspace3);
+				} else {
+					Assert.fail("The Space should share a name with subspace or subspace2");
+				}
+			}
+		}
+
+		Spaces.removeSubspaces(subspace3.getId());
+	}
+
+	private static void assertSpacesAreCopies(Space space, Space otherSpace) {
+		Assert.assertEquals(space.getName(), otherSpace.getName());
+
+		// Assert that the benchmarks are copies 
+		List<Benchmark> benchmarks = space.getBenchmarks();
+		List<Benchmark> otherBenchmarks = otherSpace.getBenchmarks();
+		assertUnorderedIdentifiableListsAreEqual(benchmarks, otherBenchmarks);
+
+		List<Solver> solvers = space.getSolvers();
+		List<Solver> otherSolvers = otherSpace.getSolvers();
+		assertUnorderedIdentifiableListsAreEqual(solvers, otherSolvers);
+
+
+		List<Job> jobs = space.getJobs();
+		List<Job> otherJobs = otherSpace.getJobs();
+		assertUnorderedIdentifiableListsAreEqual(jobs, otherJobs);
+
+		List<User> users = space.getUsers();
+		List<User> otherUsers = otherSpace.getUsers();
+		assertUnorderedIdentifiableListsAreEqual(users, otherUsers);
+
+		List<Space> subspaces = space.getSubspaces();
+		List<Space> otherSubspaces = otherSpace.getSubspaces();
+		assertUnorderedIdentifiableListsAreEqual(subspaces, otherSubspaces);
+	}
+
+	private static void assertUnorderedIdentifiableListsAreEqual(List<? extends Identifiable> identifiableList, 
+																 List<? extends Identifiable> otherIdentifiableList) {
+		List<Identifiable> identifiableListCopy = new ArrayList<Identifiable>(identifiableList);	
+		List<Identifiable> otherIdentifiableListCopy = new ArrayList<Identifiable>(otherIdentifiableList);
+		// Compares the id of two identifiables.
+		Comparator<Identifiable> idComparator = new Comparator<Identifiable>() {
+			@Override
+			public int compare(Identifiable identifiable, Identifiable otherIdentifiable) {
+				// Wrap the ids in the Integer object so we can use compareTo method.
+				Integer boxedId = Integer.valueOf(identifiable.getId());
+				Integer otherBoxedId = Integer.valueOf(otherIdentifiable.getId());
+				return boxedId.compareTo(otherBoxedId);
+			}
+		};
+		// Sort both list copies by id
+		Collections.sort(identifiableListCopy, idComparator);
+		Collections.sort(otherIdentifiableListCopy, idComparator);
+		Assert.assertEquals(identifiableListCopy.size(), otherIdentifiableListCopy.size());
+		if (identifiableListCopy.size() != otherIdentifiableListCopy.size()) {
+			return; // Avoid a NoSuchElementException
+		}
+
+		Iterator<Identifiable> identifiableIt = identifiableListCopy.iterator();
+		Iterator<Identifiable> otherIdentifiableIt = otherIdentifiableListCopy.iterator();
+		while (identifiableIt.hasNext() || otherIdentifiableIt.hasNext()) {
+			Assert.assertEquals(identifiableIt.next().getId(), otherIdentifiableIt.next().getId());
+		}
+	}
+
 	@Test
 	private void SpacePathCreateTest() {
 		Space space1=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());

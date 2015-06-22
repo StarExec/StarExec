@@ -15,6 +15,7 @@ import org.starexec.constants.R;
 import org.starexec.test.database.*;
 import org.starexec.test.security.*;
 import org.starexec.test.web.*;
+import org.starexec.test.util.dataStructures.TreeNodeTests;
 import org.starexec.test.StateTests.IntroStateTests;
 import org.starexec.test.database.BenchmarkTests;
 
@@ -65,6 +66,7 @@ public class TestManager {
 		tests.add(new RequestsTests());
 		tests.add(new ComparatorTests());
 		tests.add(new PipelineTests());
+		tests.add(new TreeNodeTests());
 		//tests.add(new LoginTests());
 		//tests.add(new UploadSolverTests());
 		//tests.add(new UploadBenchmarksTests());

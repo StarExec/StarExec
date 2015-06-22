@@ -3309,7 +3309,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
+					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
@@ -3322,7 +3322,7 @@ public class RESTServices {
 				//TODO: Should this return a list of ids of every space in the hierarchy?
 				int newSpaceId;
 				try {
-					newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
+					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
