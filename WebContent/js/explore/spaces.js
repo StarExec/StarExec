@@ -1747,7 +1747,7 @@ function updateButtonIds(id) {
 		$('#dialog-download-space').dialog({
 			modal: true,
 			width: 380,
-			height: 400,
+			height: 250, /*450*/
 			buttons: {
 				'space': function(){
 					createDownloadSpacePost(false,id);
@@ -1783,7 +1783,7 @@ function createDownloadSpacePost(hierarchy,id) {
 	var downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
 	
 	var downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
-	var useIdDirectories = $('#yesIdDirectories').prop('checked');
+	var useIdDirectories = true;/*$('#yesIdDirectories').prop('checked');*/ // always enabled for now
 	console.log("useIdDirectories: " + useIdDirectories);
 	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 	token=Math.floor(Math.random()*100000000);

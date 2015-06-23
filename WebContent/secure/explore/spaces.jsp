@@ -188,12 +188,12 @@
 		<p><input type="radio" name="downloadOption" id="downloadSolvers"/> solvers only<br>
 		<input type="radio" name="downloadOption" id="downloadBenchmarks"/> benchmarks only<br>
 		<input type="radio" name="downloadOption" id="downloadBoth" checked="checked"/> solvers + benchmarks<br></p>
-		<hr>
-		<p>
+		<div style="display:none;">
+			<hr>
 			<p><span class="ui-icon ui-icon-alert"></span>do you want to store benchmarks/solvers in id directories?</p><br>
-			<input type="radio" name="idDirectoriesOption" id="yesIdDirectories" /> yes<br>
+			<input type="radio" name="idDirectoriesOption" id="yesIdDirectories"/> yes<br>
 			<input type="radio" name="idDirectoriesOption" id="noIdDirectories" checked="checked"/> no<br>
-		</p>
+		</div>
 	</div>
 	<div id="dialog-warning" title="warning">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
