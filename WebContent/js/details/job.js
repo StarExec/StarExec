@@ -302,6 +302,10 @@ function initUI(){
 			primary: "ui-icon-gear"
 	}
 	});
+
+	$("#matrixViewButton").click(function() {
+		popup(starexecRoot+'secure/details/jobMatrixView.jsp?id='+jobId+'&stage=1&jobSpaceId='+curSpaceId);
+	});
 	
 	$("#syncResults").click(function() {
 		//just change the sync results boolean and update the button text.
@@ -350,6 +354,7 @@ function initUI(){
 			secondary: "ui-icon-transferthick-e-w"
 		}
 	});
+
 	
 	$("#popoutPanels").click(function() {
 		// default to primary stage
@@ -1010,4 +1015,13 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	).error(function(){
 		showMessage('error',"Internal error populating data table",5000);
 	});
+}
+
+function popup(url) {
+	'use strict';
+	var win = window.open(url, '_blank');
+	if (win) {
+		// Browser allowed opening of popup.
+		win.focus();
+	}
 }

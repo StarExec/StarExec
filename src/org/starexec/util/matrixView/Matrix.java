@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.JobPairs;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -56,9 +57,10 @@ public class Matrix {
 	 * @param stageNumber filter the job pairs to view by this stage.
 	 * @author Albert Giegerich
 	 */
-	private Matrix(List<JobPair> jobPairs, final int stageNumber, final String jobSpaceName, final Integer jobSpaceId) {
+	private Matrix(List<JobPair> jobPairs, final Integer jobSpaceId, final int stageNumber) {
 		final String method = "Matrix constructor";
 		try {
+			String jobSpaceName = Spaces.getJobSpace(jobSpaceId).getName();
 			log.debug("Entering " + method);
 			initializeMatrixFields(jobSpaceName, jobSpaceId);
 
@@ -113,31 +115,44 @@ public class Matrix {
 
 
 	/**
-	 * Gets a list of matrices from a job. One matrix per job space in the job.
+	 * Gets a matrix for a jobspace from a job and a stage number.
 	 * @author Albert Giegerich
 	 */
-	public static List<Matrix> getMatricesByJobSpaceFromJobStage(Job job, int stageNumber) throws StarExecException {
+	public static Matrix getMatrixForJobSpaceFromJobAndStageNumber(Job job, int jobSpaceId, int stageNumber) throws StarExecException {
 		final String method = "getMatricesByJobSpaceFromJobStage";
 		log.debug("Entering method " + method);
+		/*
 		List<Matrix> matricesByJobSpace = new LinkedList<Matrix>();
+		*/
+		Matrix matrixForJobSpace;
 		try {
-			// Get a list of the job spaces that occur in the job, ordered alphabetically.
-			List<Pair<String,Integer>> orderedSpaces = getSpacesInJobOrderedAlphabetically(job);
-			HashMap<Integer, List<JobPair>> jobPairsByJobSpaceId = getJobPairsBySpaceIdMapFromJob(job);
-			
-			// Generate the matrices in alphabetical order.
-			for (Pair<String,Integer> spaceNameAndId : orderedSpaces) {
-				String jobSpaceName = spaceNameAndId.getLeft();
-				Integer jobSpaceId = spaceNameAndId.getRight();
-				List<JobPair> jobPairsAssociatedWithJobSpaceId = jobPairsByJobSpaceId.get(jobSpaceId);
-				Matrix matrix = new Matrix(jobPairsAssociatedWithJobSpaceId, stageNumber, jobSpaceName, jobSpaceId);
-				matricesByJobSpace.add(matrix);
-			}
+			List<JobPair> jobPairsAssociatedWithJobSpaceId = getJobPairsForJobSpace(job, jobSpaceId);
+			matrixForJobSpace = new Matrix(jobPairsAssociatedWithJobSpaceId, jobSpaceId, stageNumber);
 		} catch (Exception e) {
 			log.warn("Error encountered while attempting to generate matrices for job matrix display.", e);
 			throw new StarExecException("Error encountered while attempting to generate matrices for job matrix display.");
 		}
-		return matricesByJobSpace;
+		return matrixForJobSpace;
+	}
+
+	/**
+	 * Gets all the job pairs associated with a jobspace in a job.
+	 * @param job the job to get job pairs from
+	 * @param jobSpaceId the id of the jobspace to filter the jobpairs by
+	 * @return a list of jobpairs in the given job associated with the given jobspace
+	 * @author Albert Giegerich
+	 */
+	private static List<JobPair> getJobPairsForJobSpace(Job job, int jobSpaceId) {
+		List<JobPair> jobPairs = job.getJobPairs();
+		List<JobPair> jobPairsInJobSpace = new ArrayList<JobPair>();
+		for (JobPair pair : jobPairs) {
+			Integer pairJobSpaceId = pair.getJobSpaceId();
+			// Filter by jobSpaceId
+			if (pairJobSpaceId == jobSpaceId) {
+				jobPairsInJobSpace.add(pair);	
+			} 
+		}
+		return jobPairsInJobSpace;
 	}
 
 	/**

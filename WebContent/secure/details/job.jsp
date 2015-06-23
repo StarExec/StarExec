@@ -108,7 +108,7 @@
 			<h3 id="spaceName">${jobspace.name}</h3>
 			<p id="displayJobSpaceID" class="accent">id  = ${job.primarySpace}</p>
 			
-			<a href="/${starexecRoot}/secure/details/jobMatrixView.jsp?id=${job.id}&stage=1" target="_blank"><button id="matrixViewButton" type="button">Matrix View</button></a>
+			<a href="/${starexecRoot}/secure/details/jobMatrixView.jsp?id=${job.id}&stage=1&jobspaceId=${jobspace.id}" target="_blank"><button id="matrixViewButton" type="button">Matrix View</button></a>
 			
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>

@@ -18,29 +18,28 @@ var checkboxEnabled = {
 
 // Entry point to JavaScript application.
 $(document).ready(function() {
+	'use strict';
 	registerCheckboxEventHandlers();
 
 	removeHeader();
 
-	$('.jobMatrix').each(function(index, matrix) {;
-		var table = $(matrix).dataTable({
-			/*
-			'columnDefs': [
-				{ 'width': '120px', 'targets': '_all' }
-			],
-			*/
-			'bSort': false,
-			'scrollY': '300px',
-			'scrollX': '100%',
-			'scrollCollapse': true,
-			'paging': false
-		});
-
-		table.fnAdjustColumnSizing();
-
-
-		new $.fn.dataTable.FixedColumns(table);
+	var table = $('#jobMatrix').dataTable({
+		/*
+		'columnDefs': [
+			{ 'width': '120px', 'targets': '_all' }
+		],
+		*/
+		'bSort': false,
+		'scrollY': '300px',
+		'scrollX': '100%',
+		'scrollCollapse': true,
+		'paging': false
 	});
+
+		/*table.fnAdjustColumnSizing();*/
+
+
+	new $.fn.dataTable.FixedColumns(table);
 
 
 	$('#selectStageButton').click(function() {
@@ -56,18 +55,10 @@ $(document).ready(function() {
 			$('#selectStageError').show();
 		}
 	});
-
-
 });
 
-function overrideDataTablesCss() {
-	// TODO there's probably a better way to do this that only involves CSS
-	// manually override datatable css settings
-	// to align benchmark titles column with other columns
-	//$('.benchmarkHeader').css('padding-top', '20px');
-}
-
 function isInt(value) {
+	'use strict';
 	var intRegex = /^[1-9]{1}[0-9]*$/;
 
 	return intRegex.test(value);
@@ -78,6 +69,7 @@ function isInt(value) {
  * @author Albert Giegerich
  */
 function updateDividers() {
+	'use strict';
 	if (checkboxEnabled['.cpuTimeCheckbox'] && checkboxEnabled['.memUsageCheckbox']) {
 		$('.cpuTimeMemUsageDivider').show();
 	} else {
@@ -103,6 +95,7 @@ function updateDividers() {
  * @author Albert Giegerich
  */
 function toggleCheckbox(checkboxClass) {
+	'use strict';
 	$(classControlledByCheckbox[checkboxClass]).toggle();
 	checkboxEnabled[checkboxClass] = !checkboxEnabled[checkboxClass];
 }
@@ -124,6 +117,7 @@ function registerCheckboxEventHandlers() {
 }
 
 function removeHeader() {
+	'use strict';
 	$('#pageHeader').remove();
 }
 
@@ -132,6 +126,7 @@ function removeHeader() {
  * @author Albert Giegerich
  */
 function fixHeaderHorizontally() {
+	'use strict';
 	var leftOffset = parseInt($('#pageHeader').css('left'));
 	$(window).scroll(function() {
 		$('#pageHeader').css({
