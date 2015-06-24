@@ -22,8 +22,8 @@ public class R {
     //TODO : Many descriptions and names in this file reference SGE even though the concepts are not SGE specific, should be changed to refer to BACKEND so that they can be more meaningful
 	
 
-	public R() throws UnsupportedOperationException{
-	throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
+	private R() throws UnsupportedOperationException{
+		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
     }
 
     public static Backend BACKEND = new GridEngineBackend();
