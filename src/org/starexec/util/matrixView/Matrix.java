@@ -125,8 +125,11 @@ public class Matrix {
 		List<Matrix> matricesByJobSpace = new LinkedList<Matrix>();
 		*/
 		Matrix matrixForJobSpace;
+		List<JobPair> jobPairsAssociatedWithJobSpaceId = getJobPairsForJobSpace(job, jobSpaceId);
+		if (jobPairsAssociatedWithJobSpaceId.size() > R.MAX_MATRIX_JOBPAIRS) {
+			throw new StarExecException("Matrix supports up to " + R.MAX_MATRIX_JOBPAIRS + " job pairs.");
+		}
 		try {
-			List<JobPair> jobPairsAssociatedWithJobSpaceId = getJobPairsForJobSpace(job, jobSpaceId);
 			matrixForJobSpace = new Matrix(jobPairsAssociatedWithJobSpaceId, jobSpaceId, stageNumber);
 		} catch (Exception e) {
 			log.warn("Error encountered while attempting to generate matrices for job matrix display.", e);
@@ -135,7 +138,7 @@ public class Matrix {
 		return matrixForJobSpace;
 	}
 
-	/**
+	/** 
 	 * Gets all the job pairs associated with a jobspace in a job.
 	 * @param job the job to get job pairs from
 	 * @param jobSpaceId the id of the jobspace to filter the jobpairs by
@@ -161,7 +164,7 @@ public class Matrix {
 	 * @param job the job to build a map from.
 	 * @return a HashMap that maps all the job pairs associated with a job space ID to a list in the map.
 	 * @author Albert Giegerich
-	 */
+	 * 
 	private static HashMap<Integer, List<JobPair>> getJobPairsBySpaceIdMapFromJob(Job job) {
 		HashMap<Integer, List<JobPair>> jobPairsBySpaceIdMap = new HashMap<Integer, List<JobPair>>();
 		List<JobPair> jobPairs = job.getJobPairs();
@@ -181,6 +184,7 @@ public class Matrix {
 		}
 		return jobPairsBySpaceIdMap;
 	}
+	*/
 
 	/**
 	 * Gets the job space name associated with the matrix. 
@@ -256,7 +260,7 @@ public class Matrix {
 	 * @return The row headers for the Matrix.
 	 * @author Albert Giegerich
 	 */
-	public ArrayList<Benchmark> getBenchmarksByRow() {
+	public List<Benchmark> getBenchmarksByRow() {
 		return benchmarksByRow;
 	}
 
@@ -265,7 +269,7 @@ public class Matrix {
 	 * @return The column headers for the Matrix.
 	 * @author Albert Giegerich
 	 */
-	public ArrayList<Pair<Solver,Configuration>> getSolverConfigsByColumn() {
+	public List<Pair<Solver,Configuration>> getSolverConfigsByColumn() {
 		return solverConfigsByColumn;
 	}
 

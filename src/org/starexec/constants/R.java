@@ -1,4 +1,5 @@
 package org.starexec.constants;
+import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
 import org.starexec.backend.*;
@@ -21,8 +22,8 @@ public class R {
     //TODO : Many descriptions and names in this file reference SGE even though the concepts are not SGE specific, should be changed to refer to BACKEND so that they can be more meaningful
 	
 
-	public R() throws Exception{
-	throw new Exception("Cannot instantiate class because it is static.");
+	public R() throws UnsupportedOperationException{
+	throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
     }
 
     public static Backend BACKEND = new GridEngineBackend();
@@ -52,7 +53,8 @@ public class R {
     public static int PROCESSOR_DESC_LEN=1024;
     public static int QUEUE_NAME_LEN=64;
 
-	public static final int MATRIX_VIEW_COLUMN_HEADER = 20;
+	public static final int MATRIX_VIEW_COLUMN_HEADER = 18;
+	public static final int MAX_MATRIX_JOBPAIRS = 10000;
     
     //the number of increments we should accumulate in an upload status field before actually committing to the database
     //public static int UPLOAD_STATUS_UPDATE_THRESHOLD=100;
