@@ -15,7 +15,7 @@ public class NameableComparators {
 	 * @return The new Comparator
 	 * @author Albert Giegerich
 	 */
-	public static Comparator<Nameable> caseInsensitiveAlphabeticalComparator() {
+	public static Comparator<Nameable> getCaseInsensitiveAlphabeticalComparator() {
 		return new Comparator<Nameable>() {
 			public int compare(Nameable a, Nameable b) {
 				String aName = a.getName();

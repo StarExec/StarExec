@@ -55,6 +55,7 @@
 				<li><a id="downloadPreProcessors">download preprocessors</a></li>				
 				<li><a id="downloadPostProcessors">download postprocessors</a></li>
 				<li><a id="downloadBenchProcessors">download benchmark processors</a></li>
+				<li><a id="downloadUpdateProcessors">download update processors</a></li>
 				
 			</ul>
 		</fieldset>				

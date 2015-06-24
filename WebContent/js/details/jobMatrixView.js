@@ -1,16 +1,16 @@
 // All the classes given to a checkbox 
-var orderedCheckboxClasses = ['.runtimeCheckbox','.memUsageCheckbox','.wallclockCheckbox'];
+var orderedCheckboxClasses = ['.cpuTimeCheckbox','.memUsageCheckbox','.wallclockCheckbox'];
 
 // A mapping of each checkbox class to the class it controls the visibility of
 var classControlledByCheckbox = {
-	'.runtimeCheckbox'  : '.runtime',
+	'.cpuTimeCheckbox'  : '.cpuTime',
 	'.memUsageCheckbox' : '.memUsage',
 	'.wallclockCheckbox': '.wallclock'
 };
 
 // A mapping from each checkbox to whether or not that checkbox is enabled.
 var checkboxEnabled = {
-	'.runtimeCheckbox': true,
+	'.cpuTimeCheckbox': true,
 	'.memUsageCheckbox': true,
 	'.wallclockCheckbox': true
 };
@@ -18,40 +18,62 @@ var checkboxEnabled = {
 
 // Entry point to JavaScript application.
 $(document).ready(function() {
+	'use strict';
 	registerCheckboxEventHandlers();
 
-	var table = $('.jobMatrix').DataTable({
-		"columnDefs": [
-			{ "width": "120px", "targets": "_all" }
+	removeHeader();
+
+	var table = $('#jobMatrix').dataTable({
+		/*
+		'columnDefs': [
+			{ 'width': '120px', 'targets': '_all' }
 		],
-		"scrollY": "300px",
-		"scrollX": true,
-		"scrollCollapse": true,
-		"bSort": false,
-		"paging": false
+		*/
+		'bSort': false,
+		'scrollY': '300px',
+		'scrollX': '100%',
+		'scrollCollapse': true,
+		'paging': false
 	});
 
-	new $.fn.dataTable.FixedColumns(table, {
-		leftColumns: 1,
-		rightColumns: 0
+		/*table.fnAdjustColumnSizing();*/
+
+
+	new $.fn.dataTable.FixedColumns(table);
+
+
+	$('#selectStageButton').click(function() {
+		console.log('Select stage button clicked.');
+		var stageToRedirectTo = $('#selectStageInput').val();
+		console.log('Input value is '+stageToRedirectTo);
+		if (isInt(stageToRedirectTo)) {
+			console.log('Input value is an integer, redirecting.');
+			var jobId = $('#jobId').text();
+			window.location.replace(starexecRoot + '/secure/details/jobMatrixView.jsp?id='+jobId+'&stage='+stageToRedirectTo);
+		} else {
+			console.log('Input value is not an integer, showing error message.');
+			$('#selectStageError').show();
+		}
 	});
-
-	// TODO there's probably a better way to do this that only involves CSS
-	// manually override datatable css settings
-	// to align benchmark titles column with other columns
-	$('.benchmarkHeader').css('padding-top', '20px');
-
 });
+
+function isInt(value) {
+	'use strict';
+	var intRegex = /^[1-9]{1}[0-9]*$/;
+
+	return intRegex.test(value);
+}
 
 /**
  * Shows or hides each divider class depending on whether the appropriate checkboxes are enabled or not
  * @author Albert Giegerich
  */
 function updateDividers() {
-	if (checkboxEnabled['.runtimeCheckbox'] && checkboxEnabled['.memUsageCheckbox']) {
-		$('.runtimeMemUsageDivider').show();
+	'use strict';
+	if (checkboxEnabled['.cpuTimeCheckbox'] && checkboxEnabled['.memUsageCheckbox']) {
+		$('.cpuTimeMemUsageDivider').show();
 	} else {
-		$('.runtimeMemUsageDivider').hide();
+		$('.cpuTimeMemUsageDivider').hide();
 	}
 
 	if (checkboxEnabled['.memUsageCheckbox'] && checkboxEnabled['.wallclockCheckbox']) {
@@ -60,10 +82,10 @@ function updateDividers() {
 		$('.memUsageWallclockDivider').hide();
 	}
 
-	if (checkboxEnabled['.runtimeCheckbox'] && !checkboxEnabled['.memUsageCheckbox'] && checkboxEnabled['.wallclockCheckbox']) {
-		$('.runtimeWallclockDivider').show();
+	if (checkboxEnabled['.cpuTimeCheckbox'] && !checkboxEnabled['.memUsageCheckbox'] && checkboxEnabled['.wallclockCheckbox']) {
+		$('.cpuTimeWallclockDivider').show();
 	} else {
-		$('.runtimeWallclockDivider').hide();
+		$('.cpuTimeWallclockDivider').hide();
 	}
 }
 
@@ -73,6 +95,7 @@ function updateDividers() {
  * @author Albert Giegerich
  */
 function toggleCheckbox(checkboxClass) {
+	'use strict';
 	$(classControlledByCheckbox[checkboxClass]).toggle();
 	checkboxEnabled[checkboxClass] = !checkboxEnabled[checkboxClass];
 }
@@ -93,11 +116,17 @@ function registerCheckboxEventHandlers() {
 	});
 }
 
+function removeHeader() {
+	'use strict';
+	$('#pageHeader').remove();
+}
+
 /**
  * Makes the header stay in the same place despite horizontal scrolling.
  * @author Albert Giegerich
  */
 function fixHeaderHorizontally() {
+	'use strict';
 	var leftOffset = parseInt($('#pageHeader').css('left'));
 	$(window).scroll(function() {
 		$('#pageHeader').css({

@@ -1,6 +1,9 @@
 package org.starexec.data.to;
 
+
 import com.google.gson.annotations.Expose;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class for all transfer objects that have a unique
@@ -25,4 +28,12 @@ public class Identifiable {
 	public void setId(int id) {
 		this.id = id;
 	}	
+
+	public static List<Identifiable> upcastList(List<? extends Identifiable> subclassIdentifiables) {
+		List<Identifiable> upcastedList = new ArrayList<Identifiable>();
+		for (Identifiable identifiable: subclassIdentifiables) {
+			upcastedList.add(identifiable);
+		}
+		return upcastedList;
+	}
 }

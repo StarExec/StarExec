@@ -6,7 +6,7 @@
 function makeSpaceTree(selector,usingCookies){
 	// Set the path to the css theme for the jstree plugin
 	$.jstree._themes = starexecRoot+"css/jstree/";
-	plugins = [ "types", "themes", "json_data", "ui"];
+	plugins = [ "types", "themes", "json_data", "ui", "crrm"];
 	if (typeof usingCookies == 'undefined' || usingCookies) {
 		plugins[4]="cookies";
 	}

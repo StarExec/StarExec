@@ -1,5 +1,7 @@
 package org.starexec.util.matrixView;
 
+import org.starexec.data.to.Status;
+
 /**
  * Helper class for the matrix view of a job.
  * Represents one element in the matrix.
@@ -7,23 +9,29 @@ package org.starexec.util.matrixView;
  */
 public class MatrixElement {
 	private String status;
-	private String runtime;
+	private String cpuTime;
 	private String memUsage;
 	private String wallclock;
+	private String jobPairId;
 
-	public MatrixElement(String status, String runtime, String memUsage, String wallclock) {
+	public MatrixElement(String status, String cpuTime, String memUsage, String wallclock, Integer jobPairId) {
 		this.status = status;
-		this.runtime = runtime;
+		this.cpuTime = cpuTime;
 		this.memUsage = memUsage;
 		this.wallclock = wallclock;
+		this.jobPairId = String.valueOf(jobPairId);
+	}
+
+	public String getJobPairId() {
+		return jobPairId;
 	}
 
 	public String getStatus() {
 		return status;
 	}
 
-	public String getRuntime() {
-		return runtime;
+	public String getCpuTime() {
+		return cpuTime;
 	}
 
 	public String getMemUsage() {

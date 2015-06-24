@@ -61,6 +61,7 @@ import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
@@ -1346,20 +1347,27 @@ public class RESTServices {
 		} else if (attribute.equals("email")) {
 			log.info("User with id="+userId+" has requested to change their email to "+newValue);
 			success = true;
-			try {
-				// Send a validation email to the new email address. using a unique 
-				// code to safely reference this user's entry in verification hyperlinks
-				String code = UUID.randomUUID().toString();
-				Mail.sendEmailChangeValidation(newValue, code);
-				log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
-				// If an IOException wasn't thrown then add the request to the database.
-				Requests.addChangeEmailRequest(userId, newValue, code);
-				messageToUser = "A verification email has been sent to the new email address.";
-			} catch (IOException e) {
-				messageToUser = "Could not send verification email.";
-				success = false;
-			} catch (StarExecDatabaseException e) {
-				messageToUser = "Internal error.";
+			if (!Users.getUserByEmail(newValue)) {
+				try {
+					String code = UUID.randomUUID().toString();
+					// Add the request to the database.
+					Requests.addChangeEmailRequest(userId, newValue, code);
+					// Send a validation email to the new email address. using a unique 
+					// code to safely reference this user's entry in verification hyperlinks
+					Mail.sendEmailChangeValidation(newValue, code);
+					log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
+					messageToUser = "A verification email has been sent to the new email address.";
+				} catch (IOException e) {
+					log.warn("(editUserInfo) an error occurred while trying to send a change email verification email.", e);
+					messageToUser = "Could not send verification email.";
+					success = false;
+				} catch (StarExecDatabaseException e) {
+					log.error("(editUserInfo) an error occurred while trying to add a change email request.", e);
+					messageToUser = "Internal error: could not complete email change request.";
+					success = false;
+				}
+			} else {
+				messageToUser = "A user with that email already exists.";
 				success = false;
 			}
 		} else if (attribute.equals("diskquota")) {
@@ -1620,7 +1628,7 @@ public class RESTServices {
 		}
 		
 		
-		log.debug("post process request with jobId = "+jid+" and processor id = "+pid);
+		log.info("post process request with jobId = "+jid+" and processor id = "+pid);
 		
 		return Jobs.prepareJobForPostProcessing(jid,pid,stageNumber) ? gson.toJson(new ValidatorStatusCode(true,"Post processing started successfully")) : gson.toJson(ERROR_DATABASE);
 	}
@@ -2741,10 +2749,10 @@ public class RESTServices {
 	@POST
 	@Path("/remove/subspace")
 	@Produces("application/json")
-	public String removeSubspacesFromSpace(@Context HttpServletRequest request) {
-		
-		int userId=SessionUtil.getUserId(request);
-		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+	public String removeSubspacesFromSpace(@Context final HttpServletRequest request) {
+			
+		final int userId=SessionUtil.getUserId(request);
+		final ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
 				
 		try{
 			// Extract the String subspace id's and convert them to Integers
@@ -2764,47 +2772,50 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		boolean recycleAllAllowed=false;
-		if (Util.paramExists("recyclePrims", request)) {
-			if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
-				log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
-				recycleAllAllowed=true;
-			}
-			
-		}
-		Set<Solver> solvers=new HashSet<Solver>();
-		Set<Benchmark> benchmarks=new HashSet<Benchmark>();
-		if (recycleAllAllowed) {
-			for (int sid : selectedSubspaces) {
-				solvers.addAll(Solvers.getBySpace(sid));
-				benchmarks.addAll(Benchmarks.getBySpace(sid));
-				for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
-					solvers.addAll(Solvers.getBySpace(s.getId()));
-					benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+		// Fork a new thread to delete the subspaces so the user's browser doesn't hang.
+		Runnable removeSubspacesProcess = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					boolean recycleAllAllowed=false;
+					if (Util.paramExists("recyclePrims", request)) {
+						if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
+							log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
+							recycleAllAllowed=true;
+						}
+					}
+					Set<Solver> solvers=new HashSet<Solver>();
+					Set<Benchmark> benchmarks=new HashSet<Benchmark>();
+					if (recycleAllAllowed) {
+						for (int sid : selectedSubspaces) {
+							solvers.addAll(Solvers.getBySpace(sid));
+							benchmarks.addAll(Benchmarks.getBySpace(sid));
+							for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
+								solvers.addAll(Solvers.getBySpace(s.getId()));
+								benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+							}
+						}
+					}
+					log.debug("found the following benchmarks");
+					for (Benchmark b : benchmarks) {
+						log.debug(b.getId());
+					}
+					// Remove the subspaces from the space
+					boolean success=true;
+					if (Spaces.removeSubspaces(selectedSubspaces)) {
+						if (recycleAllAllowed) {
+							log.debug("Space removed successfully, recycling primitives");
+							success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
+							success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
+						}
+					}
+				} catch (Exception e) {
+					log.warn("Error occurred while removing subspaces.", e);
 				}
 			}
-		}
-		log.debug("found the following benchmarks");
-		for (Benchmark b : benchmarks) {
-			log.debug(b.getId());
-		}
-		// Remove the subspaces from the space
-		boolean success=true;
-		if (Spaces.removeSubspaces(selectedSubspaces)) {
-			if (recycleAllAllowed) {
-				log.debug("Space removed successfully, recycling primitives");
-				success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
-				success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
-			}
-			if (success) {
-				return gson.toJson(new ValidatorStatusCode(true,"Subspace(s) removed successfully"));
-			} else {
-				return gson.toJson(ERROR_NOT_ALL_DELETED);
-			}
-			
-		} else {
-			return gson.toJson(ERROR_DATABASE);
-		}
+		};
+		Util.threadPoolExecute(removeSubspacesProcess);
+		return gson.toJson(new ValidatorStatusCode(true, "Subspaces are being deleted."));
 	}
 
 	
@@ -3296,20 +3307,24 @@ public class RESTServices {
 		// Add the subSpaces to the destination space
 		if (!copyHierarchy) {
 			for (int id : selectedSubSpaces) {
-				int newSpaceId = RESTHelpers.copySpace(id, spaceId, requestUserId);
-				
-				if (newSpaceId == 0){
-					return gson.toJson(ERROR_DATABASE);
+				int newSpaceId;
+				try {
+					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId);
+				} catch (StarExecException e) {
+					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
+
 				newSpaceIds.add(newSpaceId);
 
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
 				//TODO: Should this return a list of ids of every space in the hierarchy?
-				int newSpaceId = RESTHelpers.copyHierarchy(id, spaceId, requestUserId);
-				if (newSpaceId == 0){
-					return gson.toJson(ERROR_DATABASE);
+				int newSpaceId;
+				try {
+					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId);
+				} catch (StarExecException e) {
+					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
 				newSpaceIds.add(newSpaceId);
 

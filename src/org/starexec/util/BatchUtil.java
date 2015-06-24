@@ -862,10 +862,14 @@ public class BatchUtil {
 		
 
 		if (!benchmarks.isEmpty()){
-			Benchmarks.associate(benchmarks, spaceId,statusId);
+			Uploads.incrementXMLCompletedBenchmarks(statusId, benchmarks.size());
+			Benchmarks.associate(benchmarks, spaceId);
+			log.debug("(createSpaceFromElement) completed benchmarks so far: " + Uploads.getSpaceXMLStatus(statusId).getCompletedBenchmarks());
+			log.debug("(createSpaceFromElement) number of benchmarks: " + benchmarks.size());
 		}
 		if (!solvers.isEmpty()){
-			Solvers.associate(solvers, spaceId,statusId);
+			Solvers.associate(solvers, spaceId);
+			Uploads.incrementXMLCompletedSolvers(statusId, solvers.size());
 		}
 		
 		//TODO: Handle the upload status page for XML uploads
@@ -873,9 +877,10 @@ public class BatchUtil {
 		{
 		    //Add the updates to the database and system.
 		    updateIds = addUpdates(updates, statusId);
+			Uploads.incrementXMLCompletedUpdates(statusId, updates.size());
 			log.debug("updateIds: " + updateIds);
 		    //assocaite new updates with the space given.
-		    Benchmarks.associate(updateIds, spaceId, statusId);
+		    Benchmarks.associate(updateIds, spaceId);
 		}
 		return spaceId;
 	}

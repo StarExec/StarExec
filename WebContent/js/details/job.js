@@ -290,11 +290,21 @@ function initUI(){
 		}
 	
 	});
+
+	$("#matrixViewButton").button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	});
 	
 	$("#syncResults").button({
 		icons: {
 			primary: "ui-icon-gear"
 	}
+	});
+
+	$("#matrixViewButton").click(function() {
+		popup(starexecRoot+'secure/details/jobMatrixView.jsp?id='+jobId+'&stage=1&jobSpaceId='+curSpaceId);
 	});
 	
 	$("#syncResults").click(function() {
@@ -344,9 +354,11 @@ function initUI(){
 			secondary: "ui-icon-transferthick-e-w"
 		}
 	});
+
 	
 	$("#popoutPanels").click(function() {
-		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId);
+		// default to primary stage
+		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId+"&stage=1");
 	});
 	$("#collapsePanels").click(function() {
 		$(".panelField").each(function() {
@@ -1003,4 +1015,13 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	).error(function(){
 		showMessage('error',"Internal error populating data table",5000);
 	});
+}
+
+function popup(url) {
+	'use strict';
+	var win = window.open(url, '_blank');
+	if (win) {
+		// Browser allowed opening of popup.
+		win.focus();
+	}
 }

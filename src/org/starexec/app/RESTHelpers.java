@@ -35,10 +35,12 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.starexec.util.dataStructures.TreeNode;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -2874,84 +2876,6 @@ public class RESTHelpers {
 		return nextPage;
 	}
 
-	/**
-	 * Copy a space into another space
-	 * 
-	 * @param srcId
-	 *            The Id of the space which is being copied.
-	 * @param desId
-	 *            The Id of the destination space which is copied into.
-	 * @param usrId
-	 *            The Id of the user doing the copy.
-	 * @return The Id of the new copy of the space.
-	 * @author Ruoyu Zhang
-	 */
-
-	protected static int copySpace(int srcId, int desId, int usrId) {
-		if (srcId == desId) {
-			return 0;
-		}
-
-		Space sourceSpace = Spaces.getDetails(srcId, usrId);
-		
-		// Create a new space
-		Space tempSpace = new Space();
-		tempSpace.setName(sourceSpace.getName());
-		tempSpace.setDescription(sourceSpace.getDescription());
-		tempSpace.setLocked(sourceSpace.isLocked());
-		tempSpace.setBenchmarks(sourceSpace.getBenchmarks());
-		tempSpace.setSolvers(sourceSpace.getSolvers());
-		tempSpace.setJobs(sourceSpace.getJobs());
-
-		// Set the default permission on the space
-		tempSpace.setPermission(sourceSpace.getPermission());
-		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
-
-		if (newSpaceId <= 0) {
-			// If it failed, notify an error
-			return 0;
-		}
-
-		if (Permissions.canUserSeeSpace(srcId, usrId)) {
-			// Copying the references of benchmarks
-			List<Benchmark> benchmarks = sourceSpace.getBenchmarks();
-			List<Integer> benchmarkIds = new LinkedList<Integer>();
-			int benchId = 0;
-			for (Benchmark benchmark : benchmarks) {
-				benchId = benchmark.getId();
-				if (Permissions.canUserSeeBench(benchId, usrId)) {
-					benchmarkIds.add(benchId);
-				}
-			}
-			Benchmarks.associate(benchmarkIds, newSpaceId);
-
-			// Copying the references of solvers
-			List<Solver> solvers = sourceSpace.getSolvers();
-			List<Integer> solverIds = new LinkedList<Integer>();
-			int solverId = 0;
-			for (Solver solver : solvers) {
-				solverId = solver.getId();
-				if (Permissions.canUserSeeSolver(solverId, usrId)) {
-					solverIds.add(solverId);
-				}
-			}
-			Solvers.associate(solverIds, newSpaceId);
-
-			// Copying the references of jobs
-			List<Job> jobs = sourceSpace.getJobs();
-			List<Integer> jobIds = new LinkedList<Integer>();
-			int jobId = 0;
-			for (Job job : jobs) {
-				jobId = job.getId();
-				if (Permissions.canUserSeeJob(jobId, usrId)) {
-					jobIds.add(jobId);
-				}
-			}
-			Jobs.associate(jobIds, newSpaceId);
-		}
-
-		return newSpaceId;
-	}
 
 	/**
 	 * Copy a hierarchy of the space into another space
@@ -2965,27 +2889,43 @@ public class RESTHelpers {
 	 * @return The Id of the root space of the copied hierarchy.
 	 * @author Ruoyu Zhang
 	 */
-	protected static int copyHierarchy(int srcId, int desId, int usrId) {
+	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
 		if (srcId == desId) {
-			return 0;
+			throw new StarExecException("You can't copy a space into itself.");
 		}
 
-		int newSpaceId = copySpace(srcId, desId, usrId);
-		if (newSpaceId == 0) {
-			return 0;
-		} else {
-			List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
-			if (subSpaces == null) {
-				return newSpaceId;
-			} else {
-				for (Space space : subSpaces) {
-					if (copyHierarchy(space.getId(), newSpaceId, usrId) == 0)
-						return 0;
-				}
-				return newSpaceId;
-			}
+
+		Space sourceSpace = Spaces.get(srcId);
+		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
+		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
+		log.debug("Space tree built during space hierarchy copy:");
+		logSpaceTree(spaceTree);
+
+		return Spaces.copySpaceTree(spaceTree, desId, usrId);
+	}
+
+
+
+	private static void logSpaceTree(TreeNode<Space> tree) {
+		logSpaceTreeHelper(tree, "");
+	}
+
+	private static void logSpaceTreeHelper(TreeNode<Space> tree, String indent) {
+		StringBuilder childrenMessage = new StringBuilder();
+		childrenMessage.append(tree.getData().getName() + ": ");
+		for (TreeNode<Space> child : tree) {
+			childrenMessage.append(child.getData().getName() + " ");
+		}
+
+		log.debug(indent + "Descendants of space " + childrenMessage.toString()); 
+
+		for (TreeNode<Space> child : tree) {
+			logSpaceTreeHelper(child, indent+"    ");
 		}
 	}
+
+
+
 
 	/**
 	 * Get the result table for all the jobs in a space.

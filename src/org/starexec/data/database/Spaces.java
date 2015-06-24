@@ -28,12 +28,14 @@ import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.exceptions.StarExecException;
 /*import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 */
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
+import org.starexec.util.dataStructures.TreeNode;
 
 /**
  * Handles all database interaction for spaces
@@ -888,6 +890,206 @@ public class Spaces {
 		}
 		return 0;
 	}
+
+	/**
+	 * Copy a space into another space
+	 * 
+	 * @param srcId
+	 *            The Id of the space which is being copied.
+	 * @param desId
+	 *            The Id of the destination space which is copied into.
+	 * @param usrId
+	 *            The Id of the user doing the copy.
+	 * @return The Id of the new copy of the space.
+	 * @throws StarExecException if space copy fails.
+	 * @author Ruoyu Zhang
+	 */
+
+	public static int copySpace(int srcId, int desId, int usrId) throws StarExecException {
+		if (srcId == desId) {
+			throw new StarExecException("A space can't be copied into itself.");
+		}
+
+		Space sourceSpace = Spaces.getDetails(srcId, usrId);
+		
+		// Create a new space
+		Space tempSpace = new Space();
+		tempSpace.setName(sourceSpace.getName());
+		tempSpace.setDescription(sourceSpace.getDescription());
+		tempSpace.setLocked(sourceSpace.isLocked());
+		tempSpace.setBenchmarks(sourceSpace.getBenchmarks());
+		tempSpace.setSolvers(sourceSpace.getSolvers());
+		tempSpace.setJobs(sourceSpace.getJobs());
+
+		// Set the default permission on the space
+		tempSpace.setPermission(sourceSpace.getPermission());
+		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
+
+		if (newSpaceId <= 0) {
+			throw new StarExecException( "Copying space with name '"+sourceSpace.getName()+"' to space with id '"+
+					                     desId+"' failed for user with id '"+usrId+"'");
+		}
+
+		if (Permissions.canUserSeeSpace(srcId, usrId)) {
+			// Copying the references of benchmarks
+			List<Benchmark> benchmarks = sourceSpace.getBenchmarks();
+			List<Integer> benchmarkIds = new LinkedList<Integer>();
+			int benchId = 0;
+			for (Benchmark benchmark : benchmarks) {
+				benchId = benchmark.getId();
+				if (Permissions.canUserSeeBench(benchId, usrId)) {
+					benchmarkIds.add(benchId);
+				}
+			}
+			Benchmarks.associate(benchmarkIds, newSpaceId);
+
+			// Copying the references of solvers
+			List<Solver> solvers = sourceSpace.getSolvers();
+			List<Integer> solverIds = new LinkedList<Integer>();
+			int solverId = 0;
+			for (Solver solver : solvers) {
+				solverId = solver.getId();
+				if (Permissions.canUserSeeSolver(solverId, usrId)) {
+					solverIds.add(solverId);
+				}
+			}
+			Solvers.associate(solverIds, newSpaceId);
+
+			// Copying the references of jobs
+			List<Job> jobs = sourceSpace.getJobs();
+			List<Integer> jobIds = new LinkedList<Integer>();
+			int jobId = 0;
+			for (Job job : jobs) {
+				jobId = job.getId();
+				if (Permissions.canUserSeeJob(jobId, usrId)) {
+					jobIds.add(jobId);
+				}
+			}
+			Jobs.associate(jobIds, newSpaceId);
+		}
+
+
+		if (newSpaceId == 0) {
+			throw new StarExecException( "Copying space with name '"+sourceSpace.getName()+"' to space with id '"+
+					                     desId+"' failed for user with id '"+usrId+"'");
+		}
+
+		return newSpaceId;
+	}
+
+	/**
+	 * Copy a hierarchy of the space into another space
+	 * 
+	 * @param srcId
+	 *            The Id of the source space which is being copied.
+	 * @param desId
+	 *            The Id of the destination space which is copied into.
+	 * @param usrId
+	 *            The Id of the user doing the copy.
+	 * @return The Id of the root space of the copied hierarchy.
+	 * @author Ruoyu Zhang
+	 */
+	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
+		if (srcId == desId) {
+			throw new StarExecException("You can't copy a space into itself.");
+		}
+
+
+		Space sourceSpace = Spaces.get(srcId);
+		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
+		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
+		log.debug("Space tree built during space hierarchy copy:");
+		logSpaceTree(spaceTree);
+
+		return Spaces.copySpaceTree(spaceTree, desId, usrId);
+	}
+
+	private static void logSpaceTree(TreeNode<Space> tree) {
+		logSpaceTreeHelper(tree, "");
+	}
+
+	private static void logSpaceTreeHelper(TreeNode<Space> tree, String indent) {
+		StringBuilder childrenMessage = new StringBuilder();
+		childrenMessage.append(tree.getData().getName() + ": ");
+		for (TreeNode<Space> child : tree) {
+			childrenMessage.append(child.getData().getName() + " ");
+		}
+
+		log.debug(indent + "Descendants of space " + childrenMessage.toString()); 
+
+		for (TreeNode<Space> child : tree) {
+			logSpaceTreeHelper(child, indent+"    ");
+		}
+	}
+
+	/**
+	 * Copies a whole space tree.
+	 * @param desId the id of the space which will be the parent of the root of the space tree.
+	 * @param usrId the id of the user who is copying the space tree.
+	 * @return the id of the root of the new space tree.
+	 * @throws StarExecException if something went wrong while copying the space tree.
+	 * @author Albert Giegerich
+	 */
+	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId) throws StarExecException {
+		Space rootSpace = spaceTree.getData();
+		int newSpaceId = copySpace(rootSpace.getId(), desId, usrId);
+		for (TreeNode<Space> child : spaceTree) {
+			// Recursively copy each child into the newly created space.
+			copySpaceTree(child, newSpaceId, usrId);
+		}
+		return newSpaceId;
+	}
+
+	/**
+	 * Builds a tree hierarchy of the spaces.
+	 * @param rootSpace the root space of the space tree
+	 * @param usrId the id of the user who wants to use the spaces
+	 * @return a tree of spaces with rootSpace at the root
+	 * @throws StarExecException if something wen wrong building the space tree.
+	 * @author Albert Giegerich
+	 */
+	public static TreeNode<Space> buildSpaceTree(Space rootSpace, int usrId) throws StarExecException {
+		return buildSpaceTreeHelper(rootSpace, usrId, false);
+	}
+
+	/**
+	 *
+	 * Builds a tree hierarchy of the spaces with detailed information about each space in each node.
+	 * @param rootSpace the root space of the space tree
+	 * @param usrId the id of the user who wants to use the spaces
+	 * @return a tree of spaces with rootSpace at the root
+	 * @throws StarExecException if something wen wrong building the space tree.
+	 * @author Albert Giegerich
+	 */
+	public static TreeNode<Space> buildDetailedSpaceTree(Space rootSpace, int usrId) throws StarExecException {
+		return buildSpaceTreeHelper(rootSpace, usrId, true);
+	}
+
+	private static TreeNode<Space> buildSpaceTreeHelper(Space rootSpace, int usrId, boolean getDetails) throws StarExecException {
+		List<Space> subSpaces;
+		try {
+			subSpaces = Spaces.getSubSpaces(rootSpace.getId(), usrId);
+		} catch (Exception e) {
+			throw new StarExecException("Could not get subspaces for space with id="+rootSpace.getId()+" for user with id="+usrId, e);
+		}
+		// Base case for when rootSpace is a leaf.
+		if (subSpaces == null) {
+			return null;
+		}
+		if (getDetails) {
+			rootSpace = Spaces.getDetails(rootSpace.getId(), usrId);
+		}
+		TreeNode<Space> spaceTree = new TreeNode<Space>(rootSpace);
+		for (Space space : subSpaces) {
+			TreeNode<Space> child = buildSpaceTree(space, usrId);
+			if (child != null) {
+				spaceTree.addChild(child);	
+			}
+		}
+		return spaceTree;
+	}
+
+
 
  
 	/**

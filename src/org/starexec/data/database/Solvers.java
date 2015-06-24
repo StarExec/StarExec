@@ -209,6 +209,7 @@ public class Solvers {
 		return associate(solverIds,spaceId);
 	}
 	
+	/*
 	public static boolean associate(List<Integer> solverIds, int spaceId, int XMLUploadId) {
 		Connection con = null;			
 		int counter=0;
@@ -242,6 +243,7 @@ public class Solvers {
 		log.error("Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]");
 		return false;
 	}
+	*/
 	
 	/**
 	 * Adds an association between all the given solver ids and the given space

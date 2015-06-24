@@ -589,6 +589,7 @@ public class Jobs {
 	
 	public static boolean delete(int jobId) {
 		//we should kill jobs before deleting  them so no additional pairs are run
+   	        log.info("Deleting job " + new Integer(jobId));
 		if (!Jobs.isJobComplete(jobId)) {
 			Jobs.kill(jobId);
 		}

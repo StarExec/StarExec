@@ -103,6 +103,10 @@
 					<td>${bench.type.name}</td>
 				</tr>
 				<tr>
+					<td>processor id</td>			
+					<td>${bench.type.id}</td>
+				</tr>
+				<tr>
 					<td>description</td>			
 					<td>${bench.type.description}</td>
 				</tr>
