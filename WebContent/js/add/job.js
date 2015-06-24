@@ -492,6 +492,7 @@ function updateProgress() {
 			$('#btnNext').fadeOut('fast');
 			$('#btnBack').fadeOut('fast');
 			$('#btnPrev').fadeIn('fast');
+			clearSelectedRowsOnTable($('#tblSpaceSelection'));
 			break;
 		case 2:	// If quick run space method not chosen, how to select benchmarks
 			$('#fieldBenchMethod').fadeIn('fast');
