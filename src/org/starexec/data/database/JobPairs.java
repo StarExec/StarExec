@@ -589,26 +589,30 @@ public class JobPairs {
 	    StatusCode statusCode=stage.getStatus().getCode();
 
 	    if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
-		if (stage.getAttributes()!=null) {
-		    Properties attrs = stage.getAttributes();
-		    log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
-		    log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
-		    if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN))
-			//don't know the result, so don't mark as correct or incorrect.	
-			return 2;
-		    else if (attrs.containsKey(R.EXPECTED_RESULT) && !attrs.get(R.EXPECTED_RESULT).equals(R.STAREXEC_UNKNOWN)) {
-			if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) 
-			    //the absence of a result, or a nonmatching result, is counted as wrong
-			    return 1;
-			else 
-			    return 0;
-		    } else 
-			//if the attributes don't have an expected result, we will mark as unknown
-			return 2;
-		} else 
-		    return 0;
-	    } else 
-		return -1;
+			if (stage.getAttributes()!=null) {
+				Properties attrs = stage.getAttributes();
+				log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
+				log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
+				if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)) {
+					//don't know the result, so don't mark as correct or incorrect.	
+					return 2;
+				} else if (attrs.containsKey(R.EXPECTED_RESULT) && !attrs.get(R.EXPECTED_RESULT).equals(R.STAREXEC_UNKNOWN)) {
+					if (!attrs.containsKey(R.STAREXEC_RESULT) || !attrs.get(R.STAREXEC_RESULT).equals(attrs.get(R.EXPECTED_RESULT))) {
+						//the absence of a result, or a nonmatching result, is counted as wrong
+						return 1;
+					} else { 
+						return 0;
+					}
+				} else { 
+				//if the attributes don't have an expected result, we will mark as unknown
+				return 2;
+				}
+			} else {
+				return 0;
+			}
+	    } else {
+			return -1;
+		}
 	}
 	
 	/**

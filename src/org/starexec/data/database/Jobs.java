@@ -5,8 +5,8 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
@@ -1255,7 +1256,6 @@ public class Jobs {
 			
 			procedure = con.prepareCall("{CALL GetJobAttrs(?)}");
 			procedure.setInt(1, jobId);
- 
 			results = procedure.executeQuery();
 			return processAttrResults(results);
 		} catch (Exception e) {
@@ -2484,10 +2484,22 @@ public class Jobs {
 					HashMap<Integer,Properties> pairInfo=props.get(jp.getId());
 					if (pairInfo.containsKey(jp.getPrimaryStage().getStageNumber())) {
 						jp.getPrimaryStage().setAttributes(pairInfo.get(jp.getPrimaryStage().getStageNumber()));
-
 					}
 				} 
+				// Add the pair's benchmark's expected result to the pair's attributes.
+				TreeMap<String,String> jpBenchProps = Benchmarks.getSortedAttributes(jp.getBench().getId());
+				// Make sure the benchmark properties has an expected result
+				if (jpBenchProps.containsKey(R.EXPECTED_RESULT)) {
+					String expectedResult = jpBenchProps.get(R.EXPECTED_RESULT);
+					List<JoblineStage> jpStages = jp.getStages();
+					for (JoblineStage stage : jpStages) {
+						// Set all the stages expected results to the benchmark's expected result.
+						stage.getAttributes().setProperty(R.EXPECTED_RESULT, expectedResult);
+					}
+				}
 			}
+
+
 			return pairs;
 		} catch (Exception e) {
 			log.error("getNewCompletedPairsDetailed says "+e.getMessage(),e);
