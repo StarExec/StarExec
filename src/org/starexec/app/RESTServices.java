@@ -4133,6 +4133,26 @@ public class RESTServices {
 		return success ? gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
+	@POST
+	@Path("/grantDeveloperStatus/user/{userId}")
+	@Produces("application/json")
+	public String grantDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		boolean success = Users.changeUserRole(userId, R.DEVELOPER_ROLE_NAME);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "Developer status granted. ")) : gson.toJson(ERROR_DATABASE);
+	}
+	@POST
+	@Path("/suspendDeveloperStatus/user/{userId}")
+	@Produces("application/json")
+	public String suspendDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		//TODO
+		boolean success = Users.changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "Developer status suspended.")) : gson.toJson(ERROR_DATABASE);
+	}
+
 	/**
 	 * Sends the requested past report text file contents.
 	 * @param reportName the file name of the past report.

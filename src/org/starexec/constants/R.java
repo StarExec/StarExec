@@ -213,6 +213,7 @@ public class R {
     
     public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
     
+	public static String DEVELOPER_ROLE_NAME="developer";
     public static String SUSPENDED_ROLE_NAME="suspended";
     public static String DEFAULT_USER_ROLE_NAME="user";
     public static String ADMIN_ROLE_NAME="admin";

@@ -116,6 +116,13 @@ public class UserSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canAddOrRemoveDeveloperRole(int userId) {
+		if (!Users.isAdmin(userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
 	
 	/**
 	 * Checks to see whether the given user can suspend or reinstate users
@@ -141,6 +148,15 @@ public class UserSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userId) {
+		if (!Users.isAdmin(userId)){
+			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
+
+
 	/**
 	 * Checks to see whether a given user is allowed to see the primitives owned by another user
 	 * @param ownerId The ID of the user who owns the primitives
