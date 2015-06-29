@@ -329,17 +329,25 @@ function initUI() {
 			
 			if (numCheck != 1) {
 				// Only check the default checkbox if the user clicked on the row,
-				// and not another checkbox
+				// and not another checkbox.
 				$(this).find('.default').prop('checked', true);
 
 				var numberOfConfigsNamedDefault = $(this).find('.default').length;
-				console.log("numberOfConfigsNamedDefault: " + numberOfConfigsNamedDefault);
+
+				log("numberOfConfigsNamedDefault: " + numberOfConfigsNamedDefault);
 				if ( numberOfConfigsNamedDefault > 0 ) {
 					// Add the number of boxes that were checked to numCheck.
 					numCheck += numberOfConfigsNamedDefault;
+				} else if (numberOfConfigsNamedDefault === 0) {
+					// If their are no default configs and there is only one config then select that one
+					// by default.
+					var numberOfConfigsForSelectedSolver = $(this).find('input[type=checkbox]').length;
+					if (numberOfConfigsForSelectedSolver === 1) {
+						$(this).find('input[type=checkbox]').prop('checked', true);
+						numCheck += 1;
+					}
 				}
-
-
+				log('Total number of configs for selected solver: ' + numberOfConfigsForSelectedSolver);
 			}
 
     		//$(this).find('div>input[type=checkbox]').prop('checked', true);
@@ -478,7 +486,7 @@ function updateProgress() {
 	$('#fieldSelectBenchSpace').hide();
 	//$('#fieldSelectBenchHierarchy').hide();
 		
-	console.log("Progress: "+progress);
+	log("Progress: "+progress);
 	switch(progress) {
 		case 0:	// Job setup stage
 			$('#fieldStep1').fadeIn('fast');
