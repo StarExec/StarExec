@@ -143,14 +143,14 @@ public class UserSecurity {
 	 * @author Albert Giegerich
 	 */
 	public static ValidatorStatusCode canUserSubscribeOrUnsubscribeUser(int userIdMakingRequest) {
-		if (!Users.isAdmin(userIdMakingRequest)){
+		if (!Users.hasAdminWritePrivileges(userIdMakingRequest)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		return new ValidatorStatusCode(true);
 	}
 
 	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userId) {
-		if (!Users.isAdmin(userId)){
+		if (!Users.hasAdminWritePrivileges(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		return new ValidatorStatusCode(true);

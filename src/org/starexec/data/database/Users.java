@@ -1139,6 +1139,22 @@ public class Users {
 		User u = Users.get(userId);
 		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
 	}
+
+	/**
+	 * Checks to see if a user can view admin only pages.
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminReadPrivileges(int userId) {
+		return isAdmin(userId) || isDeveloper(userId); 
+	}
+
+	/**
+	 * Checks to see whether a user can make admin-only changes to the website/backend.
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminWritePrivileges(int userId) {
+		return isAdmin(userId);
+	}
 	
 	/**
 	 * Checks to see whether the given user is the public user

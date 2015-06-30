@@ -280,10 +280,13 @@ public class RESTServices {
 	@Path("/cluster/clearerrors")
 	@Produces("application/json")	
 	public String clearErrorStates(@Context HttpServletRequest request) {	
+		final String method = "clearErrorStates";
+		log.debug("Entering method "+method);
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserClearErrorStates(userId);
 		if (!status.isSuccess()) {
-			gson.toJson(status);
+			log.debug("("+method+") user cannot clear error states.");
+			return gson.toJson(status);
 		}
 		
 		LinkedList<String> queueNames = new LinkedList<String>();
