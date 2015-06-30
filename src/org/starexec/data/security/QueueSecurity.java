@@ -13,7 +13,7 @@ import org.starexec.util.Validator;
 public class QueueSecurity {
 	
 	public static ValidatorStatusCode canUserClearErrorStates(int userId) {
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "Only administrators can perform this action");
 		}
 		return new ValidatorStatusCode(true);
