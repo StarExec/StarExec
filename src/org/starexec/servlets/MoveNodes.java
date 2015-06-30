@@ -54,10 +54,11 @@ public class MoveNodes extends HttpServlet {
 
 	try {
 		int userId=SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminWritePrivileges(userId)) {
 			String message="You do not have permission to perform the requested operation";
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+			return;
 		}
 	    log.debug("Received request to move nodes.");
 

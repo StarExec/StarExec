@@ -5,7 +5,7 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	if (Users.isAdmin(userId)) {
+	if (Users.hasAdminReadPrivileges(userId)) {
 		List<Space> spaces = Spaces.GetAllSpaces();
 		List<WorkerNode> nodes = Cluster.getAllNodes();
 		//List<WorkerNode> nodes = Cluster.getAllNonPermanentNodes();

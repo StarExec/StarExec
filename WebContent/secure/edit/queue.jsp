@@ -8,7 +8,7 @@
 		int queueId = Integer.parseInt(request.getParameter("id"));
 
 		Queue q= null;
-		if(Users.isAdmin(userId)) {
+		if(Users.hasAdminReadPrivileges(userId)) {
 			q=Queues.get(queueId);
 		}
 

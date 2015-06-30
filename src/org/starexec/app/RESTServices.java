@@ -1276,6 +1276,13 @@ public class RESTServices {
 	@Path("/edit/queue/{id}")
 	@Produces("application/json")
 	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+
+		if (!Users.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(false, "You must be an admin to edit this queue."));
+		}
+
+
 		if (!Util.paramExists("cpuTimeout", request) || !Util.paramExists("wallTimeout", request)) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
@@ -1290,7 +1297,6 @@ public class RESTServices {
 
 		
 		
-		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserEditQueue(userId, wallTimeout, cpuTimeout);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
