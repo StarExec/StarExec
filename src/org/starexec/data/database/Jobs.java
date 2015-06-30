@@ -416,7 +416,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -429,11 +429,12 @@ public class Jobs {
 			procedure.setInt(7, job.getCpuTimeout());
 			procedure.setInt(8,job.getWallclockTimeout());
 			procedure.setLong(9, job.getMaxMemory());
-			procedure.registerOutParameter(10, java.sql.Types.INTEGER);	
+			procedure.setBoolean(10, job.timestampIsSuppressed());
+			procedure.registerOutParameter(11, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(10));
+			job.setId(procedure.getInt(11));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {

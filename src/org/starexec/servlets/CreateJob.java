@@ -159,6 +159,7 @@ public class CreateJob extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+		final String method = "doPost";
 		// Make sure the request is valid
 		long a = System.currentTimeMillis();
 		log.debug("starting job post");
@@ -176,6 +177,8 @@ public class CreateJob extends HttpServlet {
 		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
 		//a number that will be provided to the pre processor for every job pair in this job
 		long seed=Long.parseLong(request.getParameter(randSeed));
+
+
 		
 		//ensure that the cpu limits are greater than 0 and also don't exceed the constant maximum
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
@@ -187,6 +190,8 @@ public class CreateJob extends HttpServlet {
 		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
+		boolean suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
+		log.debug("("+method+")"+" User chose "+(suppressTimestamp?"":"not ")+"to suppress timestamps.");
 
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
@@ -196,7 +201,7 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
-				seed,cpuLimit,runLimit,memoryLimit);
+				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp);
 		
 		log.debug("job setup took this long " + (System.currentTimeMillis() - a));
 

@@ -664,6 +664,7 @@ public class Queues {
 				j.setCpuTimeout(results.getInt("cpuTimeout"));
 				j.setWallclockTimeout(results.getInt("clockTimeout"));
 				j.setMaxMemory(results.getLong("maximum_memory"));
+				j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
 				j.getQueue().setId(queueId);
 
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
