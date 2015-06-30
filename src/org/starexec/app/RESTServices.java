@@ -959,7 +959,7 @@ public class RESTServices {
 	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		if (!Users.isAdmin(userId)) {
+		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -4139,6 +4139,9 @@ public class RESTServices {
 	public String grantDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
 		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
 		boolean success = Users.changeUserRole(userId, R.DEVELOPER_ROLE_NAME);
 		return success ? gson.toJson(new ValidatorStatusCode(true, "Developer status granted. ")) : gson.toJson(ERROR_DATABASE);
 	}
@@ -4148,7 +4151,9 @@ public class RESTServices {
 	public String suspendDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
 		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
-		//TODO
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
 		boolean success = Users.changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
 		return success ? gson.toJson(new ValidatorStatusCode(true, "Developer status suspended.")) : gson.toJson(ERROR_DATABASE);
 	}

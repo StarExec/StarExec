@@ -7,7 +7,7 @@
 	<c:if test="${not empty user && user.role != 'unauthorized' && user.role != 'suspended'}">
 		<nav>
 			<ul>
-				<c:if test="${user.role == 'admin'}">
+				<c:if test="${user.role == 'admin' || user.role == 'developer'}">
 				<li class="round">
 					<a href="#">Admin</a>  
 			        <ul class="subnav round">  

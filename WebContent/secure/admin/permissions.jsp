@@ -8,7 +8,7 @@
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));
 		int userId = SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId)) {
+		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} else {
 			request.setAttribute("userId", id);
