@@ -26,7 +26,7 @@ public class GeneralSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserChangeLogging(int userId){
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
