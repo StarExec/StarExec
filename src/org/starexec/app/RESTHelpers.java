@@ -2051,7 +2051,9 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(suspendButton));
 
 			String subscribeButton = "";
-			if (user.isSubscribedToReports()) {
+			if (Users.isUnauthorized(user.getId())) {
+				subscribeButton = "N/A";
+			} else if (user.isSubscribedToReports()) {
 				subscribeButton = "<input type=\"button\" onclick=\"unsubscribeUserFromReports(" + user.getId() + ")\" value=\"Unsubscribe\"/>";
 			} else {
 				subscribeButton = "<input type=\"button\" onclick=\"subscribeUserToReports(" + user.getId() + ")\" value=\"Subscribe\"/>";
