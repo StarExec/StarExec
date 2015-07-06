@@ -4,7 +4,7 @@
 <%
 	try {
 		int userId = SessionUtil.getUserId(request);
-		boolean admin = Users.isAdmin(userId);
+		boolean admin = Users.hasAdminReadPrivileges(userId);
 		
 		request.setAttribute("isAdmin", admin);
 		request.setAttribute("communityNameLen", R.SPACE_NAME_LEN);
@@ -22,7 +22,7 @@
 		
 		if(com == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		} else if (perm == null || !perm.isLeader()) {
+		} else if ((perm == null || !perm.isLeader()) && !admin) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only community leaders can edit their communities");		
 		} else {
 			DefaultSettings settings = Communities.getDefaultSettings(id);

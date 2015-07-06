@@ -255,7 +255,7 @@ public class SpaceSecurity {
 	//TODO: Leaders can demote other leaders except at the community level, right?
 	public static ValidatorStatusCode canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
 		// Permissions check; ensures user is the leader of the community or is an admin
-		if(!Users.isAdmin(userIdDoingDemoting)) {
+		if(!Users.hasAdminWritePrivileges(userIdDoingDemoting)) {
 			return new ValidatorStatusCode(false, "You do not have permission to demote leaders in this space");
 		}
 		return new ValidatorStatusCode(true);
@@ -870,7 +870,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserViewCommunityRequests(int userId) {
-		if (!Users.isAdmin(userId)){
+		if (!Users.hasAdminReadPrivileges(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
