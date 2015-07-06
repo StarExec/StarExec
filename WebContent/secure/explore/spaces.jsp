@@ -184,16 +184,18 @@
 	  <div><input  type="text" id="updateID" /></div>
 	</div>
 	<div id="dialog-download-space" title="download space">
-		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-download-space-txt"></span></p><br>
+		<p><span class="ui-icon ui-icon-alert"></span>do you want to download the single space or the hierarchy?</p><br>
+		<input type="radio" name="downloadHierarchyOption" id="downloadSingleSpace" checked="checked"/>space<br>
+		<input type="radio" name="downloadHierarchyOption" id="downloadSpaceHierarchy"/>hierarchy</p>
+		<hr>
+		<p><span class="ui-icon ui-icon-alert"></span>do you want to download the benchmarks and/or the solvers?</p><br>
 		<p><input type="radio" name="downloadOption" id="downloadSolvers"/> solvers only<br>
 		<input type="radio" name="downloadOption" id="downloadBenchmarks"/> benchmarks only<br>
 		<input type="radio" name="downloadOption" id="downloadBoth" checked="checked"/> solvers + benchmarks<br></p>
-		<div style="display:none;">
-			<hr>
-			<p><span class="ui-icon ui-icon-alert"></span>do you want to store benchmarks/solvers in id directories?</p><br>
-			<input type="radio" name="idDirectoriesOption" id="yesIdDirectories"/> yes<br>
-			<input type="radio" name="idDirectoriesOption" id="noIdDirectories" checked="checked"/> no<br>
-		</div>
+		<hr>
+		<p><span class="ui-icon ui-icon-alert"></span>do you want to store benchmarks/solvers in id directories?</p><br>
+		<input type="radio" name="idDirectoriesOption" id="yesIdDirectories"/> yes<br>
+		<input type="radio" name="idDirectoriesOption" id="noIdDirectories" checked="checked"/> no<br>
 	</div>
 	<div id="dialog-warning" title="warning">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>

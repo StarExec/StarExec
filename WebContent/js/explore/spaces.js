@@ -1740,27 +1740,15 @@ function updateButtonIds(id) {
 	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog
-		$('#dialog-download-space-txt').text('do you want to download the single space or the hierarchy?');
 		$("#downloadBoth").prop("checked","checked");
 		$('#noIdDirectories').prop('checked','checked');
-
 		$('#dialog-download-space').dialog({
 			modal: true,
 			width: 380,
-			height: 250, /*450*/
+			height: 500,
 			buttons: {
-				'space': function(){
-					createDownloadSpacePost(false,id);
-					$(this).dialog("close");
-
-				},
-				'hierarchy': function(){
-				
-					createDownloadSpacePost(true,id);
-					$(this).dialog("close");
-
-				},
-				"cancel": function() {
+				'submit': function(){
+					createDownloadSpacePost(id);
 					$(this).dialog("close");
 				}
 			}
@@ -1779,12 +1767,17 @@ function createDownloadSpaceXMLRequest(includeAttrs,updates,upid,id) {
  
 }
 
-function createDownloadSpacePost(hierarchy,id) {
+function createDownloadSpacePost(id) {
+	var hierarchy = $('#downloadSpaceHierarchy').prop("checked");
 	var downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
 	
 	var downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
-	var useIdDirectories = true;/*$('#yesIdDirectories').prop('checked');*/ // always enabled for now
-	console.log("useIdDirectories: " + useIdDirectories);
+	var useIdDirectories = $('#yesIdDirectories').prop('checked');
+	log('hierarchy: ' + hierarchy);
+	log('useIdDirectories: ' + useIdDirectories);
+	log('downloadSolvers: ' + downloadSolvers);
+	log('downloadBenchmarks: ' + downloadBenchmarks);
+	log('useIdDirectories: ' + useIdDirectories);
 	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 	token=Math.floor(Math.random()*100000000);
 	window.location.href=starexecRoot+"secure/download?includesolvers="+downloadSolvers+"&includebenchmarks="+downloadBenchmarks+
