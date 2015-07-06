@@ -39,7 +39,7 @@ public class GeneralSecurity {
 	 */
 
 	public static ValidatorStatusCode canUserSeeTestInformation(int userId) {
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -53,7 +53,7 @@ public class GeneralSecurity {
 
 	public static ValidatorStatusCode canUserRunTestsNoRunningCheck(int userId) {
 		//only the admin can run tests, and they cannot be run on production
-		if (!Users.isAdmin(userId) || Util.isProduction()) {
+		if (!Users.hasAdminWritePrivileges(userId) || Util.isProduction()) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -69,6 +69,7 @@ public class GeneralSecurity {
 	public static ValidatorStatusCode canUserRunTests(int userId, boolean stress) {
 
 		boolean testRunning=false;
+
 		if (stress) {
 			testRunning=TestManager.isStressTestRunning();
 		} else {

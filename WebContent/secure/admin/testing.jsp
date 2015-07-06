@@ -6,7 +6,7 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		User user = Users.get(userId);
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		}		
 		
