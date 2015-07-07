@@ -48,6 +48,7 @@ public class AddSettingProfile extends HttpServlet {
 	private static String BENCH_ID="bench";
 	private static String MAX_MEMORY="mem";
 	private static String SETTING_ID= "settingId"; //this is set if we are doing an update only
+	private static String USER_ID_OF_OWNER = "userIdOfOwner";
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -59,6 +60,7 @@ public class AddSettingProfile extends HttpServlet {
 	 */
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
+		final String method = "doPost";
 		
 		log.debug("got a request to create a new settings profile");
 		
@@ -68,12 +70,29 @@ public class AddSettingProfile extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,status.getMessage());
 			return;
 		}
-		
+
 		DefaultSettings d=new DefaultSettings();
 		
 		//this servlet currently only handles requests for users. Community profiles are created automatically
 		d.setType(SettingType.USER);
-		d.setPrimId(SessionUtil.getUserId(request));
+
+		int userIdOfCaller=SessionUtil.getUserId(request);
+		int userIdOfOwner = -1;
+		String rawUserIdOfOwner=request.getParameter(USER_ID_OF_OWNER);
+		log.debug(method+": userIdOfOwner="+rawUserIdOfOwner);
+
+		if (Validator.isValidInteger(rawUserIdOfOwner)) {
+			userIdOfOwner = Integer.parseInt(rawUserIdOfOwner);
+			d.setPrimId(userIdOfOwner);
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request.");
+			return;
+		}
+
+		if (!SettingSecurity.canUserAddOrSeeProfile(userIdOfOwner, userIdOfCaller)) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a setting profile for this user.");
+		}
+
 
 		
 		//all profiles must set the following attributes
@@ -88,6 +107,7 @@ public class AddSettingProfile extends HttpServlet {
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
 		String benchId=request.getParameter(BENCH_ID);
+
 		
 		//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
 		if (Validator.isValidInteger(postId)) {
@@ -134,6 +154,7 @@ public class AddSettingProfile extends HttpServlet {
 			success=(Users.createNewDefaultSettings(d)>0);
 
 		}
+		log.debug(method+": Creating a new default settings was"+(success?" ":" not ")+"successful.");
 		if (!success) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}

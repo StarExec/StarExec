@@ -114,7 +114,13 @@ public class GeneralSecurity {
 	}
 	
 	
-	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, String newPass, String confirmNewPass) {
+	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, 
+															String newPass, String confirmNewPass) {
+		boolean userIsChangingOwnPassword = (userId == userIdMakingRequest);
+		boolean userIsAdmin = Users.hasAdminWritePrivileges(userIdMakingRequest);
+		if ( !(userIsChangingOwnPassword || userIsAdmin) ) {
+			return new ValidatorStatusCode(false, "You do not have permission to change this user's password.");
+		}
 		String hashedPass = Hash.hashPassword(oldPass);
 		String databasePass = Users.getPassword(userId);
 		if (!hashedPass.equals(databasePass)) {

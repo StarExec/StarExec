@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
+import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -48,15 +49,35 @@ public class UploadPicture extends HttpServlet {
     
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
-    	int userId = SessionUtil.getUserId(request);
+    	int userIdOfCaller = SessionUtil.getUserId(request);
     	try {	
 			// Extract data from the multipart request
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
+
+			String rawUserIdOfOwner = (String)form.get(UploadPicture.ID);
+			int userIdOfOwner = 0;
+			if (Validator.isValidInteger(rawUserIdOfOwner)) {
+				userIdOfOwner = Integer.parseInt(rawUserIdOfOwner);
+			} else {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User id for request was not an integer.");
+				return;
+			}
+
+
+			boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
+			boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
+			if ( !(callerIsOwner || callerIsAdmin) ) {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You cannot change this user's picture.");
+				return;
+			}
+
+
+
 			
 			ValidatorStatusCode status=this.isRequestValid(form);
 			// If the request is valid
 			if(status.isSuccess()) {
-				response.sendRedirect(this.handleUploadRequest(userId, form));
+				response.sendRedirect(this.handleUploadRequest(userIdOfCaller, form));
 			} else {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));

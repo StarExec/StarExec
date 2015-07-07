@@ -112,7 +112,6 @@ function initUI(){
 						showMessage("success","Profile settings updated successfully",5000);
 				}
 			).error(function(xhr, textStatus, errorThrown){
-				
 				showMessage('error',"Invalid parameters",5000);
 			});
 	});
@@ -132,12 +131,19 @@ function initUI(){
 							{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 								wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-								bench: $("#benchmark").val(), mem: $("#maxMem").val()},
+								bench: $("#benchmark").val(), mem: $("#maxMem").val(), userIdOfOwner: userId},
 							function(returnCode) {
 									showMessage("success","Profile created successfully",5000);
 							}
 						).error(function(xhr, textStatus, errorThrown){
-							showMessage('error',"Invalid parameters",5000);
+							log(xhr.statusText);
+							log(textStatus);
+							log(errorThrown);
+							if (xhr.statusText === 'Forbidden') {
+								showMessage('error','You do not have permission to add a new profile for this user.', 5000);
+							} else {
+								showMessage('error',"Invalid parameters",5000);
+							}
 						});
 														
 				},
@@ -152,7 +158,7 @@ function initUI(){
 	$("#setDefaultProfile").click(function() {
 		curSettingId=getSelectedSettingId();
 		$.post(
-				starexecRoot+"services/set/defaultSettings/"+ curSettingId,
+				starexecRoot+"services/set/defaultSettings/"+ curSettingId +'/'+userId,
 				function(returnData){
 					s=parseReturnCode(returnData);
 				},
