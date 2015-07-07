@@ -323,8 +323,9 @@ function attachWebsiteMonitor(){
 		}	
 		
 		var data = {name: name, url: url};
+		log('Adding website for user with id: ' + userId);
 		$.post(
-				starexecRoot+"services/website/add/user/-1",
+				starexecRoot+"services/website/add/user/" + userId,
 				data,
 				function(returnCode) {
 					s=parseReturnCode(returnCode);
