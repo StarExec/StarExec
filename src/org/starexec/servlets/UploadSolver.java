@@ -192,222 +192,219 @@ public class UploadSolver extends HttpServlet {
 	 * @throws Exception 
 	 */
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
-		try {
-		    log.info("handleSolver begins");
+		log.info("handleSolver begins");
 
-			boolean build=false;
-			String buildstr=null;
-			int[] returnArray = new int[2];
-			returnArray[0] = 0;
-			returnArray[1] = 0;
-			
-			File sandboxDir=Util.getRandomSandboxDirectory();
-			Util.logSandboxContents();
-			String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
-			FileItem item=null;
-			String name=null;
-			URL url=null;
-			Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
-			if (upMethod.equals("local")) {
-				item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
-			} else {
-				try {
-					
-					url=new URL((String)form.get(UploadSolver.FILE_URL));
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-					returnArray[0] = -2;
-					return returnArray;
-				}
-					
-				try {
-					name=url.toString().substring(url.toString().lastIndexOf('/'));
-				} catch (Exception e) {
-					name=url.toString().replace('/', '-');
-				}	
-			}
-
-			//Set up a new solver with the submitted information
-			Solver newSolver = new Solver();
-			newSolver.setUserId(userId);
-			newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
-			newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
-
-		        log.info("Handling upload of solver" + newSolver.getName());
-			
-			//Set up the unique directory to store the solver
-			//The directory is (base path)/user's ID/solver name/date/
-			File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
-			uniqueDir = new File(uniqueDir, newSolver.getName());
-			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-			
-			newSolver.setPath(uniqueDir.getAbsolutePath());
-
-			uniqueDir.mkdirs();
-			
-			
-			//Process the archive file and extract
-			File archiveFile=null;
-			//String FileName=null;
-			if (upMethod.equals("local")) {
-				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
-				archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
-				new File(archiveFile.getParent()).mkdir();
-				item.write(archiveFile);
-		                log.info("handleSolver just wrote archive to disk");
-			} else {
-				archiveFile=new File(uniqueDir, name);
-				new File(archiveFile.getParent()).mkdir();
-				if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
-					throw new Exception("Unable to copy file from URL");
-				}
-		                log.info("handleSolver just downloaded solver from url " + url);
-			}
-			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
-			
-			User currentUser=Users.get(userId);
-			long allowedBytes=currentUser.getDiskQuota();
-			long usedBytes=Users.getDiskUsage(userId);
-			
-			//the user does not have enough disk quota to upload this solver
-			if (fileSize>allowedBytes-usedBytes) {
-				archiveFile.delete();
-				returnArray[0]=-4;
+		boolean build=false;
+		String buildstr=null;
+		int[] returnArray = new int[2];
+		returnArray[0] = 0;
+		returnArray[1] = 0;
+		
+		File sandboxDir=Util.getRandomSandboxDirectory();
+		Util.logSandboxContents();
+		String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
+		FileItem item=null;
+		String name=null;
+		URL url=null;
+		Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
+		if (upMethod.equals("local")) {
+			item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
+		} else {
+			try {
+				
+				url=new URL((String)form.get(UploadSolver.FILE_URL));
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+				returnArray[0] = -2;
 				return returnArray;
 			}
-			
-			//move the archive to the sandbox
-			FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
+				
+			try {
+				name=url.toString().substring(url.toString().lastIndexOf('/'));
+			} catch (Exception e) {
+				name=url.toString().replace('/', '-');
+			}	
+		}
+
+		//Set up a new solver with the submitted information
+		Solver newSolver = new Solver();
+		newSolver.setUserId(userId);
+		newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
+		newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
+
+			log.info("Handling upload of solver" + newSolver.getName());
+		
+		//Set up the unique directory to store the solver
+		//The directory is (base path)/user's ID/solver name/date/
+		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir, newSolver.getName());
+		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		
+		newSolver.setPath(uniqueDir.getAbsolutePath());
+
+		uniqueDir.mkdirs();
+		
+		
+		//Process the archive file and extract
+		File archiveFile=null;
+		//String FileName=null;
+		if (upMethod.equals("local")) {
+			//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
+			archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
+			new File(archiveFile.getParent()).mkdir();
+			item.write(archiveFile);
+					log.info("handleSolver just wrote archive to disk");
+		} else {
+			archiveFile=new File(uniqueDir, name);
+			new File(archiveFile.getParent()).mkdir();
+			if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
+				throw new Exception("Unable to copy file from URL");
+			}
+					log.info("handleSolver just downloaded solver from url " + url);
+		}
+		long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
+		
+		User currentUser=Users.get(userId);
+		long allowedBytes=currentUser.getDiskQuota();
+		long usedBytes=Users.getDiskUsage(userId);
+		
+		//the user does not have enough disk quota to upload this solver
+		if (fileSize>allowedBytes-usedBytes) {
 			archiveFile.delete();
-			archiveFile=new File(sandboxDir,archiveFile.getName());
-			log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
-			
-			//extracts the given archive using the sandbox user
-			boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),sandboxDir.getAbsolutePath());
-			
-			//if there was an extraction error or if the temp directory is still empty.
-			if (!extracted || sandboxDir.listFiles().length==0) {
-				log.warn("there was an error extracting the new solver archive");
+			returnArray[0]=-4;
+			return returnArray;
+		}
+		
+		//move the archive to the sandbox
+		FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
+		archiveFile.delete();
+		archiveFile=new File(sandboxDir,archiveFile.getName());
+		log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
+		
+		//extracts the given archive using the sandbox user
+		boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),sandboxDir.getAbsolutePath());
+		
+		//if there was an extraction error or if the temp directory is still empty.
+		if (!extracted || sandboxDir.listFiles().length==0) {
+			log.warn("there was an error extracting the new solver archive");
+			FileUtils.deleteDirectory(sandboxDir);
+			FileUtils.deleteDirectory(uniqueDir);
+			FileUtils.deleteQuietly(archiveFile);
+			returnArray[0]=-6;
+			return returnArray;
+		}
+		if (containsBuildScript(sandboxDir)) {
+			log.debug("the uploaded solver did contain a build script");
+			if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
 				FileUtils.deleteDirectory(sandboxDir);
 				FileUtils.deleteDirectory(uniqueDir);
-				FileUtils.deleteQuietly(archiveFile);
-				returnArray[0]=-6;
+				returnArray[0]=-5;                   //fail due to invalid permissions
 				return returnArray;
 			}
-			if (containsBuildScript(sandboxDir)) {
-				log.debug("the uploaded solver did contain a build script");
-				if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
-					FileUtils.deleteDirectory(sandboxDir);
-					FileUtils.deleteDirectory(uniqueDir);
-					returnArray[0]=-5;                   //fail due to invalid permissions
-					return returnArray;
-				}
-				
-				//give sandbox full permissions over the solver directory
-				Util.sandboxChmodDirectory(sandboxDir);
-				
-				
 			
-
-				//run the build script as sandbox
-				String[] command=new String[4];
-				command[0]="sudo";
-				command[1]="-u";
-				command[2]="sandbox";
-				command[3]="./"+R.SOLVER_BUILD_SCRIPT;
-					
-				buildstr=Util.executeCommand(command, null,sandboxDir);
-				build=true;
-				log.debug("got back the output "+buildstr);
-			}
-			
+			//give sandbox full permissions over the solver directory
 			Util.sandboxChmodDirectory(sandboxDir);
-
-			for (File f : sandboxDir.listFiles()) {
-				if (f.isDirectory()) {
-					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
-				} else {
-					FileUtils.copyFileToDirectory(f, uniqueDir);
-				}
-			}
 			
-			try {
-			    FileUtils.deleteDirectory(sandboxDir);
+			
+		
+
+			//run the build script as sandbox
+			String[] command=new String[4];
+			command[0]="sudo";
+			command[1]="-u";
+			command[2]="sandbox";
+			command[3]="./"+R.SOLVER_BUILD_SCRIPT;
+				
+			buildstr=Util.executeCommand(command, null,sandboxDir);
+			build=true;
+			log.debug("got back the output "+buildstr);
+		}
+		
+		Util.sandboxChmodDirectory(sandboxDir);
+
+		for (File f : sandboxDir.listFiles()) {
+			if (f.isDirectory()) {
+				try {
+					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
+				} catch (FileNotFoundException e) {
+					throw new FileNotFoundException(
+							String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
+				}
+			} else {
+				FileUtils.copyFileToDirectory(f, uniqueDir);
+			}
+		}
+		
+		try {
+			FileUtils.deleteDirectory(sandboxDir);
+		} catch (Exception e) {
+			log.error("unable to delete temporary directory at "+sandboxDir.getAbsolutePath());
+			log.error(e.getMessage(),e);
+		}
+		
+		String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
+		if (DescMethod.equals("text")){
+			newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
+		} else if (DescMethod.equals("file")) {
+			FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+			newSolver.setDescription(item_desc.getString());
+		} else {	//Upload starexec_description.txt
+			try {	
+				File descriptionFile=new File(uniqueDir,R.SOLVER_DESC_PATH);
+				if (descriptionFile.exists()) {
+					String description=FileUtils.readFileToString(descriptionFile);
+					if (!Validator.isValidPrimDescription(description)) {
+						returnArray[0] = -3;
+						return returnArray;
+					}
+					newSolver.setDescription(description);
+					
+				} else {
+					log.debug("description file option chosen, but file was not present");
+				}
 			} catch (Exception e) {
-				log.error("unable to delete temporary directory at "+sandboxDir.getAbsolutePath());
 				log.error(e.getMessage(),e);
 			}
 			
-			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
-			if (DescMethod.equals("text")){
-				newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
-			} else if (DescMethod.equals("file")) {
-				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
-				newSolver.setDescription(item_desc.getString());
-			} else {	//Upload starexec_description.txt
-				try {	
-					File descriptionFile=new File(uniqueDir,R.SOLVER_DESC_PATH);
-					if (descriptionFile.exists()) {
-						String description=FileUtils.readFileToString(descriptionFile);
-						if (!Validator.isValidPrimDescription(description)) {
-					    	returnArray[0] = -3;
-					    	return returnArray;
-					    }
-					    newSolver.setDescription(description);
-					    
-					} else {
-						log.debug("description file option chosen, but file was not present");
-					}
-				} catch (Exception e) {
-			    	log.error(e.getMessage(),e);
-			    }
-			    
-			}
-			
-			
-			
-			//Find configurations from the top-level "bin" directory
-			for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
-				newSolver.addConfiguration(c);
-			}
-			Util.logSandboxContents();
-			
-			if (newSolver.getConfigurations().isEmpty()) {
-				returnArray[1] = -4; //It is empty
-			}
-			newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
-			//Try adding the solver to the database
-			int solver_Success = Solvers.add(newSolver, spaceId);
-			
-			//if we were successful and this solver had a build script, save the build output to show the uploader
-			if (solver_Success>0 && build) {
-				File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
-				log.debug("output file = "+buildOutputFile.getAbsolutePath());
-				buildOutputFile.getParentFile().mkdirs();
-				try {
-					FileUtils.writeStringToFile(buildOutputFile, buildstr);
-
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-			}
-
-			// if the solver was uploaded successfully log the upload in the weekly report table
-			if (solver_Success>0) {
-				Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
-			}
-
-
-			returnArray[0] = solver_Success;
-			
-			return returnArray;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 		}
 		
 		
 		
-		return List(-1,0);
+		//Find configurations from the top-level "bin" directory
+		for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
+			newSolver.addConfiguration(c);
+		}
+		Util.logSandboxContents();
+		
+		if (newSolver.getConfigurations().isEmpty()) {
+			returnArray[1] = -4; //It is empty
+		}
+		newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
+		//Try adding the solver to the database
+		int solver_Success = Solvers.add(newSolver, spaceId);
+		
+		//if we were successful and this solver had a build script, save the build output to show the uploader
+		if (solver_Success>0 && build) {
+			File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
+			log.debug("output file = "+buildOutputFile.getAbsolutePath());
+			buildOutputFile.getParentFile().mkdirs();
+			try {
+				FileUtils.writeStringToFile(buildOutputFile, buildstr);
+
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
+		}
+
+		// if the solver was uploaded successfully log the upload in the weekly report table
+		if (solver_Success>0) {
+			Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
+		}
+
+
+		returnArray[0] = solver_Success;
+		
+		return returnArray;
 	}	
 	
 	private int[] List(int i, int j) {
