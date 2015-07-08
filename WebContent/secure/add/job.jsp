@@ -79,7 +79,7 @@
 					</tr>
 					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
-						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
+						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="yyyy-MM-dd HH.mm" value="${now}" />"/></td>
 					</tr>
 					<tr class="noHover" title="are there any additional details that you want to document with the job?">
 						<td class="label"><p>description</p></td>
