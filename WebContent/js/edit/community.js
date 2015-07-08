@@ -11,8 +11,6 @@ $(document).ready(function(){
         "sDom": 'rt<"bottom"flpi><"clear">'
     });
 	
-
-	
 	$.get(  
 			starexecRoot+"services/communities/details/" + id,  
 			function(data){  			
@@ -26,6 +24,7 @@ $(document).ready(function(){
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
+	attachPostProcessorFormListener();
 });
 
 function populateDetails(jsonData) {	
@@ -185,9 +184,23 @@ function attachWebsiteMonitor(){
 	});
 }
 
+function attachPostProcessorFormListener() {
+	$('#radioLocal').click(function() {
+		$('#fileURL').hide();
+		$('#processorFileSpan').show();
+	});
+	$('#radioURL').click(function() {
+		$('#processorFileSpan').hide();	
+		$('#fileURL').show();
+	});
+}
+
 function initUI(){
 	
 	populateDefaultsWithId($("#settingId").attr("value"));
+
+	// Hide #radioURL since choose post processor by URL is not seleted by default.
+	$('#fileURL').hide();
 	
 	// Make forms editable
 	editable("name");

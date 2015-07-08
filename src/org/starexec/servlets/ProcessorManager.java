@@ -2,6 +2,7 @@ package org.starexec.servlets;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,6 +24,7 @@ import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -49,6 +51,10 @@ public class ProcessorManager extends HttpServlet {
 	private static final String PROCESSOR_NAME = "name";
 	private static final String PROCESSOR_DESC = "desc";
 	private static final String PROCESSOR_FILE = "file";	
+	private static final String PROCESSOR_URL = "processorUrl";
+	private static final String UPLOAD_METHOD = "uploadMethod";
+	private static final String LOCAL_UPLOAD_METHOD = "local";
+	private static final String URL_UPLOAD_METHOD = "URL";
 	private static final String OWNING_COMMUNITY = "com";
 	
 	
@@ -182,26 +188,53 @@ public class ProcessorManager extends HttpServlet {
 	 * @param form The form fields for the request
 	 * @return The Processor that was added to the database if it was successful
 	 */
-	private Processor addNewProcessor(HashMap<String, Object> form) {		
+	private Processor addNewProcessor(HashMap<String, Object> form) throws StarExecException {		
+		final String method = "addNewProcessor";
 		try {						
 			Processor newProc = new Processor();
 			newProc.setName((String)form.get(PROCESSOR_NAME));
 			newProc.setDescription((String)form.get(PROCESSOR_DESC));					
 			newProc.setCommunityId(Integer.parseInt((String)form.get(OWNING_COMMUNITY)));
 			
+			String uploadMethod = (String)form.get(UPLOAD_METHOD);
+
+			if (uploadMethod == null) {
+				// Set to local since upload by URL hasn't been implemented yet.
+				// TODO implement for all processors and remove this if statment.
+				uploadMethod = LOCAL_UPLOAD_METHOD;
+			}
+
+			log.debug(method+": upload method for the processor="+uploadMethod);
 			String procType = (String)form.get(PROCESSOR_TYPE);
 			newProc.setType(toProcessorEnum(procType));						
 			
-			// Save the uploaded file to disk
-			FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
+			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
 			
 			File archiveFile=null;
-			
-			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
 
-			archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
-			
-			processorFile.write(archiveFile);
+			URL processorUrl = null;
+			String processorName = null;
+			if (uploadMethod.equals("local")) {
+				// Save the uploaded file to disk
+				FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
+				archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
+				processorFile.write(archiveFile);
+			} else {
+				processorUrl=new URL((String)form.get(PROCESSOR_URL));
+				String name = null;
+				try {
+					name=processorUrl.toString().substring(processorUrl.toString().lastIndexOf('/'));
+				} catch (Exception e) {
+					// if something goes wrong just make the name directory-friendly and continue.
+					name=processorUrl.toString().replace('/', '-');
+				}
+				archiveFile = new File(uniqueDir, name);
+				if (!Util.copyFileFromURLUsingProxy(processorUrl,archiveFile)) {
+					throw new StarExecException("Unable to copy file from URL");
+				}
+			}
+
+
 			newProc.setFilePath(uniqueDir.getAbsolutePath());				
 			
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
@@ -271,6 +304,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValidCreateRequest(HashMap<String, Object> form) {
+		final String method = "isValidCreateRequest";
 		try {			
 			  
 										
@@ -278,14 +312,34 @@ public class ProcessorManager extends HttpServlet {
 
 				return new ValidatorStatusCode(false,"The supplied name is invalid-- please refer to the help files to see the correct format");
 			}
+
+			String uploadMethod = (String)form.get(UPLOAD_METHOD);
+
+			if (uploadMethod == null) {
+				// Set to local since upload by URL hasn't been implemented yet.
+				// TODO implement for all processors and remove this if statment.
+				uploadMethod = LOCAL_UPLOAD_METHOD;
+			}
+			
 			
 			boolean goodExtension=false;
-			String fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
+			String fileName = null;
+			if (uploadMethod.equals("local")) {
+				fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
+			} else {
+				fileName=(String)form.get(PROCESSOR_URL);
+			}
+
+			log.debug(method+": Name of processor file="+fileName);
+
 			for(String ext : ProcessorManager.extensions) {
 				if(fileName.endsWith(ext)) {
 					goodExtension=true;
 				}
 			}
+
+
+
 			if (!goodExtension) {
 				return new ValidatorStatusCode(false,"Uploaded archives must be a .zip, .tar, or .tgz");
 			}

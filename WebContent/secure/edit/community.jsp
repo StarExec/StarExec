@@ -372,8 +372,25 @@
 					<td><textarea name="desc" id="processorDesc"></textarea></td>
 				</tr>
 				<tr>
+					<td>upload method</td>
+					<td>
+						<div id="postProcessorLocalDiv">
+							<label>local file</label>
+							<input type="radio" id="radioLocal" name="uploadMethod" value="local" checked="checked"/>
+						</div>
+						<br>
+						<div id="postProcessorUrlDiv">
+							<label>URL</label>
+							<input type=radio id="radioURL" name="uploadMethod" value="URL"/>
+						</div>
+					</td>
+				</tr>
+				<tr>
 					<td><label for="processorFile">processor</label></td>
-					<td><input name="file" type="file" id="processorFile"/></td>
+					<td>
+						<span id="processorFileSpan"><input name="file" type="file" id="processorFile"/></span>
+						<input name="processorUrl" type="text" id="fileURL"/>
+					</td>
 				</tr>
 				<tr>
 					<td colspan="2"><button id="addPostProcessor" type="submit">add</button></td>				
