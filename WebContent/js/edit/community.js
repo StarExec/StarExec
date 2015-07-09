@@ -24,7 +24,7 @@ $(document).ready(function(){
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
-	attachPostProcessorFormListener();
+	attachProcessorFormListener();
 });
 
 function populateDetails(jsonData) {	
@@ -184,14 +184,20 @@ function attachWebsiteMonitor(){
 	});
 }
 
-function attachPostProcessorFormListener() {
-	$('#radioLocal').click(function() {
-		$('#fileURL').hide();
-		$('#processorFileSpan').show();
+function attachProcessorFormListener() {
+	$('.radioLocal').click(function() {
+		// Set radio local to checked for all types of processors.
+		$('.radioLocal').prop('checked', true);
+		$('.radioURL').prop('checked', false);
+		$('.fileURL').hide();
+		$('.processorFileSpan').show();
 	});
-	$('#radioURL').click(function() {
-		$('#processorFileSpan').hide();	
-		$('#fileURL').show();
+	$('.radioURL').click(function() {
+		log('.radioURL clicked.');
+		$('.radioURL').prop('checked', true);
+		$('.radioLocal').prop('checked', false);
+		$('.processorFileSpan').hide();	
+		$('.fileURL').show();
 	});
 }
 
@@ -200,7 +206,7 @@ function initUI(){
 	populateDefaultsWithId($("#settingId").attr("value"));
 
 	// Hide #radioURL since choose post processor by URL is not seleted by default.
-	$('#fileURL').hide();
+	$('.fileURL').hide();
 	
 	// Make forms editable
 	editable("name");
@@ -303,8 +309,8 @@ function attachFormValidation(){
 	$("#typeFile").change(function(){
 		 $("#typeFile").blur().focus(); 
     });
-	$("#processorFile").change(function(){
-		 $("#processorFile").blur().focus(); 
+	$(".processorFile").change(function(){
+		 $(".processorFile").blur().focus(); 
     });
 	
 	

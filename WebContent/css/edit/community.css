@@ -132,10 +132,10 @@ tr th {
 	width:90%;
 }
 
-input#radioLocal {
+#postRadioLocal.radioLocal, #preRadioLocal.radioLocal, #typeRadioLocal.radioLocal, #updateRadioLocal.radioLocal {
 	width: 38px;
 }
 
-input#radioURL {
+#postRadioURL.radioURL, #preRadioURL.radioURL, #typeRadioURL.radioURL, #updateRadioURL.radioURL {
 	width: 90px;
 }

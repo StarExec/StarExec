@@ -194,8 +194,25 @@
 					<td><textarea name="desc" id="typeDesc"></textarea></td>
 				</tr>
 				<tr>
-					<td><label for="typeFile">processor</label></td>
-					<td><input name="file" type="file" id="typeFile"/></td>
+					<td>upload method</td>
+					<td>
+						<div class="processorLocalDiv">
+							<label>local file</label>
+							<input type="radio" id="typeRadioLocal" class="radioLocal" name="uploadMethod" value="local" checked="checked"/>
+						</div>
+						<br>
+						<div class="processorUrlDiv">
+							<label>URL</label>
+							<input type="radio" id="typeRadioURL" class="radioURL" name="uploadMethod" value="URL"/>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td><label for="processorFile">processor</label></td>
+					<td>
+						<span class="processorFileSpan"><input name="file" type="file" class="processorFile"/></span>
+						<input name="processorUrl" type="text" class="fileURL"/>
+					</td>
 				</tr>
 				<tr>
 					<td colspan="2"><button id="addType" type="submit">add</button></td>				
@@ -328,8 +345,25 @@
 					<td><textarea name="desc" id="processorDesc"></textarea></td>
 				</tr>
 				<tr>
+					<td>upload method</td>
+					<td>
+						<div class="processorLocalDiv">
+							<label>local file</label>
+							<input type="radio" id="preRadioLocal" class="radioLocal" name="uploadMethod" value="local" checked="checked"/>
+						</div>
+						<br>
+						<div class="processorUrlDiv">
+							<label>URL</label>
+							<input type="radio" id="preRadioURL" class="radioURL" name="uploadMethod" value="URL"/>
+						</div>
+					</td>
+				</tr>
+				<tr>
 					<td><label for="processorFile">processor</label></td>
-					<td><input name="file" type="file" id="processorFile"/></td>
+					<td>
+						<span class="processorFileSpan"><input name="file" type="file" class="processorFile"/></span>
+						<input name="processorUrl" type="text" class="fileURL"/>
+					</td>
 				</tr>
 				<tr>
 					<td colspan="2"><button id="addPreProcessor" type="submit">add</button></td>				
@@ -374,22 +408,22 @@
 				<tr>
 					<td>upload method</td>
 					<td>
-						<div id="postProcessorLocalDiv">
+						<div class="processorLocalDiv">
 							<label>local file</label>
-							<input type="radio" id="radioLocal" name="uploadMethod" value="local" checked="checked"/>
+							<input type="radio" id="postRadioLocal" class="radioLocal" name="uploadMethod" value="local" checked="checked"/>
 						</div>
 						<br>
-						<div id="postProcessorUrlDiv">
+						<div class="processorUrlDiv">
 							<label>URL</label>
-							<input type=radio id="radioURL" name="uploadMethod" value="URL"/>
+							<input type="radio" id="postRadioURL" class="radioURL" name="uploadMethod" value="URL"/>
 						</div>
 					</td>
 				</tr>
 				<tr>
 					<td><label for="processorFile">processor</label></td>
 					<td>
-						<span id="processorFileSpan"><input name="file" type="file" id="processorFile"/></span>
-						<input name="processorUrl" type="text" id="fileURL"/>
+						<span class="processorFileSpan"><input name="file" type="file" class="processorFile"/></span>
+						<input name="processorUrl" type="text" class="fileURL"/>
 					</td>
 				</tr>
 				<tr>
@@ -433,8 +467,25 @@
 					<td><textarea name="desc" id="processorDesc"></textarea></td>
 				</tr>
 				<tr>
+					<td>upload method</td>
+					<td>
+						<div class="processorLocalDiv">
+							<label>local file</label>
+							<input type="radio" id="updateRadioLocal" class="radioLocal" name="uploadMethod" value="local" checked="checked"/>
+						</div>
+						<br>
+						<div class="processorUrlDiv">
+							<label>URL</label>
+							<input type="radio" id="updateRadioURL" class="radioURL" name="uploadMethod" value="URL"/>
+						</div>
+					</td>
+				</tr>
+				<tr>
 					<td><label for="processorFile">processor</label></td>
-					<td><input name="file" type="file" id="processorFile"/></td>
+					<td>
+						<span class="processorFileSpan"><input name="file" type="file" class="processorFile"/></span>
+						<input name="processorUrl" type="text" class="fileURL"/>
+					</td>
 				</tr>
 				<tr>
 					<td colspan="2"><button id="addUpdateProcessor" type="submit">add</button></td>				
