@@ -180,7 +180,7 @@
 				</tbody>									
 			</table>
 		<span id="toggleBenchType" class="caption">+ add new</span>
-		<form id=newTypeForm class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
+		<form id="newTypeForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
 			<input type="hidden" name="type" value="bench"/>

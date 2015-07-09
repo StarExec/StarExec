@@ -125,10 +125,10 @@ tr th {
 }
 
 
-#addPreProcessorForm input, #addPostProcessorForm input {
+#addPreProcessorForm input, #addPostProcessorForm input, #addUpdateProcessorForm input, #newTypeForm input {
 	width: 90%;
 }
-#addPreProcessorForm textarea, #addPostProcessorForm textarea {
+#addPreProcessorForm textarea, #addPostProcessorForm textarea, #addUpdateProcessorForm textarea, #newTypeForm textarea {
 	width:90%;
 }
 
