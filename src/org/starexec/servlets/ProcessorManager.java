@@ -198,13 +198,7 @@ public class ProcessorManager extends HttpServlet {
 			
 			String uploadMethod = (String)form.get(UPLOAD_METHOD);
 
-			if (uploadMethod == null) {
-				// Set to local since upload by URL hasn't been implemented yet.
-				// TODO implement for all processors and remove this if statment.
-				uploadMethod = LOCAL_UPLOAD_METHOD;
-			}
-
-			log.debug(method+": upload method for the processor="+uploadMethod);
+			log.debug(method+" - upload method for the processor="+uploadMethod);
 			String procType = (String)form.get(PROCESSOR_TYPE);
 			newProc.setType(toProcessorEnum(procType));						
 			
@@ -315,13 +309,6 @@ public class ProcessorManager extends HttpServlet {
 
 			String uploadMethod = (String)form.get(UPLOAD_METHOD);
 
-			if (uploadMethod == null) {
-				// Set to local since upload by URL hasn't been implemented yet.
-				// TODO implement for all processors and remove this if statment.
-				uploadMethod = LOCAL_UPLOAD_METHOD;
-			}
-			
-			
 			boolean goodExtension=false;
 			String fileName = null;
 			if (uploadMethod.equals("local")) {
@@ -330,7 +317,7 @@ public class ProcessorManager extends HttpServlet {
 				fileName=(String)form.get(PROCESSOR_URL);
 			}
 
-			log.debug(method+": Name of processor file="+fileName);
+			log.debug(method+" - Name of processor file="+fileName);
 
 			for(String ext : ProcessorManager.extensions) {
 				if(fileName.endsWith(ext)) {
