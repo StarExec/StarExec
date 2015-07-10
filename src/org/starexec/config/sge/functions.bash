@@ -119,6 +119,8 @@ function initWorkspaceVariables {
 	else
 	WORKING_DIR='/export/starexec/sandbox2'
 	fi
+
+	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
 	
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
@@ -155,6 +157,19 @@ function initWorkspaceVariables {
 	
 	
 }
+
+function createLocalTmpDirectory {
+	mkdir -p "$LOCAL_TMP_DIR"
+
+	# Check the directory actually does exist
+	if [ ! -d "$LOCAL_TMP_DIR" ]; then
+		mkdir "$LOCAL_TMP_DIR"
+		log "job error: cannot create sandbox tmp directory '$LOCAL_TMP_DIR'"
+	fi
+
+	return $?
+}
+
 #checks to see whether the first argument is a valid integer
 function isInteger {
 	log "isInteger called on $1"
@@ -385,6 +400,8 @@ function cleanWorkspace {
 	
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	safeRm local-tmp-directory "$LOCAL_TMP_DIR"
 
 	safeRm bench-inputs "$BENCH_INPUT_DIR"
 
