@@ -31,6 +31,8 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.compare.BenchmarkComparator;
+import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DependValidator;
 import org.starexec.util.NamedParameterStatement;
@@ -270,7 +272,9 @@ public class Benchmarks {
 
 	 * @author Tyler Jensen
 	 */
-	public static List<Integer> add(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) {
+	public static List<Integer> add(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws StarExecDatabaseException {
+		final String method = "add";
+		log.trace("Entering method "+method);
 		log.info("add - adding list of benchmarks to space " + spaceId);
 		Connection con = null;			
 		if (benchmarks.size()>0)
@@ -282,8 +286,15 @@ public class Benchmarks {
 
 				log.info(benchmarks.size() + " benchmarks being added to space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
+				log.trace(method+" - benchmarks="+benchmarks);
+				log.trace(method+" - benchmarks.get(0)="+benchmarks.get(0));
+				log.trace(method+" - benchmarks.get(0).getType()="+benchmarks.get(0).getType());
+				log.trace(method+" - benchmarks.get(0).getType().getId()="+benchmarks.get(0).getType().getId());
 				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
-				log.debug("add - found the following processor ID for the new benchmark " +p.getId());
+				log.trace(method+" - TEST");
+				log.trace(method+" - p="+p);
+				log.trace(method+" - p.getId()="+p.getId());
+				log.trace("add - found the following processor ID for the new benchmark " +p.getId());
 				Common.endTransaction(con);
 				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
 				//We do not actually do any processing if it is the no-type, as it is not necessary 
@@ -301,10 +312,10 @@ public class Benchmarks {
 				// Next add them to the database (must happen AFTER they are processed);
 				return Benchmarks.addNoCon(benchmarks, spaceId, statusId);
 
-				
 			} catch (Exception e){			
 				log.error(e.getMessage(), e);
 				Common.doRollback(con);
+				throw new StarExecDatabaseException(e.getMessage());
 			} finally {
 				Common.safeClose(con);
 			}
@@ -314,7 +325,6 @@ public class Benchmarks {
 			log.info("No benchmarks to add here for space " + spaceId);
 			return new ArrayList<Integer>();
 		}
-		return null;
 	}
 
 	/**
@@ -743,7 +753,7 @@ public class Benchmarks {
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation is successful and false otherwise
 	 */
-	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) {
+	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) throws IOException, StarExecException {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
@@ -751,64 +761,75 @@ public class Benchmarks {
 		int failedCounter=0; //stores the TOTAL number of benchmarks that failed 
 		Timer timer=new Timer();
 		for(Benchmark b : benchmarks) {
-			try {
-				List<File> files=new ArrayList<File>();
-				files.add(new File(p.getFilePath()));
-				files.add(new File(b.getPath()));
-				File sandbox=Util.copyFilesToNewSandbox(files);
-				String benchPath=new File(sandbox,new File(b.getPath()).getName()).getAbsolutePath();
-				File working=new File(sandbox,new File(p.getFilePath()).getName());
-				// Run the processor on the benchmark file
-				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
-				String [] procCmd = new String[2];
-				
-				procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
-				procCmd[1] = benchPath;
-				String propstr = Util.executeSandboxCommand(procCmd,null,working);
-				FileUtils.deleteQuietly(sandbox);
-				// Load results into a properties file
-				Properties prop = new Properties();
-				prop.load(new StringReader(propstr));							
-				log.debug("read this string from the processor: " + propstr);
-				log.debug("read "+prop.size()+" properties");
+			List<File> files=new ArrayList<File>();
+			files.add(new File(p.getFilePath()));
+			files.add(new File(b.getPath()));
+			File sandbox=Util.copyFilesToNewSandbox(files);
+			String benchPath=new File(sandbox,new File(b.getPath()).getName()).getAbsolutePath();
+			File working=new File(sandbox,new File(p.getFilePath()).getName());
+			// Run the processor on the benchmark file
+			log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
+			String [] procCmd = new String[2];
+			
+			procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
+			procCmd[1] = benchPath;
+			String propstr = null;
+			propstr = Util.executeSandboxCommand(procCmd,null,working);
 
-				// Attach the attributes to the benchmark
-				b.setAttributes(prop);
-				count--;
-				if (Benchmarks.isBenchValid(prop)){
-					validatedCounter++;
-					if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-						Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
-						validatedCounter=0;
-						timer.reset();
-					}
+			checkProcessorOutput(propstr);
+
+			FileUtils.deleteQuietly(sandbox);
+			// Load results into a properties file
+			Properties prop = new Properties();
+			prop.load(new StringReader(propstr));							
+			log.debug("read this string from the processor: " + propstr);
+			log.debug("read "+prop.size()+" properties");
+
+			// Attach the attributes to the benchmark
+			b.setAttributes(prop);
+			count--;
+			if (Benchmarks.isBenchValid(prop)){
+				validatedCounter++;
+				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+					Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
+					validatedCounter=0;
+					timer.reset();
+				}
+			}
+			else{
+				failedCounter++;
+				//TODO: Should we bin these like the other increments?
+				Uploads.incrementFailedBenchmarks(statusId,1);
+				if (failedCounter < R.MAX_FAILED_VALIDATIONS){
+					Uploads.addFailedBenchmark(statusId,b.getName());
+					String message = b.getName() + " failed validation";
+					log.warn(message);
+					Uploads.setBenchmarkErrorMessage(statusId, message);	
 				}
 				else{
-					failedCounter++;
-					//TODO: Should we bin these like the other increments?
-					Uploads.incrementFailedBenchmarks(statusId,1);
-					if (failedCounter < R.MAX_FAILED_VALIDATIONS){
-						Uploads.addFailedBenchmark(statusId,b.getName());
-						String message = b.getName() + " failed validation";
-						log.warn(message);
-						Uploads.setBenchmarkErrorMessage(statusId, message);	
-					}
-					else{
-						String message = "Major Benchmark Validation Errors - examine your validator";
-						log.warn(message + ", status id = " + statusId);
-						Uploads.setBenchmarkErrorMessage(statusId, message);	
-					}
+					String message = "Major Benchmark Validation Errors - examine your validator";
+					log.warn(message + ", status id = " + statusId);
+					Uploads.setBenchmarkErrorMessage(statusId, message);	
 				}
-				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
-			} catch (Exception e) {
-				log.warn(e.getMessage(), e);
-				return false;
-			} 
+			}
+			log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
 		}
 		if (validatedCounter>0) {
 			Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
 		}
 		return true;
+	}
+
+	/**
+	 * Checks the processors output string for errors.
+	 */
+	private static void checkProcessorOutput(String processorOutput) throws StarExecException {
+		final String method = "checkProcessorOutput";
+		log.debug("Entering method "+method);
+		if (processorOutput.contains("command not found")) {
+			throw new StarExecException(String.format(
+						"Processor used a command that StarExec does not recognize.%nProcessor Output:%s", processorOutput));
+		}
 	}
 
 
