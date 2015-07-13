@@ -208,7 +208,12 @@ public class ProcessorManager extends HttpServlet {
 
 			URL processorUrl = null;
 			String processorName = null;
-			if (uploadMethod.equals("local")) {
+
+			if (uploadMethod == null) {
+				// TODO modify StarExecCommand so it specifies an upload method.
+				uploadMethod = LOCAL_UPLOAD_METHOD;
+			}
+			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				// Save the uploaded file to disk
 				FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
 				archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
@@ -311,7 +316,11 @@ public class ProcessorManager extends HttpServlet {
 
 			boolean goodExtension=false;
 			String fileName = null;
-			if (uploadMethod.equals("local")) {
+			if (uploadMethod == null) {
+				// TODO modify StarExecCommand so that it specifies an upload method
+				uploadMethod = LOCAL_UPLOAD_METHOD;
+			}
+			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
 			} else {
 				fileName=(String)form.get(PROCESSOR_URL);
