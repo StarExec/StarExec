@@ -2051,20 +2051,24 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(suspendButton));
 
 			String subscribeButton = "";
-			if (user.isSubscribedToReports()) {
-				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"unsubscribeUserFromReports(" + user.getId() + ")\" value=\"Unsubscribe\"/>");
-				subscribeButton = sb.toString();
+			if (Users.isUnauthorized(user.getId())) {
+				subscribeButton = "N/A";
+			} else if (user.isSubscribedToReports()) {
+				subscribeButton = "<input type=\"button\" onclick=\"unsubscribeUserFromReports(" + user.getId() + ")\" value=\"Unsubscribe\"/>";
 			} else {
-				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"subscribeUserToReports(" + user.getId() + ")\" value=\"Subscribe\"/>");
-				subscribeButton = sb.toString();
+				subscribeButton = "<input type=\"button\" onclick=\"subscribeUserToReports(" + user.getId() + ")\" value=\"Subscribe\"/>";
 			}
-
 			entry.add(new JsonPrimitive(subscribeButton));
 
-
-
+			String developerButton = "";
+			if (Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId()) || Users.isSuspended(user.getId())) {
+				developerButton = "N/A";
+			} else if (Users.isDeveloper(user.getId())) {
+				developerButton = "<input type=\"button\" onclick=\"suspendDeveloperStatus("+user.getId()+")\"value=\"Suspend\"/>";
+			} else {
+				developerButton = "<input type=\"button\" onclick=\"grantDeveloperStatus("+user.getId()+")\"value=\"Grant\"/>";
+			}
+			entry.add(new JsonPrimitive(developerButton));
 
 
 			dataTablePageEntries.add(entry);

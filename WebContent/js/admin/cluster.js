@@ -90,6 +90,7 @@ function initUI(id){
 	});
 	
 	$("#clearErrorStates").click(function() {
+		log('clearing error states');
 		clearErrorStates();
 	});
 	

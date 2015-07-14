@@ -28,6 +28,7 @@
 			//This is for the currently shuttered select from hierarchy
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
+			request.setAttribute("suppressTimestamp", R.SUPPRESS_TIMESTAMP_INPUT_NAME);
 			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);	
 			Integer defaultId=Settings.getDefaultProfileForUser(userId);
@@ -78,7 +79,7 @@
 					</tr>
 					<tr class="noHover" title="how do you want this job to be displayed in StarExec?">
 						<td class="label"><p>job name</p></td>
-						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/></td>
+						<td><input length="${jobNameLen}" id="txtJobName" name="name" type="text" value="${space.name} <fmt:formatDate pattern="yyyy-MM-dd HH.mm" value="${now}" />"/></td>
 					</tr>
 					<tr class="noHover" title="are there any additional details that you want to document with the job?">
 						<td class="label"><p>description</p></td>
@@ -160,6 +161,15 @@
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
 					</tr>							
+					<tr class="noHover" title="">
+						<td>
+							<p>Suppress Timestamps</p>
+						</td>
+						<td>
+							Yes<input type="radio" id="radioYesSuppressTimestamps" name="${suppressTimestamp}" value="yes"/>
+							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
+						</td>
+					</tr>
 				</tbody>					
 			</table>
 		</fieldset>

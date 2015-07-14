@@ -76,3 +76,13 @@ function subscribeUserToReports(userId) {
 function unsubscribeUserFromReports(userId) {
 	postAndReloadPageIfSuccessful(starexecRoot+"services/unsubscribe/user/"+userId);
 }
+
+function grantDeveloperStatus(userId) {
+	log("grantDeveloperStatus clicked.");
+	postAndReloadPageIfSuccessful(starexecRoot+"services/grantDeveloperStatus/user/"+userId);
+}
+
+function suspendDeveloperStatus(userId) {
+	log("suspendDeveloperStatus clicked.");
+	postAndReloadPageIfSuccessful(starexecRoot+"services/suspendDeveloperStatus/user/"+userId);
+}

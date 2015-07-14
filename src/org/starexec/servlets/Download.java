@@ -788,6 +788,7 @@ public class Download extends HttpServlet {
 	 */
 	private void storeSpaceHierarchy(Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, 
 									 boolean recursive, ZipOutputStream stream, boolean useIdDirectories) throws Exception {
+		final String method = "storeSpaceHierarchy";
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
 			if (includeBenchmarks) {
@@ -810,10 +811,11 @@ public class Download extends HttpServlet {
 							zipFileName = dest+File.separator+b.getId()+File.separator+b.getName();
 						} else {
 							boolean isDuplicate = benchmarkNameDuplicateMap.get(b.getName());
-							zipFileName = dest+File.separator+b.getName();
+							zipFileName = dest+File.separator;
 							if (isDuplicate) {
-								zipFileName += "_id_" + b.getId();
+								zipFileName += "__starexex_disambiguate" + File.separator + b.getId() + File.separator;
 							}
+							zipFileName += b.getName();
 						}
 						ArchiveUtil.addFileToArchive(stream, benchmarkFile, zipFileName);
 					}
@@ -840,6 +842,7 @@ public class Download extends HttpServlet {
 				HashMap<String,Boolean> solverNameDuplicateMap = createNameDuplicateMap(solverNames);
 
 					
+				log.debug(method+": Number of solvers in space="+solverList.size());
 				for (Solver s : solverList) {
 					if (s.isDownloadable() || s.getUserId()==uid) {
 						File solverFile = new File(s.getPath());
@@ -849,12 +852,13 @@ public class Download extends HttpServlet {
 							zipFileName = dest+File.separator+"solvers"+File.separator+s.getId();
 						} else {
 							boolean isDuplicate = solverNameDuplicateMap.get(s.getName());
-							zipFileName = dest+File.separator+"solvers"+File.separator+s.getName();
+							zipFileName = dest+File.separator+"solvers"+File.separator;
 							if (isDuplicate) {
 								// Since the id directory is not being used we have to check to see if there are
 								// solvers with the same name. Append their unique ids if there are.
-								zipFileName += "_id_" + s.getId();
+								zipFileName += "__starexec_disambiguate" + File.separator + s.getId() + File.separator;
 							}
+							zipFileName += s.getName();
 						}
 						ArchiveUtil.addDirToArchive(stream, solverFile, zipFileName);
 					}

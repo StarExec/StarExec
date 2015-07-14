@@ -19,7 +19,7 @@
 		if(t_user != null) {
 			
 			boolean owner = true;
-			boolean isadmin = Users.isAdmin(visiting_userId);
+			boolean isadmin = Users.hasAdminReadPrivileges(visiting_userId);
 			if( (visiting_userId != userId) && !isadmin){
 				owner = false;
 			} else {

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Solver;

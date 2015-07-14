@@ -5,7 +5,7 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	if (Users.isAdmin(userId)) {
+	if (Users.hasAdminReadPrivileges(userId)) {
 		int id = Integer.parseInt(request.getParameter("id"));	
 		Queue q = Queues.get(id);
 		

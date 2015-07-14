@@ -46,9 +46,13 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
+
 	
 	//a list of all the stage attributes for this job, in no particular order
 	private List<StageAttributes> stageAttributes;
+
+	// Whether to suppress the timestamp produced by runsolver for this job.
+	private boolean suppressTimestamp;
 	
 	
 	public Job() {
@@ -56,6 +60,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		
 		queue = new Queue();		
 		setStageAttributes(new ArrayList<StageAttributes>());
+		setSuppressTimestamp(false); // false is default
 	}
 	
 	/**
@@ -322,6 +327,24 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		attrs.setPostProcessor(null);
 		attrs.setPreProcessor(null);
 		return attrs;
+	}
+
+	/**
+	 * Sets the suppress timestamps boolean for this job.
+	 * @param suppressTimestamp whether to suppress timestamps produced by runsolver for this job.
+	 * @author Albert Giegerich
+	 */
+	public void setSuppressTimestamp(boolean suppressTimestamp) {
+		this.suppressTimestamp = suppressTimestamp;
+	}
+
+	/**
+	 * Gets whether or not the timestamp is suppressed for this job.
+	 * @return Whether or not the timestamp is suppressed for this job.
+	 * @author Albert Giegerich
+	 */
+	public boolean timestampIsSuppressed() {
+		return suppressTimestamp;
 	}
 
 	

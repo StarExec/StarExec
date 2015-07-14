@@ -5,7 +5,7 @@
 
 	try {
 		int userId = SessionUtil.getUserId(request);
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			request.setAttribute("solverType1",CacheType.CACHE_SOLVER.getVal());
 			request.setAttribute("solverType2",CacheType.CACHE_SOLVER_REUPLOAD.getVal());
 			

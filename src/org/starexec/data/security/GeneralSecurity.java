@@ -26,7 +26,7 @@ public class GeneralSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserChangeLogging(int userId){
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -39,7 +39,7 @@ public class GeneralSecurity {
 	 */
 
 	public static ValidatorStatusCode canUserSeeTestInformation(int userId) {
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -53,7 +53,7 @@ public class GeneralSecurity {
 
 	public static ValidatorStatusCode canUserRunTestsNoRunningCheck(int userId) {
 		//only the admin can run tests, and they cannot be run on production
-		if (!Users.isAdmin(userId) || Util.isProduction()) {
+		if (!Users.hasAdminWritePrivileges(userId) || Util.isProduction()) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -69,6 +69,7 @@ public class GeneralSecurity {
 	public static ValidatorStatusCode canUserRunTests(int userId, boolean stress) {
 
 		boolean testRunning=false;
+
 		if (stress) {
 			testRunning=TestManager.isStressTestRunning();
 		} else {
@@ -113,7 +114,13 @@ public class GeneralSecurity {
 	}
 	
 	
-	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, String newPass, String confirmNewPass) {
+	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, 
+															String newPass, String confirmNewPass) {
+		boolean userIsChangingOwnPassword = (userId == userIdMakingRequest);
+		boolean userIsAdmin = Users.hasAdminWritePrivileges(userIdMakingRequest);
+		if ( !(userIsChangingOwnPassword || userIsAdmin) ) {
+			return new ValidatorStatusCode(false, "You do not have permission to change this user's password.");
+		}
 		String hashedPass = Hash.hashPassword(oldPass);
 		String databasePass = Users.getPassword(userId);
 		if (!hashedPass.equals(databasePass)) {

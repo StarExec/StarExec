@@ -6,7 +6,7 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		User u = Users.get(userId);
-		if (!Users.isAdmin(userId)) {
+		if (!Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		}	
 		
@@ -17,7 +17,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/user, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
+<star:template title="${t_user.fullName}" js="admin/user, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="admin/user, common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
 	<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
@@ -26,7 +26,7 @@
 	</fieldset>	
 	<fieldset  id="userField">
 			<legend class="expd" id="userExpd"><span>0</span> users</legend>
-			<table id="users" style="width:900px">
+			<table id="users">
 				<thead>
 					<tr>
 						<th style="width:100px;">name</th>
@@ -35,6 +35,7 @@
 						<th style="width:100px;">permissions</th>
 						<th style="width:100px;">suspend</th>
 						<th style="width:100px;">reports</th>
+						<th style="width:100px;">developer</th>
 					</tr>
 				</thead>			
 			</table>

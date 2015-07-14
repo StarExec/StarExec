@@ -36,6 +36,7 @@ import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -213,101 +214,107 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param depRootSpaceId The root space for dependencies for these benchmarks
 	 * @return A list of IDs of the newly created benchmarks
 	 */
-	public static List<Integer> addBechmarksFromArchive(File archiveFile, int userId, int spaceId, int typeId,
+	public static List<Integer> addBenchmarksFromArchive(File archiveFile, int userId, int spaceId, int typeId,
 			boolean downloadable, Permission perm, String uploadMethod, int statusId,
-			boolean hasDependencies, boolean linked, Integer depRootSpaceId) {
+			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws StarExecException {
 		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
-		try {
-			// Create a unique path the zip file will be extracted to
-			File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
-			
-			// Create the zip file object-to-be
-			long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
-			
-			User currentUser=Users.get(userId);
-			long allowedBytes=currentUser.getDiskQuota();
-			long usedBytes=Users.getDiskUsage(userId);
-			
-			if (fileSize>allowedBytes-usedBytes) {
-				archiveFile.delete();
-				Uploads.setBenchmarkErrorMessage(statusId,"The benchmark upload is too large to fit in your disk quota. The uncompressed" +
-						" size of the archive is approximately "+fileSize+" bytes, but you have only "+(allowedBytes-usedBytes)+" bytes remaining.");
-				throw new Exception("File too large to fit in user's disk quota");
-			}		
+		// Create a unique path the zip file will be extracted to
+		File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
+		
+		// Create the zip file object-to-be
+		long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
+		
+		User currentUser=Users.get(userId);
+		long allowedBytes=currentUser.getDiskQuota();
+		long usedBytes=Users.getDiskUsage(userId);
+		
+		if (fileSize>allowedBytes-usedBytes) {
+			archiveFile.delete();
+			Uploads.setBenchmarkErrorMessage(statusId,"The benchmark upload is too large to fit in your disk quota. The uncompressed" +
+					" size of the archive is approximately "+fileSize+" bytes, but you have only "+(allowedBytes-usedBytes)+" bytes remaining.");
+			throw new StarExecException("File too large to fit in user's disk quota");
+		}		
 
-			// Copy the benchmark zip to the server from the client
-																		
-			log.info("upload complete - now extracting");
-			Uploads.benchmarkFileUploadComplete(statusId);
-			// Extract the downloaded benchmark zip file
-			if(!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(),uniqueDir.getAbsolutePath())) {
-				String message = "StarExec has failed to extract your uploaded file.";
-				Uploads.setBenchmarkErrorMessage(statusId, message);
-				log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
+		// Copy the benchmark zip to the server from the client
+																	
+		log.info("upload complete - now extracting");
+		Uploads.benchmarkFileUploadComplete(statusId);
+		// Extract the downloaded benchmark zip file
+		if(!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(),uniqueDir.getAbsolutePath())) {
+			String message = "StarExec has failed to extract your uploaded file.";
+			Uploads.setBenchmarkErrorMessage(statusId, message);
+			log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
+			return null;
+		}
+		log.info("Extraction Complete");
+		//update upload status
+		Uploads.fileExtractComplete(statusId);
+
+		
+		
+		
+		log.debug("has dependencies = " + hasDependencies);
+		log.debug("linked = " + linked);
+		log.debug("depRootSpaceIds = " + depRootSpaceId);
+
+		log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
+		if(uploadMethod.equals("convert")) {
+			log.debug("convert");
+
+			//first we test to see if any names conflict
+			ValidatorStatusCode status=doSpaceNamesConflict(uniqueDir,spaceId);
+			if (!status.isSuccess()) {
+				Uploads.setBenchmarkErrorMessage(statusId,status.getMessage());
 				return null;
 			}
-			log.info("Extraction Complete");
-			//update upload status
-			Uploads.fileExtractComplete(statusId);
-
 			
 			
 			
-			log.debug("has dependencies = " + hasDependencies);
-			log.debug("linked = " + linked);
-			log.debug("depRootSpaceIds = " + depRootSpaceId);
+			Space result = null;
 
-			log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
-			if(uploadMethod.equals("convert")) {
-				log.debug("convert");
+			try {
+				result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
+			} catch (Exception e) {
+				throw new StarExecException(e.getMessage(), e);
+			}
+			if (result == null) {
+				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
+				Uploads.setBenchmarkErrorMessage(statusId, message);
+				log.error(message + " - status id = " + statusId);
+				return null;
+			}
+			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
+			result.setId(spaceId);
+			//update Status
+			Uploads.processingBegun(statusId);
+			if (!hasDependencies){
+				log.info("Now have the space java object.  Calling add with benchmarks and no dependencies for user " 
+						+ userId + " to process and add to db.");
 
-				//first we test to see if any names conflict
-				ValidatorStatusCode status=doSpaceNamesConflict(uniqueDir,spaceId);
-				if (!status.isSuccess()) {
-					Uploads.setBenchmarkErrorMessage(statusId,status.getMessage());
-					return null;
-				}
-				
-				
-				
-				Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
-				if (result == null) {
-					String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
-					Uploads.setBenchmarkErrorMessage(statusId, message);
-					log.error(message + " - status id = " + statusId);
-					return null;
-				}
-				// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
-				result.setId(spaceId);
-				//update Status
-				Uploads.processingBegun(statusId);
-				if (!hasDependencies){
-					log.info("Now have the space java object.  Calling add with benchmarks and no dependencies for user " + userId + " to process and add to db.");
+				try {
 					benchmarkIds.addAll(Spaces.addWithBenchmarks(result, userId, statusId));
-				}
-				else
-				{				
-					benchmarkIds.addAll(Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked, statusId));
-				}
-			} else if(uploadMethod.equals("dump")) {
-				List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-				
-				Uploads.processingBegun(statusId);
-				if (!hasDependencies){	
-					benchmarkIds.addAll(Benchmarks.add(results, spaceId, statusId));
-				}
-				else{
-					benchmarkIds.addAll(Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId, statusId));
+				} catch (Exception e) {
+					throw new StarExecException(e.getMessage(), e);
 				}
 			}
-			log.info("Handle upload method complete in " + spaceId + "for user " + userId);	
-			return benchmarkIds;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+			else
+			{				
+				benchmarkIds.addAll(Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked, statusId));
+			}
+		} else if(uploadMethod.equals("dump")) {
+			List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+			
+			Uploads.processingBegun(statusId);
+			if (!hasDependencies){	
+				benchmarkIds.addAll(Benchmarks.add(results, spaceId, statusId));
+			}
+			else{
+				benchmarkIds.addAll(Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId, statusId));
+			}
 		}
-		return null;
-		
+		log.info("Handle upload method complete in " + spaceId + "for user " + userId);	
+		return benchmarkIds;
 	}
 
        
@@ -374,7 +381,7 @@ public class BenchmarkUploader extends HttpServlet {
 						
 					}
 					
-					addBechmarksFromArchive(archiveFile, userId, spaceId, typeId,
+					addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId,
 							downloadable, perm, uploadMethod, statusId,
 							hasDependencies, linked, depRootSpaceId);
 
@@ -388,7 +395,7 @@ public class BenchmarkUploader extends HttpServlet {
 						Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);				
 					}
 				} catch (Exception e){
-					log.error("upload Benchmarks says " + e);
+					log.error("Error in upload benchmark.", e);
 					Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
 				}
 				finally{

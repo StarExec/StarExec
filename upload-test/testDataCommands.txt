@@ -5,6 +5,7 @@ logout
 login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
 pushbenchproc id=2 f=smt2-validator.zip n=smt2orig
 pushbenchproc id=2 f=smt2nonincremental.zip n=smt2nonincremental
+pushbenchproc id=2 f=smt2noninc2015.zip n=smt2noninc2015
 pushbenchproc id=2 f=count-lines.zip n=count-lines
 pushbenchproc id=2 f=count-chars.zip n=count-chars
 pushpostproc id=2 f=smt2postproc.zip n=smt2 post processor

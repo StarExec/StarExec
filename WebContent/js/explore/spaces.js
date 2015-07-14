@@ -13,6 +13,7 @@ var spaceChainIndex=0; //the current index of the space chain
 var openDone=true;
 var spaceChainInterval;
 var usingSpaceChain=false;
+var isLeafSpace=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain("#spaceChain").length>1); //check whether to turn off cookies
@@ -525,6 +526,8 @@ function initSpaceExplorer(){
 	jsTree.bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
+		isLeafSpace = $('#'+id).hasClass('jstree-leaf');
+		log('Selected space isLeafSpace='+isLeafSpace);
 		log('Space explorer node ' + id + ' was clicked');
 
 		updateButtonIds(id);
@@ -1740,27 +1743,23 @@ function updateButtonIds(id) {
 	$("#downloadSpace").unbind("click");
 	$("#downloadSpace").click(function(){		
 		// Display the confirmation dialog
-		$('#dialog-download-space-txt').text('do you want to download the single space or the hierarchy?');
 		$("#downloadBoth").prop("checked","checked");
 		$('#noIdDirectories').prop('checked','checked');
-
+		var dialogHeight=500;
+		if (isLeafSpace) {
+			$('#downloadHierarchyOptionContainer').hide();
+			dialogHeight=400;
+		} else {
+			$('#downloadHierarchyOptionContainer').show();
+			dialogHeight=500;
+		}
 		$('#dialog-download-space').dialog({
 			modal: true,
 			width: 380,
-			height: 250, /*450*/
+			height: dialogHeight,
 			buttons: {
-				'space': function(){
-					createDownloadSpacePost(false,id);
-					$(this).dialog("close");
-
-				},
-				'hierarchy': function(){
-				
-					createDownloadSpacePost(true,id);
-					$(this).dialog("close");
-
-				},
-				"cancel": function() {
+				'submit': function(){
+					createDownloadSpacePost(id);
 					$(this).dialog("close");
 				}
 			}
@@ -1779,12 +1778,17 @@ function createDownloadSpaceXMLRequest(includeAttrs,updates,upid,id) {
  
 }
 
-function createDownloadSpacePost(hierarchy,id) {
+function createDownloadSpacePost(id) {
+	var hierarchy = $('#downloadSpaceHierarchy').prop("checked");
 	var downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
 	
 	var downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
-	var useIdDirectories = true;/*$('#yesIdDirectories').prop('checked');*/ // always enabled for now
-	console.log("useIdDirectories: " + useIdDirectories);
+	var useIdDirectories = $('#yesIdDirectories').prop('checked');
+	log('hierarchy: ' + hierarchy);
+	log('useIdDirectories: ' + useIdDirectories);
+	log('downloadSolvers: ' + downloadSolvers);
+	log('downloadBenchmarks: ' + downloadBenchmarks);
+	log('useIdDirectories: ' + useIdDirectories);
 	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
 	token=Math.floor(Math.random()*100000000);
 	window.location.href=starexecRoot+"secure/download?includesolvers="+downloadSolvers+"&includebenchmarks="+downloadBenchmarks+

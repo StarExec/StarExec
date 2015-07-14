@@ -13,7 +13,7 @@
 		request.setAttribute("descLength", R.SPACE_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if(!p.canAddSpace()) {
+		if(!p.canAddSpace() && !Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here");
 		}
 	} catch (NumberFormatException nfe) {

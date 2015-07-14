@@ -39,6 +39,8 @@ public class SessionFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		final String method = "doFilter";
+		log.debug("Entering "+method);
 		// Cast the servlet request to an httpRequest so we have access to the session
 		HttpServletRequest httpRequest = (HttpServletRequest) request; 		
 		// If the user is logged in...

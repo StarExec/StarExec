@@ -11,11 +11,19 @@ public class UserSecurity {
 	
 	/**
 	 * Checks to see whether the given website is allowed to be associated with a user
+	 * @param userId the id of the user who is getting a new website.
+	 * @param visitingUserId the id of the user who is adding the new website.
 	 * @param name The name to be given the new website
 	 * @param URL the URL of the website
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-	public static ValidatorStatusCode canAssociateWebsite(String name, String URL){
+	public static ValidatorStatusCode canAssociateWebsite(int userId, int visitingUserId, String name, String URL){
+
+		boolean visitingUserHasAdminPrivileges = Users.hasAdminWritePrivileges(visitingUserId);
+		boolean visitingUserIsOwner = (userId == visitingUserId);
+		if (!(visitingUserIsOwner || visitingUserHasAdminPrivileges)) {
+			return new ValidatorStatusCode(false, "You do not have permission to add a website here.");
+		}
 		
 		if (!Validator.isValidWebsiteName(name)) {
 			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the correct format");
@@ -116,6 +124,13 @@ public class UserSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canAddOrRemoveDeveloperRole(int userId) {
+		if (!Users.isAdmin(userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
 	
 	/**
 	 * Checks to see whether the given user can suspend or reinstate users
@@ -136,11 +151,20 @@ public class UserSecurity {
 	 * @author Albert Giegerich
 	 */
 	public static ValidatorStatusCode canUserSubscribeOrUnsubscribeUser(int userIdMakingRequest) {
-		if (!Users.isAdmin(userIdMakingRequest)){
+		if (!Users.hasAdminWritePrivileges(userIdMakingRequest)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userId) {
+		if (!Users.hasAdminWritePrivileges(userId)){
+			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
+
+
 	/**
 	 * Checks to see whether a given user is allowed to see the primitives owned by another user
 	 * @param ownerId The ID of the user who owns the primitives
@@ -148,7 +172,7 @@ public class UserSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canViewUserPrimitives(int ownerId, int requestUserId){
-		if (Users.isAdmin(requestUserId) || ownerId==requestUserId){
+		if (Users.hasAdminReadPrivileges(requestUserId) || ownerId==requestUserId){
 			return new ValidatorStatusCode(true);
 		}
 		return new ValidatorStatusCode(false, "You do not have permission to view primitives owned by the given user");

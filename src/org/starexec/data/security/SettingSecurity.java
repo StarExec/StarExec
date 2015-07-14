@@ -18,9 +18,21 @@ import org.starexec.util.Validator;
 
 public class SettingSecurity {
 	
+	public static boolean canUserAddOrSeeProfile(int userIdOfOwner, int userIdOfCaller) {
+		boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
+		boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
+		if ( !(callerIsOwner || callerIsAdmin) ) {
+			return false;
+		} 
+		return true;
+	}
 	
-	public static ValidatorStatusCode canUserSeeProfile(int settingId, int userId) {
-		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+	public static ValidatorStatusCode canUserSeeProfile(int settingId, int userIdOfOwner, int userIdOfCaller) {
+		if (!canUserAddOrSeeProfile(userIdOfOwner, userIdOfCaller)) {
+			return new ValidatorStatusCode(false, "You do not have permission to see the given profile.");
+		}
+
+		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userIdOfCaller);
 		for (DefaultSettings s : settings) {
 			if (s.getId()==settingId) {
 				return new ValidatorStatusCode(true);

@@ -275,6 +275,7 @@ CREATE TABLE jobs (
 	clockTimeout INT, 
 	maximum_memory BIGINT DEFAULT 1073741824,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
+	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL

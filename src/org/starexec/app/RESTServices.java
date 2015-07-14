@@ -167,6 +167,16 @@ public class RESTServices {
 
 		}
 	}
+
+	@GET
+	@Path("/space/isLeaf/{spaceId}")
+	@Produces("application/json")	
+	public String isLeafSpace(@PathParam("spaceId") int spaceId) {					
+		final String method = "isLeafSpace";
+		log.debug(method+" - Entering method "+method);
+		log.debug(method+" - Attempting to determine if space with id="+spaceId+" is a leaf space.");
+		return gson.toJson(Spaces.isLeaf(spaceId));
+	}
 	
 	/**
 	 * Returns the paginated results of node assignments
@@ -280,10 +290,13 @@ public class RESTServices {
 	@Path("/cluster/clearerrors")
 	@Produces("application/json")	
 	public String clearErrorStates(@Context HttpServletRequest request) {	
+		final String method = "clearErrorStates";
+		log.debug("Entering method "+method);
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserClearErrorStates(userId);
 		if (!status.isSuccess()) {
-			gson.toJson(status);
+			log.debug("("+method+") user cannot clear error states.");
+			return gson.toJson(status);
 		}
 		
 		LinkedList<String> queueNames = new LinkedList<String>();
@@ -959,7 +972,7 @@ public class RESTServices {
 	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		if (!Users.isAdmin(userId)) {
+		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -1132,11 +1145,11 @@ public class RESTServices {
 		String name = request.getParameter("name");
 		String url = request.getParameter("url");	
 		if (type.equals("user")) {
-			ValidatorStatusCode status=UserSecurity.canAssociateWebsite(name, url);
+			ValidatorStatusCode status=UserSecurity.canAssociateWebsite(id, userId, name, url);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
-			success = Websites.add(userId, url, name,WebsiteType.USER);
+			success = Websites.add(id, url, name,WebsiteType.USER);
 		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
 			ValidatorStatusCode status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
@@ -1251,6 +1264,7 @@ public class RESTServices {
 	@Produces("appliation/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
+
 		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u,false);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
@@ -1273,6 +1287,13 @@ public class RESTServices {
 	@Path("/edit/queue/{id}")
 	@Produces("application/json")
 	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+
+		if (!Users.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(false, "You must be an admin to edit this queue."));
+		}
+
+
 		if (!Util.paramExists("cpuTimeout", request) || !Util.paramExists("wallTimeout", request)) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
@@ -1287,7 +1308,6 @@ public class RESTServices {
 
 		
 		
-		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserEditQueue(userId, wallTimeout, cpuTimeout);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
@@ -1405,17 +1425,19 @@ public class RESTServices {
 	 * @return
 	 */
 	@POST
-	@Path("/set/defaultSettings/{id}")
+	@Path("/set/defaultSettings/{id}/{userIdOfOwner}")
 	@Produces("application/json")
-	public String setSettingsProfileForUser(@PathParam("id") int id, @Context HttpServletRequest request) {	
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=SettingSecurity.canUserSeeProfile(id,userId);
+	public String setSettingsProfileForUser(@PathParam("id") int id, @PathParam("userIdOfOwner") int userIdOfOwner, 
+											@Context HttpServletRequest request) {	
+		int userIdOfCaller=SessionUtil.getUserId(request);
+
+		ValidatorStatusCode status=SettingSecurity.canUserSeeProfile(id, userIdOfOwner, userIdOfCaller);
 		
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		log.debug("setting a new default profile for a user");	
-		boolean success=Settings.setDefaultProfileForUser(userId, id);
+		boolean success=Settings.setDefaultProfileForUser(userIdOfCaller, id);
 		// Passed validation AND Database update successful
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Profile set as default")) : gson.toJson(ERROR_DATABASE);
 		
@@ -4131,6 +4153,31 @@ public class RESTServices {
 
 		boolean success = Users.unsubscribeFromReports(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully")) : gson.toJson(ERROR_DATABASE);
+	}
+
+	@POST
+	@Path("/grantDeveloperStatus/user/{userId}")
+	@Produces("application/json")
+	public String grantDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		boolean success = Users.changeUserRole(userId, R.DEVELOPER_ROLE_NAME);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "Developer status granted. ")) : gson.toJson(ERROR_DATABASE);
+	}
+	@POST
+	@Path("/suspendDeveloperStatus/user/{userId}")
+	@Produces("application/json")
+	public String suspendDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int id = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		boolean success = Users.changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
+		return success ? gson.toJson(new ValidatorStatusCode(true, "Developer status suspended.")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**

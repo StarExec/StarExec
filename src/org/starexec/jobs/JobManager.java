@@ -511,6 +511,7 @@ public abstract class JobManager {
 		jobScript=jobScript.replace("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
 		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
+		jobScript = jobScript.replace("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
 		File f = new File(scriptPath);
 
 		f.delete();		
@@ -679,6 +680,11 @@ public abstract class JobManager {
 		return arrayString;
 	}
 
+	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
+			int cpuLimit,int wallclockLimit, long memLimit) {
+		return setupJob(userId, name, description, preProcessorId, postProcessorId, queueId, randomSeed, cpuLimit, wallclockLimit, memLimit, false);
+	}
+
 
 	/**
 	 * Sets up the basic information for a job, including the user who created it,
@@ -696,7 +702,7 @@ public abstract class JobManager {
 	 * @return the new job object with the specified properties
 	 */
 	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit) {
+			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -730,6 +736,7 @@ public abstract class JobManager {
 			attrs.setPostProcessor(null);
 		}
 		j.addStageAttributes(attrs);
+		j.setSuppressTimestamp(suppressTimestamp);
 		
 		log.debug("Successfully set up job " + name);
 		return j;	

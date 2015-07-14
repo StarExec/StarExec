@@ -706,6 +706,7 @@ public class Users {
 		
 		return null;
 	}
+
 	
 	/**Gets the minimal number of Users necessary in order to service the client's 
 	 * request for the next page of Users in their DataTables object
@@ -1132,6 +1133,27 @@ public class Users {
 	public static boolean isAdmin(int userId) {
 		User u=Users.get(userId);
 		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
+	}
+
+	public static boolean isDeveloper(int userId) {
+		User u = Users.get(userId);
+		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
+	}
+
+	/**
+	 * Checks to see if a user can view admin only pages.
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminReadPrivileges(int userId) {
+		return isAdmin(userId) || isDeveloper(userId); 
+	}
+
+	/**
+	 * Checks to see whether a user can make admin-only changes to the website/backend.
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminWritePrivileges(int userId) {
+		return isAdmin(userId);
 	}
 	
 	/**

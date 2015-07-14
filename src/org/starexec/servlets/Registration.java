@@ -49,6 +49,13 @@ public class Registration extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
+		int userId = SessionUtil.getUserId(request);
+
+		if (!Users.isAdmin(userId)) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to create a new user.");
+			return;
+		}
+			
 		// Begin registration for a new user		
 		ValidatorStatusCode result = register(request, response);
 		if (result.isSuccess()) {

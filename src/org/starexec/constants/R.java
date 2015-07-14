@@ -53,8 +53,13 @@ public class R {
     public static int PROCESSOR_DESC_LEN=1024;
     public static int QUEUE_NAME_LEN=64;
 
-	public static final int MATRIX_VIEW_COLUMN_HEADER = 18;
+	// Matrix view settings
+	public static final int MATRIX_VIEW_COLUMN_HEADER = 18; // Limit on number of letters for Solver or config name
 	public static final int MAX_MATRIX_JOBPAIRS = 10000;
+
+	// JSP page constants
+	public static final String SUPPRESS_TIMESTAMP_INPUT_NAME = "suppressTimestamp"; // Name of input value for suppress timestamps in job.jsp
+	
     
     //the number of increments we should accumulate in an upload status field before actually committing to the database
     //public static int UPLOAD_STATUS_UPDATE_THRESHOLD=100;
@@ -213,6 +218,7 @@ public class R {
     
     public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
     
+	public static String DEVELOPER_ROLE_NAME="developer";
     public static String SUSPENDED_ROLE_NAME="suspended";
     public static String DEFAULT_USER_ROLE_NAME="user";
     public static String ADMIN_ROLE_NAME="admin";

@@ -322,6 +322,9 @@
     <role-name>admin</role-name>    
   </security-role>  
   <security-role>
+    <role-name>developer</role-name>    
+  </security-role>  
+  <security-role>
     <role-name>user</role-name>    
   </security-role>
   <security-role>
@@ -352,6 +355,7 @@
     <auth-constraint>
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
+	  <role-name>developer</role-name>
 	  <role-name>test</role-name>
     </auth-constraint>			
   </security-constraint>
@@ -363,6 +367,7 @@
     </web-resource-collection>
     <auth-constraint>
 	  <role-name>admin</role-name>
+	  <role-name>developer</role-name>
     </auth-constraint>			
   </security-constraint>
   
@@ -374,6 +379,7 @@
   	<auth-constraint>
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
+	  <role-name>developer</role-name>
 	  <role-name>unauthorized</role-name>
 	  <role-name>suspended</role-name>
     </auth-constraint>		
@@ -387,6 +393,7 @@
   	<auth-constraint>
 	  <role-name>user</role-name>
 	  <role-name>admin</role-name>
+	  <role-name>developer</role-name>
 	  <role-name>unauthorized</role-name>
 	  <role-name>suspended</role-name>
     </auth-constraint>		

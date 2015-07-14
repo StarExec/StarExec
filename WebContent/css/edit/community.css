@@ -124,9 +124,18 @@ tr th {
 	margin-top: 10px;
 }
 
-#addPreProcessorForm input, #addPostProcessorForm input {
+
+#addPreProcessorForm input, #addPostProcessorForm input, #addUpdateProcessorForm input, #newTypeForm input {
+	width: 90%;
+}
+#addPreProcessorForm textarea, #addPostProcessorForm textarea, #addUpdateProcessorForm textarea, #newTypeForm textarea {
 	width:90%;
 }
-#addPreProcessorForm textarea, #addPostProcessorForm textarea {
-	width:90%;
+
+#postRadioLocal.radioLocal, #preRadioLocal.radioLocal, #typeRadioLocal.radioLocal, #updateRadioLocal.radioLocal {
+	width: 38px;
+}
+
+#postRadioURL.radioURL, #preRadioURL.radioURL, #typeRadioURL.radioURL, #updateRadioURL.radioURL {
+	width: 90px;
 }

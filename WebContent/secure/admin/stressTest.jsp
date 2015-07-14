@@ -4,14 +4,11 @@
 <%	
 	try {		
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserRunTestsNoRunningCheck(userId);
-		if (!status.isSuccess()) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,status.getMessage());
-		} else {
-			
-		}
-	}catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to create a stress test");		
+		if (!Users.hasAdminReadPrivileges(userId)) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN,"You must have admin privileges to view this page.");
+		}	
+	} catch (Exception e) {
+		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());		
 	}
 %>
 <star:template title="create a stress test" css="admin/stressTest" js="lib/jquery.validate.min, admin/stressTest">

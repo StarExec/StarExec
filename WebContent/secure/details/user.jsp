@@ -23,7 +23,7 @@
 			String userFullName = t_user.getFullName();
 			request.setAttribute("sites", Websites.getAllForHTML(id, WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
-			if( (visiting_userId != id) && (!Users.isAdmin(visiting_userId))  ){
+			if( (visiting_userId != id) && (!Users.hasAdminReadPrivileges(visiting_userId))  ){
 				owner = false;
 			} else {
 				List<Job> jList = Jobs.getByUserId(t_user.getId());

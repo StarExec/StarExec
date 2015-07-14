@@ -119,6 +119,8 @@ function initWorkspaceVariables {
 	else
 	WORKING_DIR='/export/starexec/sandbox2'
 	fi
+
+	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
 	
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
@@ -155,6 +157,19 @@ function initWorkspaceVariables {
 	
 	
 }
+
+function createLocalTmpDirectory {
+	mkdir -p "$LOCAL_TMP_DIR"
+
+	# Check the directory actually does exist
+	if [ ! -d "$LOCAL_TMP_DIR" ]; then
+		mkdir "$LOCAL_TMP_DIR"
+		log "job error: cannot create sandbox tmp directory '$LOCAL_TMP_DIR'"
+	fi
+
+	return $?
+}
+
 #checks to see whether the first argument is a valid integer
 function isInteger {
 	log "isInteger called on $1"
@@ -330,9 +345,9 @@ function safeRmLock {
 #unless source is empty, in which case an error message is printed
 function safeCpAll {
 	if [ "$2" == "" ]; then 
-    	log "Unsafe cp -r detected for $1"
+		log "$1: Unsafe cp -r $2/* $3"
   	else
-    	log "Doing safeCpAll on $2"
+    	log "$1: Doing safeCpAll on $2 to $3"
    		cp -r "$2"/* "$3"
  	fi
 
@@ -385,6 +400,8 @@ function cleanWorkspace {
 	
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	safeRm local-tmp-directory "$LOCAL_TMP_DIR"
 
 	safeRm bench-inputs "$BENCH_INPUT_DIR"
 
@@ -811,17 +828,15 @@ return $?
 
 
 function copyDependencies {
-log "copying solver:  cp -r $SOLVER_PATH/* $LOCAL_SOLVER_DIR"
-cp -r "$SOLVER_PATH"/* "$LOCAL_SOLVER_DIR"
+safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
 log "solver copy complete"
 	if [ $SOLVER_CACHED -eq 0 ]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
 			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
 				#store solver in a cache
-				log "storing solver in cache at $SOLVER_CACHE_PATH"
 				#if the copy was successful
-				if cp -r "$LOCAL_SOLVER_DIR"/* "$SOLVER_CACHE_PATH" ; then
+				if safeCpAll "storing solver in cache" "$LOCAL_SOLVER_DIR" "$SOLVER_CACHE_PATH" ; then
 					log "the solver was successfully copied into the cache"
 					mkdir "$SOLVER_CACHE_PATH/finished.lock"	
 					rm -r "$SOLVER_CACHE_PATH/lock.lock"
@@ -848,7 +863,7 @@ log "solver copy complete"
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
 		mkdir $OUT_DIR/preProcessor
-		cp -r "$PRE_PROCESSOR_PATH"/* $OUT_DIR/preProcessor
+		safeCpAll "copying preProcessor" "$PRE_PROCESSOR_PATH" $OUT_DIR/preProcessor
 		chmod -R gu+rwx $OUT_DIR/preProcessor
 		cd "$OUT_DIR"/preProcessor
 		log "executing pre processor"
