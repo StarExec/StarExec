@@ -19,6 +19,7 @@ import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.JobUtil;
 import org.starexec.util.SessionUtil;
@@ -90,9 +91,11 @@ public class UploadJobXML extends HttpServlet {
 	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
 	 * @author Tim Smith
 	 */
-    private List<Integer> handleXMLFile(int userId, HashMap<String, Object> form, JobUtil jobUtil) {
+    private List<Integer> handleXMLFile(int userId, HashMap<String, Object> form, JobUtil jobUtil) throws StarExecException {
+		final String method = "handleXMLFile";
+		log.debug(method+" - Entering method handleXMLFile");
 		try {
-			log.debug("Handling Upload of XML File from User " + userId);
+			log.debug(method+" - Handling Upload of XML File from User " + userId);
 			FileItem item = (FileItem)form.get(UploadJobXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
 			
@@ -117,13 +120,7 @@ public class UploadJobXML extends HttpServlet {
 			List<Integer> current=new ArrayList<Integer>();
 
 			// Makes sure there are no directories in archive file.
-			for (File file:uniqueDir.listFiles()) 
-			{
-				if (file.isDirectory()) {
-					jobUtil.setErrorMessage("No directories allowed in archive file. Only XML files allowed.");
-					return null;
-				}
-			}
+			checkForIllegalDirectoriesInXMLArchive(uniqueDir);
 
 			for (File file:uniqueDir.listFiles())
 			{
@@ -139,12 +136,27 @@ public class UploadJobXML extends HttpServlet {
 				return jobIds;
 			} 
 			log.debug(jobUtil.getErrorMessage());
+			log.debug(method+" - Returning null.");
 			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			throw new StarExecException(e.getMessage());
 		}
-		
-		return null;
+	}
+
+	private void checkForIllegalDirectoriesInXMLArchive(File extractedArchiveDirectory) throws StarExecException {
+		final String method = "checkForIllegalDirectoriesInXMLArchive";
+		log.debug(method+" - checking for directories in extracted XML archive.");
+		for (String name: extractedArchiveDirectory.list()) 
+		{
+			log.trace(method+" - Found file with name="+name);
+			File file = new File(extractedArchiveDirectory, name);
+			if (file.isDirectory()) {
+				log.debug(method+" - Found directrory in JobXML archive file. Throwing exception.");
+				throw new StarExecException("Directories not allowed in job XML archive.");
+			}
+		}
+		log.debug(method+" - Finished checking for directories in extracted XML archive.");
 	}
 
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
