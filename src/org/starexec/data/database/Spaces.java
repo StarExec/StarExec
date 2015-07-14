@@ -1867,15 +1867,18 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Todd Elvers
 	 */
 	public static boolean isLeaf(int spaceId){
+		final String method = "isLeaf";
+		log.debug(method+" - Entering method "+method);
 		Connection con = null;			
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetDescendantsOfSpace(?)}");
+			procedure = con.prepareCall("{CALL GetDescendantsOfSpace(?)}");
 			procedure.setInt(1, spaceId);					
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
+			log.debug(method+" - Successfully called GetDescendantsOfSpace("+spaceId+")");
 			return !results.next();			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

@@ -167,6 +167,16 @@ public class RESTServices {
 
 		}
 	}
+
+	@GET
+	@Path("/space/isLeaf/{spaceId}")
+	@Produces("application/json")	
+	public String isLeafSpace(@PathParam("spaceId") int spaceId) {					
+		final String method = "isLeafSpace";
+		log.debug(method+" - Entering method "+method);
+		log.debug(method+" - Attempting to determine if space with id="+spaceId+" is a leaf space.");
+		return gson.toJson(Spaces.isLeaf(spaceId));
+	}
 	
 	/**
 	 * Returns the paginated results of node assignments

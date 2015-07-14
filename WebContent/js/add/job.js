@@ -18,8 +18,12 @@ var benchUndo = [];
 var benchMethodVal = 0;  //1 if choose from space, 2 if choose from hier, 0 otherwise
 var benchTable = null;
 var curSpaceId = null;
+var isLeaf = null;
 $(document).ready(function(){
 	curSpaceId = $("#spaceIdInput").attr("value");
+	log('curSpaceId='+curSpaceId);
+	checkIfLeafSpace(curSpaceId);
+
 	initUI();
 	attachFormValidation();
 	
@@ -469,6 +473,33 @@ function addRowSelectedAndClearSiblings(row) {
 	$(row).addClass('row_selected');
 	$(row).siblings().removeClass("row_selected");
 }
+
+function checkIfLeafSpace(spaceId) {
+	var isLeafSpace = null;
+	$.get(
+		starexecRoot+'services/space/isLeaf/'+spaceId,
+		{},
+		function(data) {
+			isLeafSpace = data;
+			log('isLeafSpace='+isLeafSpace);
+		},
+		'json'
+	).done(function() {
+		if (isLeafSpace) {
+			log('Determined that current space is a leaf space.');
+			hideHierarchyRelatedFunctionality();
+		}
+	}).fail(function() {
+		log('retrieving isLeaf failed');
+	});
+}
+
+function hideHierarchyRelatedFunctionality() {
+	log('Hiding hierarchy related functionality.');
+	$('#allBenchInHierarchy').hide();
+
+}
+
 
 /**
  * Changes the UI to properly reflect what state the job creator is in
