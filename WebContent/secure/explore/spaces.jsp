@@ -184,10 +184,12 @@
 	  <div><input  type="text" id="updateID" /></div>
 	</div>
 	<div id="dialog-download-space" title="download space">
-		<p><span class="ui-icon ui-icon-alert"></span>do you want to download the single space or the hierarchy?</p><br>
-		<input type="radio" name="downloadHierarchyOption" id="downloadSingleSpace" checked="checked"/>space<br>
-		<input type="radio" name="downloadHierarchyOption" id="downloadSpaceHierarchy"/>hierarchy</p>
-		<hr>
+		<div id="downloadHierarchyOptionContainer">
+			<p><span class="ui-icon ui-icon-alert"></span>do you want to download the single space or the hierarchy?</p><br>
+			<input type="radio" name="downloadHierarchyOption" id="downloadSingleSpace" checked="checked"/>space<br>
+			<input type="radio" name="downloadHierarchyOption" id="downloadSpaceHierarchy"/>hierarchy</p>
+			<hr>
+		</div>
 		<p><span class="ui-icon ui-icon-alert"></span>do you want to download the benchmarks and/or the solvers?</p><br>
 		<p><input type="radio" name="downloadOption" id="downloadSolvers"/> solvers only<br>
 		<input type="radio" name="downloadOption" id="downloadBenchmarks"/> benchmarks only<br>

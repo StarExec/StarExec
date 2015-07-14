@@ -13,6 +13,7 @@ var spaceChainIndex=0; //the current index of the space chain
 var openDone=true;
 var spaceChainInterval;
 var usingSpaceChain=false;
+var isLeafSpace=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain("#spaceChain").length>1); //check whether to turn off cookies
@@ -525,6 +526,8 @@ function initSpaceExplorer(){
 	jsTree.bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
+		isLeafSpace = $('#'+id).hasClass('jstree-leaf');
+		log('Selected space isLeafSpace='+isLeafSpace);
 		log('Space explorer node ' + id + ' was clicked');
 
 		updateButtonIds(id);
@@ -1742,10 +1745,18 @@ function updateButtonIds(id) {
 		// Display the confirmation dialog
 		$("#downloadBoth").prop("checked","checked");
 		$('#noIdDirectories').prop('checked','checked');
+		var dialogHeight=500;
+		if (isLeafSpace) {
+			$('#downloadHierarchyOptionContainer').hide();
+			dialogHeight=400;
+		} else {
+			$('#downloadHierarchyOptionContainer').show();
+			dialogHeight=500;
+		}
 		$('#dialog-download-space').dialog({
 			modal: true,
 			width: 380,
-			height: 500,
+			height: dialogHeight,
 			buttons: {
 				'submit': function(){
 					createDownloadSpacePost(id);
