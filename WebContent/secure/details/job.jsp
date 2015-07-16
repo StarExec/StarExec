@@ -277,8 +277,14 @@
 		
 						</tr>
 						<tr title="the job creator's description for this job">
-							<td>description</td>			
-							<td>${job.description}</td>
+							<td>description (click to edit)</td>			
+							<td>
+								<span id="jobDescriptionText">${job.description}</span>
+								<span id="editJobDescriptionWrapper">
+									<textarea id="editJobDescription" value="${job.description}"></textarea>
+									<button id="editJobDescriptionButton">change</button>
+								</span>
+							</td>
 						</tr>
 						<tr title="the user who submitted this job">
 							<td>owner</td>			

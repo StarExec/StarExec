@@ -1019,6 +1019,34 @@ public class RESTServices {
 		logUtil.exit(method);
 		return gson.toJson(status);
 	}
+
+	@POST
+	@Path("/job/edit/description/{jobId}/{newDescription}")
+	@Produces("application/json")
+	public String editJobDescription(@PathParam("jobId") int jobId, @PathParam("newDescription") String newDescription, 
+			                  @Context HttpServletRequest request) {
+		final String method = "editJobDescription";
+		logUtil.entry(method);
+		logUtil.debug(method, "Editing job description for job with id="+jobId+" where the new description="+newDescription);
+
+		int userId = SessionUtil.getUserId(request);
+
+		ValidatorStatusCode status = null;
+		if (JobSecurity.userOwnsJobOrIsAdmin(jobId, userId)) {
+			try {
+				Jobs.setJobDescription(jobId, newDescription);
+				status = new ValidatorStatusCode(true, "Description changed successfully.");
+			} catch (Exception e) {
+				status = new ValidatorStatusCode(false, e.getMessage());
+			}
+		} else {
+			status = new ValidatorStatusCode(false, "You do not have permission to change this job's description.");	
+		}
+
+		logUtil.exit(method);
+		return gson.toJson(status);
+	}
+
 	
 	@POST
 	@Path("/job/{spaceId}/allbench/pagination/")
