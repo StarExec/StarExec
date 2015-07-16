@@ -39,6 +39,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
@@ -3849,6 +3850,24 @@ public class Jobs {
 		}
 		return false;
 	}
+
+	public static void setJobName(int jobId, String newName) throws StarExecDatabaseException {
+		Connection connection = null;
+		CallableStatement procedure = null;
+		try {
+			connection = Common.getConnection();
+			procedure = connection.prepareCall("{CALL SetJobName(?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setString(2, newName);
+			procedure.executeUpdate();
+		} catch (Exception e) {
+			log.error(e);
+			throw new StarExecDatabaseException("Could not save job name to database.", e);
+		} finally {
+			Common.safeClose(connection);
+			Common.safeClose(procedure);
+		}
+	}
 	
 	/**
 	 * Given a set of pairs and a mapping from pair IDs, to stage numbers to properties, loads the properties into the
@@ -3933,6 +3952,7 @@ public class Jobs {
 
 		}
 	}
+
 	
 	
 	/**
@@ -4000,6 +4020,7 @@ public class Jobs {
 		return null;
 		
 	}
+
 	
 	/**
 	 * Given the result set from a SQL query containing job pair info, produces a list of job pairs

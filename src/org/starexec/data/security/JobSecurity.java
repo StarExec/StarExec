@@ -249,12 +249,12 @@ public class JobSecurity {
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
 	 */
-	private static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
-		Job j = Jobs.get(jobId);
-		
+	public static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
 		if (Users.isAdmin(userId)){
 			return true;
 		}
+
+		Job j = Jobs.get(jobId);
 		if(j == null || j.getUserId() != userId){
 			return false;
 		}

@@ -214,6 +214,8 @@ function initUI(){
 	$("#dialog-changeQueue").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
+	$('#editJobNameWrapper').hide();
+
 	
 	//for aesthetics, make the heights of the two option fields identical
 	$("#solverComparisonOptionField").height($("#spaceOverviewOptionField").height());
@@ -223,6 +225,9 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
+
+	$('#editJobNameButton').button();
+
 	$("#compareSolvers").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -235,6 +240,7 @@ function initUI(){
 		c2=$(".second_selected").find(".configLink").attr("id");
 		window.open(starexecRoot+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
 	});
+
 	
 	
 	attachSortButtonFunctions();
@@ -379,7 +385,45 @@ function initUI(){
 			}
 		});
 	});
-	
+
+	$('#jobNameText').click(function() {
+		$('#jobNameText').hide();
+		$('#editJobNameWrapper').show();
+		$('#editJobName').select();
+	});
+
+	// Had to use mousedown here so that it would precede $('editJobName').blur()
+	$('#editJobNameButton').mousedown(function() {
+		log('Attempting to change name...');
+		var name = $('#editJobName').val();
+		// Make sure the name is a valid primitive name.
+		var primNameRegex =new RegExp(getPrimNameRegex());
+		if (!primNameRegex.test(name)) {
+			showMessage("error", "The given name contains illegal characters.", 5000);
+			return;
+		}
+		$.post(
+			starexecRoot+'services/job/edit/name/'+jobId+'/'+name,
+			{},
+			function(returnCode) {
+				success = parseReturnCode(returnCode);
+				if (success) {
+					$('#jobNameText').text(name);
+					$('#editJobName').val(name);
+				}
+			},
+			'json'
+		);	
+		$('#editJobNameWrapper').hide();
+		$('#jobNameText').show();		
+	});	
+
+	$('#editJobName').blur(function() {
+		$('#editJobNameWrapper').hide();
+		$('#jobNameText').show();
+		$('#editJobName').val($('#jobNameText').text());
+	});
+
 	$(".changeTime").click(function() {
 		useWallclock=!useWallclock;
 		setTimeButtonText();

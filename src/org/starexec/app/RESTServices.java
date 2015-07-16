@@ -74,6 +74,7 @@ import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.util.LogUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -85,6 +86,7 @@ import com.google.gson.JsonObject;
 @Path("")
 public class RESTServices {	
 	private static final Logger log = Logger.getLogger(RESTServices.class);			
+	private static final LogUtil logUtil = new LogUtil(log);
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 	
@@ -177,6 +179,9 @@ public class RESTServices {
 		log.debug(method+" - Attempting to determine if space with id="+spaceId+" is a leaf space.");
 		return gson.toJson(Spaces.isLeaf(spaceId));
 	}
+
+	
+
 	
 	/**
 	 * Returns the paginated results of node assignments
@@ -987,6 +992,32 @@ public class RESTServices {
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+
+	@POST
+	@Path("/job/edit/name/{jobId}/{newName}")
+	@Produces("application/json")
+	public String editJobName(@PathParam("jobId") int jobId, @PathParam("newName") String newName, @Context HttpServletRequest request) {
+		final String method = "editJobName";
+		logUtil.entry(method);
+		logUtil.debug(method, "Editing job name for job with id="+jobId+" where the new name="+newName);
+
+		int userId = SessionUtil.getUserId(request);
+
+		ValidatorStatusCode status = null;
+		if (JobSecurity.userOwnsJobOrIsAdmin(jobId, userId)) {
+			try {
+				Jobs.setJobName(jobId, newName);
+				status = new ValidatorStatusCode(true, "Name changed successfully.");
+			} catch (Exception e) {
+				status = new ValidatorStatusCode(false, e.getMessage());
+			}
+		} else {
+			status = new ValidatorStatusCode(false, "You do not have permission to change this job's name.");	
+		}
+
+		logUtil.exit(method);
+		return gson.toJson(status);
 	}
 	
 	@POST
