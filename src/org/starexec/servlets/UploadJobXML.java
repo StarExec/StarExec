@@ -95,7 +95,7 @@ public class UploadJobXML extends HttpServlet {
 		final String method = "handleXMLFile";
 		log.debug(method+" - Entering method handleXMLFile");
 		try {
-			log.debug(method+" - Handling Upload of XML File from User " + userId);
+			log.info(method+" - Handling Upload of XML File from User " + userId);
 			FileItem item = (FileItem)form.get(UploadJobXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
 			
