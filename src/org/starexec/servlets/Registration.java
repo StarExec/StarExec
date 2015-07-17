@@ -14,6 +14,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -27,6 +28,7 @@ import org.starexec.util.Validator;
 @SuppressWarnings("serial")
 public class Registration extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Registration.class);	
+	private static final LogUtil logUtil = new LogUtil(log);
 	
 	// Return codes for registration
 	private static final int SUCCESS = 0;
@@ -49,12 +51,8 @@ public class Registration extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		int userId = SessionUtil.getUserId(request);
-
-		if (!Users.isAdmin(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to create a new user.");
-			return;
-		}
+		final String method = "doPost";
+		logUtil.entry(method);
 			
 		// Begin registration for a new user		
 		ValidatorStatusCode result = register(request, response);
@@ -65,6 +63,7 @@ public class Registration extends HttpServlet {
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
 		}
+		logUtil.exit(method);
 	}
 	
 	/**

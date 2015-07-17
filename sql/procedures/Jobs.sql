@@ -840,6 +840,22 @@ CREATE PROCEDURE GetAllJobs()
 				
 		FROM jobs;
 	END //
+
+DROP PROCEDURE IF EXISTS SetJobName;
+CREATE PROCEDURE SetJobName(IN _jobId INT, IN _newName VARCHAR(64))
+	BEGIN
+		UPDATE jobs
+		SET name = _newName
+		WHERE id = _jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS SetJobDescription;
+CREATE PROCEDURE SetJobDescription(IN _jobId INT, IN _newDescription TEXT)
+	BEGIN
+		UPDATE jobs
+		SET description = _newDescription
+		WHERE id = _jobId;
+	END //
 	
 -- Checks to see if there is a global pause on all jobs
 DROP PROCEDURE IF EXISTS IsSystemPaused;

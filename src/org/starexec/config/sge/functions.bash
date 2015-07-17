@@ -383,14 +383,15 @@ function cleanForNextStage {
 #takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
-	mkdir -p $WORKING_DIR
-	
-        chmod 770 $WORKING_DIR
-        chmod g+s $WORKING_DIR
 	# change ownership and permissions to make sure we can clean everything up
+	sudo chown -R `whoami` $WORKING_DIR 
+
+	mkdir -p $WORKING_DIR
+
+	chmod 770 $WORKING_DIR
+	chmod g+s $WORKING_DIR
 	log "WORKING_DIR is $WORKING_DIR"
 	
-	sudo chown -R `whoami` $WORKING_DIR 
 	chmod -R gu+rxw $WORKING_DIR
 
     

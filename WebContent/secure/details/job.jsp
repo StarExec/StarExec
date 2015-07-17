@@ -249,6 +249,17 @@
 						</tr>
 					</thead>
 					<tbody>
+						<tr title="the job's name">
+							<td>name (click to edit)</td>
+							<td id="jobName">
+								<span id="jobNameText">${job.name}</span>
+								<span id="editJobNameWrapper">
+									<input id="editJobName" type="text" value="${job.name}"></input>
+									<button id="editJobNameButton">change</button>
+								</span>
+							</td>
+						</tr>
+						</tr>
 						<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
 							<td>status</td>		
 							<c:if test="${isPaused}">
@@ -266,8 +277,14 @@
 		
 						</tr>
 						<tr title="the job creator's description for this job">
-							<td>description</td>			
-							<td>${job.description}</td>
+							<td>description (click to edit)</td>			
+							<td>
+								<span id="jobDescriptionText">${job.description}</span>
+								<span id="editJobDescriptionWrapper">
+									<textarea id="editJobDescription" value="${job.description}"></textarea>
+									<button id="editJobDescriptionButton">change</button>
+								</span>
+							</td>
 						</tr>
 						<tr title="the user who submitted this job">
 							<td>owner</td>			
