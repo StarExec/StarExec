@@ -723,135 +723,110 @@ function removeUsers(selectedUsers){
 	});
 }
 
+function removeSolversFromSpaceHierarchy(selectedSolvers) {
+	log('user confirmed solver removal from space and its hierarchy');
+	// If the user actually confirms, close the dialog right away
+	$('#dialog-confirm-delete').dialog('close');
+
+	$.post(  
+			starexecRoot+"services/remove/solver/" + spaceId,
+			{selectedIds : selectedSolvers, hierarchy : true},
+			function(returnCode) {
+				s=parseReturnCode(returnCode);
+				if (s) {
+					updateTable(solverTable);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error removing solvers",5000);
+	});
+}
+
+function removeSolversFromSpace(selectedSolvers) {
+	log('user confirmed solver removal');
+	// If the user actually confirms, close the dialog right away
+	$('#dialog-confirm-delete').dialog('close');
+
+	$.post(  
+			starexecRoot+"services/remove/solver/" + spaceId,
+			{selectedIds : selectedSolvers, hierarchy : false},
+			function(returnCode) {
+				s=parseReturnCode(returnCode);
+				if (s) {
+					updateTable(solverTable);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error removing solvers",5000);
+	});
+}
+
+function moveSolversToRecycleBin(selectedSolvers) {
+	// If the user actually confirms, close the dialog right away
+	$('#dialog-confirm-delete').dialog('close');
+
+	$.post(  
+			starexecRoot+"services/recycleandremove/solver/"+spaceId,
+			{selectedIds : selectedSolvers, hierarchy : true},
+			function(returnCode) {
+				s=parseReturnCode(returnCode);
+				if (s) {
+					updateTable(solverTable);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error removing solvers",5000);
+	});
+}
+
 /**
  * Handles removal of solver(s) from a space
  * @author Todd Elvers & Skylar Stark
  */
 function removeSolvers(selectedSolvers,ownsAll){
+	var removeSolverButtons = {
+		// The remove from space button and cancel button will be in the dialog no matter what.
+		'remove from space': function() {
+			removeSolversFromSpace(selectedSolvers);
+		},
+	}; 
+
+	if (!isLeafSpace) {
+		// Only add the hierarchy option if the space is not a leaf.
+		removeSolverButtons['remove from space hierarchy'] = function() { 
+			removeSolversFromSpaceHierarchy(selectedSolvers); 
+		};
+	} 
+
+	var dialogText = null;
 	if (ownsAll) {
-		$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to move them to the recycle bin?');
-
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			width: 380,
-			height: 250,
-			buttons: {
-				'remove from space hierarchy': function() {
-					log('user confirmed solver removal from space and its hierarchy');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(  
-							starexecRoot+"services/remove/solver/" + spaceId,
-							{selectedIds : selectedSolvers, hierarchy : true},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									updateTable(solverTable);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error removing solvers",5000);
-					});
-				},
-				'remove from space': function() {
-					log('user confirmed solver removal');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(  
-							starexecRoot+"services/remove/solver/" + spaceId,
-							{selectedIds : selectedSolvers, hierarchy : false},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									updateTable(solverTable);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error removing solvers",5000);
-					});
-				},
-				'move to recycle bin': function() {
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(  
-							starexecRoot+"services/recycleandremove/solver/"+spaceId,
-							{selectedIds : selectedSolvers, hierarchy : true},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									updateTable(solverTable);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error removing solvers",5000);
-					});
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}		
-		});		
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to move them to the recycle bin?'; 
+		// Add the move to recycle bin button if the user owns the solvers.
+		removeSolverButtons['move to recycle bin'] = function() {
+			moveSolversToRecycleBin(selectedSolvers);
+		};
 	} else {
-		$('#dialog-confirm-delete-txt').text('do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +"?");
-
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			width: 380,
-			height: 250,
-			buttons: {
-				'remove from space hierarchy': function() {
-					log('user confirmed solver removal from space and its hierarchy');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(  
-							starexecRoot+"services/remove/solver/" + spaceId,
-							{selectedIds : selectedSolvers, hierarchy : true},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									updateTable(solverTable);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error removing solvers",5000);
-					});
-				},
-				'remove from space': function() {
-					log('user confirmed solver removal');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(  
-							starexecRoot+"services/remove/solver/" + spaceId,
-							{selectedIds : selectedSolvers, hierarchy : false},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									updateTable(solverTable);
-								}
-							},
-							"json"
-					).error(function(){
-						showMessage('error',"Internal error removing solvers",5000);
-					});
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}		
-		});		
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +"?";
 	}
+
+	// Add cancel button last
+	removeSolverButtons.cancel = function() {
+		$(this).dialog("close");
+	};
+
 	
+	$('#dialog-confirm-delete-txt').text(dialogText);
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		width: 430,
+		height: 250,
+		buttons: removeSolverButtons
+	});		
 }
 
 /**
