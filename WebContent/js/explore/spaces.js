@@ -878,17 +878,24 @@ function removeSolvers(selectedSolvers,ownsAll){
 
 	var dialogText = null;
 	if (ownsAll) {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +' and its hierarchy, or would you like to move them to the recycle bin?'; 
 		// Add the move to recycle bin button if the user owns the solvers.
 		removeSolverButtons['move to recycle bin'] = function() {
 			moveSolversToRecycleBin(selectedSolvers);
 		};
+	} 
+	if (ownsAll && isLeafSpace) {
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName + " or would you like to move them to the recycle bin?";
+	} else if (ownsAll && !isLeafSpace) {
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName 
+			+' and its hierarchy, or would you like to move them to the recycle bin?'; 
+	} else if (!ownsAll && isLeafSpace) {
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName + '?';
 	} else {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' +spaceName +"?";
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName+' or from '+spaceName+' and its hierarchy?';
 	}
 
 	// Add cancel button last
-	removeSolverButtons.cancel = function() {
+	removeSolverButtons['cancel'] = function() {
 		$(this).dialog("close");
 	};
 
