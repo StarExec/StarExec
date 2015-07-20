@@ -231,6 +231,7 @@ function onTrashDrop(event, ui){
 	}
 }
 
+
 /**
  * Called when a draggable item (primitive) is dropped on a space
  */
@@ -257,9 +258,18 @@ function onSpaceDrop(event, ui) {
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
 		}
-		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
+		else if(ui.draggable.data('type')[0] == 's'){
 			if (destIsLeafSpace) {
 				$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName+'?');
+
+			} else {
+				$('#dialog-confirm-copy-txt').text(
+						'do you want to copy ' + ui.draggable.data('name') + ' to' + destName + 
+						' and all of its subspaces or just to' + destName +'?');
+			}
+		} else if (ui.draggable.data('type')[0] == 'u') {
+			if (destIsLeafSpace) {
+				$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName+'?');
 
 			} else {
 				$('#dialog-confirm-copy-txt').text(
@@ -325,29 +335,7 @@ function onSpaceDrop(event, ui) {
 	}
 	// If primitive being copied to another space is a user...
 	else if(ui.draggable.data('type')[0] == 'u'){
-		$('#dialog-confirm-copy').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'space hierarchy': function() {
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-copy').dialog('close');
-					// Make the request to the server	
-					doUserCopyPost(ids,destSpace,true,destName,ui);
-				},
-				'space': function(){
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-copy').dialog('close');
-					doUserCopyPost(ids,destSpace,false,destName,ui);
-						
-				},
-				"cancel": function() {
-					log('user canceled copy action');
-					$(this).dialog("close");
-				}
-			}		
-		});		
+		setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace);
 	}
 
 	// If copying subspaces to other spaces
@@ -437,6 +425,40 @@ function onSpaceDrop(event, ui) {
 		});			   		    	    	
 
 	}
+}
+
+function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
+	var userCopyDialogButtons = {};
+	if (!destIsLeafSpace) {
+		userCopyDialogButtons['space hierarchy'] = function() {
+			// If the user actually confirms, close the dialog right away
+			$('#dialog-confirm-copy').dialog('close');
+			// Make the request to the server	
+			doUserCopyPost(ids,destSpace,true,destName,ui);
+		};
+		userCopyDialogButtons['space'] = function(){
+			// If the user actually confirms, close the dialog right away
+			$('#dialog-confirm-copy').dialog('close');
+			doUserCopyPost(ids,destSpace,false,destName,ui);
+				
+		};
+	} else {
+		userCopyDialogButtons['confirm'] = function(){
+			// If the user actually confirms, close the dialog right away
+			$('#dialog-confirm-copy').dialog('close');
+			doUserCopyPost(ids,destSpace,false,destName,ui);
+		};
+	}
+	userCopyDialogButtons["cancel"] = function() {
+		log('user canceled copy action');
+		$(this).dialog("close");
+	}
+	$('#dialog-confirm-copy').dialog({
+		modal: true,
+		width: 380,
+		height: 165,
+		buttons: userCopyDialogButtons
+	});		
 }
 
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
