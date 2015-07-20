@@ -243,20 +243,31 @@ function onSpaceDrop(event, ui) {
 	// Get the destination space id and name
 	var destSpace = $(event.target).parent().attr('id');
 	var destName = $(event.target).text();
+	var destIsLeafSpace = spaceIsLeaf(destSpace);
 
 	log(ids.length + ' rows dropped onto ' + destName);
 	
 	if(ids.length < 2) {
+		log ("ids.length was < 2");
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
 		ids = [ui.draggable.data('id')];
 
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
+		log("ui.draggable.data('type')[0]="+ui.draggable.data('type')[0]+" , ui.draggable.data('type')[1]="+ui.draggable.data('type')[1]);
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
 		}
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
-			$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName + ' and all of its subspaces or just to' + destName +'?');
+			if (destIsLeafSpace) {
+				$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName+'?');
+
+			} else {
+				$('#dialog-confirm-copy-txt').text(
+						'do you want to copy ' + ui.draggable.data('name') + ' to' + destName + 
+						' and all of its subspaces or just to' + destName +'?');
+			}
 		} else if (ui.draggable.data('type')[0]=='j') {
+
 			$('#dialog-confirm-copy-txt').text('do you want to link ' + ui.draggable.data('name') + ' in' + destName + '?');
 		}
 		else {
@@ -278,6 +289,30 @@ function onSpaceDrop(event, ui) {
 
 	// If primitive being copied to another space is a solver...
 	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p'){
+		var solverCopyDialogButtons = {
+			'link in space': function(){
+				$('#dialog-confirm-copy').dialog('close');
+				doSolverCopyPost(ids,destSpace,spaceId,false,false);
+			},
+			'copy to space': function() {
+				$('#dialog-confirm-copy').dialog('close');	
+				doSolverCopyPost(ids,destSpace,spaceId,false,true);
+			},
+			"cancel": function() {
+				$(this).dialog("close");
+			}
+			
+		};		
+		if (!spaceIsLeaf(destSpace)) {
+			solverCopyDialogButtons['link in space hierarchy'] = function() {
+				$('#dialog-confirm-copy').dialog('close'); 
+				doSolverCopyPost(ids,destSpace,spaceId,true,false);
+			};
+			solverCopyDialogButtons['copy to space hierarchy'] = function() {
+				$('#dialog-confirm-copy').dialog('close'); 
+				doSolverCopyPost(ids,destSpace,spaceId,true,true);
+			};
+		} 			
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
@@ -285,28 +320,7 @@ function onSpaceDrop(event, ui) {
 			height: 200,
 			
 			//depending on what the user 
-			buttons: {
-				'link in space hierarchy': function() {
-					$('#dialog-confirm-copy').dialog('close'); 
-					doSolverCopyPost(ids,destSpace,spaceId,true,false);
-				},
-				'copy to space hierarchy': function() {
-					$('#dialog-confirm-copy').dialog('close'); 
-					doSolverCopyPost(ids,destSpace,spaceId,true,true);
-				},
-				'link in space': function(){
-					$('#dialog-confirm-copy').dialog('close');
-					doSolverCopyPost(ids,destSpace,spaceId,false,false);
-				},
-				'copy to space': function() {
-					$('#dialog-confirm-copy').dialog('close');	
-					doSolverCopyPost(ids,destSpace,spaceId,false,true);
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-				
-			}		
+			buttons: solverCopyDialogButtons
 		});	
 	}
 	// If primitive being copied to another space is a user...
@@ -321,8 +335,6 @@ function onSpaceDrop(event, ui) {
 					$('#dialog-confirm-copy').dialog('close');
 					// Make the request to the server	
 					doUserCopyPost(ids,destSpace,true,destName,ui);
-								
-											
 				},
 				'space': function(){
 					// If the user actually confirms, close the dialog right away
@@ -513,6 +525,10 @@ function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy) {
 	});	
 }
 
+function spaceIsLeaf(spaceId) {
+	return $('#'+spaceId).hasClass('jstree-leaf');
+}
+
 
 
 /**
@@ -526,7 +542,7 @@ function initSpaceExplorer(){
 	jsTree.bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
-		isLeafSpace = $('#'+id).hasClass('jstree-leaf');
+		isLeafSpace = spaceIsLeaf(id);
 		log('Selected space isLeafSpace='+isLeafSpace);
 		log('Space explorer node ' + id + ' was clicked');
 
