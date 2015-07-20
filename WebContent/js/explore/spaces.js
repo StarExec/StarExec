@@ -641,19 +641,51 @@ function removeBenchmarks(selectedBenches,ownsAll){
 				
 }	
 
+function cancelRemoveUsers() {
+	log('user canceled user deletion');
+	$('#dialog-confirm-delete').dialog('close');
+}
+
+function removeUsersFromSpace(selectedUsers) {
+	log('user confirmed user deletion');
+	// If the user actually confirms, close the dialog right away
+	$('#dialog-confirm-delete').dialog('close');
+
+	$.post(  
+			starexecRoot+"services/remove/user/" + spaceId,
+			{selectedIds : selectedUsers, hierarchy : false},
+			function(returnCode) {
+				s=parseReturnCode(returnCode);
+				if (s) {
+					updateTable(userTable);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error removing users",5000);
+	});	
+}
+
 /**
  * Handles removal of user(s) from a space
  * @author Todd Elvers & Skylar Stark
  */
 function removeUsers(selectedUsers){
-	$('#dialog-confirm-delete-txt').text('do you want to remove the user(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '?');
-
-	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
-		modal: true,
-		width: 380,
-		height: 165,
-		buttons: {
+	var dialogButtons = null;
+	if (isLeafSpace) {
+		$('#dialog-confirm-delete-txt').text('Are you sure you want to remove the user(s)?');
+		dialogButtons = {
+			'confirm': function() { 
+				removeUsersFromSpace(selectedUsers) 
+			}, 
+			'cancel': function() { 
+				cancelRemoveUsers() 
+			}
+		};	
+	} else {
+		$('#dialog-confirm-delete-txt').text(
+			'do you want to remove the user(s) from ' + spaceName + ' and its hierarchy or just from ' +spaceName + '?');
+		dialogButtons = {
 			'space hierarchy': function() {
 				log('user confirmed user deletion from space and its hierarchy');
 				// If the user actually confirms, close the dialog right away
@@ -667,36 +699,27 @@ function removeUsers(selectedUsers){
 							if (s) {
 								updateTable(userTable);
 							}
-							},
-						"json"
-				).error(function(){
-					showMessage('error',"Internal error removing users",5000);
-				});	
-			},
-			"space": function() {
-				log('user confirmed user deletion');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
-
-				$.post(  
-						starexecRoot+"services/remove/user/" + spaceId,
-						{selectedIds : selectedUsers, hierarchy : false},
-						function(returnCode) {
-							s=parseReturnCode(returnCode);
-							if (s) {
-								updateTable(userTable);
-							}
 						},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error removing users",5000);
 				});	
 			},
-			"cancel": function() {
-				log('user canceled user deletion');
-				$(this).dialog("close");
-			}
-		}		
+			'space': function() { 
+				removeUsersFromSpace(selectedUsers) 
+			},
+			'cancel': function() { 
+				cancelRemoveUsers() 
+			} 
+		};		
+	}
+
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		width: 380,
+		height: 200,
+		buttons: dialogButtons
 	});
 }
 
