@@ -2110,6 +2110,8 @@ public class Jobs {
 
 	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobId,int jobSpaceId,int startingRecord,int recordsPerPage,
 			boolean isSortedASC, String searchQuery, int indexOfColumnSortedBy,int configId, int stageNumber,String type) {
+		final String method = "getJobPairsForTableInJobSpaceHierarchy";
+		logUtil.entry(method);
 		Connection con = null;	
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
@@ -2122,9 +2124,15 @@ public class Jobs {
 			if (indexOfColumnSortedBy == 7) {
 				isSortedASC = !isSortedASC;
 			}
+			
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_IN_SPACE_HIERARCHY_QUERY, startingRecord, recordsPerPage, getJobPairOrderColumn(indexOfColumnSortedBy,false), isSortedASC);
 			
-			procedure = new NamedParameterStatement(con,builder.getSQL());
+			String constructedSQL = builder.getSQL();
+			logUtil.debug(method, 
+					String.format("Built sql procedure from file %s - Inputs: query=%s, jobSpaceId=%d, stageNumber=%d, configId=%d, pairType=%s%n%s",
+						PaginationQueries.GET_PAIRS_IN_SPACE_HIERARCHY_PATH, searchQuery, jobSpaceId, stageNumber, configId, type, constructedSQL));
+
+			procedure = new NamedParameterStatement(con,constructedSQL);
 				
 			
 			procedure.setString("query", searchQuery);
@@ -2142,6 +2150,7 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+			logUtil.exit(method);
 		}
 
 		return null;
