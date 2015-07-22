@@ -2,6 +2,10 @@ fieldset {
 	width: 750px;	
 }
 
+#displayJobSpaceID {
+	margin-bottom: 8px;
+}
+
 #pairTbl tr {
 	cursor: pointer;
 }

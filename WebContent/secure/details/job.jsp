@@ -95,7 +95,7 @@
 %>
 
 <star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
-	<p id="displayJobID" class="accent">id  = ${job.id}</p>
+	<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
 	
@@ -106,7 +106,7 @@
 	</div>
 	<div id="detailPanel" class="jobDetails">
 			<h3 id="spaceName">${jobspace.name}</h3>
-			<p id="displayJobSpaceID" class="accent">id  = ${job.primarySpace}</p>
+			<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
 			
 			<button id="matrixViewButton" type="button">Matrix View</button>
 			
