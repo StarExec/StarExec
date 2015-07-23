@@ -17,7 +17,7 @@ public class MatrixViewUtil {
 	private static final LogUtil logUtil = new LogUtil(log);
 
 	public static Job getJobIfAvailableToUser(int jobId, int userId, HttpServletResponse response) throws IOException {
-		final String method = "geJobIfAvailaleToUser";
+		final String method = "getJobIfAvailableToUser";
 		logUtil.entry(method);
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			Job job = Jobs.get(jobId);
