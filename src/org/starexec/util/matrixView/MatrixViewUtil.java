@@ -8,16 +8,20 @@ import org.apache.log4j.Logger;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.to.Job;
+import org.starexec.util.LogUtil;
 
 
 public class MatrixViewUtil {
 
 	private static final Logger log = Logger.getLogger(MatrixViewUtil.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	public static Job getJobIfAvailableToUser(int jobId, int userId, HttpServletResponse response) throws IOException {
+		final String method = "geJobIfAvailaleToUser";
+		logUtil.entry(method);
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			Job job = Jobs.get(jobId);
-			log.debug("(getJobIfAvailableToUser) - Number of job pairs in job with id=" + jobId + " is " + job.getJobPairs().size() );
+			logUtil.debug(method, "Number of job pairs in job with id=" + jobId + " is " + job.getJobPairs().size() );
 			
 			int jobSpaceId=job.getPrimarySpace();
 			// this means it's an old job and we should run the backwards-compatibility routine
@@ -33,8 +37,8 @@ public class MatrixViewUtil {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 				return null;
 			}
-			log.debug("(getJobIfAvailableToUser) - No errors encountered getting job for user with id = " + userId);
-			log.debug("(getJobIfAvailableToUser) - Number of job pairs in job with id=" + jobId + " is " + job.getJobPairs().size() );
+			logUtil.debug(method, "No errors encountered getting job for user with id = " + userId);
+			logUtil.debug(method,"Number of job pairs in job with id=" + jobId + " is " + job.getJobPairs().size() );
 
 			return job;
 		} else {
