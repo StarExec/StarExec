@@ -668,7 +668,7 @@ public class Download extends HttpServlet {
 						ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
 					} else {
 						zipFileName.append(File.separator);
-						zipFileName.append(file.getName());
+						zipFileName.append(p.getBench().getName());
 						ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
 					}
 					
