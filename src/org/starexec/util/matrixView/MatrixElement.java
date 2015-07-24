@@ -13,13 +13,19 @@ public class MatrixElement {
 	private String memUsage;
 	private String wallclock;
 	private String jobPairId;
+	private String uniqueIdentifier;
 
-	public MatrixElement(String status, String cpuTime, String memUsage, String wallclock, Integer jobPairId) {
+	public MatrixElement(String status, String cpuTime, String memUsage, String wallclock, Integer jobPairId, String uniqueIdentifier) {
 		this.status = status;
 		this.cpuTime = cpuTime;
 		this.memUsage = memUsage;
 		this.wallclock = wallclock;
 		this.jobPairId = String.valueOf(jobPairId);
+		this.uniqueIdentifier = uniqueIdentifier;
+	}
+
+	public String getUniqueIdentifier() {
+		return uniqueIdentifier;
 	}
 
 	public String getJobPairId() {

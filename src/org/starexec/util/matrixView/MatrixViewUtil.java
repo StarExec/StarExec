@@ -32,7 +32,7 @@ public class MatrixViewUtil {
 			
 			if (jobSpaceId>0) {
 				// Get all the job pairs for the job as well as basic info.
-				job = Jobs.getDetailed(jobId, 0);
+				job = Jobs.getJobForMatrix(jobId);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 				return null;

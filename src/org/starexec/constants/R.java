@@ -79,6 +79,7 @@ public class R {
     public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
     public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]+$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
+
     
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,"+R.MSG_LEN+"}$";
     public static String PRIMITIVE_DESC_PATTERN="^[^<>\"\'%;)(&\\+-]{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
@@ -224,6 +225,8 @@ public class R {
     public static String ADMIN_ROLE_NAME="admin";
     public static String TEST_ROLE_NAME="test";
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
+
+	public static String MATRIX_ELEMENT_ID_FORMAT ="%s%d-%s%d-%s%d"; 
 
     
     //some proxy data

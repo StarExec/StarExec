@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.TreeSet;
@@ -60,6 +61,7 @@ import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.data.to.Status.StatusCode;
@@ -70,11 +72,14 @@ import org.starexec.test.TestResult;
 import org.starexec.test.TestSequence;
 import org.starexec.util.Hash;
 import org.starexec.util.LoggingManager;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-import org.starexec.util.LogUtil;
+import org.starexec.util.matrixView.Matrix;
+import org.starexec.util.matrixView.MatrixElement;
+
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -668,6 +673,75 @@ public class RESTServices {
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type,wallclock,stageNumber);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+
+	@GET
+	@Path("/matrix/finished/{jobId}/{jobSpaceId}/{stageId}")
+	@Produces("application/json")
+	public String getFinishedJobPairsForMatrix(@PathParam("jobId") int jobId, @PathParam("jobSpaceId") int jobSpaceId, 
+											   @PathParam("stageId") int stageId, @Context HttpServletRequest request) {
+		final String method = "getFinishedJobPairsForMatrix";
+		logUtil.entry(method);
+		logUtil.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageId);
+
+
+		Map<String, SimpleMatrixElement> benchSolverConfigElementMap = new HashMap<String, SimpleMatrixElement>();
+		// Get all the latest new completed job pairs.
+		List<JobPair> completedJobPairs = Jobs.getNewCompletedPairsDetailed(jobId, 0);
+		for (JobPair pair : completedJobPairs) {
+			JoblineStage stage = pair.getStageFromNumber(stageId);
+			if (stage != null) {
+				// Get the three primitives that uniquely identify the MatrixElement we want to send back to the server.
+				Benchmark benchmark = pair.getBench();
+				Solver solver = stage.getSolver();
+				Configuration configuration = stage.getConfiguration();
+				// Build a unique string from the three primitives.
+				String benchSolverConfigIdentifier = String.format(R.MATRIX_ELEMENT_ID_FORMAT, benchmark.getName(), benchmark.getId(), 
+						solver.getName(), solver.getId(), configuration.getName(), configuration.getId());
+				// Make it so the identifiers can be used in Jquery selectors.
+				benchSolverConfigIdentifier = benchSolverConfigIdentifier.replace("#", "\\#");
+				benchSolverConfigIdentifier = benchSolverConfigIdentifier.replace(".", "\\.");
+				benchSolverConfigIdentifier = benchSolverConfigIdentifier.replace(":", "\\:");
+				// Get the element associated with the job pair.
+				String status = Jobs.getStatusFromStage(stage);
+				String cpuTime = String.valueOf(stage.getCpuTime());
+				String wallclock = String.valueOf(stage.getWallclockTime()); 
+				String memUsage = String.valueOf(stage.getMaxVirtualMemory());
+				SimpleMatrixElement element = new SimpleMatrixElement(status, cpuTime, memUsage, wallclock);
+				// Associate the unique string with the element
+				benchSolverConfigElementMap.put(benchSolverConfigIdentifier, element);
+			}
+		}
+
+		boolean isComplete = Jobs.isJobComplete(jobId);
+		MatrixJson matrixData = new MatrixJson(isComplete, benchSolverConfigElementMap);
+
+		logUtil.exit(method);
+		return gson.toJson(matrixData);
+	}
+
+	// Simplified matrix element so we can send less data via JSON.
+	private class SimpleMatrixElement {
+		String status;
+		String cpuTime;
+		String memUsage;
+		String wallclock;
+		public SimpleMatrixElement(String status, String cpuTime, String memUsage, String wallclock) {
+			this.status = status;
+			this.cpuTime = cpuTime;
+			this.memUsage = memUsage;
+			this.wallclock = wallclock;
+		}
+	}
+	
+	private class MatrixJson {
+		boolean done;
+		Map<String, SimpleMatrixElement> benchSolverConfigElementMap;
+
+		public MatrixJson(boolean done, Map<String, SimpleMatrixElement> benchSolverConfigElementMap) {
+			this.done = done;
+			this.benchSolverConfigElementMap = benchSolverConfigElementMap;
+		}
 	}
 	
 

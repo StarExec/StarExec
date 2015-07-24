@@ -15,13 +15,21 @@ var checkboxEnabled = {
 	'.wallclockCheckbox': true
 };
 
+var jobId; 
+var jobSpaceId; 
+var stageNumber; 
 
 // Entry point to JavaScript application.
 $(document).ready(function() {
 	'use strict';
-	registerCheckboxEventHandlers();
 
+	jobId = $('#jobId').text();
+	jobSpaceId = $('#jobSpaceId').text();
+	stageNumber = $('#stageNumber').text();
+
+	registerCheckboxEventHandlers();
 	removeHeader();
+
 
 	var table = $('#jobMatrix').dataTable({
 		/*
@@ -55,7 +63,44 @@ $(document).ready(function() {
 			$('#selectStageError').show();
 		}
 	});
+
+	getFinishedJobPairsFromServer();
 });
+
+function getFinishedJobPairsFromServer(done) {
+	'use strict';
+	if (done) {
+		return;
+	} else {
+		$.get(
+			starexecRoot+'services/matrix/finished/'+jobId+'/'+jobSpaceId+'/'+stageNumber,
+			'',
+			function(data) {
+				log(data);
+				setTimeout(function() {
+					updateMatrix(data.benchSolverConfigElementMap);
+					getFinishedJobPairsFromServer(data.done);
+				}, 5000);
+			},
+			'json'
+		 );
+	}
+}
+
+function updateMatrix(jobPairData) {
+	'use strict';
+	for (var key in jobPairData) {
+		if (jobPairData.hasOwnProperty(key)) {
+			var selector = '#'+key;
+			/*log('Number of elements selected with selector='+selector+': '+$(selector).length);*/
+			$(selector+' '+'.wallclock').text(jobPairData[key].wallclock);
+			$(selector+' '+'.memUsage').text(jobPairData[key].memUsage);
+			$(selector+' '+'.cpuTime').text(jobPairData[key].cpuTime);
+			$(selector).removeClass('incomplete');
+			$(selector).addClass(jobPairData[key].status);
+		}
+	}
+}
 
 function isInt(value) {
 	'use strict';

@@ -232,7 +232,7 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
-		SELECT job_pairs.id, path, jobpair_stage_data.solver_name,jobpair_stage_data.solver_id,jobpair_stage_data.config_name,
+		SELECT job_pairs.id, job_pairs.job_space_id, path, jobpair_stage_data.solver_name,jobpair_stage_data.solver_id,jobpair_stage_data.config_name,
 		jobpair_stage_data.config_id,bench_name,bench_id,solver_pipelines.name,
 		job_spaces.name,job_pairs.status_code,job_spaces.id, pipeline_stages.pipeline_id, jobpair_stage_data.stage_number
 		FROM job_pairs
@@ -370,6 +370,22 @@ CREATE PROCEDURE countPairsForJob(IN _id INT)
 		SELECT COUNT(*) AS count 
 		FROM job_pairs
 		WHERE job_id=_id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllJobPairsByJob;
+CREATE PROCEDURE GetAllJobPairsByJob(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM job_pairs 
+						/*JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id*/
+						JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+						JOIN	configurations	AS	config	ON	jobpair_stage_data.config_id = config.id 
+						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
+						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
+						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
+
+					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+		WHERE job_pairs.job_id=_id AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
 	END //
 	
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId

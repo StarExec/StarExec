@@ -25,6 +25,7 @@ import="java.util.ArrayList,
 		request.setAttribute("matrix", matrix);
 
 		request.setAttribute("job", job);
+		request.setAttribute("jobSpaceId", jobSpaceId);
 		request.setAttribute("stage", stageNumber);
 
 	} catch (NumberFormatException nfe) {
@@ -37,6 +38,8 @@ import="java.util.ArrayList,
 <star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/jobMatrixView, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/dataTables.fixedColumns.min" css="details/jobMatrixView, common/dataTable, common/dataTables.fixedColumns.min">			
 <div id="matrixPanel">
 	<span id="jobId" style="display: none;">${job.id}</span>
+	<span id="jobSpaceId" style="display: none;">${jobSpaceId}</span>
+	<span id="stageNumber" style="display:none;">${stage}</span>
 	<h2 class="jobSpaceName">matrix for job space "${matrix.getJobSpaceName()}" with id=${matrix.getJobSpaceId()}</h2>
 	<div class="matrixLegend">
 		<p class="matrixTextLegend">
@@ -104,7 +107,7 @@ import="java.util.ArrayList,
 					<c:forEach var="matrixElement" varStatus="columnIndex" items="${matrixRow}">
 						<c:choose>
 							<c:when test="${matrixElement != null}">
-							<td class="jobMatrixCell ${matrixElement.getStatus()} row${rowIndex.getIndex()} column${columnIndex.getIndex()}" width="120px">
+							<td id="${matrixElement.getUniqueIdentifier()}" class="jobMatrixCell ${matrixElement.getStatus()} row${rowIndex.getIndex()} column${columnIndex.getIndex()}" width="120px">
 									<a href="/${starexecRoot}/secure/details/pair.jsp?id=${matrixElement.getJobPairId()}">
 										<span class="wallclock">${matrixElement.getWallclock()}</span>
 										<span class="cpuTimeWallclockDivider"> / </span>

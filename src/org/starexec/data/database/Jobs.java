@@ -842,13 +842,17 @@ public class Jobs {
 		}
 		return memory;
 	}
-	
+
 	/**
-	 * Gets information about the job with the given ID. Job pair information is not returned
-	 * @param jobId The ID of the job in question
-	 * @return The Job object that represents the job with the given ID
+	 * Get a job that has job pairs with the simple information included.
+	 * @param jobId The id of the job to be gotten
+	 * @author Albert Giegerich
 	 */
-	private static Job get(int jobId, boolean includeDeleted) {
+	public static Job getWithSimplePairs(int jobId) {
+		return get(jobId, false, true);
+	}
+
+	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -865,6 +869,9 @@ public class Jobs {
 			results = procedure.executeQuery();
 			if(results.next()){
 				Job j = new Job();
+				if (getSimplePairs) {
+					j.setJobPairs(getPairsSimple(jobId));
+				}
 				j.setId(results.getInt("id"));
 				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));
@@ -889,6 +896,15 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return null;
+	}
+	
+	/**
+	 * Gets information about the job with the given ID. Job pair information is not returned
+	 * @param jobId The ID of the job in question
+	 * @return The Job object that represents the job with the given ID
+	 */
+	private static Job get(int jobId, boolean includeDeleted) {
+		return get(jobId, includeDeleted, false);
 	}
 	
 	/**
@@ -1099,6 +1115,11 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static Job getDetailed(int jobId, int since) {
+		return getDetailed(jobId, since, true);
+	}
+
+	private static Job getDetailed(int jobId, int since, boolean getCompletedPairsOnly) {
+		final String method = "getDetailed";
 		log.info("getting detailed info for job " + jobId);
 		Connection con = null;			
 		ResultSet results=null;
@@ -1132,13 +1153,14 @@ public class Jobs {
 				return null;
 			}
 			
-			log.debug("(getDetailed) - Getting job pairs for job with id="+jobId+" since completionID="+since);	
-			j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
-			
-				
+			if (getCompletedPairsOnly) {
+				logUtil.debug(method, "Getting job pairs for job with id="+jobId+" since completionID="+since);	
+				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
+			} else {
+				j.setJobPairs(Jobs.getAllPairs(jobId));
+			}
 			
 			return j;
-
 		} catch (Exception e){			
 			log.error("job get detailed for job id = " + jobId + " says " + e.getMessage(), e);		
 		} finally {
@@ -1148,6 +1170,32 @@ public class Jobs {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets a status description of a stage.
+	 * @param stage the stage to get the status code from.
+	 * @return the status code of the input stage.
+	 * @author Albert Giegerich
+	 */
+	public static String getStatusFromStage(JoblineStage stage) {
+		// 0 for solved 1 for wrong
+		int correctCode = JobPairs.isPairCorrect(stage);
+		StatusCode statusCode = stage.getStatus().getCode();
+		if (correctCode == 0) {
+			return "solved";
+		} else if (correctCode == 1) {
+			return "wrong";
+		} else if (statusCode.statIncomplete()) {
+			return "incomplete";
+		} else if (statusCode.failed()) {
+			return "failed";
+		} else if (statusCode.resource()) {
+			// Resources (time/memory) ran out.
+			return "resource";
+		} else {
+			return "unknown";
+		}
 	}
 	
 	/**
@@ -2465,7 +2513,38 @@ public class Jobs {
 		}
 		return null;
 	}
-	
+
+	public static Job getJobForMatrix(int jobId) {
+		return getDetailed(jobId, 0, false);
+	}
+
+	private static List<JobPair> getAllPairs(int jobId) {
+		final String method = "getAllPairs";
+		Connection con = null;	
+		ResultSet results=null;
+		CallableStatement procedure = null;
+
+		try {			
+			con = Common.getConnection();	
+			
+			logUtil.debug(method, "Getting all detailed pairs for job " + jobId);
+			
+			procedure = con.prepareCall("{CALL GetAllJobPairsByJob(?)}");
+			procedure.setInt(1, jobId);
+			results = procedure.executeQuery();
+			List<JobPair> jobPairs= getPairsDetailed(jobId,con,results,false);
+
+			return jobPairs;
+		} catch (Exception e) {
+			log.error("getNewCompletedPairsDetailed says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
 	/**
 	 * Gets all job pairs for the given job that have been completed after a given point and also
 	 * populates its resource TOs. Gets only the primary stage
@@ -2652,6 +2731,7 @@ public class Jobs {
 			    stage.setSolver(s);
 			    jp.addStage(stage);
 			    jp.setId(results.getInt("id"));
+				jp.setJobSpaceId(results.getInt("job_pairs.job_space_id"));
 			    jp.getStatus().setCode(results.getInt("job_pairs.status_code"));
 			    jp.getBench().setId(results.getInt("job_pairs.bench_id"));
 			    jp.getBench().setName(results.getString("job_pairs.bench_name"));
