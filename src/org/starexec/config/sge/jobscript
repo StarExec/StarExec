@@ -220,7 +220,7 @@ fi
 SANDBOX_FOUND=true
 if [ $SANDBOX -eq 1 ] ; then
 	SANDBOX_PARAM="sandbox"
-elif [ $SANDBOX -q 2 ] ; then
+elif [ $SANDBOX -eq 2 ] ; then
 	SANDBOX_PARAM="sandbox2"
 else
 	SANDBOX_FOUND=false
