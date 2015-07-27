@@ -49,6 +49,10 @@ $(document).ready(function() {
 
 	new $.fn.dataTable.FixedColumns(table);
 
+	$(window).resize(function() {
+		table.fnDraw();
+	});
+
 
 	$('#selectStageButton').click(function() {
 		console.log('Select stage button clicked.');
@@ -64,10 +68,10 @@ $(document).ready(function() {
 		}
 	});
 
-	getFinishedJobPairsFromServer();
+	getFinishedJobPairsFromServer(false, table);
 });
 
-function getFinishedJobPairsFromServer(done) {
+function getFinishedJobPairsFromServer(done, dataTable) {
 	'use strict';
 	if (done) {
 		return;
@@ -78,8 +82,8 @@ function getFinishedJobPairsFromServer(done) {
 			function(data) {
 				log(data);
 				setTimeout(function() {
-					updateMatrix(data.benchSolverConfigElementMap);
-					getFinishedJobPairsFromServer(data.done);
+					updateMatrix(data.benchSolverConfigElementMap, dataTable);
+					getFinishedJobPairsFromServer(data.done, dataTable);
 				}, 5000);
 			},
 			'json'
@@ -87,7 +91,7 @@ function getFinishedJobPairsFromServer(done) {
 	}
 }
 
-function updateMatrix(jobPairData) {
+function updateMatrix(jobPairData, dataTable) {
 	'use strict';
 	for (var key in jobPairData) {
 		if (jobPairData.hasOwnProperty(key)) {
@@ -100,6 +104,8 @@ function updateMatrix(jobPairData) {
 			$(selector).addClass(jobPairData[key].status);
 		}
 	}
+	// redraw the table
+	dataTable.fnDraw(false);
 }
 
 function isInt(value) {
@@ -180,4 +186,5 @@ function fixHeaderHorizontally() {
 	});
 }
 
-
+function zoomChanged(originalZoom) {
+}
