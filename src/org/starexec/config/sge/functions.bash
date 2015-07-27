@@ -380,6 +380,24 @@ function cleanForNextStage {
 
 }
 
+function killDeadlockedJobPair {
+	TIMEOUT=$1
+	EXTRA=$2
+	CURRENT_USER=$3
+
+	log "Wallclock timeout for current jobpair = $TIMEOUT"
+	log "Extra time given to jobpair on top of wallclock timeout before we kill it = $EXTRA"
+	log "User whose job will be killed if it exceeds it's runtime = $CURRENT_USER"
+
+	date
+	sleep $TIMEOUT
+	sleep $EXTRA
+	date
+
+	echo "About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
+	sudo -u $CURRENT_USER killall --user $CURRENT_USER
+}
+
 #takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."

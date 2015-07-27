@@ -226,12 +226,16 @@ else
 	SANDBOX_FOUND=false
 fi
 
+#Give job pairs 2 extra minutes before we kill them.
+JOB_PAIR_EXTRA_TIME=120
+
 log "doing stage index $STAGE_INDEX"
 log "stage number : $CURRENT_STAGE_NUMBER"
 log "cpu timeout : $CURRENT_STAGE_CPU"
 log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
 log "global cpu timeout : $STAREXEC_CPU_LIMIT"
 log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
+log "extra time for job pair after wallclock timeout : $JOB_PAIR_EXTRA_TIME"
 log "stage cpu timeout : ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}"
 log "stage wallclock timeout : ${STAGE_WALLCLOCK_TIMEOUTS[$STAGE_INDEX]}"
 log "mem limit : $CURRENT_STAGE_MEMORY"
@@ -247,16 +251,29 @@ log "bench path : $BENCH_PATH"
 log "benchmark suffix : $CURRENT_BENCH_SUFFIX"
 log "argument string : $ARGUMENT_STRING"
 
-
 if [ "$SANDBOX_FOUND" = true ] ; then
+	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
+	killDeadlockedJobPair $STAREXEC_WALLCLOCK_LIMIT $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
+	# Get the process of our defensive killDeadlockedJobPair function.
+	KILL_DEADLOCKED_JOB_PAIR_PID=$!
+
+
 	cd /export/starexec/$SANDBOX_PARAM/solver/bin
 	pwd
 	echo "  $LOCAL_RUNSOLVER_PATH $SUPPRESS_TIMESTAMP_PARAM --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
+
+	# run runsolver
 	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" "$SUPPRESS_TIMESTAMP_PARAM" --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
+
+	# If runsolver finishes then stop the killDeadlockedJobPair function.
+	log "Runsolver finished successfully. Killing the defensive killall function."
+	kill $KILL_DEADLOCKED_JOB_PAIR_PID
 else
 	log "no job run for pair $PAIR_ID because a sandbox was not found"
 	sendStatus $ERROR_RUNSCRIPT
 fi
+
+
 
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
