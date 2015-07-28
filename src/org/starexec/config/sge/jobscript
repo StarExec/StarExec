@@ -253,9 +253,15 @@ log "argument string : $ARGUMENT_STRING"
 
 if [ "$SANDBOX_FOUND" = true ] ; then
 	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
+	echo "Checking who current user is using: whoami ..."	
+	whoami
+	echo "Calling killDeadlockedJobPair"
 	killDeadlockedJobPair $STAREXEC_WALLCLOCK_LIMIT $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
+	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
+	echo "Checking which user owns the killDeadlockedJobPair process using: ps aux | grep $KILL_DEADLOCKED_JOB_PAIR_PID ..."
+	ps aux | grep $KILL_DEADLOCKED_JOB_PAIR_PID
 
 
 	cd /export/starexec/$SANDBOX_PARAM/solver/bin
