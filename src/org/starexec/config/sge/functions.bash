@@ -395,7 +395,7 @@ function killDeadlockedJobPair {
 	date
 
 	echo "About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
-	sudo -u $CURRENT_USER killall --user $CURRENT_USER
+	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
 }
 
 #takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
