@@ -67,7 +67,7 @@ public class Permissions {
 		if (Benchmarks.isPublic(benchId)){
 			return true;
 		}	
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		if (Settings.canUserSeeBenchmarkInSettings(userId, benchId)) {
@@ -301,7 +301,7 @@ public class Permissions {
 		if (Spaces.isPublicSpace(spaceId)){
 			return true;
 		}
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		Connection con = null;			

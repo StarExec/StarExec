@@ -16,7 +16,7 @@
 
 		if(b != null) {
 			// Ensure the user visiting this page is the owner of the benchmark
-			if(userId != b.getUserId()){
+			if(userId != b.getUserId() && !Users.hasAdminReadPrivileges(userId)){
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
 			} else {
 				request.setAttribute("bench", b);

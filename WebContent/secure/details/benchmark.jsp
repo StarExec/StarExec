@@ -22,7 +22,7 @@
 			request.setAttribute("usr", Users.get(b.getUserId()));
 			request.setAttribute("bench", b);
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));		
-			request.setAttribute("isAdmin",Users.isAdmin(userId));
+			request.setAttribute("hasAdminReadPrivileges",Users.hasAdminReadPrivileges(userId));
 			Space s = Communities.getDetails(b.getType().getCommunityId());
 			if (s==null) {
 				s=new Space();
@@ -174,11 +174,11 @@
 	<fieldset id="actions">
 		<legend>actions</legend>
 	
-		<c:if test="${usr.id == user.id}">
+		<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
 			<a id="editLink" href="/${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>
 		</c:if>
 	 	
-		<c:if test="${downloadable}">
+		<c:if test="${downloadable || hasAdminReadPrivileges}">
 			<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
 		

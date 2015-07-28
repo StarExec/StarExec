@@ -1715,6 +1715,7 @@ function checkPermissions(perms, id) {
 		$('#reserveQueue').fadeOut('fast');
 	}	
 
+	log('perms.addSpace='+perms.addSpace);
 	if(perms.addSpace) {		
 		$('#addSpace').fadeIn('fast');	
 		$('#uploadXML').fadeIn('fast');	
