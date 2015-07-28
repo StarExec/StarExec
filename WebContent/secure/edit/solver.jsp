@@ -14,10 +14,8 @@
 		}
 
 		if(s != null) {
-			// Ensure the user visiting this page is the owner of the solver
-			if(userId != s.getUserId()){
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this solver can edit details about it.");
-			} else {
+			// Ensure the user visiting this page is the owner of the solver or has admin read privileges
+			if (userId == s.getUserId() || Users.hasAdminReadPrivileges(userId)) {
 				request.setAttribute("solver", s);
 				request.setAttribute("sites", Websites.getAllForHTML(solverId, WebsiteType.SOLVER));
 				if(s.isDownloadable()){
@@ -27,6 +25,8 @@
 					request.setAttribute("isDownloadable", "");
 					request.setAttribute("isNotDownloadable", "checked");
 				}
+			} else {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this solver can edit details about it.");
 			}
 		} else {
 			if (Solvers.isSolverDeleted(solverId)) {
