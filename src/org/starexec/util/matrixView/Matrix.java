@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.JobPairs;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -31,6 +32,7 @@ import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.compare.NameableComparators;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 
@@ -49,6 +51,7 @@ public class Matrix {
 
 
 	private static final Logger log = Logger.getLogger(Matrix.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 
 
 	/**
@@ -59,9 +62,10 @@ public class Matrix {
 	 */
 	private Matrix(List<JobPair> jobPairs, final Integer jobSpaceId, final int stageNumber) {
 		final String method = "Matrix constructor";
+		logUtil.entry(method);
 		try {
+			logUtil.debug(method, "Found "+jobPairs.size()+" job pairs.");
 			String jobSpaceName = Spaces.getJobSpace(jobSpaceId).getName();
-			log.debug("Entering " + method);
 			initializeMatrixFields(jobSpaceName, jobSpaceId);
 
 
@@ -82,7 +86,7 @@ public class Matrix {
 			}
 
 
-			log.debug("("+method+") sorting benchmarks and solver-config pairs.");
+			logUtil.debug(method,"Sorting benchmarks and solver-config pairs.");
 			// Sort the benchmarks alphabetically by name ignoring case.
 			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<Benchmark>(uniqueBenchmarks);
 			Collections.sort(uniqueBenchmarkList, NameableComparators.getCaseInsensitiveAlphabeticalComparator());
@@ -107,9 +111,9 @@ public class Matrix {
 			// Populate the matrix.
 			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList); 
 			populateMatrixData(uniqueBenchmarkList, uniqueSolverConfigList, vectorIntersectionToCellDataMap);
-			log.debug("Leaving matrix constructor.");
+			logUtil.exit(method);
 		} catch (Exception e) {
-			log.warn("Error in constructing matrix for matrix view page.", e);
+			logUtil.warn(method, "Error in constructing matrix for matrix view page." + e.getMessage());
 		}
 	}
 
@@ -120,7 +124,8 @@ public class Matrix {
 	 */
 	public static Matrix getMatrixForJobSpaceFromJobAndStageNumber(Job job, int jobSpaceId, int stageNumber) throws StarExecException {
 		final String method = "getMatricesByJobSpaceFromJobStage";
-		log.debug("Entering method " + method);
+		logUtil.entry(method);
+		logUtil.debug(method, "Found "+job.getJobPairs().size()+" job pairs.");
 		/*
 		List<Matrix> matricesByJobSpace = new LinkedList<Matrix>();
 		*/
@@ -146,10 +151,12 @@ public class Matrix {
 	 * @author Albert Giegerich
 	 */
 	private static List<JobPair> getJobPairsForJobSpace(Job job, int jobSpaceId) {
+		final String method = "getJobPairsForJobSpace";
 		List<JobPair> jobPairs = job.getJobPairs();
 		List<JobPair> jobPairsInJobSpace = new ArrayList<JobPair>();
 		for (JobPair pair : jobPairs) {
 			Integer pairJobSpaceId = pair.getJobSpaceId();
+			logUtil.debug(method, "job space id="+pairJobSpaceId);
 			// Filter by jobSpaceId
 			if (pairJobSpaceId == jobSpaceId) {
 				jobPairsInJobSpace.add(pair);	
@@ -340,7 +347,7 @@ public class Matrix {
 			Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
 			   new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
 
-			MatrixElement jobPairCellData = getCellDataFromStageAndJobPairId(stage, pair.getId());
+			MatrixElement jobPairCellData = getCellDataFromStageAndJobPairId(bench, stage, pair.getId());
 
 			// Associate the benchmark-solverConfig intersection point with the data that should appear
 			// at that point.
@@ -353,9 +360,9 @@ public class Matrix {
 	 * @param stage the stage 
 	 * @author Albert Giegerich
 	 */
-	private static MatrixElement getCellDataFromStageAndJobPairId(JoblineStage stage, Integer jobPairId) {
+	public static MatrixElement getCellDataFromStageAndJobPairId(Benchmark benchmark, JoblineStage stage, Integer jobPairId) {
 		// Replace spaces with _ to make the status usable as a css class.
-		String status = getStatusFromStage(stage);
+		String status = Jobs.getStatusFromStage(stage);
 		String cpuTime = String.valueOf(stage.getCpuTime());
 		String wallclock = String.valueOf(stage.getWallclockTime()); 
 		String memUsage = String.valueOf(stage.getMaxVirtualMemory());
@@ -364,36 +371,15 @@ public class Matrix {
 			log.warn("(getCellDataFromStageAndJobPairId) jobPairId should not be null.");
 		}
 
-		MatrixElement displayData = new MatrixElement(status, cpuTime, memUsage, wallclock, jobPairId);
+		Solver solver = stage.getSolver();
+		Configuration config = stage.getConfiguration();
+		String uniqueIdentifier = String.format(R.MATRIX_ELEMENT_ID_FORMAT, benchmark.getName(), benchmark.getId(), solver.getName(),solver.getId(), 
+				config.getName(), config.getId());
+		MatrixElement displayData = new MatrixElement(status, cpuTime, memUsage, wallclock, jobPairId, uniqueIdentifier);
 
 		return displayData;
 	}
 
-	/**
-	 * Gets a status description of a stage.
-	 * @param stage the stage to get the status code from.
-	 * @return the status code of the input stage.
-	 * @author Albert Giegerich
-	 */
-	private static String getStatusFromStage(JoblineStage stage) {
-		// 0 for solved 1 for wrong
-		int correctCode = JobPairs.isPairCorrect(stage);
-		StatusCode statusCode = stage.getStatus().getCode();
-		if (correctCode == 0) {
-			return "solved";
-		} else if (correctCode == 1) {
-			return "wrong";
-		} else if (statusCode.statIncomplete()) {
-			return "incomplete";
-		} else if (statusCode.failed()) {
-			return "failed";
-		} else if (statusCode.resource()) {
-			// Resources (time/memory) ran out.
-			return "resource";
-		} else {
-			return "unknown";
-		}
-	}
 
 	/**
 	 * Initializes the matrices private fields.

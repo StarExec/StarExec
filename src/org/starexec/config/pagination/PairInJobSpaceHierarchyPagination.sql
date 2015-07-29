@@ -15,6 +15,7 @@
 						jobpair_stage_data.config_name,
 						jobpair_stage_data.status_code,
 						jobpair_stage_data.solver_id,
+						completion_id,
 						jobpair_stage_data.solver_name, jobpair_stage_data.stage_number,
 						job_pairs.bench_id,
 						bench_name,
@@ -24,6 +25,7 @@
 						jobpair_stage_data.cpu AS cpu
 						
 				FROM	job_pairs
+				LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 				LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.stage_number=jobpair_stage_data.stage_number AND job_attributes.attr_key="starexec-result")
 				
@@ -42,8 +44,8 @@
 				( :pairType = "incomplete" AND job_pairs.status_code!=7 AND !(job_pairs.status_code>=14 AND job_pairs.status_code<=17)) OR
 				( :pairType="failed" AND ((job_pairs.status_code>=8 AND job_pairs.status_code<=13) OR job_pairs.status_code=18)) OR
 				( :pairType ="complete" AND (job_pairs.status_code=7 OR (job_pairs.status_code<=14 ANd job_pairs.status_code<=17))) OR
-				( :pairType= "unknown" AND job_pairs.status_code=7 AND job_attributes.attr_value="starexec-unknown") OR
-				( :pairType = "solved" AND job_pairs.status_code=7 AND (job_attributes.attr_value=bench_attributes.attr_value OR bench_attributes.attr_value is null)) OR
+				( :pairType= "unknown" AND job_pairs.status_code=7 AND (job_attributes.attr_value="starexec-unknown"OR bench_attributes.attr_value is null)) OR
+				( :pairType = "solved" AND job_pairs.status_code=7 AND job_attributes.attr_value=bench_attributes.attr_value) OR
 				( :pairType = "wrong" AND job_pairs.status_code=7 AND (bench_attributes.attr_value is not null) and (job_attributes.attr_value!=bench_attributes.attr_value)))
 				
 				

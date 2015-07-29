@@ -121,6 +121,7 @@ function extendDataTableFunctions(){
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	curType = $('#pairFilter').find(":selected").attr("value");
+	log(curType);
 	if (sortOverride!=null) {
 		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
 		aoData.push( { "name": "sort_dir", "value":isASC() } );

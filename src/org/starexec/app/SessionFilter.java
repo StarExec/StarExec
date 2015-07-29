@@ -18,6 +18,7 @@ import org.starexec.data.database.Reports;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
+import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 
 /**
@@ -30,6 +31,7 @@ import org.starexec.util.SessionUtil;
  */
 public class SessionFilter implements Filter {
 	private static final Logger log = Logger.getLogger(SessionFilter.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 	
 	
 	@Override
@@ -40,7 +42,7 @@ public class SessionFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		final String method = "doFilter";
-		log.debug("Entering "+method);
+		logUtil.entry(method);
 		// Cast the servlet request to an httpRequest so we have access to the session
 		HttpServletRequest httpRequest = (HttpServletRequest) request; 		
 		// If the user is logged in...
@@ -64,6 +66,7 @@ public class SessionFilter implements Filter {
 		
 		// Be nice and pass on the request to the next filter
 		chain.doFilter(request, response);
+		logUtil.exit(method);
 	}
 	
 	/**

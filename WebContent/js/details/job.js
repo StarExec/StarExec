@@ -113,7 +113,7 @@ function initSpaceExplorer() {
 		maxStages = data.rslt.obj.attr("maxStages");
 		setMaxStagesDropdown(parseInt(maxStages));
 		$("#spaceName").text($('.jstree-clicked').text());
-		$("#displayJobSpaceID").text("id  = "+id);
+		$("#displayJobSpaceID").text("job space id  = "+id);
 		reloadTables(id);
 	}).on( "click", "a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
 }

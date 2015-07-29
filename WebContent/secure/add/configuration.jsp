@@ -10,7 +10,7 @@
 		request.setAttribute("configNameLen", R.CONFIGURATION_NAME_LEN-4);
 		request.setAttribute("configDescLen", R.CONFIGURATION_DESC_LEN);
 		// Verify this user is the owner of the solver they are trying to upload configurations to
-		if(solver.getUserId() == userId) {
+		if(solver.getUserId() == userId || Users.hasAdminReadPrivileges(userId)) {
 			request.setAttribute("solver", solver);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add configurations here.");

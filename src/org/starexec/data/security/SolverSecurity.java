@@ -395,12 +395,12 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canUserDownloadSolver(int solverId, int userId) {
 		Solver s=Solvers.get(solverId);
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean userHasAdminReadPrivileges = Users.hasAdminReadPrivileges(userId);
 		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see this solver");
 		
 		}
-		if (!(s.isDownloadable() || s.getUserId()==userId || isAdmin)) {
+		if (!(s.isDownloadable() || s.getUserId()==userId || userHasAdminReadPrivileges)) {
 			return new ValidatorStatusCode(false, "This solver is not available for download");
 		}
 		

@@ -33,7 +33,7 @@
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
 			
 
-			request.setAttribute("isAdmin",Users.isAdmin(userId));
+			request.setAttribute("hasAdminReadPrivileges",Users.hasAdminReadPrivileges(userId));
 			boolean downloadable=SolverSecurity.canUserDownloadSolver(solverId,userId).isSuccess();
 			
 		
@@ -171,10 +171,10 @@
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	<fieldset id="actions">
 		<legend>actions</legend>
-		<c:if test="${downloadable}">			
+		<c:if test="${downloadable || hasAdminReadPrivileges}">			
 			<button type="button" id="downLink3">download</button>
 		</c:if>
-		<c:if test="${usr.id == user.id}">
+		<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
 			
 			<a href="/${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 			<a href="/${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
