@@ -29,8 +29,7 @@ public class BenchmarkSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to see the given benchmark");
 		
 		}
-		boolean isAdmin=Users.isAdmin(userId);
-		if (!(b.isDownloadable() || b.getUserId()==userId || isAdmin)) {
+		if (!(b.isDownloadable() || b.getUserId()==userId || Users.hasAdminReadPrivileges(userId))) {
 			return new ValidatorStatusCode(false, "The given benchmark has been marked as being not downloadable");
 		}
 		
