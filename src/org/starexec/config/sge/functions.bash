@@ -380,6 +380,13 @@ function cleanForNextStage {
 
 }
 
+# Kills all of a sandboxes processes if their job pair becomes deadlocked
+# and time out.
+# Input:
+#    $1 - The timeout of the jobpair, currently the wallclock
+#    $2 - The extra time we give to the jobpair after the wallclock timeout
+#    $3 - The user to kill all processes for, should be sandbox or sandbox2
+# author: Albert Giegerch
 function killDeadlockedJobPair {
 	TIMEOUT=$1
 	EXTRA=$2
@@ -394,7 +401,7 @@ function killDeadlockedJobPair {
 	sleep $EXTRA
 	date
 
-	echo "About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
+	log "killDeadlockedJobPair: About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
 	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
 }
 

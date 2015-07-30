@@ -210,10 +210,8 @@ sandboxWorkspace
 CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[$STAGE_INDEX]}
 
 if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
-	SUPPRESS_TIMESTAMP_PARAM=""
 	log "Suppressing timestamp."
 else
-	SUPPRESS_TIMESTAMP_PARAM="--timestamp"
 	log "Not suppressing timestamp."
 fi
 
@@ -224,6 +222,14 @@ elif [ $SANDBOX -eq 2 ] ; then
 	SANDBOX_PARAM="sandbox2"
 else
 	SANDBOX_FOUND=false
+fi
+
+if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
+  TIMESTAMP_PARAM=""
+  ADDEOF_PARAM=""
+else
+  TIMESTAMP_PARAM="--timestamp"
+  ADDEOF_PARAM="--add-eof"
 fi
 
 #Give job pairs 2 extra minutes before we kill them.
@@ -255,25 +261,33 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
 	echo "Checking who current user is using: whoami ..."	
 	whoami
+
+	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
 	echo "Calling killDeadlockedJobPair"
+
 	killDeadlockedJobPair $STAREXEC_WALLCLOCK_LIMIT $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
-	echo "Checking which user owns the killDeadlockedJobPair process using: ps aux | grep $KILL_DEADLOCKED_JOB_PAIR_PID ..."
-	ps aux | grep $KILL_DEADLOCKED_JOB_PAIR_PID
-
 
 	cd /export/starexec/$SANDBOX_PARAM/solver/bin
 	pwd
-	echo "  $LOCAL_RUNSOLVER_PATH $SUPPRESS_TIMESTAMP_PARAM --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
 	# run runsolver
-	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" "$SUPPRESS_TIMESTAMP_PARAM" --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
+	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
+
+	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
 
 	# If runsolver finishes then stop the killDeadlockedJobPair function.
-	log "Runsolver finished successfully. Killing the defensive killall function."
+	log "Runsolver finished. Killing the defensive killall function."
 	kill $KILL_DEADLOCKED_JOB_PAIR_PID
+	KILL_EXIT_STATUS=$?
+	JOB_PAIR_DEADLOCKED=false
+	if [ $KILL_EXIT_STATUS = 1 ]; then
+		#killDeadlockedJobPair was dead so the job pair
+		log "Job pair was deadlocked."
+		JOB_PAIR_DEADLOCKED=true
+	fi
 else
 	log "no job run for pair $PAIR_ID because a sandbox was not found"
 	sendStatus $ERROR_RUNSCRIPT
@@ -304,7 +318,7 @@ JOB_ERROR="1";
 
 if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
   true 
-elif ( grep 'wall clock time exceeded' $WATCHFILE ) then
+elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
   log "epilog detects wall clock time exceeded"
   sendStatus $EXCEED_RUNTIME
   sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}

@@ -46,6 +46,7 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.jobs.JobManager;
 import org.starexec.servlets.CreateJob;
 import org.starexec.util.DOMHelper;
+import org.starexec.util.LogUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,6 +55,7 @@ import org.xml.sax.SAXException;
 
 public class JobUtil {
 	private static final Logger log = Logger.getLogger(JobUtil.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 	
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
@@ -71,14 +73,16 @@ public class JobUtil {
 	 * @throws IOException
 	 */
 	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
-			log.warn("File from User " + userId + " is not Schema valid.");
+			logUtil.warn(method, "File from User " + userId + " is not Schema valid.");
 			return null;
 		}
 		
 		Permission p = Permissions.get(userId, spaceId);
 		if (!p.canAddJob()){
+			logUtil.info(method, "User with id="+userId+" does not have permission to create a job on space with id="+spaceId);
 			errorMessage = "You do not have permission to create a job on this space";
 			return null;
 		}
@@ -90,16 +94,16 @@ public class JobUtil {
 		NodeList listOfJobElements = jobsElement.getElementsByTagName("Job");
 		
 		NodeList listOfPipelines = doc.getElementsByTagName("SolverPipeline");
-		log.info("# of pipelines = " + listOfPipelines.getLength());
+		logUtil.info(method, "# of pipelines = " + listOfPipelines.getLength());
 		
         //Check Jobs and Job Pairs
         NodeList listOfJobs = doc.getElementsByTagName("Job");
-		log.info("# of Jobs = " + listOfJobs.getLength());
+		logUtil.info(method, "# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
         
-		log.info("# of JobPairs = " + listOfJobPairs.getLength());
+		logUtil.info(method, "# of JobPairs = " + listOfJobPairs.getLength());
 		NodeList listOfJobLines= doc.getElementsByTagName("JobLine");
-		log.info(" # of JobLines = "+listOfJobLines.getLength());
+		logUtil.info(method, " # of JobLines = "+listOfJobLines.getLength());
 		//this job has nothing to run
 		if (listOfJobLines.getLength()+listOfJobPairs.getLength()==0) {
 			errorMessage="Every job must have at least one job pair or job line to be created";
@@ -110,6 +114,7 @@ public class JobUtil {
 		
 		//data structure to ensure all pipeline names in this upload are unique
 		HashMap<String,SolverPipeline> pipelineNames=new HashMap<String,SolverPipeline>();
+		logUtil.info(method, "Creating pipelines from elements.");
 		for (int i=0; i< listOfPipelines.getLength(); i++) {
 			Node pipeline = listOfPipelines.item(i);
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
@@ -123,19 +128,21 @@ public class JobUtil {
 			}
 			pipelineNames.put(pipe.getName(),pipe);
 		}
+		logUtil.info(method, "Finished creating pipelines from elements.");
 		
 		// Make sure jobs are named
+		logUtil.info(method, "Checking to make sure jobs are named.");
 		for (int i = 0; i < listOfJobs.getLength(); i++){
 			Node jobNode = listOfJobs.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				String name = jobElement.getAttribute("name");
 				if (name == null) {
-					log.info("Name not found");
+					logUtil.info(method, "Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
 					return null;
 				}
-				log.debug("Job Name = " + name);
+				logUtil.debug(method, "Job Name = " + name);
 				
 				if (!org.starexec.util.Validator.isValidJobName(name)){
 					errorMessage = name + "is not a valid job name";
@@ -148,8 +155,11 @@ public class JobUtil {
 			}
 		}
 		
+		logUtil.info(method, "Finished checking to make sure jobs are named.");
+		
 		this.jobCreationSuccess = true;
 		
+		logUtil.info(method, "Creating jobs from elements.");
 		for (int i = 0; i < listOfJobElements.getLength(); i++){
 			Node jobNode = listOfJobElements.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
@@ -163,6 +173,7 @@ public class JobUtil {
 				jobIds.add(id);
 			}
 		}
+		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
 
 		return jobIds;
 	}

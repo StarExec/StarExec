@@ -818,7 +818,7 @@ public class Spaces {
 	 */
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
 		//the admin can see every space, so we don't need to worry about finding only spaces some user can see
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			if (hierarchy) {
 				return getCountInSpaceHierarchy(spaceId);
 			}
@@ -1708,7 +1708,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
 			procedure.setInt(1, spaceId);
 		} else {
