@@ -133,10 +133,17 @@ function initWorkspaceVariables {
 	# The benchmark's name
 	BENCH_NAME="${BENCH_PATH##*/}"
 	
-	BENCH_FILE_EXTENSION="${BENCH_PATH##*.}"
+	BENCH_FILE_EXTENSION="${BENCH_NAME##*.}"
 	
+        if [ "$BENCH_FILE_EXTENSION" == "$BENCH_NAME" ] ; then
+          # this means that there is no file extension in $BENCH_NAME
+          LOCAL_BENCH_NAME="theBenchmark"
+        else
+          LOCAL_BENCH_NAME="theBenchmark.$BENCH_FILE_EXTENSION"
+        fi
+
 	# The path to the benchmark on the execution host 
-	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/theBenchmark.$BENCH_FILE_EXTENSION"
+	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$LOCAL_BENCH_NAME"
 	
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
