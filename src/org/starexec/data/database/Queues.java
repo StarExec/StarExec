@@ -995,7 +995,11 @@ public class Queues {
 
 	 */
 	public static List<Queue> getUserQueues(int userId) {
-	    return getQueues(userId);
+		if (Users.hasAdminReadPrivileges(userId)) {
+			return getAll();
+		} else {
+			return getQueues(userId);
+		}
 	}
 	
 	/**
