@@ -84,11 +84,6 @@ public class AddSpace extends HttpServlet {
 
 		Permission usersPermissions = Permissions.get(userId, spaceId);		
 
-		if ( (usersPermissions == null || !usersPermissions.canAddSpace()) && !Users.isAdmin(userId) ) { 
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here.");
-			return;
-		}
-
 		// Make the space to be added and set it's basic information
 		Space s = new Space();
 		s.setName((String)request.getParameter(name));
@@ -226,7 +221,7 @@ public class AddSpace extends HttpServlet {
 		
 			// Verify this user can add spaces to this space
 			Permission p = SessionUtil.getPermission(request, spaceId);
-			if(!p.canAddSpace()) {
+			if(p==null || !p.canAddSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a new space here");
 			}
 			

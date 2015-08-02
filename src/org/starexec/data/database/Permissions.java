@@ -204,7 +204,7 @@ public class Permissions {
 		if (Solvers.isPublic(solverId)){
 			return true;
 		}
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
