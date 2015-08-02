@@ -13,13 +13,13 @@
 		request.setAttribute("descLength", R.SPACE_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if(!p.canAddSpace() && !Users.hasAdminReadPrivileges(userId)) {
+		if( (p == null || !p.canAddSpace()) && !Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here");
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The parent space id was not in the correct format");
 	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");		
+		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist"+e.getMessage());		
 	}
 %>
 
