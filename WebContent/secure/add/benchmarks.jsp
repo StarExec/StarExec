@@ -22,7 +22,7 @@
 		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if (!p.canAddBenchmark()) {
+		if ( (p == null || !p.canAddBenchmark()) && !Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to add benchmarks here");
 		}

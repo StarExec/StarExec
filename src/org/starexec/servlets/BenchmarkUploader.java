@@ -39,13 +39,16 @@ import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
 
 
 @SuppressWarnings("serial")
 public class BenchmarkUploader extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	// The unique date stamped file name format
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
@@ -433,6 +436,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @author ??? - modified by Ben
 	 */
 	private ValidatorStatusCode isRequestValid(HashMap<String, Object> form, HttpServletRequest request) {
+		final String method = "isRequestValid";
 		try {			
 																
 			if (!Validator.isValidInteger((String)form.get(BENCHMARK_TYPE))) {
@@ -471,8 +475,12 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			
 			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+
+			logUtil.trace(method, "perm="+perm);
+			logUtil.trace(method, "uploadMethod="+uploadMethod);
 			
-			if(uploadMethod.equals("dump") && !perm.canAddBenchmark()) {
+
+			if( perm == null || (!perm.canAddBenchmark() && uploadMethod.equals("dump")) ) {
 				// They don't have permissions, send forbidden error
 				return new ValidatorStatusCode(false, "You do not have permission to upload benchmarks to this space");
 			} else if (uploadMethod.equals("convert") && !(perm.canAddBenchmark() && perm.canAddSpace())) {
