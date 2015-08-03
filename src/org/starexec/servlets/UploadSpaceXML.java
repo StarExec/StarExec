@@ -20,8 +20,10 @@ import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Permission;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.SessionUtil;
@@ -59,10 +61,16 @@ public class UploadSpaceXML extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 					return;
 				} 
+
+				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
+				if (!userMayUploadSpaceXML(userId, spaceId)) {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here.");
+					return;
+				}
 				
 				BatchUtil batchUtil = new BatchUtil();
 				int statusId=Uploads.createSpaceXMLUploadStatus(userId);
-				this.handleXMLFile(userId, form, batchUtil,statusId);				
+				this.handleXMLFile(userId, spaceId, form, batchUtil,statusId);				
 			
 				// Note: Inherit users is handled in BatchUtil's createSpaceFromElement(...)
 				
@@ -80,6 +88,15 @@ public class UploadSpaceXML extends HttpServlet {
     		log.error(e.getMessage(), e);
     	}	
 	}
+
+	private boolean userMayUploadSpaceXML(int userId, int spaceId) {
+		Permission userPermission = Permissions.get(userId, spaceId);
+		if (userPermission != null && userPermission.canAddSpace()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
     
 	/**
 	 * This method is responsible for uploading a compressed folder with an xml representation
@@ -89,7 +106,7 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @param batchUtil a BatchUtil object we can use for setting an error message if a problem is encountered.
 	 * @throws Exception 
 	 */
-    public void handleXMLFile(final int userId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
+    public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
 		try {
 			Util.threadPoolExecute(new Runnable() {
 				@Override
@@ -114,7 +131,6 @@ public class UploadSpaceXML extends HttpServlet {
 						Uploads.XMLFileUploadComplete(statusId);
 						//Typically there will just be 1 file, but might as well allow more
 						
-						Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 						for (File file:uniqueDir.listFiles())
 						{
 							List<Integer> current=new ArrayList<Integer>();
