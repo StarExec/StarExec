@@ -12,7 +12,7 @@
 		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if(!p.canAddSolver()) {
+		if( !Users.hasAdminReadPrivileges(userId) && (p==null || !p.canAddSolver()) ) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add solvers here");
 		}
 		List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
