@@ -25,6 +25,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 
@@ -35,6 +36,7 @@ import org.starexec.util.PaginationQueryBuilder;
  */
 public class Queues {
 	private static final Logger log = Logger.getLogger(Queues.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	/**
 	 * Removes a queue from the database and calls R.BACKEND.removeQueue
@@ -738,11 +740,12 @@ public class Queues {
 	 * @return
 	 */
 	public static List<Queue> getQueuesForUser(int userId) {
+		final String method = "getQueuesForUser";
 		if (Users.isAdmin(userId)) {
+			logUtil.debug(method, "Getting queues for admin user.");
 			return getQueues(0);
 		} else {
-			
-			
+			logUtil.debug(method, "Getting queues for non-admin user.");
 			List<Space> spaces = Spaces.getAllSuperSpaces(userId);
 			
 			List<Queue> queues = new LinkedList<Queue>();
