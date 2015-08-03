@@ -747,6 +747,35 @@ public class RESTServices {
 			this.benchSolverConfigElementMap = benchSolverConfigElementMap;
 		}
 	}
+
+	/**
+	 * Determine if the current user is a developer.
+	 * @param request The HTTP GET request
+	 * @return a JSON boolean value.
+	 * @author Albert Giegerich
+	 */
+	@GET
+	@Path("/users/isDeveloper")
+	@Produces("application/json")	
+	public String userIsDeveloper(@Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		return userIsDeveloper(userId, request);
+	}
+
+	/**
+	 * Determine if a given user is a developer.
+	 * @param userId Determine if user with this id is a developer
+	 * @param request The HTTP GET request
+	 * @return a JSON boolean value.
+	 * @author Albert Giegerich
+	 */
+	@GET
+	@Path("/users/isDeveloper/{userId}")
+	@Produces("application/json")	
+	public String userIsDeveloper(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		boolean userIsDeveloper = Users.isDeveloper(userId);
+		return gson.toJson(userIsDeveloper);
+	}
 	
 
 	@POST
