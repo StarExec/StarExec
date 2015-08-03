@@ -14,9 +14,12 @@ var openDone=true;
 var spaceChainInterval;
 var usingSpaceChain=false;
 var isLeafSpace=false;
+var userIsDeveloper=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain("#spaceChain").length>1); //check whether to turn off cookies
+
+	determineIfUserIsDeveloper();
 
 	// Build left-hand side of page (space explorer)
 	initSpaceExplorer();
@@ -33,9 +36,20 @@ $(document).ready(function(){
 		}
 		
 	},10000);
-	
-
 });
+
+// Set the userIsDeveloper variable using a GET
+function determineIfUserIsDeveloper() {
+	'use strict';
+	$.get(
+		starexecRoot+'services/users/isDeveloper',
+		'',
+		function(data) {
+			userIsDeveloper = data;
+		},
+		'json'
+	);
+}
 
 
 /**
@@ -1691,7 +1705,11 @@ function createTooltip(element, selector, type, message){
  */
 function checkPermissions(perms, id) {
 	// Check for no permission and hide entire action list if not present
-	if(perms == null) {
+	// Don't hide if user is developer
+	if (userIsDeveloper) {
+		$('#actionList').show();
+		return;
+	} else if(perms == null) {
 		log('no permissions found, hiding action bar');
 		$('#actionList').hide();		
 		return;

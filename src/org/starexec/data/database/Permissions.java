@@ -407,14 +407,7 @@ public class Permissions {
 				p.setRemoveJob(results.getBoolean("remove_job"));
 				p.setLeader(results.getBoolean("is_leader"));
 				p.setId(userId);
-
-				if (Users.hasAdminReadPrivileges(userId) && results.wasNull()) {
-					// If the permission doesn't exist but the user is a developer
-					// then get a new permission to prevent read-only functions from
-					// being hidden
-					return getEmptyPermission();
-
-				} else if(results.wasNull()) {
+				if(results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
 					null result and return null */
