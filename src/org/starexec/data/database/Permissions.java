@@ -408,7 +408,13 @@ public class Permissions {
 				p.setLeader(results.getBoolean("is_leader"));
 				p.setId(userId);
 
-				if(results.wasNull()) {
+				if (Users.hasAdminReadPrivileges(userId) && results.wasNull()) {
+					// If the permission doesn't exist but the user is a developer
+					// then get a new permission to prevent read-only functions from
+					// being hidden
+					return getEmptyPermission();
+
+				} else if(results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
 					null result and return null */
@@ -449,7 +455,7 @@ public class Permissions {
 		p.setLeader(true);
 		return p;
 	}
-	
+
 	/**
 	 * Returns a permissions object with every permission set to false. The ID is not set
 	 * @return 
