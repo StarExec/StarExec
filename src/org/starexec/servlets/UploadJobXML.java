@@ -18,7 +18,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Users;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Permission;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.JobUtil;
@@ -71,10 +74,16 @@ public class UploadJobXML extends HttpServlet {
 				    response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				    return;
 				}
+
+				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
+				if (!userMayUploadJobXML(userId, spaceId)) {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to run jobs in this space.");
+					return;
+				}
 				
 				JobUtil jobUtil = new JobUtil();
 
-				List<Integer> result = this.handleXMLFile(userId, form, jobUtil);
+				List<Integer> result = this.handleXMLFile(userId, spaceId, form, jobUtil);
 				
 				// Redirect based on success/failure
 				if(result!=null) {
@@ -98,13 +107,23 @@ public class UploadJobXML extends HttpServlet {
     	}	
 	}
 
+	private boolean userMayUploadJobXML(int userId, int spaceId) {
+		final String method = "userMayUploadJobXML";
+		Permission userPermissions = Permissions.get(userId, spaceId);
+		if (userPermissions == null || !userPermissions.canAddJob()) {
+			return false;	
+		} else {
+			return true;
+		}
+	}
+
 	/**
 	 * Gets the XML file from the form and tries to create a job from it
 	 * @param userId the ID of the user making the request
 	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
 	 * @author Tim Smith
 	 */
-    private List<Integer> handleXMLFile(int userId, HashMap<String, Object> form, JobUtil jobUtil) throws StarExecException {
+    private List<Integer> handleXMLFile(int userId, int spaceId, HashMap<String, Object> form, JobUtil jobUtil) throws StarExecException {
 		final String method = "handleXMLFile";
 		logUtil.entry(method);
 		try {
@@ -128,7 +147,6 @@ public class UploadJobXML extends HttpServlet {
 			
 			//Typically there will just be 1 file, but might as well allow more
 			
-			Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 			List<Integer> jobIds=new ArrayList<Integer>();
 			List<Integer> current=new ArrayList<Integer>();
 
