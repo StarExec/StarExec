@@ -13,7 +13,8 @@
 		}
 		
 		if (s != null) {
-			if (!Permissions.get(userId, spaceId).isLeader()) {
+			Permission userPermission = Permissions.get(userId, spaceId);
+			if (!Users.hasAdminReadPrivileges(userId) && (userPermission == null || !userPermission.isLeader()) ) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the leaders of this space can edit details about it.");
 			}
 			else {
