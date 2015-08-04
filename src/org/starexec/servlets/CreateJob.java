@@ -380,6 +380,17 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
+
+			int userId = SessionUtil.getUserId(request);
+			int sid = Integer.parseInt(request.getParameter(spaceId));
+			// Make sure the user has access to the space
+			Permission perm = Permissions.get(userId, sid);
+			if (sid>=0) {
+				if(perm == null || !perm.canAddJob()) {
+					return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
+				}
+			}
+
 			// Make sure timeout an int
 			if(!Validator.isValidInteger(request.getParameter(clockTimeout))) {
 				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
@@ -427,7 +438,6 @@ public class CreateJob extends HttpServlet {
 			}
 			// Make sure the queue is a valid selection and user has access to it
 			Integer queueId = Integer.parseInt(request.getParameter(workerQueue));
-			int userId = SessionUtil.getUserId(request);
 			
 			//make sure both timeouts are <= the queue settings
 			int cpuLimit = Integer.parseInt(request.getParameter(cpuTimeout));
@@ -442,21 +452,14 @@ public class CreateJob extends HttpServlet {
 			}		
 
 			
-			int sid = Integer.parseInt(request.getParameter(spaceId));
 			
-			Permission perm = Permissions.get(userId, sid);
-			// Make sure the user has access to the space
 			
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
 			}
+
 			if (request.getParameter(run).equals("quickJob")) {
 				//we only need to check to see if the space is valid if a space was actually specified
-				if (sid>=0) {
-					if(perm == null || !perm.canAddJob()) {
-						return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
-					}
-				}
 				if (!Util.paramExists(benchmarks, request)) {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
 				}

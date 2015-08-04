@@ -10,7 +10,7 @@
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		
-		if(!p.canAddJob()) {
+		if (!Users.hasAdminReadPrivileges(userId) && (p == null || !p.canAddJob())) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
 			request.setAttribute("space", Spaces.get(spaceId));
