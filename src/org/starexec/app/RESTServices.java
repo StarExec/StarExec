@@ -2252,8 +2252,11 @@ public class RESTServices {
 			Integer fromSpaceId=null;
 			//if null, we are not copying from anywhere-- we are just putting a solver into a new space
 			// Since we're passing null through JQuery it will be encoded as the empty string.
-			if (fromSpace!="") {
+			if (!fromSpace.equals("")) {
+				log.debug("fromSpace was not null.");
 				fromSpaceId=Integer.parseInt(fromSpace);
+			} else {
+				log.debug("fromSpace was null.");
 			}
 			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 			boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
