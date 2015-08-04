@@ -1,5 +1,7 @@
 package org.starexec.app;
 
+import com.google.common.io.CharStreams;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -2257,10 +2259,22 @@ public class RESTServices {
 	 *          7: there exists a primitive with the same name
 	 * @author Tyler Jensen & Todd Elvers
 	 */
+
+	
+	/*
+	private static String getPostRequestBody(HttpServletRequest request) throws Exception {
+		if ("POST".equalsIgnoreCase(request.getMethod())) { 
+			// Throws IOException
+			return CharStreams.toString(request.getReader());
+		} else {
+			throw new Exception("Request isn't a POST request.");
+		}
+	}
+	*/
+
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
-	
 	public String copySolversToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request,@Context HttpServletResponse response) {
 		log.debug("entering the copy function");
 		try {
@@ -2278,6 +2292,7 @@ public class RESTServices {
 			
 			// Get the space the solver is being copied from
 			String fromSpace = request.getParameter("fromSpace");
+			log.debug("fromSpace: " + fromSpace);
 			Integer fromSpaceId=null;
 			//if null, we are not copying from anywhere-- we are just putting a solver into a new space
 			if (fromSpace!=null) {
