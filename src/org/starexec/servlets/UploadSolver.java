@@ -495,7 +495,7 @@ public class UploadSolver extends HttpServlet {
 			
 			int spaceId=Integer.parseInt((String)form.get("space"));
 			Permission userPermissions = SessionUtil.getPermission(request, spaceId);
-			if (userPermissions == null || userPermissions.canAddSolver()) {
+			if (userPermissions == null || !userPermissions.canAddSolver()) {
 				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");
 			}
 			
