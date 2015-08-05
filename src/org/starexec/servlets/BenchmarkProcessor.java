@@ -114,10 +114,10 @@ public class BenchmarkProcessor extends HttpServlet {
 				return new ValidatorStatusCode(false, "Could not find the processor referenced by the processor id = "+pid);
 			}
 			
-			if (!Users.isMemberOfCommunity(userId, p.getCommunityId())) {
+			if (!Users.isMemberOfCommunity(userId, p.getCommunityId()) && !Users.hasAdminReadPrivileges(userId)) {
 				return new ValidatorStatusCode(false,  "You must be a member of the community that owns the processor");
 			}
-			if (!Users.isMemberOfSpace(userId,spaceId)) {
+			if (!Users.isMemberOfSpace(userId,spaceId) && !Users.isAdmin(userId)) {
 				return new ValidatorStatusCode(false,  "You must be a member of the space you are trying to process");
 
 			}
