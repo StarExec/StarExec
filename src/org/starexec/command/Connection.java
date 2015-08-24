@@ -290,7 +290,8 @@ public class Connection {
 	//TODO: Support dependencies for benchmarks
 	
 	protected int uploadBenchmarks(String filePath,Integer type,Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy,
-			Boolean dependency,Boolean linked, Integer depRoot) {		
+			Boolean dependency,Boolean linked, Integer depRoot) {
+		HttpResponse response = null;
 		try {
 			
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADBENCHMARKS);
@@ -333,10 +334,9 @@ public class Connection {
 			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			int returnCode=response.getStatusLine().getStatusCode();
-			response.getEntity().getContent().close();
 			
 			if (returnCode==302) {
 			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
@@ -352,6 +352,8 @@ public class Connection {
 			}
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	/**
@@ -363,6 +365,7 @@ public class Connection {
 	 * @return The ID of the new configuration on success (a positive integer), or a negative error code on failure
 	 */
 	public int uploadConfiguration(String name, String desc, String filePath, Integer solverID) {
+		HttpResponse response = null;
 		try {
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADCONFIG);
@@ -380,10 +383,9 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(entity.build());
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
 			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id<=0) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
@@ -393,6 +395,8 @@ public class Connection {
 			return id;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -408,9 +412,8 @@ public class Connection {
 	 */
 	
 	protected int uploadProcessor(String name, String desc, String filePath,Integer communityID,String type) {
-
 		File f = new File(filePath); //file is also required
-
+		HttpResponse response = null;
 		try {
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADPROCESSOR);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
@@ -425,12 +428,10 @@ public class Connection {
 			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			
-			response.getEntity().getContent().close();
-			
+						
 			//we are expecting to be redirected to the page for the processor
 			if (response.getStatusLine().getStatusCode()!=302) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
@@ -438,9 +439,10 @@ public class Connection {
 			}
 			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			return id;
-		} catch (Exception e) {
-			
+		} catch (Exception e) {	
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 		
 	}
@@ -498,8 +500,9 @@ public class Connection {
 	 */
     public List<Integer> uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
 	    List<Integer> ids=new ArrayList<Integer>();
+	    HttpResponse response = null;
 		try {
-		        String ext = R.URL_UPLOADSPACE;
+		    String ext = R.URL_UPLOADSPACE;
 			if(isJobXML){
 			    ext = R.URL_UPLOADJOBXML;
 			}
@@ -514,14 +517,10 @@ public class Connection {
 			
 			post.setEntity(entity.build());
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 
-			
 			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
-			
-			//EntityUtils.consume(response.getEntity());
-			
+						
 			int code = response.getStatusLine().getStatusCode();
 			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
@@ -539,6 +538,8 @@ public class Connection {
 		} catch (Exception e) {
 		    ids.add(Status.ERROR_INTERNAL);  
 			return ids;
+		} finally {
+			safeCloseResponse(response);
 		}
 	    
 	}
@@ -589,9 +590,8 @@ public class Connection {
 	 * @return
 	 */
 	private int uploadSolver(MultipartEntityBuilder entity,HttpPost post,String name,String desc,String descMethod,
-		
 			Integer spaceID,Boolean downloadable,Boolean runTestJob,Integer settingId, Integer type) {
-		
+		HttpResponse response = null;
 		try {
 			//Only  include the description file if we need it
 			if (descMethod.equals("file")) {
@@ -617,9 +617,8 @@ public class Connection {
 			}
 			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);		
-			HttpResponse response=client.execute(post);			
+			response=client.execute(post);			
 			setSessionIDIfExists(response.getAllHeaders());			
-			response.getEntity().getContent().close();
 			int newID=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			//if the request was not successful
 			if (newID<=0) {
@@ -629,7 +628,9 @@ public class Connection {
 			return newID;
 		} catch (Exception e) {	
 			return Status.ERROR_INTERNAL;
-		}	
+		} finally {
+			safeCloseResponse(response);
+		}
 		
 	}
 	
@@ -648,7 +649,6 @@ public class Connection {
 	 */
 	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable, Boolean runTestJob,Integer settingId,Integer type) {
 		try {
-			
 			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			FileBody fileBody = new FileBody(new File(filePath));
@@ -659,7 +659,7 @@ public class Connection {
 			return uploadSolver(entity,post,name,desc,descMethod,spaceID,downloadable,runTestJob,settingId,type);
 		} catch (Exception e) {	
 			return Status.ERROR_INTERNAL;
-		}	
+		}
 	}
 	
 	/**
@@ -839,8 +839,8 @@ public class Connection {
 	 */
 	
 	protected int deletePrimitives(List<Integer> ids, String type) {
+		HttpResponse response = null;
 		try {
-			
 			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type);
 			post=(HttpPost) setHeaders(post);
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
@@ -848,12 +848,11 @@ public class Connection {
 				params.add(new BasicNameValuePair("selectedIds[]",id.toString()));
 			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			JsonObject obj=JsonHandler.getJsonObject(response);
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
 			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
 			
 			if (success) {
 				return 0;
@@ -864,6 +863,8 @@ public class Connection {
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 		
 	}
@@ -874,18 +875,20 @@ public class Connection {
 		 * @return True if the page was retrieved successfully and false otherwise
 		 */
 	public boolean canGetPage(String relURL) {
+		HttpResponse response=null;
 		try {
 			HttpGet get=new HttpGet(baseURL+relURL);
 			get=(HttpGet) setHeaders(get);
-			HttpResponse response=client.execute(get);
+			response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());
-			response.getEntity().getContent().close();
 			
 			//we should get 200, which is the code for ok
 			return response.getStatusLine().getStatusCode()==200;
 			
 		} catch (Exception e) {
 			
+		} finally {
+			safeCloseResponse(response);
 		}
 		return false;
 	}
@@ -895,17 +898,19 @@ public class Connection {
 	 * @return The integer user ID
 	 */	
 	public int getUserID() {
+		HttpResponse response = null;
 		try {
 			HttpGet get=new HttpGet(baseURL+R.URL_GETID);
 			get=(HttpGet) setHeaders(get);
-			HttpResponse response=client.execute(get);
+			response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
-			response.getEntity().getContent().close();
 			return json.getAsInt();
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	/**
@@ -916,13 +921,12 @@ public class Connection {
 	 * @return 0 on success or a negative error code otherwise
 	 */
 	protected int setSpaceVisibility(Integer spaceID,Boolean hierarchy, Boolean setPublic) {
+		HttpResponse response = null;
 		try {
-			
 			HttpPost post=new HttpPost(baseURL+R.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
 			post=(HttpPost) setHeaders(post);
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
 			
 			//we should get back an HTTP OK if we're allowed to change the visibility
 			if (response.getStatusLine().getStatusCode()!=200) {
@@ -931,6 +935,8 @@ public class Connection {
 			return 0;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -942,19 +948,19 @@ public class Connection {
 	 */
 	
 	protected int setUserSetting(String setting,String val) {
+		HttpResponse response = null;
 		try {	
 			int userId=getUserID();
 			String url=baseURL+R.URL_USERSETTING+setting+"/"+userId+"/"+val;
 			url=url.replace(" ", "%20"); //encodes white space, which can't be used in a URL
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
 			} else {
@@ -964,6 +970,8 @@ public class Connection {
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -993,20 +1001,20 @@ public class Connection {
 	 */
 	
 	public int rerunJob(Integer jobID) {
+		HttpResponse response = null;
 		try {
 			String URL=baseURL+R.URL_RERUNJOB;
 			URL=URL.replace("{id}", jobID.toString());
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
 			
-			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
 			} else {
@@ -1016,6 +1024,8 @@ public class Connection {
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL; 
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -1026,20 +1036,20 @@ public class Connection {
 	 */
 	
 	public int rerunPair(Integer pairID) {
+		HttpResponse response = null;
 		try {
 			String URL=baseURL+R.URL_RERUNPAIR;
 			URL=URL.replace("{id}", pairID.toString());
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
 
-			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
 			} else {
@@ -1049,6 +1059,8 @@ public class Connection {
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL; 
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -1060,6 +1072,7 @@ public class Connection {
 	 */
 	
 	protected int pauseOrResumeJob(Integer jobID, boolean pause) {
+		HttpResponse response = null;
 		try {
 			String URL=baseURL+R.URL_PAUSEORRESUME;
 			if (pause) {
@@ -1071,13 +1084,12 @@ public class Connection {
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			response.getEntity().getContent().close();
 			
 			
 			if (success) {
@@ -1089,6 +1101,8 @@ public class Connection {
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL; 
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -1156,6 +1170,7 @@ public class Connection {
 	 * @author Eric Burns
 	 */
 	protected int removePrimitives(List<Integer> primIDs,Integer spaceID,String type, Boolean recyclePrims) {
+		HttpResponse response = null;
 		try {
 			HttpPost post = null;
 			if (type.equalsIgnoreCase("subspace")) {
@@ -1175,14 +1190,13 @@ public class Connection {
 			params.add(new BasicNameValuePair("recyclePrims",recyclePrims.toString()));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			response.getEntity().getContent().close();
 			if (success) {
 				return 0;
 			} else {
@@ -1191,6 +1205,8 @@ public class Connection {
 			}
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	/**
@@ -1200,15 +1216,16 @@ public class Connection {
 	 */
 	
 	public boolean logout() {
+		HttpResponse response = null;
 		try {
 			HttpPost post=new HttpPost(baseURL+R.URL_LOGOUT);
 			post=(HttpPost) setHeaders(post);
-			HttpResponse response=client.execute(post);
-			response.getEntity().getContent().close();
+			response=client.execute(post);
 			return true;
 		} catch (Exception e) {
-			
 			return false;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -1219,9 +1236,10 @@ public class Connection {
 	 * @author Eric Burns
 	 */
 	public int login() {
+		HttpResponse response = null;
 		try {
 			HttpGet get = new HttpGet(baseURL+R.URL_HOME);
-			HttpResponse response=client.execute(get);
+			response=client.execute(get);
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
 			response.getEntity().getContent().close();
 			if (!this.isValid()) {
@@ -1254,7 +1272,6 @@ public class Connection {
 			
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
 			
-			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
 			//this means that the server did not give us a new session for the login
@@ -1269,6 +1286,8 @@ public class Connection {
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 		
 		
@@ -1401,6 +1420,7 @@ public class Connection {
 	 */
 	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, String type) {
 		List<Integer> fail=new ArrayList<Integer>();
+		HttpResponse response = null;
 		try {
 			String urlExtension;
 			if (type.equals("solver")) {
@@ -1438,13 +1458,12 @@ public class Connection {
 			
 			post=(HttpPost) setHeaders(post);
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			response.getEntity().getContent().close();
 			if (success) {
 				List<Integer> newPrimIds=new ArrayList<Integer>();
 				String[] newIds=HTMLParser.extractMultipartCookie(response.getAllHeaders(),"New_ID");
@@ -1465,6 +1484,8 @@ public class Connection {
 		} catch (Exception e) {
 			fail.add(Status.ERROR_INTERNAL);
 			return fail;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -1480,9 +1501,8 @@ public class Connection {
 	 */
 	
 	public int createSubspace(String name, String desc,Integer parentSpaceID, Permission p, Boolean locked) {
+		HttpResponse response = null;
 		try {
-		 
-			
 			//first sets username and password data into HTTP POST request
 			List<NameValuePair> params=new ArrayList<NameValuePair>(3);
 			params.add(new BasicNameValuePair("parent", parentSpaceID.toString()));
@@ -1499,10 +1519,8 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			post=(HttpPost) setHeaders(post);
 			
-			HttpResponse response=client.execute(post);
-			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
-			
+			response=client.execute(post);
+			setSessionIDIfExists(response.getAllHeaders());			
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
@@ -1510,6 +1528,8 @@ public class Connection {
 			return newID;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -1660,7 +1680,7 @@ public class Connection {
 	protected HashMap<Integer,String> getPrims(Integer spaceID, Integer limit, boolean forUser, String type) {
 		HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 		HashMap<Integer,String> prims=new HashMap<Integer,String>();
-		
+		HttpResponse response = null;
 		try {
 		    
 			
@@ -1723,13 +1743,12 @@ public class Connection {
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
-			HttpResponse response=client.execute(post);
+			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			JsonElement jsonE=JsonHandler.getJsonString(response);
 			JsonObject obj=jsonE.getAsJsonObject();
 			String message=JsonHandler.getMessageOfResponse(obj);
-			response.getEntity().getContent().close();
 			
 			//if we got back a ValidatorStatusCode, there was an error
 			if (message!=null) {
@@ -1770,6 +1789,8 @@ public class Connection {
 		    errorMap.put(Status.ERROR_INTERNAL, e.getMessage());
 			
 			return errorMap;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	/**
@@ -1836,7 +1857,6 @@ public class Connection {
 			if (!fileFound) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
 
-				response.getEntity().getContent().close();
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			
@@ -1849,13 +1869,14 @@ public class Connection {
 			FileOutputStream outs=new FileOutputStream(out);
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
-			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 
 			return 0;
 		} catch (Exception e) {
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 		
 	}
@@ -2037,6 +2058,8 @@ public class Connection {
 			
 			
 			boolean fileFound=false;
+			
+			System.out.println(response.getStatusLine().getStatusCode());
 			for (Header x : response.getAllHeaders()) {
 				if (x.getName().equals("Content-Disposition")) {
 					fileFound=true;
@@ -2046,7 +2069,6 @@ public class Connection {
 			
 			if (!fileFound) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
-				response.getEntity().getContent().close();
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			
@@ -2067,10 +2089,7 @@ public class Connection {
 				
 				//indicates there was no new information
 				if (lastSeen<=since) {
-					
-					response.getEntity().getContent().close();
 					if (done) {
-						
 						return R.SUCCESS_JOBDONE;
 					}
 					
@@ -2086,7 +2105,6 @@ public class Connection {
 			FileOutputStream outs=new FileOutputStream(out);
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
-			response.getEntity().getContent().close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
 			if (!Validator.isValidZip(out)) {
@@ -2115,8 +2133,11 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
+			e.printStackTrace();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 		
 	}
@@ -2149,19 +2170,19 @@ public class Connection {
 	 * Null is returned if there was an error, and this Connection's error message will have been set
 	 */
 	public String getBenchmarkUploadStatus(Integer statusId) {
+		HttpResponse response = null;
 		try {
 			
 			String URL=baseURL+R.URL_GET_BENCH_UPLOAD_STATUS;
 			URL=URL.replace("{statusId}",statusId.toString());
 			HttpGet get=new HttpGet(URL);
 			get=(HttpGet) setHeaders(get);
-			HttpResponse response=client.execute(get);
+			response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			response.getEntity().getContent().close();
 			if (success) {
 				
 				return message;
@@ -2172,6 +2193,8 @@ public class Connection {
 		} catch (Exception e) {
 			setLastError("Internal error getting benchmark upload details");
 			return null;
+		} finally {
+			safeCloseResponse(response);
 		}
 		return null;
 	}
@@ -2193,15 +2216,14 @@ public class Connection {
 	 * @return A status code as defined in status.java
 	 */
 	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed) {
+		HttpResponse response = null;
 		try {
-			
-			
 			HttpGet get=new  HttpGet(baseURL+R.URL_ADDJOB+"?sid="+spaceId.toString());
 			get=(HttpGet) setHeaders(get);
 			
 			//this response contains HTML with a significant amount of data we need to read through 
 			//to find job settings
-			HttpResponse response=client.execute(get);
+			response=client.execute(get);
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			HttpEntity data=response.getEntity();
@@ -2275,7 +2297,6 @@ public class Connection {
 			
 			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
-			response.getEntity().getContent().close();
 
 			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
 			
@@ -2288,6 +2309,8 @@ public class Connection {
 			return Status.ERROR_SERVER;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
+		} finally {
+			safeCloseResponse(response);
 		}
 	}
 	
@@ -2413,13 +2436,13 @@ public class Connection {
 	 */
 	protected Map<String,String> getPrimitiveAttributes(int id, String type) {
 		HashMap<String, String> failMap=new HashMap<String,String>();
+		HttpResponse response=null;
 		try {
 			HttpGet get=new HttpGet(baseURL+R.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
 			get=(HttpGet) setHeaders(get);
-			HttpResponse response=client.execute(get);
+			response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
-			response.getEntity().getContent().close();
 			String errorMessage=JsonHandler.getMessageOfResponse(json.getAsJsonObject());
 			if (errorMessage!=null) {
 				this.setLastError(errorMessage);
@@ -2431,6 +2454,20 @@ public class Connection {
 			e.printStackTrace();
 			failMap.put("-1", String.valueOf(Status.ERROR_INTERNAL));
 			return failMap;
+		} finally {
+			safeCloseResponse(response);
+		}
+	}
+	
+	/**
+	 * Closes an HttpResponse, suppressing any errors.
+	 * @param response
+	 */
+	private void safeCloseResponse(HttpResponse response) {
+		try {
+			response.getEntity().getContent().close();
+		} catch (Exception e) {
+			//ignore
 		}
 	}
 
