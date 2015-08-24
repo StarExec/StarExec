@@ -669,7 +669,8 @@ public class Jobs {
 	}
 	
 	/**
-	 * Gets information about the job with the given ID. Job pair information is not returned
+	 * Gets information about the job with the given ID. Job pair information is not returned.
+	 * Deleted jobs are not returned.
 	 * @param jobId The ID of the job in question
 	 * @return The Job object that represents the job with the given ID
 	 */

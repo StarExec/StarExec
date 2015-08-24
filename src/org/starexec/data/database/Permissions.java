@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.BenchmarkUploadStatus;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.SpaceXMLUploadStatus;
@@ -163,7 +164,9 @@ public class Permissions {
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
-			if (Jobs.isJobDeleted(jobId)) {
+			Job j = Jobs.get(jobId);
+			// job does not exist or has been deleted.
+			if (j==null) {
 				return false;
 			}
 			if (Jobs.isPublic(jobId) || Users.isAdmin(userId) ){
