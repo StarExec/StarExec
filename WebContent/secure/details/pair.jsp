@@ -24,6 +24,8 @@
 			User u = Users.get(j.getUserId());
 			String pairlog=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
+			boolean moreThanOneStage = jp.getStages().size() > 1;
+			request.setAttribute("moreThanOneStage", moreThanOneStage);
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
@@ -92,11 +94,14 @@
 			</tbody>
 		</table>	
 	</fieldset>		
-	<fieldset id="fieldStats">
-	<legend>run statistics</legend>	
-	
-			<c:forEach var="stage" items="${pair.getStages()}">
-				
+	<c:forEach var="stage" items="${pair.getStages()}">
+		<c:if test="${moreThanOneStage}">
+			<%-- This fieldset is terminated in an identical <c:if> element further down --%>
+			<fieldset id="fieldStats">
+			<legend>stage ${stage.stageNumber} statistics</legend>	
+		</c:if>
+			<fieldset id="stageStats">
+				<legend>run statistics</legend>
 				<table id="pairStats" class="shaded">
 					<thead>
 						<tr>
@@ -141,54 +146,50 @@
 						</tr>
 					</tbody>
 				</table>
+			</fieldset>
 				
 			<fieldset id="fieldAttrs">
 				<legend>stage attributes</legend>	
-					<c:choose>
-						<c:when test="${stage.status.code == 'STATUS_WAIT_RESULTS'}">
-							<p>waiting for results. try again in 2 minutes.</p>
-						</c:when>
-						<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
-							<p>none</p>
-						</c:when>
+				<c:choose>
+					<c:when test="${stage.status.code == 'STATUS_WAIT_RESULTS'}">
+						<p>waiting for results. try again in 2 minutes.</p>
+					</c:when>
+					<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
+						<p>none</p>
+					</c:when>
 						<c:when test="${stage.status.code == 'STATUS_COMPLETE'}">
-							<table id="pairAttrs" class="shaded">
-								<thead>
-									<tr>
-										<th>key</th>
-										<th>value</th>				
-									</tr>		
-								</thead>	
-								<tbody>
-									<c:forEach var="entry" items="${stage.attributes}">
-									<tr>
-										<td>${entry.key}</td>
-										<td>${entry.value}</td>
-									</tr>
-								</c:forEach>
-								</tbody>
-							</table>
-						</c:when>				
-						<c:otherwise>		
-							<p>unavailable</p>
-						</c:otherwise>
-					</c:choose>		
-				</fieldset>
-				
-				
-				
-				<fieldset id="fieldOutput">		
-						<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
-						<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
-						<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
-						<p class="caption">output may be truncated. 'popout' for the full output.</p>
-				</fieldset>
-				
-				
-			</c:forEach>
-			
-			
-	</fieldset>		
+						<table id="pairAttrs" class="shaded">
+							<thead>
+								<tr>
+									<th>key</th>
+									<th>value</th>				
+								</tr>		
+							</thead>	
+							<tbody>
+								<c:forEach var="entry" items="${stage.attributes}">
+								<tr>
+									<td>${entry.key}</td>
+									<td>${entry.value}</td>
+								</tr>
+							</c:forEach>
+							</tbody>
+						</table>
+					</c:when>				
+					<c:otherwise>		
+						<p>unavailable</p>
+					</c:otherwise>
+				</c:choose>		
+			</fieldset>
+			<fieldset id="fieldOutput">		
+					<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
+					<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
+					<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
+					<p class="caption">output may be truncated. 'popout' for the full output.</p>
+			</fieldset>
+		<c:if test="${moreThanOneStage}">
+			</fieldset>		
+		</c:if>
+	</c:forEach>
 	
 	
 	
