@@ -24,20 +24,20 @@ public class UtilTests extends TestSequence{
 	Space s=null;
 	Solver s1=null;
 	Solver s2=null;
-	@Test
+	@StarexecTest
 	private void BytesToGigabytesTest() {
 		Assert.assertEquals(1, Util.bytesToGigabytes(1073741824),.005);
 		Assert.assertEquals(0,Util.bytesToGigabytes(0),.005);
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetExtenstionTest() {
 		Assert.assertEquals("zip",Util.getFileExtension("this/is/a/fake.zip"));
 		Assert.assertEquals("test",Util.getFileExtension("fake.test"));
 		
 	}
 
-	@Test
+	@StarexecTest
 	private void GetTempPasswordTest() {
 		int index=0;
 		while (index<10) {
@@ -49,7 +49,7 @@ public class UtilTests extends TestSequence{
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void ToIntegerListTest() {
 		List<Integer> ints=Util.toIntegerList(new String[]{"11","2","321"});
 		Assert.assertEquals(3,ints.size());
@@ -63,7 +63,7 @@ public class UtilTests extends TestSequence{
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void URLTest() {
 		String random=TestUtil.getRandomSpaceName();
 		String url=Util.url(random);
@@ -72,7 +72,7 @@ public class UtilTests extends TestSequence{
 		Assert.assertTrue(url.endsWith(random));
 	}
 	
-	@Test
+	@StarexecTest
 	private void intClampTest() {
 		Assert.assertEquals(1,Util.clamp(0, 10, 1));
 		Assert.assertEquals(13,Util.clamp(13, 25, 7));
@@ -81,7 +81,7 @@ public class UtilTests extends TestSequence{
 		Assert.assertEquals(10,Util.clamp(10, 10, 10));
 	}
 	
-	@Test
+	@StarexecTest
 	private void longClampTest() {
 	
 		Assert.assertEquals(1,Util.clamp(0L, 10L, 1L));
@@ -92,7 +92,7 @@ public class UtilTests extends TestSequence{
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void isNullOrEmptyTest() {
 		Assert.assertTrue(Util.isNullOrEmpty(null));
 		Assert.assertTrue(Util.isNullOrEmpty(""));
@@ -103,7 +103,7 @@ public class UtilTests extends TestSequence{
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void BytesToMegabytesTest() {
 		Assert.assertEquals(1, Util.bytesToMegabytes(1048576));
 		Assert.assertEquals(1, Util.bytesToMegabytes(1048577));
@@ -112,7 +112,7 @@ public class UtilTests extends TestSequence{
 		Assert.assertEquals(0, Util.bytesToMegabytes(3));
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void copyToSandboxTest() throws IOException {
 		List<File> files=new ArrayList<File>();
 		files.add(new File(s1.getPath()));

@@ -13,7 +13,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -24,7 +24,7 @@ public class WebsiteTests extends TestSequence {
 	private User admin=null;
 	private Space space=null;
 	
-	@Test
+	@StarexecTest
 	private void addAndRemoveSolverWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(solver.getId(), "http://www.uiowa.edu", name, WebsiteType.SOLVER));
@@ -40,7 +40,7 @@ public class WebsiteTests extends TestSequence {
 		Assert.assertNull(id);
 	}
 	
-	@Test
+	@StarexecTest
 	private void addAndRemoveUserWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(user.getId(), "http://www.uiowa.edu", name, WebsiteType.USER));
@@ -56,13 +56,13 @@ public class WebsiteTests extends TestSequence {
 		Assert.assertNull(id);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAllforHTMLTest() {
 		List<Website> sites=Websites.getAllForHTML(solver.getId(), WebsiteType.SOLVER);
 		Assert.assertNotNull(sites);
 	}
 	
-	@Test
+	@StarexecTest
 	private void addAndRemoveSpaceWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(space.getId(), "http://www.uiowa.edu", name, WebsiteType.SPACE));

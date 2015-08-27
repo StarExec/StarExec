@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.CacheSecurity;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -13,7 +13,7 @@ public class CacheSecurityTests extends TestSequence {
 	User user1=null;
 	User admin=null;
 	
-	@Test
+	@StarexecTest
 	private void CanUserClearCacheTest() {
 		Assert.assertEquals(true,CacheSecurity.canUserClearCache(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,CacheSecurity.canUserClearCache(user1.getId()).isSuccess());

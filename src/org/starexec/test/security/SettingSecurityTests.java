@@ -6,7 +6,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -20,7 +20,7 @@ public class SettingSecurityTests extends TestSequence {
 		return "SettingSecurityTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void canModifySettingsTest() {
 		Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), u.getId()).isSuccess());
 		Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), admin.getId()).isSuccess());
@@ -28,7 +28,7 @@ public class SettingSecurityTests extends TestSequence {
 		Assert.assertFalse(SettingSecurity.canModifySettings(-1, u2.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUpdateSettingsTest() {
 		//SettingSecurity.canUpdateSettings(id, attribute, newValue, userId)
 	}

@@ -18,7 +18,7 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -31,7 +31,7 @@ public class JobSecurityTests extends TestSequence {
 	private User user=null;                  //owner of all the test primitives
 	private User nonOwner=null;
 	private User admin=null;
-	@Test
+	@StarexecTest
 	private void CanDeleteJob() {
 		Assert.assertEquals(true,JobSecurity.canUserDeleteJob(job.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,JobSecurity.canUserDeleteJob(job.getId(), user.getId()).isSuccess());
@@ -39,7 +39,7 @@ public class JobSecurityTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanRerunJobTest() {
 		Assert.assertEquals(true,JobSecurity.canUserRerunPairs(job.getId(), user.getId()).isSuccess());
 		Assert.assertEquals(true,JobSecurity.canUserRerunPairs(job.getId(), admin.getId()).isSuccess());
@@ -48,25 +48,25 @@ public class JobSecurityTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanPauseJob() {
 		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,JobSecurity.canUserPauseJob(job.getId(), user.getId()).isSuccess());
 		Assert.assertNotEquals(true,JobSecurity.canUserPauseJob(job.getId(), nonOwner.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanResumeJob() {
 		Assert.assertEquals(true,JobSecurity.canUserResumeJob(job.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,JobSecurity.canUserResumeJob(job.getId(), user.getId()).isSuccess());
 		Assert.assertNotEquals(true,JobSecurity.canUserResumeJob(job.getId(), nonOwner.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanChangeQueues() {
 		//JobSecurity.canChangeQueue(jobId, userId, queueId)
 	}
-	@Test
+	@StarexecTest
 	private void CanPauseAllJobs() {
 		Assert.assertEquals(true,JobSecurity.canUserPauseAllJobs(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,JobSecurity.canUserPauseAllJobs(user.getId()).isSuccess());

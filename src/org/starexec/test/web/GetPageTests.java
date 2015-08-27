@@ -26,7 +26,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -50,133 +50,133 @@ public class GetPageTests extends TestSequence {
 	User admin=null;
 	Space testCommunity=null;	
 	Queue q=null;
-	@Test
+	@StarexecTest
 	private void getSpaceExplorerTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/spaces.jsp"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getCommunityExplorerTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/communities.jsp"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getClusterTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/cluster.jsp"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getSolverDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/solver.jsp?id="+solver.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getSolverEditTest(){
 		Assert.assertTrue(con.canGetPage("secure/edit/solver.jsp?id="+solver.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getSolverAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/solver.jsp?sid="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getBatchJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/batchJob.jsp?sid="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getBatchSpaceAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/batchSpace.jsp?sid="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getBenchmarkDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/benchmark.jsp?id="+benchmarkIds.get(0)));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getBenchmarkEditTest(){
 		Assert.assertTrue(con.canGetPage("secure/edit/benchmark.jsp?id="+benchmarkIds.get(0)));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getBenchAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/benchmarks.jsp?sid="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getConfigDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/configuration.jsp?id="+config.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getConfigEditTest(){
 		Assert.assertTrue(con.canGetPage("secure/edit/configuration.jsp?id="+config.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getConfigAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/configuration.jsp?sid="+solver.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getPictureAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/picture.jsp?type=solver&Id="+solver.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getSpaceEditTest() {
 		Assert.assertTrue(con.canGetPage("secure/edit/space.jsp?id="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/job.jsp?id="+job.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPanelViewTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getPairsInSpaceTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getPrimaryStage().getConfiguration().getId()
 				+"&sid="+job.getPrimarySpace()+"&id="+job.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getPairDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/pair.jsp?id="+job.getJobPairs().get(0).getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getQuickJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/quickJob.jsp?sid="+space1.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getRecycleBinTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/recycleBin.jsp"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getUserDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/user.jsp?id="+user.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getUserEditTest(){
 		Assert.assertTrue(con.canGetPage("secure/edit/account.jsp?id="+user.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getDefaultPrimTest() {
 		Assert.assertTrue(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=solver&id="+settings.getId()));
 		Assert.assertTrue(con.canGetPage("secure/edit/defaultPrimitive.jsp?type=benchmark&id="+settings.getId()));
@@ -187,89 +187,89 @@ public class GetPageTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getHelpTest(){
 		Assert.assertTrue(con.canGetPage("secure/help.jsp"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminAssocCommunityTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
 		Assert.assertFalse(con.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminCacheTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/cache.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/cache.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminClusterTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/cluster.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/cluster.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminCommunityTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/community.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/community.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminJobTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/job.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/job.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminLoggingTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/logging.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/logging.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminMoveNodesTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/moveNodes.jsp?id="+q.getId()));
 		Assert.assertFalse(con.canGetPage("secure/admin/moveNodes.jsp?id="+q.getId()));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminNodesTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/nodes.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/nodes.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminPermanentQueueTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/permanentQueue.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/permanentQueue.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminPermissionsTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
 		Assert.assertFalse(con.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminStarexecTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/starexec.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/starexec.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAdminTestingTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/test.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/test.jsp"));
@@ -278,14 +278,14 @@ public class GetPageTests extends TestSequence {
 	
 	
 	
-	@Test
+	@StarexecTest
 	private void getAdminUserTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/user.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/user.jsp"));
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void failBadURLTest(){
 		Assert.assertFalse(con.canGetPage("secure/details/fakewebpage.jsp"));
 	}

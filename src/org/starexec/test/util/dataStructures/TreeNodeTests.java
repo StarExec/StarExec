@@ -4,7 +4,7 @@ import java.lang.IndexOutOfBoundsException;
 import java.lang.NullPointerException;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.util.dataStructures.TreeNode;
 
@@ -26,7 +26,7 @@ public class TreeNodeTests extends TestSequence {
 		// No body since this does not interact with the database.
 	}
 
-	@Test
+	@StarexecTest
 	private void AddAndRemoveChildTest() {
 		TreeNode<Integer> tree = new TreeNode<Integer>(1);
 		TreeNode<Integer> child = new TreeNode<Integer>(2);
@@ -41,7 +41,7 @@ public class TreeNodeTests extends TestSequence {
 		Assert.assertEquals(tree.getNumberOfChildren(), 0);
 	}
 
-	@Test
+	@StarexecTest
 	private void IteratorTest() {
 		TreeNode<Integer> tree = new TreeNode<Integer>(null);
 		for (int i = 0; i < 50; i++) {
@@ -54,7 +54,7 @@ public class TreeNodeTests extends TestSequence {
 		}
 	}
 
-	@Test
+	@StarexecTest
 	private void NullChildTest() {
 		TreeNode<Integer> tree = new TreeNode<Integer>(null);
 		try {
@@ -65,7 +65,7 @@ public class TreeNodeTests extends TestSequence {
 		}
 	}
 
-	@Test
+	@StarexecTest
 	private void GetIndexFromReferenceTest() {
 		final TreeNode<Integer> tree = new TreeNode<Integer>(null);
 		TreeNode<Integer> child = null;
@@ -85,7 +85,7 @@ public class TreeNodeTests extends TestSequence {
 	}
 
 
-	@Test
+	@StarexecTest
 	private void OutOfBoundsTest() {
 		TreeNode<Integer> tree = new TreeNode<Integer>(null);
 		assertIndexOutOfBoundsForTree(0, tree);

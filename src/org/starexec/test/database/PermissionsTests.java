@@ -15,7 +15,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -37,7 +37,7 @@ public class PermissionsTests extends TestSequence {
 	Benchmark benchmarkDownloadable=null; //these two benchmarks are the first and second benchmark from the "benchmarks" array
 	Benchmark benchmarkNoDownload=null;
 	
-	@Test
+	@StarexecTest
 	private void CanSeeBenchmarkTest() {
 		int benchId=benchmarks.get(0);
 		Assert.assertTrue(Permissions.canUserSeeBench(benchId, owner.getId()));
@@ -47,7 +47,7 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertFalse(Permissions.canUserSeeBench(benchId, noPerms.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanSeeBenchmarksTest() {
 		Assert.assertTrue(Permissions.canUserSeeBenchs(benchmarks, owner.getId()));
 		Assert.assertTrue(Permissions.canUserSeeBenchs(benchmarks, admin.getId()));
@@ -56,7 +56,7 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertFalse(Permissions.canUserSeeBenchs(benchmarks, noPerms.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanSeeSolverTest() {
 		int solverId=solver.getId();
 		Assert.assertTrue(Permissions.canUserSeeSolver(solverId, owner.getId()));
@@ -65,7 +65,7 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertFalse(Permissions.canUserSeeSolver(solverId, noPerms.getId()));
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void CanSeeSolversTest() {
 		List<Integer> solvers=new ArrayList<Integer>();
 		solvers.add(solver.getId());
@@ -78,7 +78,7 @@ public class PermissionsTests extends TestSequence {
 	
 	
 	//TODO: Make this test stronger
-	@Test
+	@StarexecTest
 	private void GetSpaceDefaultTest() {
 		Permission p=Permissions.getSpaceDefault(space.getId());
 		Assert.assertNotNull(p);
@@ -86,7 +86,7 @@ public class PermissionsTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void FullPermissionsTest() {
 		Permission p=Permissions.getFullPermission();
 		Assert.assertTrue(p.canAddBenchmark());

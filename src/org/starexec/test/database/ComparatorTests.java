@@ -13,7 +13,7 @@ import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 
@@ -22,7 +22,7 @@ import org.starexec.test.TestUtil;
 
 public class ComparatorTests extends TestSequence {
 	Random rand=new Random();
-	@Test
+	@StarexecTest
 	private void benchmarkComparatorTest() {
 		BenchmarkComparator comp=new BenchmarkComparator(0,true);
 		
@@ -53,7 +53,7 @@ public class ComparatorTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void solverComparatorTest() {
 		SolverComparator comp=new SolverComparator(0,true);
 		
@@ -96,7 +96,7 @@ public class ComparatorTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void JobPairComparatorTest() {
 		JobPairComparator comp=new JobPairComparator(0,0,true);
 		for (int x=0;x<100;x++) {
@@ -182,7 +182,7 @@ public class ComparatorTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void SolverComparisionComparatorTest() {
 		SolverComparisonComparator comp=new SolverComparisonComparator(0,false,true,0);
 	}

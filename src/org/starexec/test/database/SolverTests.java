@@ -13,7 +13,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -24,13 +24,13 @@ public class SolverTests extends TestSequence {
 	private Space space1, space2, testCommunity;
 	User testUser;
 	
-	@Test
+	@StarexecTest
 	private void GetSolverTest() {
 		Solver cs=Solvers.get(solver.getId());
 		Assert.assertNotNull(cs);
 		Assert.assertEquals(cs.getId(),solver.getId());
 	}
-	@Test
+	@StarexecTest
 	private void GetSolverListTest() {
 		List<Integer> list=new ArrayList<Integer>();
 		list.add(solver.getId());
@@ -39,7 +39,7 @@ public class SolverTests extends TestSequence {
 		Assert.assertEquals(solver.getId(), cs.get(0).getId());
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void recycleAndRestoreTest() {
 		Assert.assertFalse(Solvers.isSolverRecycled(solver.getId()));
 		Assert.assertTrue(Solvers.recycle(solver.getId()));
@@ -48,7 +48,7 @@ public class SolverTests extends TestSequence {
 		Assert.assertFalse(Solvers.isSolverRecycled(solver.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void changeNameTest() {
 		String curName=solver.getName();
 		Solver cs=Solvers.get(solver.getId());
@@ -60,14 +60,14 @@ public class SolverTests extends TestSequence {
 		solver.setName(newName);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getConfigTest() {
 		Configuration c=Solvers.getConfiguration(config.getId());
 		Assert.assertNotNull(c);
 		Assert.assertEquals(config.getName(),c.getName());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getConfigsBySolver() {
 		List<Configuration> configs=Solvers.getConfigsForSolver(solver.getId());
 		Assert.assertNotNull(configs);
@@ -82,7 +82,7 @@ public class SolverTests extends TestSequence {
 		Assert.assertTrue(foundConfig);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getWithConfig() {
 		Solver s=Solvers.getWithConfig(solver.getId(), config.getId());
 		Assert.assertNotNull(s);
@@ -92,7 +92,7 @@ public class SolverTests extends TestSequence {
 		
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void updateConfigName() {
 		String oldName=config.getName();
 		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getName(),oldName);
@@ -102,7 +102,7 @@ public class SolverTests extends TestSequence {
 		config.setName(newName);
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateConfigDescription() {
 		String oldDesc=config.getDescription();
 		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getDescription(),oldDesc);
@@ -111,7 +111,7 @@ public class SolverTests extends TestSequence {
 		Assert.assertEquals(Solvers.getConfiguration(config.getId()).getDescription(),newDesc);
 		config.setDescription(newDesc);
 	}
-	@Test 
+	@StarexecTest 
 	private void deleteConfigTest() {
 		Configuration c=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
 		Assert.assertNotNull(c);
@@ -120,7 +120,7 @@ public class SolverTests extends TestSequence {
 		Assert.assertNull(Solvers.getConfiguration(c.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void changeDescTest() {
 		String curDesc=solver.getDescription();
 		Solver cs=Solvers.get(solver.getId());
@@ -132,7 +132,7 @@ public class SolverTests extends TestSequence {
 		solver.setDescription(newDesc);
 	}
 	
-	@Test
+	@StarexecTest
 	private void changeDownloadableTest() {
 		Solver cs=Solvers.get(solver.getId());
 		Assert.assertEquals(solver.isDownloadable(), cs.isDownloadable());

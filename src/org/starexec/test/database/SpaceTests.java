@@ -23,7 +23,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -45,7 +45,7 @@ public class SpaceTests extends TestSequence {
 	Solver solver = null;
 	List<Benchmark> benchmarks=null; //all primitives owned by leader and placed into subspace
 	
-	@Test
+	@StarexecTest
 	private void getSpaceTest() {
 		Space test=Spaces.get(community.getId());
 		Assert.assertNotNull(test);
@@ -58,7 +58,7 @@ public class SpaceTests extends TestSequence {
 	}
 	
 	//TODO: Test to make sure the solvers are no longer in there
-	@Test
+	@StarexecTest
 	private void removeSolversFromHierarchyTest() {
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace3.getId()));
@@ -69,14 +69,14 @@ public class SpaceTests extends TestSequence {
 	
 	
 	
-	@Test
+	@StarexecTest
 	private void getSpaceHierarchyTest() {
 		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
 		Assert.assertEquals(3, spaces.size());
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void removeSolverTest() {
 		List<Integer> solverId=new ArrayList<Integer>();
 		solverId.add(solver.getId());
@@ -94,7 +94,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertTrue(Solvers.associate(solverId, subspace.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void removeBenchmarkTest() {
 		List<Integer> benchId=new ArrayList<Integer>();
 		benchId.add(benchmarks.get(0).getId());
@@ -114,7 +114,7 @@ public class SpaceTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAllSpacesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		Assert.assertNotNull(spaces);
@@ -122,13 +122,13 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(Spaces.getSubSpaceHierarchy(1, admin.getId()).size()+2, spaces.size());
 	}
 	
-	@Test
+	@StarexecTest
 	private void leafTest() {
 		Assert.assertFalse(Spaces.isLeaf(community.getId()));
 		Assert.assertTrue(Spaces.isLeaf(subspace.getId()));
 	}
 
-	@Test
+	@StarexecTest
 	private void CopyHierarchyTest() {
 		TreeNode<Space> spaceTree;
 		try {
@@ -216,7 +216,7 @@ public class SpaceTests extends TestSequence {
 		}
 	}
 
-	@Test
+	@StarexecTest
 	private void SpacePathCreateTest() {
 		Space space1=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
 		String space1Path=community.getName()+R.JOB_PAIR_PATH_DELIMITER+space1.getName();
@@ -241,13 +241,13 @@ public class SpaceTests extends TestSequence {
 		Spaces.removeSubspaces(space1.getId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetCommunityOfSpaceTest() {
 		Assert.assertEquals(community.getId(),Spaces.getCommunityOfSpace(subspace.getId()));
 		Assert.assertEquals(community.getId(),Spaces.getCommunityOfSpace(community.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetNameTest() {
 		Assert.assertEquals(community.getName(),Spaces.getName(community.getId()));
 		Assert.assertEquals(subspace.getName(),Spaces.getName(subspace.getId()));
@@ -255,20 +255,20 @@ public class SpaceTests extends TestSequence {
 	}	
 	
 	
-	@Test
+	@StarexecTest
 	private void IsCommunityTest() {
 		//of course, it should actually be a community
 		Assert.assertTrue(Communities.isCommunity(community.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getDefaultCpuTimeoutTest() {
 		int timeout=Communities.getDefaultCpuTimeout(community.getId());
 		if (timeout<=0) {
 			Assert.fail("Timeout was not greater than 0");
 		}
 	}
-	@Test 
+	@StarexecTest 
 	private void updateDefaultCpuTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 		
@@ -277,14 +277,14 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(timeout+1, Communities.getDefaultCpuTimeout(community.getId()));
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout));
 	}
-	@Test
+	@StarexecTest
 	private void getDefaultWallclockTimeoutTest() {
 		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
 		if (timeout<=0) {
 			Assert.fail("Timeout was not greater than 0");
 		}
 	}
-	@Test
+	@StarexecTest
 	private void updateDefaultWallclockTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 
@@ -294,7 +294,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getDefaultMemoryLimit() {
 		long limit=Communities.getDefaultMaxMemory(community.getId());
 		if (limit<=0) {
@@ -304,7 +304,7 @@ public class SpaceTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void inListOfCommunities() throws Exception {
 		List<Space> comms=Communities.getAll();
 		for (Space s : comms) {
@@ -316,7 +316,7 @@ public class SpaceTests extends TestSequence {
 		Assert.fail("community was not found in the list of communities");
 	}
 	
-	@Test
+	@StarexecTest
 	private void nameUpdateTest() throws Exception {
 		String currentName=community.getName();
 		Assert.assertEquals(currentName,Spaces.getName(community.getId()));
@@ -327,7 +327,7 @@ public class SpaceTests extends TestSequence {
 		addMessage("Space name consistent after update");
 		community.setName(newName);
 	}
-	@Test
+	@StarexecTest
 	private void descriptionUpdateTest() throws Exception {
 		String currentDesc=community.getDescription();
 		Assert.assertEquals(currentDesc,Spaces.get(community.getId()).getDescription());

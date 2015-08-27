@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -19,7 +19,7 @@ public class RequestsTests extends TestSequence {
 	Space comm=null;
 	
 	
-	@Test
+	@StarexecTest
 	private void getCommunityRequestByUserTest() {
 		CommunityRequest test=Requests.getCommunityRequest(request.getUserId());
 		Assert.assertEquals(request.getCode(), test.getCode());
@@ -27,7 +27,7 @@ public class RequestsTests extends TestSequence {
 		Assert.assertEquals(request.getMessage(),test.getMessage());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getCommunityRequestByCodeTest() {
 		CommunityRequest test=Requests.getCommunityRequest(request.getCode());
 		Assert.assertEquals(request.getCode(), test.getCode());
@@ -35,12 +35,12 @@ public class RequestsTests extends TestSequence {
 		Assert.assertEquals(request.getMessage(),test.getMessage());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getCommunityRequestCountTest() {
 		Assert.assertTrue(Requests.getCommunityRequestCount()>0);
 	}
 	
-	@Test
+	@StarexecTest
 	private void approveCommunityRequestTest() {
 		User tempUser=ResourceLoader.loadUserIntoDatabase();
 		CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
@@ -52,7 +52,7 @@ public class RequestsTests extends TestSequence {
 		Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void declineCommunityRequestTest() {
 		User tempUser=ResourceLoader.loadUserIntoDatabase();
 		CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
@@ -64,7 +64,7 @@ public class RequestsTests extends TestSequence {
 		Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void addAndRedeemPassResetRequestTest() {
 		String randomCode=UUID.randomUUID().toString();
 		Assert.assertTrue(Requests.addPassResetRequest(registeredUser.getId(), randomCode));
@@ -72,7 +72,7 @@ public class RequestsTests extends TestSequence {
 		Assert.assertEquals(registeredUser.getId(),userId);
 	}
 	
-	@Test
+	@StarexecTest
 	private void addCommunityRequestTest() {
 		String randomMessage=TestUtil.getRandomAlphaString(30);
 		String randomCode=UUID.randomUUID().toString();

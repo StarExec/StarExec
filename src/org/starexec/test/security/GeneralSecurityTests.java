@@ -5,7 +5,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Hash;
@@ -17,31 +17,31 @@ public class GeneralSecurityTests extends TestSequence {
 	User admin=null;
 	
 	
-	@Test
+	@StarexecTest
 	private void CanRestartStarexecTest() {
 		Assert.assertEquals(true, GeneralSecurity.canUserRestartStarexec(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true, GeneralSecurity.canUserRestartStarexec(user1.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanViewTestInfo() {
 		Assert.assertEquals(true, GeneralSecurity.canUserSeeTestInformation(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true, GeneralSecurity.canUserSeeTestInformation(user1.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanUserChangeLoggingTest() {
 		Assert.assertEquals(true, GeneralSecurity.canUserChangeLogging(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true, GeneralSecurity.canUserChangeLogging(user1.getId()).isSuccess());
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void canUserRunTests() {
 		Assert.assertEquals(true, GeneralSecurity.canUserRunTestsNoRunningCheck(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true, GeneralSecurity.canUserRunTestsNoRunningCheck(user1.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUserUpdatePassword() {
 		String pass1=Util.getTempPassword();
 		String pass2=Util.getTempPassword();

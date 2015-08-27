@@ -8,7 +8,7 @@ import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 
 public class ClusterTests extends TestSequence {
@@ -19,17 +19,17 @@ public class ClusterTests extends TestSequence {
 		return "ClusterTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void getIdByNameTest() {
 		Assert.assertEquals(n.getId(),Cluster.getNodeIdByName(n.getName()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getNameByIdTest() {
 		Assert.assertEquals(n.getName(), Cluster.getNodeNameById(n.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getAllNodesTest() {
 		List<WorkerNode> nodes=Cluster.getAllNodes();
 		Assert.assertNotNull(nodes);
@@ -37,22 +37,22 @@ public class ClusterTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void getNodeCountTest() {
 		Assert.assertTrue(Cluster.getNodeCount()>0);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getDefaultQueueIdTest() {
 		Assert.assertEquals(allQueue.getId(),Cluster.getDefaultQueueId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getQueueForNode() {
 		Assert.assertEquals(allQueue.getId(),Cluster.getQueueForNode(n).getId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getNodesForQueue() {
 		List<WorkerNode> nodes = Cluster.getNodesForQueue(allQueue.getId());
 		Assert.assertNotNull(nodes);
@@ -66,7 +66,7 @@ public class ClusterTests extends TestSequence {
 		Assert.assertTrue(containsNode);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getNodeDetailsTest() {
 		
 		WorkerNode node=Cluster.getNodeDetails(n.getId());

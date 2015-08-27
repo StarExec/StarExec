@@ -7,7 +7,7 @@ import org.starexec.data.database.Settings;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -23,21 +23,21 @@ public class DefaultSettingsTests extends TestSequence {
 		return "DefaultSettingsTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void getSettingsByUser() {
 		List<DefaultSettings> settingsList=Settings.getDefaultSettingsOwnedByUser(u.getId());
 		Assert.assertEquals(settingsList.size(), 1);
 		Assert.assertTrue(settingsList.get(0).equals(settings));
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteSettingsTest() {
 		DefaultSettings temp=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(u.getId());
 		Assert.assertTrue(Settings.deleteProfile(temp.getId()));
 		Assert.assertNull(Settings.getProfileById(temp.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getSettingsByNameTest() {
 		List<DefaultSettings> settingsList=Settings.getDefaultSettingsByPrimIdAndType(settings.getPrimId(), settings.getType());
 		
@@ -46,14 +46,14 @@ public class DefaultSettingsTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void getSettingsTest() {
 		DefaultSettings temp=Settings.getProfileById(settings.getId());
 		Assert.assertNotNull(temp);
 		Assert.assertTrue(temp.equals(settings));
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateDefaultMemoryLimitTest() {
 
 		

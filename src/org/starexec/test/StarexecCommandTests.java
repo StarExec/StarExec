@@ -58,7 +58,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 	String solverURL=null;
 	
-	@Test
+	@StarexecTest
 	private void CreateJobTest() {
 		String jobName=TestUtil.getRandomJobName();
 		int qid=Queues.getAllQ().getId();
@@ -73,64 +73,64 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetIDTest() {
 		int id=con.getUserID();
 		Assert.assertEquals(user.getId(), id);
 		
 	}
-	@Test
+	@StarexecTest
 	private void ListSolversTest() {
 		HashMap<Integer,String> mapping=con.getSolversInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getSolvers().size());
 	}
-	@Test
+	@StarexecTest
 	private void ListBenchmarksTest() {
 		HashMap<Integer,String> mapping=con.getBenchmarksInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getBenchmarks().size());
 
 	}
-	@Test
+	@StarexecTest
 	private void ListJobsTest() {
 		HashMap<Integer,String> mapping=con.getJobsInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getJobs().size());
 
 	}
-	@Test
+	@StarexecTest
 	private void ListUsersTest() {
 		HashMap<Integer,String> mapping=con.getUsersInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getUsers().size());
 	}
-	@Test
+	@StarexecTest
 	private void ListSpacesTest() {
 		HashMap<Integer,String> mapping=con.getSpacesInSpace(space1.getId());
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Spaces.getDetails(space1.getId(), user.getId()).getSubspaces().size());
 	}
-	@Test
+	@StarexecTest
 	private void ListSolversByUser() {
 		HashMap<Integer,String> mapping=con.getSolversByUser();
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Solvers.getSolverCountByUser(user.getId()));
 	}
-	@Test
+	@StarexecTest
 	private void ListJobsByUser() {
 		HashMap<Integer,String> mapping=con.getJobsByUser();
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(), Jobs.getJobCountByUser(user.getId()));
 	}
-	@Test
+	@StarexecTest
 	private void ListBenchmarksByUser() {
 		HashMap<Integer,String> mapping=con.getBenchmarksByUser();
 		Assert.assertFalse(isErrorMap(mapping));
 		Assert.assertEquals(mapping.size(),Benchmarks.getBenchmarkCountByUser(user.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void uploadConfiguration() {
 		String name=TestUtil.getRandomSolverName();
 		int result=con.uploadConfiguration(name, "", configFile.getAbsolutePath(), solver.getId());
@@ -140,7 +140,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(solver.getId(),testConfig.getSolverId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteConfiguration() {
 		Configuration testConfig=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
 		Assert.assertNotNull(testConfig);
@@ -151,7 +151,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNull(Solvers.getConfiguration(testConfig.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteProcessor() {
 		Processor testProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
 		Assert.assertNotNull(testProc);
@@ -164,7 +164,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void uploadPostProcessor() {
 		String name=TestUtil.getRandomSolverName();
 		int result=con.uploadPostProc(name, "", processorFile.getAbsolutePath(), testCommunity.getId());
@@ -175,7 +175,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(ProcessorType.POST,testProc.getType());
 		Assert.assertTrue(Processors.delete(testProc.getId()));
 	}
-	@Test
+	@StarexecTest
 	private void uploadPreProcessor() {
 		String name=TestUtil.getRandomSolverName();
 		int result=con.uploadPreProc(name, "", processorFile.getAbsolutePath(), testCommunity.getId());
@@ -186,7 +186,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(ProcessorType.PRE,testProc.getType());
 		Assert.assertTrue(Processors.delete(testProc.getId()));
 	}
-	@Test
+	@StarexecTest
 	private void uploadBenchProcessor() {
 		String name=TestUtil.getRandomSolverName();
 		int result=con.uploadBenchProc(name, "", processorFile.getAbsolutePath(), testCommunity.getId());
@@ -197,7 +197,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(ProcessorType.BENCH,testProc.getType());
 		Assert.assertTrue(Processors.delete(testProc.getId()));
 	}
-	@Test
+	@StarexecTest
 	private void uploadSolver() throws Exception {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
@@ -213,7 +213,7 @@ public class StarexecCommandTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void uploadSolverFromURL() throws Exception {
 		addMessage("adding solver to space with id = "+space1.getId());
 		String name=TestUtil.getRandomSolverName();
@@ -246,7 +246,7 @@ public class StarexecCommandTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void uploadBenchmarks() throws Exception {
 		
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
@@ -267,7 +267,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(Spaces.removeSubspaces(tempSpace.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void uploadBenchmarksFromURL() {
 		
 		//we are putting the benchmarks in a new space to avoid name collisions
@@ -288,7 +288,7 @@ public class StarexecCommandTests extends TestSequence {
 
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void downloadSpaceXML() {
 		File xmlFile=new File(downloadDir,TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(xmlFile.exists());
@@ -296,7 +296,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(0, result);
 		Assert.assertTrue(xmlFile.exists());
 	}
-	@Test 
+	@StarexecTest 
 	private void downloadSpace() {
 		File spaceFile=new File(downloadDir,TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(spaceFile.exists());
@@ -305,7 +305,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(spaceFile.exists());
 	}
 	
-	@Test
+	@StarexecTest
 	private void downloadSpaceHierarchy() {
 		File spaceFile=new File(downloadDir, TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(spaceFile.exists());
@@ -313,7 +313,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(spaceFile.exists());
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void setFirstNameTest() {
 		String fname=user.getFirstName();
 		int result=con.setFirstName(fname+"a");
@@ -321,7 +321,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(fname+"a", Users.get(user.getId()).getFirstName()); //ensure the database reflects the change
 		Users.updateFirstName(user.getId(), fname); //change the name back just to keep things consistent
 	}
-	@Test 
+	@StarexecTest 
 	private void setLastNameTest() {
 		String lname=user.getLastName();
 		int result=con.setLastName(lname+"a");
@@ -329,7 +329,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertEquals(lname+"a", Users.get(user.getId()).getLastName()); //ensure the database reflects the change
 		Users.updateLastName(user.getId(), lname); //change the name back just to keep things consistent
 	}
-	@Test 
+	@StarexecTest 
 	private void setInstitutionTest() {
 		String inst=user.getInstitution();
 		int result=con.setInstitution(inst+"a");
@@ -338,7 +338,7 @@ public class StarexecCommandTests extends TestSequence {
 		Users.updateInstitution(user.getId(), inst); //change the institution back just to keep things consistent
 	}
 	
-	@Test
+	@StarexecTest
 	private void linkUserTest() {
 		Integer[] users=new Integer[1];
 		users[0]=user2.getId();
@@ -355,7 +355,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void linkSolverTest() {
 		Integer[] solverArr=new Integer[1];
 		solverArr[0]=solver.getId();
@@ -371,7 +371,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void  copySolverTest() {
 		Integer[] solverArr=new Integer[1];
 		solverArr[0]=solver.getId();
@@ -396,7 +396,7 @@ public class StarexecCommandTests extends TestSequence {
 		}
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void  copyBenchmarkTest() {
 		Space toCopy=ResourceLoader.loadSpaceIntoDatabase(user.getId(),space1.getId());
 		Integer[] benchArr=new Integer[benchmarkIds.size()];
@@ -430,7 +430,7 @@ public class StarexecCommandTests extends TestSequence {
 		Spaces.removeSubspaces(toCopy.getId());		
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void  linkBenchmarkTest() {
 		Space toCopy=ResourceLoader.loadSpaceIntoDatabase(user.getId(),space1.getId());
 		Integer[] benchArr=new Integer[benchmarkIds.size()];
@@ -464,7 +464,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void createSubspaceTest() throws Exception {
 		String name=TestUtil.getRandomSpaceName();
 		org.starexec.command.Permission p=new org.starexec.command.Permission();
@@ -481,7 +481,7 @@ public class StarexecCommandTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteSolversTest() {
 		Solver tempSolver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", testCommunity.getId(), user.getId());
 		Assert.assertNotNull(Solvers.get(tempSolver.getId()));
@@ -493,7 +493,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(Solvers.deleteAndRemoveSolver(tempSolver.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteJobsTest() {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
@@ -508,7 +508,7 @@ public class StarexecCommandTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteBenchmarksTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",tempSpace.getId(),user.getId());
@@ -525,7 +525,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void copySpaceTest() {
 		Integer[] spaceArr=new Integer[1];
 		List<Space> before=Spaces.getSubSpaces(space2.getId(), user.getId());
@@ -537,7 +537,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void downloadJobCSV() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
@@ -548,7 +548,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 	
 	//TODO: This test fails likely because the output directory of test jobs is not being created
-	//@Test
+	//@StarexecTest
 	private void downloadJobOutput() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
@@ -558,7 +558,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(downloadDir.exists());
 	}
 	
-	@Test
+	@StarexecTest
 	private void downloadProcessorTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
@@ -567,7 +567,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(downloadDir.exists());
 	}
 	
-	@Test
+	@StarexecTest
 	private void downloadSolverTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
@@ -576,7 +576,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(downloadDir.exists());
 	}
 	
-	@Test
+	@StarexecTest
 	private void downloadBenchmarkTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);
@@ -585,7 +585,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(downloadDir.exists());
 	}
 	
-	@Test
+	@StarexecTest
 	private void removeSolversTest() {
 		Solver temp=ResourceLoader.loadSolverIntoDatabase("CVC4.zip",testCommunity.getId(),user.getId());
 		Assert.assertTrue(Solvers.getAssociatedSpaceIds(temp.getId()).contains(testCommunity.getId()));
@@ -601,7 +601,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(Solvers.deleteAndRemoveSolver(temp.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void removeBenchmarksTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", tempSpace.getId(), user.getId());
@@ -620,7 +620,7 @@ public class StarexecCommandTests extends TestSequence {
 		Spaces.removeSubspaces(tempSpace.getId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void removeJobsTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		Assert.assertNotNull(job);
@@ -632,7 +632,7 @@ public class StarexecCommandTests extends TestSequence {
 		Spaces.removeSubspaces(tempSpace.getId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void removeSpacesTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 
@@ -644,42 +644,42 @@ public class StarexecCommandTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void viewSolverTest() {
 		Map<String,String> attrs=con.getSolverAttributes(solver.getId());
 		Assert.assertEquals(String.valueOf(solver.getId()),attrs.get("id"));
 		Assert.assertEquals(solver.getName(),attrs.get("name"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void viewSpaceTest() {
 		Map<String,String> attrs=con.getSpaceAttributes(testCommunity.getId());
 		Assert.assertEquals(String.valueOf(testCommunity.getId()),attrs.get("id"));
 		Assert.assertEquals(testCommunity.getName(),attrs.get("name"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void viewJobTest() {
 		Map<String,String> attrs=con.getJobAttributes(job.getId());
 		Assert.assertEquals(String.valueOf(job.getId()),attrs.get("id"));
 		Assert.assertEquals(job.getName(),attrs.get("name"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void viewProcessorTest() {
 		Map<String,String> attrs=con.getProcessorAttributes(proc.getId());
 		Assert.assertEquals(String.valueOf(proc.getId()),attrs.get("id"));
 		Assert.assertEquals(proc.getName(),attrs.get("name"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void viewConfigurationTest() {
 		Map<String,String> attrs=con.getConfigurationAttributes(config.getId());
 		Assert.assertEquals(String.valueOf(config.getId()),attrs.get("id"));
 		Assert.assertEquals(config.getName(),attrs.get("name"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void viewBenchmarkTest() {
 		Map<String,String> attrs=con.getBenchmarkAttributes(benchmarkIds.get(0));
 		Assert.assertEquals(String.valueOf(benchmarkIds.get(0)),attrs.get("id"));

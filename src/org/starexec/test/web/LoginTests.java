@@ -15,7 +15,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -23,7 +23,7 @@ import org.starexec.util.Util;
 public class LoginTests extends TestSequence {
 	User u=null;
 	Space s=null;
-	@Test
+	@StarexecTest
 	private void loginSuccess() {
 		// Create a new instance of the html unit driver
         // Notice that the remainder of the code relies on the interface, 
@@ -46,7 +46,7 @@ public class LoginTests extends TestSequence {
         
 	}
 	
-	@Test
+	@StarexecTest
 	private void loginFail() {
 		// Create a new instance of the html unit driver
         // Notice that the remainder of the code relies on the interface, 

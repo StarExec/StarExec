@@ -22,7 +22,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.jobs.JobManager;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -46,7 +46,7 @@ public class JobTests extends TestSequence {
 	private User user2=null;
 	private Job job2=null;
 	
-	@Test
+	@StarexecTest
 	private void GetTest() {
 		Job testJob=Jobs.get(job.getId());
 		Assert.assertNotNull(testJob);
@@ -54,7 +54,7 @@ public class JobTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void getUserByJobTest() {
 		User u=Users.getUserByJob(job.getId());
 		Assert.assertEquals(user.getId(),u.getId());
@@ -62,7 +62,7 @@ public class JobTests extends TestSequence {
 	
 	
 	
-	@Test
+	@StarexecTest
 	private void GetByUserTest() {
 		List<Job> jobs=Jobs.getByUserId(user.getId());
 		Assert.assertEquals(1,jobs.size());
@@ -73,36 +73,36 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(jobs.get(0).getName(),job2.getName());
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetBySpaceTest() {
 		List<Job> jobs=Jobs.getBySpace(space.getId());
 		Assert.assertEquals(2,jobs.size());
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetDirectoryTest() {
 		String path=Jobs.getDirectory(job.getId());
 		Assert.assertNotNull(path);
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetTotalCountTest() {
 		Assert.assertTrue(Jobs.getJobCount()>0);
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetCountInSpaceTest() {
 		Assert.assertEquals(2,Jobs.getCountInSpace(space.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetCountInSpaceWithQuery() {
 		Assert.assertEquals(1,Jobs.getCountInSpace(space.getId(), job.getName()));
 		Assert.assertEquals(1,Jobs.getCountInSpace(space.getId(),job2.getName()));
 		Assert.assertEquals(0,Jobs.getCountInSpace(space.getId(),TestUtil.getRandomJobName()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetLogDirectoryTest() {
 		String path=Jobs.getLogDirectory(job.getId());
 		Assert.assertNotNull(path);
@@ -113,31 +113,31 @@ public class JobTests extends TestSequence {
 	
 	//TODO: Right now, this test is basically just checking to see if the method throws errors. Since the status of the job
 	//changes over time, it's hard to know what the status of the job actually should be
-	@Test
+	@StarexecTest
 	private void GetStatusTest() {
 		Assert.assertNotNull(Jobs.getJobStatusCode(job.getId()));
 	}
 	
 	//TODO: This test also just checks for errors
-	@Test
+	@StarexecTest
 	private void IsSystemPaused() {
 		Jobs.isSystemPaused();
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void IsDeletedTest() {
 		Assert.assertFalse(Jobs.isJobDeleted(job.getId()));
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void IsKilledTest() {
 		Assert.assertFalse(Jobs.isJobKilled(job.getId()));
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void PauseAndUnpauseTest() {
 		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
 		Assert.assertTrue(Jobs.pause(job.getId()));
@@ -149,7 +149,7 @@ public class JobTests extends TestSequence {
 
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void DeleteJobTest() {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
@@ -165,13 +165,13 @@ public class JobTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void CountPendingPairsTest() {
 		int count=Jobs.countPendingPairs(job.getId());
 		Assert.assertTrue(count>=0);
 	}
 	
-	@Test
+	@StarexecTest
 	private void CountIncompletePairsTest() {
 		int count=Jobs.countIncompletePairs(job.getId());
 		Assert.assertTrue(count>=0);
@@ -203,7 +203,7 @@ public class JobTests extends TestSequence {
 		return sum;
 	}
 	
-	@Test
+	@StarexecTest
 	private void depthFirstAddTest() {
 		Job j=new Job();
 		HashMap<Integer,List<JobPair>> spacesToPairs = getPairSetup();
@@ -228,7 +228,7 @@ public class JobTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void roundRobinAddTest() {
 		Job j=new Job();
 		HashMap<Integer,List<JobPair>> spacesToPairs = getPairSetup();
@@ -249,20 +249,20 @@ public class JobTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void CountTimelessPairsTest() {
 		int count=Jobs.countTimelessPairs(job.getId());
 		Assert.assertTrue(count>=0);		
 	}
 	
 	//TODO: This only checks for SQL errors right now
-	@Test
+	@StarexecTest
 	private void getPairsByStatusTest() {
 		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), 7);
 		Assert.assertNotNull(pairs);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getTimelessPairsByStatusTest() {
 		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), 7);
 		Assert.assertNotNull(pairs);

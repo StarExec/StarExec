@@ -10,7 +10,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Space;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -23,14 +23,14 @@ public class ProcessorTests extends TestSequence {
 		return "ProcessorTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void getProcTest() throws Exception {
 		Processor p=Processors.get(postProc.getId());
 		Assert.assertNotNull(p);
 		Assert.assertEquals(postProc.getName(),p.getName());
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateProcName() {
 		String oldName=postProc.getName();
 		String newName=TestUtil.getRandomSolverName();
@@ -41,7 +41,7 @@ public class ProcessorTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateProcDesc() {
 		String oldDesc=postProc.getDescription();
 		String newDesc=TestUtil.getRandomSolverName();
@@ -51,7 +51,7 @@ public class ProcessorTests extends TestSequence {
 		postProc.setDescription(newDesc);
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetByCommunity() {
 		List<Processor> procs=Processors.getByCommunity(community.getId(), postProc.getType());
 		boolean foundProc=false;
@@ -63,7 +63,7 @@ public class ProcessorTests extends TestSequence {
 		Assert.assertTrue(foundProc);
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetAllByType() {
 		List<Processor> procs=Processors.getAll(postProc.getType());
 		boolean foundProc=false;

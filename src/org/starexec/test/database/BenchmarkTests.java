@@ -12,7 +12,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -25,7 +25,7 @@ public class BenchmarkTests extends TestSequence {
 	private Space space=null;
 	private List<Benchmark> benchmarks=null; //owned by user
 	
-	@Test
+	@StarexecTest
 	private void GetByUser() {
 		List<Benchmark> benches=Benchmarks.getByOwner(user.getId());
 		Assert.assertNotNull(benches);
@@ -35,7 +35,7 @@ public class BenchmarkTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetBySpace() {
 		List<Benchmark> benches=Benchmarks.getBySpace(space.getId());
 		Assert.assertNotNull(benches);
@@ -46,19 +46,19 @@ public class BenchmarkTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetCountInSpaceTest() {
 		Assert.assertEquals(benchmarks.size(),Benchmarks.getCountInSpace(space.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetCountInSpaceWithQuery() {
 		Assert.assertEquals(benchmarks.size(), Benchmarks.getCountInSpace(space.getId(),""));
 		String name=benchmarks.get(0).getName();
 		Assert.assertEquals(1,Benchmarks.getCountInSpace(space.getId(),name));
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetBenchmarkTest() {
 		Benchmark b=Benchmarks.get(benchmarks.get(0).getId());
 		Assert.assertNotNull(b);
@@ -68,12 +68,12 @@ public class BenchmarkTests extends TestSequence {
 	
 	
 	
-	@Test
+	@StarexecTest
 	private void GetAssociatedSpaceIds() {
 		Assert.assertEquals(space.getId(),(int)Benchmarks.getAssociatedSpaceIds(benchmarks.get(0).getId()).get(0));
 	}
 	
-	@Test
+	@StarexecTest
 	private void AssociateBenchmarksTest() {
 		Space subspace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), space.getId());
 		List<Integer> ids= new ArrayList<Integer>();
@@ -89,14 +89,14 @@ public class BenchmarkTests extends TestSequence {
 	}
 	
 	
-	@Test 
+	@StarexecTest 
 	private void GetContentsTest() {
 		Benchmark b=benchmarks.get(0);
 		String str=Benchmarks.getContents(b.getId(), -1);
 		Assert.assertNotNull(str);
 	}
 	
-	@Test
+	@StarexecTest
 	private void RecycleAndRestoreTest() {
 		Benchmark b= benchmarks.get(0);
 		String name=b.getName();
@@ -115,7 +115,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertEquals(0,Benchmarks.getRecycledBenchmarkCountByUser(user.getId(),name));
 	}
 	
-	@Test
+	@StarexecTest
 	private void RecycleAndRestoreAllTest() {
 		for (Benchmark b : benchmarks) {
 			Assert.assertFalse(Benchmarks.isBenchmarkRecycled(b.getId()));
@@ -133,7 +133,7 @@ public class BenchmarkTests extends TestSequence {
 				
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateDetailsTest() {
 		Benchmark b=benchmarks.get(0);
 		String newName=TestUtil.getRandomSolverName();
@@ -148,7 +148,7 @@ public class BenchmarkTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteBenchTest() {
 		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		for (Integer id : ids) {
@@ -160,7 +160,7 @@ public class BenchmarkTests extends TestSequence {
 		}	
 	}
 	
-	@Test
+	@StarexecTest
 	private void setRecycledToDeletedTest() {
 		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		List<Integer> ids2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user2.getId());

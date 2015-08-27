@@ -10,7 +10,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -24,7 +24,7 @@ public class UploadBenchmarksTests extends TestSequence {
 	
 	
 	//makes sure we do not navigate away from the page until javascript validation is passing
-	@Test
+	@StarexecTest
 	private void validationTest() {
 		
 		driver.get(Util.url("secure/add/benchmarks.jsp?sid="+s.getId()));
@@ -38,7 +38,7 @@ public class UploadBenchmarksTests extends TestSequence {
         Assert.assertTrue(driver.getCurrentUrl().equals(url));        
 	}
 	
-	@Test
+	@StarexecTest
 	private void uploadBenchmarksTest() {
 		driver.get(Util.url("secure/add/benchmarks.jsp?sid="+s.getId()));
 		String url=driver.getCurrentUrl();

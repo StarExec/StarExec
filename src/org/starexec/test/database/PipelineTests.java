@@ -8,7 +8,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.*;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -27,7 +27,7 @@ public class PipelineTests extends TestSequence {
 		return "PipelineTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void getFullPipelineTest() {
 		SolverPipeline p=Pipelines.getFullPipeline(pipe.getId());
 		Assert.assertNotNull(p);
@@ -42,7 +42,7 @@ public class PipelineTests extends TestSequence {
 		
 	}
 	
-	/*@Test
+	/*@StarexecTest
 	private void addStageToDatabase() {
 		PipelineStage newStage=new PipelineStage();
 		newStage.setConfigId(s.getConfigurations().get(0).getId());

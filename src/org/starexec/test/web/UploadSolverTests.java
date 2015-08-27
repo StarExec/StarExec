@@ -14,7 +14,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -30,7 +30,7 @@ public class UploadSolverTests extends TestSequence {
 	
 	
 	//makes sure we do not navigate away from the page until javascript validation is passing
-	@Test
+	@StarexecTest
 	private void validationTest() {
 		
 		driver.get(Util.url("secure/add/solver.jsp?sid="+s.getId()));
@@ -61,7 +61,7 @@ public class UploadSolverTests extends TestSequence {
         Assert.assertTrue(driver.getCurrentUrl().equals(url));
 	}
 	//makes sure we can upload a solver correctly
-	@Test
+	@StarexecTest
 	private void uploadSolverTest() throws InterruptedException {
 		driver.get(Util.url("secure/add/solver.jsp?sid="+s.getId()));
 		

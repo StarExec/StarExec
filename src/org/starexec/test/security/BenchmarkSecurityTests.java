@@ -13,7 +13,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -28,21 +28,21 @@ public class BenchmarkSecurityTests extends TestSequence {
 	List<Integer> benchmarkIds=null; //these are benchmarks owned by user1 and placed in space
 	List<Integer> benchmarkIds2=null; //these are benchmarks owned by user2 and placed in space2
 	
-	@Test
+	@StarexecTest
 	private void CanDeleteBenchTest() {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user2.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanRecyleBenchTest() {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBench(benchmarkIds.get(0), user2.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanRestoreBenchTest() {
 		Benchmark b=Benchmarks.get(benchmarkIds.get(0));
 		//benchmarks can be restored only if they were actually recycled to begin with
@@ -59,7 +59,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertTrue(Benchmarks.restore(b.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanDeleteBenchesTest() {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, admin.getId()).isSuccess());
@@ -72,7 +72,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(temp, admin.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canRecycleBenchesTest() {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, admin.getId()).isSuccess());
@@ -85,7 +85,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(temp, admin.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canRestoreBenchesTest() {
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user1.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, admin.getId()).isSuccess());
@@ -120,7 +120,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void canEditBenchmarkTest() {
 		Benchmark b1=Benchmarks.get(benchmarkIds.get(0));
 		Benchmark b2=Benchmarks.get(benchmarkIds.get(1));
@@ -130,7 +130,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserEditBenchmark(b1.getId(), b1.getName(),b2.getDescription(),b1.getType().getId(), user2.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canViewBenchmarkContentsTest() {
 		Benchmark b=Benchmarks.get(benchmarkIds.get(0));
 		//first, do the test with "downloadable" set to false

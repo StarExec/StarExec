@@ -266,7 +266,7 @@ public abstract class TestSequence {
 	
 	/**
 	 * Retrieves a list of all methods declared in the current class that have the
-	 * @test annotation
+	 * @StarexecTest annotation
 	 * @return
 	 */
 	
@@ -284,7 +284,7 @@ public abstract class TestSequence {
 	}
 	/**
 	 * Determines whether the given method is a test, based on whether
-	 * it has the @test annotation
+	 * it has the @StarexecTest annotation
 	 * @param m The method to check
 	 * @return
 	 */
@@ -299,13 +299,13 @@ public abstract class TestSequence {
 	}
 	
 	/**
-	 * Determines whether the given annotation is the @test annotation
+	 * Determines whether the given annotation is the @StarexecTest annotation
 	 * @param a The annotation to check
 	 * @return
 	 */
 	
 	protected static boolean isTestAnnotation(Annotation a) {
-		return a.annotationType().equals(Test.class);
+		return a.annotationType().equals(StarexecTest.class);
 	}
 	
 	/**

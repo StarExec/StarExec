@@ -16,7 +16,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -36,14 +36,14 @@ public class SolverSecurityTests extends TestSequence {
 	
 	Space tempCommunity=null; //led by 'owner'
 	Space tempCommunity2=null; //led by 'regular'
-	@Test
+	@StarexecTest
 	private void deleteSolverPermissionTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolver(solver.getId(), regular.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canDeleteSolversTest() {
 		List<Integer> ids=new ArrayList<Integer>();
 		ids.add(solver.getId());
@@ -60,7 +60,7 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteSolvers(ids, owner.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUserSeeBuildLog() {
 		Assert.assertEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), admin.getId()).isSuccess());
@@ -68,7 +68,7 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true, SolverSecurity.canUserSeeBuildLog(solver.getId(), regular.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canDeleteConfigurationsTest() {
 		List<Integer> ids=new ArrayList<Integer>();
 		ids.add(c.getId());
@@ -86,7 +86,7 @@ public class SolverSecurityTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void canRecycleSolversTest() {
 		List<Integer> ids=new ArrayList<Integer>();
 		ids.add(solver.getId());
@@ -103,7 +103,7 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SolverSecurity.canUserRecycleSolvers(ids, owner.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canRestoreSolversTest() {
 		List<Integer> ids=new ArrayList<Integer>();
 		ids.add(solver.getId());
@@ -120,7 +120,7 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolvers(ids, owner.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canDownloadSolverTest() {
 		Assert.assertTrue(SolverSecurity.canUserDownloadSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertTrue(SolverSecurity.canUserDownloadSolver(solver.getId(), admin.getId()).isSuccess());
@@ -128,7 +128,7 @@ public class SolverSecurityTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void canAssociateWebsite() {
 		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","http://www.test.url").isSuccess());
 		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","http://www.test.url").isSuccess());
@@ -141,7 +141,7 @@ public class SolverSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","<script>").isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanDeleteWebsiteTest() {
 		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
 		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0).getId();
@@ -155,27 +155,27 @@ public class SolverSecurityTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void recycleSolverPermissionTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), regular.getId()).isSuccess());
 	}
-	@Test
+	@StarexecTest
 	private void restoreSolverPermissionTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserRestoreSolver(solver.getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserRestoreSolver(solver.getId(), regular.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUserUpdateSolver() {
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), owner.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserUpdateSolver(solver.getId(), solver.getName(), solver.getDescription(), solver.isDownloadable(), regular.getId()).isSuccess());
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void canUserUpdateConfiguration() {
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateConfiguration(c.getId(), owner.getId(), c.getName(), c.getDescription()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserUpdateConfiguration(c.getId(), admin.getId(), c.getName(), c.getDescription()).isSuccess());
@@ -183,7 +183,7 @@ public class SolverSecurityTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUserAddConfigurationTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserAddConfiguration(solver.getId(), admin.getId()).isSuccess());
@@ -191,21 +191,21 @@ public class SolverSecurityTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUserDeleteConfigurationTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfiguration(c.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserDeleteConfiguration(c.getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserDeleteConfiguration(c.getId(), regular.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canRunStarexecBuildTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserRunStarexecBuild(owner.getId(), tempCommunity.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserRunStarexecBuild(admin.getId(), tempCommunity.getId()).isSuccess());
 		Assert.assertNotEquals(true,SolverSecurity.canUserRunStarexecBuild(owner.getId(), tempCommunity2.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUserRecycleOrphanedSolversTest() {
 		Assert.assertEquals(true, SolverSecurity.canUserRecycleOrphanedSolvers(owner.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true, SolverSecurity.canUserRecycleOrphanedSolvers(owner.getId(), admin.getId()).isSuccess());

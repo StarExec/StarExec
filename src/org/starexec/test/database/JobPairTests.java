@@ -21,7 +21,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -50,7 +50,7 @@ public class JobPairTests extends TestSequence {
 		return "JobPairTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void addAndRetrieveAttributesTest() {
 		JobPair jp=job.getJobPairs().get(0);
 		Properties p=new Properties();
@@ -61,38 +61,38 @@ public class JobPairTests extends TestSequence {
 		Assert.assertTrue(test.contains(prop));		
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPairLogTest() {
 		String path=JobPairs.getLogFilePath(job.getJobPairs().get(0));
 		Assert.assertNotNull(path);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPairLogByIdTest() {
 		String path=JobPairs.getFilePath(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(path);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPairPathTest() {
 		String path=JobPairs.getFilePath(job.getJobPairs().get(0));
 		Assert.assertNotNull(path);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPairPathByIdTest() {
 		String path=JobPairs.getFilePath(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(path);
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPairTest() {
 		JobPair test=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(test);
 		Assert.assertEquals(test.getJobId(),job.getId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getJobPairDetailedTest() {
 		JobPair test=JobPairs.getPairDetailed(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(test);
@@ -101,7 +101,7 @@ public class JobPairTests extends TestSequence {
 		Assert.assertEquals(test.getPrimarySolver().getName(),solver.getName());
 	}
 	
-	@Test
+	@StarexecTest
 	private void setPairStatusTest() {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		Assert.assertTrue(JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_UNKNOWN.getVal()));

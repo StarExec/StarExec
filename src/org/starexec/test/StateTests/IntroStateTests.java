@@ -7,7 +7,7 @@ import java.util.Set;
 import org.junit.Assert;
 
 import org.starexec.servlets.BenchmarkUploader;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.util.Util;
 import org.starexec.data.database.Benchmarks;
@@ -28,7 +28,7 @@ public class IntroStateTests extends TestSequence {
 		return "IntroStateTests";
 	}
 	
-	@Test
+	@StarexecTest
 	private void NoDefaultLeadersTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		
@@ -37,7 +37,7 @@ public class IntroStateTests extends TestSequence {
 		}
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void UniqueSubspaceNamesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		for (Space s : spaces) {

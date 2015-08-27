@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -14,7 +14,7 @@ public class UserSecurityTests extends TestSequence {
 	User user2=null;
 	User admin=null;
 	
-	@Test
+	@StarexecTest
 	private void canUpdateFirstNameTest() {
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "firstname","test").isSuccess());
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "firstname","test").isSuccess());
@@ -22,7 +22,7 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "firstname","test").isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanDeleteUserTest() {
 		Assert.assertEquals(true,UserSecurity.canDeleteUser(user1.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,UserSecurity.canDeleteUser(user2.getId(), admin.getId()).isSuccess());
@@ -33,7 +33,7 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user2.getId()).isSuccess());
 	}
 
-	@Test
+	@StarexecTest
 	private void canUpdateLastNameTest() {
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "lastname","test").isSuccess());
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "lastname","test").isSuccess());
@@ -41,7 +41,7 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "lastname","test").isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canUpdateInstitutionTest() {
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "institution","Iowa").isSuccess());
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "institution","Iowa").isSuccess());
@@ -50,7 +50,7 @@ public class UserSecurityTests extends TestSequence {
 	}
 
 	
-	@Test
+	@StarexecTest
 	private void canUpdateDiskQuotaTest() {
 		//only admins can update anyone's disk quota
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "diskquota","10").isSuccess());
@@ -59,14 +59,14 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user1.getId(), "diskquota","10").isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canSuspendOrReinstateUser() {
 		Assert.assertEquals(true, UserSecurity.canUserSuspendOrReinstateUser(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user1.getId()).isSuccess());
 		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user2.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void canViewUserPrimitives() {
 		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),user1.getId()).isSuccess());
 		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),admin.getId()).isSuccess());

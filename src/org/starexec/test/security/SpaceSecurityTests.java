@@ -11,7 +11,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
@@ -25,7 +25,7 @@ public class SpaceSecurityTests extends TestSequence {
 	Space space2=null; //a private space
 	Space publicSpace=null; //a public space
 	
-	@Test
+	@StarexecTest
 	private void CanAssociateWebsiteTest() {
 		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
@@ -46,7 +46,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","<script>").isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanDeleteWebsiteTest() {
 		Websites.add(space1.getId(), "https://www.fake.edu", "new", WebsiteType.SPACE);
 		int websiteId=Websites.getAll(space1.getId(), WebsiteType.SPACE).get(0).getId();
@@ -59,7 +59,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, admin.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanAddUserToSpace() {
 		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), admin.getId(),owner.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), owner.getId(),owner.getId()).isSuccess());
@@ -67,7 +67,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SpaceSecurity.canAddUserToSpace(space2.getId(), noPerms.getId(), owner.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanRemoveSolverFromSpace() {
 		Assert.assertEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), owner.getId()).isSuccess());
@@ -75,7 +75,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SpaceSecurity.canUserRemoveSolver(space2.getId(), noPerms.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanRemoveBenchmarkFromSpace() {
 		Assert.assertEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), owner.getId()).isSuccess());
@@ -83,7 +83,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SpaceSecurity.canUserRemoveBenchmark(space2.getId(), noPerms.getId()).isSuccess());
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void CanUpdateProperties() {
 		Assert.assertEquals(true,SpaceSecurity.canUpdateProperties(space2.getId(), admin.getId(), "fake", false).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canUpdateProperties(space2.getId(), owner.getId(), "fake", false).isSuccess());
@@ -92,7 +92,7 @@ public class SpaceSecurityTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanUserViewCommunityTests() {
 		Assert.assertEquals(true,SpaceSecurity.canUserViewCommunityRequests(admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,SpaceSecurity.canUserViewCommunityRequests(owner.getId()).isSuccess());
@@ -100,7 +100,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,SpaceSecurity.canUserViewCommunityRequests(noPerms.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanUserSeeSpace() {
 		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(space1.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(space1.getId(), owner.getId()).isSuccess());
@@ -113,7 +113,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertEquals(true,SpaceSecurity.canUserSeeSpace(publicSpace.getId(), noPerms.getId()).isSuccess());
 	}
 	
-	@Test
+	@StarexecTest
 	private void CanSetPublicOrPrivate() {
 		Assert.assertEquals(true,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canSetSpacePublicOrPrivate(space2.getId(), owner.getId()).isSuccess());
@@ -122,7 +122,7 @@ public class SpaceSecurityTests extends TestSequence {
 
 	}
 
-	@Test
+	@StarexecTest
 	private void CanRemoveJobFromSpace() {
 		Assert.assertEquals(true,SpaceSecurity.canUserRemoveJob(space2.getId(), admin.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canUserRemoveJob(space2.getId(), owner.getId()).isSuccess());
@@ -131,7 +131,7 @@ public class SpaceSecurityTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void CanLeaveSpace() {
 		Assert.assertEquals(true,SpaceSecurity.canUserLeaveSpace(space2.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SpaceSecurity.canUserLeaveSpace(space2.getId(), noPerms.getId()).isSuccess());

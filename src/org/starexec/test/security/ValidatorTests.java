@@ -2,14 +2,14 @@ package org.starexec.test.security;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.util.Validator;
 public class ValidatorTests extends TestSequence {
 	
 	
-	@Test
+	@StarexecTest
 	private void DescriptionRegexTest() {
 		Assert.assertTrue(Validator.isValidPrimDescription(""));
 		Assert.assertTrue(Validator.isValidPrimDescription("hello world"));
@@ -22,7 +22,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidPrimDescription("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void WebsiteRegexTest() {
 		Assert.assertTrue(Validator.isValidWebsite("http://www.uiowa.edu"));
 		Assert.assertTrue(Validator.isValidWebsite("https://cs.starexec.uiowa.edu"));
@@ -34,7 +34,7 @@ public class ValidatorTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void QueueNameTest() {
 		Assert.assertTrue(Validator.isValidQueueName("hello world"));
 		Assert.assertTrue(Validator.isValidQueueName("Mark"));
@@ -49,7 +49,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidQueueName("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void JobNameTest() {
 		Assert.assertTrue(Validator.isValidJobName("hello world"));
 		Assert.assertTrue(Validator.isValidJobName("Mark"));
@@ -63,7 +63,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidJobName("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void ConfigurationNameTest() {
 		Assert.assertTrue(Validator.isValidConfigurationName("hello world"));
 		Assert.assertTrue(Validator.isValidConfigurationName("Mark"));
@@ -76,7 +76,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidConfigurationName("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void ProcessorNameTest() {
 		Assert.assertTrue(Validator.isValidProcessorName("hello world"));
 		Assert.assertTrue(Validator.isValidProcessorName("Mark"));
@@ -89,7 +89,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidProcessorName("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void BenchmarkNameTest() {
 		Assert.assertTrue(Validator.isValidBenchName("hello world"));
 		Assert.assertTrue(Validator.isValidBenchName("Mark"));
@@ -103,7 +103,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidBenchName("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void SolverNameRegexTest() {
 		Assert.assertTrue(Validator.isValidSolverName("hello world"));
 		Assert.assertTrue(Validator.isValidSolverName("Mark"));
@@ -117,7 +117,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidSolverName("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void BoolRegexTest() {
 		Assert.assertTrue(Validator.isValidBool("true"));
 		Assert.assertTrue(Validator.isValidBool("false"));
@@ -132,7 +132,7 @@ public class ValidatorTests extends TestSequence {
 		
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void InstitutionRegexTest() {
 		Assert.assertTrue(Validator.isValidInstitution("The University Of Iowa"));
 		Assert.assertTrue(Validator.isValidInstitution("test"));
@@ -148,7 +148,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidInstitution("<script>"));
 	}
 	
-	@Test
+	@StarexecTest
 	private void IntRegexTest() {
 		Assert.assertTrue(Validator.isValidInteger("4"));
 		Assert.assertTrue(Validator.isValidInteger("-3835"));
@@ -162,7 +162,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidInteger(null));
 
 	}
-	@Test
+	@StarexecTest
 	private void ArchiveRegexTest() {
 		Assert.assertTrue(Validator.isValidArchiveType(".zip"));
 		Assert.assertTrue(Validator.isValidArchiveType(".tar"));
@@ -176,7 +176,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidArchiveType("<script>"));
 
 	}
-	@Test
+	@StarexecTest
 	private void DoubleRegexTest() {
 		Assert.assertTrue(Validator.isValidDouble("4.0"));
 		Assert.assertTrue(Validator.isValidDouble("-.9"));
@@ -191,7 +191,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertFalse(Validator.isValidDouble("3493.2de"));
 		Assert.assertFalse(Validator.isValidDouble(null));
 	}
-	@Test
+	@StarexecTest
 	private void EmailRegexTest() {
 		Assert.assertTrue(Validator.isValidEmail("test@uiowa.edu"));
 		Assert.assertTrue(Validator.isValidEmail("test_two@hotmail.com"));
@@ -204,7 +204,7 @@ public class ValidatorTests extends TestSequence {
 
 
 	}
-	@Test
+	@StarexecTest
 	private void IntegerListTest() {
 		Assert.assertTrue(Validator.isValidIntegerList(new String[]{"3","1"}));
 		Assert.assertTrue(Validator.isValidIntegerList(new String[]{"0","132929","3492"}));

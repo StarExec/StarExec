@@ -28,7 +28,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -110,7 +110,7 @@ public class SpaceExplorerTests extends TestSequence {
 		Thread.sleep(2000);
 	}
 	
-	@Test
+	@StarexecTest
 	private void linkSolverTest() throws InterruptedException {
 		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
 		linkPrimitiveTest("solverField","solvers");
@@ -119,7 +119,7 @@ public class SpaceExplorerTests extends TestSequence {
 		solvers.add(solver.getId());
 		Spaces.removeSolvers(solvers, space2.getId());
 	}
-	@Test
+	@StarexecTest
 	private void linkSolverTest2() throws InterruptedException {
 		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
 		linkPrimitiveTest("solverField","solvers");
@@ -128,7 +128,7 @@ public class SpaceExplorerTests extends TestSequence {
 		solvers.add(solver.getId());
 		Spaces.removeSolvers(solvers, space2.getId());
 	}
-	@Test
+	@StarexecTest
 	private void linkSolverTest3() throws InterruptedException {
 		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
 		linkPrimitiveTest("solverField","solvers");
@@ -137,7 +137,7 @@ public class SpaceExplorerTests extends TestSequence {
 		solvers.add(solver.getId());
 		Spaces.removeSolvers(solvers, space2.getId());
 	}
-	@Test
+	@StarexecTest
 	private void linkSolverTest4() throws InterruptedException {
 		Assert.assertEquals(1,Solvers.getAssociatedSpaceIds(solver.getId()).size());
 		linkPrimitiveTest("solverField","solvers");
@@ -148,7 +148,7 @@ public class SpaceExplorerTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void linkBenchmarkTest() throws InterruptedException {
 		//int benchId=benchmarkIds.get(0);
 		//Assert.assertEquals(1,Benchmarks.getAssociatedSpaceIds(benchId).size());
@@ -157,7 +157,7 @@ public class SpaceExplorerTests extends TestSequence {
 
 	}
 	
-	@Test
+	@StarexecTest
 	private void linkJobTest() throws InterruptedException {
 		List<Job>jobs=Spaces.getDetails(space2.getId(), user.getId()).getJobs();
 		Assert.assertEquals(0,jobs.size());

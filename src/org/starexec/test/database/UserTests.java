@@ -15,7 +15,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.Test;
+import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
@@ -40,7 +40,7 @@ public class UserTests extends TestSequence {
 		return Spaces.removeUsers(userId, space.getId());
 	}
 	
-	@Test
+	@StarexecTest
 	private void getUserByEmailTest() {
 		Assert.assertFalse(Users.getUserByEmail(TestUtil.getRandomEmail()));
 		Assert.assertTrue(Users.getUserByEmail(user1.getEmail()));
@@ -49,13 +49,13 @@ public class UserTests extends TestSequence {
 	}
 	
 	//TODO: Confirm the password was actually updated correctly?
-	@Test
+	@StarexecTest
 	private void setPasswordTest() {
 		String randomPass=TestUtil.getRandomPassword();
 		Assert.assertTrue(Users.updatePassword(user1.getId(), randomPass));
 	}
 	
-	@Test
+	@StarexecTest
 	private void getCommunitiesTest() {
 		List<Integer> commIds=Users.getCommunities(user1.getId());
 		Assert.assertEquals(0,commIds.size());
@@ -68,7 +68,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(found);
 	}
 	
-	@Test
+	@StarexecTest
 	private void registerUserTest() {
 		User u=new User();
 		u.setFirstName(TestUtil.getRandomUserName());
@@ -84,7 +84,7 @@ public class UserTests extends TestSequence {
 		Assert.assertNull(Users.get(u.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void AssociateOneUserOneSpace() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
@@ -98,7 +98,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(removeUserFromSpace(user1,space));
 	}
 	
-	@Test
+	@StarexecTest
 	private void AssociateManyUsersOneSpace() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
@@ -118,7 +118,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(removeUserFromSpace(user3,space));
 	}
 	
-	@Test
+	@StarexecTest
 	private void AssociateManyUsersSpaceHierarchy() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), subspace.getId()));
@@ -140,7 +140,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(removeUserFromSpace(user2,subspace));
 	}
 	
-	@Test 
+	@StarexecTest 
 	private void AssociateManyUsersManySpaces() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), subspace.getId()));
@@ -168,7 +168,7 @@ public class UserTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void deleteUserTest() {
 		User temp=ResourceLoader.loadUserIntoDatabase();
 		Assert.assertNotNull(Users.get(temp.getId()));
@@ -177,7 +177,7 @@ public class UserTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetUserTest() {
 		User temp=Users.get(user1.getId());
 		
@@ -189,7 +189,7 @@ public class UserTests extends TestSequence {
 		// should get null for a non-user
 		Assert.assertNull(Users.get(-1));
 	}
-	@Test
+	@StarexecTest
 	private void GetUserByEmailTest() {
 		User temp=Users.get(user1.getEmail());
 		
@@ -203,7 +203,7 @@ public class UserTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetAdminsTest() {
 		List<User> admins=Users.getAdmins();
 		for (User u : admins) {
@@ -213,7 +213,7 @@ public class UserTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetCountTest() {
 		int count=Users.getCount();
 		Assert.assertNotEquals(0,count);
@@ -226,13 +226,13 @@ public class UserTests extends TestSequence {
 	}
 	
 	
-	@Test
+	@StarexecTest
 	private void GetCountInSpaceTest() {
 		int count=Spaces.getUsers(space.getId()).size();
 		Assert.assertEquals(count, Users.getCountInSpace(space.getId()));
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetDiskUsageTest() {
 		Assert.assertEquals(0,Users.getDiskUsage(user1.getId()));
 		Solver solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user1.getId());
@@ -249,7 +249,7 @@ public class UserTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void SetDiskQuotaTest() {
 		long quota=Users.get(user1.getId()).getDiskQuota();
 		Assert.assertTrue(Users.setDiskQuota(user1.getId(), quota+1));
@@ -257,7 +257,7 @@ public class UserTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void SetAndGetDefaultPageSize() {
 		int pageSize=Users.getDefaultPageSize(user1.getId());
 		Assert.assertTrue(Users.setDefaultPageSize(user1.getId(), pageSize+1));
@@ -265,13 +265,13 @@ public class UserTests extends TestSequence {
 	}
 	
 	//TODO: Make this stronger?
-	@Test
+	@StarexecTest
 	private void GetPasswordTest() {
 		Assert.assertNotNull(Users.getPassword(user1.getId()));
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void GetTestUserTest() {
 		User testUser=Users.getTestUser();
 		Assert.assertNotNull(testUser);
@@ -279,7 +279,7 @@ public class UserTests extends TestSequence {
 		
 	}
 	
-	@Test
+	@StarexecTest
 	private void IsAdminTest() {
 		Assert.assertFalse(Users.isAdmin(user1.getId()));
 		Assert.assertFalse(Users.isAdmin(user2.getId()));
@@ -291,7 +291,7 @@ public class UserTests extends TestSequence {
 		}
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateFirstNameTest() {
 		String originalName=user1.getFirstName();
 		String newName=TestUtil.getRandomUserName();
@@ -301,7 +301,7 @@ public class UserTests extends TestSequence {
 		user1.setFirstName(newName);
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateLastNameTest() {
 		String originalName=user1.getLastName();
 		String newName=TestUtil.getRandomUserName();
@@ -311,7 +311,7 @@ public class UserTests extends TestSequence {
 		user1.setLastName(newName);
 	}
 	
-	@Test
+	@StarexecTest
 	private void updateInstitutionTest() {
 		String originalInst=user1.getInstitution();
 		String newInst=TestUtil.getRandomUserName();
@@ -321,7 +321,7 @@ public class UserTests extends TestSequence {
 		user1.setInstitution(newInst);
 
 	}
-	@Test
+	@StarexecTest
 	private void SuspendAndReinstateTest() {
 		Assert.assertFalse(Users.isSuspended(user1.getId()));
 		Assert.assertTrue(Users.suspend(user1.getId()));
