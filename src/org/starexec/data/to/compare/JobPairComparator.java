@@ -7,7 +7,6 @@ import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.test.TestSequence;
 
 public class JobPairComparator implements Comparator<JobPair> {
 	protected static final Logger log = Logger.getLogger(JobPairComparator.class);	

@@ -21,7 +21,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.test.TestManager;
+import org.starexec.test.integration.TestManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;

@@ -2,7 +2,7 @@ package org.starexec.data.security;
 
 import org.owasp.esapi.ESAPI;
 import org.starexec.data.database.Users;
-import org.starexec.test.TestManager;
+import org.starexec.test.integration.TestManager;
 import org.starexec.util.Hash;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;

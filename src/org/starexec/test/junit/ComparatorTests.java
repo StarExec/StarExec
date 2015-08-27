@@ -14,8 +14,8 @@ import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
+import org.starexec.test.integration.TestSequence;
 
 //this class ensures that all of the comparators in org/starexec/data/to/compare are working properly
 // by checking to see if they sort correctly on all their relevant columns

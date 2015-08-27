@@ -69,9 +69,9 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.test.TestManager;
-import org.starexec.test.TestResult;
-import org.starexec.test.TestSequence;
+import org.starexec.test.integration.TestManager;
+import org.starexec.test.integration.TestResult;
+import org.starexec.test.integration.TestSequence;
 import org.starexec.util.Hash;
 import org.starexec.util.LoggingManager;
 import org.starexec.util.LogUtil;
@@ -81,6 +81,7 @@ import org.starexec.util.Util;
 import org.starexec.util.Validator;
 import org.starexec.util.matrixView.Matrix;
 import org.starexec.util.matrixView.MatrixElement;
+
 
 
 import com.google.gson.Gson;

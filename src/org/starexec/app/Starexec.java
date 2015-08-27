@@ -32,7 +32,7 @@ import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.servlets.ProcessorManager;
-import org.starexec.test.TestManager;
+import org.starexec.test.integration.TestManager;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.Mail;
