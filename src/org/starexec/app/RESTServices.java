@@ -524,6 +524,7 @@ public class RESTServices {
 	public String getNodeDetails(@PathParam("id") int id, @Context HttpServletRequest request) {	
 		return gson.toJson(Cluster.getNodeDetails(id));
 	}
+
 	
 	/**
 	 * @return a json string representing all attributes of the queue with the given id
@@ -536,6 +537,14 @@ public class RESTServices {
 	public String getQueueDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
 		log.debug("getting queue details");
 		return gson.toJson(Queues.getDetails(id));
+	}
+
+	@GET
+	@Path("/cluster/queues/details/nodeCount/{queueId}")
+	@Produces("application/json")
+	public String getNumberOfNodesInQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
+		int numberOfNodes = Queues.getNodes(queueId).size();
+		return gson.toJson(numberOfNodes);
 	}
 	
 	/**
