@@ -1,8 +1,9 @@
-package org.starexec.test.database;
+package org.starexec.test.junit;
 
 import java.util.Random;
 
 import org.junit.Assert;
+import org.junit.Test;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
@@ -13,17 +14,16 @@ import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.test.StarexecTest;
 import org.starexec.test.TestSequence;
 import org.starexec.test.TestUtil;
 
 //this class ensures that all of the comparators in org/starexec/data/to/compare are working properly
 // by checking to see if they sort correctly on all their relevant columns
 
-public class ComparatorTests extends TestSequence {
+public class ComparatorTests {
 	Random rand=new Random();
-	@StarexecTest
-	private void benchmarkComparatorTest() {
+	@Test
+	public void benchmarkComparatorTest() {
 		BenchmarkComparator comp=new BenchmarkComparator(0,true);
 		
 		for (int x=0;x<100;x++) {
@@ -53,8 +53,8 @@ public class ComparatorTests extends TestSequence {
 		}
 	}
 	
-	@StarexecTest
-	private void solverComparatorTest() {
+	@Test
+	public void solverComparatorTest() {
 		SolverComparator comp=new SolverComparator(0,true);
 		
 		for (int x=0;x<100;x++) {
@@ -96,8 +96,8 @@ public class ComparatorTests extends TestSequence {
 		}
 	}
 	
-	@StarexecTest
-	private void JobPairComparatorTest() {
+	@Test
+	public void JobPairComparatorTest() {
 		JobPairComparator comp=new JobPairComparator(0,0,true);
 		for (int x=0;x<100;x++) {
 			String a=TestUtil.getRandomAlphaString(rand.nextInt(10)+2);
@@ -182,26 +182,9 @@ public class ComparatorTests extends TestSequence {
 		}
 	}
 	
-	@StarexecTest
-	private void SolverComparisionComparatorTest() {
+	@Test
+	public void SolverComparisionComparatorTest() {
 		SolverComparisonComparator comp=new SolverComparisonComparator(0,false,true,0);
-	}
-	
-	@Override
-	protected String getTestName() {
-		return "ComparatorTests";
-	}
-
-	@Override
-	protected void setup() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	protected void teardown() throws Exception {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

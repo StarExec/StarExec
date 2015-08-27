@@ -64,7 +64,6 @@ public class TestManager {
 		tests.add(new DefaultSettingsTests());
 		tests.add(new UploadTests());
 		tests.add(new RequestsTests());
-		tests.add(new ComparatorTests());
 		tests.add(new PipelineTests());
 		tests.add(new TreeNodeTests());
 		//tests.add(new LoginTests());
