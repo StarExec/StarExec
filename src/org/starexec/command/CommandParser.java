@@ -781,7 +781,6 @@ class CommandParser {
 				}
 				
 				if (status==R.SUCCESS_JOBDONE) {
-					
 					outputDone=true;
 				}
 				
@@ -814,7 +813,6 @@ class CommandParser {
 	protected int handleGetCommand(String c, HashMap<String,String> commandParams) {
 		
 		try {
-			System.out.println("Processing your download request, please wait. This will take some time for large files");
 			int serverStatus=0;
 			
 			String procClass=null;
@@ -884,6 +882,7 @@ class CommandParser {
 			else {
 				return Status.ERROR_BAD_COMMAND;
 			}
+			System.out.println("Processing your download request, please wait. This will take some time for large files");
 			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {
 				System.out.println("Download complete");
