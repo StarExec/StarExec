@@ -1,0 +1,9 @@
+/* 
+ 
+ Shared between admin/cluster and explore/cluster 
+
+ */ 
+.nodeCount {
+	float: right;
+	margin-right: 30;
+}

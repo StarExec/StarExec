@@ -10,7 +10,10 @@ $(document).ready(function(){
 	 var id = -1;
 	 curQueueId=-1;
 	// Initialize the jstree plugin for the community list
-	jQuery("#exploreList").jstree({  
+	$("#exploreList").bind("loaded.jstree", function(e, data) {
+		 // Register a callback for when the jstree has finished loading
+		addNodeCountsToTree();
+	}).jstree({  
 		"json_data" : { 
 			"ajax" : { 
 				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from
