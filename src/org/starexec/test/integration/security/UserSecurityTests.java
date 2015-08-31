@@ -28,7 +28,10 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertEquals(true,UserSecurity.canDeleteUser(user2.getId(), admin.getId()).isSuccess());
 
 		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user1.getId()).isSuccess());
-		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(admin.getId(), user1.getId()).isSuccess());
+
+		// Users can delete any users that are not admins.
+		Assert.assertEquals(true,UserSecurity.canDeleteUser(admin.getId(), user1.getId()).isSuccess());
+
 		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(admin.getId(), admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user2.getId()).isSuccess());
 	}

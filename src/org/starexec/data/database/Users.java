@@ -1104,12 +1104,6 @@ public class Users {
 				log.debug("security permission error when trying to delete user with id = "+userIdToDelete);
 				return false;
 			}
-			if (!Users.isTestUser(userIdToDelete)) {
-				log.debug("can't delete user with id = "+userIdToDelete+" because they are not a test user");
-				return false; //we only want to delete test users for now
-			}
-			
-			
 			
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteUser(?)}");
