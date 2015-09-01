@@ -23,7 +23,7 @@ public class HTMLParser {
 	 * @author Eric Burns
 	 */
 	
-	protected static String URLEncode(String u, HashMap<String,String> params) {
+	public static String URLEncode(String u, HashMap<String,String> params) {
 		StringBuilder answer=new StringBuilder();
 		answer.append(u);
 		answer.append("?");
@@ -57,13 +57,16 @@ public class HTMLParser {
 	}
 	
 	/**
-	 * If present, extracts the name and value from the current html line. Returns null if it doesn't exist
-	 * @param htmlString The string to be processed
+	 * If present, extracts the name and value from the current html line. Returns null if it doesn't exist.
+	 * @param htmlString The string to be processed. If the string contains more than one name tag or more
+	 * than one value tag, the first occurrences are used and later ones are ignored.
 	 * @return A BasicNameValuePair containing the name and the value of an html tag.
 	 * @author Eric Burns
 	 */
-	protected static BasicNameValuePair extractNameValue(String htmlString) {
-		
+	public static BasicNameValuePair extractNameValue(String htmlString) {
+		if (htmlString==null) {
+			return null;
+		}
 		int startNameIndex=htmlString.indexOf("name=");
 		if (startNameIndex<0) {
 			return null;
@@ -88,7 +91,7 @@ public class HTMLParser {
 	 * @param type The type of primitive that could be present
 	 * @return The name if it exists or null if it does not
 	 */
-	protected static String extractNameFromJson(String jsonString, String type) {
+	public static String extractNameFromJson(String jsonString, String type) {
 		
 		//spaces are formatted differently from any other primitive
 		if (type.equals("spaces")) {
@@ -131,14 +134,18 @@ public class HTMLParser {
 	}
 
 	/**
-	 * Given a Json string formatted as StarExec does it's first line in a table
+	 * Given a Json string formatted as StarExec does its first line in a table
 	 * extract the ID of a primitive
 	 * @param jsonString The Json string to test for an ID
 	 * @return The ID if it exists or null if it does not
 	 */
-	protected static Integer extractIDFromJson(String jsonString) {
-		
-		//IDs are stored as the 'value' of a hidden input
+	public static Integer extractIDFromJson(String jsonString) {
+		if (jsonString==null) {
+			return null;
+		}
+		//IDs are stored as  the 'value' of a hidden input
+		//This chunk of code finds the hidden attribute and moves backwards
+		// to the start of the tag, which is opened by <
 		int startIndex=jsonString.indexOf("type=\"hidden\"");
 		while (startIndex>=0 && jsonString.charAt(startIndex)!='<') {
 			startIndex-=1;
@@ -146,16 +153,12 @@ public class HTMLParser {
 		if (startIndex<0) {
 			return null;
 		}
+		// next, we identify the value of the value attribute inside of the hidden tag
 		startIndex=jsonString.indexOf("value",startIndex);
 		if (startIndex<0) {
 			return null;
 		}
-		startIndex+=7;
-		int endIndex=startIndex+1;
-		while (endIndex<jsonString.length() && jsonString.charAt(endIndex)!='"') {
-			endIndex+=1;
-		}
-		String id=jsonString.substring(startIndex,endIndex);
+		String id=extractQuotedString(jsonString,startIndex+6);
 		if (Validator.isValidPosInteger(id)) {
 			return Integer.valueOf(id);
 		}	
@@ -172,7 +175,6 @@ public class HTMLParser {
 		String value=extractCookie(headers,cookieName);
 		if (value==null){
 			return null;
-			
 		}
 
 		return value.replace("\"", "").split(",");
@@ -189,9 +191,15 @@ public class HTMLParser {
 	 */
 	
 	public static String extractCookie(Header[] headers, String cookieName) {
-		
+		if (headers==null || cookieName==null) {
+			return null;
+		}
 		for (Header x : headers) {
+			// cookies are parsed in the code below. Note that cookies are in a form like
+			// Set-Cookie: name=Nicholas; expires=Sat, 02 May 2009 23:38:25 GMT
+			// where all cookies are on a single semicolon-delimited line.
 			if (x.getName().equals("Set-Cookie")) {
+
 				String value=x.getValue().trim();
 				if (value.contains(cookieName)) {
 					int begin=value.indexOf(cookieName);

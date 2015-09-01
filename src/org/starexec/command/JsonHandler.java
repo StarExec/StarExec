@@ -12,7 +12,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-class JsonHandler {
+public class JsonHandler {
 	/**
 	 * Given an HttpRespone with a JsonElement in its content, returns
 	 * the JsonElement
@@ -21,7 +21,7 @@ class JsonHandler {
 	 * @throws Exception
 	 */
 	
-	protected static JsonElement getJsonString(HttpResponse response) throws Exception {
+	public static JsonElement getJsonString(HttpResponse response) throws Exception {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
 		StringBuilder builder = new StringBuilder();
 		for (String line = null; (line = reader.readLine()) != null;) {
@@ -89,7 +89,7 @@ class JsonHandler {
 	 * @param response
 	 * @return The object, or null if none existed
 	 */
-	protected static JsonObject getJsonObject(HttpResponse response) {
+	public static JsonObject getJsonObject(HttpResponse response) {
 		try {
 
 			JsonElement jsonE=JsonHandler.getJsonString(response);
