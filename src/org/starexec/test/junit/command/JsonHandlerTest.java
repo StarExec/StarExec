@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class JsonHandlerTest {
 		HttpResponse response = Mockito.mock(HttpResponse.class);
 		HttpEntity mockEntity = Mockito.mock(HttpEntity.class);
 		Mockito.when(response.getEntity()).thenReturn(mockEntity);
-		Mockito.when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream("hello!".getBytes(StandardCharsets.UTF_8)));
+		Mockito.when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream("hello!".getBytes("UTF-8")));
 		JsonElement e = JsonHandler.getJsonString(response);
 		assertEquals("\"hello!\"", e.toString());
 	}
