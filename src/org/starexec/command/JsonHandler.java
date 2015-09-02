@@ -31,23 +31,6 @@ public class JsonHandler {
 		return parser.parse(builder.toString());
 		
 	}
-	/**
-	 * Gets an integer code as encoded in json
-	 * @param response
-	 * @return
-	 */
-	protected static Integer getIntegerJsonCode(HttpResponse response) {
-		try {
-
-			JsonElement jsonE=JsonHandler.getJsonString(response);
-		
-			JsonPrimitive p=jsonE.getAsJsonPrimitive();
-			return p.getAsInt();
-		} catch (Exception e) {
-			return -1;
-		}
-	}
-	
 	
 	/**
 	 * Gets back a status message from a ValidatorStatusCode sent back from the server

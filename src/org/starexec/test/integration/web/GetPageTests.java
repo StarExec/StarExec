@@ -137,7 +137,7 @@ public class GetPageTests extends TestSequence {
 	
 	@StarexecTest
 	private void getJobPanelViewTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()));
+		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()+"&stage=1"));
 	}
 	
 	@StarexecTest
