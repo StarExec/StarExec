@@ -200,6 +200,11 @@ function initUI(){
 		useSelectedBenchmark();
 		e.preventDefault();
 	});
+	$("#deleteUser").button({
+		icons: {
+			primary: "ui-icon-close"
+		}
+	});	
 	
 	 $("#solverList").dataTable({ 
 			"sDom"			: 'rt<"bottom"flpi><"clear">',

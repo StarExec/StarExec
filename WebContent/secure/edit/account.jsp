@@ -1,5 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
-<%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%> <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
@@ -19,8 +18,11 @@
 		if(t_user != null) {
 			
 			boolean owner = true;
-			boolean isadmin = Users.hasAdminReadPrivileges(visiting_userId);
-			if( (visiting_userId != userId) && !isadmin){
+			boolean hasAdminReadPrivileges = Users.hasAdminReadPrivileges(visiting_userId);
+			boolean hasAdminWritePrivileges = Users.hasAdminWritePrivileges(visiting_userId);
+			// The user can be deleted if the visting user has admin write privileges and the user being deleted is NOT an admin.
+			boolean canDeleteUser =  hasAdminWritePrivileges && !Users.isAdmin(userId);
+			if( (visiting_userId != userId) && !hasAdminReadPrivileges){
 				owner = false;
 			} else {
 				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
@@ -40,7 +42,9 @@
 			}
 			
 			request.setAttribute("owner", owner);
-			request.setAttribute("isadmin", isadmin);
+			request.setAttribute("canDeleteUser", canDeleteUser);
+			request.setAttribute("hasAdminReadPrivileges", hasAdminReadPrivileges);
+			request.setAttribute("hasAdminWritePrivileges", hasAdminWritePrivileges);
 			request.setAttribute("user", t_user);
 		}
 	} catch (Exception e) {
@@ -99,7 +103,7 @@
 		</table>
 		<h6>(click the current value of an attribute to edit it)</h6>
 	</fieldset>
-	<c:if test="${isadmin}">
+	<c:if test="${hasAdminReadPrivileges}">
 		<fieldset>
 			<legend>user disk quota</legend>
 				<table id="diskUsageTable" class="shaded" uid=${userId}>
@@ -340,6 +344,12 @@
 		<button id="useBenchmark">use selected benchmark</button>
 		
 	</fieldset>
+	<c:if test="${canDeleteUser}">
+		<fieldset>
+			<legend>delete user</legend>
+			<button id="deleteUser">delete user</button>
+		</fieldset>
+	</c:if>
 	
 	<div id="dialog-confirm-delete" title="confirm delete">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
