@@ -15,8 +15,6 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.ggf.drmaa.JobTemplate;
-import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
@@ -53,15 +51,6 @@ public abstract class JobManager {
 	private static final Logger log = Logger.getLogger(JobManager.class);
 
 	private static String mainTemplate = null; // initialized below
-
-	private static Session session = null; // used in submitScript() below.
-
-	/** Initialize the GridEngine session. This must be done before calling checkPendingJobs(). 
-	 * @author Aaron Stump
-	 */
-	public static void setSession(Session _session) {
-		session = _session;
-	}
 
     public synchronized static boolean checkPendingJobs(){
     	try {
@@ -310,76 +299,8 @@ public abstract class JobManager {
 	} // end submitJobs()
 
 
-	/**
-	 * Takes in a job script and submits it to the grid engine
-	 * @param the current SGE Session (which we will not release)
-	 * @param scriptPath The absolute path to the script
-	 * @param pair The pair the script is being submitted for
-	 * @return The grid engine id of the submitted job. -1 if the submit failed
-	 * @throws Exception 
-	 */
-	private synchronized static int submitScript(String scriptPath, JobPair pair) throws Exception {
-		JobTemplate sgeTemplate = null;
-
-		try {
-			sgeTemplate = null;		
-
-			// Set up the grid engine template
-			sgeTemplate = session.createJobTemplate();
-			//log.debug("submitScript - Create Job Template for  " + pair.getId());
-
-			// DRMAA needs to be told to expect a shell script and not a binary
-			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
-			//log.debug("submitScript - Set Native Specification for  " + pair.getId());
-
-			// Tell the job where it will deal with files
-			sgeTemplate.setWorkingDirectory("/export/starexec/sandbox");
-			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
-
-			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)
-			
-			String logPath=JobPairs.getLogFilePath(pair);
-			File file=new File(logPath);
-			file.getParentFile().mkdirs();
-			
-			if (file.exists()) {
-			    log.info("Deleting old log file for " + pair.getId());
-			    file.delete();
-			}
-
-			sgeTemplate.setOutputPath(":" + logPath);
-			//log.debug("submitScript - Set Output Path for  " + pair.getId());
-
-			// Tell the job where the script to be executed is
-			sgeTemplate.setRemoteCommand(scriptPath);	        
-			//log.debug("submitScript - Set Remote Command for  " + pair.getId());
-
-			// Actually submit the job to the grid engine
-			String id = session.runJob(sgeTemplate);
-			log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath)); 
-
-			return Integer.parseInt(id);
-		} catch (org.ggf.drmaa.DrmaaException drme) {
-			log.warn("script Path = " + scriptPath);
-			//log.warn("sgeTemplate = " +sgeTemplate.toString());
-			JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
-			log.error("submitScript says " + drme.getMessage(), drme);
-		} catch (Exception e) {
-			JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
-			log.error(e.getMessage(), e);
-		} finally {
-			// Cleanup. Session's MUST be exited or SGE will be mean to you
-			if(sgeTemplate != null) {
-				session.deleteJobTemplate(sgeTemplate);
-			}
-
-		}
-
-		return -1;
-	}
-
     protected static String base64encode(String s) {
-	return new String(Base64.encodeBase64(s.getBytes()));
+    	return new String(Base64.encodeBase64(s.getBytes()));
     }
 
 	/**
@@ -862,9 +783,8 @@ public abstract class JobManager {
 	 * 
 	 * @param spaceId the id of the space we start in
 	 * @param userId the id of the user creating the job
-	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
-	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
+	 * @param path The path to use for each job pair created.
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
