@@ -235,17 +235,15 @@ public abstract class JobManager {
 							+"for job " + s.job.getId() 
 							+ ", queue = "+q.getName() 
 							+ ", user = "+s.job.getUserId());
-
-					
-					//skip if this user has many more pairs than some other user
-					if (monitor.skipUser(s.job.getUserId())) {
-						log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
-						continue;
-					}
 					
 					int i = 0;
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
-
+						//skip if this user has many more pairs than some other user
+						log.debug("user "+s.job.getUserId()+" has a load of "+monitor.getLoad(s.job.getUserId()));
+						if (monitor.skipUser(s.job.getUserId())) {
+							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							break;
+						}
 
 						JobPair pair = s.pairIter.next();
 						monitor.increaseLoad(s.job.getUserId(), s.job.getWallclockTimeout());
