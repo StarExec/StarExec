@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.starexec.constants.R;
@@ -91,14 +92,10 @@ public class LoadBalanceMonitor {
 	 * of users.
 	 * @param userIds
 	 */
-	public void setUsers(List<Integer> userIds) {
-		HashSet<Integer> ids = new HashSet<Integer>();
-		for (Integer i : userIds) {
-			ids.add(i);
-		}
+	public void setUsers(Set<Integer> userIds) {
 		List<Integer> usersToRemove = new ArrayList<Integer>();
 		for (Integer i : loads.keySet()) {
-			if (!ids.contains(i)) {
+			if (!userIds.contains(i)) {
 				// the user cannot be removed directly on this line because
 				// it would cause a concurrent modification exception.
 				usersToRemove.add(i);

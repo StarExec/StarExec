@@ -52,6 +52,8 @@ public abstract class JobManager {
 
 	private static String mainTemplate = null; // initialized below
 
+	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+	
     public synchronized static boolean checkPendingJobs(){
     	try {
     		log.debug("about to check if the system is paused");
@@ -128,6 +130,18 @@ public abstract class JobManager {
 			pairIter = _pairIter;
 		}
 	}
+	
+	/**
+	 * Gets the load balance monitor for a particular queue.
+	 * @param queueId The ID of the queue to get the monitor for
+	 * @return
+	 */
+	private static LoadBalanceMonitor getMonitor(int queueId) {
+		if (!queueToMonitor.containsKey(queueId)) {
+			queueToMonitor.put(queueId, new LoadBalanceMonitor(R.NUM_JOB_PAIRS_AT_A_TIME));
+		}
+		return queueToMonitor.get(queueId);
+	}
 
 	/**
 	 * Submits a job to the grid engine
@@ -137,7 +151,8 @@ public abstract class JobManager {
 	 * @param nodeCount The number of nodes in the given queue
 
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {		
+	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
+		LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
 
 			
@@ -175,9 +190,6 @@ public abstract class JobManager {
 			 *
 			 */
 
-			
-			HashMap<Integer,Integer> usersToPairCounts=new HashMap<Integer,Integer>();
-
 			int count = queueSize;
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
@@ -197,23 +209,18 @@ public abstract class JobManager {
 				Iterator<SchedulingState> it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				usersToPairCounts=new HashMap<Integer,Integer>();
+				Set<Integer> pendingUsers=new HashSet<Integer>();
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
-					int userId=s.job.getUserId();
-					usersToPairCounts.put(userId,0);
+					pendingUsers.add(s.job.getUserId());
 				}
-				for (Integer uid : usersToPairCounts.keySet()) {
-					usersToPairCounts.put(uid,Queues.getSizeOfQueue(q.getId(),uid));	
-				}
-				it = schedule.iterator();
-				int min=Collections.min(usersToPairCounts.values());
-				int max=Collections.max(usersToPairCounts.values());
+				//TODO: Each user currently defaults to a usage of 0. The usage should 
+				//actually default to the sum of wallclock timeouts of all the pairs they currently have
+				//running.
+				monitor.setUsers(pendingUsers);
 				
-				boolean excludeUsers=((max-R.NUM_JOB_PAIRS_AT_A_TIME)>min); // will we exclude users who have too many pairs this time
+				it = schedule.iterator();
 
-				log.debug("the max pairs by user = "+max);
-				log.debug("the min pairs by user = "+min);
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
 
@@ -229,22 +236,19 @@ public abstract class JobManager {
 							+ ", queue = "+q.getName() 
 							+ ", user = "+s.job.getUserId());
 
-					int i = 0;
 					
-					if (excludeUsers) {
-						
-						int curCount=usersToPairCounts.get(s.job.getUserId());
-						//skip if this user has many more pairs than some other user
-						if (curCount>(max-R.NUM_JOB_PAIRS_AT_A_TIME)) {
-							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
-							continue;
-						}
+					//skip if this user has many more pairs than some other user
+					if (monitor.skipUser(s.job.getUserId())) {
+						log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+						continue;
 					}
 					
+					int i = 0;
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 
 
 						JobPair pair = s.pairIter.next();
+						monitor.increaseLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
 							//submission failed and move on

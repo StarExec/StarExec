@@ -2,7 +2,9 @@ package org.starexec.test.junit.jobs;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -83,7 +85,7 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testSetUsersEmptyMonitor() {
-		List<Integer> users = new ArrayList<Integer>();
+		Set<Integer> users = new HashSet<Integer>();
 		users.add(1);
 		users.add(2);
 		users.add(3);
@@ -98,7 +100,7 @@ public class LoadBalanceMonitorTests {
 	public void testSetUsersNoOverlap() {
 		monitor.addUser(4);
 		monitor.increaseLoad(4, 5);
-		List<Integer> users = new ArrayList<Integer>();
+		Set<Integer> users = new HashSet<Integer>();
 		users.add(1);
 		users.add(2);
 		users.add(3);
@@ -116,7 +118,7 @@ public class LoadBalanceMonitorTests {
 		monitor.addUser(2);
 		monitor.increaseLoad(1, 2);
 		monitor.increaseLoad(2, 2);
-		List<Integer> users = new ArrayList<Integer>();
+		Set<Integer> users = new HashSet<Integer>();
 		users.add(1);
 		users.add(2);
 		monitor.setUsers(users);
