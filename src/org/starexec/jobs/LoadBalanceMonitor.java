@@ -128,7 +128,7 @@ public class LoadBalanceMonitor {
 	 * @return
 	 */
 	public boolean skipUser(int userId) {
-		Long userLoad = loads.get(userId);
+		Long userLoad = this.getLoad(userId);
 		return userLoad - getMin() > loadDifferenceThreshold;	
 	}
 	

@@ -169,8 +169,9 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
-				
-				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, ((nodeCount*R.NODE_MULTIPLIER)-queueSize)/joblist.size() + 1);
+				// for every job, retrieve no more than the number of pairs that would fill the queue. 
+				// retrieving more than this is wasteful.
+				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
 				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId(),limit).iterator();
 
 				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
@@ -189,15 +190,13 @@ public abstract class JobManager {
 			 * schedule.  
 			 *
 			 */
-
-			int count = queueSize;
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
 			int maxLoops=300;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
 				curLoops++;
-				if (count >= R.NODE_MULTIPLIER * nodeCount) {
+				if (queueSize >= R.NODE_MULTIPLIER * nodeCount) {
 					break; // out of while (!schedule.isEmpty())
 
 				}
@@ -226,6 +225,8 @@ public abstract class JobManager {
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
+						// because we retrieve enough pairs for every job to fill the queue if possible, this 
+						// should mean that this job has been completely submitted.
 						it.remove();
 						continue;
 					}		
@@ -260,8 +261,6 @@ public abstract class JobManager {
 							// Write the script that will run this individual pair				
 							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
 
-							
-
 							String logPath=JobPairs.getLogFilePath(pair);
 							File file=new File(logPath);
 							file.getParentFile().mkdirs();
@@ -285,12 +284,12 @@ public abstract class JobManager {
 							} else{
 							    JobPairs.setPairStatus(pair.getId(),errorCode);
 							}
-							count++; 
+							queueSize++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
 							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
-					}	
+					}
 				} // end iterating once through the schedule
 			} // end looping until schedule is empty or we have submitted enough job pairs
 
