@@ -53,12 +53,14 @@ CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	END //	
 
 	
--- Gets the number of enqueued job pairs for a given queue and user
-DROP PROCEDURE IF EXISTS GetQueueSizeByUser;
-CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
+-- Gets the sum of wallclock timeouts for all 
+DROP PROCEDURE IF EXISTS GetUserLoadOnQueue;
+CREATE PROCEDURE GetUserLoadOnQueue(IN _queueId INT, IN _user INT)
 	BEGIN
-		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
-                WHERE (job_pairs.status_code=4) AND jobs.queue_id = _queueId AND jobs.user_id=_user;
+		SELECT SUM(jobs.clockTimeout) AS load FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
+                WHERE (job_pairs.status_code=4 OR job_pairs.status_code=3
+                OR job_pairs.status_code=2 OR job_pairs.status_code=5)
+                AND jobs.queue_id = _queueId AND jobs.user_id=_user;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given queue id

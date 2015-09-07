@@ -178,9 +178,20 @@ public abstract class JobManager {
 
 				schedule.add(s);
 			}
+			
+			// maps user IDs to the total 'load' that user is responsible for on the current queue,
+			// where load is the sum of wallclock timeouts of all active pairs on the queue
+			HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			Iterator<SchedulingState> it = schedule.iterator();
+			while (it.hasNext()) {
+				SchedulingState s = it.next();
+				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
+					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
+				}
+			}
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
-
+			
 			/*
 			 * we are going to loop through the schedule adding a few job
 			 * pairs at a time to SGE.  If the count of jobs enqueued
@@ -205,17 +216,15 @@ public abstract class JobManager {
 					break;
 				}
 
-				Iterator<SchedulingState> it = schedule.iterator();
+				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				Set<Integer> pendingUsers=new HashSet<Integer>();
+				HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
-					pendingUsers.add(s.job.getUserId());
+					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
-				//TODO: Each user currently defaults to a usage of 0. The usage should 
-				//actually default to the sum of wallclock timeouts of all the pairs they currently have
-				//running.
+				
 				monitor.setUsers(pendingUsers);
 				
 				it = schedule.iterator();

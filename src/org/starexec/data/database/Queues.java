@@ -893,28 +893,27 @@ public class Queues {
 	}
 	
 	/**
-	 * Returns the number of job pairs running in the given queue that are owned by the given user
+	 * Returns the sum of wallclock timeouts for all pairs that are in the given queue (running
+	 * or enqueued) that are owned by the given user.
 	 * @param queueId The queue in question
-	 * @param userId The ID of the user who owns the pairs we are counting
-	 * @return The integer number of job pairs, or null on failure
+	 * @param userId The ID of the user who owns the pairs
+	 * @return The integer sum of wallclock timeouts, or null on failure
 	 */
 
-	public static Integer getSizeOfQueue(int queueId, int userId) {
+	public static Integer getUserLoadOnQueue(int queueId, int userId) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetQueueSizeByUser(?,?)}");					
+			 procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
 			procedure.setInt(1, queueId);					
 			procedure.setInt(2, userId);
 			 results = procedure.executeQuery();
 
-			Integer qSize = -1;
 			while(results.next()){
-				qSize = results.getInt("count");	
+				return results.getInt("load");	
 			}							
-			return qSize;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

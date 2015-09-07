@@ -40,6 +40,14 @@ public class LoadBalanceMonitor {
 		return minimum;
 	}
 	
+	/**
+	 * 
+	 * This function is only used by testing right now, and it is likely not useful for
+	 * production code, as the load values are manipulated internally by functions like
+	 * setUsers.
+	 * @param userId
+	 * @return
+	 */
 	public Long getLoad(int userId) {
 		return loads.get(userId);
 	}
@@ -51,6 +59,9 @@ public class LoadBalanceMonitor {
 	private void decrementAll(Long val) {
 		for (Integer i : loads.keySet()) {
 			loads.put(i, loads.get(i) - val);
+		}
+		if (minimum!=null) {
+			minimum-=val;
 		}
 	}
 	
@@ -65,18 +76,14 @@ public class LoadBalanceMonitor {
 	 * If the user is already present, nothing is done
 	 * @param userId
 	 */
-	public void addUser(int userId) {
+	public void addUser(int userId, long defaultLoad) {
 		if (loads.containsKey(userId)) {
 			return;
 		}
-		Long min = getMin();
-		if ( min!= null && min > 0) {
-			decrementAll(min);
+		if (minimum==null || defaultLoad < minimum) {
+			minimum = defaultLoad;
 		}
-		minimum = 0l;
-		if (!loads.containsKey(userId)) {
-			loads.put(userId, 0l);
-		}
+		loads.put(userId, defaultLoad);
 	}
 	
 	/**
@@ -92,10 +99,10 @@ public class LoadBalanceMonitor {
 	 * of users.
 	 * @param userIds
 	 */
-	public void setUsers(Set<Integer> userIds) {
+	public void setUsers(HashMap<Integer, Integer> userIdsToDefaults) {
 		List<Integer> usersToRemove = new ArrayList<Integer>();
 		for (Integer i : loads.keySet()) {
-			if (!userIds.contains(i)) {
+			if (!userIdsToDefaults.containsKey(i)) {
 				// the user cannot be removed directly on this line because
 				// it would cause a concurrent modification exception.
 				usersToRemove.add(i);
@@ -104,8 +111,17 @@ public class LoadBalanceMonitor {
 		for (Integer i : usersToRemove) {
 			removeUser(i);
 		}
-		for (Integer i : userIds) {
-			addUser(i);
+		
+		// This block of code decrements all the existing load values
+		// by the current minimum load value. This is done so that
+		// new users (who are added next) are not given preference
+		// over the users that were running jobs before.
+		Long min = getMin();
+		if ( min!= null && min > 0) {
+			decrementAll(min);
+		}
+		for (Integer i : userIdsToDefaults.keySet()) {
+			addUser(i, userIdsToDefaults.get(i));
 		}
 	}
 	
