@@ -1158,8 +1158,8 @@ public class Connection {
 	 * @return 0 on success, or a negative integer status code on failure
 	 */
 	
-	public int removeSubspace(List<Integer> subspaceIds, Integer spaceID, Boolean recyclePrims) {
-		return removePrimitives(subspaceIds, spaceID,"subspace", recyclePrims);
+	public int removeSubspace(List<Integer> subspaceIds, Boolean recyclePrims) {
+		return removePrimitives(subspaceIds, null, "subspace", recyclePrims);
 	}
 	
 	/**

@@ -1208,16 +1208,16 @@ public class Spaces {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetSpaceById(?)}");
+			procedure = con.prepareCall("{CALL GetSpaceById(?)}");
 			procedure.setInt(1, spaceId);					
-			 results = procedure.executeQuery();
-			String communityName = null;
+			results = procedure.executeQuery();
+			String name = null;
 
 			if(results.next()){
-				communityName = results.getString("name");
+				name = results.getString("name");
 			}
 
-			return communityName;
+			return name;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

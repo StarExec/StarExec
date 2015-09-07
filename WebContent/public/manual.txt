@@ -442,9 +442,9 @@ OPTIONAL: None
 -- removesubspace -Removes a subspace from a given space. "id" is the subspace ID. If "recycleprims" is present,
 				   all solvers and benchmarks present in the space hierarchy rooted at the given space that 
 				   you have permission to recycle will be recycled.
-REQUIRED: "id" "from"
+REQUIRED: "id"
 OPTIONAL: "recycleprims" 
-EXAMPLE: 'removesubspace id=10 from=4 recycleprims='
+EXAMPLE: 'removesubspace id=10 recycleprims='
 
 -- removeuser -Removes a user from a given space. "id" is the user ID.
 REQUIRED: "id" "from"

@@ -331,12 +331,16 @@ class ArgumentParser {
 	 */
 	protected int removePrimitive(HashMap<String,String> commandParams,String type) {
 		try {
-			int valid=Validator.isValidRemoveRequest(commandParams);
+			int valid=Validator.isValidRemoveRequest(commandParams, type);
 			if (valid<0) {
 				return valid;
 			}
+			Integer fromSpace = -1;
+			if (!type.equals("subspace")) {
+				fromSpace = Integer.parseInt(commandParams.get(R.PARAM_FROM));
+			}
 			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
-			return con.removePrimitives(ids, Integer.parseInt(commandParams.get(R.PARAM_FROM)), type, commandParams.containsKey(R.PARAM_DELETE_PRIMS));
+			return con.removePrimitives(ids, fromSpace, type, commandParams.containsKey(R.PARAM_RECYCLE_PRIMS));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}

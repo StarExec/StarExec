@@ -258,7 +258,7 @@ public class R {
 	public static String PARAM_GUEST="guest";
 	public static String PARAM_FROM="from";
 	public static String PARAM_TO="to";
-	public static String PARAM_DELETE_PRIMS="recycleprims";
+	public static String PARAM_RECYCLE_PRIMS="recycleprims";
 	public static String PARAM_INCLUDE_IDS="incids";
 	public static String PARAM_EXCLUDE_SOLVERS="nosolve";
 	public static String PARAM_EXCLUDE_BENCHMARKS="nobench";

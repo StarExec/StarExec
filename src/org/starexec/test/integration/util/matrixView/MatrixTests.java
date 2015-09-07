@@ -1,4 +1,4 @@
-package org.starexec.test.util.matrixView;
+package org.starexec.test.integration.util.matrixView;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -39,6 +39,7 @@ public class Validator {
 	//the following lists specify the parameters, either required or optional, that are accepted by a certain
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
+	private static String[] allowedRemoveSubspaceParams = new String[] {R.PARAM_ID, R.PARAM_RECYCLE_PRIMS};
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedDownloadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_GET_ATTRIBUTES,R.PARAM_PROCID};
 
@@ -87,20 +88,29 @@ public class Validator {
 	
 	/**
 	 * Checks whether the incoming arguments satisfy a request to remove a primitive
-	 * @param commandParams Arguments given by teh user
+	 * @param commandParams Arguments given by the user
+	 * @param type The type of primitive being removed.
 	 * @return An integer status code as defined in Status.
 	 */
-	public static int isValidRemoveRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
-			return Status.ERROR_MISSING_PARAM;
+	public static int isValidRemoveRequest(HashMap<String,String> commandParams, String type) {
+		if (type.equals("subspace")) {
+			if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+				return Status.ERROR_MISSING_PARAM;
+			}
+			findUnnecessaryParams(allowedRemoveSubspaceParams,commandParams);
+
+		} else {
+			if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
+				return Status.ERROR_MISSING_PARAM;
+			}
+			findUnnecessaryParams(allowedRemoveParams,commandParams);
+			if (!isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+				return Status.ERROR_INVALID_ID;
+			}
 		}
-		
-		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))
-				|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
-		
-		findUnnecessaryParams(allowedRemoveParams,commandParams);
 		return 0;
 	}
 	

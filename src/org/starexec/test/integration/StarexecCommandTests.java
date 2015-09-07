@@ -636,11 +636,17 @@ public class StarexecCommandTests extends TestSequence {
 	@StarexecTest
 	private void removeSpacesTest() {
 		Space tempSpace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
-
 		List<Integer> id=new ArrayList<Integer>();
 		id.add(tempSpace.getId());
 		Assert.assertNotNull(Spaces.getName(tempSpace.getId()));
-		Assert.assertEquals(0,con.removeSubspace(id,testCommunity.getId(),false));
+		Assert.assertEquals(0,con.removeSubspace(id, false));
+		try {
+			// wait for a few seconds because spaces are removed in a separate thread
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			//pass
+		}
+		
 		Assert.assertNull(Spaces.getName(tempSpace.getId()));
 
 	}
