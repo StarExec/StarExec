@@ -2213,64 +2213,19 @@ public class Connection {
 	 * @param seed A number that will be passed into the preprocessor for every job pair in this job
 	 * If false, they will be run in a round-robin fashion.
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
+	 * @param suppressTimestamps If true, timestamps will not be added to job output lines. Defaults to false.
 	 * @return A status code as defined in status.java
 	 */
-	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed) {
+	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu,
+			Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed, Boolean suppressTimestamps) {
 		HttpResponse response = null;
 		try {
-			HttpGet get=new  HttpGet(baseURL+R.URL_ADDJOB+"?sid="+spaceId.toString());
-			get=(HttpGet) setHeaders(get);
-			
-			//this response contains HTML with a significant amount of data we need to read through 
-			//to find job settings
-			response=client.execute(get);
-			setSessionIDIfExists(response.getAllHeaders());
-			
-			HttpEntity data=response.getEntity();
-			BufferedReader br=new BufferedReader(new InputStreamReader(data.getContent()));
-			BasicNameValuePair keyValue=null;
-			
-			String line=br.readLine();
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
-			String cpuTime=null,wallclockTime=null, mem=null;
-			
-			while (line!=null) {
-				
-				line=line.trim();
-				keyValue=HTMLParser.extractNameValue(line);
-				if (keyValue!=null) {
-					
-					//we can't put cpuTimeout or wallclockTimeout into the entity immediately
-					//because we still want to check if the user set them manually
-					if (keyValue.getName().equals("cpuTimeout")) {
-						cpuTime=keyValue.getValue();
-					} else if (keyValue.getName().equals("wallclockTimeout")) {
-						wallclockTime=keyValue.getValue();
-					} else if (keyValue.getName().equals("maxMem")) {
-						mem=keyValue.getValue();
-					}
-				}
-				
-				line=br.readLine();
-			}
-			//use the user given values if they are specified
-			if (cpu!=null) {
-				cpuTime=String.valueOf(cpu);
-			}
-			if (wallclock!=null) {
-				wallclockTime=String.valueOf(wallclock);
-			}
-			if (maxMemory!=null) {
-				mem=String.valueOf(maxMemory);
-			}
-			
-			
+
 			String traversalMethod="depth";
 			if (!useDepthFirst) {
 				traversalMethod="robin";
 			}
-			br.close();
-			response.getEntity().getContent().close();
 			
 			HttpPost post=new HttpPost(baseURL+R.URL_POSTJOB);
 			
@@ -2279,20 +2234,32 @@ public class Connection {
 			params.add(new BasicNameValuePair("sid", spaceId.toString()));
 			params.add(new BasicNameValuePair("name",name));
 			params.add(new BasicNameValuePair("desc",desc));
-			params.add(new BasicNameValuePair("wallclockTimeout",wallclockTime));
-			params.add(new BasicNameValuePair("cpuTimeout",cpuTime));
+			if (wallclock!=null) {
+				params.add(new BasicNameValuePair("wallclockTimeout",String.valueOf(wallclock)));
+			}
+			if (cpu!=null) {
+				params.add(new BasicNameValuePair("cpuTimeout",String.valueOf(cpu)));
+			}
 			params.add(new BasicNameValuePair("queue",queueId.toString()));
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair("seed",seed.toString()));
 			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
-			params.add(new BasicNameValuePair("maxMem",mem));
+			if (maxMemory!=null) {
+				params.add(new BasicNameValuePair("maxMem",String.valueOf(maxMemory)));
+			}
 			params.add(new BasicNameValuePair("runChoice","keepHierarchy"));
 			if (startPaused) {
 				params.add(new BasicNameValuePair("pause","yes"));
 			} else {
 				params.add(new BasicNameValuePair("pause","no"));
 			}
+			if (suppressTimestamps) {
+				params.add(new BasicNameValuePair("suppressTimestamp", "yes"));
+			} else {
+				params.add(new BasicNameValuePair("suppressTimestamp", "no"));
+			}
+			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			response=client.execute(post);

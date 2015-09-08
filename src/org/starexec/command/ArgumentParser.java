@@ -207,9 +207,14 @@ class ArgumentParser {
 			if (commandParams.containsKey(R.PARAM_SEED)) {
 				seed=Long.parseLong(commandParams.get(R.PARAM_SEED));
 			}
-			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name, desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId), Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),wallclock, cpu,useDepthFirst,maxMemory,startPaused,seed);
+			//TODO: Support suppress timestamps param
+			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name,
+					desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId),
+					Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),wallclock,
+					cpu,useDepthFirst,maxMemory,startPaused,seed, commandParams.containsKey(R.PARAM_SUPPRESS_TIMESTAMPS));
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}
 	}
