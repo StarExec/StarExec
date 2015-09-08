@@ -214,7 +214,6 @@ class ArgumentParser {
 					cpu,useDepthFirst,maxMemory,startPaused,seed, commandParams.containsKey(R.PARAM_SUPPRESS_TIMESTAMPS));
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}
 	}

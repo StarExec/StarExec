@@ -24,16 +24,15 @@ public class UserSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void CanDeleteUserTest() {
-		Assert.assertEquals(true,UserSecurity.canDeleteUser(user1.getId(), admin.getId()).isSuccess());
-		Assert.assertEquals(true,UserSecurity.canDeleteUser(user2.getId(), admin.getId()).isSuccess());
+		Assert.assertTrue(UserSecurity.canDeleteUser(user1.getId(), admin.getId()).isSuccess());
+		Assert.assertTrue(UserSecurity.canDeleteUser(user2.getId(), admin.getId()).isSuccess());
 
-		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user1.getId()).isSuccess());
+		Assert.assertFalse(UserSecurity.canDeleteUser(user1.getId(), user1.getId()).isSuccess());
 
-		// Users can delete any users that are not admins.
-		Assert.assertEquals(true,UserSecurity.canDeleteUser(admin.getId(), user1.getId()).isSuccess());
+		Assert.assertFalse(UserSecurity.canDeleteUser(admin.getId(), user1.getId()).isSuccess());
 
-		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(admin.getId(), admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,UserSecurity.canDeleteUser(user1.getId(), user2.getId()).isSuccess());
+		Assert.assertFalse(UserSecurity.canDeleteUser(admin.getId(), admin.getId()).isSuccess());
+		Assert.assertFalse(UserSecurity.canDeleteUser(user1.getId(), user2.getId()).isSuccess());
 	}
 
 	@StarexecTest
