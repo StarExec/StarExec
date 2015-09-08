@@ -912,7 +912,7 @@ public class Queues {
 			 results = procedure.executeQuery();
 
 			while(results.next()){
-				return results.getInt("load");	
+				return results.getInt("queue_load");	
 			}							
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

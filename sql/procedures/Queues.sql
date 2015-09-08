@@ -57,7 +57,7 @@ CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 DROP PROCEDURE IF EXISTS GetUserLoadOnQueue;
 CREATE PROCEDURE GetUserLoadOnQueue(IN _queueId INT, IN _user INT)
 	BEGIN
-		SELECT SUM(jobs.clockTimeout) AS load FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
+		SELECT SUM(jobs.clockTimeout) AS queue_load FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
                 WHERE (job_pairs.status_code=4 OR job_pairs.status_code=3
                 OR job_pairs.status_code=2 OR job_pairs.status_code=5)
                 AND jobs.queue_id = _queueId AND jobs.user_id=_user;
