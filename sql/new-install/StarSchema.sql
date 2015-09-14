@@ -357,6 +357,20 @@ CREATE TABLE jobpair_stage_data (
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
 );
 
+-- this table stores, for every user, the difference in time
+-- between that user's job pair wallclock timeouts and actual
+-- runtime. This data is used by the JobManager for scheduling pairs
+-- among different users. This data is stored only temporarily between calls
+-- to submitJobs. It is completely wiped out after each call,
+-- so data here is generally stored for only about 30 seconds
+-- at a time.
+CREATE TABLE jobpair_time_delta (
+	user_id INT NOT NULL,
+	time_delta INT DEFAULT 0,
+	PRIMARY KEY (user_id),
+	CONSTRAINT jobpair_time_delta_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Stores all inputs to a particular job pair, outside of the primary benchmark
 -- TODO: Do we want delete cascades on benchmarks? Might confuse users who accidentally delete benchmark inputs
 CREATE TABLE jobpair_inputs (

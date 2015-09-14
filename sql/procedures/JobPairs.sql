@@ -65,7 +65,8 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			
 
 			
-			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId); 
+			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId);
+			
 			-- this checks to see if the job is done and sets its completion id if so.
 			-- It checks by trying to find exactly 1 pair (for efficiency) that is not yet complete
 			IF (SELECT COUNT(*) FROM (select id from job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (status_code<7 || status_code>18) LIMIT 1) as theCount)=0 THEN
@@ -190,11 +191,22 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 	END //
 	
 -- Sets the completion time to now (the moment this is called) for the pair with the given id
-
+-- Also sets the time_delta for the pair in the jobpair_time_delta table.
 DROP PROCEDURE IF EXISTS SetPairEndTime;
 CREATE PROCEDURE SetPairEndTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET end_time=NOW() WHERE id=_id;
+		
+		-- save the diff between this pair's timeout and wallclock time to jobpair_time_delta
+		INSERT IGNORE INTO jobpair_time_delta(user_id, time_delta) 
+		VALUES ((SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id),0);
+			
+		UPDATE jobpair_time_delta
+		SET time_delta = (SELECT jobs.clockTimeout - CEIL(SUM(jobpair_stage_data.wallclock)) +time_delta
+						  FROM jobpair_stage_data JOIN job_pairs ON job_pairs.id=jobpair_stage_data.jobpair_id
+						  JOIN jobs ON jobs.id = job_pairs.job_id WHERE jobpair_stage_data.jobpair_id=_id)
+		WHERE user_id=(SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id);
+		
 	END //
 	
 -- Counts the number of pairs with the given status code that completed in within the given
