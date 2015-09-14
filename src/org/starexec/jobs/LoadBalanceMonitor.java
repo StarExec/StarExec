@@ -15,7 +15,7 @@ public class LoadBalanceMonitor {
 
 	// The basic operations we will be the following
 	// Add / Find / Remove users by userIds: All O(1) with a HashSet
-	// Find min / max load in set: O(n) with a HashSet
+	// Find min load in set: O(n) with a HashSet
 	// This can be improved on with more complex data structures, but here n is going
 	// to get the number of users simultaneously running jobs on a single queue, which
 	// is always very small. Constant time overheads of more complex structures are
@@ -23,15 +23,11 @@ public class LoadBalanceMonitor {
 	// to support very large numbers of simultaneous users, we likely want another structure
 	// such as a combination HashMap / PriorityQueue structure.
 	private HashMap<Integer, Long> loads = new HashMap<Integer, Long>();
-	
 
 	private Long minimum = null;
 	
-	private Long loadDifferenceThreshold = 10l;
-	
-	public LoadBalanceMonitor(long threshold) {
-		loadDifferenceThreshold = threshold;
-	}
+	// ten minutes
+	private Long loadDifferenceThreshold = 600l;
 	
 	public Long getMin() {
 		if (minimum == null && loads.size()>0) {
@@ -52,18 +48,6 @@ public class LoadBalanceMonitor {
 		return loads.get(userId);
 	}
 	
-	/**
-	 * Decrements every load by the given value.
-	 * @param val
-	 */
-	private void decrementAll(Long val) {
-		for (Integer i : loads.keySet()) {
-			loads.put(i, loads.get(i) - val);
-		}
-		if (minimum!=null) {
-			minimum-=val;
-		}
-	}
 	
 	private void invalidateMin(long val) {
 		if (minimum!=null && minimum==val) {
@@ -72,18 +56,25 @@ public class LoadBalanceMonitor {
 	}
 	
 	/**
-	 * Adds a new user to the map, giving them an initial load value of 0.
-	 * If the user is already present, nothing is done
+	 * Adds a new user to the set of users being managed. The initial load
+	 * for the user is the minimum + defaultLoad. Nothing is done if the user is 
+	 * already present.
 	 * @param userId
+	 * @param defaultLoad
 	 */
 	public void addUser(int userId, long defaultLoad) {
 		if (loads.containsKey(userId)) {
 			return;
 		}
-		if (minimum==null || defaultLoad < minimum) {
+		getMin();
+		if (minimum == null) {
 			minimum = defaultLoad;
 		}
-		loads.put(userId, defaultLoad);
+		if (loads.size()>0) {
+			loads.put(userId, defaultLoad + minimum);
+		} else {
+			loads.put(userId, defaultLoad);
+		}
 	}
 	
 	/**
@@ -111,15 +102,6 @@ public class LoadBalanceMonitor {
 		for (Integer i : usersToRemove) {
 			removeUser(i);
 		}
-		
-		// This block of code decrements all the existing load values
-		// by the current minimum load value. This is done so that
-		// new users (who are added next) are not given preference
-		// over the users that were running jobs before.
-		Long min = getMin();
-		if ( min!= null && min > 0) {
-			decrementAll(min);
-		}
 		for (Integer i : userIdsToDefaults.keySet()) {
 			addUser(i, userIdsToDefaults.get(i));
 		}
@@ -130,7 +112,7 @@ public class LoadBalanceMonitor {
 	 * @param userId
 	 * @param load
 	 */
-	public void increaseLoad(int userId, long load) {
+	public void changeLoad(int userId, long load) {
 		// the minimum may change only if this user has the current minimum load
 		invalidateMin(loads.get(userId));
 		loads.put(userId, loads.get(userId) + load);

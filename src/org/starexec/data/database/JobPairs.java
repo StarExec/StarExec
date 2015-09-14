@@ -1172,7 +1172,11 @@ public class JobPairs {
 		return jp;
 	}
 	
-	
+	/**
+	 * Sets the queuesub_time field of a job pair to the current time, as
+	 * obtained by calling NOW() in MySQL.
+	 * @param pairId The ID of the pair to set the queue sub time of.
+	 */
 	public static boolean setQueueSubTime(int pairId) {
 		Connection con=null;
 		CallableStatement procedure=null;

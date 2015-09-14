@@ -138,7 +138,7 @@ public abstract class JobManager {
 	 */
 	private static LoadBalanceMonitor getMonitor(int queueId) {
 		if (!queueToMonitor.containsKey(queueId)) {
-			queueToMonitor.put(queueId, new LoadBalanceMonitor(R.NUM_JOB_PAIRS_AT_A_TIME));
+			queueToMonitor.put(queueId, new LoadBalanceMonitor());
 		}
 		return queueToMonitor.get(queueId);
 	}
@@ -256,7 +256,7 @@ public abstract class JobManager {
 						}
 
 						JobPair pair = s.pairIter.next();
-						monitor.increaseLoad(s.job.getUserId(), s.job.getWallclockTimeout());
+						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
 							//submission failed and move on
