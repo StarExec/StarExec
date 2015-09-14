@@ -1377,13 +1377,14 @@ public class JobPairs {
 			
 			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData()");
 			results = procedure.executeQuery();
-			Common.safeClose(procedure);
-			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData()");
-			procedure.executeUpdate();
 			HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
 			while (results.next()) {
 				data.put(results.getInt(0), results.getInt(1));
 			}
+			Common.safeClose(procedure);
+			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData()");
+			procedure.executeUpdate();
+			
 			
 			Common.endTransaction(con);
 			return data;
