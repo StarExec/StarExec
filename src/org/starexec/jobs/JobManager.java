@@ -189,6 +189,8 @@ public abstract class JobManager {
 					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
 				}
 			}
+			// updates user load values to take into account actual job pair runtimes.
+			monitor.updateLoads(JobPairs.getAndClearTimeDeltas());
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
 			

@@ -1361,11 +1361,42 @@ public class JobPairs {
 		return false;
 	}
 	
-
-
+	/**
+	 * Reads all data from the jobpair_time_delta table and then clears the table,
+	 * all inside a single transaction.
+	 * @return A HashMap mapping userIds to their time delta values.
+	 */
 	
-
-	
+	public static HashMap<Integer, Integer> getAndClearTimeDeltas() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData()");
+			results = procedure.executeQuery();
+			Common.safeClose(procedure);
+			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData()");
+			procedure.executeUpdate();
+			HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
+			while (results.next()) {
+				data.put(results.getInt(0), results.getInt(1));
+			}
+			
+			Common.endTransaction(con);
+			return data;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+			return null;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+	}
 
 	/**
 	 * Update's a job pair's grid engine id

@@ -233,6 +233,17 @@ CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
 		JOIN benchmarks ON benchmarks.id=jobpair_inputs.bench_id
 		WHERE jobpair_id=_pairId ORDER BY input_number ASC;
 	END //
+	
+DROP PROCEDURE IF EXISTS GetJobpairTimeDeltaData;
+CREATE PROCEDURE GetJobpairTimeDeltaData()
+	BEGIN
+		SELECT * FROM jobpair_time_delta;
+	END //
 
+DROP PROCEDURE IF EXISTS ClearJobpairTimeDeltaData;
+CREATE PROCEDURE ClearJobpairTimeDeltaData()
+	BEGIN
+		DELETE FROM jobpair_time_delta;
+	END //
 
 DELIMITER ; -- this should always be at the end of the file

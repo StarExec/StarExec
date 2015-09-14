@@ -108,14 +108,28 @@ public class LoadBalanceMonitor {
 	}
 	
 	/**
-	 * Increases the load associated with a given user
-	 * @param userId
-	 * @param load
+	 * Updates the load associated with a given user
+	 * @param userId ID of user to affect. Nothing happens if the user does not already exist.
+	 * @param load. Increases user load if positive, decreases user load if negative.
 	 */
 	public void changeLoad(int userId, long load) {
+		if (!loads.containsKey(userId)) {
+			return;
+		}
 		// the minimum may change only if this user has the current minimum load
 		invalidateMin(loads.get(userId));
 		loads.put(userId, loads.get(userId) + load);
+	}
+	
+	/**
+	 * Given a map from userids to loads, calls changeLoad once per entry
+	 * in the map.
+	 * @param users A mapping from users to load values to update by.
+	 */
+	public void updateLoads(HashMap<Integer, Integer> users) {
+		for (Integer i : users.keySet()) {
+			changeLoad(i, users.get(i));
+		}
 	}
 	
 	/**
