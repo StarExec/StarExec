@@ -190,7 +190,7 @@ public abstract class JobManager {
 				}
 			}
 			// updates user load values to take into account actual job pair runtimes.
-			monitor.updateLoads(JobPairs.getAndClearTimeDeltas());
+			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas());
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
 			

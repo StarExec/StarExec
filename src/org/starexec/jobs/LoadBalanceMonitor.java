@@ -12,6 +12,46 @@ import org.starexec.constants.R;
 
 public class LoadBalanceMonitor {
 
+	class UserLoadData implements Comparable<UserLoadData> {
+		int userId;
+		
+		/* Whenever a user is added to the LoadBalanceMonitor, they are intialized
+		 * with a 'basis' equal to the minimum value at the time they were added.
+		 * From then on, if the minimum value in the monitor ever drops below the basis
+		 * for a user, that user's load is decreased by the value (user-basis - new-min),
+		 * and their basis is updated. This is done to avoid penalizing new users that come
+		 * into the monitor at a time when other users may have inflated load times due
+		 * to running pairs with high timeouts that finish quickly.
+		 **/
+		Long minBasis;
+		Long load;
+		public UserLoadData(int u, long m, long l) {
+			userId = u;
+			minBasis = m;
+			load = l;
+		}
+
+		// comparisons are done based on the user's load value
+		@Override
+		public int compareTo(UserLoadData arg0) {
+			return Long.compare(load, arg0.load);
+		}
+		
+		//equality and hashing are done based on userId only
+		@Override
+		public boolean equals(Object o) {
+			if (!(o instanceof UserLoadData)) {
+				return false;
+			}
+			UserLoadData that = (UserLoadData) o;
+			return this.userId==that.userId;
+		}
+		
+		@Override
+		public int hashCode() {
+			return userId;
+		}
+	}
 
 	// The basic operations we will be the following
 	// Add / Find / Remove users by userIds: All O(1) with a HashSet
@@ -22,7 +62,7 @@ public class LoadBalanceMonitor {
 	// substantial, and so for now this is a very simple and fast option. If we want
 	// to support very large numbers of simultaneous users, we likely want another structure
 	// such as a combination HashMap / PriorityQueue structure.
-	private HashMap<Integer, Long> loads = new HashMap<Integer, Long>();
+	private HashMap<Integer, UserLoadData> loads = new HashMap<Integer, UserLoadData>();
 
 	private Long minimum = null;
 	
@@ -31,7 +71,7 @@ public class LoadBalanceMonitor {
 	
 	public Long getMin() {
 		if (minimum == null && loads.size()>0) {
-			minimum = Collections.min(loads.values());
+			minimum = Collections.min(loads.values()).load;
 		}
 		return minimum;
 	}
@@ -45,7 +85,11 @@ public class LoadBalanceMonitor {
 	 * @return
 	 */
 	public Long getLoad(int userId) {
-		return loads.get(userId);
+		UserLoadData d = loads.get(userId);
+		if (d!=null) {
+			return d.load;
+		}
+		return null;
 	}
 	
 	
@@ -62,7 +106,7 @@ public class LoadBalanceMonitor {
 	 * @param userId
 	 * @param defaultLoad
 	 */
-	public void addUser(int userId, long defaultLoad) {
+	private void addUser(int userId, long defaultLoad, long basis) {
 		if (loads.containsKey(userId)) {
 			return;
 		}
@@ -70,19 +114,16 @@ public class LoadBalanceMonitor {
 		if (minimum == null) {
 			minimum = defaultLoad;
 		}
-		if (loads.size()>0) {
-			loads.put(userId, defaultLoad + minimum);
-		} else {
-			loads.put(userId, defaultLoad);
-		}
+		
+		loads.put(userId, new UserLoadData(userId, basis, defaultLoad));
 	}
 	
 	/**
 	 * Completely removes a user from the monitor.
 	 * @param userId
 	 */
-	public void removeUser(int userId) {
-		invalidateMin(loads.remove(userId));
+	private void removeUser(int userId) {
+		invalidateMin(loads.remove(userId).load);
 	}
 	
 	/**
@@ -102,8 +143,15 @@ public class LoadBalanceMonitor {
 		for (Integer i : usersToRemove) {
 			removeUser(i);
 		}
+		// all new users are set to their default load plus the minimum
+		// at the time this was called. The min is added to prevent
+		// new users from having an advantage over existing users.
+		Long m = getMin();
+		if (m==null) {
+			m=0l;
+		}
 		for (Integer i : userIdsToDefaults.keySet()) {
-			addUser(i, userIdsToDefaults.get(i));
+			addUser(i, userIdsToDefaults.get(i) + m, m);
 		}
 	}
 	
@@ -117,8 +165,21 @@ public class LoadBalanceMonitor {
 			return;
 		}
 		// the minimum may change only if this user has the current minimum load
-		invalidateMin(loads.get(userId));
-		loads.put(userId, loads.get(userId) + load);
+		invalidateMin(loads.get(userId).load);
+		loads.get(userId).load = loads.get(userId).load + load;
+	}
+	
+	/**
+	 * 
+	 * @param newBasis
+	 */
+	private void setNewBasis(long newBasis) {
+		for (UserLoadData d : loads.values()) {
+			if (newBasis < d.minBasis) {
+				d.load = d.load - (d.minBasis - newBasis);
+				d.minBasis = newBasis;
+			}
+		}
 	}
 	
 	/**
@@ -126,9 +187,14 @@ public class LoadBalanceMonitor {
 	 * in the map.
 	 * @param users A mapping from users to load values to update by.
 	 */
-	public void updateLoads(HashMap<Integer, Integer> users) {
+	public void subtractTimeDeltas(HashMap<Integer, Integer> users) {
+		Long oldMin = getMin();
 		for (Integer i : users.keySet()) {
-			changeLoad(i, users.get(i));
+			changeLoad(i, -users.get(i));
+		}
+		Long newMin = getMin();
+		if (oldMin!=null && newMin!=null && newMin < oldMin) {
+			setNewBasis(newMin);
 		}
 	}
 	
@@ -136,8 +202,8 @@ public class LoadBalanceMonitor {
 	 * Determines whether a given user should be skipped, meaning they should not
 	 * be allowed to enqueue any more job pairs for the time being. A user is 
 	 * skipped whenever their load is substantially greater than the minimum load.
-	 * @param userId
-	 * @return
+	 * @param userId The ID of hte user to check
+	 * @return True if the user should be skipped and false if not.
 	 */
 	public boolean skipUser(int userId) {
 		Long userLoad = this.getLoad(userId);

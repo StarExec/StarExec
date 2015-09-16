@@ -22,24 +22,30 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testAddSingleUser() {
-		monitor.addUser(1, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
 		Assert.assertEquals(0, (long)monitor.getLoad(1));
 		Assert.assertEquals(0, (long)monitor.getMin());
 	}
 	
 	@Test
 	public void addExistingUser() {
-		monitor.addUser(1, 1);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 1);
-		monitor.addUser(1, 0);
-		Assert.assertEquals(2, (long)monitor.getLoad(1));
+		monitor.setUsers(users);
+		Assert.assertEquals(1, (long)monitor.getLoad(1));
 	}
 	
 	@Test
 	public void testRemoveSingleUser() {
-		monitor.addUser(1, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 12);
-		monitor.removeUser(1);
+		monitor.setUsers(new HashMap<Integer, Integer>());
 		
 		Assert.assertEquals(null, monitor.getLoad(1));
 		Assert.assertEquals(null, monitor.getMin());
@@ -47,17 +53,23 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testRemoveMinUser() {
-		monitor.addUser(1, 0);
-		monitor.addUser(2, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		users.put(2, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 3);
 		Assert.assertEquals(0, (long)monitor.getMin());
-		monitor.removeUser(2);
+		users.remove(2);
+		monitor.setUsers(users);
+
 		Assert.assertEquals(3, (long)monitor.getMin());
 	}
 	
 	@Test
 	public void testIncrementLoadSingleUser() {
-		monitor.addUser(1, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 6);
 		Assert.assertEquals(6, (long)monitor.getLoad(1));
 		Assert.assertEquals(6, (long)monitor.getMin());
@@ -70,8 +82,10 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testIncrementLoadTwoUsers() {
-		monitor.addUser(1, 0);
-		monitor.addUser(2, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		users.put(2, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 6);
 		Assert.assertEquals(6, (long)monitor.getLoad(1));
 		Assert.assertEquals(0, (long)monitor.getLoad(2));
@@ -87,8 +101,8 @@ public class LoadBalanceMonitorTests {
 	public void testSetUsersEmptyMonitor() {
 		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
 		users.put(1, 3);
-		users.put(2, 0);
-		users.put(3, 0);
+		users.put(2, 3);
+		users.put(3, 3);
 
 		monitor.setUsers(users);
 
@@ -100,12 +114,14 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testSetUsersNoOverlap() {
-		monitor.addUser(4, 1);
-		monitor.changeLoad(4, 5);
 		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(4, 0);
+		monitor.setUsers(users);
+		monitor.changeLoad(4, 5);
+		users = new HashMap<Integer, Integer>();
 		users.put(1, 3);
-		users.put(2, 0);
-		users.put(3, 0);
+		users.put(2, 3);
+		users.put(3, 3);
 		monitor.setUsers(users);
 		for (Integer i : users.keySet()) {
 			Assert.assertEquals(3, (long)monitor.getLoad(i));
@@ -116,11 +132,13 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testSetUsersAllOverlap() {
-		monitor.addUser(1, 0);
-		monitor.addUser(2, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		users.put(2, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 2);
 		monitor.changeLoad(2, 2);
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users = new HashMap<Integer, Integer>();
 		users.put(1, 3);
 		users.put(2, 3);
 		monitor.setUsers(users);
@@ -132,7 +150,9 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void skipUserTestSingleUser() {
-		monitor.addUser(1, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
 		Assert.assertFalse(monitor.skipUser(1));
 		monitor.changeLoad(1, 3000);
 		Assert.assertFalse(monitor.skipUser(1));
@@ -140,8 +160,10 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void skipUserTestTwoUsers() {
-		monitor.addUser(1, 0);
-		monitor.addUser(2, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		users.put(2, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 1);
 		Assert.assertFalse(monitor.skipUser(1));
 		Assert.assertFalse(monitor.skipUser(2));
@@ -152,9 +174,12 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testAddUserAfterLoad() {
-		monitor.addUser(1, 0);
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
 		monitor.changeLoad(1, 5);
-		monitor.addUser(2, 0);
+		users.put(2, 0);
+		monitor.setUsers(users);
 		Assert.assertEquals(5, (long)monitor.getLoad(1));
 		Assert.assertEquals(5, (long)monitor.getLoad(2));
 		Assert.assertEquals(5, (long)monitor.getMin());
