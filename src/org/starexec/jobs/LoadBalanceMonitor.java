@@ -28,7 +28,7 @@ public class LoadBalanceMonitor {
 		public UserLoadData(int u, long m, long l) {
 			userId = u;
 			minBasis = m;
-			load = load;
+			load = l;
 		}
 
 		// comparisons are done based on the user's load value
@@ -87,6 +87,7 @@ public class LoadBalanceMonitor {
 	public Long getLoad(int userId) {
 		UserLoadData d = loads.get(userId);
 		if (d!=null) {
+			System.out.println(d.load);
 			return d.load;
 		}
 		return null;
