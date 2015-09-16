@@ -6,7 +6,7 @@
      See example.local.properties in this directory for an example. -->
 
 <!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump, Eric Burns -->
-<project name="starexec" default="war" basedir=".">
+<project name="starexec" default="epilog-test" basedir=".">
 
         <loadproperties srcFile="local.properties"/>
 
@@ -218,16 +218,7 @@
 				<include name="**/*.xml"/>
 		   </fileset>
 		</replaceregexp>
-                
 
-
-
-
-
-		<!-- Update the job schema to use the current server and app -->
-	
-	
-		
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
@@ -241,6 +232,23 @@
 			<fileset dir="WebContent"/>
 			<lib dir="${web-inf}/lib"/>			
 		</war>
+	</target>
+	
+	<target name="epilog-test" depends="war">
+		<!-- Execute JUnit tests -->
+		<path id="testpath">
+			<pathelement path="${class-dir}"/>
+			<fileset dir="${web-inf}/lib" includes="**/*.jar"/>
+			<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+			<fileset dir="local-lib" includes="**/*.jar"/>
+		</path>
+		<junit printsummary="yes" haltonfailure="yes">
+			<formatter type="plain"/>
+			<classpath refid="testpath"/>
+			<batchtest>
+				<fileset dir="${class-dir}" includes="**/junit/**/*.class"/>
+			</batchtest>
+        </junit>
 	</target>
 		
 </project>
