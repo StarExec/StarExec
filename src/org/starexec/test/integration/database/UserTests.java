@@ -12,6 +12,7 @@ import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -172,7 +173,11 @@ public class UserTests extends TestSequence {
 	private void deleteUserTest() {
 		User temp=ResourceLoader.loadUserIntoDatabase();
 		Assert.assertNotNull(Users.get(temp.getId()));
-		Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
+		try {
+			Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
 		Assert.assertNull(Users.get(temp.getId()));
 		
 	}
@@ -222,7 +227,12 @@ public class UserTests extends TestSequence {
 		//this might fail if another user is added to the system at exactly this time,
 		//but that would be atypical, and failure is not highly costly
 		Assert.assertEquals(count+1,Users.getCount());
-		Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
+		try {
+			Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
 	}
 	
 	

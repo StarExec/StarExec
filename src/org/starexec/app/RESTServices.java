@@ -66,6 +66,7 @@ import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
@@ -2630,6 +2631,33 @@ public class RESTServices {
 		return gson.toJson(ERROR_DATABASE);
 		
 	}
+
+	/**
+	 * Permanently deletes a user from the system.
+	 * @param userToDeleteId The id of the user to be deleted.
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/delete/user/{userId}")
+	@Produces("application/json")
+	public String deleteUser(@PathParam("userId") int userToDeleteId, @Context HttpServletRequest request) {
+
+		int callersUserId = SessionUtil.getUserId(request);
+
+		boolean success = false;
+		try {
+			success = Users.deleteUser(userToDeleteId, callersUserId);
+				
+		} catch (StarExecSecurityException e) {
+			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to delete this user."));
+		}
+
+		if (success) {
+			return gson.toJson(new ValidatorStatusCode(true, "The user has been successfully deleted."));
+		} else {
+			return gson.toJson(new ValidatorStatusCode(false, "An internal error occurred while attempting to delete the user."));
+		}
+	}
 	
 	/**
 	 * Deletes a list of solvers
@@ -3389,7 +3417,7 @@ public class RESTServices {
 		String name = (String) request.getParameter("name");
 		String description="";
 		if (Util.paramExists("description", request)) {
-			description = (String) request.getParameter("description");
+			description = (String)request.getParameter("description");
 		}
 		
 		ValidatorStatusCode status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description);
@@ -3844,8 +3872,8 @@ public class RESTServices {
 		}
 		
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequests(request);
-		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+		
 	}
 	
 	/**

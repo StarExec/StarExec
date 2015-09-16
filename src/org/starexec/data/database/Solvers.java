@@ -496,6 +496,20 @@ public class Solvers {
 		
 		return false;
 	}
+
+	/**
+	 * Deletes every solver in a list of solvers from disk and sets the deleted flag. 
+	 * @param solversToDelete the list of solvers to delete.
+	 * @author Albert Giegerich
+	 */
+	public static void deleteEach(List<Solver> solversToDelete) {
+		for (Solver solver : solversToDelete) {
+			boolean success = delete(solver.getId());
+			if (!success) {
+				log.error("Solver with id="+solver.getId()+" was not deleted successfully.");
+			}
+		}
+	}
 	
 	
 	/**

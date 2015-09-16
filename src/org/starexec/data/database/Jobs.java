@@ -39,6 +39,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
@@ -584,6 +585,20 @@ public class Jobs {
 		
 		return success;
 	}
+
+	/**
+	 * Deletes each job in a list of jobs.
+	 * @param jobsToDelete List of jobs to delete.
+	 * @author Albert Giegerich
+	 */
+	public static void deleteEach(List<Job> jobsToDelete) {
+		for (Job job : jobsToDelete) {
+			boolean success = delete(job.getId());
+			if (!success) {
+				log.error("Job with id="+job.getId()+" was not deleted successfully.");
+			}
+		}
+	}
 	
 	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
@@ -591,7 +606,6 @@ public class Jobs {
 	 * @param jobId The ID of the job to delete
 	 * @return True on success, false otherwise
 	 */
-	
 	public static boolean delete(int jobId) {
 		//we should kill jobs before deleting  them so no additional pairs are run
    	        log.info("Deleting job " + new Integer(jobId));

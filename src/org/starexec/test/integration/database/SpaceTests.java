@@ -16,6 +16,7 @@ import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Identifiable;
@@ -380,9 +381,13 @@ public class SpaceTests extends TestSequence {
 		Spaces.removeSubspaces(subspace2.getId());
 		Spaces.removeSubspaces(subspace3.getId());
 		boolean success=Spaces.removeSubspaces(community.getId());
-		Users.deleteUser(leader.getId(),admin.getId());
-		Users.deleteUser(member1.getId(),admin.getId());
-		Users.deleteUser(member2.getId(),admin.getId());
+		try {
+			Users.deleteUser(leader.getId(),admin.getId());
+			Users.deleteUser(member1.getId(),admin.getId());
+			Users.deleteUser(member2.getId(),admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
 
 		Assert.assertTrue(success);
 	}

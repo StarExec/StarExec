@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
+import org.starexec.exceptions.*;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -49,7 +50,11 @@ public class RequestsTests extends TestSequence {
 		Assert.assertTrue(Requests.approveCommunityRequest(tempUser.getId(), comm.getId()));
 		Assert.assertNull(Requests.getCommunityRequest(tempRequest.getCode()));
 		Assert.assertTrue(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
-		Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+		try {
+			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
 	}
 	
 	@StarexecTest
@@ -61,7 +66,11 @@ public class RequestsTests extends TestSequence {
 		Assert.assertTrue(Requests.declineCommunityRequest(tempUser.getId(), comm.getId()));
 		Assert.assertNull(Requests.getCommunityRequest(tempRequest.getCode()));
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
-		Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+		try {
+			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
 	}
 	
 	@StarexecTest

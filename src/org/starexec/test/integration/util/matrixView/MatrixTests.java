@@ -28,6 +28,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.util.matrixView.Matrix;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.test.integration.StarexecTest;
@@ -88,9 +89,13 @@ public class MatrixTests extends TestSequence {
 		}
 		Processors.delete(postProc.getId());
 		Spaces.removeSubspaces(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
-		Users.deleteUser(nonOwner.getId(),admin.getId());
+		try {
+			Users.deleteUser(user.getId(), admin.getId());
+			Users.deleteUser(user2.getId(), admin.getId());
+			Users.deleteUser(nonOwner.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			log.error("Failed to delete test users.", e);
+		}
 	}
 
 	@StarexecTest

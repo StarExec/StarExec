@@ -12,14 +12,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Solvers;
 import org.starexec.data.security.UserSecurity;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.util.Hash;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for users
@@ -35,7 +43,6 @@ public class Users {
 	 * @param permId The permissions the user should have on the space
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
-	 * @throws Exception 
 	 */
 	protected static boolean associate(Connection con, int userId, int spaceId) throws Exception {
 		CallableStatement procedure= null;
@@ -1094,31 +1101,89 @@ public class Users {
 	 * @param userIdMakingRequest The ID of the user trying to perform the deletion
 	 * @return True on success, false on error
 	 */
-	public static boolean deleteUser(int userIdToDelete, int userIdMakingRequest) {
+	public static boolean deleteUser(int userToDeleteId, int userMakingRequestId) throws StarExecSecurityException{
+		log.debug("User with id="+userMakingRequestId+" is attempting to delete user with id="+userToDeleteId);
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
 			
 			//Only allow the deletion of test users, and only if the admin is asking
-			if (!UserSecurity.canDeleteUser(userIdToDelete, userIdMakingRequest).isSuccess()) {
-				log.debug("security permission error when trying to delete user with id = "+userIdToDelete);
-				return false;
+			if (!UserSecurity.canDeleteUser(userToDeleteId, userMakingRequestId).isSuccess()) {
+				log.debug("security permission error when trying to delete user with id = "+userToDeleteId);
+				throw new StarExecSecurityException(
+						"User with id="+userMakingRequestId+" does not have permissions to delete user with id="
+						+userToDeleteId);
+
 			}
+
+			// First delete all the users primitives on disk.
+			deleteUsersPrimitives(userToDeleteId);
+			deleteUsersPrimitiveDirectories(userToDeleteId);
 			
+			// Then delete the user from the database.
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteUser(?)}");
-			procedure.setInt(1, userIdToDelete);
+			procedure.setInt(1, userToDeleteId);
 			procedure.executeQuery();
+
+			log.debug("Successfully deleted user with id="+userToDeleteId);
 			return true;
-		}catch (Exception e) {
+		} catch (StarExecSecurityException e) {
+			throw e;
+		} catch (Exception e) {
 			log.error("deleteUser says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		log.debug("internal error trying to delete user with id = "+userIdToDelete);
+		log.debug("internal error trying to delete user with id = "+userToDeleteId);
 		return false;
 	}
+
+	private static void deleteUsersPrimitives(int userId) {
+		log.debug("Deleting primitives of user with id="+userId);
+		List<Solver> solversToDelete = Solvers.getByOwner(userId);
+		Solvers.deleteEach(solversToDelete);
+
+		List<Benchmark> benchmarksToDelete = Benchmarks.getByOwner(userId);
+		Benchmarks.deleteEach(benchmarksToDelete);
+		
+		List<Job> jobsToDelete = Jobs.getByUserId(userId);
+		Jobs.deleteEach(jobsToDelete);
+	}
+
+	/**
+	 * Deletes a user's benchmark and solver directory in the data directory.
+	 * @param userId Id of user whose benchmark and solver directories are to be deleted.
+	 * @author Albert Giegerich
+	 */
+	private static void deleteUsersPrimitiveDirectories(int userId) {
+		log.debug("Deleting primitive directories of user with id="+userId);
+		deleteUsersSolverDirectory(userId);
+		deleteUsersBenchmarkDirectory(userId);
+	}
+
+	/**
+	 * Deletes a user's solver directory in the data directory. 
+	 * @param userId Id of user whose solver directory is to be deleted.
+	 * @author Albert Giegerich
+	 */
+	private static void deleteUsersSolverDirectory(int userId) {
+		String pathToSolverDirectory = R.SOLVER_PATH + "/" + userId;
+		Util.safeDeleteDirectory(pathToSolverDirectory);
+	}
+
+	/**
+	 * Deletes a user's benchmark directory in the data directory.
+	 * @param userId Id of user whose benchmark directory is to be deleted.
+	 * @author Albert Giegerich
+	 */
+	private static void deleteUsersBenchmarkDirectory(int userId) {
+		String pathToBenchmarkDirectory = R.BENCHMARK_PATH + "/" + userId;
+		Util.safeDeleteDirectory(pathToBenchmarkDirectory);
+	}
+
+
 	/**
 	 * Checks to see whether the given user is an admin
 	 * @param userId

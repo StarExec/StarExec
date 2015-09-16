@@ -24,6 +24,7 @@
 			boolean canDeleteUser =  hasAdminWritePrivileges && !Users.isAdmin(userId);
 			if( (visiting_userId != userId) && !hasAdminReadPrivileges){
 				owner = false;
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 			} else {
 				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
 				
