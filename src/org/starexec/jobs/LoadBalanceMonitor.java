@@ -28,13 +28,13 @@ public class LoadBalanceMonitor {
 		public UserLoadData(int u, long m, long l) {
 			userId = u;
 			minBasis = m;
-			load = l;
+			load = load;
 		}
 
 		// comparisons are done based on the user's load value
 		@Override
 		public int compareTo(UserLoadData arg0) {
-			return Long.compare(load, arg0.load);
+			return load.compareTo(arg0.load);
 		}
 		
 		//equality and hashing are done based on userId only
