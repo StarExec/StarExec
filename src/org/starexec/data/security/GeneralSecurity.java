@@ -21,6 +21,18 @@ public class GeneralSecurity {
 	}
 	
 	/**
+	 * Checks to see if the given user has permission to clear load balancing data
+	 * @param userId The ID of the user making the request
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 */
+	public static ValidatorStatusCode canUserClearLoadBalanceData(int userId){
+		if (!Users.isAdmin(userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+		}
+		return new ValidatorStatusCode(true);
+	}
+	
+	/**
 	 * Checks to see if the given user has permission to change logging settings
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise

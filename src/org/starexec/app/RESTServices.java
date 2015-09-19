@@ -67,6 +67,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.jobs.JobManager;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
@@ -82,6 +83,7 @@ import org.starexec.util.Util;
 import org.starexec.util.Validator;
 import org.starexec.util.matrixView.Matrix;
 import org.starexec.util.matrixView.MatrixElement;
+
 
 
 
@@ -4029,6 +4031,19 @@ public class RESTServices {
 		Util.executeCommand("sudo -u tomcat /sbin/service tomcat7 restart");
 		log.debug("restarted");
 		return gson.toJson(new ValidatorStatusCode(true,"Starexec restarted successfully"));
+	}
+	
+	@POST
+	@Path("/jobs/clearloadbalance")
+	@Produces("application/json")
+	public String clearLoadBalanceData(@Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=GeneralSecurity.canUserClearLoadBalanceData(userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		JobManager.clearLoadBalanceMonitors();
+		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
 	}
 	
 	@POST

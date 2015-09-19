@@ -54,6 +54,18 @@ public abstract class JobManager {
 
 	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
 	
+	/**
+	 * Completely clears all load data from memory and also from the database.
+	 * This function is synchronized to prevent concurrent modification
+	 * of the queueToMonitor structure between this and the SubmitJobs
+	 * function.
+	 */
+	public synchronized static void clearLoadBalanceMonitors() {
+		log.debug("Clearing out all load balancing data");
+		queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+		JobPairs.getAndClearTimeDeltas();
+	}
+	
     public synchronized static boolean checkPendingJobs(){
     	try {
     		log.debug("about to check if the system is paused");
