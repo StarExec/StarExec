@@ -265,4 +265,12 @@ public class LoadBalanceMonitor {
 		return userLoad - getMin() > loadDifferenceThreshold;	
 	}
 	
+	public List<UserLoadData> getAllData() {
+		List<UserLoadData> d = new ArrayList<UserLoadData>();
+		for (UserLoadData u : loads.values()) {
+			d.add(u);
+		}
+		return d;
+	}
+	
 }

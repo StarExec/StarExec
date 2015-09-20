@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.jobs.JobManager, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -11,6 +11,8 @@
 		if (!Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} 
+		String userLoadData = JobManager.getUserLoadDataFormattedString();
+		request.setAttribute("loadData", userLoadData);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 	} catch (Exception e) {
@@ -31,6 +33,10 @@
 			<div id="dialog-confirm-restart" title="confirm restart">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>
 			</div>	
-		</fieldset>	
+		</fieldset>
+		<fieldset>
+			<legend>user load data</legend>
+			<textarea id="loadData">${loadData}</textarea>
+		</fieldset>
 	</div>	
 </star:template>

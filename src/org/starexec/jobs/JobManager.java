@@ -24,6 +24,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Configuration;
@@ -35,10 +36,12 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.jobs.LoadBalanceMonitor.UserLoadData;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
@@ -53,6 +56,40 @@ public abstract class JobManager {
 	private static String mainTemplate = null; // initialized below
 
 	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+	
+	private static String userLoadDataAsString(UserLoadData d) {
+		StringBuilder sb = new StringBuilder();
+		User u = Users.get(d.userId);
+		sb.append(u.getFullName());
+		sb.append(" ");
+		if (!d.active()) {
+			sb.append("(inactive) ");
+		}
+		sb.append(": load = " + d.load);
+		return sb.toString();
+	}
+	/**
+	 * Gets all user load data for every queue as a single formatted string, which
+	 * can be displayed on the front end.
+	 * @return The formatted string
+	 */
+	public static String getUserLoadDataFormattedString() {
+		if (queueToMonitor.size()==0) {
+			return "No current data";
+		}
+		StringBuilder sb = new StringBuilder();
+		for (Integer queueID : queueToMonitor.keySet()) {
+			sb.append("Queue ID = " +queueID);
+			sb.append("\n\n");
+			LoadBalanceMonitor m = queueToMonitor.get(queueID);
+			for (UserLoadData d : m.getAllData()) {
+				sb.append(userLoadDataAsString(d));
+				sb.append("\n");
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
 	
 	/**
 	 * Completely clears all load data from memory and also from the database.
