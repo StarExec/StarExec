@@ -2,6 +2,7 @@ package org.starexec.jobs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,10 @@ public class LoadBalanceMonitor {
 		 **/
 		Long minBasis;
 		Long load;
+		
+		// If this is null, the user is active. Otherwise, it is the time
+		// at which the user became inactive.
+		private Date inactiveDateTime = null;
 		public UserLoadData(int u, long m, long l) {
 			userId = u;
 			minBasis = m;
@@ -50,6 +55,43 @@ public class LoadBalanceMonitor {
 		@Override
 		public int hashCode() {
 			return userId;
+		}
+		
+		public boolean active() {
+			return inactiveDateTime == null;
+		}
+		
+		/**
+		 * If this user is active, inactivates them, setting the current time.
+		 */
+		public void inactivate() {
+			if (this.active()) {
+				// dates are initialized to the current time
+				inactiveDateTime = new Date();
+			}
+		}
+		
+		/**
+		 * If this user is inactive, activates them and updates their
+		 * load accordingly
+		 */
+		public void activate() {
+			if (!this.active()) {
+				Date now = new Date();
+				Date then = inactiveDateTime;
+				inactiveDateTime = null;
+				// gets the number of hours between the two times, truncated down
+				// to the nearest hour.
+				Long hours = (now.getTime() - then.getTime())/ (1000*60*60) -5;
+				if (hours<=2) {
+					return;
+				}
+				// simple linear decay function that will reduce load to 0 after one week
+				this.load -= this.load *  hours / (24*7);
+				if (load<0) {
+					load = 0l;
+				}
+			}
 		}
 	}
 
@@ -108,14 +150,22 @@ public class LoadBalanceMonitor {
 	 * @param defaultLoad
 	 */
 	private void addUser(int userId, long defaultLoad, long basis) {
-		if (loads.containsKey(userId)) {
-			return;
-		}
 		getMin();
 		if (minimum == null) {
 			minimum = defaultLoad;
 		}
-		
+		if (loads.containsKey(userId)) {
+			UserLoadData d = loads.get(userId);
+			if (d.active()) {
+				return;
+			} else {
+				d.activate();
+				if (d.load < defaultLoad) {
+					d.load = defaultLoad;
+					d.minBasis = basis;
+				}
+			}
+		}
 		loads.put(userId, new UserLoadData(userId, basis, defaultLoad));
 	}
 	
@@ -124,7 +174,11 @@ public class LoadBalanceMonitor {
 	 * @param userId
 	 */
 	private void removeUser(int userId) {
-		invalidateMin(loads.remove(userId).load);
+		UserLoadData u = loads.get(userId);
+		if (u!=null && u.active()) {
+			invalidateMin(u.load);
+			u.inactivate();
+		}
 	}
 	
 	/**
