@@ -121,8 +121,9 @@
 							</select>
 						</td>
 					</tr>
-					<tr class="noHover" title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
-						<td class="label"><p>wallclock timeout</p></td>
+					<tr class="noHover">
+						<td class="label"><p title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">wallclock timeout
+						<span class="ui-icon ui-icon-help" title="Smaller values may result in faster pair scheduling in the short term. See the cluster help page for more details."></span></p></td>
 						<td>	
 							<input type="text" name="wallclockTimeout" id="wallclockTimeout"/>
 						</td>
