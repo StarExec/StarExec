@@ -128,8 +128,7 @@ public abstract class JobManager {
 		    List<Job> joblist = Queues.getPendingJobs(qId);
 		    log.debug("about to submit this many jobs "+joblist.size());
 		    if (joblist.size() > 0) {
-		    	
-			submitJobs(joblist, q, queueSize,nodeCount);
+		    	submitJobs(joblist, q, queueSize,nodeCount);
 		    }
 		} else {
 		    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");

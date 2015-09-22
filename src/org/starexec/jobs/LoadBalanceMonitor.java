@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
 public class LoadBalanceMonitor {
-
+	private static final Logger log = Logger.getLogger(LoadBalanceMonitor.class);
 	class UserLoadData implements Comparable<UserLoadData> {
 		int userId;
 		
@@ -245,6 +246,8 @@ public class LoadBalanceMonitor {
 	public void subtractTimeDeltas(HashMap<Integer, Integer> users) {
 		Long oldMin = getMin();
 		for (Integer i : users.keySet()) {
+			log.debug("user "+i+" is being credited "+users.get(i));
+			
 			changeLoad(i, -users.get(i));
 		}
 		Long newMin = getMin();
