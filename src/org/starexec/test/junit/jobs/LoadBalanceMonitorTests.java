@@ -47,7 +47,8 @@ public class LoadBalanceMonitorTests {
 		monitor.changeLoad(1, 12);
 		monitor.setUsers(new HashMap<Integer, Integer>());
 		
-		Assert.assertEquals(null, monitor.getLoad(1));
+		// user is still there, just inactive
+		Assert.assertEquals(12, (long)monitor.getLoad(1));
 		Assert.assertEquals(null, monitor.getMin());
 	}
 	
@@ -119,15 +120,15 @@ public class LoadBalanceMonitorTests {
 		monitor.setUsers(users);
 		monitor.changeLoad(4, 5);
 		users = new HashMap<Integer, Integer>();
-		users.put(1, 3);
-		users.put(2, 3);
-		users.put(3, 3);
+		users.put(1, 6);
+		users.put(2, 6);
+		users.put(3, 6);
 		monitor.setUsers(users);
 		for (Integer i : users.keySet()) {
-			Assert.assertEquals(3, (long)monitor.getLoad(i));
+			Assert.assertEquals(6, (long)monitor.getLoad(i));
 		}
-		Assert.assertEquals(null, monitor.getLoad(4));
-		Assert.assertEquals(3, (long)monitor.getMin());
+		Assert.assertEquals(5, (long)monitor.getLoad(4));
+		Assert.assertEquals(6, (long)monitor.getMin());
 	}
 	
 	@Test
@@ -183,5 +184,17 @@ public class LoadBalanceMonitorTests {
 		Assert.assertEquals(5, (long)monitor.getLoad(1));
 		Assert.assertEquals(5, (long)monitor.getLoad(2));
 		Assert.assertEquals(5, (long)monitor.getMin());
+	}
+	
+	@Test
+	public void testForMinWithInactiveUser() {
+		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
+		users.put(1, 0);
+		monitor.setUsers(users);
+		users.put(2, 0);
+		users.remove(1);
+		monitor.setUsers(users);
+		monitor.changeLoad(2, 10);
+		Assert.assertEquals(10, (long)monitor.getMin());
 	}
 }

@@ -79,9 +79,9 @@ public abstract class JobManager {
 		}
 		StringBuilder sb = new StringBuilder();
 		for (Integer queueID : queueToMonitor.keySet()) {
-			sb.append("Queue ID = " +queueID);
-			sb.append("\n\n");
 			LoadBalanceMonitor m = queueToMonitor.get(queueID);
+			sb.append("Queue ID = " +queueID + "minimum = "+m.getMin());
+			sb.append("\n\n");
 			// updates user load values to take into account actual job pair runtimes.
 			m.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(queueID));
 			for (UserLoadData d : m.getAllData()) {

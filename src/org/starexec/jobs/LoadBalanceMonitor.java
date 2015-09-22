@@ -113,8 +113,14 @@ public class LoadBalanceMonitor {
 	private Long loadDifferenceThreshold = 600l;
 	
 	public Long getMin() {
-		if (minimum == null && loads.size()>0) {
-			minimum = Collections.min(loads.values()).load;
+		List<UserLoadData> activeUsers = new ArrayList<UserLoadData>();
+		for (UserLoadData d : loads.values()) {
+			if (d.active()) {
+				activeUsers.add(d);
+			}
+		}
+		if (minimum == null && activeUsers.size()>0) {
+			minimum = Collections.min(activeUsers).load;
 		}
 		return minimum;
 	}
@@ -130,7 +136,6 @@ public class LoadBalanceMonitor {
 	public Long getLoad(int userId) {
 		UserLoadData d = loads.get(userId);
 		if (d!=null) {
-			System.out.println(d.load);
 			return d.load;
 		}
 		return null;
