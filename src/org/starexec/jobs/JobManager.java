@@ -82,6 +82,8 @@ public abstract class JobManager {
 			sb.append("Queue ID = " +queueID);
 			sb.append("\n\n");
 			LoadBalanceMonitor m = queueToMonitor.get(queueID);
+			// updates user load values to take into account actual job pair runtimes.
+			m.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(queueID));
 			for (UserLoadData d : m.getAllData()) {
 				sb.append(userLoadDataAsString(d));
 				sb.append("\n");
@@ -100,7 +102,7 @@ public abstract class JobManager {
 	public synchronized static void clearLoadBalanceMonitors() {
 		log.debug("Clearing out all load balancing data");
 		queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
-		JobPairs.getAndClearTimeDeltas();
+		JobPairs.getAndClearTimeDeltas(-1);
 	}
 	
     public synchronized static boolean checkPendingJobs(){
@@ -239,7 +241,7 @@ public abstract class JobManager {
 				}
 			}
 			// updates user load values to take into account actual job pair runtimes.
-			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas());
+			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
 			

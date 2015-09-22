@@ -198,14 +198,17 @@ CREATE PROCEDURE SetPairEndTime(IN _id INT)
 		UPDATE job_pairs SET end_time=NOW() WHERE id=_id;
 		
 		-- save the diff between this pair's timeout and wallclock time to jobpair_time_delta
-		INSERT IGNORE INTO jobpair_time_delta(user_id, time_delta) 
-		VALUES ((SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id),0);
+		INSERT IGNORE INTO jobpair_time_delta(user_id, queue_id, time_delta) 
+		VALUES ((SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id),
+		(SELECT queue_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id), 0);
 			
 		UPDATE jobpair_time_delta
 		SET time_delta = (SELECT jobs.clockTimeout - CEIL(SUM(jobpair_stage_data.wallclock)) +time_delta
 						  FROM jobpair_stage_data JOIN job_pairs ON job_pairs.id=jobpair_stage_data.jobpair_id
 						  JOIN jobs ON jobs.id = job_pairs.job_id WHERE jobpair_stage_data.jobpair_id=_id)
-		WHERE user_id=(SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id);
+		WHERE user_id=(SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id 
+		WHERE job_pairs.id=_id 
+		AND queue_id=(SELECT queue_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id));
 		
 	END //
 	
@@ -234,16 +237,20 @@ CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
 		WHERE jobpair_id=_pairId ORDER BY input_number ASC;
 	END //
 	
+-- Select all data from the jobpair_time_delta table for a specific
+-- queue. -1 means all queues
 DROP PROCEDURE IF EXISTS GetJobpairTimeDeltaData;
-CREATE PROCEDURE GetJobpairTimeDeltaData()
+CREATE PROCEDURE GetJobpairTimeDeltaData(IN _qid INT)
 	BEGIN
-		SELECT * FROM jobpair_time_delta;
+		SELECT * FROM jobpair_time_delta WHERE queue_id=_qid OR _qid = -1;
 	END //
 
+-- Deletes all data from the jobpair_time_delta table for a specific
+-- queue. -1 means all queues
 DROP PROCEDURE IF EXISTS ClearJobpairTimeDeltaData;
-CREATE PROCEDURE ClearJobpairTimeDeltaData()
+CREATE PROCEDURE ClearJobpairTimeDeltaData(IN _qid INT)
 	BEGIN
-		DELETE FROM jobpair_time_delta;
+		DELETE FROM jobpair_time_delta WHERE queue_id=_qid OR _qid=-1;
 	END //
 
 DELIMITER ; -- this should always be at the end of the file

@@ -1362,12 +1362,14 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Reads all data from the jobpair_time_delta table and then clears the table,
-	 * all inside a single transaction.
+	 * Reads all data for a specific queue from the jobpair_time_delta table and then clears
+	 * the data from that queue all inside a single transaction.
+	 * @param queueID The ID of the queue to get data for. If this is -1, gets and clears
+	 * all data
 	 * @return A HashMap mapping userIds to their time delta values.
 	 */
 	
-	public static HashMap<Integer, Integer> getAndClearTimeDeltas() {
+	public static HashMap<Integer, Integer> getAndClearTimeDeltas(int queueID) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1375,14 +1377,16 @@ public class JobPairs {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
 			
-			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData()");
+			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData(?)");
+			procedure.setInt(1, queueID);
 			results = procedure.executeQuery();
 			HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
 			while (results.next()) {
 				data.put(results.getInt(1), results.getInt(2));
 			}
 			Common.safeClose(procedure);
-			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData()");
+			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData(?)");
+			procedure.setInt(queueID, 1);
 			procedure.executeUpdate();
 			
 			
