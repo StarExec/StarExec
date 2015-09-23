@@ -1,6 +1,8 @@
 package org.starexec.test.integration.database;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,11 +10,17 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -24,15 +32,19 @@ import org.starexec.test.resources.ResourceLoader;
 
 //TODO: Test pagination functions
 public class UserTests extends TestSequence {
-	User testUser=null;
-	
-	User user1=null;
-	User user2=null;
-	User user3=null;
-	User admin=null;
-	Space space=null;
-	Space subspace=null;
-	Space comm=null;
+	private User testUser=null;
+	private User user1=null;
+	private User user2=null;
+	private User user3=null;
+	private User admin=null;
+	private Processor postProc=null;
+	private Space space=null;
+	private Space subspace=null;
+	private Space comm=null;
+	private int wallclockTimeout=100;
+	private int cpuTimeout=100;
+	private int gbMemory=1;
+	private final String BENCH_ARCHIVE = "benchmarks.zip";
 	
 	private boolean removeUserFromSpace(User user, Space space) {
 		List<Integer> userId=new ArrayList<Integer>();
@@ -170,7 +182,7 @@ public class UserTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void deleteUserTest() {
+	private void DeleteUserTest() {
 		User temp=ResourceLoader.loadUserIntoDatabase();
 		Assert.assertNotNull(Users.get(temp.getId()));
 		try {
@@ -179,7 +191,167 @@ public class UserTests extends TestSequence {
 			Assert.fail(e.getMessage());
 		}
 		Assert.assertNull(Users.get(temp.getId()));
-		
+	}
+
+	/**
+	 * Tests that a user's solvers are deleted when the user is deleted.
+	 * @author Albert Giegerich
+	 */
+	@StarexecTest
+	private void DeleteUserDeletesUsersSolversTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		Solver tempSolver = ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertNull(Solvers.get(tempSolver.getId()));
+	}
+
+	/**
+	 * Tests that a user's solver directory is deleted when the user is deleted.
+	 * @author Albert Giegerich
+	 */
+	private void DeleteUserDeletesUsersSolverDirectoryTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		File tempUsersSolverDirectory = new File(R.SOLVER_PATH+"/"+tempUser.getId());
+		Assert.assertTrue(tempUsersSolverDirectory.exists());
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertFalse(tempUsersSolverDirectory.exists());
+	}
+
+	/**
+	 * Tests that a user's benchmarks are deleted when the user is deleted.
+	 * @author Albert Giegerich
+	 */
+	@StarexecTest
+	private void DeleteUserDeletesUsersBenchmarkTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		for (Integer benchmarkId : tempBenchmarkIds) {
+			Assert.assertNotNull(benchmarkId);
+			Assert.assertNull(Benchmarks.get(benchmarkId));
+		}
+	}
+
+	/**
+	 * Tests that a user's benchmark directory is deleted when the user is deleted.
+	 * @author Albert Giegerich
+	 */
+	@StarexecTest
+	private void DeleteUserDeletesUsersBenchmarkDirectoryTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		File tempUsersBenchmarkDirectory = new File(R.BENCHMARK_PATH+"/"+tempUser.getId());
+		Assert.assertTrue(tempUsersBenchmarkDirectory.exists());
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertFalse(tempUsersBenchmarkDirectory.exists());
+	}
+
+	/**
+	 * Tests that deleting a user also deletes that user's jobs.
+	 * @author Albert Giegerich
+	 */
+	@StarexecTest
+	private void DeleteUserDeletesUsersJobsTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		Solver tempSolver = ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+
+		Job tempJob = ResourceLoader.loadJobIntoDatabase(
+				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		Assert.assertNotNull(tempJob);	
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertNull(Jobs.get(tempJob.getId()));
+	}
+
+	/**
+	 * Asserts that job pairs are deleted from the database successfully.
+	 * @author Albert Giegerich
+	 */
+	@StarexecTest
+	private void DeleteUserDeletesJobPairsTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		Solver tempSolver = ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+
+		Job tempJob = ResourceLoader.loadJobIntoDatabase(
+				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		Assert.assertNotNull(tempJob);	
+
+		Assert.assertNotNull(tempJob.getJobPairs());
+		Assert.assertTrue(tempJob.getJobPairs().size() > 0);
+
+		for (JobPair pair : tempJob.getJobPairs()) {
+			Assert.assertNotNull(pair);
+		}
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		for (JobPair pair : tempJob.getJobPairs()) {
+			JobPair currentPair = JobPairs.getPair(pair.getId());
+			Assert.assertNull(currentPair);
+		}
+	}
+
+	@StarexecTest
+	private void DeleteUserDeletesJobDirectoriesTest() {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		Solver tempSolver = ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+
+		Job tempJob = ResourceLoader.loadJobIntoDatabase(
+				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		Assert.assertNotNull(tempJob);	
+
+		File jobDirectory = new File(R.NEW_JOB_OUTPUT_DIR +"/"+ tempJob.getId());
+		Assert.assertTrue(jobDirectory.exists());
+
+
+		try {
+			Users.deleteUser(tempUser.getId(), admin.getId());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertFalse(jobDirectory.exists());
+
 	}
 	
 	@StarexecTest
@@ -194,6 +366,7 @@ public class UserTests extends TestSequence {
 		// should get null for a non-user
 		Assert.assertNull(Users.get(-1));
 	}
+
 	@StarexecTest
 	private void GetUserByEmailTest() {
 		User temp=Users.get(user1.getEmail());
@@ -354,12 +527,12 @@ public class UserTests extends TestSequence {
 		user1=ResourceLoader.loadUserIntoDatabase();
 		user2=ResourceLoader.loadUserIntoDatabase();
 		user3=ResourceLoader.loadUserIntoDatabase();
+		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		testUser=Users.getTestUser();
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), Communities.getTestCommunity().getId());
 		subspace=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space.getId());
 		comm=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
-		
 	}
 
 	@Override

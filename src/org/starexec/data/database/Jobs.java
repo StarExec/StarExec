@@ -591,14 +591,57 @@ public class Jobs {
 	 * @param jobsToDelete List of jobs to delete.
 	 * @author Albert Giegerich
 	 */
-	public static void deleteEach(List<Job> jobsToDelete) {
-		for (Job job : jobsToDelete) {
-			boolean success = delete(job.getId());
-			if (!success) {
-				log.error("Job with id="+job.getId()+" was not deleted successfully.");
+	public static boolean deleteEach(List<Job> jobsToDelete) {
+		Connection con = null; 
+		boolean allJobsDeleted = true;
+		try {
+			con=Common.getConnection();
+			for (Job job : jobsToDelete) {
+				// Delete the job.
+				boolean success = delete(job.getId(), con);
+				// If any deletion fails allJobsDeleted will be permanently set to false.
+				allJobsDeleted = (allJobsDeleted ? success : false);
+				if (!success) {
+					log.error("Job with id="+job.getId()+" was not deleted successfully.");
+				}
 			}
+		} catch (Exception e) {
+			log.error("Encountered an error while attempting to delete a list of jobs. "+e.getMessage());
+			allJobsDeleted = false;
+		} finally {
+			Common.safeClose(con);
+		}
+		return allJobsDeleted;
+	}
+
+	/**
+	 * Deletes all jobs owned by a user.
+	 * @param userId Id of user whose jobs are to be deleted.
+	 * @throws StarExecDatabaseException if error occurs while interacting with database.
+	 * @author Albert Giegerich
+	public static void deleteUsersJobs(int userId) throws StarExecDatabaseException {
+		// Kill any jobs still running before deletion.
+		killUsersJobs(userId);
+		Connection con = null;
+		CallableStatement procedure=null;
+		List<Job> userJobs = Jobs.getByUserId(userId);
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("CALL DeleteUsersJobs(?)");
+			procedure.setInt(1, userId);
+			procedure.executeUpdate();
+
+			// Delete the user's job directories.
+			deleteJobDirectories(userJobs);
+		} catch (Exception e) {
+			throw new StarExecDatabaseException("Error while trying to delete jobs owned by user.", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 	}
+	*/
+
 	
 	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
@@ -607,15 +650,9 @@ public class Jobs {
 	 * @return True on success, false otherwise
 	 */
 	public static boolean delete(int jobId) {
-		//we should kill jobs before deleting  them so no additional pairs are run
-   	        log.info("Deleting job " + new Integer(jobId));
-		if (!Jobs.isJobComplete(jobId)) {
-			Jobs.kill(jobId);
-		}
 		Connection con=null;
 		try {
 			con=Common.getConnection();
-			Jobs.removeCachedJobStats(jobId,con);
 			return delete(jobId,con);
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
@@ -663,10 +700,17 @@ public class Jobs {
 	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
-	
 	protected static boolean delete(int jobId, Connection con) {
+		log.info("Deleting job " + jobId);
+		//we should kill jobs before deleting  them so no additional pairs are run
+		if (!Jobs.isJobComplete(jobId)) {
+			Jobs.kill(jobId);
+		}
 		CallableStatement procedure = null;
 		try {
+			// Remove the jobs stats from the database.
+			Jobs.removeCachedJobStats(jobId,con);
+
 			procedure = con.prepareCall("{CALL DeleteJob(?)}");
 			procedure.setInt(1, jobId);		
 			procedure.executeUpdate();	
@@ -681,6 +725,8 @@ public class Jobs {
 		}
 		return false;
 	}
+
+
 	
 	/**
 	 * Gets information about the job with the given ID. Job pair information is not returned.
@@ -3772,7 +3818,6 @@ public class Jobs {
 		return false;
 	}
 
-
 	/**
 	 * kills a running/paused job, and also sets the killed property to true in the database. 
 	 * @param jobId The ID of the job to kill
@@ -3802,6 +3847,31 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+	
+	/**
+	 * Kill all jobs belonging to a user.
+	 * @param userId Id of user whose jobs are to be killed.
+	 * @throws StarExecDatabaseException if a database related exception occurs.
+	 * @author Albert Giegerich
+	 */
+	protected static void killUsersJobs(int userId) throws StarExecDatabaseException {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			List<Job> usersJobs = Jobs.getByUserId(userId);
+			for (Job job : usersJobs) {
+				int jobId = job.getId();
+				// Kill any jobs that are still running.
+				if (!Jobs.isJobComplete(jobId)) {
+					Jobs.kill(jobId, con);
+				}
+			}
+		} catch (Exception e) {
+			throw new StarExecDatabaseException("Database error while deleting all jobs owned by user with id="+userId, e);
+		} finally {
+			Common.safeClose(con);
+		}
 	}
 	
 	/**

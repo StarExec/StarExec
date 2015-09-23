@@ -1095,10 +1095,10 @@ public class Users {
 	}
 	
 	/**
-	 * Completely deletes a user from the database. Right now, this is only
-	 * being used to delete temporary users created during testing
+	 * Completely deletes a user from the database. 
 	 * @param userIdToDelete The ID of the user to delete
 	 * @param userIdMakingRequest The ID of the user trying to perform the deletion
+	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
 	public static boolean deleteUser(int userToDeleteId, int userMakingRequestId) throws StarExecSecurityException{
@@ -1106,8 +1106,7 @@ public class Users {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
-			
-			//Only allow the deletion of test users, and only if the admin is asking
+			//Only allow the deletion of non-admin users, and only if the admin is asking
 			if (!UserSecurity.canDeleteUser(userToDeleteId, userMakingRequestId).isSuccess()) {
 				log.debug("security permission error when trying to delete user with id = "+userToDeleteId);
 				throw new StarExecSecurityException(
@@ -1115,12 +1114,13 @@ public class Users {
 						+userToDeleteId);
 
 			}
-
-			// First delete all the users primitives on disk.
-			deleteUsersPrimitives(userToDeleteId);
+			// Delete the users primitive directories. This must occur before we delete the user
+			// so we can still get the users job id's from the database.
 			deleteUsersPrimitiveDirectories(userToDeleteId);
+
 			
-			// Then delete the user from the database.
+			// Delete the user from the database, this should delete all benchmarks and solvers and jobs
+			// from the database using cascading deletes.
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL DeleteUser(?)}");
 			procedure.setInt(1, userToDeleteId);
@@ -1140,18 +1140,6 @@ public class Users {
 		return false;
 	}
 
-	private static void deleteUsersPrimitives(int userId) {
-		log.debug("Deleting primitives of user with id="+userId);
-		List<Solver> solversToDelete = Solvers.getByOwner(userId);
-		Solvers.deleteEach(solversToDelete);
-
-		List<Benchmark> benchmarksToDelete = Benchmarks.getByOwner(userId);
-		Benchmarks.deleteEach(benchmarksToDelete);
-		
-		List<Job> jobsToDelete = Jobs.getByUserId(userId);
-		Jobs.deleteEach(jobsToDelete);
-	}
-
 	/**
 	 * Deletes a user's benchmark and solver directory in the data directory.
 	 * @param userId Id of user whose benchmark and solver directories are to be deleted.
@@ -1161,6 +1149,20 @@ public class Users {
 		log.debug("Deleting primitive directories of user with id="+userId);
 		deleteUsersSolverDirectory(userId);
 		deleteUsersBenchmarkDirectory(userId);
+		deleteUsersJobDirectories(userId);
+	}
+
+	/**
+	 * Deletes the given jobs' directories.
+	 * @param jobs Jobs whose directories are to be deleted.
+	 * @author Albert Giegerich
+	 */
+	private static void deleteUsersJobDirectories(int userId) {
+		List<Job> jobs = Jobs.getByUserId(userId);
+		for (Job job : jobs) {
+			int jobId = job.getId();
+			Util.safeDeleteDirectory(Jobs.getDirectory(jobId));
+		}
 	}
 
 	/**
