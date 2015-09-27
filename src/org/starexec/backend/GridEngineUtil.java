@@ -8,15 +8,14 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-
 import org.starexec.backend.GridEngineBackend;
+import org.starexec.util.Util;
 
 
 /**
@@ -88,7 +87,7 @@ public class GridEngineUtil {
 						    String[] split3 = sourceQueueName.split("\\.");
 						    String shortQName = split3[0];
 						    log.debug("About to execute sudo command 1");
-						    BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @" + shortQName + "hosts", envp);
+						    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @" + shortQName + "hosts", envp);
 						}
 					}
 				}
@@ -108,7 +107,7 @@ public class GridEngineUtil {
 					
 				// Transfer nodes out of @allhosts
 				log.debug("About to execute sudo command 2");
-					BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @allhosts", envp);
+					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @allhosts", envp);
 				}
 			}
 			
@@ -130,7 +129,7 @@ public class GridEngineUtil {
 		//Add the host
 
 			log.debug("About to execute sudo command 3");
-		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
+		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", envp);
 		
 			
 			
@@ -194,7 +193,7 @@ public class GridEngineUtil {
 			f2.setWritable(true, false);
 				
 			log.debug("About to execute sudo command 4");
-			BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", envp);
 		
 			
 	
@@ -249,10 +248,10 @@ public class GridEngineUtil {
 		    String name = sourceQueueNames[i];
 		    String[] split3 = name.split("\\.");
 		    String shortQName = split3[0];
-		    BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeFullName + " @" + shortQName + "hosts", envp);
+		    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeFullName + " @" + shortQName + "hosts", envp);
 		}
 		log.debug("adding node with name = "+nodeFullName +" to queue = "+shortQueueName);
-		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + nodeFullName + " @" + shortQueueName + "hosts", envp);
+		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + nodeFullName + " @" + shortQueueName + "hosts", envp);
 	    }
 	}
 

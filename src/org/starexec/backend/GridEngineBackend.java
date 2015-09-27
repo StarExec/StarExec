@@ -1,10 +1,7 @@
 package org.starexec.backend;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.regex.Pattern;
-import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
@@ -12,7 +9,7 @@ import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 import org.starexec.backend.GridEngineR;
 import org.starexec.backend.GridEngineUtil;
-import org.starexec.backend.BackendUtil;
+import org.starexec.util.Util;
 
 
 
@@ -156,7 +153,7 @@ public class GridEngineBackend implements Backend{
     	String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 		try {
-			BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -173,7 +170,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean killPair(int execId){
 		try{
-		    BackendUtil.executeCommand("qdel " + execId);	
+		    Util.executeCommand("qdel " + execId);	
 		    return true;
 		} catch (Exception e) {
 		    return false;
@@ -187,7 +184,7 @@ public class GridEngineBackend implements Backend{
      */
     public String getRunningJobsStatus() {
     	try {	
-			return BackendUtil.executeCommand("qstat -f");
+			return Util.executeCommand("qstat -f");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -201,7 +198,7 @@ public class GridEngineBackend implements Backend{
     public String[] getWorkerNodes() {
     	try {
     		// Execute the SGE command to get the node list
-    		String nodeResults = BackendUtil.executeCommand(GridEngineR.NODE_LIST_COMMAND);
+    		String nodeResults = Util.executeCommand(GridEngineR.NODE_LIST_COMMAND);
     		log.debug("getWorkerNodes got the following results");
     		log.debug(nodeResults);
     		return nodeResults.split(System.getProperty("line.separator"));
@@ -223,7 +220,7 @@ public class GridEngineBackend implements Backend{
 
     	try {
     		// Call SGE to get details for the given node
-    		String results = BackendUtil.executeCommand(GridEngineR.NODE_DETAILS_COMMAND + nodeName);
+    		String results = Util.executeCommand(GridEngineR.NODE_DETAILS_COMMAND + nodeName);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineUtil.nodeKeyValPattern.matcher(results);
@@ -259,7 +256,7 @@ public class GridEngineBackend implements Backend{
     public String[] getQueues(){
     	try {
     		// Execute the SGE command to get the list of queues
-    		String queuestr = BackendUtil.executeCommand(GridEngineR.QUEUE_LIST_COMMAND);
+    		String queuestr = Util.executeCommand(GridEngineR.QUEUE_LIST_COMMAND);
 
     		return queuestr.split(System.getProperty("line.separator"));	
     	} catch (Exception e) {
@@ -286,7 +283,7 @@ public class GridEngineBackend implements Backend{
     public String[] getQueueDetails(String nodeName){
     	try {
     		// Call SGE to get details for the given node
-    		String results = BackendUtil.executeCommand(GridEngineR.QUEUE_DETAILS_COMMAND + nodeName);
+    		String results = Util.executeCommand(GridEngineR.QUEUE_DETAILS_COMMAND + nodeName);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineUtil.queueKeyValPattern.matcher(results);
@@ -327,7 +324,7 @@ public class GridEngineBackend implements Backend{
     		String[] envp = new String[2];
     		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
     		envp[1] = "SGE_ROOT="+BACKEND_ROOT; // it seems we need to set this explicitly if we change the environment.
-    		String results = BackendUtil.executeCommand(GridEngineR.QUEUE_STATS_COMMAND,envp);
+    		String results = Util.executeCommand(GridEngineR.QUEUE_STATS_COMMAND,envp);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineUtil.queueAssocPattern.matcher(results);
@@ -368,7 +365,7 @@ public class GridEngineBackend implements Backend{
 			envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 
 			for(int i=0;i<allQueueNames.length;i++) {
-				BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],envp);
 			}
 			return true;
 		} catch (Exception e) {
@@ -393,12 +390,12 @@ public class GridEngineBackend implements Backend{
     		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 
     		//DISABLE the queue: 
-    		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
     		//DELETE the queue:
-    		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
     				
     		//Delete the host group:
-    		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
     		return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
@@ -447,7 +444,7 @@ public class GridEngineBackend implements Backend{
     	try {
     		String[] envp = new String[1];
     		envp[0] = "SGE_ROOT="+ BACKEND_ROOT;
-    		BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", envp);
     	    return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
