@@ -59,8 +59,9 @@ public interface Backend{
 
     /**
      * kills all pairs
+     * @return true on success and false on error.
      */
-    public void killAll();
+    public boolean killAll();
 
 
     

@@ -7,10 +7,9 @@ import java.util.regex.Pattern;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
-
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
-
+import org.ggf.drmaa.SessionFactory;
 import org.starexec.backend.GridEngineR;
 import org.starexec.backend.GridEngineUtil;
 import org.starexec.backend.BackendUtil;
@@ -30,11 +29,18 @@ public class GridEngineBackend implements Backend{
 
      **/
     public void initialize(String BACKEND_ROOT){
-
-	    session = GridEngineUtil.createSession();
-	    log.info("Created GridEngine session");
 	    this.BACKEND_ROOT = BACKEND_ROOT;
 
+    	try {
+			log.debug("createSession() loading class."); 	
+			// Try to load the class, if it does not exist this will cause an exception instead of an error			
+			Class.forName("com.sun.grid.drmaa.SessionImpl");
+			Session s = SessionFactory.getFactory().getSession();
+			s.init("");
+		    log.info("Created GridEngine session");
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
     }
 
     /**
@@ -43,10 +49,15 @@ public class GridEngineBackend implements Backend{
 
      **/
     public void destroyIf(){
-	if (!session.toString().contains("drmaa")) {
-	    log.debug("Shutting down the session..." + session);
-	    GridEngineUtil.destroySession(session);
-	}
+		if (!session.toString().contains("drmaa")) {
+		    log.debug("Shutting down the session..." + session);
+		    try {
+				session.exit();
+			}
+			catch (Exception e) {
+				log.error("Problem destroying session: "+e,e);
+			}
+		}
     }
 
 
@@ -141,8 +152,16 @@ public class GridEngineBackend implements Backend{
      * @return true if successful, false otherwise
      * kills a jobpair
      */
-    public void killAll(){
-	GridEngineUtil.deleteAllSGEJobs(BACKEND_ROOT);
+    public boolean killAll(){
+    	String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
+		try {
+			BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
     }
 
 
@@ -153,13 +172,12 @@ public class GridEngineBackend implements Backend{
      * kills a jobpair
      */
     public boolean killPair(int execId){
-	try{
-	    BackendUtil.executeCommand("qdel " + execId);	
-	    return true;
-	} catch (Exception e) {
-	    return false;
-	}
-
+		try{
+		    BackendUtil.executeCommand("qdel " + execId);	
+		    return true;
+		} catch (Exception e) {
+		    return false;
+		}
     }
 
 
@@ -168,8 +186,12 @@ public class GridEngineBackend implements Backend{
      * @return a string representing the status of jobs running on the system
      */
     public String getRunningJobsStatus() {
-	return GridEngineUtil.getQstatOutput();
-		
+    	try {	
+			return BackendUtil.executeCommand("qstat -f");
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
     }
 
     /**
@@ -341,7 +363,18 @@ public class GridEngineBackend implements Backend{
      * should clear any states caused by errors on both queues and nodes
      */
     public boolean clearNodeErrorStates( String[] allQueueNames){
-	return GridEngineUtil.clearNodeErrorStates(BACKEND_ROOT,allQueueNames);
+    	try {
+			String[] envp = new String[1];
+			envp[0] = "SGE_ROOT="+BACKEND_ROOT;
+
+			for(int i=0;i<allQueueNames.length;i++) {
+				BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],envp);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
     }
 
     

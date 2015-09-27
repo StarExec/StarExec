@@ -58,36 +58,6 @@ public class GridEngineUtil {
 		queueAssocPattern = Pattern.compile(GridEngineR.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
 
 	}
-
-	public static Session createSession() {
-		try {
-			log.debug("createSession() loading class."); 	
-			// Try to load the class, if it does not exist this will cause an exception instead of an error			
-			Class.forName("com.sun.grid.drmaa.SessionImpl");
-		} catch (Exception e) {
-			log.error("Error loading com.sun.grid.drmaa.SessionImpl");
-		}
-
-		Session s = SessionFactory.getFactory().getSession();
-		
-		try {
-			s.init("");
-		} catch (Exception e) {
-			log.error("Error initializing the SGE session.");
-		}
-		return s;
-	}
-
-	public static void destroySession(Session s) {
-		try {
-			s.exit();
-		}
-		catch (Exception e) {
-			log.error("Problem destroying session: "+e,e);
-		}
-	}		
-
-
 	
     public static boolean createPermanentQueue(boolean isNewQueue,String BACKEND_ROOT,String queueName, String[] nodeNames,String[] queueNames){
 		try {
@@ -237,60 +207,7 @@ public class GridEngineUtil {
 		return false;
 
 	}
-	
-	
-	/**
-	 * Clears off every currently running SGE job from every queue
-	 * @return
-	 */
-	public static boolean deleteAllSGEJobs(String BACKEND_ROOT) {
-		String[] envp = new String[1];
-		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
-		try {
-			BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-	} 
-	
-	/**
-	 * Clears the error states from every node associated with every queue
-	 * @return True on success and false otherwise
-	 */
-    public static boolean clearNodeErrorStates(String BACKEND_ROOT,String[] allQueueNames) {
-		try {
-			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 
-			for(int i=0;i<allQueueNames.length;i++) {
-				
-				BackendUtil.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],envp);
-			}
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return false;
-	}
-	
-	/**
-	 * pure SGE, move
-	 * Runs qstat -f and returns the result
-	 * @return The qstat output, or null if there was an error
-	 */
-	public static String getQstatOutput() {
-		try {
-			
-			return BackendUtil.executeCommand("qstat -f");
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		
-		return null;
-	}
-	
 	/**
 	 * Moves the given set of nodes into the given queue
 	 * @param BACKEND_ROOT the location to the backend root, if sge found at R.SGE_ROOT
