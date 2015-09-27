@@ -319,7 +319,7 @@ public class RESTServices {
 		for(Queue q : Queues.getAll()){
 		    queueNames.add(q.getName());
 		}
-		return R.BACKEND.clearNodeErrorStates(R.SGE_ROOT,queueNames.toArray(new String[queueNames.size()])) ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
+		return R.BACKEND.clearNodeErrorStates(queueNames.toArray(new String[queueNames.size()])) ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
 	}
 	
 	/**
@@ -348,7 +348,7 @@ public class RESTServices {
 	@Path("/cluster/qstat")
 	@Produces("text/plain")		
 	public String getQstatOutput(@Context HttpServletRequest request) {		
-		String qstat=R.BACKEND.getRunningJobsStatus(R.SGE_ROOT);
+		String qstat=R.BACKEND.getRunningJobsStatus();
 		if(!Util.isNullOrEmpty(qstat)) {
 			return qstat;
 		}
@@ -4224,7 +4224,7 @@ public class RESTServices {
 		boolean success = true;
 		//Make BACKEND changes
 		if (!q.getStatus().equals("ACTIVE")) {
-		    success = R.BACKEND.createPermanentQueue(R.SGE_ROOT, true,req.getQueueName(),null,null);
+		    success = R.BACKEND.createPermanentQueue(true,req.getQueueName(),null,null);
 		}
 		
 		//Make database changes

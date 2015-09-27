@@ -491,7 +491,7 @@ public class ResourceLoader {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
 			String [] empty=new String[0];
-			R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queueName, null,null);
+			R.BACKEND.createPermanentQueue(true,queueName, null,null);
 			
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();

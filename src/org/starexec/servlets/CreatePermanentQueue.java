@@ -99,7 +99,7 @@ public class CreatePermanentQueue extends HttpServlet {
 		//TODO : BUG when trying to create a permanent queue using an orphaned node, seems to create queue with right node, returning wrong status code for some reason? seems related to cputimeout and wallclock timeout
 		String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
 		String[] qNames = queueNames.toArray(new String[queueNames.size()]);
-		boolean backend_success = R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queue_name+".q",nNames,qNames);
+		boolean backend_success = R.BACKEND.createPermanentQueue(true,queue_name+".q",nNames,qNames);
 
 		log.debug("backend_success: " + backend_success);
 

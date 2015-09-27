@@ -3918,7 +3918,7 @@ public class Jobs {
 	    for (JobPair jp : jobPairsEnqueued) {
 		//TODO : remember to change name of getGridEngineId
 		int execId = jp.getGridEngineId();
-		R.BACKEND.killPair(R.SGE_ROOT,execId);
+		R.BACKEND.killPair(execId);
 		JobPairs.UpdateStatus(jp.getId(), 20);
 	    }
 	    //Get the running job pairs and remove them
@@ -3926,7 +3926,7 @@ public class Jobs {
 	    if (jobPairsRunning != null) {
 		for (JobPair jp: jobPairsRunning) {
 		    int execId = jp.getGridEngineId();
-		    R.BACKEND.killPair(R.SGE_ROOT,execId);
+		    R.BACKEND.killPair(execId);
 		    JobPairs.UpdateStatus(jp.getId(), 20);
 		}
 	    }
@@ -3966,7 +3966,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
-			R.BACKEND.killAll(R.SGE_ROOT);
+			R.BACKEND.killAll();
 			List<Job> jobs = new LinkedList<Job>();		
 			jobs = Jobs.getRunningJobs();
 			if (jobs != null) {

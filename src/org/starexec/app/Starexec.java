@@ -69,7 +69,7 @@ public class Starexec implements ServletContextListener {
 		    log.debug("Releasing Util threadpool...");
 		    Util.shutdownThreadPool();
 
-		    R.BACKEND.destroyIf(R.SGE_ROOT);
+		    R.BACKEND.destroyIf();
 		    // Wait for the task scheduler to finish
 		    taskScheduler.awaitTermination(10, TimeUnit.SECONDS);
 		    taskScheduler.shutdownNow();

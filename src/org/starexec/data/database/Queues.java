@@ -63,7 +63,7 @@ public class Queues {
 		
 	    if (nodes != null) {
 		for (WorkerNode n : nodes) {
-		    R.BACKEND.moveNode(R.SGE_ROOT,n.getName(),R.BACKEND.getDefaultQueueName(R.SGE_ROOT));
+		    R.BACKEND.moveNode(n.getName(),R.BACKEND.getDefaultQueueName());
 		}
 	    }
 		
@@ -78,7 +78,7 @@ public class Queues {
 	    } else {
 		success = success && Requests.DeleteReservation(queueId);
 	    }
-	    R.BACKEND.deleteQueue(R.SGE_ROOT,queueName);
+	    R.BACKEND.deleteQueue(queueName);
 			
 	    Cluster.loadWorkerNodes();
 	    Cluster.loadQueues();	

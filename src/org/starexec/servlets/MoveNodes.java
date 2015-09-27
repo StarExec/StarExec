@@ -95,7 +95,7 @@ public class MoveNodes extends HttpServlet {
 	    }
 		
 	    //BACKEND Changes
-	    R.BACKEND.moveNodes(R.SGE_ROOT,queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
+	    R.BACKEND.moveNodes(queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
 
 	    Cluster.loadWorkerNodes();
 	    Cluster.loadQueues();
