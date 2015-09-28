@@ -23,12 +23,21 @@ $(document).ready(function(){
 		 	primary: "ui-icon-refresh"
 	 	}
 	 });
+	 $("#refreshLoads").button( {
+		 icons: {
+		 	primary: "ui-icon-refresh"
+	 	}
+	 });
 	 $("#refreshQstat").click(function() {
 		 loadQstatOutput();
 	 });
+	 $("#refreshLoads").click(function() {
+		 loadQueueLoads();
+	 });
 	 
 	 $("#qstatField").expandable(true);
-	 
+	 $("#loadsField").expandable(true);
+
 	 
 	 setInterval(function() {
 		 jobPairTable.fnDraw(false);
@@ -153,6 +162,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 function getDetails(id, type) {
 	var url = '';
 	qid=id;
+	loadQueueLoads();
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
@@ -184,6 +194,18 @@ function loadQstatOutput() {
 			{},
 			function(data){
 				$("#qstatOutput").val(data);
+
+			},  
+			"text"
+	);
+}
+
+function loadQueueLoads() {
+	$.get(  
+			starexecRoot+"services/cluster/loads/"+qid,
+			{},
+			function(data){
+				$("#loadOutput").val(data);
 
 			},  
 			"text"

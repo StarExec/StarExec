@@ -11,8 +11,6 @@
 		if (!Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		} 
-		String userLoadData = JobManager.getUserLoadDataFormattedString();
-		request.setAttribute("loadData", userLoadData);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 	} catch (Exception e) {
@@ -33,10 +31,6 @@
 			<div id="dialog-confirm-restart" title="confirm restart">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>
 			</div>	
-		</fieldset>
-		<fieldset>
-			<legend>user load data</legend>
-			<textarea id="loadData">${loadData}</textarea>
 		</fieldset>
 	</div>	
 </star:template>

@@ -16,7 +16,7 @@ import org.starexec.util.Util;
 public class GridEngineBackend implements Backend{
     private Session session = null;
     private Logger log;
-    private String BACKEND_ROOT = null;;
+    private String BACKEND_ROOT = null;
     public GridEngineBackend(){
     	log = Logger.getLogger(GridEngineBackend.class);
     }

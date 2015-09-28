@@ -57,40 +57,12 @@ public abstract class JobManager {
 
 	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
 	
-	private static String userLoadDataAsString(UserLoadData d) {
-		StringBuilder sb = new StringBuilder();
-		User u = Users.get(d.userId);
-		sb.append(u.getFullName());
-		sb.append(" ");
-		if (!d.active()) {
-			sb.append("(inactive) ");
+	public static String getLoadRepresentationForQueue(int queueId) {
+		log.debug("retrieving load data for queue = "+queueId);
+		if (queueToMonitor.containsKey(queueId)){
+			return queueToMonitor.get(queueId).toString();
 		}
-		sb.append(": load = " + d.load);
-		return sb.toString();
-	}
-	/**
-	 * Gets all user load data for every queue as a single formatted string, which
-	 * can be displayed on the front end.
-	 * @return The formatted string
-	 */
-	public static String getUserLoadDataFormattedString() {
-		if (queueToMonitor.size()==0) {
-			return "No current data";
-		}
-		StringBuilder sb = new StringBuilder();
-		for (Integer queueID : queueToMonitor.keySet()) {
-			LoadBalanceMonitor m = queueToMonitor.get(queueID);
-			sb.append("Queue ID = " +queueID + "minimum = "+m.getMin());
-			sb.append("\n\n");
-			// updates user load values to take into account actual job pair runtimes.
-			m.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(queueID));
-			for (UserLoadData d : m.getAllData()) {
-				sb.append(userLoadDataAsString(d));
-				sb.append("\n");
-			}
-			sb.append("\n");
-		}
-		return sb.toString();
+		return null;
 	}
 	
 	/**
@@ -278,7 +250,7 @@ public abstract class JobManager {
 				}
 				
 				monitor.setUsers(pendingUsers);
-				
+				monitor.setUserLoadDataFormattedString();
 				it = schedule.iterator();
 
 				while (it.hasNext()) {

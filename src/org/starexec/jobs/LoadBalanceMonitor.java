@@ -1,6 +1,7 @@
 package org.starexec.jobs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,6 +12,9 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.database.JobPairs;
+import org.starexec.data.database.Users;
+import org.starexec.data.to.User;
 
 public class LoadBalanceMonitor {
 	private static final Logger log = Logger.getLogger(LoadBalanceMonitor.class);
@@ -273,12 +277,50 @@ public class LoadBalanceMonitor {
 		return userLoad - getMin() > loadDifferenceThreshold;	
 	}
 	
-	public List<UserLoadData> getAllData() {
-		List<UserLoadData> d = new ArrayList<UserLoadData>();
-		for (UserLoadData u : loads.values()) {
-			d.add(u);
+	private String stringRepresentation = null;
+	
+	private String userLoadDataAsString(UserLoadData d) {
+		StringBuilder sb = new StringBuilder();
+		User u = Users.get(d.userId);
+		sb.append(u.getFullName());
+		sb.append(" ");
+		if (!d.active()) {
+			sb.append("(inactive) ");
 		}
-		return d;
+		sb.append(": load = " + d.load);
+		return sb.toString();
+	}
+	
+	private List<UserLoadData> getSortedDataList() {
+		List<UserLoadData> data = new ArrayList<UserLoadData>();
+		for (UserLoadData d : loads.values()) {
+			data.add(d);
+		}
+		Collections.sort(data);
+
+		return data;
+	}
+	
+	/**
+	 * Gets all user load data for every queue as a single formatted string, which
+	 * can be displayed on the front end.
+	 */
+	public void setUserLoadDataFormattedString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("minimum = "+this.getMin());
+		sb.append("\n\n");
+		// updates user load values to take into account actual job pair runtimes.
+		
+		for (UserLoadData d : getSortedDataList()) {
+			sb.append(userLoadDataAsString(d));
+			sb.append("\n");
+		}
+		sb.append("\n");		
+		stringRepresentation = sb.toString();
+	}
+	
+	public String toString() {
+		return stringRepresentation;
 	}
 	
 }

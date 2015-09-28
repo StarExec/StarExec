@@ -357,6 +357,23 @@ public class RESTServices {
 	}
 	
 	/**
+	 * @return a text string that shows the load values for the given queue.
+	 * @param queueId the ID of the queue to get data for.
+	 * @author Eric Burns
+	 */
+	@GET
+	@Path("/cluster/loads/{queueId}")
+	@Produces("text/plain")		
+	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {		
+		String loads = JobManager.getLoadRepresentationForQueue(queueId);
+		if(!Util.isNullOrEmpty(loads)) {
+			return loads;
+		}
+
+		return "not available";
+	}
+	
+	/**
 	 * @return a text string that holds the log of job pair with the given id
 	 * @author Tyler Jensen
 	 */

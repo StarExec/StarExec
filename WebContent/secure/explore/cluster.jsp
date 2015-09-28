@@ -30,6 +30,11 @@
 			</table>
 			
 		</fieldset>	
+		<fieldset id="loadsField">
+			<legend>queue load</legend>
+			<button id="refreshLoads">refresh</button>
+			<textarea id="loadOutput"></textarea>
+		</fieldset>
 		<fieldset id="qstatField">
 			<legend>qstat output</legend>
 			<button id="refreshQstat">refresh</button>
