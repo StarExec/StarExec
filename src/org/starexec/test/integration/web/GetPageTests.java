@@ -249,9 +249,9 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void getAdminPermanentQueueTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/admin/permanentQueue.jsp"));
-		Assert.assertFalse(con.canGetPage("secure/admin/permanentQueue.jsp"));
+	private void getAdminAddQueueTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/addQueue.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/addQueue.jsp"));
 
 	}
 	

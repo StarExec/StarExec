@@ -186,7 +186,6 @@ CREATE TABLE queues (
 	slots_reserved INTEGER DEFAULT 0,
 	slots_free INTEGER DEFAULT 0,
 	slots_total INTEGER DEFAULT 0,
-	permanent BOOLEAN DEFAULT FALSE,
 	global_access BOOLEAN DEFAULT FALSE,
 	cpuTimeout INT DEFAULT 259200,
 	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue

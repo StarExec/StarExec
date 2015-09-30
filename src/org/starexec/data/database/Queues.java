@@ -46,7 +46,6 @@ public class Queues {
 	public static boolean removeQueue(int queueId) {
 	    
 	    Queue q=Queues.get(queueId);
-	    boolean permanent=q.getPermanent();
 	    String queueName = q.getName();
 		
 	    //Pause jobs that are running on the queue
@@ -62,22 +61,17 @@ public class Queues {
 	    List<WorkerNode> nodes = Queues.getNodes(queueId);
 		
 	    if (nodes != null) {
-		for (WorkerNode n : nodes) {
-		    R.BACKEND.moveNode(n.getName(),R.BACKEND.getDefaultQueueName());
-		}
+			for (WorkerNode n : nodes) {
+			    R.BACKEND.moveNode(n.getName(),R.BACKEND.getDefaultQueueName());
+			}
 	    }
 		
 	    boolean success=true;
 		
 		
 	    /***** DELETE THE QUEUE *****/	
-	    //Database Change
-	    if (permanent) {
-		success=success && Queues.delete(queueId);
-
-	    } else {
-		success = success && Requests.DeleteReservation(queueId);
-	    }
+	    
+	    success=success && Queues.delete(queueId);
 	    R.BACKEND.deleteQueue(queueName);
 			
 	    Cluster.loadWorkerNodes();
@@ -341,15 +335,6 @@ public class Queues {
 	 */
 	public static List<Queue> getAllAdmin() {
 	    return getQueues(-2);
-	}
-	
-	/**
-	 * Gets all queues in the starexec cluster (excluding 'permanent' queues)
-	 * @return A list of queues
-	 * @author Wyatt Kaiser
-	 */
-	public static List<Queue> getAllNonPermanent() {
-		return getQueues(-3);
 	}
 
 	/**
@@ -702,8 +687,6 @@ public class Queues {
 			} else if (userId == -2) {
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
-			} else if (userId == -3) {
-				procedure = con.prepareCall("{CALL GetAllQueuesNonPermanent}");
 			} else {
 			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
 			    procedure.setInt(1, userId);
@@ -746,61 +729,37 @@ public class Queues {
 			return getQueues(0);
 		} else {
 			logUtil.debug(method, "Getting queues for non-admin user.");
-			List<Space> spaces = Spaces.getAllSuperSpaces(userId);
 			
-			List<Queue> queues = new LinkedList<Queue>();
-			// First add all the queues that have been reserved for a 
-			// superspace that the user is a member of
-			if (spaces != null) {
-				for (Space s : spaces) {
-					queues.addAll(Queues.getQueuesForSpace(s.getId()));
+			Connection con = null;
+			ResultSet results = null;
+			CallableStatement procedure = null;
+			try {
+				con = Common.getConnection();
+				procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
+				procedure.setInt(1, userId);
+				results = procedure.executeQuery();
+				List<Queue> queues = new LinkedList<Queue>();
+				
+				while (results.next()) {
+					Queue q = new Queue();
+					q.setId(results.getInt("id"));
+					q.setName(results.getString("name"));
+					q.setStatus(results.getString("status"));
+					q.setGlobalAccess(results.getBoolean("global_access"));
+					q.setCpuTimeout(results.getInt("cpuTimeout"));
+					q.setWallTimeout(results.getInt("clockTimeout"));
+					queues.add(q);
 				}
+				return queues;
+			} catch (Exception e) {
+				log.error("GetQueuesForUser says " + e.getMessage(), e);
+			} finally {
+				Common.safeClose(con);
+				Common.safeClose(results);
+				Common.safeClose(procedure);
 			}
-			
-			//Then get the permanent queues for the user
-			queues.addAll(Queues.getPermanentQueuesForUser(userId));			
-			return queues;
-
+			return null;
 		}
-	}
-	
-	/**
-	 * Gets all of the permanent queues that the given user has access to for running a job
-	 * @param userId
-	 * @return
-	 */
-	
-	private static List<Queue> getPermanentQueuesForUser(int userId) {
-		Connection con = null;
-		ResultSet results = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetPermanentQueuesForUser(?)}");
-			procedure.setInt(1, userId);
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while (results.next()) {
-				Queue q = new Queue();
-				q.setId(results.getInt("id"));
-				q.setName(results.getString("name"));
-				q.setStatus(results.getString("status"));
-				q.setPermanent(results.getBoolean("permanent"));
-				q.setGlobalAccess(results.getBoolean("global_access"));
-				q.setCpuTimeout(results.getInt("cpuTimeout"));
-				q.setWallTimeout(results.getInt("clockTimeout"));
-				queues.add(q);
-			}
-			return queues;
-		} catch (Exception e) {
-			log.error("GetPermanentQueuesForUser says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
 	}
 
 	/**
@@ -1205,36 +1164,6 @@ public class Queues {
 	}
 	
 	/**
-	 * Checks to see whether the given queue is permanent
-	 * @param queueId The ID of the queue to check
-	 * @return True if the queue is permanent and false if it is not OR there is an error
-	 */
-	
-	public static boolean isQueuePermanent(int queueId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL IsQueuePermanent(?)}");
-			procedure.setInt(1, queueId);
-			
-			results = procedure.executeQuery();
-			while(results.next()) {
-				return results.getBoolean("permanent");
-			}
-		} catch (Exception e) {
-			log.error("IsQueuePermanent says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return false;
-	}
-	
-	/**
 	 * Updates the cpu timeout for an existing queue
 	 * @param queueId
 	 * @param timeout
@@ -1284,44 +1213,7 @@ public class Queues {
 		}
 		return false;
 	}
-	
-	/**
-	 * Makes a queue permanent by both setting the "permanent" flag to be true and 
-	 * also removing the queue's association from spaces.
-	 * @param queue_id
-	 * @return
-	 */
-	public static boolean makeQueuePermanent(int queue_id) {
-		Connection con = null;
-		CallableStatement MakePermanent = null;
-		CallableStatement DeleteAssociation = null;
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-			
-			//Set permanent flag in queues
-			MakePermanent = con.prepareCall("{CALL MakeQueuePermanent(?)}");
-			MakePermanent.setInt(1, queue_id);
-			MakePermanent.executeUpdate();
-			log.debug("successfully made this queue permanent = "+queue_id);
-			
-			//Delete from comm_queue
-			DeleteAssociation = con.prepareCall("{CALL RemoveQueueAssociation(?)}");
-			DeleteAssociation.setInt(1, queue_id);
-			DeleteAssociation.executeUpdate();
-			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e) {
-			log.error("MakeQueuePermanent says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(MakePermanent);
-			Common.safeClose(DeleteAssociation);
-		}
-		return false;
-	}
-	
+
 	/**
 	 * Checks to see whether the given queue is global or not
 	 * @param queueId

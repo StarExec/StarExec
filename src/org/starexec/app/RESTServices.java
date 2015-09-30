@@ -192,68 +192,6 @@ public class RESTServices {
 	}
 
 	
-
-	
-	/**
-	 * Returns the paginated results of node assignments
-	 * For the manage_nodes page. this is an admin only function
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/nodes/dates/pagination/{string_date}")
-	@Produces("application/json")
-	//TODO: This needs to be refactored
-	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-	
-		//Get todays date
-		Date today = new Date();
-
-		//Get the passed in date
-		String start_month = date.substring(0,2);
-		String start_day = date.substring(2, 4);
-		String start_year = date.substring(4, 8);
-		String new_date = start_month + "/" + start_day + "/" + start_year;
-		
-		//Get the latest date that a node is reserved for
-		Date latest = Cluster.getLatestNodeDate();
-		java.util.Date newDateJava = null;
-		
-		if (Validator.isValidDate(new_date)) {
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-			java.sql.Date newDateSql = null;
-			java.sql.Date latestSql = null;
-			try {
-				newDateJava = format.parse(new_date);
-				newDateSql = new java.sql.Date(newDateJava.getTime());
-				
-				latestSql = new java.sql.Date(latest.getTime());
-			} catch (ParseException e1) {
-				log.error(e1.getMessage(),e1);
-			}
-			
-			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
-				return gson.toJson(4);
-			}
-			
-		} else {
-			return gson.toJson(2);
-		}
-	
-		latest = newDateJava;
-		//Get all the dates between these two dates
-	    List<java.sql.Date> dates = Requests.getDateRange(today, latest);
-	    
-	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForManageNodes(dates, request);
-	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	    
-		}
-	
 	@GET
 	@Path("/benchmarks/uploadDescription/{statusId}")
 	@Produces("application/json")
@@ -4221,36 +4159,7 @@ public class RESTServices {
 		
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue set as test queue")) : gson.toJson(ERROR_DATABASE);
 	}
-	
-	/**
-	 * Will update a queue making it permanent
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/permanent/queue/{queueId}")
-	@Produces("application/json")
-	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		QueueRequest req = Requests.getRequestForReservation(queue_id);
-		Queue q = Queues.get(queue_id);
-		boolean success = true;
-		//Make BACKEND changes
-		if (!q.getStatus().equals("ACTIVE")) {
-		    success = R.BACKEND.createPermanentQueue(true,req.getQueueName(),null,null);
-		}
-		
-		//Make database changes
-		if (success) {
-			success = Queues.makeQueuePermanent(queue_id);
-		}
-		
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue is now permanent")) : gson.toJson(ERROR_DATABASE);
-	}
+
 	
 	/**
 	 * Clears all stats from the cache for the given job

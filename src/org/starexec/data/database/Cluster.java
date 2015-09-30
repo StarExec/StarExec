@@ -231,32 +231,6 @@ public class Cluster {
 		return ret;
 	}	
 	
-	public static int getNonPermanentNodeCount() {
-		log.debug("Calling GetNonPermanentNodeCount");
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		int ret = 0;
-		try {		
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount(?)}");
-			procedure.setInt(1, Cluster.getDefaultQueueId());
-			results = procedure.executeQuery();	
-			
-			
-			if(results.next()){
-				ret = results.getInt("nodeCount");
-			}						
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}	
-		return ret;
-	}
-	
 	/**
 	 * Gets a worker node with detailed information (Id and name along with all attributes)
 	 * @param con The connection to make the query with
@@ -792,35 +766,7 @@ public class Cluster {
 		}
 		return null;
 	}
-	
-	public static List<WorkerNode> getAllNonPermanentNodes() {
-		log.debug("Starting getAllNonPermanentNodes...");
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetAllNonPermanentNodes()}");
-			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-			while (results.next()){
-				WorkerNode n = new WorkerNode();
-				n.setId(results.getInt("id"));
-				n.setName(results.getString("name"));
-				n.setStatus(results.getString("status"));
-				nodes.add(n);
-			}
-			return nodes;
-		} catch (Exception e) {
-			log.error("GetAllNonPermanentNodes says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
+
 
 
 	public static Queue getQueueForNode(WorkerNode node) {
@@ -838,7 +784,6 @@ public class Cluster {
 				q.setId(results.getInt("id"));
 				q.setName(results.getString("name"));
 				q.setStatus(results.getString("status"));
-				q.setPermanent(results.getBoolean("permanent"));
 				return q;
 			}
 		} catch (Exception e) {
@@ -934,8 +879,8 @@ public class Cluster {
 	}
 
 
-	public static boolean setPermQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
-		log.debug("SetPermQueueCommunityAccess beginning...");
+	public static boolean setQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
+		log.debug("SetQueueCommunityAccess beginning...");
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -945,7 +890,7 @@ public class Cluster {
 			
 			if (community_ids != null) {
 				for (int id : community_ids) {
-					procedure = con.prepareCall("{CALL SetPermQueueCommunityAccess(?, ?)}");
+					procedure = con.prepareCall("{CALL SetQueueCommunityAccess(?, ?)}");
 					procedure.setInt(1, id);
 					procedure.setInt(2, queue_id);
 					
@@ -958,7 +903,7 @@ public class Cluster {
 			return true;
 			
 		} catch (Exception e) {
-			log.error("SetPermQueueCommunityAccess says " + e.getMessage(), e);
+			log.error("SetQueueCommunityAccess says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

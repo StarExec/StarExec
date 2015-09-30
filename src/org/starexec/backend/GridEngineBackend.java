@@ -1,14 +1,16 @@
 package org.starexec.backend;
 
+import java.io.File;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 import org.starexec.backend.GridEngineR;
-import org.starexec.backend.GridEngineUtil;
 import org.starexec.util.Util;
 
 
@@ -17,6 +19,21 @@ public class GridEngineBackend implements Backend{
     private Session session = null;
     private Logger log;
     private String BACKEND_ROOT = null;
+    
+    // The regex patterns used to parse SGE output
+ 	private static Pattern nodeKeyValPattern;
+ 	private static Pattern queueKeyValPattern;
+ 	private static Pattern queueAssocPattern;
+
+ 	static {
+ 		// Compile the SGE output parsing patterns when this class is loaded
+ 		nodeKeyValPattern = Pattern.compile(GridEngineR.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+ 		queueKeyValPattern = Pattern.compile(GridEngineR.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+ 		queueAssocPattern = Pattern.compile(GridEngineR.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
+
+ 	}
+    
+    
     public GridEngineBackend(){
     	log = Logger.getLogger(GridEngineBackend.class);
     }
@@ -223,7 +240,7 @@ public class GridEngineBackend implements Backend{
     		String results = Util.executeCommand(GridEngineR.NODE_DETAILS_COMMAND + nodeName);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineUtil.nodeKeyValPattern.matcher(results);
+    		java.util.regex.Matcher matcher = GridEngineBackend.nodeKeyValPattern.matcher(results);
 
     		List<String> detailsList = new LinkedList<String>();
     		
@@ -286,7 +303,7 @@ public class GridEngineBackend implements Backend{
     		String results = Util.executeCommand(GridEngineR.QUEUE_DETAILS_COMMAND + nodeName);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineUtil.queueKeyValPattern.matcher(results);
+    		java.util.regex.Matcher matcher = GridEngineBackend.queueKeyValPattern.matcher(results);
 
     		List<String> detailsList = new LinkedList<String>();
     		
@@ -327,7 +344,7 @@ public class GridEngineBackend implements Backend{
     		String results = Util.executeCommand(GridEngineR.QUEUE_STATS_COMMAND,envp);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineUtil.queueAssocPattern.matcher(results);
+    		java.util.regex.Matcher matcher = GridEngineBackend.queueAssocPattern.matcher(results);
 
     		List<String> detailsList = new LinkedList<String>();
     		
@@ -403,19 +420,134 @@ public class GridEngineBackend implements Backend{
     	return false;
 	
     }
+    
+    
+    /**
+	 * Gets a String array representing the environment for SGE
+	 * @param BACKEND_ROOT
+	 * @return
+	 */
+	private String[] getSGEEnv() {
+		String[] envp = new String[1];
+		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
+		return envp;
+	}
 
 
     /**
      * creates a new queue
 
-     *@param isNewQueue true if creating a new queue, false if only switching status to permanent
-     *@param destQueueName the name of the destination queue
+     *@param queueName the name of the destination queue
      *@param nodeNames the names of the nodes to be moved 
      *@param sourceQueueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-    public boolean createPermanentQueue(boolean isNewQueue,String destQueueName, String[] nodeNames, String[] sourceQueueNames){
-    	return GridEngineUtil.createPermanentQueue(isNewQueue, BACKEND_ROOT,destQueueName,nodeNames,sourceQueueNames);
+    public boolean createQueue(String queueName, String[] nodeNames, String[] sourceQueueNames){
+    	try {
+			log.debug("begin createQueue");
+			String[] split = queueName.split("\\.");
+			String shortQueueName = split[0];
+	
+			StringBuilder sb = new StringBuilder();
+			
+			//TODO : What's this supposed to do?  Doesn't seem to be doing what it should
+			//Get the nodes we are going to transfer
+			for (int i = 0; i < nodeNames.length; i++) {
+				String fullName = nodeNames[i];
+				String[] split2 = fullName.split("\\.");
+				String shortName = split2[0];
+				sb.append(shortName);
+				sb.append(" ");
+					
+				// Transfer nodes out of @allhosts
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @allhosts", getSGEEnv());
+			}
+			
+			
+			String hostList = sb.toString();
+	
+			/***** CREATE A QUEUE *****/
+			// Create newHost.hgrp
+			String newHost;
+		
+			newHost = "group_name @" + shortQueueName + "hosts" +
+					  "\nhostlist " + hostList;
+			File f = new File("/tmp/newHost30.hgrp");
+			FileUtils.writeStringToFile(f, newHost);
+			f.setReadable(true, false);
+			f.setWritable(true, false);
+
+			//Add the host
+
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", getSGEEnv());			
+			
+			// Create newQueue.q [COMPLETE]
+			String newQueue;
+		
+			newQueue = "qname                   " + queueName + 
+						"\nhostlist             @" + shortQueueName + "hosts" + 
+						"\nseq_no                0" +
+						"\nload_thresholds       np_load_avg=1.75" +
+						"\nsuspend_thresholds    NONE" +
+						"\nnsuspend              1" +
+						"\nsuspend_interval      00:05:00" +
+						"\npriority              0" +
+						"\nmin_cpu_interval      00:05:00" +
+						"\nprocessors            UNDEFINED" +
+						"\nqtype                 BATCH INTERACTIVE" +
+						"\nckpt_list             NONE" +
+						"\npe_list               make" +
+						"\nrerun                 FALSE" +
+						"\nslots                 2" +
+						"\ntmpdir                /tmp" +
+						"\nshell                 /bin/csh" +
+						"\nprolog                NONE" +
+						"\nepilog                NONE" +
+						"\nshell_start_mode      posix_compliant" +
+						"\nstarter_method        NONE" +
+						"\nsuspend_method        NONE" +
+						"\nresume_method         NONE" +
+						"\nterminate_method      NONE" +
+						"\nnotify                00:00:60"+
+						"\nowner_list            NONE"+
+						"\nuser_lists            NONE"+
+						"\nxuser_lists           NONE"+
+						"\nsubordinate_list      NONE"+
+						"\ncomplex_values        NONE"+
+						"\nprojects              NONE"+
+						"\nxprojects             NONE"+
+						"\ncalendar              NONE"+
+						"\ninitial_state         default"+
+						"\ns_rt                  INFINITY"+
+						"\nh_rt                  INFINITY"+
+						"\ns_cpu                 INFINITY"+
+						"\nh_cpu                 INFINITY"+
+						"\ns_fsize               INFINITY"+
+						"\nh_fsize               INFINITY"+
+						"\ns_data                INFINITY"+
+						"\nh_data                INFINITY"+
+						"\ns_stack               INFINITY"+
+						"\nh_stack               INFINITY"+
+						"\ns_core                INFINITY"+
+						"\nh_core                INFINITY"+
+						"\ns_rss                 INFINITY"+
+						"\nh_rss                 INFINITY"+
+						"\ns_vmem                INFINITY"+
+						"\nh_vmem                INFINITY";
+			
+			File f2 = new File("/tmp/newQueue30.q");
+			FileUtils.writeStringToFile(f2, newQueue);
+			f2.setReadable(true, false);
+			f2.setWritable(true, false);
+				
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", getSGEEnv());
+
+		    log.debug("created queue successfully");
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
     }
 
 
@@ -428,9 +560,47 @@ public class GridEngineBackend implements Backend{
      * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
      * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
      */
-    public void moveNodes(String destQueueName,String[] nodeNames,String[] sourceQueueNames){
+    public boolean moveNodes(String queueName,String[] nodeNames,String[] sourceQueueNames){
+    	try {
+    		log.info("moveNodes begins, for queue "+queueName);
+    		String[] split = queueName.split("\\.");
+    		String shortQueueName = split[0];
+    		StringBuilder sb = new StringBuilder();
+
+
+    		if ((nodeNames == null) || (nodeNames.length == 0)) {
+    			log.warn("No nodes to move");
+    		} else {
+    		    for(int i=0;i<nodeNames.length;i++){
+	    			//String fullName = n.getName();
+	    		    String nodeFullName = nodeNames[i];
+	    			String[] split2 = nodeFullName.split("\\.");
+	    			String shortName = split2[0];
+	    			sb.append(shortName);
+	    			sb.append(" ");
+	    			log.debug("moving node "+nodeFullName);
+					//remove the association with this node and the queue it is currently associated with and add it to the queue
+					if (sourceQueueNames[i] != null) {
+					    // orphaned nodes could have null queues
+					    
+					    String name = sourceQueueNames[i];
+					    String[] split3 = name.split("\\.");
+					    String shortQName = split3[0];
+					    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeFullName + " @" + shortQName + "hosts", getSGEEnv());
+					}
+					log.debug("adding node with name = "+nodeFullName +" to queue = "+shortQueueName);
+					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + nodeFullName + " @" + shortQueueName + "hosts", getSGEEnv());
+    		    }
+    		}
+
+	    	log.debug("Move nodes ending.");
+	    	return true;
+    	} catch (Exception e) {
+    		log.error(e.getMessage(),e);
+    	}
+    	return false;
 	
-	GridEngineUtil.moveNodes(BACKEND_ROOT,destQueueName,nodeNames,sourceQueueNames);
+
     }
 
     /**

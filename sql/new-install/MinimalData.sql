@@ -41,6 +41,6 @@ INSERT INTO website (user_id, name, url) VALUES (1, 'University', 'http://www.cs
 INSERT INTO website (user_id, name, url) VALUES (2, 'Personal', 'http://www.google.com');
 INSERT INTO website (user_id, name, url) VALUES (2, 'University', 'http://www.cs.uiowa.edu');
 
-INSERT INTO queues(name, status, permanent, global_access) VALUES ("all.q", "ACTIVE", true, true);
+INSERT INTO queues(name, status, global_access) VALUES ("all.q", "ACTIVE", true);
 INSERT INTO system_flags (paused, test_queue) VALUES (false,1);
 

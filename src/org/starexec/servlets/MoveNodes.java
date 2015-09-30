@@ -28,7 +28,7 @@ import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
 /**
- * Servlet which handles incoming requests adding new permanent queues
+ * Servlet which handles incoming requests to move nodes from queue to queue
  * @author Wyatt Kaiser
  */
 @SuppressWarnings("serial")
@@ -98,18 +98,7 @@ public class MoveNodes extends HttpServlet {
 	    R.BACKEND.moveNodes(queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
 
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueues();
-		
-	    Collection<Queue> queues = NQ.values();
-	    for (Queue q : queues) {
-		// if there is a queue which is not all.q and it is not a permanent queue
-		// i.e. it is a reserved queue
-		if (q != null)
-		    if (!q.getName().equals(R.DEFAULT_QUEUE_NAME) && !q.getPermanent()) {
-			Requests.DecreaseNodeCount(q.getId()); // decrease the node count of the reservation by 1
-		    }
-	    }
-		
+	    Cluster.loadQueues();		
 	    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 	}
 	catch (Exception e) {

@@ -125,13 +125,12 @@ public interface Backend{
 
     /**
      * creates a new queue
-     *@param isNewQueue true if creating a new queue, false if only switching status to permanent
-     *@param destQueueName the name of the destination queue
+     *@param newQueueName the name of the destination queue
      *@param nodeNames the names of the nodes to be moved 
      *@param sourceQueueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-    public boolean createPermanentQueue(boolean isNewQueue,String destQueueName, String[] nodeNames, String[] sourceQueueNames);
+    public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames);
 
     /**
      *@param destQueueName the name of the destination queue
@@ -141,7 +140,7 @@ public interface Backend{
      * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
      * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
      */
-    public void moveNodes(String destQueueName,String[] nodeNames,String[] sourceQueueNames);
+    public boolean moveNodes(String destQueueName,String[] nodeNames,String[] sourceQueueNames);
 
     /**
      * moves the given node to the given queue

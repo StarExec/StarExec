@@ -38,7 +38,7 @@ try {
 					</tr>
 				</thead>
 				<tbody>
-					<tr id="queueName" class="noHover" title="what would you like to name your permanent queue?">
+					<tr id="queueName" class="noHover" title="what would you like to name your queue?">
 						<td class="label"><p>queue name</p></td>
 						<td>
 							<input type="hidden" name="name" value="${queueName}"/>

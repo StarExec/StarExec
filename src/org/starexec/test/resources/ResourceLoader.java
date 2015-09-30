@@ -481,7 +481,7 @@ public class ResourceLoader {
 	}
 	
 	/**
-	 * Loads a queue with the given timeouts into the database. The queue will be set as permanent
+	 * Loads a queue with the given timeouts into the database.
 	 * @param wallTimeout
 	 * @param cpuTimeout
 	 * @return
@@ -491,7 +491,7 @@ public class ResourceLoader {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
 			String [] empty=new String[0];
-			R.BACKEND.createPermanentQueue(true,queueName, null,null);
+			R.BACKEND.createQueue(queueName, null,null);
 			
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();
@@ -502,8 +502,7 @@ public class ResourceLoader {
 				return null;
 			}
 			
-			boolean success = Queues.makeQueuePermanent(queueId);
-			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
+			boolean success =  Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
 			
 			return Queues.get(queueId);
