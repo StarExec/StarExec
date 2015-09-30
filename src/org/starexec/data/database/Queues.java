@@ -915,38 +915,6 @@ public class Queues {
 
 		return null;
 	}
-	
-	public static List<Queue> getUnreservedQueues(int userId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetUnreservedQueues(?)}");
-			procedure.setInt(1, userId);
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while(results.next()){
-				Queue q = new Queue();
-				q.setName(results.getString("name"));
-				q.setId(results.getInt("id"));	
-				q.setStatus(results.getString("status"));
-				queues.add(q);
-			}			
-						
-			return queues;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
 
 	/**
 	 * Gets all queues in the starexec cluster accessible by the user with the given id

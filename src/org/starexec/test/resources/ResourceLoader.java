@@ -8,14 +8,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-
-
-
-
-
-
-
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -43,7 +35,6 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.Space;

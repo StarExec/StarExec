@@ -24,50 +24,7 @@ CREATE PROCEDURE AddCommunityRequest(IN _id INT, IN _community INT, IN _code VAR
 			VALUES (_id, _community, _code, _message, SYSDATE());
 		END IF;
 	END //
-	
--- Adds a request to reserve a queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS AddQueueRequest;
-CREATE PROCEDURE AddQueueRequest(IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _message VARCHAR(512), IN _wall INT, IN _cpu INT, OUT _id INT)
-	BEGIN
-		INSERT INTO queue_request(user_id, space_id, queue_name, message, created, clockTimeout,cpuTimeout)
-		VALUES (_userId, _spaceId, _queueName, _message,SYSDATE(), _wall, _cpu);
-		SELECT LAST_INSERT_ID() INTO _id;
-	END //
 
--- Associates a given date with an existing queue reservation request 
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS AssociateDateWithQueueRequest;
-CREATE PROCEDURE AssociateDateWithQueueRequest(IN _request_id INT, IN _date DATE, IN _nodes INT)
-	BEGIN
-		INSERT IGNORE INTO queue_request_assoc (request_id, reserve_date, request_id)
-		VALUES (_request_id, _date, _nodes);
-	END //
-	
--- Drops all of the queue_request_assoc entries for a given queue request
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS DeleteQueueRequestAssocEntries;
-CREATE PROCEDURE DeleteQueueRequestAssocEntries(IN _request_id INT)
-	BEGIN
-		DELETE FROM queue_request_assoc
-		WHERE request_id=_request_id;
-	END //
-	
-DROP PROCEDURE IF EXISTS UpdateQueueRequest;
-CREATE PROCEDURE UpdateQueueRequest(IN _id INT, IN _userId INT, IN _spaceId INT, IN _queueName VARCHAR(64), IN _message VARCHAR(512),  IN _created TIMESTAMP, IN _cpu INT, IN _wall INT)
-	BEGIN
-		UPDATE queue_request
-		SET user_id=_userId,
-		space_id=_spaceId,
-		queue_name=_queueName,
-		message=_message,
-		created=_created,
-		cpuTimeout=_cpu,
-		clockTimeout=_wall
-		WHERE id=_id;
-	END //
-
-	
 -- Adds a user to USER_ASSOC, deletes their entry in INVITES, and makes their
 -- role 'user' if not so already
 -- Author: Todd Elvers & Skylar Stark
@@ -147,17 +104,6 @@ CREATE PROCEDURE GetCommunityRequestByCode(IN _code VARCHAR(36))
 		FROM community_requests
 		WHERE code = _code;
 	END //
-	
-	
--- Returns the queue request associated with the given id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetQueueRequestById;
-CREATE PROCEDURE GetQueueRequestById(IN _id INT)
-	BEGIN
-		SELECT *
-		FROM queue_request
-		WHERE id=_id;
-	END //
 
 -- Looks for an activation code, and if successful, removes it from VERIFY,
 -- then adds an entry to USER_ROLES
@@ -187,30 +133,7 @@ CREATE PROCEDURE RedeemPassResetRequestByCode(IN _code VARCHAR(36), OUT _id INT)
 		DELETE FROM pass_reset_request
 		WHERE code = _code;
 	END //
-	
-	
--- Removes the request with the given id from the queue reservation table
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveQueueReservation;
-CREATE PROCEDURE RemoveQueueReservation(IN _id INT)
-	BEGIN
-		DELETE FROM queue_request 
-		WHERE id = _id;
-		
-		DELETE FROM queue_request_assoc
-		WHERE request_id=_id;
-	END //
-	
 
--- Gets the number of queue reservations waiting approval
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetQueueRequestCount;
-CREATE PROCEDURE GetQueueRequestCount()
-	BEGIN
-		SELECT DISTINCT count(DISTINCT user_id, space_id, queue_name) AS requestCount
-		FROM queue_request;
-	END //
-	
 -- Gets the number of community requests waiting approval
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetCommunityRequestCount;
@@ -218,106 +141,6 @@ CREATE PROCEDURE GetCommunityRequestCount()
 	BEGIN
 		SELECT count(*) AS requestCount
 		FROM community_requests;
-	END //
-	
--- Gets the number of queue reservations
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetQueueReservationCount;
-CREATE PROCEDURE GetQueueReservationCount()
-	BEGIN
-		SELECT count(*) AS reservationCount
-		FROM comm_queue;
-	END //
-	
--- Gets the number of historic queue reservations
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetHistoricReservationCount;
-CREATE PROCEDURE GetHistoricReservationCount()
-	BEGIN
-		-- we do a left join and then get only the rows with "null," which are the entries for which no date is after
-		-- or on today. In other words, we get reservations for which every date was in the past
-		SELECT count(distinct id) AS reservationCount
-		FROM queue_request
-		LEFT JOIN queue_request_assoc ON (queue_request_assoc.request_id=queue_request.id AND CURDATE()>=reserve_date)
-		WHERE queue_request_assoc.request_id IS NULL;
-	END //
-	
--- Deletes a queue reservation by removing it from comm_queue table
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS CancelQueueReservation;
-CREATE PROCEDURE CancelQueueReservation(IN _queueId INT)
-	BEGIN
-		DELETE FROM comm_queue
-		WHERE queue_id = _queueId;
-
-	END //
-
--- Get All the queue reservations
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllQueueReservations;
-CREATE PROCEDURE GetAllQueueReservations()
-	BEGIN
-		SELECT space_id, queue_id, MIN(node_count), MAX(node_count), MIN(reserve_date), MAX(reserve_date), message, cpuTimeout, clockTimeout
-		FROM queue_request_assoc
-		JOIN queue_requests ON queue_requests.id=queue_request_assoc.request_id
-		GROUP BY space_id, queue_id;
-	END //
-		
--- Returns the nodeCount for a particular queue request on a particular date
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetRequestNodeCountOnDate;
-CREATE PROCEDURE GetRequestNodeCountOnDate(IN _request_id INT, IN _reserveDate DATE)
-	BEGIN
-		SELECT node_count AS count
-		FROM queue_request_assoc
-		WHERE request_id = _request_id AND reserve_date = _reserveDate;
-	END //
-
-	
--- Returns the the space_id associated with a given queue_name
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetQueueRequestSpaceId;
-CREATE PROCEDURE GetQueueRequestSpaceId ( IN _queueName VARCHAR(64)) 
-	BEGIN
-		SELECT DISTINCT space_id
-		FROM queue_request
-		WHERE queue_name = _queueName;
-	END //
-	
-DROP PROCEDURE IF EXISTS GetQueueRequestForReservation;
-CREATE PROCEDURE GetQueueRequestForReservation( IN _queueId INT)
-	BEGIN
-		SELECT space_id, queue_id, MAX(node_count), MIN(reserve_date), MAX(reserve_date), message, cpuTimeout, clockTimeout
-		FROM queue_request_assoc
-		JOIN queue_request ON  queue_request.id=queue_request_assoc.request_id
-		WHERE queue_id = _queueId;
-	END //
-	
--- Gets the earliest end date of all reserved queues where the end date is after the given date
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEarliestEndDate;
-CREATE PROCEDURE GetEarliestEndDate(IN _date DATE)
-	BEGIN
-		SELECT min(endDate)
-		FROM (
-			SELECT MAX(reserve_date) AS endDate
-			FROM queue_request_assoc
-			JOIN queue_request ON queue_request.id=request_id
-			WHERE reserve_date >= _date AND approved=true
-			GROUP BY request_id
-		) AS allEndDates;
-	END //
-	
--- Decreases the node count of a reservation by 1
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS DecreaseNodeCount;
-CREATE PROCEDURE DecreaseNodeCount(IN _queueId INT)
-	BEGIN
-		UPDATE queue_request_assoc
-		JOIN queue_request ON queue_request_assoc.request_id = queue_request.id
-		SET node_count = node_count - 1
-		WHERE queue_id = _queueId
-		AND node_count > 0;
 	END //
 
 -- Creates a change email request for user with _userId.

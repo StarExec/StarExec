@@ -506,38 +506,6 @@ CREATE TABLE change_email_requests (
 	CONSTRAINT change_email_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-
-
--- Pending requests to reserve a queue
--- Author: Wyatt Kaiser
-CREATE TABLE queue_request (
-	id INT NOT NULL AUTO_INCREMENT,
-	user_id INT NOT NULL,
-	space_id INT NOT NULL,
-	queue_name VARCHAR(64) NOT NULL,
-	message TEXT NOT NULL,
-	created TIMESTAMP NOT NULL,	
-	cpuTimeout INT DEFAULT 259200,
-	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
-	approved BOOLEAN NOT NULL DEFAULT FALSE,
-	queue_id INT DEFAULT NULL,
-	PRIMARY KEY (id),
-	CONSTRAINT queue_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	CONSTRAINT queue_request_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
-);
-
-
--- Associates a queue request to a particular day, on which the queue will have some number of nodes
--- Author: Eric Burns
-CREATE TABLE queue_request_assoc (
-	node_count INT NOT NULL,
-	reserve_date DATE NOT NULL,
-	request_id INT NOT NULL,
-	PRIMARY KEY (reserve_date, request_id),
-	CONSTRAINT queue_request_assoc FOREIGN KEY (request_id) REFERENCES queue_request(id) ON DELETE CASCADE
-);
-
 -- Pending requests to reset a user's password
 -- Author: Todd Elvers
 CREATE TABLE pass_reset_request (

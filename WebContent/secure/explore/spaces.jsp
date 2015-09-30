@@ -154,7 +154,6 @@
 				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
 				<li><a class="btnEdit" id="editSpacePermissions" href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
-				<!-- <li><a class="btnAdd" id="reserveQueue" href="/${starexecRoot}/secure/reserve/queue.jsp">Reserve Queue</a></li>-->
 				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
 			

@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -170,42 +169,6 @@ public class Cluster {
 		}		
 	}
 	
-	
-	public static java.util.Date getLatestNodeDate() {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetLatestNodeDate()}");
-			results = procedure.executeQuery();
-			Date latest = null;
-			while(results.next()){
-				latest = results.getDate("MAX(reserve_date)");
-			}	
-		
-			java.util.Date newDate = null;
-			if (latest == null) {
-				java.util.Calendar cal = java.util.Calendar.getInstance();
-				java.util.Date utilDate = cal.getTime();
-				java.sql.Date sqlDate = new Date(utilDate.getTime());
-				newDate = new Date(sqlDate.getTime());
-			} else {
-				newDate = new Date(latest.getTime());
-			}
-			return newDate;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
 	public static int getNodeCount() {
 		log.debug("Calling GetNodeCount");
 		Connection con = null;
@@ -360,50 +323,6 @@ public class Cluster {
 		return null;
 	}
 	
-	
-	/**
-	 * retrieves all the nodes that are not reserved for a certain time
-	 * @param sequenceName the name of the node to set the status for
-	 * @param status the status to set for the node
-	 * @return True if the operation was a success, false otherwise.
-	 */
-	public static List<WorkerNode> getUnReservedNodes(Date start, Date end) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-
-			log.debug("start = " + start);
-			procedure = con.prepareCall("{CALL GetUnReservedNodes(?, ?)}");
-			procedure.setDate(1, start);	
-			procedure.setDate(2, end);
-			results = procedure.executeQuery();	
-			
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-			
-			while(results.next()){
-				WorkerNode n = new WorkerNode();
-				n.setName(results.getString("name"));
-				n.setId(results.getInt("id"));
-				n.setStatus(results.getString("status"));
-				nodes.add(n);
-			}			
-						
-			return nodes;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		return null;
-	}
-
-	
 	/**
 	 * Updates the status of ALL worker nodes with the given status
 	 * @param status The status to set for all nodes
@@ -513,150 +432,6 @@ public class Cluster {
 		log.debug(String.format("Node [%s] failed to be updated.", name));
 		return false;
 	}
-	
-	/**
-	 * Updates the node count for a specific reserved queue on a specific day 
-	 * @param queueId The ID of the queue 
-	 * @param nodeCount
-	 * @param date
-	 * @return
-	 */
-	public static Boolean updateNodeCount(int requestId, int nodeCount, java.sql.Date date) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
-			
-
-			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?)}");
-			procedure.setInt(1, requestId);
-			procedure.setInt(2, nodeCount);
-			procedure.setDate(3, date);
-			procedure.executeUpdate();
-
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-
-
-	public static Boolean reserveNodes(int request_id, Date start, Date end) {
-			
-		List<java.sql.Date> dates =  Requests.getDateRange(start, end);
-
-		for (java.sql.Date utilDate : dates) {
-			int node_count = Requests.GetNodeCountOnDate(request_id, utilDate);
-			
-		    Boolean result = updateNodeCount(request_id, node_count, utilDate);
-		    if (!result) {
-		    	return false;
-		    }
-		}
-		return true;
-	}
-
-
-
-
-
-
-	public static int getTempNodeCountOnDate(String name, java.util.Date date) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetTempNodeCountOnDate(?, ?)}");
-			procedure.setString(1, name);
-			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-			procedure.setDate(2, sqlDate);
-			
-			
-			results = procedure.executeQuery();
-
-			while(results.next()){
-				return results.getInt("count");
-			}			
-
-			return -1;			
-			
-		} catch (Exception e){			
-			log.error("GetTempNodeCountOnDate says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-
-	/**
-	 * Removes all entries from the queue_request_assoc table where the node count is 0.
-	 * This can happen if nodes are removed from a reservation after it was made
-	 * @return True on success, false otherwise
-	 */
-
-	private static boolean removeEmptyNodeCounts() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL RemoveEmptyNodeCounts()}");	
-			
-			procedure.executeUpdate();
-			
-			return true;
-		} catch (Exception e) {
-			log.error("RemoveEmptyNodeCounts() says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}			
-		return false;
-	}
-	
-	public static int getMinNodeCount(int requestId) {
-		return getMinOrMaxNodeCount(requestId,"min");
-	}
-	
-	public static int getMaxNodeCount(int requestId) {
-		return getMinOrMaxNodeCount(requestId,"max");
-	}
-
-	private static int getMinOrMaxNodeCount(int requestId, String minOrMax) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL Get"+minOrMax+"NodeCount(?)}");	
-			procedure.setInt(1, requestId);
-			
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-				return results.getInt("count");
-			}			
-			
-		} catch (Exception e){			
-			log.error("GetMaxNodeCount says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-
 
 	public static List<Job> getJobsRunningOnQueue(int queueId) {
 		Connection con = null;
@@ -766,8 +541,6 @@ public class Cluster {
 		}
 		return null;
 	}
-
-
 
 	public static Queue getQueueForNode(WorkerNode node) {
 		Connection con = null;

@@ -22,7 +22,6 @@ import org.starexec.data.database.Queues;
 
 
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;

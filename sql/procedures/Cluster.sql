@@ -95,19 +95,6 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 		ORDER BY name;	
 	END //
 	
--- Gets the id, name and status of all queues in the cluster that are active and the user can use and are unreserved
--- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
--- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetUnreservedQueues;
-CREATE PROCEDURE GetUnreservedQueues(IN _userID INT)
-	BEGIN		
-		SELECT id, name, status
-		FROM queues
-		LEFT JOIN comm_queue ON queues.id=comm_queue.queue_id
-		WHERE status="ACTIVE" AND comm_queue.space_id IS NULL
-		ORDER BY name;	
-	END //
-	
 -- Gets worker node with the given ID
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetNodeDetails;
@@ -216,59 +203,6 @@ CREATE PROCEDURE GetActiveNodeCount()
 		AS nodeCount
 		FROM nodes
 		WHERE status = "ACTIVE";
-	END //
-	
--- Returns the node count for a particular date for a particular queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNodeCountOnDate;
-CREATE PROCEDURE GetNodeCountOnDate(_requestId INT, IN _reserveDate DATE)
-	BEGIN
-		SELECT node_count AS count
-		FROM queue_request_assoc
-		WHERE request_id = _requestId AND reserve_date = _reserveDate;
-	END //
-	
--- Returns the latest date in the queue_request_assoc table
--- Author: Wyatt Kaiser	
-DROP PROCEDURE IF EXISTS GetLatestNodeDate;
-CREATE PROCEDURE GetLatestNodeDate()
-	BEGIN
-		SELECT MAX(reserve_date)
-		FROM queue_request_assoc
-		JOIN queue_request ON queue_request.id=queue_request_assoc.request_id
-		WHERE approved=TRUE;
-	END //
-	
--- Updates the number of nodes a particular reservation will get on a specific day
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
-CREATE PROCEDURE UpdateReservedNodeCount(IN _requestId INT, IN _nodeCount INT, IN _date DATE)
-	BEGIN
-		UPDATE queue_request_assoc
-		SET node_count=_nodeCount
-		WHERE reserve_date=_date AND request_id=_requestId;
-	END //
-	
-
-	
--- Returns the minimum node count for a queue reservation
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetMinNodeCount;
-CREATE PROCEDURE GetMinNodeCount( IN _requestId INT )
-	BEGIN
-		SELECT MIN(node_count) AS count
-		FROM queue_request_assoc
-		WHERE request_id = _requestId;
-	END //
-	
--- Returns the maximum node count for a queue reservation
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetMaxNodeCount;
-CREATE PROCEDURE GetMaxNodeCount (IN _requestId INT)
-	BEGIN
-		SELECT MAX(node_count) AS count
-		FROM queue_request_assoc
-		WHERE request_id = _requestId;
 	END //
 	
 -- Returns all the nodes in the system that are active

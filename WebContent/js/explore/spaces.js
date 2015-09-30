@@ -1723,14 +1723,12 @@ function checkPermissions(perms, id) {
 		
 		$('#editSpace').fadeIn('fast');
 		//$('#editSpacePermissions').fadeIn('fast');
-		$('#reserveQueue').fadeIn('fast');
 
 	} else {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
 		//$('#editSpacePermissions').fadeOut('fast');
-		$('#reserveQueue').fadeOut('fast');
 	}	
 
 	log('perms.addSpace='+perms.addSpace);
@@ -1786,7 +1784,6 @@ function updateButtonIds(id) {
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
 	$('#addQuickJob').attr('href', starexecRoot+"secure/add/quickJob.jsp?sid=" + id);
 
-	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 

@@ -21,7 +21,6 @@ import org.starexec.data.database.Requests;
 import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -92,15 +91,13 @@ public class CreateQueue extends HttpServlet {
 		String queue_name = (String)request.getParameter(name);
 		log.debug("queue_name: " + queue_name);
 
-		//BACKEND Changes
-		QueueRequest req = new QueueRequest();
-		req.setQueueName(queue_name + ".q");
+		String qName = queue_name+".q";
 	
 		//TODO : BUG when trying to create a queue using an orphaned node, seems to create queue with right node,
 		//returning wrong status code for some reason? seems related to cputimeout and wallclock timeout
 		String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
 		String[] qNames = queueNames.toArray(new String[queueNames.size()]);
-		boolean backend_success = R.BACKEND.createQueue(queue_name+".q",nNames,qNames);
+		boolean backend_success = R.BACKEND.createQueue(qName,nNames,qNames);
 
 		log.debug("backend_success: " + backend_success);
 
@@ -111,8 +108,7 @@ public class CreateQueue extends HttpServlet {
 		Collection<Queue> queues = NQ.values();
 		
 		//DatabaseChanges
-		log.debug("about to get queue with name = "+req.getQueueName());
-		int queueId=Queues.getIdByName(req.getQueueName());
+		int queueId=Queues.getIdByName(qName);
 		log.debug("just added new queue with id = "+queueId);
 		
 		

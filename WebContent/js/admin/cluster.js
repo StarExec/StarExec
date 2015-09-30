@@ -1,4 +1,3 @@
-var reserved;
 var requests;
 var type;
 var defaultQueueId;
@@ -149,16 +148,7 @@ function initUI(id){
 			primary: "ui-icon-pencil"
 		}
 	});
-	
-	//Make tables expandable/collapsable
-	$('#reservationField').expandable(false);
-	$('#reservedField').expandable(false);
-	$('#historicField').expandable(true);
 
-	
-	
-	
-	
 	$("#editQueue").click(function() {
 		window.open(starexecRoot+"secure/edit/queue.jsp?id="+curQueueId);
 	});
