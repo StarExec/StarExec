@@ -442,7 +442,7 @@ public class GridEngineBackend implements Backend{
      *@param sourceQueueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-    public boolean createQueue(String queueName, String[] nodeNames, String[] sourceQueueNames){
+    public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames){
     	try {
 			log.debug("begin createQueue");
 			String[] split = queueName.split("\\.");
@@ -450,17 +450,25 @@ public class GridEngineBackend implements Backend{
 	
 			StringBuilder sb = new StringBuilder();
 			
-			//TODO : What's this supposed to do?  Doesn't seem to be doing what it should
-			//Get the nodes we are going to transfer
-			for (int i = 0; i < nodeNames.length; i++) {
-				String fullName = nodeNames[i];
-				String[] split2 = fullName.split("\\.");
-				String shortName = split2[0];
-				sb.append(shortName);
-				sb.append(" ");
+			//This is being called from "Create new permanent queue"
+			if (nodeNames != null) {
+			    for (int i=0;i<nodeNames.length;i++) {
+					String fullName = nodeNames[i];
+					String[] split2 = fullName.split("\\.");
+					String shortName = split2[0];
+					sb.append(shortName);
+					sb.append(" ");
 					
-				// Transfer nodes out of @allhosts
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @allhosts", getSGEEnv());
+
+					String sourceQueueName = queueNames[i];
+					//if node is not orphaned
+					if(sourceQueueName != null){
+					    String[] split3 = sourceQueueName.split("\\.");
+					    String shortQName = split3[0];
+					    log.debug("About to execute sudo command 1");
+					    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @" + shortQName + "hosts", getSGEEnv());
+					}
+				}
 			}
 			
 			

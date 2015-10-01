@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
 import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Queue;
@@ -37,7 +36,6 @@ public class CreateQueue extends HttpServlet {
 
 	// Request attributes
 	private static final String name = "name";
-	//private static final String Nodes = "Nodes";
 	private static final String nodes = "node";
 	private static final String maxCpuTimeout="cpuTimeout";
 	private static final String maxWallTimeout="wallTimeout";
@@ -73,19 +71,19 @@ public class CreateQueue extends HttpServlet {
 		LinkedList<String> queueNames = new LinkedList<String>();
 		if (nodeIds != null) {
 		    for (int id : nodeIds) {
-			log.debug("id = " + id);
-			WorkerNode n = new WorkerNode();
-			n.setId(id);
-			n.setName(Cluster.getNodeNameById(id));
-			Queue q = Cluster.getQueueForNode(n);
-			NQ.put(n, q);
-
-			nodeNames.add(Cluster.getNodeNameById(id));
-			if(q == null){
-			    queueNames.add(null);
-			}else{
-			    queueNames.add(q.getName());
-			}
+				log.debug("id = " + id);
+				WorkerNode n = new WorkerNode();
+				n.setId(id);
+				n.setName(Cluster.getNodeNameById(id));
+				Queue q = Cluster.getQueueForNode(n);
+				NQ.put(n, q);
+	
+				nodeNames.add(Cluster.getNodeNameById(id));
+				if(q == null){
+				    queueNames.add(null);
+				}else{
+				    queueNames.add(q.getName());
+				}
 		    }
 		}
 		String queue_name = (String)request.getParameter(name);
@@ -104,9 +102,7 @@ public class CreateQueue extends HttpServlet {
 		//reloads worker nodes and queues
 		Cluster.loadWorkerNodes();
 		Cluster.loadQueues();
-		
-		Collection<Queue> queues = NQ.values();
-		
+				
 		//DatabaseChanges
 		int queueId=Queues.getIdByName(qName);
 		log.debug("just added new queue with id = "+queueId);
@@ -114,8 +110,7 @@ public class CreateQueue extends HttpServlet {
 		
 		Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
 		Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
-		log.debug(cpuTimeout);
-		log.debug(wallTimeout);
+		
 		boolean success = Queues.updateQueueCpuTimeout(queueId, cpuTimeout);
 		success = success && Queues.updateQueueWallclockTimeout(queueId, wallTimeout);
 		if (!success) {
