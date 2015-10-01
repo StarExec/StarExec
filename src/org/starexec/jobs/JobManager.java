@@ -80,37 +80,45 @@ public abstract class JobManager {
     public synchronized static boolean checkPendingJobs(){
     	try {
     		log.debug("about to check if the system is paused");
-	    if (Jobs.isSystemPaused()) { 
-    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
-    	    	return false;
-    	}
-	    Common.logConnectionsOpen();
-	    log.debug("about to get all queues");
-	    
-	    List<Queue> queues = Queues.getAll();
-	    log.debug("found this many queues "+queues.size());
-	    for (Queue q : queues) {
-	    	log.debug("about to submit to queue "+q.getId());
-		int qId = q.getId();
-		String qname = q.getName();
-		int nodeCount=Queues.getNodes(qId).size();
-		int queueSize = Queues.getSizeOfQueue(qId);
-		log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
-		if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
-		    List<Job> joblist = Queues.getPendingJobs(qId);
-		    log.debug("about to submit this many jobs "+joblist.size());
-		    if (joblist.size() > 0) {
-		    	submitJobs(joblist, q, queueSize,nodeCount);
+		    if (Jobs.isSystemPaused()) { 
+	    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
+	    	    	return false;
+	    	}
+		    Common.logConnectionsOpen();
+		    log.debug("about to get all queues");
+		    
+		    List<Queue> queues = Queues.getAll();
+		    log.debug("found this many queues "+queues.size());
+		    for (Queue q : queues) {
+		    	log.debug("about to submit to queue "+q.getId());
+				int qId = q.getId();
+				String qname = q.getName();
+				int nodeCount=Queues.getNodes(qId).size();
+				int queueSize = Queues.getSizeOfQueue(qId);
+				log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
+				if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
+				    List<Job> joblist = Queues.getPendingJobs(qId);
+				    log.debug("about to submit this many jobs "+joblist.size());
+				    if (joblist.size() > 0) {
+				    	submitJobs(joblist, q, queueSize,nodeCount);
+				    } else {
+				    	// if we have no jobs to submit, that means we should set
+				    	// the active users in the monitor to the empty set.
+				    	// This ensures users are set to inactive correctly
+				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
+				    	if (m!=null) {
+				    		m.setUsers(new HashMap<Integer,Integer>());
+				    	}
+				    }
+				} else {
+				    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
+				}
 		    }
-		} else {
-		    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
-		}
-	    }
     	} catch (Exception e) {
-	    log.error(e.getMessage(),e);
+    		log.error(e.getMessage(),e);
     	}
 	    
-	return false;
+    	return false;
     }
     
     
