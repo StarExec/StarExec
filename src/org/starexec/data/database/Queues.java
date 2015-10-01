@@ -3,9 +3,9 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -35,6 +35,13 @@ public class Queues {
 	private static final Logger log = Logger.getLogger(Queues.class);
 	private static final LogUtil logUtil = new LogUtil(log);
 
+    /**
+     * @return returns the default queue name, default queue should always exist
+     */
+    public static String getDefaultQueueName(){
+    	return "all";
+    }
+	
 	/**
 	 * Removes a queue from the database and calls R.BACKEND.removeQueue
 	 * @param queueId The Id of the queue to remove.
@@ -43,23 +50,22 @@ public class Queues {
 	public static boolean removeQueue(int queueId) {
 	    
 	    Queue q=Queues.get(queueId);
-	    String queueName = q.getName();
 		
 	    //Pause jobs that are running on the queue
 	    List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
 
 	    if (jobs != null) {
-		for (Job j : jobs) {
-		    Jobs.pause(j.getId());
-		}
+			for (Job j : jobs) {
+			    Jobs.pause(j.getId());
+			}
 	    }
 
 	    //Move associated Nodes back to default queue
 	    List<WorkerNode> nodes = Queues.getNodes(queueId);
-		
+
 	    if (nodes != null) {
 			for (WorkerNode n : nodes) {
-			    R.BACKEND.moveNode(n.getName(),R.BACKEND.getDefaultQueueName());
+			    R.BACKEND.moveNode(n.getName(), getDefaultQueueName());
 			}
 	    }
 		
@@ -69,7 +75,7 @@ public class Queues {
 	    /***** DELETE THE QUEUE *****/	
 	    
 	    success=success && Queues.delete(queueId);
-	    R.BACKEND.deleteQueue(queueName);
+	    R.BACKEND.deleteQueue(q.getName());
 			
 	    Cluster.loadWorkerNodes();
 	    Cluster.loadQueues();	
@@ -952,7 +958,7 @@ public class Queues {
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static boolean update(String name, HashMap<String, String> attributes) {
+	public static boolean update(String name, Map<String, String> attributes) {
 		Connection con = null;	
 		CallableStatement procAddCol = null;
 		CallableStatement procUpdateAttr = null;

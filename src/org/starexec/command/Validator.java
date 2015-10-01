@@ -19,15 +19,13 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 //TODO: A lot of the logic in this class can be safely checked on the backend (valid IDs, for instance).
 public class Validator {
 	
-	//which archives can we download from Starexec
+	/**which archives can we download from Starexec*/
 	public static String[] VALID_ARCHIVETYPES={"zip"};
 	
 	
 	public static Pattern patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
 	public static Pattern patternInteger = Pattern.compile(R.LONG_PATTERN);
-	public static Pattern patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	public static Pattern patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
@@ -207,17 +205,6 @@ public class Validator {
 	 */
 	public static boolean isValidPrimName(String name){    	
     	return patternPrimName.matcher(name).matches();    	
-    }
-    
-    /**
-     * Validates a boolean value by ensuring it is something Boolean.parseBoolean()
-     * can handle
-     * 
-     * @param boolString the string to check for a parse-able boolean value
-     * @return true iff boolString isn't null and is either "true" or "false"
-     */
-    public static boolean isValidBool(String boolString){
-    	return patternBoolean.matcher(boolString).matches();
     }
     
     /**

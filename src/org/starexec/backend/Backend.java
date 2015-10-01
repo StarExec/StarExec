@@ -1,5 +1,7 @@
 package org.starexec.backend;
 
+import java.util.Map;
+
 /**
  * This interface is how StarExec should communicate with whatever backend is being used
  * for handling distributing jobs across the compute nodes.
@@ -11,10 +13,8 @@ public interface Backend{
      * 
      * BACKEND_ROOT
      *
-     * all methods take in BACKEND_ROOT as the first parameter
      * BACKEND_ROOT should be the location of the BACKEND software (path/to/cluster_management_system_dir)
-     * the admin should know specifically where BACKEND_ROOT points,
-     * It is sent to every single method just in case it's necessary to access a command or file in the BACKEND software
+     * the admin should know specifically where BACKEND_ROOT points
      * -------
      * IDENTIFIERS
      *
@@ -86,40 +86,30 @@ public interface Backend{
      * where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
      * 
      */
-    public String[] getNodeDetails(String nodeName);
+    public Map<String, String> getNodeDetails(String nodeName);
 
     /**
-     * @return returns a list of all active queues
+     * @return returns a list of all active queue names
      */
     public String[] getQueues();
 
     /**
-     * @return returns the default queue name, should be an active queue
-     */
-    public String getDefaultQueueName();
-
-    /**
      * @param name the name of a node
-     * @return an even-sized String[] representing a details map for a given queue
-     *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
+     * @return a map of queue detail keys to values
      */
-    public String[] getQueueDetails(String name);
+    public Map<String,String> getQueueDetails(String name);
 
 
     /**
-     * @return an array that represents queue-node assocations: [queueName1,nodeName1,queueName1,nodeName2,queueName2,nodeName3]
-     * the queue and node names should match the names returned when calling getWorkerNodes and getQueues.
-     * queue names are found in the even-indexed positions, node name otherwise. 
-     *  a queue at index i is associated with the node at index i + 1
+     * @return a map from node name to queue name
      */
-    public String[] getQueueNodeAssociations();
+    public Map<String, String> getQueueNodeAssociations();
 
     /**
-     * @param allQueueNames the names of all queues, 
      * @return true if sucessful, false otherwise
      * should clear any states caused by errors on both queues and nodes
      */
-    public boolean clearNodeErrorStates(String[] allQueueNames);
+    public boolean clearNodeErrorStates();
 
    /**
      * deletes a queue that no longer has nodes associated with it

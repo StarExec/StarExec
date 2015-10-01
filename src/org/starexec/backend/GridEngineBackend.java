@@ -1,8 +1,10 @@
 package org.starexec.backend;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -10,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.starexec.backend.GridEngineR;
 import org.starexec.util.Util;
 
 /**
@@ -19,6 +20,19 @@ import org.starexec.util.Util;
  */
 
 public class GridEngineBackend implements Backend{
+    // SGE Configurations, see GridEngineBackend
+    private static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
+    private static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
+    private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
+    private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
+    private static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
+    private static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
+    private static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
+    private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+
+
+	
+	
     private Session session = null;
     private Logger log;
     private String BACKEND_ROOT = null;
@@ -30,9 +44,9 @@ public class GridEngineBackend implements Backend{
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded
- 		nodeKeyValPattern = Pattern.compile(GridEngineR.NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
- 		queueKeyValPattern = Pattern.compile(GridEngineR.QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
- 		queueAssocPattern = Pattern.compile(GridEngineR.QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
+ 		nodeKeyValPattern = Pattern.compile(NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+ 		queueKeyValPattern = Pattern.compile(QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+ 		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
 
  	}
     
@@ -91,14 +105,14 @@ public class GridEngineBackend implements Backend{
      *
      **/
     public boolean isError(int execCode){
-	if(execCode >= 0) {						       	
-	    
-	    return false;
-	}
-	else {
-	    
-	    return true;
-	}
+		if(execCode >= 0) {						       	
+		    
+		    return false;
+		}
+		else {
+		    
+		    return true;
+		}
     }
 
     /**
@@ -173,10 +187,8 @@ public class GridEngineBackend implements Backend{
      * kills a jobpair
      */
     public boolean killAll(){
-    	String[] envp = new String[1];
-		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 		try {
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",envp);
+			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",getSGEEnv());
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -221,7 +233,7 @@ public class GridEngineBackend implements Backend{
     public String[] getWorkerNodes() {
     	try {
     		// Execute the SGE command to get the node list
-    		String nodeResults = Util.executeCommand(GridEngineR.NODE_LIST_COMMAND);
+    		String nodeResults = Util.executeCommand(NODE_LIST_COMMAND);
     		log.debug("getWorkerNodes got the following results");
     		log.debug(nodeResults);
     		return nodeResults.split(System.getProperty("line.separator"));
@@ -239,31 +251,26 @@ public class GridEngineBackend implements Backend{
      * @return an even-sized String[] representing a details map for a given node
      * where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
      */
-    public String[] getNodeDetails(String nodeName){
+    public Map<String,String> getNodeDetails(String nodeName){
 
     	try {
     		// Call SGE to get details for the given node
-    		String results = Util.executeCommand(GridEngineR.NODE_DETAILS_COMMAND + nodeName);
+    		String results = Util.executeCommand(NODE_DETAILS_COMMAND + nodeName);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.nodeKeyValPattern.matcher(results);
 
-    		List<String> detailsList = new LinkedList<String>();
-    		
+    		Map<String, String> detailMap = new HashMap<String,String>();
     		// For each match...
     		while(matcher.find()) {
     			// Split apart the key from the value
     			String[] keyVal = matcher.group().split("=");
     			
     			// Add the results to the details list
-    			detailsList.add(keyVal[0]);
-    			detailsList.add(keyVal[1]);
-
-
+    			detailMap.put(keyVal[0], keyVal[1]);
     		}
-    		String [] details = detailsList.toArray(new String[detailsList.size()]);
 
-    		return details;
+    		return detailMap;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
@@ -279,7 +286,7 @@ public class GridEngineBackend implements Backend{
     public String[] getQueues(){
     	try {
     		// Execute the SGE command to get the list of queues
-    		String queuestr = Util.executeCommand(GridEngineR.QUEUE_LIST_COMMAND);
+    		String queuestr = Util.executeCommand(QUEUE_LIST_COMMAND);
 
     		return queuestr.split(System.getProperty("line.separator"));	
     	} catch (Exception e) {
@@ -290,43 +297,29 @@ public class GridEngineBackend implements Backend{
     }
 
     /**
-
-     * @return returns the default queue name, default queue should always exist
-     */
-    public String getDefaultQueueName(){
-	return "all";
-    }
-
-    /**
-
      * @param nodeName the name of a node
      * @return an even-sized String[] representing a details map for a given queue
      *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
      */
-    public String[] getQueueDetails(String nodeName){
+    public Map<String,String> getQueueDetails(String nodeName){
     	try {
     		// Call SGE to get details for the given node
-    		String results = Util.executeCommand(GridEngineR.QUEUE_DETAILS_COMMAND + nodeName);
+    		String results = Util.executeCommand(QUEUE_DETAILS_COMMAND + nodeName);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.queueKeyValPattern.matcher(results);
 
-    		List<String> detailsList = new LinkedList<String>();
-    		
+    		Map<String, String> detailsMap = new HashMap<String, String>();
     		// For each match...
     		while(matcher.find()) {
     			// Split apart the key from the value
     			String[] keyVal = matcher.group().split("\\s+");
     			
     			// Add the results to the details list
-    			detailsList.add(keyVal[0]);
-    			detailsList.add(keyVal[1]);
-
-
+    			detailsMap.put(keyVal[0], keyVal[1]);
     		}
-    		String [] details = detailsList.toArray(new String[detailsList.size()]);
 
-    		return details;
+    		return detailsMap;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
@@ -341,33 +334,27 @@ public class GridEngineBackend implements Backend{
      * queue names are found in the even-indexed positions, node name otherwise. 
      *  a queue at index i is associated with the node at index i + 1
      */
-    public String[] getQueueNodeAssociations(){
+    public Map<String,String> getQueueNodeAssociations(){
 	
     	try {
     		String[] envp = new String[2];
     		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
     		envp[1] = "SGE_ROOT="+BACKEND_ROOT; // it seems we need to set this explicitly if we change the environment.
-    		String results = Util.executeCommand(GridEngineR.QUEUE_STATS_COMMAND,envp);
+    		String results = Util.executeCommand(QUEUE_STATS_COMMAND,envp);
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.queueAssocPattern.matcher(results);
-
-    		List<String> detailsList = new LinkedList<String>();
+    		
+    		Map<String,String> nodesToQueuesMap = new HashMap<String, String>();
     		
     		// For each match...
     		while(matcher.find()) {
     			// Split apart the key from the value
-    			String[] keyVal = matcher.group().split("@");
-    			
-    			// Add the results to the details list
-    			detailsList.add(keyVal[0]);
-    			detailsList.add(keyVal[1]);
-
-
+    			String[] queueNode = matcher.group().split("@");
+    			nodesToQueuesMap.put(queueNode[1], queueNode[0]);
     		}
-    		String [] details = detailsList.toArray(new String[detailsList.size()]);
 
-    		return details;
+    		return nodesToQueuesMap;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
@@ -382,13 +369,11 @@ public class GridEngineBackend implements Backend{
      * @return true if sucessful, false otherwise
      * should clear any states caused by errors on both queues and nodes
      */
-    public boolean clearNodeErrorStates( String[] allQueueNames){
+    public boolean clearNodeErrorStates(){
     	try {
-			String[] envp = new String[1];
-			envp[0] = "SGE_ROOT="+BACKEND_ROOT;
-
+			String[] allQueueNames = this.getQueues();
 			for(int i=0;i<allQueueNames.length;i++) {
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],envp);
+				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],getSGEEnv());
 			}
 			return true;
 		} catch (Exception e) {
@@ -409,16 +394,13 @@ public class GridEngineBackend implements Backend{
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
 
-    		String[] envp = new String[1];
-    		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
-
     		//DISABLE the queue: 
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, getSGEEnv());
     		//DELETE the queue:
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, getSGEEnv());
     				
     		//Delete the host group:
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", getSGEEnv());
     		return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
@@ -430,8 +412,7 @@ public class GridEngineBackend implements Backend{
     
     /**
 	 * Gets a String array representing the environment for SGE
-	 * @param BACKEND_ROOT
-	 * @return
+	 * @return A size 1 array containing "SGE_ROOT=" plus the root path
 	 */
 	private String[] getSGEEnv() {
 		String[] envp = new String[1];
@@ -626,9 +607,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean moveNode(String nodeName, String queueName){
     	try {
-    		String[] envp = new String[1];
-    		envp[0] = "SGE_ROOT="+ BACKEND_ROOT;
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", envp);
+    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
     	    return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);

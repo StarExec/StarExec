@@ -3,9 +3,9 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -40,7 +40,7 @@ public class Cluster {
 				String name = lines[i];
 				log.debug("Updating info for node "+name);
 				// In the database, update the attributes for the node
-				Cluster.updateNode(name,  Cluster.getNodeDetails(name));				
+				Cluster.updateNode(name,  R.BACKEND.getNodeDetails(name));				
 				// Set the node as active (because we just saw it!)
 				Cluster.setNodeStatus(name, R.NODE_STATUS_ACTIVE);
 			}
@@ -49,24 +49,6 @@ public class Cluster {
 		}
 		log.info("Completed loading info for worker nodes into db");
 	}
-
-	/**
-	 * Calls BACKEND to get details about the given node. 
-	 * @param name The name of the node to get details about
-	 * @param name The name of the node to get details about
-	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
-	 */
-	public static HashMap<String, String> getNodeDetails(String name) {
-	    String[] map = R.BACKEND.getNodeDetails(name);
-	    HashMap<String, String> details = new HashMap<String, String>();
-	    
-	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
-	    for(int i = 0; i < (map.length/2)*2; i=i+2){
-		details.put(map[i],map[i+1]);
-	    }
-	    return details;
-	}
-
 
 	/**
 	 * Gets the queue list from BACKEND and adds them to the database if they don't already exist. This must
@@ -96,7 +78,7 @@ public class Cluster {
 			    log.debug("Loading details for queue "+name);
 
 			    // In the database, update the attributes for the queue
-			    Queues.update(name,  Cluster.getQueueDetails(name));
+			    Queues.update(name,  R.BACKEND.getQueueDetails(name));
 
 			    // Set the queue as active since we just saw it
 			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
@@ -110,35 +92,17 @@ public class Cluster {
 	}
 
 	/**
-	 * Calls BACKEND to get details about the given queue. 
-	 * @param name The name of the queue to get details about
-	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
-	 */
-	public static HashMap<String, String> getQueueDetails(String name) {
-
-	    String[] map = R.BACKEND.getQueueDetails(name);
-	    HashMap<String, String> details = new HashMap<String, String>();
-	    
-	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
-	    for(int i = 0; i < (map.length/2)*2; i=i+2){
-		details.put(map[i],map[i+1]);
-	    }
-	    return details;
-
-	}
-
-	/**
 	 * Extracts queue-node association from BACKEND and puts it into the db.
 	 * @return true if successful
 	 * @author Benton McCune
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 	    Queues.clearQueueAssociations();
-	    String[] assoc = R.BACKEND.getQueueNodeAssociations();
+	    Map<String,String> assoc = R.BACKEND.getQueueNodeAssociations();
 	    
 	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
-	    for(int i = 0; i < (assoc.length/2)*2; i=i+2){
-		Queues.associate(assoc[i], assoc[i+1]);
+	    for(String node : assoc.keySet()){
+	    	Queues.associate(assoc.get(node), node);
 	    }
 	    return true;
 	    
@@ -367,7 +331,7 @@ public class Cluster {
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static boolean updateNode(String name, HashMap<String, String> attributes) {
+	public static boolean updateNode(String name, Map<String, String> attributes) {
 		Connection con = null;			
 		CallableStatement procAddNode = null;
 		CallableStatement procAddCol = null;

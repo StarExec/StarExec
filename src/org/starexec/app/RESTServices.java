@@ -236,11 +236,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		LinkedList<String> queueNames = new LinkedList<String>();
-		for(Queue q : Queues.getAll()){
-		    queueNames.add(q.getName());
-		}
-		return R.BACKEND.clearNodeErrorStates(queueNames.toArray(new String[queueNames.size()])) ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
+		return R.BACKEND.clearNodeErrorStates() ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
 	}
 	
 	/**
