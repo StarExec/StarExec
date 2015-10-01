@@ -2,7 +2,6 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -144,37 +143,17 @@ public class Cluster {
 	    return true;
 	    
 	}
-
-
-	public static void associateNodes(int queueId, List<Integer> nodeIds) {
-		log.debug("Calling AssociateQueue");
-		Connection con = null;
-		CallableStatement associateQueue=null;
-		try {		
-			con = Common.getConnection();
-			// Adds the nodes as associated with the queue
-			for (int nodeId : nodeIds) {
-				associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
-				associateQueue.setInt(1, queueId);
-				associateQueue.setInt(2, nodeId);
-				associateQueue.executeUpdate();
-				Common.safeClose(associateQueue);
-			}
-		} catch (Exception e) {
-			//if there was an error during the update, the procedure will not close
-			Common.safeClose(associateQueue);
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}		
-	}
 	
+	/**
+	 * Gets the total number of active nodes in the system
+	 * @return The number of active nodes, or -1 on error.
+	 */
 	public static int getNodeCount() {
 		log.debug("Calling GetNodeCount");
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		int ret = 0;
+		
 		try {		
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetActiveNodeCount()}");
@@ -182,7 +161,7 @@ public class Cluster {
 			
 			
 			if (results.next()){
-				ret = results.getInt("nodeCount");
+				return results.getInt("nodeCount");
 			}						
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -191,7 +170,7 @@ public class Cluster {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}	
-		return ret;
+		return -1;
 	}	
 	
 	/**
@@ -247,6 +226,15 @@ public class Cluster {
 		return null;
 	}
 	
+	/**
+	 * Gets the next page of nodes for the admin to view
+	 * @param startingRecord The index of the record to start at.
+	 * @param recordsPerPage The number of nodes to return.
+	 * @param isSortedASC Whether to sort ASC or DESC
+	 * @param indexOfColumnSortedBy The index of the column to sort on.
+	 * @param SearchQuery A string query to filter results on
+	 * @return The list of nodes to display, or null on error
+	 */
 	
 	public static List<WorkerNode> getNodesForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String SearchQuery) {
 		Connection con = null;			
@@ -433,6 +421,11 @@ public class Cluster {
 		return false;
 	}
 
+	/**
+	 * Gets all the jobs running on the given queue
+	 * @param queueId The ID of the queue to check
+	 * @return The list of jobs running, or null on error
+	 */
 	public static List<Job> getJobsRunningOnQueue(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -469,6 +462,10 @@ public class Cluster {
 		return null;
 	}
 	
+	/**
+	 * Gets all nodes in the system
+	 * @return A list of nodes, or null on error
+	 */
 	public static List<WorkerNode> getAllNodes() {
 		log.debug("Starting getAllNodes...");
 		Connection con = null;
@@ -500,8 +497,8 @@ public class Cluster {
 	
 	/**
 	 * Gets all of the nodes that are NOT associated with the given queue
-	 * @param queueId
-	 * @return
+	 * @param queueId The ID of the queue
+	 * @return The list of nodes not attached to the given queue, or null on error
 	 */
 	public static List<WorkerNode> getNonAttachedNodes(int queueId) {
 		log.debug("Starting getNonAttachedNodes...");
@@ -542,6 +539,11 @@ public class Cluster {
 		return null;
 	}
 
+	/**
+	 * Gets the queue that owns the given node
+	 * @param node The node to check
+	 * @return The queue, or null if none exists or on error.
+	 */
 	public static Queue getQueueForNode(WorkerNode node) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -571,7 +573,7 @@ public class Cluster {
 
 	/**
 	 * Retrieves the ID of a node given its name. 
-	 * @param nodeName
+	 * @param nodeName The name of the node to check
 	 * @return The ID of the node, or -1 if it couldn't be found
 	 */
 	public static int getNodeIdByName(String nodeName) {
@@ -599,8 +601,8 @@ public class Cluster {
 
 	/**
 	 * Gets the name of a node given its ID
-	 * @param id
-	 * @return
+	 * @param id The id of the node to get the name of
+	 * @return The string name of the node, or null if it could not be found
 	 */
 	public static String getNodeNameById(int id) {
 		Connection con = null;
@@ -624,7 +626,10 @@ public class Cluster {
 		}
 		return null;
 	}
-	
+	/**
+	 * Gets the system default queue
+	 * @return The id of the queue, or 01 on error
+	 */
 	public static int getDefaultQueueId() {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -651,7 +656,12 @@ public class Cluster {
 		return -1;
 	}
 
-
+	/**
+	 * Gives one or more communities access to a queue
+	 * @param community_ids The IDs of the communities to give access to
+	 * @param queue_id The ID of the queue
+	 * @return True on success and false on error.
+	 */
 	public static boolean setQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
 		log.debug("SetQueueCommunityAccess beginning...");
 		Connection con = null;

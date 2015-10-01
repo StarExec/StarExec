@@ -1,7 +1,5 @@
 package org.starexec.app;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +11,6 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
@@ -34,7 +31,6 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.exceptions.StarExecException;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.SessionUtil;
@@ -292,7 +288,6 @@ public class RESTHelpers {
 	 * 
 	 * @author Tyler Jensen & Todd Elvers
 	 */
-	@SuppressWarnings("unused")
 	protected static class SpacePermPair {
 		@Expose
 		private Space space;
@@ -313,7 +308,6 @@ public class RESTHelpers {
 	 * 
 	 * @author Tyler Jensen
 	 */
-	@SuppressWarnings("unused")
 	protected static class CommunityDetails {
 		@Expose
 		private Space space;
@@ -341,7 +335,6 @@ public class RESTHelpers {
 	 * 
 	 * @author Wyatt Kaiser
 	 */
-	@SuppressWarnings("unused")
 	protected static class PermissionDetails {
 		@Expose
 		private Permission perm;
@@ -658,29 +651,6 @@ public class RESTHelpers {
 		sb.append("</p>");
 		return sb.toString();
 	}
-
-	/**
-	 * Returns the HTML representing a job pair's status
-	 *
-	 * @param statType 'asc' or 'desc'
-	 * @param numerator a job pair's completePairs, pendingPairs, or errorPairs variable
-	 * @param denominator a job pair's totalPairs variable
-	 * @return HTML representing a job pair's status
-	 * @author Todd Elvers
-	 */
-	public static String getPairStatHtml(String statType, int numerator, int denominator){
-		StringBuilder sb = new StringBuilder();
-		sb.append("<p class=\"stat ");
-		sb.append(statType);
-		sb.append("\">");
-		sb.append(numerator);
-		sb.append("/");
-		sb.append(denominator);
-		sb.append("</p>");
-		return sb.toString();
-	}
-	
-	
 	
 	/**
 	 * 
@@ -2698,35 +2668,6 @@ public class RESTHelpers {
 		// Return the next DataTable page
 		return nextPage;
 	}
-
-	/**
-	 * Copy a hierarchy of the space into another space
-	 * 
-	 * @param srcId
-	 *            The Id of the source space which is being copied.
-	 * @param desId
-	 *            The Id of the destination space which is copied into.
-	 * @param usrId
-	 *            The Id of the user doing the copy.
-	 * @return The Id of the root space of the copied hierarchy.
-	 * @author Ruoyu Zhang
-	 */
-	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
-		if (srcId == desId) {
-			throw new StarExecException("You can't copy a space into itself.");
-		}
-
-
-		Space sourceSpace = Spaces.get(srcId);
-		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
-		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
-		log.debug("Space tree built during space hierarchy copy:");
-		logSpaceTree(spaceTree);
-
-		return Spaces.copySpaceTree(spaceTree, desId, usrId);
-	}
-
-
 
 	private static void logSpaceTree(TreeNode<Space> tree) {
 		logSpaceTreeHelper(tree, "");

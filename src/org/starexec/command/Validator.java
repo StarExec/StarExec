@@ -27,7 +27,6 @@ public class Validator {
 	public static Pattern patternInteger = Pattern.compile(R.LONG_PATTERN);
 	public static Pattern patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);

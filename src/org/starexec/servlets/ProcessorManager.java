@@ -54,7 +54,6 @@ public class ProcessorManager extends HttpServlet {
 	private static final String PROCESSOR_URL = "processorUrl";
 	private static final String UPLOAD_METHOD = "uploadMethod";
 	private static final String LOCAL_UPLOAD_METHOD = "local";
-	private static final String URL_UPLOAD_METHOD = "URL";
 	private static final String OWNING_COMMUNITY = "com";
 	
 	

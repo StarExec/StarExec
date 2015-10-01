@@ -3,7 +3,6 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,13 +17,11 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -426,6 +423,11 @@ public class Queues {
 		return -1;		
 	}
 	
+	/**
+	 * Gets the ID of a queue given the name of the queue
+	 * @param queueName The exact name of the queue, including .q
+	 * @return The name, or null if it was not found.
+	 */
 	public static int getIdByName(String queueName) {
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -571,45 +573,7 @@ public class Queues {
 		}
 			return null;
 	}
-	
-	/**
-	 * For a particular queue reservation, gets the number of nodes in that reservation on a particular day
-	 * @param requestId The id of the request entry for the queue of interest
-	 * @param date
-	 * @return
-	 */
-	
-	 public static int getNodeCountOnDate(int requestId, java.util.Date date) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
-			procedure.setInt(1, requestId);
-			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-			procedure.setDate(2, sqlDate);
-			
-			
-			results = procedure.executeQuery();
 
-			while(results.next()){
-				return results.getInt("count");
-			}			
-
-			return 0;			
-			
-		} catch (Exception e){			
-			log.error("GetNodeCountOnDate says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return 0;
-	}
-	
 	/**
 	 * Gets all nodes in the cluster that belong to the queue
 	 * @param id The id of the queue to get nodes for
@@ -719,8 +683,8 @@ public class Queues {
 	
 	/**
 	 * Retrieves all of the queues that the given user has access to when running a job
-	 * @param userId
-	 * @return
+	 * @param userId Id of the user to get queues for
+	 * @return A list of queues, or null on error
 	 */
 	public static List<Queue> getQueuesForUser(int userId) {
 		final String method = "getQueuesForUser";
@@ -764,8 +728,8 @@ public class Queues {
 
 	/**
 	 * Get all the queues that have been reserved for a particular space
-	 * @param spaceId
-	 * @return
+	 * @param spaceId The ID of the space to check
+	 * @return A list of valid queues or null on errors
 	 */
 	public static List<Queue> getQueuesForSpace(int spaceId) {
 		Connection con = null;
@@ -1053,40 +1017,6 @@ public class Queues {
 		log.debug(String.format("Queue [%s] failed to be updated.", name));
 		return false;
 	}
-
-	/**
-	 * Updates the usage of the given queue
-	 * @param q The queue to update the useage for. Must have a name and usage attributes
-	 * @return True if the operation was a success, false otherwise.
-	 */
-	public static boolean updateUsage(Queue q) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			
-			 procedure = con.prepareCall("{CALL UpdateQueueUseage(?, ?, ?, ?, ?)}");
-			
-			procedure.setString(1, q.getName());
-			procedure.setInt(2, q.getSlotsTotal());
-			procedure.setInt(3, q.getSlotsAvailable());
-			procedure.setInt(4, q.getSlotsUsed());
-			procedure.setInt(5, q.getSlotsReserved());
-			procedure.executeUpdate();
-			
-			//log.debug(String.format("Updated usage for queue [%s] successfully [U%d/R%d/T%d]", q.getName(), q.getSlotsUsed(), q.getSlotsReserved(), q.getSlotsTotal()));
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		log.debug(String.format("Usage for queue [%s] failed to be updated.", q.getName()));
-		return false;
-	}
 	
 	/**
 	 * Checks to see whether the given name is already being used by a queue
@@ -1133,9 +1063,9 @@ public class Queues {
 	
 	/**
 	 * Updates the cpu timeout for an existing queue
-	 * @param queueId
-	 * @param timeout
-	 * @return
+	 * @param queueId The ID of the queue to update
+	 * @param timeout The timeout to set, in seconds
+	 * @return True on success and false on error
 	 */
 	public static boolean updateQueueCpuTimeout(int queueId, int timeout) {
 		Connection con=null;
@@ -1158,9 +1088,9 @@ public class Queues {
 	}
 	/**
 	 * Updates the wallclock timeout for an existing queue
-	 * @param queueId
-	 * @param timeout
-	 * @return
+	 * @param queueId The ID of the queue to update
+	 * @param timeout The new timeout, in seconds.
+	 * @return True on success and false on error.
 	 */
 	public static boolean updateQueueWallclockTimeout(int queueId, int timeout) {
 		Connection con=null;
@@ -1184,7 +1114,7 @@ public class Queues {
 
 	/**
 	 * Checks to see whether the given queue is global or not
-	 * @param queueId
+	 * @param queueId The ID of the queue to check
 	 * @return True if it is global, and false if it is not OR if there is an error
 	 */
 	
@@ -1214,8 +1144,8 @@ public class Queues {
 	
 	/**
 	 * Deletes a queue from the database
-	 * @param queueId
-	 * @return
+	 * @param queueId The ID of the queue to delete
+	 * @return True on success and false on error
 	 */
 
 	public static boolean delete(int queueId) {
@@ -1239,7 +1169,7 @@ public class Queues {
 	}
 	/**
 	 * Sets the global access column of the given queue to true
-	 * @param queueId
+	 * @param queueId The ID of the queue to check
 	 * @return True on success and false on failure
 	 */
 	public static boolean makeGlobal(int queueId) {
@@ -1263,7 +1193,7 @@ public class Queues {
 	
 	/**
 	 * Sets the global_access column of the given queue to false
-	 * @param queueId
+	 * @param queueId The ID of hte queue to remove
 	 * @return True on success and false on error
 	 */
 	public static boolean removeGlobal(int queueId) {
@@ -1285,7 +1215,11 @@ public class Queues {
 		return false;
 	}
 	
-	
+	/**
+	 * Sets the given queue to be the system test queue.
+	 * @param queueId The ID of the queue to make the test queue.
+	 * @return True on success and false on error.
+	 */
 	public static boolean setTestQueue(int queueId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -1308,7 +1242,7 @@ public class Queues {
 	
 	/**
 	 * Returns all.q, which is the one queue in the system that is always guaranteed to exist
-	 * @return
+	 * @return The default queue, or null if it could not be found.
 	 */
 	public static Queue getAllQ() {
 		return Queues.get(R.DEFAULT_QUEUE_ID);
@@ -1318,7 +1252,7 @@ public class Queues {
 	 * Gets the queue that should be used for running test jobs. If no such queue
 	 * is currently set, it will be set to all.q before returning. This is to ensure
 	 * a test queue is always set
-	 * @return
+	 * @return The id of the queue, or -1 on error
 	 */
 	public static int getTestQueue() {
 		Connection con=null;

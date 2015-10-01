@@ -44,21 +44,6 @@ import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-/**
- * Creates a class to keep track of the Benchmark-Solver-Configuration Pairs
- * @author kais_wyatt
- */
-class BSC {
-    List<Benchmark> b;
-    List<Solver> s;
-    HashMap<Solver, List<Configuration>> sc;
-
-    BSC (List<Benchmark> b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
-        this.b = b;
-        this.s = s;
-        this.sc = sc;
-    }
-}
 
 /**
  * Servlet which handles incoming requests to create new jobs
