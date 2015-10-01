@@ -1,5 +1,10 @@
 package org.starexec.backend;
 
+/**
+ * This interface is how StarExec should communicate with whatever backend is being used
+ * for handling distributing jobs across the compute nodes.
+ *
+ */
 public interface Backend{
     /**
      * NOTES:
@@ -94,7 +99,7 @@ public interface Backend{
     public String getDefaultQueueName();
 
     /**
-     * @param nodeName the name of a node
+     * @param name the name of a node
      * @return an even-sized String[] representing a details map for a given queue
      *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
      */
@@ -139,6 +144,7 @@ public interface Backend{
      * moves nodes from source queues to the destination queue <queueName>
      * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
      * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
+     * @return True on success and false on failure.
      */
     public boolean moveNodes(String destQueueName,String[] nodeNames,String[] sourceQueueNames);
 

@@ -1,11 +1,7 @@
 package org.starexec.app;
 
-import com.google.common.io.CharStreams;
-
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -14,9 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Date;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -68,24 +61,16 @@ import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.jobs.JobManager;
-import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.integration.TestManager;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.util.Hash;
 import org.starexec.util.LoggingManager;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-import org.starexec.util.matrixView.Matrix;
-import org.starexec.util.matrixView.MatrixElement;
-
-
-
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -111,9 +96,7 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_INVALID_PARAMS=new ValidatorStatusCode(false, "The supplied parameters are invalid");
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_SELF=new ValidatorStatusCode(false, "You cannot promote yourself");
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_LEADER=new ValidatorStatusCode(false, "The user is already a leader");
-	
-	private static final ValidatorStatusCode ERROR_NOT_ALL_DELETED=new ValidatorStatusCode(false, "Not all primitives could be deleted");
-	
+		
 	private static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
 	private static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
 	

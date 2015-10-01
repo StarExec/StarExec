@@ -13,7 +13,10 @@ import org.ggf.drmaa.SessionFactory;
 import org.starexec.backend.GridEngineR;
 import org.starexec.util.Util;
 
-
+/**
+ * This is a backend implementation that uses Sun Grid Engine
+ *
+ */
 
 public class GridEngineBackend implements Backend{
     private Session session = null;
@@ -33,7 +36,10 @@ public class GridEngineBackend implements Backend{
 
  	}
     
-    
+    /**
+     * This constructor only initializes logging-- initialze must be called
+     * after construction.
+     */
     public GridEngineBackend(){
     	log = Logger.getLogger(GridEngineBackend.class);
     }

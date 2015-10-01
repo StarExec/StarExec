@@ -2,11 +2,7 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,7 +11,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.Queue;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecDatabaseException;
 
@@ -207,45 +202,6 @@ public class Requests {
 	}
 
 	/**
-	 * 
-	 * @param req
-	 * @return
-	 */
-	public static Boolean DeleteReservation(int queueId) {
-		log.debug("deleteReservation");
-		Connection con = null;
-		CallableStatement procedureAddHistory = null;
-		CallableStatement procedureRemoveReservation = null;
-		CallableStatement procedureDelete = null;
-
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-
-			
-			procedureRemoveReservation = con.prepareCall("{CALL CancelQueueReservation(?)}");
-			procedureRemoveReservation.setInt(1, queueId);
-			procedureRemoveReservation.executeUpdate();
-			
-			procedureDelete = con.prepareCall("{CALL RemoveQueue(?)}");
-			procedureDelete.setInt(1, queueId);
-			procedureDelete.executeUpdate();
-			
-			Common.endTransaction(con);			
-			return true;
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedureAddHistory);
-			Common.safeClose(procedureDelete);
-			Common.safeClose(procedureRemoveReservation);
-		}
-	}
-	
-	/**
 	 * Retrieves a community request from the database given the user id
 	 * @param userId the user id of the request to retrieve
 	 * @return The request associated with the user id
@@ -347,7 +303,12 @@ public class Requests {
 		return 0;
 	}
 	
-	
+	/**
+	 * Gets all pending request to join communities
+	 * @param startingRecord The 0-indexed record to start on.
+	 * @param recordsPerPage The number of requests to return
+	 * @return A list of requests to display, or null on error
+	 */
 	public static List<CommunityRequest> getPendingCommunityRequests(int startingRecord, int recordsPerPage) {
 		Connection con = null;			
 		CallableStatement procedure= null;
@@ -390,6 +351,7 @@ public class Requests {
 	 * Checks an activation code provided by the user against the code in table VERIFY 
 	 * and if they match, removes that entry in VERIFY, and adds an entry to USER_ROLES
 	 * @param codeFromUser the activation code provided by the user
+	 * @return The ID of the user on success and -1 on error
 	 * @author Todd Elvers
 	 */
 	public static int redeemActivationCode(String codeFromUser){
@@ -445,40 +407,15 @@ public class Requests {
 		
 		return -1;
 	}
-	
-	/**
-	 * Given a start date and an end date, gets an array that has all the dates between them, inclusive.
-	 * The dates will be ordered by time
-	 * @param startDate
-	 * @param endDate
-	 * @return
-	 */
-	
-	public static List<java.sql.Date> getDateRange(java.util.Date startDate, java.util.Date endDate) {
-	    List<java.sql.Date> dates = new ArrayList<java.sql.Date>();
-	    Calendar calendar = new GregorianCalendar();
-	    calendar.setTime(startDate);
-	    while (calendar.getTime().before(endDate))
-	    {
-	        java.util.Date result = calendar.getTime();
-			java.sql.Date sqlDate = new java.sql.Date(result.getTime());
-
-	        dates.add(sqlDate);
-	        calendar.add(Calendar.DATE, 1);
-	    }
-	    java.util.Date latestResult = calendar.getTime();
-		java.sql.Date sqlDate = new java.sql.Date(latestResult.getTime());
-
-	    dates.add(sqlDate);
-	    return dates;
-	}
 
 
 	/**
 	 * Adds a change email request to the database.
 	 * @param userId The id of the user making the request.
 	 * @param newEmail The new email the user wants to change their account's email to.
+	 * @param code The unique code to assign to this request
 	 * @author Albert Giegerich
+	 * @throws StarExecDatabaseException Whenever there is a database error
 	 */
 	public static void addChangeEmailRequest(int userId, String newEmail, String code) throws StarExecDatabaseException{
 		Connection con = null;
@@ -501,6 +438,12 @@ public class Requests {
 		}
 	}
 
+	/**
+	 * Retrieves a request to change email addresses
+	 * @param userId The ID of the request to retrieve
+	 * @return A pair consisting of the new email address first and the code second
+	 * @throws StarExecDatabaseException If there was a database error.
+	 */
 	public static Pair<String, String> getChangeEmailRequest(int userId) throws StarExecDatabaseException {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -554,6 +497,12 @@ public class Requests {
 		}
 	}
 
+	/**
+	 * Checks whether a user has an outstanding request to change their email address
+	 * @param userId The ID of the user to check
+	 * @return True if so and false if not or there was an error.
+	 * @throws StarExecDatabaseException Whenever there was a database exception.
+	 */
 	public static boolean changeEmailRequestExists(int userId) throws StarExecDatabaseException {
 		Connection con = null;
 		CallableStatement procedure = null;
