@@ -341,6 +341,9 @@ public class UserTests extends TestSequence {
 		Assert.assertNotNull(tempJob);	
 
 		File jobDirectory = new File(R.NEW_JOB_OUTPUT_DIR +"/"+ tempJob.getId());
+		// Make the job directory since ResourceLoader isn't actually running the job.
+		jobDirectory.mkdir();
+
 		Assert.assertTrue(jobDirectory.exists());
 
 
