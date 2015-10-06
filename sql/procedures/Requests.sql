@@ -143,6 +143,16 @@ CREATE PROCEDURE GetCommunityRequestCount()
 		FROM community_requests;
 	END //
 
+-- Gets the number of community requests waiting approval for the specified community.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetCommunityRequestCountForCommunity;
+CREATE PROCEDURE GetCommunityRequestCountForCommunity(IN _communityId INT)
+	BEGIN
+		SELECT count(*) AS requestCount
+		FROM community_requests
+		WHERE community = _communityId;
+	END //
+
 -- Creates a change email request for user with _userId.
 -- The email the the user is requesting to change to is _newEmail.
 -- Author: Albert Giegerich

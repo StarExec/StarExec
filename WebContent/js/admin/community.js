@@ -67,6 +67,8 @@ function initUI(id){
 			primary: "ui-icon-circle-arrow-n"
 		}
 	});
+
+	setupHandlersForCommunityRequestAcceptDeclineButtons();
 	
 	$('#newCommunity').attr('href', starexecRoot+"secure/add/space.jsp?sid=1");
 	
@@ -74,6 +76,7 @@ function initUI(id){
 		$("#removeCommLeader").hide();
 		$("#promoteCommLeader").hide();
 	}	
+
 }
 
 
@@ -87,17 +90,11 @@ function updateActionId(id) {
 
 function initDataTables(){
 	// Setup the DataTable objects
-	$('#commRequests').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler
-	});
+	initCommunityRequestsTable('#commRequests', true);	
 }
 
+
+/*
 function fnPaginationHandler(sSource, aoData, fnCallback){
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
@@ -118,8 +115,4 @@ function fnPaginationHandler(sSource, aoData, fnCallback){
 			"json"
 	)
 }
-
-function handleRequest(code, isApproved) {
-	alert(code + " " + isApproved);
-}
-
+*/

@@ -2613,11 +2613,12 @@ public class RESTHelpers {
 			String spaceLink = sb.toString();
 
 			sb = new StringBuilder();
-			sb.append("<input type=\"button\" onclick=\"handleRequest('" + req.getCode() + "' , 'true')\" value=\"Approve\"/>");
+			sb.append("<input class=\"acceptRequestButton\" type=\"button\" data-code=\""+req.getCode()+"\" value=\"Approve\" />");
 			String approveButton = sb.toString();
 
 			sb = new StringBuilder();
-			sb.append("<input type=\"button\" onclick=\"handleRequest('" + req.getCode() + "', 'false')\" value=\"Decline\"/>");
+			sb.append("<input type=\"button\" class=\"declineRequestButton\""
+					+ "data-code=\""+req.getCode()+"\" value=\"Decline\"/>");
 			String declineButton = sb.toString();
 
 			// Create an object, and inject the above HTML, to represent an
@@ -2783,8 +2784,36 @@ public class RESTHelpers {
 		nextPage.add("aaData", dataTablePageEntries);
 		return nextPage;
 	}
-	
+	/**
+	 * Gets all pending community requests for a given community.
+	 * @param request The http request.
+	 * @param communityId The community to get pending requests for.
+	 * @author Albert Giegerich
+	 */
+	public static JsonObject getNextDataTablesPageForPendingCommunityRequestsForCommunity(HttpServletRequest request, int communityId) {
+		return getNextDataTablesPageForPendingCommunityRequests(request, false, communityId);
+	}
+
+	/**
+	 * Gets all pending community requests. 
+	 * @param request The http request.
+	 * @author Albert Giegerich
+	 */
 	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest request) {
+		return getNextDataTablesPageForPendingCommunityRequests(request, true, null);
+	}
+
+	/**
+	 * Provides an abstraction so the same code can be used when we want to get all pending community requests or
+	 * just requests for a given community.
+	 * @param request The http request.
+	 * @param getAllCommunityRequests True if we want all community requests, false if we only want ones for a specific community.
+	 * @param communityId The community to get pending requests for. Ignored if getAllCommunityRequests is false.
+	 * @author Unknown, Albert Giegerich
+	 */
+	private static JsonObject getNextDataTablesPageForPendingCommunityRequests(
+			HttpServletRequest request, boolean getAllCommunityRequests, Integer communityId) {
+
 		// Parameter Validation
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
 		if (null == attrMap) {
@@ -2792,11 +2821,22 @@ public class RESTHelpers {
 		}
 
 		int currentUserId = SessionUtil.getUserId(request);
-		int totalRequests = Requests.getCommunityRequestCount();
-		List<CommunityRequest> requests = Requests.getPendingCommunityRequests(
-				attrMap.get(STARTING_RECORD),
-				attrMap.get(RECORDS_PER_PAGE)
-				);
+		int totalRequests = 0; 
+		List<CommunityRequest> requests = null;
+		if (getAllCommunityRequests) {
+			requests = Requests.getPendingCommunityRequests(
+					attrMap.get(STARTING_RECORD),
+					attrMap.get(RECORDS_PER_PAGE)
+					);
+			totalRequests = Requests.getCommunityRequestCount();
+		} else {
+			requests = Requests.getPendingCommunityRequestsForCommunity(
+					attrMap.get(STARTING_RECORD),
+					attrMap.get(RECORDS_PER_PAGE),
+					communityId
+					);
+			totalRequests = Requests.getCommunityRequestCountForCommunity(communityId);
+		}
 
 		/**
 		 * Used to display the 'total entries' information at the bottom of the
@@ -2813,5 +2853,4 @@ public class RESTHelpers {
 		}
 		return convertCommunityRequestsToJsonObject(requests, totalRequests, attrMap.get(SYNC_VALUE), currentUserId);
 	}
-
 }

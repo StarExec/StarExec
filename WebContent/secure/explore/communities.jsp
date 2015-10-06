@@ -1,8 +1,31 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.*, org.starexec.constants.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="Communities" js="common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common">			
+<%
+	boolean hideCommunityRequests = false;
+	try {
+		int userId=SessionUtil.getUserId(request);
+		request.setAttribute("userId", userId);
+	} catch (Exception e) {
+		// If we can't get the userId, assume the isn't leader.
+		hideCommunityRequests = true;
+	}
+	request.setAttribute("hideCommunityRequests", hideCommunityRequests);
+	request.setAttribute("leaderResponseParameterName", Mail.LEADER_RESPONSE);
+	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);
+	request.setAttribute("approveCommunityRequestName", R.APPROVE_COMMUNITY_REQUEST);
+	request.setAttribute("declineCommunityRequestName", R.DECLINE_COMMUNITY_REQUEST);
+	request.setAttribute("sentFromCommunityPage", R.SENT_FROM_COMMUNITY_PAGE);
+%>
+
+<star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common">			
+	<span id="leaderResponse" value="${leaderResponseParameterName}" hidden></span>
+	<span id="emailCode" value="${emailCodeParameterName}" hidden></span>
+	<span id="approveRequest" value="${approveCommunityRequestName}" hidden></span>
+	<span id="declineRequest" value="${declineCommunityRequestName}" hidden></span>
+	<span id="communityPage" value="${sentFromCommunityPage}" hidden></span>
+	<span id="userId" value="${userId}" hidden></span>
 	<div id="explorer">
 		<h3>Official</h3>
 		<ul id="exploreList">
@@ -45,7 +68,23 @@
 				</thead>			
 			</table>
 		</fieldset>										 	
-		
+
+		<c:if test="${!hideCommunityRequests}">
+			<fieldset  id="communityField"> <legend class="expd" id="communityExpd"><span>0</span> pending community requests</legend>
+				<table id="commRequests">
+					<thead>
+						<tr>
+							<th>user</th>
+							<th>community</th>
+							<th>message</th>
+							<th>approve</th>
+							<th>decline</th>
+						</tr>
+					</thead>			
+				</table>
+			</fieldset>
+		</c:if>
+
 		<fieldset>
 			<legend>actions</legend>
 			<ul id="actionList">

@@ -15,9 +15,22 @@
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
+
+	// These will be used by the JavaScript.
+	request.setAttribute("leaderResponseParameterName", Mail.LEADER_RESPONSE);
+	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);
+	request.setAttribute("approveCommunityRequestName", R.APPROVE_COMMUNITY_REQUEST);
+	request.setAttribute("declineCommunityRequestName", R.DECLINE_COMMUNITY_REQUEST);
+	request.setAttribute("sentFromCommunityPage", R.SENT_FROM_COMMUNITY_PAGE);
 %>
 
-<star:template title="${t_user.fullName}" js="admin/community, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/community, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, admin/admin">
+	<span id="leaderResponse" value="${leaderResponseParameterName}" hidden></span>
+	<span id="emailCode" value="${emailCodeParameterName}" hidden></span>
+	<span id="approveRequest" value="${approveCommunityRequestName}" hidden></span>
+	<span id="declineRequest" value="${declineCommunityRequestName}" hidden></span>
+	<span id="communityPage" value="${sentFromCommunityPage}" hidden></span>
+
 	<div id="explorer">
 		<h3>official</h3>
 		<ul id="exploreList"></ul>

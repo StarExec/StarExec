@@ -273,19 +273,32 @@ public class Requests {
 		
 		return null;
 	}
-	
+
+	public static int getCommunityRequestCountForCommunity(int communityId) {
+		return getCommunityRequestCount(false, communityId);
+	}
+
 	/**
 	 * Returns the number of community_requests
 	 * @return the number of community_requests
 	 */
 	public static int getCommunityRequestCount() {
+		return getCommunityRequestCount(true, null);
+	}
+
+	private static int getCommunityRequestCount(boolean getCountForAllCommunities, Integer communityId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();
 
-			procedure = con.prepareCall("{CALL GetCommunityRequestCount()}");
+			if (getCountForAllCommunities) {
+				procedure = con.prepareCall("{CALL GetCommunityRequestCount()}");
+			} else {
+				procedure = con.prepareCall("{CALL GetCommunityRequestCountForCommunity(?)}");
+				procedure.setInt(1, communityId);
+			}
 			results = procedure.executeQuery();
 			int reservationCount= 0;
 			if (results.next()) {
@@ -302,6 +315,15 @@ public class Requests {
 		
 		return 0;
 	}
+
+	public static List<CommunityRequest> getPendingCommunityRequestsForCommunity(int startingRecord, int recordsPerPage, int communityId) {
+		return getPendingCommunityRequests(startingRecord, recordsPerPage, false, communityId);
+	}
+
+	public static List<CommunityRequest> getPendingCommunityRequests(int startingRecord, int recordsPerPage) {
+		return getPendingCommunityRequests(startingRecord, recordsPerPage, true, null);
+	}
+	
 	
 	/**
 	 * Gets all pending request to join communities
@@ -309,16 +331,25 @@ public class Requests {
 	 * @param recordsPerPage The number of requests to return
 	 * @return A list of requests to display, or null on error
 	 */
-	public static List<CommunityRequest> getPendingCommunityRequests(int startingRecord, int recordsPerPage) {
+	private static List<CommunityRequest> getPendingCommunityRequests(
+			int startingRecord, int recordsPerPage, boolean getForAllCommunities, Integer communityId) 
+	{
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
-			procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequests(?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
+			if (getForAllCommunities) {
+				procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequests(?, ?)}");
+				procedure.setInt(1, startingRecord);
+				procedure.setInt(2,	recordsPerPage);
+			} else {
+				procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequestsForCommunity(?, ?, ?)}");
+				procedure.setInt(1, startingRecord);
+				procedure.setInt(2,	recordsPerPage);
+				procedure.setInt(3, communityId);
+			}
 			results = procedure.executeQuery();
 			
 			List<CommunityRequest> requests = new LinkedList<CommunityRequest>();

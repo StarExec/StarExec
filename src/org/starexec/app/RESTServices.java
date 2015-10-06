@@ -3764,7 +3764,7 @@ public class RESTServices {
 	 * @author Wyatt kaiser
 	 * @throws Exception
 	 */
-	@POST
+	@GET
 	@Path("/community/pending/requests/")
 	@Produces("application/json")
 	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) throws Exception {
@@ -3777,7 +3777,21 @@ public class RESTServices {
 		
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequests(request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+
+	@GET
+	@Path("community/pending/requests/{communityId}")
+	@Produces("application/json")
+	public String getPendingCommunityRequestsForCommunity(@PathParam("communityId") int communityId, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		ValidatorStatusCode status=SpaceSecurity.canUserViewCommunityRequestsForCommunity(userId, communityId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
 		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequestsForCommunity(request, communityId);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 	
 	/**
