@@ -31,6 +31,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.SessionUtil;
@@ -2788,10 +2789,33 @@ public class RESTHelpers {
 	 * Gets all pending community requests for a given community.
 	 * @param request The http request.
 	 * @param communityId The community to get pending requests for.
+	 * @return the new json object or null on error.
 	 * @author Albert Giegerich
 	 */
-	public static JsonObject getNextDataTablesPageForPendingCommunityRequestsForCommunity(HttpServletRequest request, int communityId) {
-		return getNextDataTablesPageForPendingCommunityRequests(request, false, communityId);
+	public static JsonObject getNextDataTablesPageForPendingCommunityRequestsForCommunity(HttpServletRequest httpRequest, int communityId) {
+
+		// Parameter Validation
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(httpRequest);
+		if (attrMap == null) {
+			return null;
+		}
+
+		int totalRequests = 0; 
+		List<CommunityRequest> requests = null;
+		try {
+			requests = Requests.getPendingCommunityRequestsForCommunity(
+						attrMap.get(STARTING_RECORD),
+						attrMap.get(RECORDS_PER_PAGE),
+						communityId
+						);
+			totalRequests = Requests.getCommunityRequestCountForCommunity(communityId);
+		} catch (StarExecDatabaseException e) {
+			log.error("Could not successfully get community requests for community with id="+communityId, e);
+			return null;
+		}
+
+
+		return setupAttrMapAndConvertRequestsToJson(requests, totalRequests, attrMap, httpRequest);
 	}
 
 	/**
@@ -2799,8 +2823,27 @@ public class RESTHelpers {
 	 * @param request The http request.
 	 * @author Albert Giegerich
 	 */
-	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest request) {
-		return getNextDataTablesPageForPendingCommunityRequests(request, true, null);
+	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest httpRequest) {
+		// Parameter Validation
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(httpRequest);
+		if (attrMap == null) {
+			return null;
+		}
+
+		int totalRequests = 0; 
+		List<CommunityRequest> requests = null;
+		try {
+			requests = Requests.getPendingCommunityRequests(
+					attrMap.get(STARTING_RECORD),
+					attrMap.get(RECORDS_PER_PAGE)
+					);
+			totalRequests = Requests.getCommunityRequestCount();
+		} catch (StarExecDatabaseException e) {
+			log.error("Could not successfully get community requests for all communities.", e);
+			return null;
+		}
+
+		return setupAttrMapAndConvertRequestsToJson(requests, totalRequests, attrMap, httpRequest);
 	}
 
 	/**
@@ -2811,33 +2854,8 @@ public class RESTHelpers {
 	 * @param communityId The community to get pending requests for. Ignored if getAllCommunityRequests is false.
 	 * @author Unknown, Albert Giegerich
 	 */
-	private static JsonObject getNextDataTablesPageForPendingCommunityRequests(
-			HttpServletRequest request, boolean getAllCommunityRequests, Integer communityId) {
-
-		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		int currentUserId = SessionUtil.getUserId(request);
-		int totalRequests = 0; 
-		List<CommunityRequest> requests = null;
-		if (getAllCommunityRequests) {
-			requests = Requests.getPendingCommunityRequests(
-					attrMap.get(STARTING_RECORD),
-					attrMap.get(RECORDS_PER_PAGE)
-					);
-			totalRequests = Requests.getCommunityRequestCount();
-		} else {
-			requests = Requests.getPendingCommunityRequestsForCommunity(
-					attrMap.get(STARTING_RECORD),
-					attrMap.get(RECORDS_PER_PAGE),
-					communityId
-					);
-			totalRequests = Requests.getCommunityRequestCountForCommunity(communityId);
-		}
-
+	private static JsonObject setupAttrMapAndConvertRequestsToJson(List<CommunityRequest> requests, 
+			int totalRequests, HashMap<String, Integer> attrMap, HttpServletRequest httpRequest) {
 		/**
 		 * Used to display the 'total entries' information at the bottom of the
 		 * DataTable; also indirectly controls whether or not the pagination
@@ -2851,6 +2869,7 @@ public class RESTHelpers {
 		else {
 			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
 		}
+		int currentUserId = SessionUtil.getUserId(httpRequest);
 		return convertCommunityRequestsToJsonObject(requests, totalRequests, attrMap.get(SYNC_VALUE), currentUserId);
 	}
 }

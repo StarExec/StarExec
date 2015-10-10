@@ -1,6 +1,7 @@
 package org.starexec.test.integration.database;
 
 import java.util.UUID;
+import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.data.database.*;
@@ -14,10 +15,14 @@ import org.starexec.test.resources.ResourceLoader;
 public class RequestsTests extends TestSequence {
 
 	User registeredUser=null;
+	// requestedUser and requestedUser2 have requests for comm
 	User requestedUser=null;
+	// requestedUser's request
 	CommunityRequest request=null;
+	
 	User admin=null;
 	Space comm=null;
+	Space comm2=null;
 	
 	
 	@StarexecTest
@@ -35,10 +40,40 @@ public class RequestsTests extends TestSequence {
 		Assert.assertEquals(request.getUserId(),test.getUserId());
 		Assert.assertEquals(request.getMessage(),test.getMessage());
 	}
+
+	@StarexecTest
+	private void getCommunityRequestForCommunityTest() {
+		int commRequestsSizeBefore = 0;
+		int comm2RequestsSizeBefore = 0;
+		int commRequestsSizeAfter = 0;
+		int comm2RequestsSizeAfter = 0;
+		try {
+			commRequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm.getId()).size();
+			comm2RequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm2.getId()).size();
+			User tempUser=ResourceLoader.loadUserIntoDatabase();
+			CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm.getId()).size();
+			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm2.getId()).size();
+
+			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+		} catch (StarExecDatabaseException e) {
+			Assert.fail("Requests.getPendingCommunityRequestsForCommunity threw an exception: "+e.getMessage());
+		} catch (StarExecSecurityException e) {
+			Assert.fail(e.getMessage());
+		}
+
+		Assert.assertEquals(commRequestsSizeBefore, commRequestsSizeAfter-1);
+		Assert.assertEquals(comm2RequestsSizeBefore, comm2RequestsSizeAfter);
+	}
+
 	
 	@StarexecTest
 	private void getCommunityRequestCountTest() {
-		Assert.assertTrue(Requests.getCommunityRequestCount()>0);
+		try {
+			Assert.assertTrue(Requests.getCommunityRequestCount()>0);
+		} catch (StarExecDatabaseException e) {
+			Assert.fail("getCommunityRequestCount threw an exception."+e.getMessage());
+		}
 	}
 	
 	@StarexecTest
@@ -99,14 +134,17 @@ public class RequestsTests extends TestSequence {
 	protected void setup() throws Exception {
 		registeredUser=ResourceLoader.loadUserIntoDatabase();
 		requestedUser=ResourceLoader.loadUserIntoDatabase();
+   
 		admin=Users.getAdmins().get(0);
 		comm=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
+		comm2=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
 		request= ResourceLoader.loadCommunityRequestIntoDatabase(requestedUser.getId(), comm.getId());
 	}
 
 	@Override
 	protected void teardown() throws Exception {
 		Spaces.removeSubspaces(comm.getId());
+		Spaces.removeSubspaces(comm2.getId());
 		Users.deleteUser(registeredUser.getId(), admin.getId());
 		Users.deleteUser(requestedUser.getId(), admin.getId());
 		

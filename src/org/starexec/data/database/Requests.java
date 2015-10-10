@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -274,54 +275,123 @@ public class Requests {
 		return null;
 	}
 
-	public static int getCommunityRequestCountForCommunity(int communityId) {
-		return getCommunityRequestCount(false, communityId);
+	/**
+	 * Gets the number of community requests for a given community.
+	 * @param communityId The community to get the number of requests for.
+	 * @return the number of community requests for the community.
+	 */
+	public static int getCommunityRequestCountForCommunity(int communityId) throws StarExecDatabaseException {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetCommunityRequestCountForCommunity(?)}");
+			procedure.setInt(1, communityId);
+			results = procedure.executeQuery();
+			return processRequestCountResults(results);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new StarExecDatabaseException("Could not get community request count for community with id="+communityId, e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
 	}
 
 	/**
 	 * Returns the number of community_requests
 	 * @return the number of community_requests
 	 */
-	public static int getCommunityRequestCount() {
-		return getCommunityRequestCount(true, null);
-	}
-
-	private static int getCommunityRequestCount(boolean getCountForAllCommunities, Integer communityId) {
+	public static int getCommunityRequestCount() throws StarExecDatabaseException {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
 			con = Common.getConnection();
-
-			if (getCountForAllCommunities) {
-				procedure = con.prepareCall("{CALL GetCommunityRequestCount()}");
-			} else {
-				procedure = con.prepareCall("{CALL GetCommunityRequestCountForCommunity(?)}");
-				procedure.setInt(1, communityId);
-			}
+			procedure = con.prepareCall("{CALL GetCommunityRequestCount()}");
 			results = procedure.executeQuery();
-			int reservationCount= 0;
-			if (results.next()) {
-				reservationCount = results.getInt("requestCount");
-			}		
-			return reservationCount;
+			return processRequestCountResults(results);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			throw new StarExecDatabaseException("Could not get community request count for all communities.", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
-		return 0;
 	}
 
-	public static List<CommunityRequest> getPendingCommunityRequestsForCommunity(int startingRecord, int recordsPerPage, int communityId) {
-		return getPendingCommunityRequests(startingRecord, recordsPerPage, false, communityId);
+	private static int processRequestCountResults(ResultSet requestCountResults) throws SQLException {
+		int reservationCount= 0;
+		if (requestCountResults.next()) {
+			reservationCount = requestCountResults.getInt("requestCount");
+		}		
+		return reservationCount;
 	}
 
-	public static List<CommunityRequest> getPendingCommunityRequests(int startingRecord, int recordsPerPage) {
-		return getPendingCommunityRequests(startingRecord, recordsPerPage, true, null);
+	/**
+	 * Gets all pending requests to join a given community. 
+	 * @param startingRecord The 0-indexed record to start on.
+	 * @param recordsPerPage The number of requests to return.
+	 * @param communityId the community to get requests for.
+	 * @return A list of requests to display, or null on error.
+	 * @author Albert Giegerich
+	 */
+	public static List<CommunityRequest> getPendingCommunityRequestsForCommunity(
+			int startingRecord, int recordsPerPage, int communityId) throws StarExecDatabaseException 
+	{
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequestsForCommunity(?, ?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(3, communityId);
+			results = procedure.executeQuery();
+			return processGetCommunityRequestResults(results);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			throw new StarExecDatabaseException("Error while retrieving next page of pending community requests.", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+	}
+
+	/**
+	 * Gets all pending request to join communities
+	 * @param startingRecord The 0-indexed record to start on.
+	 * @param recordsPerPage The number of requests to return.
+	 * @return A list of requests to display, or null on error.
+	 */
+	public static List<CommunityRequest> getPendingCommunityRequests(int startingRecord, int recordsPerPage) throws StarExecDatabaseException {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		ResultSet results=null;
+
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequests(?, ?)}");
+			procedure.setInt(1, startingRecord);
+			procedure.setInt(2,	recordsPerPage);
+			results = procedure.executeQuery();
+			return processGetCommunityRequestResults(results);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+			throw new StarExecDatabaseException("Error while retrieving next page of pending community requests.", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
 	}
 	
 	
@@ -331,51 +401,21 @@ public class Requests {
 	 * @param recordsPerPage The number of requests to return
 	 * @return A list of requests to display, or null on error
 	 */
-	private static List<CommunityRequest> getPendingCommunityRequests(
-			int startingRecord, int recordsPerPage, boolean getForAllCommunities, Integer communityId) 
+	private static List<CommunityRequest> processGetCommunityRequestResults(ResultSet results) throws SQLException
 	{
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			
-			if (getForAllCommunities) {
-				procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequests(?, ?)}");
-				procedure.setInt(1, startingRecord);
-				procedure.setInt(2,	recordsPerPage);
-			} else {
-				procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequestsForCommunity(?, ?, ?)}");
-				procedure.setInt(1, startingRecord);
-				procedure.setInt(2,	recordsPerPage);
-				procedure.setInt(3, communityId);
-			}
-			results = procedure.executeQuery();
-			
-			List<CommunityRequest> requests = new LinkedList<CommunityRequest>();
-			
-			while(results.next()){
-				CommunityRequest req = new CommunityRequest();
-				req.setUserId(results.getInt("user_id"));
-				req.setCommunityId(results.getInt("community"));
-				req.setCode(results.getString("code"));
-				req.setMessage(results.getString("message"));
-				req.setCreateDate(results.getTimestamp("created"));
-
-				requests.add(req);	
-				
-							
-			}	
-			return requests;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
+		List<CommunityRequest> requests = new LinkedList<CommunityRequest>();
 		
-		return null;
+		while(results.next()){
+			CommunityRequest req = new CommunityRequest();
+			req.setUserId(results.getInt("user_id"));
+			req.setCommunityId(results.getInt("community"));
+			req.setCode(results.getString("code"));
+			req.setMessage(results.getString("message"));
+			req.setCreateDate(results.getTimestamp("created"));
+
+			requests.add(req);	
+		}	
+		return requests;
 	}
 	
 	/**
