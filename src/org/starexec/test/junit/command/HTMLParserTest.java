@@ -64,23 +64,6 @@ public class HTMLParserTest {
 	}
 	
 	@Test
-	public void testExtractNameValue() {
-		Assert.assertEquals(null, HTMLParser.extractNameValue(""));
-		Assert.assertEquals(null, HTMLParser.extractNameValue(null));
-		Assert.assertEquals(null, HTMLParser.extractNameValue("< name=one >"));
-		Assert.assertEquals(null, HTMLParser.extractNameValue("< value=one >"));
-		
-		BasicNameValuePair p = HTMLParser.extractNameValue("<name=\"one\" value=\"two\">");
-		Assert.assertEquals("one", p.getName());
-		Assert.assertEquals("two", p.getValue());
-		
-		p = HTMLParser.extractNameValue("< id=\"ignored\" value=\"two\" class=\"span\" \n name=\"one\">");
-		
-		Assert.assertEquals("one", p.getName());
-		Assert.assertEquals("two", p.getValue());
-	}
-	
-	@Test
 	public void testExtractIDFromJson() {
 		Assert.assertEquals(null, HTMLParser.extractIDFromJson(""));
 		Assert.assertEquals(null, HTMLParser.extractIDFromJson(null));

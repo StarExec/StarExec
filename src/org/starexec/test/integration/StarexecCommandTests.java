@@ -22,6 +22,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
@@ -468,7 +469,7 @@ public class StarexecCommandTests extends TestSequence {
 	@StarexecTest
 	private void createSubspaceTest() throws Exception {
 		String name=TestUtil.getRandomSpaceName();
-		org.starexec.command.Permission p=new org.starexec.command.Permission();
+		Permission p=new Permission();
 		int newSpaceId=con.createSubspace(name, "", testCommunity.getId(), p, false);
 		if (newSpaceId>0) {
 			Space testSpace=Spaces.get(newSpaceId);

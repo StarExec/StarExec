@@ -6,10 +6,11 @@ import org.junit.runners.Suite.SuiteClasses;
 import org.starexec.test.junit.command.HTMLParserTest;
 import org.starexec.test.junit.command.JsonHandlerTest;
 import org.starexec.test.junit.jobs.LoadBalanceMonitorTests;
+import org.starexec.test.junit.util.HashTests;
 
 @RunWith(Suite.class)
 @SuiteClasses({ ComparatorTests.class, UtilTests.class, LoadBalanceMonitorTests.class,
-	HTMLParserTest.class, JsonHandlerTest.class})
+	HTMLParserTest.class, JsonHandlerTest.class, HashTests.class})
 public class AllTests {
 
 }

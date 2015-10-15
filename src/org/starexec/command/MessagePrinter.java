@@ -1,7 +1,11 @@
 package org.starexec.command;
 
 import java.util.List;
-
+/**
+ * This class handles printing messages to stdout. This is mostly done to communicate with users
+ * at the command prompt.
+ *
+ */
 public class MessagePrinter {
 
 	/**

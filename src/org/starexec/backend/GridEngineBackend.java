@@ -2,8 +2,6 @@ package org.starexec.backend;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Pattern;
 

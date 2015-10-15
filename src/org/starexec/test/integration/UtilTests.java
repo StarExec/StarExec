@@ -17,9 +17,7 @@ import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.Test;
 
-import com.mysql.jdbc.StringUtils;
 public class UtilTests extends TestSequence{
 	
 	User u=null;

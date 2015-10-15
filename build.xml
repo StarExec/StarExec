@@ -56,6 +56,7 @@
 	</target>
 	
 	<target name="compilestarcom" depends="cleanstarcom">
+		<copy file="${source-dir}/org/starexec/data/to/Permission.java" tofile="${starcomsrc}/Permission.java"/>
 		<javac debug="true" debuglevel="lines,vars,source" srcdir="${starcomsrc}" destdir="${starcom-comp}" classpathref="starcomclasspath"/>
 	</target>
 	

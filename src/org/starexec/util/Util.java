@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +46,8 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.FileItemIterator;
+import org.apache.tomcat.util.http.fileupload.FileItemStream;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
@@ -303,17 +307,17 @@ public class Util {
 		// Use Tomcat's multipart form utilities
 		FileItemFactory factory = new DiskFileItemFactory();
 		ServletFileUpload upload = new ServletFileUpload(factory);
-		List<FileItem> items = upload.parseRequest(request);
 		HashMap<String, Object> form = new HashMap<String, Object>();
-			
-		for(FileItem f : items) {
+		FileItemIterator fileItems = upload.getItemIterator(request);
+		while(fileItems.hasNext()) {
+			FileItemStream f = fileItems.next();
 		    // If we're dealing with a regular form field...
 		    if(f.isFormField()) {
-			// Add the field name and field value to the hashmap
-			form.put(f.getFieldName(), f.getString());				
+				// Add the field name and field value to the hashmap
+				form.put(f.getFieldName(), IOUtils.toString(f.openStream()));				
 		    } else {
-			// Else we've encountered a file, so add the FileItem to the hashmap
-			form.put(f.getFieldName(), f);					
+				// Else we've encountered a file, so add the FileItem to the hashmap
+				form.put(f.getFieldName(), f);					
 		    }	
 		}
 			
@@ -937,7 +941,18 @@ public class Util {
     	}
     	return false;
     }
-    
-    
+    /**
+     * Writes the given InputStream to the given file. The InputStream
+     * will be close on return
+     * @param stream The InputStream to copy
+     * @param outputFile The File to write to
+     * @throws IOException If there were any writing exceptions
+     */
+    public static void writeInputStreamToFile(InputStream stream, File outputFile) throws IOException {
+    	FileOutputStream output = new FileOutputStream(outputFile);
+    	IOUtils.copy(stream, output);
+    	stream.close();
+    	output.close();
+    }
     
 }

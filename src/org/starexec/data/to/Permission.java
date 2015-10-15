@@ -1,5 +1,10 @@
 package org.starexec.data.to;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.annotations.Expose;
 
 /**
@@ -180,5 +185,85 @@ public class Permission extends Identifiable {
 	 */
 	public void setLeader(boolean isLeader) {
 		this.isLeader = isLeader;
+	}
+	
+	public void setPermissionOn(String perm) {
+		if (perm.equalsIgnoreCase("addSolver")) {
+			this.addSolver=true;
+		}
+		if (perm.equalsIgnoreCase("addBench")) {
+			this.addBenchmark=true;
+		}
+		if (perm.equalsIgnoreCase("addSpace")) {
+			this.addSpace=true;
+		}
+		if (perm.equalsIgnoreCase("addJob")) {
+			this.addJob=true;
+		}
+		if (perm.equalsIgnoreCase("addUser")) {
+			this.addUser=true;
+		}
+		if (perm.equalsIgnoreCase("removeSolver")) {
+			this.removeSolver=true;
+		}
+		if (perm.equalsIgnoreCase("removeSpace")) {
+			this.removeSpace=true;
+		}
+		if (perm.equalsIgnoreCase("removeUser")) {
+			this.removeUser=true;
+		}
+		if (perm.equalsIgnoreCase("removeJob")) {
+			this.removeJob=true;
+		}
+		if (perm.equalsIgnoreCase("removeBench")) {
+			this.removeBench=true;
+		}
+	}
+	
+	private Map<String, Boolean> getPermissionMap() {
+		Map<String, Boolean> permMap = new HashMap<String, Boolean>();
+		permMap.put("addSolver", addSolver);
+		permMap.put("addBench", addBenchmark);
+		permMap.put("addSpace", addSpace);
+		permMap.put("addUser", addUser);
+		permMap.put("addJob", addJob);
+		
+		permMap.put("removeSolver", removeSolver);
+		permMap.put("removeBench", removeBench);
+		permMap.put("removeSpace", removeSpace);
+		permMap.put("removeUser", removeUser);
+		permMap.put("removeJob", removeJob);
+
+		return permMap;
+	}
+	
+	private List<String> getPermissionsWithValue(boolean value) {
+		List<String> perms=new ArrayList<String>();
+		Map<String, Boolean> permMap = getPermissionMap();
+		for (String s : permMap.keySet()) {
+			if (permMap.get(s)==value) {
+				perms.add(s);
+			}
+		}
+		return perms;
+	}
+	
+	/**
+	 * Gets all the permissions that are turned on, as strings that are
+	 * recognized by the server
+	 * @return
+	 */
+	public List<String> getOnPermissions() {
+		return getPermissionsWithValue(true);
+	}
+	
+	/**
+	 * Gets all the permissions that are turned on, as strings that are
+	 * recognized by the server
+	 * @return
+	 */
+	public List<String> getOffPermissions() {
+		return getPermissionsWithValue(false);
+
 	}
 }

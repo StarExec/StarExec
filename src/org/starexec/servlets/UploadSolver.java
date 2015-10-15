@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemStream;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
@@ -206,12 +207,12 @@ public class UploadSolver extends HttpServlet {
 		File sandboxDir=Util.getRandomSandboxDirectory();
 		Util.logSandboxContents();
 		String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
-		FileItem item=null;
+		FileItemStream item=null;
 		String name=null;
 		URL url=null;
 		Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 		if (upMethod.equals("local")) {
-			item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
+			item = (FileItemStream)form.get(UploadSolver.UPLOAD_FILE);	
 		} else {
 			try {
 				
@@ -255,8 +256,9 @@ public class UploadSolver extends HttpServlet {
 			//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
 			archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 			new File(archiveFile.getParent()).mkdir();
-			item.write(archiveFile);
-					log.info("handleSolver just wrote archive to disk");
+			Util.writeInputStreamToFile(item.openStream(), archiveFile);
+			//item.write(archiveFile);
+			//		log.info("handleSolver just wrote archive to disk");
 		} else {
 			archiveFile=new File(uniqueDir, name);
 			new File(archiveFile.getParent()).mkdir();

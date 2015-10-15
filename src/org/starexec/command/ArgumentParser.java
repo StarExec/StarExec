@@ -18,13 +18,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.starexec.data.to.Permission;
+
 class ArgumentParser {
 	
 	Connection con;
 	
 	/**
 	 * Gets the last server error message that was returned
-	 * @return
+	 * @return A string error message describing the last error. These
+	 * messages should be human readable.
 	 */
 	public String getLastServerError() {
 		return con.getLastError();
@@ -75,15 +78,6 @@ class ArgumentParser {
 	}
 	
 	/**
-	 * Gets all of the completion indices for job information (not job output)
-	 * @return A map of job IDs to the last seen completion indices for those jobs. 
-	 */
-	
-	protected HashMap<Integer,Integer> getInfoIndices() {
-		return con.getInfoIndices();
-	}
-	
-	/**
 	 * Gets the max completion ID yet seen for output downloads on a given job
 	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
@@ -93,41 +87,7 @@ class ArgumentParser {
 		return con.getJobOutCompletion(jobID);
 		
 	}
-	
-	/**
-	 * Gets all of the completion indices for job output (not job info)
-	 * @return A map of job IDs to the last seen completion indices for those jobs. 
-	 */
-	
-	protected HashMap<Integer,Integer> getOutIndices() {
-		return con.getOutputIndices();
-	}
-	
-	
-	
-	/**
-	 * Gets username being used for this connection
-	 * @return The username
-	 */
-	protected String getUsername() {
-		return con.getUsername();
-	}
-	
-	/**
-	 * Gets the password being used for this connection
-	 * @return The password
-	 */
-	protected String getPassword() {
-		return con.getPassword();
-	}
-	
-	/**
-	 * Gets the home URL of the StarExec instance currently connected to
-	 * @return The base URL
-	 */
-	protected String getBaseURL() {
-		return con.getBaseURL();
-	}
+
 	
 	/**
 	 * Log into StarExec with the username and password of this connection
@@ -474,17 +434,6 @@ class ArgumentParser {
 		
 	}
 	
-
-	
-	/**
-	 * Gets the ID of the user currently logged in to StarExec
-	 * @return The integer user ID
-	 */
-	
-	protected int getUserID() {
-		return con.getUserID();
-	}
-	
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
 	 * @param urlParams Parameters to be encoded into the URL to send to the server
@@ -559,7 +508,7 @@ class ArgumentParser {
 	/**
 	 * This function updates one of the default settings of the current Starexec user
 	 * @param setting The field to assign a new value to
-	 * @param newVal-- The new value to use for setting
+	 * @param commandParams Parameters given by the user at the command line
 	 * @return A code indicating the success of the operation
 	 * @author Eric Burns
 	 */

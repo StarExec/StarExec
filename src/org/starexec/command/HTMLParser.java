@@ -1,15 +1,12 @@
 package org.starexec.command;
 
+import java.util.HashMap;
+
+import org.apache.http.Header;
 /**
  * This class reads HTML strings from StarExec and parses out necessary information from them.
  * HTML parsing is really to be avoided as much as possible due to how fragile it can be.
  */
-
-import java.util.HashMap;
-
-
-import org.apache.http.Header;
-import org.apache.http.message.BasicNameValuePair;
 
 public class HTMLParser {
 	
@@ -55,34 +52,6 @@ public class HTMLParser {
 		}
 		return str.substring(startIndex+1,endIndex);
 	}
-	
-	/**
-	 * If present, extracts the name and value from the current html line. Returns null if it doesn't exist.
-	 * @param htmlString The string to be processed. If the string contains more than one name tag or more
-	 * than one value tag, the first occurrences are used and later ones are ignored.
-	 * @return A BasicNameValuePair containing the name and the value of an html tag.
-	 * @author Eric Burns
-	 */
-	public static BasicNameValuePair extractNameValue(String htmlString) {
-		if (htmlString==null) {
-			return null;
-		}
-		int startNameIndex=htmlString.indexOf("name=");
-		if (startNameIndex<0) {
-			return null;
-		}
-		
-		String name=extractQuotedString(htmlString,startNameIndex+5);
-		int startValueIndex=htmlString.indexOf("value=");
-		if (startValueIndex<0) {
-			return null;
-		}
-		String value=extractQuotedString(htmlString,startValueIndex+6);
-		BasicNameValuePair pair=new BasicNameValuePair(name,value);
-		
-		return pair;
-	}
-	
 
 	/**
 	 * Given a Json string formatted as StarExec does its first line in a table
@@ -167,9 +136,10 @@ public class HTMLParser {
 	
 	/**
 	 * Extracts all the values of a comma-separated cookie as a list of strings.
-	 * @param headers
-	 * @param cookieName
-	 * @return
+	 * @param headers Array of headers to check for cookies in
+	 * @param cookieName The name of the cookie to look for
+	 * @return A string array, where each value in the array is one value of the comma-separated
+	 * cookie.
 	 */
 	public static String[] extractMultipartCookie(Header[] headers, String cookieName) {
 		String value=extractCookie(headers,cookieName);
