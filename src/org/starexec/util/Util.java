@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -303,21 +304,21 @@ public class Util {
      * @param request The request to parse
      * @return A hashmap containing the field name to field value mapping
      */
+    //TODO: Create a simple class for holding some FileItemStream data? Can just encapsulate
+    //the FileItemStream and read its data in up front.
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
-		FileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
 		HashMap<String, Object> form = new HashMap<String, Object>();
-		FileItemIterator fileItems = upload.getItemIterator(request);
-		while(fileItems.hasNext()) {
-			FileItemStream f = fileItems.next();
+		for (Part p : request.getParts()) {
+			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
-		    if(f.isFormField()) {
+		    if(!wrapper.isFile()) { //TODO: Check if this is a non-file or file
 				// Add the field name and field value to the hashmap
-				form.put(f.getFieldName(), IOUtils.toString(f.openStream()));				
+				form.put(p.getName(), IOUtils.toString(p.getInputStream()));				
 		    } else {
 				// Else we've encountered a file, so add the FileItem to the hashmap
-				form.put(f.getFieldName(), f);					
+		    	
+				form.put(p.getName(), wrapper);					
 		    }	
 		}
 			
