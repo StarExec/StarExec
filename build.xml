@@ -14,6 +14,7 @@
 	<property name="project-name" value="${appname}" />	
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-dir" value="src" />
+	<property name="data-to-source-dir" value="${source-dir}/org/starexec/data/to"/>
 	<property name="scripts-dir" value="scripts-common" />
 	<property name="build-dir" value="build" />
 	<property name="class-dir" value="${build-dir}/classes" />		
@@ -56,8 +57,8 @@
 	</target>
 	
 	<target name="compilestarcom" depends="cleanstarcom">
-		<copy file="${source-dir}/org/starexec/data/to/Permission.java" tofile="${starcomsrc}/Permission.java"/>
-		<javac debug="true" debuglevel="lines,vars,source" srcdir="${starcomsrc}" destdir="${starcom-comp}" classpathref="starcomclasspath"/>
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
+</javac>
 	</target>
 	
 	<!-- Builds a runnable jar with all necessasry libraries built in -->
