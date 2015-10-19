@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
@@ -26,6 +26,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
+import org.starexec.util.PartWrapper;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -37,6 +38,7 @@ import org.starexec.util.Validator;
  * @author Benton McCune
  */
 @SuppressWarnings("serial")
+@MultipartConfig
 public class UploadSpaceXML extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);	
@@ -113,7 +115,7 @@ public class UploadSpaceXML extends HttpServlet {
 				public void run(){
 					try{ 
 						log.debug("Handling Upload of XML File from User " + userId);
-						FileItem item = (FileItem)form.get(UploadSpaceXML.UPLOAD_FILE);		
+						PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
 						// Don't need to keep file long - just using download directory
 						File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "" + userId);
 						uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
@@ -174,7 +176,7 @@ public class UploadSpaceXML extends HttpServlet {
 			Integer.parseInt((String)form.get(SPACE_ID));
 			
 			boolean goodExtension=false;
-			String fileName = FilenameUtils.getName(((FileItem)form.get(UploadSpaceXML.UPLOAD_FILE)).getName());
+			String fileName = FilenameUtils.getName(((PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE)).getName());
 			for(String ext : UploadSpaceXML.extensions) {
 				if(fileName.endsWith(ext)) {
 					goodExtension=true;

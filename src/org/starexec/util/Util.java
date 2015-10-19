@@ -1,6 +1,5 @@
 package org.starexec.util;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -8,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
@@ -29,7 +27,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -45,27 +42,8 @@ import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.FileItemIterator;
-import org.apache.tomcat.util.http.fileupload.FileItemStream;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cache;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.JobPair;
 import org.starexec.test.TestUtil;
 
 public class Util {	
@@ -304,8 +282,6 @@ public class Util {
      * @param request The request to parse
      * @return A hashmap containing the field name to field value mapping
      */
-    //TODO: Create a simple class for holding some FileItemStream data? Can just encapsulate
-    //the FileItemStream and read its data in up front.
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
 		HashMap<String, Object> form = new HashMap<String, Object>();
@@ -316,8 +292,8 @@ public class Util {
 				// Add the field name and field value to the hashmap
 				form.put(p.getName(), IOUtils.toString(p.getInputStream()));				
 		    } else {
-				// Else we've encountered a file, so add the FileItem to the hashmap
-		    	
+				// Else we've encountered a file, so add the entire wrapper to the HashMap.
+		    	// The wrapper provides all the relevant interface of a FileItem
 				form.put(p.getName(), wrapper);					
 		    }	
 		}

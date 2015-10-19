@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Reports;
@@ -40,12 +39,14 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.LogUtil;
+import org.starexec.util.PartWrapper;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
 
 
 @SuppressWarnings("serial")
+@MultipartConfig
 public class BenchmarkUploader extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	
 	private static final LogUtil logUtil = new LogUtil(log);
@@ -339,7 +340,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		URL tempURL=null;
 		String tempName=null;
-		FileItem tempFileToUpload=null;
+		PartWrapper tempFileToUpload=null;
 		if (localOrUrl.equals("URL")) {
 			tempURL=new URL((String)form.get(FILE_URL));
 			try {
@@ -349,12 +350,12 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 			
 		} else {
-			tempFileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
+			tempFileToUpload = ((PartWrapper)form.get(BENCHMARK_FILE));
 		}
 		
 		final String name=tempName;
 		final URL url=tempURL;
-		final FileItem fileToUpload=tempFileToUpload;
+		final PartWrapper fileToUpload=tempFileToUpload;
 		
 		log.debug("upload status id is " + statusId);
 		
@@ -458,7 +459,7 @@ public class BenchmarkUploader extends HttpServlet {
 			String fileName=null;
 			// Last test, return true when we find a valid file extension
 			if (((String)form.get(FILE_LOC)).equals("local")) {
-				fileName = ((FileItem)form.get(BENCHMARK_FILE)).getName();
+				fileName = ((PartWrapper)form.get(BENCHMARK_FILE)).getName();
 			} else {
 				fileName=(String)form.get(FILE_URL);
 			}

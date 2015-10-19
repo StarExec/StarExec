@@ -9,19 +9,21 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.util.PartWrapper;
+
 
 /**
  * This class is to handle the upload of a picture. Notice that this upload
@@ -32,6 +34,7 @@ import org.starexec.util.Validator;
  *
  */
 @SuppressWarnings("serial")
+@MultipartConfig
 public class UploadPicture extends HttpServlet {
 	private static final Logger log = Logger.getLogger(UploadPicture.class);	 
     
@@ -99,7 +102,7 @@ public class UploadPicture extends HttpServlet {
      */
 	private String handleUploadRequest(int userId, HashMap<String, Object> form) throws Exception {
 		try {
-			FileItem item = (FileItem)form.get(UploadPicture.PICTURE_FILE);
+			PartWrapper item = (PartWrapper)form.get(UploadPicture.PICTURE_FILE);
 			String fileName = "";
 			String redir = Util.docRoot("secure/edit/account.jsp");
 			

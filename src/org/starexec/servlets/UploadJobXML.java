@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
@@ -26,6 +26,7 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.JobUtil;
 import org.starexec.util.LogUtil;
+import org.starexec.util.PartWrapper;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -38,7 +39,7 @@ import org.apache.log4j.Logger;
  * 
  * @author Tim Smith
  */
-
+@MultipartConfig
 public class UploadJobXML extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
@@ -128,7 +129,7 @@ public class UploadJobXML extends HttpServlet {
 		logUtil.entry(method);
 		try {
 			logUtil.info(method,"Handling Upload of XML File from user with id=" + userId);
-			FileItem item = (FileItem)form.get(UploadJobXML.UPLOAD_FILE);		
+			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
 			
 			// TODO Should we use the same directory as batchSpaces with a slightly different name for job xml uploads?
@@ -204,7 +205,7 @@ public class UploadJobXML extends HttpServlet {
 			}
 			
 			boolean goodExtension=false;
-			String fileName = FilenameUtils.getName(((FileItem)form.get(UploadJobXML.UPLOAD_FILE)).getName());
+			String fileName = FilenameUtils.getName(((PartWrapper)form.get(UploadJobXML.UPLOAD_FILE)).getName());
 			for(String ext : UploadJobXML.extensions) {
 				if(fileName.endsWith(ext)) {
 					goodExtension=true;
