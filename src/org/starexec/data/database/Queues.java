@@ -219,7 +219,7 @@ public class Queues {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
+			procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
 			procedure.setString(1, queueName);
 			procedure.setString(2, nodeName);
 			

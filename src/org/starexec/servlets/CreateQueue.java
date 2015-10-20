@@ -31,7 +31,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateQueue extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(AddSpace.class);	
+	private static final Logger log = Logger.getLogger(CreateQueue.class);	
 
 	// Request attributes
 	private static final String name = "name";
