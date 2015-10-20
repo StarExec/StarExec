@@ -29,6 +29,7 @@ public class GridEngineBackend implements Backend{
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
 
 
+    private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	
 	
     private Session session = null;
@@ -186,7 +187,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean killAll(){
 		try {
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qdel -f -u tomcat",getSGEEnv());
+			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qdel -f -u tomcat",getSGEEnv());
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -371,7 +372,7 @@ public class GridEngineBackend implements Backend{
     	try {
 			String[] allQueueNames = this.getQueues();
 			for(int i=0;i<allQueueNames.length;i++) {
-				Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -cq "+allQueueNames[i],getSGEEnv());
+				Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qmod -cq "+allQueueNames[i],getSGEEnv());
 			}
 			return true;
 		} catch (Exception e) {
@@ -393,12 +394,12 @@ public class GridEngineBackend implements Backend{
     		String shortQueueName = split[0];
 
     		//DISABLE the queue: 
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qmod -d " + queueName, getSGEEnv());
+    		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qmod -d " + queueName, getSGEEnv());
     		//DELETE the queue:
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dq " + queueName, getSGEEnv());
+    		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dq " + queueName, getSGEEnv());
     				
     		//Delete the host group:
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dhgrp @"+ shortQueueName +"hosts", getSGEEnv());
+    		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dhgrp @"+ shortQueueName +"hosts", getSGEEnv());
     		return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
@@ -451,7 +452,7 @@ public class GridEngineBackend implements Backend{
 					    String[] split3 = sourceQueueName.split("\\.");
 					    String shortQName = split3[0];
 					    log.debug("About to execute sudo command 1");
-					    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + fullName + " @" + shortQName + "hosts", getSGEEnv());
+					    Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + fullName + " @" + shortQName + "hosts", getSGEEnv());
 					}
 				}
 			}
@@ -472,7 +473,7 @@ public class GridEngineBackend implements Backend{
 
 			//Add the host
 
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Ahgrp /tmp/newHost30.hgrp", getSGEEnv());			
+			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Ahgrp /tmp/newHost30.hgrp", getSGEEnv());			
 			
 			// Create newQueue.q [COMPLETE]
 			String newQueue;
@@ -533,7 +534,7 @@ public class GridEngineBackend implements Backend{
 			f2.setReadable(true, false);
 			f2.setWritable(true, false);
 				
-			Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -Aq /tmp/newQueue30.q", getSGEEnv());
+			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Aq /tmp/newQueue30.q", getSGEEnv());
 
 		    log.debug("created queue successfully");
 			return true;
@@ -579,10 +580,10 @@ public class GridEngineBackend implements Backend{
 					    String name = sourceQueueNames[i];
 					    String[] split3 = name.split("\\.");
 					    String shortQName = split3[0];
-					    Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeFullName + " @" + shortQName + "hosts", getSGEEnv());
+					    Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + nodeFullName + " @" + shortQName + "hosts", getSGEEnv());
 					}
 					log.debug("adding node with name = "+nodeFullName +" to queue = "+shortQueueName);
-					Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -aattr hostgroup hostlist " + nodeFullName + " @" + shortQueueName + "hosts", getSGEEnv());
+					Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -aattr hostgroup hostlist " + nodeFullName + " @" + shortQueueName + "hosts", getSGEEnv());
     		    }
     		}
 
@@ -605,7 +606,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean moveNode(String nodeName, String queueName){
     	try {
-    		Util.executeCommand("sudo -u sgeadmin /cluster/sge-6.2u5/bin/lx24-amd64/qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
+    		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
     	    return true;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);

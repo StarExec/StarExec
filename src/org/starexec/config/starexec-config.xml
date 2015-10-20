@@ -41,10 +41,10 @@
                         <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             			<!-- SGE Configuration -->
             
-			<property key="SGE_ROOT" value="/cluster/sge-6.2u5" />
+			<property key="SGE_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
-			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
+			<property key="SGE_ACCOUNTING_FILE" value="/cluster/gridengine-8.1.8/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />
 			<property key="QUEUE_DETAILS_COMMAND" value="qconf -sq " />

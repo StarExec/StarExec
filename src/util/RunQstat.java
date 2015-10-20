@@ -28,7 +28,7 @@ public class RunQstat {
 	
 		String[] envp = new String[2];
 		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
-		envp[1] = "SGE_ROOT=/cluster/sge-6.2u5"; // it seems we need to set this explicitly if we change the environment.
+		envp[1] = "SGE_ROOT=/cluster/gridengine-8.1.8"; // it seems we need to set this explicitly if we change the environment.
 		String results = Util.executeCommand("qstat -f -u tomcat",envp);
 	
 		// Parse the output from the SGE call to get the child worker nodes
