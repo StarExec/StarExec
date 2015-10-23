@@ -10,8 +10,10 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
@@ -20,6 +22,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
 
 /**
  * This class is responsible for intercepting all requests to protected resources
@@ -45,12 +48,15 @@ public class SessionFilter implements Filter {
 		logUtil.entry(method);
 		// Cast the servlet request to an httpRequest so we have access to the session
 		HttpServletRequest httpRequest = (HttpServletRequest) request; 		
+		
+		HttpServletResponse httpResponse = (HttpServletResponse) response;
 		// If the user is logged in...
 		if(httpRequest.getUserPrincipal() != null) {
+			String userEmail = httpRequest.getUserPrincipal().getName();
 			// Check if they have the necessary user SessionUtil stored in their session
+
 			if(SessionUtil.getUser((HttpServletRequest)request) == null) {
 				// If not, retrieve the user's information from the database
-				String userEmail = httpRequest.getUserPrincipal().getName();
 				User user = Users.get(userEmail);
 				
 				// And add it to their session to be used elsewhere
@@ -61,6 +67,13 @@ public class SessionFilter implements Filter {
 				
 				// Add the login to the database
 				this.logUserLogin(user, httpRequest);				
+			}
+			if (R.DEBUG_MODE_ACTIVE){
+				if (!Users.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
+					httpRequest.getSession().invalidate();
+					httpResponse.sendRedirect(Util.docRoot(""));	
+					return;
+				}
 			}
 		}
 		

@@ -237,4 +237,6 @@ public class R {
     //some proxy data
     public static String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
     public static int PROXY_PORT = 8888;
+    
+    public static boolean DEBUG_MODE_ACTIVE = false;
 }	
