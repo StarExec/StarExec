@@ -17,13 +17,7 @@
 	<%
 		try {
 			//try to use a cookie first so we don't always need to ask the database
-			//String defaultPageSize=HTMLParser.extractCookie(request.getCookies(),"datatables-page-size");
-			//if (!Validator.isValidInteger(defaultPageSize)) {
-				String defaultPageSize=String.valueOf(Users.getDefaultPageSize(SessionUtil.getUserId(request)));
-				//response.addCookie(new Cookie("datatables-page-size",defaultPageSize));
-			//}else {
-			//	System.out.println(defaultPageSize);
-			//}
+			String defaultPageSize=String.valueOf(Users.getDefaultPageSize(SessionUtil.getUserId(request)));
 			request.setAttribute("pagesize", defaultPageSize);
 
 		} catch (Exception e) {

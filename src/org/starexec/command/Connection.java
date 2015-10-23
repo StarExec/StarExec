@@ -69,54 +69,6 @@ public class Connection {
 	@SuppressWarnings("deprecation")
 	
 	/**
-	 * Gets an HttpClient that ignores SSL certificates. The SSL certificate
-	 * for StarExec is currently not valid
-	 * @return An HttpClient that ignores SSL certificates.
-	 */
-	//TODO: If StarExec gets a valid certificate, we shouldn't have to do this anymore
-	private HttpClient getClient() {
-		try{
-			HttpClient base=new DefaultHttpClient();
-			SSLContext ctx = SSLContext.getInstance("TLS");
-			
-			//just create a trustmanager that does nothing, as we already know StarExec's certificate
-			//is invalid
-			X509TrustManager tm = new X509TrustManager() {
-
-
-			    public X509Certificate[] getAcceptedIssuers() {
-			        return null;
-			    }
-
-				@Override
-				public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-						throws CertificateException {
-					
-					
-				}
-
-				@Override
-				public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-						throws CertificateException {
-					
-					
-				}
-			};
-			ctx.init(null, new TrustManager[]{tm}, null);
-			SSLSocketFactory ssf = new SSLSocketFactory(ctx);
-			ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-			ClientConnectionManager ccm = base.getConnectionManager();
-			SchemeRegistry sr = ccm.getSchemeRegistry();
-			sr.register(new Scheme("https", ssf, 443));
-			
-			client = new DefaultHttpClient(ccm, base.getParams());
-			return client;
-		} catch (Exception e) {
-			return null;
-		}
-	}
-	
-	/**
 	 * Constructor used for copying the setup of one connection into a new connection. Useful if a connection
 	 * gets into a bad state (possibly response streams left open due to errors)
 	 * @param con The old connection to copy
@@ -127,7 +79,8 @@ public class Connection {
 		this.setBaseURL(con.getBaseURL());
 		setUsername(con.getUsername());
 		setPassword(con.getPassword());
-		client=getClient();
+		client=new DefaultHttpClient();
+
 		client.getParams();
 		setInfoIndices(con.getInfoIndices());
 		setOutputIndices(con.getOutputIndices());
@@ -173,7 +126,8 @@ public class Connection {
 		initializeComponents();
 	}
 	private void initializeComponents() {
-		client=getClient();
+		client=new DefaultHttpClient();
+
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,Integer>());
 		lastError="";
