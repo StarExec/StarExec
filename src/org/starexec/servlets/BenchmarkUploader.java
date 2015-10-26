@@ -360,31 +360,31 @@ public class BenchmarkUploader extends HttpServlet {
 		log.debug("upload status id is " + statusId);
 		
 		//It will delay the redirect until this method is finished which is why a new thread is used
+		
+					
+		// Create a unique path the zip file will be extracted to
+		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
+		// Create the paths on the filesystem
+		uniqueDir.mkdirs();
+					
+		log.info("Handling upload request for user " + userId + " in space " + spaceId);
+					
+		File archive=null;
+		if (localOrUrl.equals("local")) {
+			archive = new File(uniqueDir,  FilenameUtils.getName(fileToUpload.getName()));
+			fileToUpload.write(archive);
+		} else {
+			archive=new File(uniqueDir,name);
+			if (!Util.copyFileFromURLUsingProxy(url,archive)) {
+				throw new Exception("Unable to copy file from URL");
+			}	
+		}
+		final File archiveFile = archive;
 		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){
 				try{
-					
-					// Create a unique path the zip file will be extracted to
-					File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
-					uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
-					// Create the paths on the filesystem
-					uniqueDir.mkdirs();
-					
-					log.info("Handling upload request for user " + userId + " in space " + spaceId);
-					
-					File archiveFile=null;
-					if (localOrUrl.equals("local")) {
-						archiveFile = new File(uniqueDir,  FilenameUtils.getName(fileToUpload.getName()));
-						fileToUpload.write(archiveFile);
-					} else {
-						archiveFile=new File(uniqueDir,name);
-						if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
-							throw new Exception("Unable to copy file from URL");
-						}
-						
-					}
-					
 					addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId,
 							downloadable, perm, uploadMethod, statusId,
 							hasDependencies, linked, depRootSpaceId);
