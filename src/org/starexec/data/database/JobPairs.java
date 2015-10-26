@@ -1386,7 +1386,7 @@ public class JobPairs {
 			}
 			Common.safeClose(procedure);
 			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData(?)");
-			procedure.setInt(queueID, 1);
+			procedure.setInt(1, queueID);
 			procedure.executeUpdate();
 			
 			
