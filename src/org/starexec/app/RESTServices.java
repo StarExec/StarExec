@@ -3961,6 +3961,19 @@ public class RESTServices {
 		JobManager.clearLoadBalanceMonitors();
 		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
 	}
+	
+	@POST
+	@Path("/starexec/debugmode/{value}")
+	@Produces("application/json")
+	public String clearLoadBalanceData(@PathParam("value") boolean value, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=GeneralSecurity.canUserRestartStarexec(userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		R.DEBUG_MODE_ACTIVE = value;
+		return gson.toJson(new ValidatorStatusCode(true,"Debug mode state changed successfully"));
+	}
 
 
 	/**
