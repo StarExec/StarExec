@@ -114,7 +114,7 @@ $$STAGE_DEPENDENCY_ARRAY$$
 # setup the memory limit for this stage
 
 #THIS ONLY NEEDS TO BE DONE ONCE
-NODE_MEM=$(vmstat -s | head -1 | sed 's/total memory//')
+NODE_MEM=$(vmstat -s | head -1 | sed 's/K total memory//')
 
 #then, convert kb to mb
 NODE_MEM=$(($NODE_MEM/1024))
