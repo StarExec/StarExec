@@ -465,7 +465,7 @@ public class ArchiveUtil {
 	}
 	
 	
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws Exception {
+	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		ZipEntry entry=new ZipEntry(zipFileName);
 		zos.putNextEntry(entry);
 		FileInputStream input=new FileInputStream(srcFile);
@@ -475,7 +475,7 @@ public class ArchiveUtil {
 		input.close();
 	}
 	
-	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws Exception {
+	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		File[] files=srcFile.listFiles();
 		for (int index=0;index<files.length;index++) {
 			if (files[index].isDirectory()) {
@@ -492,7 +492,7 @@ public class ArchiveUtil {
 	 * @param baseName If not null or empty, all files will be in one directory with this name
 	 * @throws Exception
 	 */
-	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws Exception {
+	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName=baseName;
 		ZipOutputStream stream=new ZipOutputStream(output);
 		for (File f : paths) {
