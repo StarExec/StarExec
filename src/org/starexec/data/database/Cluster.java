@@ -2,18 +2,16 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.WorkerNode;
 
 
@@ -37,12 +35,12 @@ public class Cluster {
 			// Set all nodes as inactive (we will update them to active as we see them)
 			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
 			
-			String[] lines = R.BACKEND.getWorkerNodes(R.SGE_ROOT);
+			String[] lines = R.BACKEND.getWorkerNodes();
 			for (int i = 0; i < lines.length; i++) {
 				String name = lines[i];
 				log.debug("Updating info for node "+name);
 				// In the database, update the attributes for the node
-				Cluster.updateNode(name,  Cluster.getNodeDetails(name));				
+				Cluster.updateNode(name,  R.BACKEND.getNodeDetails(name));				
 				// Set the node as active (because we just saw it!)
 				Cluster.setNodeStatus(name, R.NODE_STATUS_ACTIVE);
 			}
@@ -51,24 +49,6 @@ public class Cluster {
 		}
 		log.info("Completed loading info for worker nodes into db");
 	}
-
-	/**
-	 * Calls BACKEND to get details about the given node. 
-	 * @param name The name of the node to get details about
-	 * @param name The name of the node to get details about
-	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
-	 */
-	public static HashMap<String, String> getNodeDetails(String name) {
-	    String[] map = R.BACKEND.getNodeDetails(R.SGE_ROOT,name);
-	    HashMap<String, String> details = new HashMap<String, String>();
-	    
-	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
-	    for(int i = 0; i < (map.length/2)*2; i=i+2){
-		details.put(map[i],map[i+1]);
-	    }
-	    return details;
-	}
-
 
 	/**
 	 * Gets the queue list from BACKEND and adds them to the database if they don't already exist. This must
@@ -90,7 +70,7 @@ public class Cluster {
 			// Set all queues as inactive (we will set them as active when we see them)
 			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
 
-			String[] queueNames = R.BACKEND.getQueues(R.SGE_ROOT);
+			String[] queueNames = R.BACKEND.getQueues();
 
 			for (int i = 0; i < queueNames.length; i++) {
 			    String name = queueNames[i];
@@ -98,7 +78,7 @@ public class Cluster {
 			    log.debug("Loading details for queue "+name);
 
 			    // In the database, update the attributes for the queue
-			    Queues.update(name,  Cluster.getQueueDetails(name));
+			    Queues.update(name,  R.BACKEND.getQueueDetails(name));
 
 			    // Set the queue as active since we just saw it
 			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
@@ -112,106 +92,32 @@ public class Cluster {
 	}
 
 	/**
-	 * Calls BACKEND to get details about the given queue. 
-	 * @param name The name of the queue to get details about
-	 * @return A hashmap of key value pairs. The key is the attribute name and the value is the value for that attribute.
-	 */
-	public static HashMap<String, String> getQueueDetails(String name) {
-
-	    String[] map = R.BACKEND.getQueueDetails(R.SGE_ROOT,name);
-	    HashMap<String, String> details = new HashMap<String, String>();
-	    
-	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
-	    for(int i = 0; i < (map.length/2)*2; i=i+2){
-		details.put(map[i],map[i+1]);
-	    }
-	    return details;
-
-	}
-
-	/**
 	 * Extracts queue-node association from BACKEND and puts it into the db.
 	 * @return true if successful
 	 * @author Benton McCune
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 	    Queues.clearQueueAssociations();
-	    String[] assoc = R.BACKEND.getQueueNodeAssociations(R.SGE_ROOT);
+	    Map<String,String> assoc = R.BACKEND.getQueueNodeAssociations();
 	    
 	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
-	    for(int i = 0; i < (assoc.length/2)*2; i=i+2){
-		Queues.associate(assoc[i], assoc[i+1]);
+	    for(String node : assoc.keySet()){
+	    	Queues.associate(assoc.get(node), node);
 	    }
 	    return true;
 	    
 	}
-
-
-	public static void associateNodes(int queueId, List<Integer> nodeIds) {
-		log.debug("Calling AssociateQueue");
-		Connection con = null;
-		CallableStatement associateQueue=null;
-		try {		
-			con = Common.getConnection();
-			// Adds the nodes as associated with the queue
-			for (int nodeId : nodeIds) {
-				associateQueue = con.prepareCall("{CALL AssociateQueueById(?, ?)}");	
-				associateQueue.setInt(1, queueId);
-				associateQueue.setInt(2, nodeId);
-				associateQueue.executeUpdate();
-				Common.safeClose(associateQueue);
-			}
-		} catch (Exception e) {
-			//if there was an error during the update, the procedure will not close
-			Common.safeClose(associateQueue);
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}		
-	}
 	
-	
-	public static java.util.Date getLatestNodeDate() {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetLatestNodeDate()}");
-			results = procedure.executeQuery();
-			Date latest = null;
-			while(results.next()){
-				latest = results.getDate("MAX(reserve_date)");
-			}	
-		
-			java.util.Date newDate = null;
-			if (latest == null) {
-				java.util.Calendar cal = java.util.Calendar.getInstance();
-				java.util.Date utilDate = cal.getTime();
-				java.sql.Date sqlDate = new Date(utilDate.getTime());
-				newDate = new Date(sqlDate.getTime());
-			} else {
-				newDate = new Date(latest.getTime());
-			}
-			return newDate;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
+	/**
+	 * Gets the total number of active nodes in the system
+	 * @return The number of active nodes, or -1 on error.
+	 */
 	public static int getNodeCount() {
 		log.debug("Calling GetNodeCount");
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		int ret = 0;
+		
 		try {		
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetActiveNodeCount()}");
@@ -219,7 +125,7 @@ public class Cluster {
 			
 			
 			if (results.next()){
-				ret = results.getInt("nodeCount");
+				return results.getInt("nodeCount");
 			}						
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -228,34 +134,8 @@ public class Cluster {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}	
-		return ret;
+		return -1;
 	}	
-	
-	public static int getNonPermanentNodeCount() {
-		log.debug("Calling GetNonPermanentNodeCount");
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		int ret = 0;
-		try {		
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNonPermanentNodeCount(?)}");
-			procedure.setInt(1, Cluster.getDefaultQueueId());
-			results = procedure.executeQuery();	
-			
-			
-			if(results.next()){
-				ret = results.getInt("nodeCount");
-			}						
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}	
-		return ret;
-	}
 	
 	/**
 	 * Gets a worker node with detailed information (Id and name along with all attributes)
@@ -310,6 +190,15 @@ public class Cluster {
 		return null;
 	}
 	
+	/**
+	 * Gets the next page of nodes for the admin to view
+	 * @param startingRecord The index of the record to start at.
+	 * @param recordsPerPage The number of nodes to return.
+	 * @param isSortedASC Whether to sort ASC or DESC
+	 * @param indexOfColumnSortedBy The index of the column to sort on.
+	 * @param SearchQuery A string query to filter results on
+	 * @return The list of nodes to display, or null on error
+	 */
 	
 	public static List<WorkerNode> getNodesForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String SearchQuery) {
 		Connection con = null;			
@@ -386,50 +275,6 @@ public class Cluster {
 		return null;
 	}
 	
-	
-	/**
-	 * retrieves all the nodes that are not reserved for a certain time
-	 * @param sequenceName the name of the node to set the status for
-	 * @param status the status to set for the node
-	 * @return True if the operation was a success, false otherwise.
-	 */
-	public static List<WorkerNode> getUnReservedNodes(Date start, Date end) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-
-			log.debug("start = " + start);
-			procedure = con.prepareCall("{CALL GetUnReservedNodes(?, ?)}");
-			procedure.setDate(1, start);	
-			procedure.setDate(2, end);
-			results = procedure.executeQuery();	
-			
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-			
-			while(results.next()){
-				WorkerNode n = new WorkerNode();
-				n.setName(results.getString("name"));
-				n.setId(results.getInt("id"));
-				n.setStatus(results.getString("status"));
-				nodes.add(n);
-			}			
-						
-			return nodes;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		return null;
-	}
-
-	
 	/**
 	 * Updates the status of ALL worker nodes with the given status
 	 * @param status The status to set for all nodes
@@ -486,7 +331,7 @@ public class Cluster {
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static boolean updateNode(String name, HashMap<String, String> attributes) {
+	public static boolean updateNode(String name, Map<String, String> attributes) {
 		Connection con = null;			
 		CallableStatement procAddNode = null;
 		CallableStatement procAddCol = null;
@@ -539,151 +384,12 @@ public class Cluster {
 		log.debug(String.format("Node [%s] failed to be updated.", name));
 		return false;
 	}
-	
-	/**
-	 * Updates the node count for a specific reserved queue on a specific day 
-	 * @param queueId The ID of the queue 
-	 * @param nodeCount
-	 * @param date
-	 * @return
-	 */
-	public static Boolean updateNodeCount(int requestId, int nodeCount, java.sql.Date date) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			con = Common.getConnection();
-			
-
-			procedure = con.prepareCall("{CALL UpdateReservedNodeCount(?,?,?)}");
-			procedure.setInt(1, requestId);
-			procedure.setInt(2, nodeCount);
-			procedure.setDate(3, date);
-			procedure.executeUpdate();
-
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-
-
-	public static Boolean reserveNodes(int request_id, Date start, Date end) {
-			
-		List<java.sql.Date> dates =  Requests.getDateRange(start, end);
-
-		for (java.sql.Date utilDate : dates) {
-			int node_count = Requests.GetNodeCountOnDate(request_id, utilDate);
-			
-		    Boolean result = updateNodeCount(request_id, node_count, utilDate);
-		    if (!result) {
-		    	return false;
-		    }
-		}
-		return true;
-	}
-
-
-
-
-
-
-	public static int getTempNodeCountOnDate(String name, java.util.Date date) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetTempNodeCountOnDate(?, ?)}");
-			procedure.setString(1, name);
-			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-			procedure.setDate(2, sqlDate);
-			
-			
-			results = procedure.executeQuery();
-
-			while(results.next()){
-				return results.getInt("count");
-			}			
-
-			return -1;			
-			
-		} catch (Exception e){			
-			log.error("GetTempNodeCountOnDate says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
 
 	/**
-	 * Removes all entries from the queue_request_assoc table where the node count is 0.
-	 * This can happen if nodes are removed from a reservation after it was made
-	 * @return True on success, false otherwise
+	 * Gets all the jobs running on the given queue
+	 * @param queueId The ID of the queue to check
+	 * @return The list of jobs running, or null on error
 	 */
-
-	private static boolean removeEmptyNodeCounts() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL RemoveEmptyNodeCounts()}");	
-			
-			procedure.executeUpdate();
-			
-			return true;
-		} catch (Exception e) {
-			log.error("RemoveEmptyNodeCounts() says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}			
-		return false;
-	}
-	
-	public static int getMinNodeCount(int requestId) {
-		return getMinOrMaxNodeCount(requestId,"min");
-	}
-	
-	public static int getMaxNodeCount(int requestId) {
-		return getMinOrMaxNodeCount(requestId,"max");
-	}
-
-	private static int getMinOrMaxNodeCount(int requestId, String minOrMax) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL Get"+minOrMax+"NodeCount(?)}");	
-			procedure.setInt(1, requestId);
-			
-			results = procedure.executeQuery();
-			
-			while(results.next()){
-				return results.getInt("count");
-			}			
-			
-		} catch (Exception e){			
-			log.error("GetMaxNodeCount says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-
-
 	public static List<Job> getJobsRunningOnQueue(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -720,6 +426,10 @@ public class Cluster {
 		return null;
 	}
 	
+	/**
+	 * Gets all nodes in the system
+	 * @return A list of nodes, or null on error
+	 */
 	public static List<WorkerNode> getAllNodes() {
 		log.debug("Starting getAllNodes...");
 		Connection con = null;
@@ -751,8 +461,8 @@ public class Cluster {
 	
 	/**
 	 * Gets all of the nodes that are NOT associated with the given queue
-	 * @param queueId
-	 * @return
+	 * @param queueId The ID of the queue
+	 * @return The list of nodes not attached to the given queue, or null on error
 	 */
 	public static List<WorkerNode> getNonAttachedNodes(int queueId) {
 		log.debug("Starting getNonAttachedNodes...");
@@ -792,37 +502,12 @@ public class Cluster {
 		}
 		return null;
 	}
-	
-	public static List<WorkerNode> getAllNonPermanentNodes() {
-		log.debug("Starting getAllNonPermanentNodes...");
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetAllNonPermanentNodes()}");
-			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-			while (results.next()){
-				WorkerNode n = new WorkerNode();
-				n.setId(results.getInt("id"));
-				n.setName(results.getString("name"));
-				n.setStatus(results.getString("status"));
-				nodes.add(n);
-			}
-			return nodes;
-		} catch (Exception e) {
-			log.error("GetAllNonPermanentNodes says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
 
-
+	/**
+	 * Gets the queue that owns the given node
+	 * @param node The node to check
+	 * @return The queue, or null if none exists or on error.
+	 */
 	public static Queue getQueueForNode(WorkerNode node) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -838,7 +523,6 @@ public class Cluster {
 				q.setId(results.getInt("id"));
 				q.setName(results.getString("name"));
 				q.setStatus(results.getString("status"));
-				q.setPermanent(results.getBoolean("permanent"));
 				return q;
 			}
 		} catch (Exception e) {
@@ -853,7 +537,7 @@ public class Cluster {
 
 	/**
 	 * Retrieves the ID of a node given its name. 
-	 * @param nodeName
+	 * @param nodeName The name of the node to check
 	 * @return The ID of the node, or -1 if it couldn't be found
 	 */
 	public static int getNodeIdByName(String nodeName) {
@@ -881,8 +565,8 @@ public class Cluster {
 
 	/**
 	 * Gets the name of a node given its ID
-	 * @param id
-	 * @return
+	 * @param id The id of the node to get the name of
+	 * @return The string name of the node, or null if it could not be found
 	 */
 	public static String getNodeNameById(int id) {
 		Connection con = null;
@@ -906,7 +590,10 @@ public class Cluster {
 		}
 		return null;
 	}
-	
+	/**
+	 * Gets the system default queue
+	 * @return The id of the queue, or 01 on error
+	 */
 	public static int getDefaultQueueId() {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -933,9 +620,14 @@ public class Cluster {
 		return -1;
 	}
 
-
-	public static boolean setPermQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
-		log.debug("SetPermQueueCommunityAccess beginning...");
+	/**
+	 * Gives one or more communities access to a queue
+	 * @param community_ids The IDs of the communities to give access to
+	 * @param queue_id The ID of the queue
+	 * @return True on success and false on error.
+	 */
+	public static boolean setQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
+		log.debug("SetQueueCommunityAccess beginning...");
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -945,7 +637,7 @@ public class Cluster {
 			
 			if (community_ids != null) {
 				for (int id : community_ids) {
-					procedure = con.prepareCall("{CALL SetPermQueueCommunityAccess(?, ?)}");
+					procedure = con.prepareCall("{CALL SetQueueCommunityAccess(?, ?)}");
 					procedure.setInt(1, id);
 					procedure.setInt(2, queue_id);
 					
@@ -958,7 +650,7 @@ public class Cluster {
 			return true;
 			
 		} catch (Exception e) {
-			log.error("SetPermQueueCommunityAccess says " + e.getMessage(), e);
+			log.error("SetQueueCommunityAccess says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

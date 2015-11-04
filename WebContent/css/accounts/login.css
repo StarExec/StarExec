@@ -30,6 +30,7 @@
 
 #loginForm input {
 	width: 200px;
+	margin-bottom: 3px;
 }
 
 #loginForm a:link {

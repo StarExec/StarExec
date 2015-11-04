@@ -40,6 +40,7 @@ $(document).ready(function(){
 	$('#fieldAttrs').expandable(true);
 	$("#fieldActions").expandable(true);
 	$('#fieldOutput').expandable(true);		
+	$('#stageStats').expandable(true);
 	
 	$('#fieldLog').expandable(true);
 	

@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.to.BenchmarkUploadStatus;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.SpaceXMLUploadStatus;
@@ -163,7 +164,9 @@ public class Permissions {
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
-			if (Jobs.isJobDeleted(jobId)) {
+			Job j = Jobs.get(jobId);
+			// job does not exist or has been deleted.
+			if (j==null) {
 				return false;
 			}
 			if (Jobs.isPublic(jobId) || Users.isAdmin(userId) ){
@@ -204,7 +207,7 @@ public class Permissions {
 		if (Solvers.isPublic(solverId)){
 			return true;
 		}
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
@@ -407,7 +410,6 @@ public class Permissions {
 				p.setRemoveJob(results.getBoolean("remove_job"));
 				p.setLeader(results.getBoolean("is_leader"));
 				p.setId(userId);
-
 				if(results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
@@ -449,7 +451,7 @@ public class Permissions {
 		p.setLeader(true);
 		return p;
 	}
-	
+
 	/**
 	 * Returns a permissions object with every permission set to false. The ID is not set
 	 * @return 

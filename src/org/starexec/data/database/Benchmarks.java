@@ -228,38 +228,6 @@ public class Benchmarks {
 			Common.safeClose(procedure);
 		}
 	}
-	
-
-	/**
-	 * Internal method which adds the list of benchmarks to the database and associates them with the given spaceId
-	 * @param con The connection the operation will take place on
-	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to
-	 * @return True if the operation was a success, false otherwise. If null, they will not be added to any space
-	 * @author Tyler Jensen
-	 * @param conParam The open connection to make the transaction on
-	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
-	 * @throws Exception 
-	 */
-    protected static List<Integer> add(Connection conParam, List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws Exception {
-		List<Integer> benchIds=new ArrayList<Integer>();
-    	for(Benchmark b : benchmarks) {
-		    if (Benchmarks.isBenchValid(b.getAttributes())){
-		    	int id=Benchmarks.add(conParam, b,statusId);
-		    	if (id>0) {
-		    		benchIds.add(id);
-		    	} else {
-				    throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
-		    	}
-		    }
-		}		
-    	if (spaceId!=null) {
-        	Benchmarks.associate(benchIds, spaceId);
-
-    	}
-    	return benchIds;
-    }
-	
 
 	/**
 	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
@@ -983,6 +951,19 @@ public class Benchmarks {
 	}
 
 	/**
+	 * Deletes each benchmark in a list of benchmarks
+	 * @author Albert Giegerich
+	 */
+	public static void deleteEach(List<Benchmark> benchmarksToDelete) {
+		for (Benchmark benchmark : benchmarksToDelete) {
+			boolean success = delete(benchmark.getId());
+			if (!success) {
+				log.error("Benchmark with id="+benchmark.getId()+" was not deleted successfully.");		
+			}
+		}
+	}
+
+	/**
 	 * Deletes a benchmark from the database (cascading deletes handle all dependencies)
 	 * @param id the id of the benchmark to delete
 	 * @return True if the operation was a success, false otherwise
@@ -1253,21 +1234,6 @@ public class Benchmarks {
 	public static Benchmark get(int benchId) {
 		return Benchmarks.get(benchId,false,false);
 	}
-
-	/**
-	 * Retrieves a benchmark. Will not return a "deleted" benchmark
-	 * @param benchId The id of the benchmark to retrieve
-	 * @return A benchmark object representing the benchmark with the given ID
-	 * @param includeAttrs True if we should include the attributes for this benchmarks and false otherwise
-	 * @author Tyler Jensen
-	 * 
-	 */
-	public static Benchmark get(int benchId, boolean includeAttrs) {
-		return Benchmarks.get(benchId, includeAttrs,false);
-	}
-	
-	
-	
 	
 	/**
 	 * @param benchId The id of the benchmark to retrieve
@@ -1307,16 +1273,7 @@ public class Benchmarks {
 	public static List<Benchmark> get(List<Integer> benchIds) {
 		return get(benchIds,false);
 	}
-	
-	/**
-	 * Checks to see if the given benchmark is owned by the test user
-	 * @param benchId The ID of the benchmark to check
-	 * @return True if the benchmark is owned by the test user and false otherwise
-	 */
-	public static boolean isTestBenchmark(int benchId) {
-		return Users.isTestUser(Benchmarks.get(benchId).getUserId());
-	}
-	
+
 	/**
 	 * @param benchIds A list of ids to get benchmarks for
 	 * @return A list of benchmark object representing the benchmarks with the given IDs
@@ -2694,39 +2651,6 @@ public class Benchmarks {
 		
 		return false;
 	}
-	/**
-	 * Writes the attributes of the given benchmark out to the given file. There will be one attribute per line,
-	 * with the key and value of each attribute separated by the delimter string
-	 * @param benchId The ID of the benchmark to get attributes of
-	 * @param outputFile The file to write the attributes to 
-	 * @param delimiter The string that will separate the key and value of each attribue
-	 * @return True on success and false otherwise
-	 */
-	
-	public static boolean writeBenchmarkAttributesToFile(int benchId, File outputFile, String delimiter) {
-		try {
-			Properties p=Benchmarks.getAttributes(benchId);
-			StringBuilder sb=new StringBuilder();
-			for (Entry<Object,Object> e : p.entrySet()) {
-				sb.append(e.getKey());
-				sb.append(delimiter);
-				sb.append(e.getValue());
-				sb.append("\n");
-			}
-			FileUtils.writeStringToFile(outputFile, sb.toString());
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			
-		}
-		return false;
-	}
-	
-	
-	
-	
-	
-	
 	
 	/**
 	 * Gets every Benchmark that shares a space with the given user

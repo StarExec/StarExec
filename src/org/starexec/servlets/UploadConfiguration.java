@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
@@ -22,13 +22,15 @@ import org.starexec.data.to.Solver;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.util.PartWrapper;
+
 
 /**
  * Supports the uploading of new configuration files to the Starexec file system
  * 
  * @author Todd Elvers
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("serial")@MultipartConfig
 public class UploadConfiguration extends HttpServlet {
 	private static final Logger log = Logger.getLogger(UploadConfiguration.class);	
     
@@ -107,7 +109,7 @@ public class UploadConfiguration extends HttpServlet {
 	public ValidatorStatusCode handleConfiguration(HashMap<String, Object> configAttrMap) {
 		try {
 			// Set up a new configuration object with the submitted information
-			FileItem uploadedFile = (FileItem)configAttrMap.get(UPLOAD_FILE);
+			PartWrapper uploadedFile = (PartWrapper)configAttrMap.get(UPLOAD_FILE);
 			Solver solver = Solvers.get(Integer.parseInt((String)configAttrMap.get(SOLVER_ID)));
 			Configuration newConfig = new Configuration();
 			newConfig.setName((String)configAttrMap.get(CONFIG_NAME));

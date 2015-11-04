@@ -18,7 +18,6 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	@Expose private int slotsReserved;
 	@Expose private int slotsAvailable;
 	@Expose private int slotsTotal;
-	@Expose private boolean permanent;
 	@Expose private boolean global_access;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
@@ -111,20 +110,6 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	 */
 	public void setSlotsTotal(int slotaTotal) {
 		this.slotsTotal = slotaTotal;
-	}
-	
-	/**
-	 * @return true if the queue is permanent, false otherwise
-	 */
-	public boolean getPermanent() {
-		return permanent;
-	}
-
-	/**
-	 * @param permanent true if queue is permanent, false otherwise
-	 */
-	public void setPermanent(boolean permanent) {
-		this.permanent = permanent;
 	}
 	
 	/**

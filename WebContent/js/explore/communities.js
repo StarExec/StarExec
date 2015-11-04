@@ -1,5 +1,7 @@
 var leaderTable;
 var memberTable;
+requestsTable = null;
+var requestsTableInitializedOnce=false;
 
 var commName; // Current community's name
 
@@ -9,7 +11,17 @@ $(document).ready(function(){
 	 $.jstree._themes = starexecRoot+"css/jstree/";
 	 
 	 var id = -1;
-	 
+	 var userId=$('#userId').attr('value');
+	 log('User Id is: ' + userId);
+
+	memberTable = $('#members').dataTable( {
+		"sDom": 'rt<"bottom"flpi><"clear">'
+	    });
+	
+	leaderTable = $('#leaders').dataTable( {
+		"sDom": 'rt<"bottom"flpi><"clear">'
+	    });	
+
 
 	// Initialize the jstree plugin for the community list
 	jQuery("#exploreList").jstree({  
@@ -48,15 +60,18 @@ $(document).ready(function(){
         id = data.rslt.obj.attr("id");
         updateActionId(id);
         getCommunityDetails(id);
+		// immediately hide the community requests table so unauthorized users wont get a glimpse of it.
+		$('#communityField').fadeOut('fast');
+		if (requestsTableInitializedOnce) {
+			// Destroy the commRequests table if it's been built.
+			requestsTable.fnDestroy();
+		} else {
+			requestsTableInitializedOnce = true;
+		}	
+		requestsTable = initCommunityRequestsTable('#commRequests', false, id); 
     }).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 	
-	memberTable = $('#members').dataTable( {
-		"sDom": 'rt<"bottom"flpi><"clear">'
-	    });
-	
-	leaderTable = $('#leaders').dataTable( {
-		"sDom": 'rt<"bottom"flpi><"clear">'
-	    });	
+
 
 	
 	$("#members").on( "click", "tr", function(){
@@ -115,6 +130,8 @@ $(document).ready(function(){
 			secondary: "ui-icon-arrowthick-1-s"
 		}
 	});
+
+	setupHandlersForCommunityRequestAcceptDeclineButtons();
 	
 	initDialogs();
 
@@ -164,11 +181,13 @@ function initDialogs() {
  * Populates the community details panel with information on the given community
  */
 function getCommunityDetails(id) {
+	log('getting community details for selected community.');
 	$('#loader').show();
 	
 	$.get(  
 		starexecRoot+"services/communities/details/" + id,  
 		function(data){  			
+			log('successfully got commmunity details');
 			populateDetails(data);			
 		},  
 		"json"
@@ -182,6 +201,7 @@ function getCommunityDetails(id) {
  * @param jsonData the json data to populate the details page with
  */
 function populateDetails(jsonData) {
+	log ('populating community details.');
 	commName = jsonData.space.name;
 	// Populate space defaults
 	$('#commName').fadeOut('fast', function(){
@@ -231,12 +251,15 @@ function populateDetails(jsonData) {
  * @param perms The JSON permission object representing permissions for the current space
  */
 function checkPermissions(perms,isMember) {	
+	log ('checking permissions for user');
 	//we can have permissions even if we are not a member, if the community is public
 	if(perms == null) {
+		log('perms was null');
 		$('#downloadPostProcessors').fadeOut('fast');
 		$('#downloadBenchProcessors').fadeOut('fast');
 		$('#downloadPreProcessors').fadeOut('fast');
 		$('#downloadUpdateProcessors').fadeOut('fast');
+		$('#communityField').fadeOut('fast');
 		//return;
 	} else {
 		$('#downloadPostProcessors').fadeIn('fast');
@@ -244,9 +267,15 @@ function checkPermissions(perms,isMember) {
 		$('#downloadPreProcessors').fadeIn('fast');
 		$('#downloadUpdateProcessors').fadeIn('fast');
 		if(perms.isLeader) {
+			log('User is leader for this community');
 			$('#editComm').fadeIn('fast');
+			$('#communityField').fadeIn('fast');
+			$('#commRequests').fadeIn('fast');
 		} else {
+			log('User is not leader for this community');
+			$('#communityField').fadeOut('fast');
 			$('#editComm').fadeOut('fast');
+			$('#commRequests').fadeOut('fast');
 		}
 	}
 	if (!isMember) {

@@ -23,78 +23,89 @@ $(document).ready(function(){
 		 	primary: "ui-icon-refresh"
 	 	}
 	 });
+	 $("#refreshLoads").button( {
+		 icons: {
+		 	primary: "ui-icon-refresh"
+	 	}
+	 });
 	 $("#refreshQstat").click(function() {
 		 loadQstatOutput();
 	 });
+	 $("#refreshLoads").click(function() {
+		 loadQueueLoads();
+	 });
 	 
 	 $("#qstatField").expandable(true);
-	 
+	 $("#loadsField").expandable(true);
+
 	 
 	 setInterval(function() {
 		 jobPairTable.fnDraw(false);
 	 }, 10000);
-
-	 
 });
 	 
 function initClusterExplorer() {
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = starexecRoot+"css/jstree/";
 
-	 // Initialize the jstree plugin for the explorer list
-		jQuery("#exploreList").jstree({  
-			"json_data" : { 
-				"ajax" : { 
-					"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from 
-					"data" : function (n) {  							
-						return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
-					} 
+	 $("#exploreList").bind("loaded.jstree", function(e, data) {
+		 // Register a callback for when the jstree has finished loading
+		addNodeCountsToTree();
+	 }).jstree({  
+		 // Initialize the jstree plugin for the explorer list
+		"json_data" : { 
+			"ajax" : { 
+				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from 
+				"data" : function (n) {  							
+					return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
 				} 
-			}, 
-			"themes" : { 
-				"theme" : "default", 					
-				"dots" : true, 
-				"icons" : true
-			},		
-			"types" : {				
-				"max_depth" : -2,
-				"max_children" : -2,					
-				"valid_children" : [ "queue" ],
-				"types" : {						
-					"active_queue" : {
-						"valid_children" : [ "enabled_node", "disabled_node" ],
-						"icon" : {
-							"image" : starexecRoot+"images/jstree/on.png"
-						}
-					},
-					"inactive_queue" : {
-						"valid_children" : [ "enabled_node", "disabled_node" ],
-						"icon" : {
-							"image" : starexecRoot+"images/jstree/off.png"
-						}
-					},
-					"enabled_node" : {
-						"valid_children" : [],
-						"icon" : {
-							"image" : starexecRoot+"images/jstree/on.png"
-						}
-					},
-					"disabled_node" : {
-						"valid_children" : [],
-						"icon" : {
-							"image" : starexecRoot+"images/jstree/off.png"
-						}
+			} 
+		}, 
+		"themes" : { 
+			"theme" : "default", 					
+			"dots" : true, 
+			"icons" : true
+		},		
+		"types" : {				
+			"max_depth" : -2,
+			"max_children" : -2,					
+			"valid_children" : [ "queue" ],
+			"types" : {						
+				"active_queue" : {
+					"valid_children" : [ "enabled_node", "disabled_node" ],
+					"icon" : {
+						"image" : starexecRoot+"images/jstree/on.png"
+					}
+				},
+				"inactive_queue" : {
+					"valid_children" : [ "enabled_node", "disabled_node" ],
+					"icon" : {
+						"image" : starexecRoot+"images/jstree/off.png"
+					}
+				},
+				"enabled_node" : {
+					"valid_children" : [],
+					"icon" : {
+						"image" : starexecRoot+"images/jstree/on.png"
+					}
+				},
+				"disabled_node" : {
+					"valid_children" : [],
+					"icon" : {
+						"image" : starexecRoot+"images/jstree/off.png"
 					}
 				}
-			},
-			"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
-			"core" : { animation : 200 }
-		}).bind("select_node.jstree", function (event, data) {
-			// When a node is clicked, get its ID and display the info in the details pane		
-			id = data.rslt.obj.attr("id");
-	        getDetails(id,data.rslt.obj.attr("rel"));
-	    }).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
+			}
+		},
+		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
+		"core" : { animation : 200 }
+	}).bind("select_node.jstree", function (event, data) {
+		// When a node is clicked, get its ID and display the info in the details pane		
+		id = data.rslt.obj.attr("id");
+		getDetails(id,data.rslt.obj.attr("rel"));
+	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 }
+
 
 function initDataTables() {
 	jobPairTable = $('#details').dataTable( {
@@ -151,6 +162,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 function getDetails(id, type) {
 	var url = '';
 	qid=id;
+	loadQueueLoads();
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
@@ -182,6 +194,18 @@ function loadQstatOutput() {
 			{},
 			function(data){
 				$("#qstatOutput").val(data);
+
+			},  
+			"text"
+	);
+}
+
+function loadQueueLoads() {
+	$.get(  
+			starexecRoot+"services/cluster/loads/"+qid,
+			{},
+			function(data){
+				$("#loadOutput").val(data);
 
 			},  
 			"text"

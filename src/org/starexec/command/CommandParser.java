@@ -8,6 +8,7 @@ package org.starexec.command;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -489,9 +490,9 @@ class CommandParser {
 	 * @author Eric Burns
 	 */
 	protected int runFile(String filePath, boolean verbose) {
-		
+		BufferedReader br = null;
 		try {
-			BufferedReader br=new BufferedReader(new FileReader(filePath));
+			br=new BufferedReader(new FileReader(filePath));
 			String line=br.readLine();
 			int status;
 			while (line!=null) {
@@ -518,7 +519,12 @@ class CommandParser {
 		} catch (Exception e) {
 			
 			return Status.ERROR_COMMAND_FILE_TERMINATING;
-		} 
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
 	}
 	
 	protected int exit() {
@@ -673,24 +679,6 @@ class CommandParser {
 		return status;
 	}
 	
-	
-	
-	/**
-	 * Given a comma-separated string, converts it to an array of strings
-	 * with all leading and trailing whitespace removed.
-	 * @param str The string to convert
-	 * @return An array of strings 
-	 */
-	
-	protected static String[] convertToArray(String str) {
-		String[] ids=str.split(",");
-		for (int x=0;x<ids.length;x++) {
-			ids[x]=ids[x].trim();
-		}
-		
-		return ids;
-	}
-	
 	protected static Integer[] convertToIntArray(String str) {
 		String[] ids=str.split(",");
 		Integer[] answer=new Integer[ids.length];
@@ -781,7 +769,6 @@ class CommandParser {
 				}
 				
 				if (status==R.SUCCESS_JOBDONE) {
-					
 					outputDone=true;
 				}
 				
@@ -814,7 +801,6 @@ class CommandParser {
 	protected int handleGetCommand(String c, HashMap<String,String> commandParams) {
 		
 		try {
-			System.out.println("Processing your download request, please wait. This will take some time for large files");
 			int serverStatus=0;
 			
 			String procClass=null;
@@ -884,6 +870,7 @@ class CommandParser {
 			else {
 				return Status.ERROR_BAD_COMMAND;
 			}
+			System.out.println("Processing your download request, please wait. This will take some time for large files");
 			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {
 				System.out.println("Download complete");

@@ -18,10 +18,10 @@ import org.starexec.data.database.Users;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-
 /**
- * Servlet which handles incoming requests adding new permanent queues
- * @author Wyatt Kaiser
+ * Servlet that handles requests for assocating queues with particular communities
+ * @author Eric
+ *
  */
 @SuppressWarnings("serial")
 public class AssocCommunities extends HttpServlet {		
@@ -54,7 +54,7 @@ public class AssocCommunities extends HttpServlet {
 		List<Integer> community_ids = Util.toIntegerList(request.getParameterValues(communities));
 		
 		
-		boolean result = Cluster.setPermQueueCommunityAccess(community_ids, queue_id);
+		boolean result = Cluster.setQueueCommunityAccess(community_ids, queue_id);
 		
 		if (result) {
 			response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));

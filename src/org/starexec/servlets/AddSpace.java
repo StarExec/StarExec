@@ -24,6 +24,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -35,6 +36,7 @@ import org.starexec.util.Validator;
 @SuppressWarnings("serial")
 public class AddSpace extends HttpServlet {		
 	private static final Logger log = Logger.getLogger(AddSpace.class);	
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	// Request attributes
 	private static final String parentSpace = "parent";
@@ -67,6 +69,7 @@ public class AddSpace extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+		final String method = "doPost";
 		// Make sure the request is valid
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {
@@ -75,7 +78,12 @@ public class AddSpace extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
 		}
-		
+
+		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
+		int userId = SessionUtil.getUserId(request);
+
+		Permission usersPermissions = Permissions.get(userId, spaceId);		
+
 		// Make the space to be added and set it's basic information
 		Space s = new Space();
 		s.setName((String)request.getParameter(name));
@@ -102,8 +110,6 @@ public class AddSpace extends HttpServlet {
 		// Set the default permission on the space
 		s.setPermission(p);
 		
-		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
-		int userId = SessionUtil.getUserId(request);
 		
 		
 		int newSpaceId = Spaces.add(s, spaceId, userId);
@@ -215,7 +221,7 @@ public class AddSpace extends HttpServlet {
 		
 			// Verify this user can add spaces to this space
 			Permission p = SessionUtil.getPermission(request, spaceId);
-			if(!p.canAddSpace()) {
+			if(p==null || !p.canAddSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a new space here");
 			}
 			

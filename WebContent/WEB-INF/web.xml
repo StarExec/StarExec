@@ -50,14 +50,6 @@
   
   <!-- Servlet Definitions -->
   <servlet>
-  	<servlet-name>ReserveQueue</servlet-name>
-  	<servlet-class>org.starexec.servlets.ReserveQueue</servlet-class>
-  </servlet>
-  <servlet-mapping>
-  	<servlet-name>ReserveQueue</servlet-name>
-  	<url-pattern>/secure/reserve/queue</url-pattern>
-  </servlet-mapping>
-  <servlet>
   	<servlet-name>ProcessBenchmarks</servlet-name>
   	<servlet-class>org.starexec.servlets.BenchmarkProcessor</servlet-class>
   </servlet>
@@ -73,15 +65,6 @@
   <servlet-mapping>
   	<servlet-name>CreateQueue</servlet-name>
     <url-pattern>/secure/add/queue</url-pattern>
-  </servlet-mapping>
-  
-  <servlet>
-  	<servlet-name>CreatePermanentQueue</servlet-name>
-  	<servlet-class>org.starexec.servlets.CreatePermanentQueue</servlet-class>
-  </servlet>
-  <servlet-mapping>
-  	<servlet-name>CreatePermanentQueue</servlet-name>
-    <url-pattern>/secure/permanent/queue</url-pattern>
   </servlet-mapping>
 
   <servlet>

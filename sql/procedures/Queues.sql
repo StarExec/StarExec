@@ -53,12 +53,14 @@ CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	END //	
 
 	
--- Gets the number of enqueued job pairs for a given queue and user
-DROP PROCEDURE IF EXISTS GetQueueSizeByUser;
-CREATE PROCEDURE GetQueueSizeByUser(IN _queueId INT, IN _user INT)
+-- Gets the sum of wallclock timeouts for all 
+DROP PROCEDURE IF EXISTS GetUserLoadOnQueue;
+CREATE PROCEDURE GetUserLoadOnQueue(IN _queueId INT, IN _user INT)
 	BEGIN
-		SELECT COUNT(*) AS count FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
-                WHERE (job_pairs.status_code=4) AND jobs.queue_id = _queueId AND jobs.user_id=_user;
+		SELECT SUM(jobs.clockTimeout) AS queue_load FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
+                WHERE (job_pairs.status_code=4 OR job_pairs.status_code=3
+                OR job_pairs.status_code=2 OR job_pairs.status_code=5)
+                AND jobs.queue_id = _queueId AND jobs.user_id=_user;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given queue id
@@ -92,26 +94,6 @@ CREATE PROCEDURE getNameById(IN _queueId INT)
 		FROM queues
 		WHERE id = _queueId;
 	END // 
-	
--- Determines if the queue is a permanent queue
--- Author: Wyatt kaiser
-DROP PROCEDURE IF EXISTS IsQueuePermanent;
-CREATE PROCEDURE IsQueuePermanent (IN _queueId INT)
-	BEGIN
-		SELECT permanent
-		FROM queues
-		WHERE id = _queueId;
-	END //
-	
--- Makes a queue permanent by setting its value to true
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS MakeQueuePermanent;
-CREATE PROCEDURE MakeQueuePermanent (IN _queueId INT)
-	BEGIN
-		UPDATE queues
-		SET permanent = true
-		WHERE id = _queueId;
-	END //
 
 -- Updates the max wallclock timeout for a queue
 -- Author: Eric Burns
@@ -152,7 +134,7 @@ CREATE PROCEDURE RemoveQueueAssociation(IN _queueId INT)
 		WHERE queue_id = _queueId;
 	END //
 	
--- Make a permanent queue have global access
+-- Make a queue have global access
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS MakeQueueGlobal;
 CREATE PROCEDURE MakeQueueGlobal(IN _queueId INT)
@@ -165,7 +147,7 @@ CREATE PROCEDURE MakeQueueGlobal(IN _queueId INT)
 		WHERE queue_id = _queueId;
 	END //
 		
--- remove global access from a permanent queue
+-- remove global access from a queue
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS RemoveQueueGlobal;
 CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
@@ -175,34 +157,20 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 		WHERE id = _queueId;
 	END //
 	
--- Get the active queues that have been reserved for a particular space
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetQueuesForSpace;
-CREATE PROCEDURE GetQueuesForSpace(IN _spaceId INT)
+-- Gets all of the queues that the given user is allowed to use
+DROP PROCEDURE IF EXISTS GetQueuesForUser;
+CREATE PROCEDURE GetQueuesForUser(IN _userID INT)
 	BEGIN
-		SELECT DISTINCT queue_id
-		FROM comm_queue
-		JOIN queues ON comm_queue.queue_id = queues.id
-		WHERE comm_queue.space_id = _spaceId 
-			AND queues.status = "ACTIVE" 
-			AND queues.permanent = false;
-	END //
-	
--- Gets all of the permanent queues that the given user is allowed to use
-DROP PROCEDURE IF EXISTS GetPermanentQueuesForUser;
-CREATE PROCEDURE GetPermanentQueuesForUser(IN _userID INT)
-	BEGIN
-		SELECT DISTINCT id, name, status, permanent, global_access, cpuTimeout,clockTimeout
+		SELECT DISTINCT id, name, status, global_access, cpuTimeout,clockTimeout
 		FROM queues 
 			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
 			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
 		WHERE 	
-				queues.status = "ACTIVE"
-			AND queues.permanent = true
+			queues.status = "ACTIVE"
 			AND (
 				(IsLeader(comm_queue.space_id, _userId) = 1)	-- Either you are the leader of the community it was given access to
 				OR
-				(global_access = true)							-- or it is a global permanent queue
+				(global_access = true)							-- or it is a global queue
 				);				 
 	END //
 

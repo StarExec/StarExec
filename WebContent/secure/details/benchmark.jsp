@@ -13,7 +13,7 @@
 		TreeMap<String,String> attrs = new TreeMap<String,String>();
 		List<BenchmarkDependency> deps = new ArrayList<BenchmarkDependency>();
 		if(Permissions.canUserSeeBench(benchId, userId)) {
-			b = Benchmarks.get(benchId, true);
+			b = Benchmarks.get(benchId, true, false);
 			attrs = Benchmarks.getSortedAttributes(benchId);
 			deps = Benchmarks.getBenchDependencies(benchId);
 		}		

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,25 +28,23 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.DefaultSettings;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Solver.ExecutableType;
-import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
+import org.starexec.util.LogUtil;
+import org.starexec.util.PartWrapper;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -58,9 +57,11 @@ import org.starexec.util.Validator;
  * @author Skylar Stark
  */
 @SuppressWarnings("serial")
+@MultipartConfig
 public class UploadSolver extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(UploadSolver.class);	
+	private static final LogUtil logUtil = new LogUtil(log);
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     
@@ -83,6 +84,7 @@ public class UploadSolver extends HttpServlet {
     	try {	
     		// If we're dealing with an upload request...
 	    log.info("doPost begins");
+
 			if (ServletFileUpload.isMultipartContent(request)) {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
 				
@@ -98,12 +100,11 @@ public class UploadSolver extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,status.getMessage());
 					return;
 				}
-				
-	                        log.debug("Validated the request");
+				log.debug("Validated the request");
 
+				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 				boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
 				
-				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
 				//should be 2 element array where the first element is the new solver ID and the
@@ -203,12 +204,12 @@ public class UploadSolver extends HttpServlet {
 		File sandboxDir=Util.getRandomSandboxDirectory();
 		Util.logSandboxContents();
 		String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
-		FileItem item=null;
+		PartWrapper item=null;
 		String name=null;
 		URL url=null;
 		Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
 		if (upMethod.equals("local")) {
-			item = (FileItem)form.get(UploadSolver.UPLOAD_FILE);	
+			item = (PartWrapper)form.get(UploadSolver.UPLOAD_FILE);	
 		} else {
 			try {
 				
@@ -253,7 +254,8 @@ public class UploadSolver extends HttpServlet {
 			archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
 			new File(archiveFile.getParent()).mkdir();
 			item.write(archiveFile);
-					log.info("handleSolver just wrote archive to disk");
+			//item.write(archiveFile);
+			//		log.info("handleSolver just wrote archive to disk");
 		} else {
 			archiveFile=new File(uniqueDir, name);
 			new File(archiveFile.getParent()).mkdir();
@@ -346,7 +348,7 @@ public class UploadSolver extends HttpServlet {
 		if (DescMethod.equals("text")){
 			newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
 		} else if (DescMethod.equals("file")) {
-			FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+			PartWrapper item_desc = (PartWrapper)form.get(UploadSolver.SOLVER_DESC_FILE);
 			newSolver.setDescription(item_desc.getString());
 		} else {	//Upload starexec_description.txt
 			try {	
@@ -422,7 +424,9 @@ public class UploadSolver extends HttpServlet {
 	 * @return true iff the request is valid
 	 */
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form, HttpServletRequest request) {
+		final String method = "isValidRequest";
 		try {
+			logUtil.entry(method);
 			int userId=SessionUtil.getUserId(request);
 			//defines the set of attributes that are required
 			if (!form.containsKey(UPLOAD_METHOD) ||
@@ -460,7 +464,7 @@ public class UploadSolver extends HttpServlet {
 			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
 
 			if (DescMethod.equals("file")) {
-				FileItem item_desc = (FileItem)form.get(UploadSolver.SOLVER_DESC_FILE);
+				PartWrapper item_desc = (PartWrapper)form.get(UploadSolver.SOLVER_DESC_FILE);
 				if (!Validator.isValidPrimDescription(item_desc.getString())) {
 					return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
 				}
@@ -473,7 +477,7 @@ public class UploadSolver extends HttpServlet {
 			boolean goodExtension=false;
 			String fileName=null;
 			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
-				fileName = FilenameUtils.getName(((FileItem)form.get(UploadSolver.UPLOAD_FILE)).getName());
+				fileName = FilenameUtils.getName(((PartWrapper)form.get(UploadSolver.UPLOAD_FILE)).getName());
 				
 			} else {
 				fileName=(String)form.get(UploadSolver.FILE_URL);
@@ -489,7 +493,8 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			int spaceId=Integer.parseInt((String)form.get("space"));
-			if (!SessionUtil.getPermission(request, spaceId).canAddSolver()) {
+			Permission userPermissions = SessionUtil.getPermission(request, spaceId);
+			if (userPermissions == null || !userPermissions.canAddSolver()) {
 				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");
 			}
 			

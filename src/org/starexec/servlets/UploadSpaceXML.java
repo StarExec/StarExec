@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,13 +18,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Permission;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
+import org.starexec.util.PartWrapper;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -35,6 +38,7 @@ import org.starexec.util.Validator;
  * @author Benton McCune
  */
 @SuppressWarnings("serial")
+@MultipartConfig
 public class UploadSpaceXML extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);	
@@ -59,10 +63,16 @@ public class UploadSpaceXML extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 					return;
 				} 
+
+				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
+				if (!userMayUploadSpaceXML(userId, spaceId)) {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here.");
+					return;
+				}
 				
 				BatchUtil batchUtil = new BatchUtil();
 				int statusId=Uploads.createSpaceXMLUploadStatus(userId);
-				this.handleXMLFile(userId, form, batchUtil,statusId);				
+				this.handleXMLFile(userId, spaceId, form, batchUtil,statusId);				
 			
 				// Note: Inherit users is handled in BatchUtil's createSpaceFromElement(...)
 				
@@ -80,6 +90,15 @@ public class UploadSpaceXML extends HttpServlet {
     		log.error(e.getMessage(), e);
     	}	
 	}
+
+	private boolean userMayUploadSpaceXML(int userId, int spaceId) {
+		Permission userPermission = Permissions.get(userId, spaceId);
+		if (userPermission != null && userPermission.canAddSpace()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
     
 	/**
 	 * This method is responsible for uploading a compressed folder with an xml representation
@@ -89,14 +108,14 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @param batchUtil a BatchUtil object we can use for setting an error message if a problem is encountered.
 	 * @throws Exception 
 	 */
-    public void handleXMLFile(final int userId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
+    public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
 		try {
 			Util.threadPoolExecute(new Runnable() {
 				@Override
 				public void run(){
 					try{ 
 						log.debug("Handling Upload of XML File from User " + userId);
-						FileItem item = (FileItem)form.get(UploadSpaceXML.UPLOAD_FILE);		
+						PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
 						// Don't need to keep file long - just using download directory
 						File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "" + userId);
 						uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
@@ -114,7 +133,6 @@ public class UploadSpaceXML extends HttpServlet {
 						Uploads.XMLFileUploadComplete(statusId);
 						//Typically there will just be 1 file, but might as well allow more
 						
-						Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 						for (File file:uniqueDir.listFiles())
 						{
 							List<Integer> current=new ArrayList<Integer>();
@@ -158,7 +176,7 @@ public class UploadSpaceXML extends HttpServlet {
 			Integer.parseInt((String)form.get(SPACE_ID));
 			
 			boolean goodExtension=false;
-			String fileName = FilenameUtils.getName(((FileItem)form.get(UploadSpaceXML.UPLOAD_FILE)).getName());
+			String fileName = FilenameUtils.getName(((PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE)).getName());
 			for(String ext : UploadSpaceXML.extensions) {
 				if(fileName.endsWith(ext)) {
 					goodExtension=true;

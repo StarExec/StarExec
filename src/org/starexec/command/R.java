@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class R {
 	
-	public static String VERSION="May 14, 2015";
+	public static String VERSION="September 08, 2015";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
@@ -258,7 +258,7 @@ public class R {
 	public static String PARAM_GUEST="guest";
 	public static String PARAM_FROM="from";
 	public static String PARAM_TO="to";
-	public static String PARAM_DELETE_PRIMS="recycleprims";
+	public static String PARAM_RECYCLE_PRIMS="recycleprims";
 	public static String PARAM_INCLUDE_IDS="incids";
 	public static String PARAM_EXCLUDE_SOLVERS="nosolve";
 	public static String PARAM_EXCLUDE_BENCHMARKS="nobench";
@@ -270,6 +270,7 @@ public class R {
 	public static String PARAM_ONLY_COMPLETED="comp";
 	public static String PARAM_SETTING="set";
 	public static String PARAM_TYPE="type";
+	public static String PARAM_SUPPRESS_TIMESTAMPS = "suppresstime";
 	public static String ARG_ROUNDROBIN="r";
 	public static String ARG_DEPTHFIRST="d";
 	

@@ -2,8 +2,9 @@
 	width:19%;
 }
 
-#qstatOutput {
+#qstatOutput, #loadOutput {
 
 	width: 96%;
 	height:300px;	
 }
+

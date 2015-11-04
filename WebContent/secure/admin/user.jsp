@@ -9,6 +9,7 @@
 		if (!Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 		}	
+		request.setAttribute("columnWidth", "100px");
 		
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
@@ -29,13 +30,13 @@
 			<table id="users">
 				<thead>
 					<tr>
-						<th style="width:100px;">name</th>
-						<th style="width:100px;">institution</th>
+						<th style="width:${columnWidth};">name</th>
+						<th style="width:${columnWidth};">institution</th>
 						<th style="width:200px;">email</th>
-						<th style="width:100px;">permissions</th>
-						<th style="width:100px;">suspend</th>
-						<th style="width:100px;">reports</th>
-						<th style="width:100px;">developer</th>
+						<th style="width:${columnWidth};">permissions</th>
+						<th style="width:${columnWidth};">suspend</th>
+						<th style="width:${columnWidth};">reports</th>
+						<th style="width:${columnWidth};">developer</th>
 					</tr>
 				</thead>			
 			</table>

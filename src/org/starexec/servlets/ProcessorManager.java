@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +21,6 @@ import javax.ws.rs.Path;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
@@ -32,6 +32,7 @@ import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.util.PartWrapper;
 
 
 /**
@@ -39,6 +40,7 @@ import org.starexec.util.Validator;
  * @author Tyler Jensen
  */
 @SuppressWarnings("serial")
+@MultipartConfig
 public class ProcessorManager extends HttpServlet {		
 	private static final Logger log = Logger.getLogger(ProcessorManager.class);
 
@@ -54,7 +56,6 @@ public class ProcessorManager extends HttpServlet {
 	private static final String PROCESSOR_URL = "processorUrl";
 	private static final String UPLOAD_METHOD = "uploadMethod";
 	private static final String LOCAL_UPLOAD_METHOD = "local";
-	private static final String URL_UPLOAD_METHOD = "URL";
 	private static final String OWNING_COMMUNITY = "com";
 	
 	
@@ -215,7 +216,7 @@ public class ProcessorManager extends HttpServlet {
 			}
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				// Save the uploaded file to disk
-				FileItem processorFile = (FileItem)form.get(PROCESSOR_FILE);
+				PartWrapper processorFile = (PartWrapper)form.get(PROCESSOR_FILE);
 				archiveFile = new File(uniqueDir,  FilenameUtils.getName(processorFile.getName()));
 				processorFile.write(archiveFile);
 			} else {
@@ -321,7 +322,7 @@ public class ProcessorManager extends HttpServlet {
 				uploadMethod = LOCAL_UPLOAD_METHOD;
 			}
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
-				fileName = ((FileItem)form.get(PROCESSOR_FILE)).getName();
+				fileName = ((PartWrapper)form.get(PROCESSOR_FILE)).getName();
 			} else {
 				fileName=(String)form.get(PROCESSOR_URL);
 			}

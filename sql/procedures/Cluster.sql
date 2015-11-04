@@ -78,17 +78,6 @@ CREATE PROCEDURE GetAllQueuesAdmin()
 		FROM queues
 		ORDER BY id;	
 	END //
-
--- Gets the id, name, and status of all queues in the cluster, excludign permanent queues
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllQueuesNonPermanent;
-CREATE PROCEDURE GetAllQueuesNonPermanent()
-	BEGIN
-		SELECT id, name, status, cpuTimeout, clockTimeout
-		FROM queues
-		WHERE permanent = false
-		ORDER BY id;
-	END //
 	
 -- Gets the id, name and status of all queues in the cluster that are active and the user can use
 -- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
@@ -103,19 +92,6 @@ CREATE PROCEDURE GetUserQueues(IN _userID INT)
 		AND (global_access
 			   OR
 			(comm_queue.space_id IS NOT NULL AND IsLeader(comm_queue.space_id,_userId) = 1))
-		ORDER BY name;	
-	END //
-	
--- Gets the id, name and status of all queues in the cluster that are active and the user can use and are unreserved
--- That is, non exclusive queues and exclusive queues associated with spaces that the user is the leader of
--- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetUnreservedQueues;
-CREATE PROCEDURE GetUnreservedQueues(IN _userID INT)
-	BEGIN		
-		SELECT id, name, status
-		FROM queues
-		LEFT JOIN comm_queue ON queues.id=comm_queue.queue_id
-		WHERE status="ACTIVE" AND comm_queue.space_id IS NULL
 		ORDER BY name;	
 	END //
 	
@@ -229,71 +205,6 @@ CREATE PROCEDURE GetActiveNodeCount()
 		WHERE status = "ACTIVE";
 	END //
 	
-DROP PROCEDURE IF EXISTS GetNonPermanentNodeCount;
-CREATE PROCEDURE GetNonPermanentNodeCount(IN _defaultQueueId INT)
-	BEGIN
-		SELECT Count(*)
-		AS nodeCount
-		FROM nodes, queue_assoc, queues
-		WHERE nodes.id = queue_assoc.node_id
-				AND nodes.status = "ACTIVE" 
-				AND queue_assoc.queue_id = queues.id
-				AND (queues.permanent = false || queues.id = _defaultQueueId);
-	END //
-	
--- Returns the node count for a particular date for a particular queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNodeCountOnDate;
-CREATE PROCEDURE GetNodeCountOnDate(_requestId INT, IN _reserveDate DATE)
-	BEGIN
-		SELECT node_count AS count
-		FROM queue_request_assoc
-		WHERE request_id = _requestId AND reserve_date = _reserveDate;
-	END //
-	
--- Returns the latest date in the queue_request_assoc table
--- Author: Wyatt Kaiser	
-DROP PROCEDURE IF EXISTS GetLatestNodeDate;
-CREATE PROCEDURE GetLatestNodeDate()
-	BEGIN
-		SELECT MAX(reserve_date)
-		FROM queue_request_assoc
-		JOIN queue_request ON queue_request.id=queue_request_assoc.request_id
-		WHERE approved=TRUE;
-	END //
-	
--- Updates the number of nodes a particular reservation will get on a specific day
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS UpdateReservedNodeCount;
-CREATE PROCEDURE UpdateReservedNodeCount(IN _requestId INT, IN _nodeCount INT, IN _date DATE)
-	BEGIN
-		UPDATE queue_request_assoc
-		SET node_count=_nodeCount
-		WHERE reserve_date=_date AND request_id=_requestId;
-	END //
-	
-
-	
--- Returns the minimum node count for a queue reservation
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetMinNodeCount;
-CREATE PROCEDURE GetMinNodeCount( IN _requestId INT )
-	BEGIN
-		SELECT MIN(node_count) AS count
-		FROM queue_request_assoc
-		WHERE request_id = _requestId;
-	END //
-	
--- Returns the maximum node count for a queue reservation
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetMaxNodeCount;
-CREATE PROCEDURE GetMaxNodeCount (IN _requestId INT)
-	BEGIN
-		SELECT MAX(node_count) AS count
-		FROM queue_request_assoc
-		WHERE request_id = _requestId;
-	END //
-	
 -- Returns all the nodes in the system that are active
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetAllNodes;
@@ -313,19 +224,6 @@ CREATE PROCEDURE GetNonAttachedNodes(IN _queueId INT)
 		FROM nodes LEFT JOIN queue_assoc on nodes.id = queue_assoc.node_id 
 		LEFT JOIN queues ON queues.id=queue_assoc.queue_id
 		WHERE nodes.status = "ACTIVE" AND (queue_assoc.queue_id IS NULL OR queue_assoc.queue_id != _queueId);
-	END //
-	
--- Returns all the nodes in the system that are active and not associated w/ permanent queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllNonPermanentNodes;
-CREATE PROCEDURE GetAllNonPermanentNodes ()
-	BEGIN
-		SELECT nodes.id, nodes.name, nodes.status
-		FROM nodes, queues, queue_assoc
-		WHERE       nodes.id = queue_assoc.node_id 
-				AND queue_assoc.queue_id = queues.id
-				AND queues.permanent = false
-				AND	nodes.status = "ACTIVE";
 	END //
 	
 -- Returns the jobs that are currently running on a specific queue
@@ -359,7 +257,7 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 DROP PROCEDURE IF EXISTS GetQueueForNode;
 CREATE PROCEDURE GetQueueForNode(IN _nodeId INT)
 	BEGIN
-		SELECT queues.id, queues.name, queues.status, queues.permanent
+		SELECT queues.id, queues.name, queues.status
 		FROM queues, queue_assoc
 		WHERE queues.id = queue_assoc.queue_id AND queue_assoc.node_id = _nodeId;
 	END //
@@ -394,10 +292,10 @@ CREATE PROCEDURE GetDefaultQueueId(IN _queueName VARCHAR(64))
 		WHERE name = _queueName;
 	END //
 	
--- Give the community (leaders) Access to a permanent queue
+-- Give the community (leaders) Access to a queue
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS SetPermQueueCommunityAccess;
-CREATE PROCEDURE SetPermQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
+DROP PROCEDURE IF EXISTS SetQueueCommunityAccess;
+CREATE PROCEDURE SetQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
 	BEGIN
 		INSERT INTO comm_queue
 		VALUES (_communityId, _queueId);

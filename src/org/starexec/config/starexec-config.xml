@@ -37,14 +37,15 @@
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="5368709120" />	
+			<property key="DEBUG_MODE_ACTIVE" value="true" />
 	  									
                         <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             			<!-- SGE Configuration -->
             
-			<property key="SGE_ROOT" value="/cluster/sge-6.2u5" />
+			<property key="SGE_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
-			<property key="SGE_ACCOUNTING_FILE" value="/cluster/sge-6.2u5/default/common/accounting" />
+			<property key="SGE_ACCOUNTING_FILE" value="/cluster/gridengine-8.1.8/default/common/accounting" />
 			<property key="QUEUE_LIST_COMMAND" value="qconf -sql" />
 			<property key="QUEUE_USAGE_COMMAND" value="qstat -g c" />
 			<property key="QUEUE_DETAILS_COMMAND" value="qconf -sq " />
@@ -198,17 +199,17 @@
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_agiegerich" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_agiegerich?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
-		<property key="PUBLIC_USER_ID" value="3" /> 
+				<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_agiegerich"/>
                 <property key="BENCHMARK_PATH" value="/home/starexec/starexec_agiegerich/data_dir/Benchmarks" />
                 <property key="SOLVER_PATH" value="/home/starexec/starexec_agiegerich/data_dir/Solvers" />
                 <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/Solvers/buildoutput"/>
                 <property key="PROCESSOR_DIR" value="/home/starexec/starexec_agiegerich/data_dir/processor_scripts" />           
-		<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_agiegerich/data_dir" />
+				<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_agiegerich/data_dir" />
                 <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_agiegerich/data_dir/jobin" />
                 <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/jobout" />     
-		<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/joboutput"/>	
+				<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/joboutput"/>	
                 <property key="JOB_LOG_DIR" value="/home/starexec/starexec_agiegerich/data_dir/joboutput/logs" />
                 <property key="PICTURE_PATH" value="/home/starexec/starexec_agiegerich/data_dir/pictures" /> 
                 <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_agiegerich/data_dir/batchSpace/uploads" />           

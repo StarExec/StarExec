@@ -15,8 +15,6 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
-import org.ggf.drmaa.JobTemplate;
-import org.ggf.drmaa.Session;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
@@ -26,6 +24,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Configuration;
@@ -37,10 +36,12 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.jobs.LoadBalanceMonitor.UserLoadData;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
@@ -54,50 +55,70 @@ public abstract class JobManager {
 
 	private static String mainTemplate = null; // initialized below
 
-	private static Session session = null; // used in submitScript() below.
-
-	/** Initialize the GridEngine session. This must be done before calling checkPendingJobs(). 
-	 * @author Aaron Stump
-	 */
-	public static void setSession(Session _session) {
-		session = _session;
+	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+	
+	public static String getLoadRepresentationForQueue(int queueId) {
+		log.debug("retrieving load data for queue = "+queueId);
+		if (queueToMonitor.containsKey(queueId)){
+			return queueToMonitor.get(queueId).toString();
+		}
+		return null;
 	}
-
+	
+	/**
+	 * Completely clears all load data from memory and also from the database.
+	 * This function is synchronized to prevent concurrent modification
+	 * of the queueToMonitor structure between this and the SubmitJobs
+	 * function.
+	 */
+	public synchronized static void clearLoadBalanceMonitors() {
+		log.debug("Clearing out all load balancing data");
+		queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+		JobPairs.getAndClearTimeDeltas(-1);
+	}
+	
     public synchronized static boolean checkPendingJobs(){
     	try {
     		log.debug("about to check if the system is paused");
-	    if (Jobs.isSystemPaused()) { 
-    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
-    	    	return false;
-    	}
-	    Common.logConnectionsOpen();
-	    log.debug("about to get all queues");
-	    
-	    List<Queue> queues = Queues.getAll();
-	    log.debug("found this many queues "+queues.size());
-	    for (Queue q : queues) {
-	    	log.debug("about to submit to queue "+q.getId());
-		int qId = q.getId();
-		String qname = q.getName();
-		int nodeCount=Queues.getNodes(qId).size();
-		int queueSize = Queues.getSizeOfQueue(qId);
-		log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
-		if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
-		    List<Job> joblist = Queues.getPendingJobs(qId);
-		    log.debug("about to submit this many jobs "+joblist.size());
-		    if (joblist.size() > 0) {
-		    	
-			submitJobs(joblist, q, queueSize,nodeCount);
+		    if (Jobs.isSystemPaused()) { 
+	    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
+	    	    	return false;
+	    	}
+		    Common.logConnectionsOpen();
+		    log.debug("about to get all queues");
+		    
+		    List<Queue> queues = Queues.getAll();
+		    log.debug("found this many queues "+queues.size());
+		    for (Queue q : queues) {
+		    	log.debug("about to submit to queue "+q.getId());
+				int qId = q.getId();
+				String qname = q.getName();
+				int nodeCount=Queues.getNodes(qId).size();
+				int queueSize = Queues.getSizeOfQueue(qId);
+				log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
+				if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
+				    List<Job> joblist = Queues.getPendingJobs(qId);
+				    log.debug("about to submit this many jobs "+joblist.size());
+				    if (joblist.size() > 0) {
+				    	submitJobs(joblist, q, queueSize,nodeCount);
+				    } else {
+				    	// if we have no jobs to submit, that means we should set
+				    	// the active users in the monitor to the empty set.
+				    	// This ensures users are set to inactive correctly
+				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
+				    	if (m!=null) {
+				    		m.setUsers(new HashMap<Integer,Integer>());
+				    	}
+				    }
+				} else {
+				    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
+				}
 		    }
-		} else {
-		    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
-		}
-	    }
     	} catch (Exception e) {
-	    log.error(e.getMessage(),e);
+    		log.error(e.getMessage(),e);
     	}
 	    
-	return false;
+    	return false;
     }
     
     
@@ -139,6 +160,18 @@ public abstract class JobManager {
 			pairIter = _pairIter;
 		}
 	}
+	
+	/**
+	 * Gets the load balance monitor for a particular queue.
+	 * @param queueId The ID of the queue to get the monitor for
+	 * @return
+	 */
+	private static LoadBalanceMonitor getMonitor(int queueId) {
+		if (!queueToMonitor.containsKey(queueId)) {
+			queueToMonitor.put(queueId, new LoadBalanceMonitor());
+		}
+		return queueToMonitor.get(queueId);
+	}
 
 	/**
 	 * Submits a job to the grid engine
@@ -148,7 +181,8 @@ public abstract class JobManager {
 	 * @param nodeCount The number of nodes in the given queue
 
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {		
+	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
+		LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
 
 			
@@ -165,17 +199,31 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
-				
-				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, ((nodeCount*R.NODE_MULTIPLIER)-queueSize)/joblist.size() + 1);
+				// for every job, retrieve no more than the number of pairs that would fill the queue. 
+				// retrieving more than this is wasteful.
+				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
 				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId(),limit).iterator();
 
 				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 
 				schedule.add(s);
 			}
+			
+			// maps user IDs to the total 'load' that user is responsible for on the current queue,
+			// where load is the sum of wallclock timeouts of all active pairs on the queue
+			HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			Iterator<SchedulingState> it = schedule.iterator();
+			while (it.hasNext()) {
+				SchedulingState s = it.next();
+				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
+					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
+				}
+			}
+			// updates user load values to take into account actual job pair runtimes.
+			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
-
+			
 			/*
 			 * we are going to loop through the schedule adding a few job
 			 * pairs at a time to SGE.  If the count of jobs enqueued
@@ -185,18 +233,13 @@ public abstract class JobManager {
 			 * schedule.  
 			 *
 			 */
-
-			
-			HashMap<Integer,Integer> usersToPairCounts=new HashMap<Integer,Integer>();
-
-			int count = queueSize;
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
 			int maxLoops=300;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
 				curLoops++;
-				if (count >= R.NODE_MULTIPLIER * nodeCount) {
+				if (queueSize >= R.NODE_MULTIPLIER * nodeCount) {
 					break; // out of while (!schedule.isEmpty())
 
 				}
@@ -205,31 +248,26 @@ public abstract class JobManager {
 					break;
 				}
 
-				Iterator<SchedulingState> it = schedule.iterator();
+				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				usersToPairCounts=new HashMap<Integer,Integer>();
+				HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
-					int userId=s.job.getUserId();
-					usersToPairCounts.put(userId,0);
+					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
-				for (Integer uid : usersToPairCounts.keySet()) {
-					usersToPairCounts.put(uid,Queues.getSizeOfQueue(q.getId(),uid));	
-				}
-				it = schedule.iterator();
-				int min=Collections.min(usersToPairCounts.values());
-				int max=Collections.max(usersToPairCounts.values());
 				
-				boolean excludeUsers=((max-R.NUM_JOB_PAIRS_AT_A_TIME)>min); // will we exclude users who have too many pairs this time
+				monitor.setUsers(pendingUsers);
+				monitor.setUserLoadDataFormattedString();
+				it = schedule.iterator();
 
-				log.debug("the max pairs by user = "+max);
-				log.debug("the min pairs by user = "+min);
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
+						// because we retrieve enough pairs for every job to fill the queue if possible, this 
+						// should mean that this job has been completely submitted.
 						it.remove();
 						continue;
 					}		
@@ -239,23 +277,18 @@ public abstract class JobManager {
 							+"for job " + s.job.getId() 
 							+ ", queue = "+q.getName() 
 							+ ", user = "+s.job.getUserId());
-
+					
 					int i = 0;
-					
-					if (excludeUsers) {
-						
-						int curCount=usersToPairCounts.get(s.job.getUserId());
-						//skip if this user has many more pairs than some other user
-						if (curCount>(max-R.NUM_JOB_PAIRS_AT_A_TIME)) {
-							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
-							continue;
-						}
-					}
-					
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
-
+						//skip if this user has many more pairs than some other user
+						log.debug("user "+s.job.getUserId()+" has a load of "+monitor.getLoad(s.job.getUserId()));
+						if (monitor.skipUser(s.job.getUserId())) {
+							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							break;
+						}
 
 						JobPair pair = s.pairIter.next();
+						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
 							//submission failed and move on
@@ -268,8 +301,6 @@ public abstract class JobManager {
 						try {
 							// Write the script that will run this individual pair				
 							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
-
-							
 
 							String logPath=JobPairs.getLogFilePath(pair);
 							File file=new File(logPath);
@@ -284,22 +315,22 @@ public abstract class JobManager {
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							JobPairs.setQueueSubTime(pair.getId());
 							// Submit to the grid engine
-							int execId = R.BACKEND.submitScript(R.SGE_ROOT,scriptPath, "/export/starexec/sandbox",logPath);
+							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
 							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
 
 							//TODO : need a better way to handle error codes
-							if(!R.BACKEND.isError(R.SGE_ROOT,execId)){
+							if(!R.BACKEND.isError(execId)){
 							    //TODO : remember to change name of update gridEngineId to update execId or something similar
 							    JobPairs.updateGridEngineId(pair.getId(),execId);
 							} else{
 							    JobPairs.setPairStatus(pair.getId(),errorCode);
 							}
-							count++; 
+							queueSize++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
 							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
-					}	
+					}
 				} // end iterating once through the schedule
 			} // end looping until schedule is empty or we have submitted enough job pairs
 
@@ -310,76 +341,8 @@ public abstract class JobManager {
 	} // end submitJobs()
 
 
-	/**
-	 * Takes in a job script and submits it to the grid engine
-	 * @param the current SGE Session (which we will not release)
-	 * @param scriptPath The absolute path to the script
-	 * @param pair The pair the script is being submitted for
-	 * @return The grid engine id of the submitted job. -1 if the submit failed
-	 * @throws Exception 
-	 */
-	private synchronized static int submitScript(String scriptPath, JobPair pair) throws Exception {
-		JobTemplate sgeTemplate = null;
-
-		try {
-			sgeTemplate = null;		
-
-			// Set up the grid engine template
-			sgeTemplate = session.createJobTemplate();
-			//log.debug("submitScript - Create Job Template for  " + pair.getId());
-
-			// DRMAA needs to be told to expect a shell script and not a binary
-			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
-			//log.debug("submitScript - Set Native Specification for  " + pair.getId());
-
-			// Tell the job where it will deal with files
-			sgeTemplate.setWorkingDirectory("/export/starexec/sandbox");
-			//log.debug("submitScript - Set Working Directory for  " + pair.getId());
-
-			// Tell where the starexec log for the job should be placed (semicolon is required by SGE)
-			
-			String logPath=JobPairs.getLogFilePath(pair);
-			File file=new File(logPath);
-			file.getParentFile().mkdirs();
-			
-			if (file.exists()) {
-			    log.info("Deleting old log file for " + pair.getId());
-			    file.delete();
-			}
-
-			sgeTemplate.setOutputPath(":" + logPath);
-			//log.debug("submitScript - Set Output Path for  " + pair.getId());
-
-			// Tell the job where the script to be executed is
-			sgeTemplate.setRemoteCommand(scriptPath);	        
-			//log.debug("submitScript - Set Remote Command for  " + pair.getId());
-
-			// Actually submit the job to the grid engine
-			String id = session.runJob(sgeTemplate);
-			log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath)); 
-
-			return Integer.parseInt(id);
-		} catch (org.ggf.drmaa.DrmaaException drme) {
-			log.warn("script Path = " + scriptPath);
-			//log.warn("sgeTemplate = " +sgeTemplate.toString());
-			JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
-			log.error("submitScript says " + drme.getMessage(), drme);
-		} catch (Exception e) {
-			JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
-			log.error(e.getMessage(), e);
-		} finally {
-			// Cleanup. Session's MUST be exited or SGE will be mean to you
-			if(sgeTemplate != null) {
-				session.deleteJobTemplate(sgeTemplate);
-			}
-
-		}
-
-		return -1;
-	}
-
     protected static String base64encode(String s) {
-	return new String(Base64.encodeBase64(s.getBytes()));
+    	return new String(Base64.encodeBase64(s.getBytes()));
     }
 
 	/**
@@ -862,9 +825,8 @@ public abstract class JobManager {
 	 * 
 	 * @param spaceId the id of the space we start in
 	 * @param userId the id of the user creating the job
-	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
-	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
+	 * @param path The path to use for each job pair created.
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */

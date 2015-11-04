@@ -200,6 +200,30 @@ function initUI(){
 		useSelectedBenchmark();
 		e.preventDefault();
 	});
+	$("#deleteUser").button({
+		icons: {
+			primary: "ui-icon-close"
+		}
+	});	
+	$("#deleteUser").click(function(e) {
+		$('#dialog-confirm-delete-txt').text('Deleting a user will delete all their primitives.\nAre you sure you want to delete this user?');
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 200,
+			buttons: {
+				'yes': function() {
+					$('#dialog-confirm-delete').dialog('close');
+					var userId = getUserIdAssociatedWithPage();
+					log("userId: "+userId);
+					sendDeleteUserRequest(userId);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
 	
 	 $("#solverList").dataTable({ 
 			"sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -242,6 +266,23 @@ function initUI(){
 	    	
 	    	$(this).text($(this).text() + " (community profile)");
 	    });
+}
+
+function getUserIdAssociatedWithPage() {
+	var userId = $('#infoTable').attr('uid');
+	return userId;
+}
+
+function sendDeleteUserRequest(userId) {
+	$.post(
+			starexecRoot+'services/delete/user/'+userId,
+			{},
+			function(validatorStatusCode) {
+				parseReturnCode(validatorStatusCode);	
+				window.location.replace(starexecRoot);  
+			},
+			'json'
+	 );
 }
 
 function fnSolverPaginationHandler(sSource,aoData,fnCallback) {

@@ -113,6 +113,8 @@ corresponds to a dependent bench space.
 
 "since" -When downloading job info, specifies the earliest completed pair after which to get info.
 
+"suppresstime" -When creating a job, do not include timestamps in the lines of job output.
+
 "t" -When using 'sleep,' specifies the amount of time in seconds. Decimal values are permitted.
 
 "to" -When copying a primitive, specifies the ID of the destination space, or the root of the 
@@ -442,9 +444,9 @@ OPTIONAL: None
 -- removesubspace -Removes a subspace from a given space. "id" is the subspace ID. If "recycleprims" is present,
 				   all solvers and benchmarks present in the space hierarchy rooted at the given space that 
 				   you have permission to recycle will be recycled.
-REQUIRED: "id" "from"
+REQUIRED: "id"
 OPTIONAL: "recycleprims" 
-EXAMPLE: 'removesubspace id=10 from=4 recycleprims='
+EXAMPLE: 'removesubspace id=10 recycleprims='
 
 -- removeuser -Removes a user from a given space. "id" is the user ID.
 REQUIRED: "id" "from"
@@ -463,7 +465,7 @@ varied set of parameters.
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
 REQUIRED: "id"  "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause" "seed"
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause" "seed" "suppresstime"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r pause='
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.

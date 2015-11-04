@@ -1,18 +1,41 @@
-var progress = 0;
 
 
-$(document).ready(function() {
+$(document).ready(function(){
 	attachFormValidation();
-	$('#btnSubmit').button({
+
+	initUI();
+	
+	// Remove all unselected rows from the DOM before submitting
+	$('#addForm').submit(function() {
+		$('#tblNodes tbody').children('tr').not('.row_selected').find('input').remove();
+	});
+		
+});
+
+function initUI(){
+	
+	$("#btnDone").button({
 		icons: {
-			secondary: "ui-icon-circle-check"
+			primary: "ui-icon-locked"
 		}
 	});
 	
-});
+	// Set up datatables
+	$('#tblNodes').dataTable( {
+        "sDom": 'rt<"bottom"f><"clear">',        
+        "bPaginate": false,        
+        "bSort": true        
+    });
+	
+	$("#tblNodes").on("click", "tr",  function() {
+		$(this).toggleClass("row_selected");
+	});
+
+}
 
 
 function attachFormValidation() {
+	
 	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
 			"regex", 
@@ -21,58 +44,23 @@ function attachFormValidation() {
 				return this.optional(element) || re.test(value);
 	});
 	
-	
-	$.validator.addMethod(
-			"greaterThan", 
-			function(value, element, params) {
-
-			    if (!/Invalid|NaN/.test(new Date(Date.parse(value)))) {
-			        return new Date(Date.parse(value)) > new Date(Date.parse($(params).val()));
-			    }
-			    alert(Date.parse(value));
-			    return isNaN(value) && isNaN($(params).val()) 
-			        || (Number(value) > Number($(params).val())); 
-			},'Must be greater than {0}.');
-	
-	$.validator.addMethod(
-			"greaterThanYesterday", 
-			function(value, element, params) {
-				var today = new Date();
-				today.setHours(0, 0, 0, 0);
-				
-			    if (!/Invalid|NaN/.test(new Date())) {
-			        return today <= new Date(Date.parse(value));
-			    }
-			    alert(today);
-			    return isNaN(value) && isNaN(value) 
-			        || (Number(value) > Number(value)); 
-			},'Must be greater than {0}.');
-	
-	
+		
 	// Set up form validation
-	var today = new Date();
-	today.setHours(0,0,0,0);
 	$("#addForm").validate({
 		rules: {
 			name: {
 				required: true,
 				minlength: 2,
 				maxlength: $("#txtQueueName").attr("length"),
-				regex : getQueueNameRegex()
+			        regex : getQueueNameRegex()
 			},
-			node: {
+			wallTimeout: {
 				required: true,
-				regex: "[0-9]+"
+				min: 1
 			},
-			start: {
+			cpuTimeout: {
 				required: true,
-				greaterThanYesterday: today,
-				regex:  "[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]"
-			},
-			end: {
-				required: true,
-				greaterThan: "#start",
-				regex:  "[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]"
+				min: 1
 			}
 		},
 		messages: {
@@ -81,20 +69,6 @@ function attachFormValidation() {
 				minlength: "2 characters minimum",
 				maxlength: $("#txtQueueName").attr("length") + " characters maximum",
 				regex: "invalid character(s)"
-			},
-			node: {
-				required: "enter a node count",
-				regex: "invalid character(s)"
-			},
-			start: {
-				required: "enter a start date",
-				greaterThanYesterday: "date must be after or on today's date",
-				regex: "invalid format - ex. mm/dd/yyyy"
-			},
-			end: {
-				required: "enter a end date",
-				greaterThan: "must be greater than start date",
-				regex: "invalid format - ex. mm/dd/yyyy"
 			}
 		}
 	});

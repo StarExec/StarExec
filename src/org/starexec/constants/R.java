@@ -226,10 +226,17 @@ public class R {
     public static String TEST_ROLE_NAME="test";
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
-	public static String MATRIX_ELEMENT_ID_FORMAT ="%s%d-%s%d-%s%d"; 
+	public static final String MATRIX_ELEMENT_ID_FORMAT ="%s%d-%s%d-%s%d"; 
 
+	public static final String APPROVE_COMMUNITY_REQUEST = "approve";
+	public static final String DECLINE_COMMUNITY_REQUEST = "decline";
+	// This is used as a AJAX parameter to identify requests that were sent from the community page
+	// versus requests that were sent from email to accept or decline join community requests
+	public static final String SENT_FROM_COMMUNITY_PAGE = "sentFromCommunityPage";
     
     //some proxy data
     public static String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
     public static int PROXY_PORT = 8888;
+    
+    public static boolean DEBUG_MODE_ACTIVE = false;
 }	

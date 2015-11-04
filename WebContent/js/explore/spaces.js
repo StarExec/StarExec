@@ -14,9 +14,12 @@ var openDone=true;
 var spaceChainInterval;
 var usingSpaceChain=false;
 var isLeafSpace=false;
+var userIsDeveloper=false;
 $(document).ready(function(){	
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain("#spaceChain").length>1); //check whether to turn off cookies
+
+	determineIfUserIsDeveloper();
 
 	// Build left-hand side of page (space explorer)
 	initSpaceExplorer();
@@ -33,9 +36,20 @@ $(document).ready(function(){
 		}
 		
 	},10000);
-	
-
 });
+
+// Set the userIsDeveloper variable using a GET
+function determineIfUserIsDeveloper() {
+	'use strict';
+	$.get(
+		starexecRoot+'services/users/isDeveloper',
+		'',
+		function(data) {
+			userIsDeveloper = data;
+		},
+		'json'
+	);
+}
 
 
 /**
@@ -1691,7 +1705,11 @@ function createTooltip(element, selector, type, message){
  */
 function checkPermissions(perms, id) {
 	// Check for no permission and hide entire action list if not present
-	if(perms == null) {
+	// Don't hide if user is developer
+	if (userIsDeveloper) {
+		$('#actionList').show();
+		return;
+	} else if(perms == null) {
 		log('no permissions found, hiding action bar');
 		$('#actionList').hide();		
 		return;
@@ -1705,14 +1723,12 @@ function checkPermissions(perms, id) {
 		
 		$('#editSpace').fadeIn('fast');
 		//$('#editSpacePermissions').fadeIn('fast');
-		$('#reserveQueue').fadeIn('fast');
 
 	} else {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
 		//$('#editSpacePermissions').fadeOut('fast');
-		$('#reserveQueue').fadeOut('fast');
 	}	
 
 	log('perms.addSpace='+perms.addSpace);
@@ -1768,7 +1784,6 @@ function updateButtonIds(id) {
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
 	$('#addQuickJob').attr('href', starexecRoot+"secure/add/quickJob.jsp?sid=" + id);
 
-	$('#reserveQueue').attr('href', starexecRoot+"secure/reserve/queue.jsp?sid=" + id);
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
 	
 

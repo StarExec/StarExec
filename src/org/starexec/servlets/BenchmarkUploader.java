@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Reports;
@@ -39,13 +38,18 @@ import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
+import org.starexec.util.LogUtil;
+import org.starexec.util.PartWrapper;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
 
+
 @SuppressWarnings("serial")
+@MultipartConfig
 public class BenchmarkUploader extends HttpServlet {
 	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	// The unique date stamped file name format
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
@@ -336,7 +340,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		URL tempURL=null;
 		String tempName=null;
-		FileItem tempFileToUpload=null;
+		PartWrapper tempFileToUpload=null;
 		if (localOrUrl.equals("URL")) {
 			tempURL=new URL((String)form.get(FILE_URL));
 			try {
@@ -346,41 +350,41 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 			
 		} else {
-			tempFileToUpload = ((FileItem)form.get(BENCHMARK_FILE));
+			tempFileToUpload = ((PartWrapper)form.get(BENCHMARK_FILE));
 		}
 		
 		final String name=tempName;
 		final URL url=tempURL;
-		final FileItem fileToUpload=tempFileToUpload;
+		final PartWrapper fileToUpload=tempFileToUpload;
 		
 		log.debug("upload status id is " + statusId);
 		
 		//It will delay the redirect until this method is finished which is why a new thread is used
+		
+					
+		// Create a unique path the zip file will be extracted to
+		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
+		// Create the paths on the filesystem
+		uniqueDir.mkdirs();
+					
+		log.info("Handling upload request for user " + userId + " in space " + spaceId);
+					
+		File archive=null;
+		if (localOrUrl.equals("local")) {
+			archive = new File(uniqueDir,  FilenameUtils.getName(fileToUpload.getName()));
+			fileToUpload.write(archive);
+		} else {
+			archive=new File(uniqueDir,name);
+			if (!Util.copyFileFromURLUsingProxy(url,archive)) {
+				throw new Exception("Unable to copy file from URL");
+			}	
+		}
+		final File archiveFile = archive;
 		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){
 				try{
-					
-					// Create a unique path the zip file will be extracted to
-					File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
-					uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
-					// Create the paths on the filesystem
-					uniqueDir.mkdirs();
-					
-					log.info("Handling upload request for user " + userId + " in space " + spaceId);
-					
-					File archiveFile=null;
-					if (localOrUrl.equals("local")) {
-						archiveFile = new File(uniqueDir,  FilenameUtils.getName(fileToUpload.getName()));
-						fileToUpload.write(archiveFile);
-					} else {
-						archiveFile=new File(uniqueDir,name);
-						if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
-							throw new Exception("Unable to copy file from URL");
-						}
-						
-					}
-					
 					addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId,
 							downloadable, perm, uploadMethod, statusId,
 							hasDependencies, linked, depRootSpaceId);
@@ -433,6 +437,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @author ??? - modified by Ben
 	 */
 	private ValidatorStatusCode isRequestValid(HashMap<String, Object> form, HttpServletRequest request) {
+		final String method = "isRequestValid";
 		try {			
 																
 			if (!Validator.isValidInteger((String)form.get(BENCHMARK_TYPE))) {
@@ -454,7 +459,7 @@ public class BenchmarkUploader extends HttpServlet {
 			String fileName=null;
 			// Last test, return true when we find a valid file extension
 			if (((String)form.get(FILE_LOC)).equals("local")) {
-				fileName = ((FileItem)form.get(BENCHMARK_FILE)).getName();
+				fileName = ((PartWrapper)form.get(BENCHMARK_FILE)).getName();
 			} else {
 				fileName=(String)form.get(FILE_URL);
 			}
@@ -471,8 +476,12 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			
 			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+
+			logUtil.trace(method, "perm="+perm);
+			logUtil.trace(method, "uploadMethod="+uploadMethod);
 			
-			if(uploadMethod.equals("dump") && !perm.canAddBenchmark()) {
+
+			if( perm == null || (!perm.canAddBenchmark() && uploadMethod.equals("dump")) ) {
 				// They don't have permissions, send forbidden error
 				return new ValidatorStatusCode(false, "You do not have permission to upload benchmarks to this space");
 			} else if (uploadMethod.equals("convert") && !(perm.canAddBenchmark() && perm.canAddSpace())) {

@@ -9,7 +9,7 @@
 		
 		// Verify this user can add spaces to this space
 		Permission userPerm = SessionUtil.getPermission(request, spaceId);
-		if(userPerm.canAddSpace()) {
+		if(Users.hasAdminReadPrivileges(userId) || userPerm.canAddSpace()) {
 			request.setAttribute("space", Spaces.get(spaceId));
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add spaces here");

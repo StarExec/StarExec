@@ -1,40 +1,20 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, java.text.SimpleDateFormat, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.*;"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 
 try {
-	int id = Integer.parseInt(request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
-	QueueRequest req = Requests.getQueueRequest(id);
-	List<Queue> queues = Queues.getAllNonPermanent();
-
-
-
-	User u = Users.get(userId);
-	if (!Users.isAdmin(userId)) {
-		response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-	} else {
+	if (Users.hasAdminReadPrivileges(userId)) {
+		List<Space> spaces = Spaces.GetAllSpaces();
+		List<WorkerNode> nodes = Cluster.getAllNodes();
 		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-		request.setAttribute("queues", queues);
-			
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-		java.util.Date start = req.getStartDate();
-		java.util.Date end = req.getEndDate();
-		String start1 = sdf.format(start);
-		String end1 = sdf.format(end);
-
-		request.setAttribute("queueName", req.getQueueName());
-		request.setAttribute("defaultQueueName", R.DEFAULT_QUEUE_NAME);
-		request.setAttribute("message", req.getMessage());
-		request.setAttribute("id", req.getId());
-		request.setAttribute("userId", req.getUserId());
-		request.setAttribute("spaceId", req.getSpaceId());
-		request.setAttribute("nodeCount" , req.getNodeCount());
-		request.setAttribute("start", start1);
-		request.setAttribute("end", end1);
+		request.setAttribute("nodes", nodes);
 		request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
-	}		
+	} else {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
+	}
+	
 			
 } catch (NumberFormatException nfe) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
@@ -44,21 +24,8 @@ try {
 
 %>
 
-<star:template title="create queue" css="admin/admin, explore/common, common/table, add/queue" js="admin/queue, lib/jquery-ui-1.8.16.custom.min, lib/jquery.dataTables.min, lib/jquery.jeditable, lib/jquery.validate.min, lib/jquery.dataTables.editable, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min">	
-	<style>
-		.statusConflict { color: red; }
-		.statusClear {color : green; }
-		.statusZero {color : yellow; }
-		.statusNeutral { color : black; }
-	</style>
-	<form id="addForm" method="POST" action="/${starexecRoot}/secure/add/queue" class="queue">	
-		<input type="hidden" name="spaceId" value="${spaceId}"/>
-		<input type="hidden" name="userId" value="${userId}"/>
-		<input type="hidden" name="id" value="${id}"/>
-		<input type="hidden" name="nodecount" value="${nodeCount}"/>
-		<input type="hidden" name="start" value="${start}"/>
-		<input type="hidden" name="end" value="${end}"/>
-		<input type="hidden" name="queueName" value="${queueName}"/>
+<star:template title="create queue" js="add/queue, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">	
+	<form id="addForm" method="POST" action="/${starexecRoot}/secure/add/queue" class="queue">
 		<fieldset id="fieldStep1">
 			<legend>Add a Queue</legend>
 			<table id="tblConfig" class="shaded contentTbl">
@@ -69,27 +36,11 @@ try {
 					</tr>
 				</thead>
 				<tbody>
-					<tr class="noHover" title="what would you like to name your queue?">
+					<tr id="queueName" class="noHover" title="what would you like to name your queue?">
 						<td class="label"><p>queue name</p></td>
-						<td><input id="queueName" name="queueName" type="text" value="${queueName}"/> </td>					
+						<td><input length="${queueNameLen}" id="txtQueueName" name="name" type="text"/></td>
+						
 					</tr>
-					<tr class="noHover" title="user's reason for requesting this queue.">
-						<td class="label"><p>message</p></td>
-						<td id="msg">${message}</td>
-					</tr>
-					<tr class="noHover" title="number of nodes to reserve">
-						<td class="label"><p>max node count</p></td>
-						<td><input id="nodeCount" name="nodeCount" type="text" value="${nodeCount}"/> </td>											
-					</tr>
-					<tr class="noHover" title="when would you like to begin your reservation?">
-						<td class="label"><p>start date</p></td>
-						<td><input id="start" name="start" type="text" value="${start}"/> </td>											
-					</tr>
-					<tr class="noHover" title="when would you like to end your reservation?">
-						<td class="label"><p>end date</p></td>
-						<td><input id="end" name="end" type="text" value="${end}"/> </td>					
-					</tr>		
-					
 					<tr class="noHover" title="the maximum cpu timeout that can be set for any job using this queue">
 						<td class="label"><p>cpu timeout</p></td>
 						<td><input value="${defaultTimeout}" name="cpuTimeout" type="text" id="cpuTimeoutText"/></td>
@@ -97,41 +48,42 @@ try {
 					<tr class="noHover" title="the maximum wallclock timeout that can be set for any job using this queue">
 						<td class="label"><p>wall timeout</p></td>
 						<td><input value="${defaultTimeout}" name="wallTimeout" type="text" id="wallTimeoutText"/></td>
-					</tr>	
-					
+					</tr>						
 					
 				</tbody>
 			</table>
-			<div>
-				<button type="button" class="update" id="btnUpdate">update</button>
-			</div>
 	</fieldset>
-	
-	<div style="width: 100%; overflow: auto; margin-bottom: 20px" id="nodeTableDiv">
-	<fieldset>
-		<legend class="expd" id="nodeExpd">nodes</legend>
-		<table id="nodes">
-			<thead>
-				<tr>				
-					<th style="width: 100px;">date</th>
-					<th style="width: 100px;">${defaultQueueName}</th>
-					<c:forEach items="${queues}" var="queue"> 
-						<th style="width: 100px;">${queue.name}</th>
-					</c:forEach>
-					<th style="width: 100px;" id="qName">${id}</th>
-					<th>total</th>
-					<th class="statusConflict">conflict</th>
-				</tr>
-			</thead>			
-		</table>
-	</fieldset>
-	</div>
+	<fieldset id="fieldSelectNodeSpace"> 
+			<legend>node selection</legend>
+			<table id="tblNodes" class="contentTbl">
+				<thead>
+					<tr>
+						<th>node</th>
+					</tr>
+				</thead>	
+				<tbody>
+				<c:forEach var="n" items="${nodes}">
+					<tr id="node_${n.id}">
+						<td>
+							<input type="hidden" name="node" value="${n.id}"/>
+							<p>${n.name}</p>							
+							
+						</td>																		
+					</tr>
+				</c:forEach>
+				</tbody>					
+			</table>		
+		</fieldset>
 	<div id="actionBar">
-			<button type="submit" class="round" id="btnDone">submit</button>			
-			<button type="button" class="round" id="btnBack">cancel</button>
-			<button type="button" class="round" id="btnDecline">decline</button>
-	</div>	
-	</form>
+		<fieldset>
+			<legend>actions</legend>
+			<ul id="actionList">
+				<li><button type="submit" id="btnDone">Submit</button></li>
+			</ul>
+		</fieldset>		
+	</div>
+		
+</form>
 
 	<c:if test="${not empty param.result and param.result == 'requestSent'}">			
 		<div class='success message'>request sent successfully - you will receive an email when a leader of that community approves/declines your request</div>
@@ -139,7 +91,4 @@ try {
 	<c:if test="${not empty param.result and param.result == 'requestNotSent'}">			
 		<div class='error message'>you are already a member of that community, or have already requested to be and are awaiting approval</div>
 	</c:if>
-	<div id="dialog-warning" title="warning">
-		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
-	</div>
 </star:template>

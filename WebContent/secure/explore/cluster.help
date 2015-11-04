@@ -21,3 +21,16 @@ case, you may sometimes see multiple job pairs listed when only
 one is running (this is a bug we have not resolved yet).
 -->
 </p>
+
+<h2>Scheduling</h2>
+
+<p>When several users are attempting to use the same queue at the same time,
+pairs are scheduled to balance compute time among each user as evenly as possible.
+This is done by tracking the compute time used by each user and preferentially 
+adding pairs for users that have taken the least runtime.
+Whenever a job pair is added to a queue, the pair's wallclock timeout is used as
+an estimation of the pair's runtime until the pair finishes, at which point the
+actual wallclock runtime of the pair is used. Note that this means that setting
+wallclock timeouts that are substantially higher than necessary may cause jobs
+to run more slowly in the short term.
+</p>

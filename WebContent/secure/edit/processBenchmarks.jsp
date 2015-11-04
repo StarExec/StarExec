@@ -8,7 +8,7 @@ try {
 	int spaceId = Integer.parseInt((String)request.getParameter("sid"));
 
 	// Grab relevant user id & processor info
-	if (Users.isMemberOfSpace(userId,spaceId) || Users.isAdmin(userId)) {
+	if (Users.isMemberOfSpace(userId,spaceId) || Users.hasAdminReadPrivileges(userId)) {
 		request.setAttribute("sid",spaceId);
 		List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
 		request.setAttribute("procs",procs);

@@ -16,18 +16,16 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
 
+//TODO: A lot of the logic in this class can be safely checked on the backend (valid IDs, for instance).
 public class Validator {
 	
-	//which archives can we download from Starexec
+	/**which archives can we download from Starexec*/
 	public static String[] VALID_ARCHIVETYPES={"zip"};
 	
 	
 	public static Pattern patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
 	public static Pattern patternInteger = Pattern.compile(R.LONG_PATTERN);
-	public static Pattern patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternUrl = Pattern.compile(R.URL_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 	public static Pattern patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
@@ -39,6 +37,7 @@ public class Validator {
 	//the following lists specify the parameters, either required or optional, that are accepted by a certain
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
+	private static String[] allowedRemoveSubspaceParams = new String[] {R.PARAM_ID, R.PARAM_RECYCLE_PRIMS};
 	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
 	private static String[] allowedDownloadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_GET_ATTRIBUTES,R.PARAM_PROCID};
 
@@ -63,7 +62,7 @@ public class Validator {
 	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED, R.PARAM_SEED};
+		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED, R.PARAM_SEED, R.PARAM_SUPPRESS_TIMESTAMPS};
 	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_TYPE,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
 		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE, R.PARAM_RUN, R.PARAM_SETTING};
 	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
@@ -87,20 +86,29 @@ public class Validator {
 	
 	/**
 	 * Checks whether the incoming arguments satisfy a request to remove a primitive
-	 * @param commandParams Arguments given by teh user
+	 * @param commandParams Arguments given by the user
+	 * @param type The type of primitive being removed.
 	 * @return An integer status code as defined in Status.
 	 */
-	public static int isValidRemoveRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
-			return Status.ERROR_MISSING_PARAM;
+	public static int isValidRemoveRequest(HashMap<String,String> commandParams, String type) {
+		if (type.equals("subspace")) {
+			if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+				return Status.ERROR_MISSING_PARAM;
+			}
+			findUnnecessaryParams(allowedRemoveSubspaceParams,commandParams);
+
+		} else {
+			if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
+				return Status.ERROR_MISSING_PARAM;
+			}
+			findUnnecessaryParams(allowedRemoveParams,commandParams);
+			if (!isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+				return Status.ERROR_INVALID_ID;
+			}
 		}
-		
-		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))
-				|| !isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
-		
-		findUnnecessaryParams(allowedRemoveParams,commandParams);
 		return 0;
 	}
 	
@@ -197,17 +205,6 @@ public class Validator {
 	 */
 	public static boolean isValidPrimName(String name){    	
     	return patternPrimName.matcher(name).matches();    	
-    }
-    
-    /**
-     * Validates a boolean value by ensuring it is something Boolean.parseBoolean()
-     * can handle
-     * 
-     * @param boolString the string to check for a parse-able boolean value
-     * @return true iff boolString isn't null and is either "true" or "false"
-     */
-    public static boolean isValidBool(String boolString){
-    	return patternBoolean.matcher(boolString).matches();
     }
     
     /**

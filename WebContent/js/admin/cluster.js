@@ -1,4 +1,3 @@
-var reserved;
 var requests;
 var type;
 var defaultQueueId;
@@ -10,7 +9,10 @@ $(document).ready(function(){
 	 var id = -1;
 	 curQueueId=-1;
 	// Initialize the jstree plugin for the community list
-	jQuery("#exploreList").jstree({  
+	$("#exploreList").bind("loaded.jstree", function(e, data) {
+		 // Register a callback for when the jstree has finished loading
+		addNodeCountsToTree();
+	}).jstree({  
 		"json_data" : { 
 			"ajax" : { 
 				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from
@@ -61,10 +63,9 @@ $(document).ready(function(){
 		// When a node is clicked, get its ID and display the info in the details pane		
 	   id = data.rslt.obj.attr("id");
 	   window['type'] = data.rslt.obj.attr("rel");
-	   var permanent = data.rslt.obj.attr("permanent");
 	   var global = data.rslt.obj.attr("global");
 	   defaultQueueId = data.rslt.obj.attr("defaultQueueId");
-	   updateActionId(id, type, permanent, global);
+	   updateActionId(id, type, global);
 	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 	initUI(id);
 	initDataTables();
@@ -74,8 +75,6 @@ $(document).ready(function(){
 function initUI(id){
 	
 	$('#dialog-confirm-remove').hide();
-	$('#dialog-confirm-permanent').hide();
-
 	
 	$("#newQueue").button({
 		icons: {
@@ -94,7 +93,7 @@ function initUI(id){
 		clearErrorStates();
 	});
 	
-	$("#newPermanent").button({
+	$("#newQueue").button({
 		icons: {
 			primary: "ui-icon-plusthick"
 		}
@@ -112,11 +111,7 @@ function initUI(id){
 		}
 	});
 	
-	$("#makePermanent").button({
-		icons: {
-			primary: "ui-icon-locked"
-		}
-	});
+	
 	
 	$("#moveNodes").button({
 		icons: {
@@ -153,42 +148,7 @@ function initUI(id){
 			primary: "ui-icon-pencil"
 		}
 	});
-	
-	//Make tables expandable/collapsable
-	$('#reservationField').expandable(false);
-	$('#reservedField').expandable(false);
-	$('#historicField').expandable(true);
 
-	
-	
-	$("#makePermanent").click(function() {
-		$('#dialog-confirm-permanent-txt').text('are you sure you want to make this queue permanent?');
-	
-		$('#dialog-confirm-permanent').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed to make queue permanent');
-					$('#dialog-confirm-permanent').dialog('close');
-					$.post(
-							starexecRoot+"services/permanent/queue/" + curQueueId,
-							function(returnCode) {
-								parseReturnCode(returnCode);
-
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled make queue permanent');
-					$(this).dialog("close");
-				}
-			}
-		});
-	});
-	
 	$("#editQueue").click(function() {
 		window.open(starexecRoot+"secure/edit/queue.jsp?id="+curQueueId);
 	});
@@ -303,11 +263,10 @@ function initUI(id){
 
 }
 
-function updateActionId(id, type, permanent, global) {	
+function updateActionId(id, type, global) {	
 	curQueueId=id;
 	if (id == -1) {
 		$("#removeQueue").hide();
-		$("#makePermanent").hide();
 		$("#moveNodes").hide();
 		$("#CommunityAssoc").hide();
 		$("#makeGlobal").hide();
@@ -325,7 +284,6 @@ function updateActionId(id, type, permanent, global) {
 
 		if (id == defaultQueueId) {
 			$("#removeQueue").hide();
-			$("#makePermanent").hide();
 			$("#moveNodes").show();
 			$("#CommunityAssoc").hide();
 			$("#makeGlobal").hide();
@@ -333,32 +291,23 @@ function updateActionId(id, type, permanent, global) {
 		} else {
 			$("#removeQueue").show();
 
-			if (permanent == 'true') {
-				$("#makePermanent").hide();
-				$("#moveNodes").show();
+			$("#moveNodes").show();
 
-				if (global == 'true') {
-					$("#makeGlobal").hide();
-					$("#removeGlobal").show();
-					$("#CommunityAssoc").hide();
-				} else {
-					$("#makeGlobal").show();
-					$("#removeGlobal").hide();
-					$("#CommunityAssoc").show();
-				}
-				
-			} else {
-				$("#makePermanent").show();
-				$("#moveNodes").hide();
-				$("#CommunityAssoc").hide();
+			if (global == 'true') {
 				$("#makeGlobal").hide();
+				$("#removeGlobal").show();
+				$("#CommunityAssoc").hide();
+			} else {
+				$("#makeGlobal").show();
 				$("#removeGlobal").hide();
+				$("#CommunityAssoc").show();
 			}
+				
+			
 			
 		}
 	} else {
 		$("#removeQueue").hide();
-		$("#makePermanent").hide();
 		$("#moveNodes").hide();
 		$("#CommunityAssoc").hide();
 		$("#makeGlobal").hide();

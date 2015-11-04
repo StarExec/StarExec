@@ -2,8 +2,6 @@ package org.starexec.app;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -12,9 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.ArrayList;
-import java.util.TreeSet;
-import java.util.Date;
 import java.util.UUID;
 
 import javax.servlet.http.Cookie;
@@ -64,22 +59,18 @@ import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
-import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.jobs.JobManager;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.test.TestManager;
-import org.starexec.test.TestResult;
-import org.starexec.test.TestSequence;
-import org.starexec.util.Hash;
+import org.starexec.test.integration.TestManager;
+import org.starexec.test.integration.TestResult;
+import org.starexec.test.integration.TestSequence;
 import org.starexec.util.LoggingManager;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-import org.starexec.util.matrixView.Matrix;
-import org.starexec.util.matrixView.MatrixElement;
-
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -105,9 +96,7 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_INVALID_PARAMS=new ValidatorStatusCode(false, "The supplied parameters are invalid");
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_SELF=new ValidatorStatusCode(false, "You cannot promote yourself");
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_LEADER=new ValidatorStatusCode(false, "The user is already a leader");
-	
-	private static final ValidatorStatusCode ERROR_NOT_ALL_DELETED=new ValidatorStatusCode(false, "Not all primitives could be deleted");
-	
+		
 	private static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
 	private static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
 	
@@ -186,68 +175,6 @@ public class RESTServices {
 	}
 
 	
-
-	
-	/**
-	 * Returns the paginated results of node assignments
-	 * For the manage_nodes page. this is an admin only function
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/nodes/dates/pagination/{string_date}")
-	@Produces("application/json")
-	//TODO: This needs to be refactored
-	public String nodeSchedule(@PathParam("string_date") String date, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-	
-		//Get todays date
-		Date today = new Date();
-
-		//Get the passed in date
-		String start_month = date.substring(0,2);
-		String start_day = date.substring(2, 4);
-		String start_year = date.substring(4, 8);
-		String new_date = start_month + "/" + start_day + "/" + start_year;
-		
-		//Get the latest date that a node is reserved for
-		Date latest = Cluster.getLatestNodeDate();
-		java.util.Date newDateJava = null;
-		
-		if (Validator.isValidDate(new_date)) {
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-			java.sql.Date newDateSql = null;
-			java.sql.Date latestSql = null;
-			try {
-				newDateJava = format.parse(new_date);
-				newDateSql = new java.sql.Date(newDateJava.getTime());
-				
-				latestSql = new java.sql.Date(latest.getTime());
-			} catch (ParseException e1) {
-				log.error(e1.getMessage(),e1);
-			}
-			
-			if (newDateSql.before(latestSql) && !newDateSql.toString().equals(latestSql.toString())) {
-				return gson.toJson(4);
-			}
-			
-		} else {
-			return gson.toJson(2);
-		}
-	
-		latest = newDateJava;
-		//Get all the dates between these two dates
-	    List<java.sql.Date> dates = Requests.getDateRange(today, latest);
-	    
-	    JsonObject nextDataTablesPage = RESTHelpers.getNextdataTablesPageForManageNodes(dates, request);
-	    return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-	    
-		}
-	
 	@GET
 	@Path("/benchmarks/uploadDescription/{statusId}")
 	@Produces("application/json")
@@ -309,11 +236,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		LinkedList<String> queueNames = new LinkedList<String>();
-		for(Queue q : Queues.getAll()){
-		    queueNames.add(q.getName());
-		}
-		return R.BACKEND.clearNodeErrorStates(R.SGE_ROOT,queueNames.toArray(new String[queueNames.size()])) ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
+		return R.BACKEND.clearNodeErrorStates() ? gson.toJson(new ValidatorStatusCode(true)) : gson.toJson(new ValidatorStatusCode(false, "Internal error handling request"));
 	}
 	
 	/**
@@ -342,9 +265,26 @@ public class RESTServices {
 	@Path("/cluster/qstat")
 	@Produces("text/plain")		
 	public String getQstatOutput(@Context HttpServletRequest request) {		
-		String qstat=R.BACKEND.getRunningJobsStatus(R.SGE_ROOT);
+		String qstat=R.BACKEND.getRunningJobsStatus();
 		if(!Util.isNullOrEmpty(qstat)) {
 			return qstat;
+		}
+
+		return "not available";
+	}
+	
+	/**
+	 * @return a text string that shows the load values for the given queue.
+	 * @param queueId the ID of the queue to get data for.
+	 * @author Eric Burns
+	 */
+	@GET
+	@Path("/cluster/loads/{queueId}")
+	@Produces("text/plain")		
+	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {		
+		String loads = JobManager.getLoadRepresentationForQueue(queueId);
+		if(!Util.isNullOrEmpty(loads)) {
+			return loads;
 		}
 
 		return "not available";
@@ -522,6 +462,7 @@ public class RESTServices {
 	public String getNodeDetails(@PathParam("id") int id, @Context HttpServletRequest request) {	
 		return gson.toJson(Cluster.getNodeDetails(id));
 	}
+
 	
 	/**
 	 * @return a json string representing all attributes of the queue with the given id
@@ -534,6 +475,14 @@ public class RESTServices {
 	public String getQueueDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
 		log.debug("getting queue details");
 		return gson.toJson(Queues.getDetails(id));
+	}
+
+	@GET
+	@Path("/cluster/queues/details/nodeCount/{queueId}")
+	@Produces("application/json")
+	public String getNumberOfNodesInQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
+		int numberOfNodes = Queues.getNodes(queueId).size();
+		return gson.toJson(numberOfNodes);
 	}
 	
 	/**
@@ -746,6 +695,35 @@ public class RESTServices {
 			this.done = done;
 			this.benchSolverConfigElementMap = benchSolverConfigElementMap;
 		}
+	}
+
+	/**
+	 * Determine if the current user is a developer.
+	 * @param request The HTTP GET request
+	 * @return a JSON boolean value.
+	 * @author Albert Giegerich
+	 */
+	@GET
+	@Path("/users/isDeveloper")
+	@Produces("application/json")	
+	public String userIsDeveloper(@Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		return userIsDeveloper(userId, request);
+	}
+
+	/**
+	 * Determine if a given user is a developer.
+	 * @param userId Determine if user with this id is a developer
+	 * @param request The HTTP GET request
+	 * @return a JSON boolean value.
+	 * @author Albert Giegerich
+	 */
+	@GET
+	@Path("/users/isDeveloper/{userId}")
+	@Produces("application/json")	
+	public String userIsDeveloper(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		boolean userIsDeveloper = Users.isDeveloper(userId);
+		return gson.toJson(userIsDeveloper);
 	}
 	
 
@@ -2228,10 +2206,22 @@ public class RESTServices {
 	 *          7: there exists a primitive with the same name
 	 * @author Tyler Jensen & Todd Elvers
 	 */
+
+	
+	/*
+	private static String getPostRequestBody(HttpServletRequest request) throws Exception {
+		if ("POST".equalsIgnoreCase(request.getMethod())) { 
+			// Throws IOException
+			return CharStreams.toString(request.getReader());
+		} else {
+			throw new Exception("Request isn't a POST request.");
+		}
+	}
+	*/
+
 	@POST
 	@Path("/spaces/{spaceId}/add/solver")
 	@Produces("application/json")
-	
 	public String copySolversToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request,@Context HttpServletResponse response) {
 		log.debug("entering the copy function");
 		try {
@@ -2249,14 +2239,11 @@ public class RESTServices {
 			
 			// Get the space the solver is being copied from
 			String fromSpace = request.getParameter("fromSpace");
+			log.debug("fromSpace: " + fromSpace);
 			Integer fromSpaceId=null;
 			//if null, we are not copying from anywhere-- we are just putting a solver into a new space
-			// Since we're passing null through JQuery it will be encoded as the empty string.
-			if (!fromSpace.equals("")) {
-				log.debug("fromSpace was not null.");
+			if (fromSpace!=null) {
 				fromSpaceId=Integer.parseInt(fromSpace);
-			} else {
-				log.debug("fromSpace was null.");
 			}
 			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
 			boolean copyToSubspaces = Boolean.parseBoolean(request.getParameter("copyToSubspaces"));
@@ -2579,6 +2566,33 @@ public class RESTServices {
 		}
 		return gson.toJson(ERROR_DATABASE);
 		
+	}
+
+	/**
+	 * Permanently deletes a user from the system.
+	 * @param userToDeleteId The id of the user to be deleted.
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/delete/user/{userId}")
+	@Produces("application/json")
+	public String deleteUser(@PathParam("userId") int userToDeleteId, @Context HttpServletRequest request) {
+
+		int callersUserId = SessionUtil.getUserId(request);
+
+		boolean success = false;
+		try {
+			success = Users.deleteUser(userToDeleteId, callersUserId);
+				
+		} catch (StarExecSecurityException e) {
+			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to delete this user."));
+		}
+
+		if (success) {
+			return gson.toJson(new ValidatorStatusCode(true, "The user has been successfully deleted."));
+		} else {
+			return gson.toJson(new ValidatorStatusCode(false, "An internal error occurred while attempting to delete the user."));
+		}
 	}
 	
 	/**
@@ -3339,7 +3353,7 @@ public class RESTServices {
 		String name = (String) request.getParameter("name");
 		String description="";
 		if (Util.paramExists("description", request)) {
-			description = (String) request.getParameter("description");
+			description = (String)request.getParameter("description");
 		}
 		
 		ValidatorStatusCode status=SolverSecurity.canUserUpdateConfiguration(configId,userId,name,description);
@@ -3719,38 +3733,6 @@ public class RESTServices {
 			return gson.toJson(0);
 	}
 	
-	@POST
-	@Path("/queues/pending/pagination/")
-	@Produces("application/json")
-	public String getAllPendingQueueReservations(@Context HttpServletRequest request) throws Exception {
-		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}	
-		
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingQueueReservations(request);
-		
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
-	}
-
-
-	@POST
-	@Path("/queues/historic/pagination/")
-	@Produces("application/json")
-	public String getAllHistoricReservations(@Context HttpServletRequest request) throws Exception {
-		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}		
-		
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForHistoricReservations(request);
-		
-		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
-	}
-	
-	
 	/**
 	 * Cancels a queue reservation 
 	 * @param spaceId the id of the space the reservation was for
@@ -3782,7 +3764,7 @@ public class RESTServices {
 	 * @author Wyatt kaiser
 	 * @throws Exception
 	 */
-	@POST
+	@GET
 	@Path("/community/pending/requests/")
 	@Produces("application/json")
 	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) throws Exception {
@@ -3794,7 +3776,21 @@ public class RESTServices {
 		}
 		
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequests(request);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+
+	@GET
+	@Path("community/pending/requests/{communityId}")
+	@Produces("application/json")
+	public String getPendingCommunityRequestsForCommunity(@PathParam("communityId") int communityId, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		JsonObject nextDataTablesPage = null;
+		ValidatorStatusCode status=SpaceSecurity.canUserViewCommunityRequestsForCommunity(userId, communityId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
 		
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForPendingCommunityRequestsForCommunity(request, communityId);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 	
@@ -3954,126 +3950,32 @@ public class RESTServices {
 	}
 	
 	@POST
-	@Path("/cancel/request/{id}")
+	@Path("/jobs/clearloadbalance")
 	@Produces("application/json")
-	public String cancelQueueRequest(@PathParam("id") int id, @Context HttpServletRequest request) throws IOException {
-		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
+	public String clearLoadBalanceData(@Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=GeneralSecurity.canUserClearLoadBalanceData(userId);
 		if (!status.isSuccess()) {
-			return gson.toJson(status);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		// simply remove the reservation from our 
-		boolean success= Requests.removeQueueReservation(id);
-		
-		if (success) {
-			QueueRequest queueRequest = Requests.getQueueRequest(id);
-			// Notify user they've been declined
-			Mail.sendReservationResults(queueRequest, false);
-			log.info(String.format("User [%s] has been declined queue reservation.", Users.get(queueRequest.getUserId()).getFullName()));
-			return gson.toJson(new ValidatorStatusCode(true,"Request canceled successfully"));	
-		} else {
-			return gson.toJson(ERROR_DATABASE);
-		}
-		
+		JobManager.clearLoadBalanceMonitors();
+		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
 	}
-
-	/**
-	 * Updates information in the database using a POST. the new values for 
-	 * queueName, nodeCount, startDate, and endDate are included in the path.
-	 * First validates that the new values are legal, and then updates the database
-	 * and session information accordingly.
-	 * 
-	 * @return a json string containing '0' if the update was successful, else
-	 * a json string containing '1'
-	 * @author Wyatt Kaiser
-	 */
+	
 	@POST
-	@Path("/edit/request/{id}/{queueName}/{nodeCount}/{startDate}/{endDate}")
+	@Path("/starexec/debugmode/{value}")
 	@Produces("application/json")
-	public String editQueueRequest(@PathParam("id") int id, @PathParam("queueName") String queueName, @PathParam("nodeCount") String nodeCount, @PathParam("startDate") String startDate, @PathParam("endDate") String endDate, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserUpdateRequest(userId,queueName);
+	public String clearLoadBalanceData(@PathParam("value") boolean value, @Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=GeneralSecurity.canUserRestartStarexec(userId);
 		if (!status.isSuccess()) {
-			return gson.toJson(status);
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		
-		boolean success = false;
-		String start_month = startDate.substring(0,2);
-		String start_day = startDate.substring(2, 4);
-		String start_year = startDate.substring(4, 8);
-		
-		String end_month = endDate.substring(0,2);
-		String end_day = endDate.substring(2, 4);
-		String end_year = endDate.substring(4, 8);
-
-		String new_start = start_month + "/" + start_day + "/" + start_year;
-		String new_end = end_month + "/" + end_day + "/" + end_year;
-
-		
-		if ((Validator.isValidInteger(nodeCount) && Validator.isValidDate(new_start) && Validator.isValidDate(new_end)) ) {
-			log.debug("validated");
-			
-			SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-		    java.sql.Date startDateSql = null;
-		    java.sql.Date endDateSql = null;
-		    java.sql.Date todaySql = null;
-			try {
-				java.util.Date startDateJava = format.parse(new_start);
-				startDateSql = new java.sql.Date(startDateJava.getTime());
-				
-				java.util.Date endDateJava = format.parse(new_end);
-				endDateSql = new java.sql.Date(endDateJava.getTime());
-				
-				java.util.Date today = new Date();
-				todaySql = new java.sql.Date(today.getTime());
-			} catch (ParseException e1) {
-				log.error(e1.getMessage(),e1);
-			}
-			log.debug("today = " + todaySql);
-			log.debug("startDate = " + startDateSql);
-			log.debug("endDate = " + endDateSql);
-			
-			if (startDateSql.before(todaySql) && (!startDateSql.toString().equals(todaySql.toString())) ) {
-				log.debug("start day is before today");
-				return gson.toJson(4);
-			} else if (endDateSql.before(startDateSql)) { //end date is before or equivalent to start date
-				log.debug("end date is before start date");
-				return gson.toJson(5);
-			} else if (endDateSql.toString().equals(startDateSql.toString())) {
-				log.debug("end date is equivalent to start date");
-				return gson.toJson(5);
-			} else {
-				QueueRequest req = Requests.getQueueRequest(id);
-				QueueRequest new_req = new QueueRequest();
-				new_req.setUserId(req.getUserId());
-				new_req.setSpaceId(req.getSpaceId());
-				new_req.setQueueName(queueName);
-				
-				//Only update max node_count if it has been changed
-				if (Integer.parseInt(nodeCount) == req.getNodeCount()) {
-					new_req.setNodeCount(req.getNodeCount());
-				} else {
-					new_req.setNodeCount(Integer.parseInt(nodeCount));
-				}
-				new_req.setStartDate(startDateSql);
-				new_req.setEndDate(endDateSql);
-				new_req.setMessage(req.getMessage());
-				new_req.setId(id);
-				new_req.setCreateDate(req.getCreateDate());
-				
-				success = Requests.updateQueueRequest(new_req);		
-
-			}
-		} else {
-			log.debug("invalid");
-			return gson.toJson(ERROR_INVALID_PARAMS);
-		}
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Request edited successfully")) : gson.toJson(ERROR_DATABASE);
+		R.DEBUG_MODE_ACTIVE = value;
+		return gson.toJson(new ValidatorStatusCode(true,"Debug mode state changed successfully"));
 	}
 
-	
-	
-	
+
 	/**
 	 * Will update the database to reflect saved temp node_count changes
 	 * 
@@ -4111,36 +4013,7 @@ public class RESTServices {
 		
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue set as test queue")) : gson.toJson(ERROR_DATABASE);
 	}
-	
-	/**
-	 * Will update a queue making it permanent
-	 * 
-	 * @author Wyatt Kaiser
-	 */
-	@POST
-	@Path("/permanent/queue/{queueId}")
-	@Produces("application/json")
-	public String makeQueuePermanent(@PathParam("queueId") int queue_id, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		QueueRequest req = Requests.getRequestForReservation(queue_id);
-		Queue q = Queues.get(queue_id);
-		boolean success = true;
-		//Make BACKEND changes
-		if (!q.getStatus().equals("ACTIVE")) {
-		    success = R.BACKEND.createPermanentQueue(R.SGE_ROOT, true,req.getQueueName(),null,null);
-		}
-		
-		//Make database changes
-		if (success) {
-			success = Queues.makeQueuePermanent(queue_id);
-		}
-		
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue is now permanent")) : gson.toJson(ERROR_DATABASE);
-	}
+
 	
 	/**
 	 * Clears all stats from the cache for the given job

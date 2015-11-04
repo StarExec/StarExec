@@ -44,21 +44,6 @@ import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-/**
- * Creates a class to keep track of the Benchmark-Solver-Configuration Pairs
- * @author kais_wyatt
- */
-class BSC {
-    List<Benchmark> b;
-    List<Solver> s;
-    HashMap<Solver, List<Configuration>> sc;
-
-    BSC (List<Benchmark> b, List<Solver> s, HashMap<Solver, List<Configuration>> sc) {
-        this.b = b;
-        this.s = s;
-        this.sc = sc;
-    }
-}
 
 /**
  * Servlet which handles incoming requests to create new jobs
@@ -161,7 +146,6 @@ public class CreateJob extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		final String method = "doPost";
 		// Make sure the request is valid
-		long a = System.currentTimeMillis();
 		log.debug("starting job post");
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {
@@ -170,24 +154,41 @@ public class CreateJob extends HttpServlet {
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
-		}		
-		log.debug("job validation took this long " + (System.currentTimeMillis() - a));
-		int cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
-		int runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
-		long memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
+		}
+		int space = Integer.parseInt((String)request.getParameter(spaceId));
+		DefaultSettings settings = Communities.getDefaultSettings(space);
+		// next parameters are optional, and are set to the community defaults if not present
+		int cpuLimit = 0;
+		if (Util.paramExists(cpuTimeout, request)) {
+			cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
+		} else {
+			cpuLimit = settings.getCpuTimeout();
+		}
+		int runLimit = 0;
+		if (Util.paramExists(clockTimeout, request)) {
+			runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
+		} else {
+			runLimit = settings.getWallclockTimeout();
+		}
+		long memoryLimit=0;
+		if (Util.paramExists(maxMemory, request)) {
+			memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
+		} else {
+			memoryLimit = settings.getMaxMemory();
+		}
+		
 		//a number that will be provided to the pre processor for every job pair in this job
 		long seed=Long.parseLong(request.getParameter(randSeed));
 
 
 		
-		//ensure that the cpu limits are greater than 0 and also don't exceed the constant maximum
+		//ensure that the cpu limits are greater than 0
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
 		
 		//memory is in units of bytes
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 		
-		int space = Integer.parseInt((String)request.getParameter(spaceId));
 		int userId = SessionUtil.getUserId(request);
 
 		boolean suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
@@ -203,9 +204,7 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(workerQueue)),
 				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp);
 		
-		log.debug("job setup took this long " + (System.currentTimeMillis() - a));
 
-		
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversalMethod = request.getParameter(traversal);
@@ -302,10 +301,6 @@ public class CreateJob extends HttpServlet {
 			// No pairs in the job means something went wrong; error out
 			return;
 		}
-		
-		log.debug("jobpair creation took this long " + (System.currentTimeMillis() - a));
-
-		
 
 		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
@@ -331,7 +326,18 @@ public class CreateJob extends HttpServlet {
 		}
 	}
 	
-	public static ValidatorStatusCode isValid(int userId, int queueId, int cpuLimit, int wallclockLimit, Integer preProcId, Integer postProcId) {
+	/**
+	 * Validates that the given parameters are allowable for the given queue and user.
+	 * @param userId The ID of the user trying to create a job. Invalid if this user does not have permission
+	 * to use the given queue.
+	 * @param queueId The queue being used.
+	 * @param cpuLimit The CPU timeout for the job. Invalid if it exceeds the queue limit. Not checked if null. 
+	 * @param wallclockLimit The wallclock timeout for the job. Invalid if it exceeds the queue limit. Not checked if null.
+	 * @param preProcId The ID of the pre processor being used. Invalid if the given user cannot use it.
+	 * @param postProcId The ID of the post processor being used. Invalid if the given user cannot use it.
+	 * @return A ValidatorStatusCode with a human readable error message if invalid.
+	 */
+	public static ValidatorStatusCode isValid(int userId, int queueId, Integer cpuLimit, Integer wallclockLimit, Integer preProcId, Integer postProcId) {
 		List<Queue> userQueues = Queues.getUserQueues(userId); 
 		Boolean queueFound=false;
 		for (Queue queue:userQueues){
@@ -346,11 +352,11 @@ public class CreateJob extends HttpServlet {
 		}
 		
 		Queue q=Queues.get(queueId);
-		if (wallclockLimit > q.getWallTimeout()) {
+		if (wallclockLimit!=null && wallclockLimit > q.getWallTimeout()) {
 			return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
 		}
 		
-		if (cpuLimit>q.getCpuTimeout()) {
+		if (cpuLimit != null && cpuLimit>q.getCpuTimeout()) {
 			return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
 		}
 		
@@ -380,17 +386,35 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
+
+			int userId = SessionUtil.getUserId(request);
+			int sid = Integer.parseInt(request.getParameter(spaceId));
+			// Make sure the user has access to the space
+			Permission perm = Permissions.get(userId, sid);
+			if (sid>=0) {
+				if(perm == null || !perm.canAddJob()) {
+					return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
+				}
+			}
+
 			// Make sure timeout an int
-			if(!Validator.isValidInteger(request.getParameter(clockTimeout))) {
+			if(Util.paramExists(clockTimeout, request) && !Validator.isValidInteger(request.getParameter(clockTimeout))) {
 				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
 			}
 
-			if(!Validator.isValidInteger(request.getParameter(cpuTimeout))) {
+			if(Util.paramExists(cpuTimeout, request) && !Validator.isValidInteger(request.getParameter(cpuTimeout))) {
 				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 			
-			if(!Validator.isValidDouble(request.getParameter(maxMemory))) {
+			if(Util.paramExists(maxMemory, request) && !Validator.isValidDouble(request.getParameter(maxMemory))) {
 				return new ValidatorStatusCode(false, "The given maximum memory needs to be a valid double");
+			}
+			if (!Util.paramExists(clockTimeout, request) || !Util.paramExists(cpuTimeout, request) || !Util.paramExists(maxMemory, request)) {
+				DefaultSettings s = Communities.getDefaultSettings(Integer.parseInt(request.getParameter(spaceId)));
+				if (s==null) {
+					return new ValidatorStatusCode(false, "There is no settings profile for the current space, "
+							+ "so time and memory limits must be specified");
+				}
 			}
 			
 			if (!Validator.isValidLong(request.getParameter(randSeed))) {
@@ -427,36 +451,16 @@ public class CreateJob extends HttpServlet {
 			}
 			// Make sure the queue is a valid selection and user has access to it
 			Integer queueId = Integer.parseInt(request.getParameter(workerQueue));
-			int userId = SessionUtil.getUserId(request);
-			
-			//make sure both timeouts are <= the queue settings
-			int cpuLimit = Integer.parseInt(request.getParameter(cpuTimeout));
-			int runLimit = Integer.parseInt(request.getParameter(clockTimeout));
-			
-			
-			
-			
 			// Ensure the job description is valid
 			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
 				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
 			}		
-
-			
-			int sid = Integer.parseInt(request.getParameter(spaceId));
-			
-			Permission perm = Permissions.get(userId, sid);
-			// Make sure the user has access to the space
-			
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
 			}
+
 			if (request.getParameter(run).equals("quickJob")) {
 				//we only need to check to see if the space is valid if a space was actually specified
-				if (sid>=0) {
-					if(perm == null || !perm.canAddJob()) {
-						return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
-					}
-				}
 				if (!Util.paramExists(benchmarks, request)) {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
 				}
@@ -513,6 +517,19 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
 			}
+			
+			
+
+			//make sure both timeouts are <= the queue settings
+			Integer cpuLimit = null;
+			if (Util.paramExists(cpuTimeout, request)) {
+				cpuLimit = Integer.parseInt(request.getParameter(cpuTimeout));
+			}
+			Integer runLimit = null;
+			if (Util.paramExists(clockTimeout, request)) {
+				runLimit = Integer.parseInt(request.getParameter(clockTimeout));
+			}
+			
 			// Passed all type checks-- next we check permissions 
 			return CreateJob.isValid(userId,queueId,cpuLimit,runLimit,preProc,postProc);
 		} catch (Exception e) {

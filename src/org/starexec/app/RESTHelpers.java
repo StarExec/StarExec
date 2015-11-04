@@ -1,7 +1,5 @@
 package org.starexec.app;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +11,6 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
@@ -26,7 +23,6 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
@@ -35,9 +31,9 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.test.TestResult;
-import org.starexec.test.TestSequence;
+import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.test.integration.TestResult;
+import org.starexec.test.integration.TestSequence;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.dataStructures.TreeNode;
@@ -262,7 +258,6 @@ public class RESTHelpers {
 	protected static class JSTreeAttribute {
 		private int id;
 		private String rel;
-		private boolean permanent;
 		private boolean global;
 		private int defaultQueueId;
 		private int maxStages;
@@ -273,7 +268,6 @@ public class RESTHelpers {
 			this.rel = type;
 			this.maxStages=maxStages;
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
-				this.permanent = Queues.isQueuePermanent(id);
 				this.global = Queues.isQueueGlobal(id);
 			}
 			this.defaultQueueId = Cluster.getDefaultQueueId();
@@ -295,7 +289,6 @@ public class RESTHelpers {
 	 * 
 	 * @author Tyler Jensen & Todd Elvers
 	 */
-	@SuppressWarnings("unused")
 	protected static class SpacePermPair {
 		@Expose
 		private Space space;
@@ -316,7 +309,6 @@ public class RESTHelpers {
 	 * 
 	 * @author Tyler Jensen
 	 */
-	@SuppressWarnings("unused")
 	protected static class CommunityDetails {
 		@Expose
 		private Space space;
@@ -344,7 +336,6 @@ public class RESTHelpers {
 	 * 
 	 * @author Wyatt Kaiser
 	 */
-	@SuppressWarnings("unused")
 	protected static class PermissionDetails {
 		@Expose
 		private Permission perm;
@@ -661,29 +652,6 @@ public class RESTHelpers {
 		sb.append("</p>");
 		return sb.toString();
 	}
-
-	/**
-	 * Returns the HTML representing a job pair's status
-	 *
-	 * @param statType 'asc' or 'desc'
-	 * @param numerator a job pair's completePairs, pendingPairs, or errorPairs variable
-	 * @param denominator a job pair's totalPairs variable
-	 * @return HTML representing a job pair's status
-	 * @author Todd Elvers
-	 */
-	public static String getPairStatHtml(String statType, int numerator, int denominator){
-		StringBuilder sb = new StringBuilder();
-		sb.append("<p class=\"stat ");
-		sb.append(statType);
-		sb.append("\">");
-		sb.append(numerator);
-		sb.append("/");
-		sb.append(denominator);
-		sb.append("</p>");
-		return sb.toString();
-	}
-	
-	
 	
 	/**
 	 * 
@@ -2646,11 +2614,12 @@ public class RESTHelpers {
 			String spaceLink = sb.toString();
 
 			sb = new StringBuilder();
-			sb.append("<input type=\"button\" onclick=\"handleRequest('" + req.getCode() + "' , 'true')\" value=\"Approve\"/>");
+			sb.append("<input class=\"acceptRequestButton\" type=\"button\" data-code=\""+req.getCode()+"\" value=\"Approve\" />");
 			String approveButton = sb.toString();
 
 			sb = new StringBuilder();
-			sb.append("<input type=\"button\" onclick=\"handleRequest('" + req.getCode() + "', 'false')\" value=\"Decline\"/>");
+			sb.append("<input type=\"button\" class=\"declineRequestButton\""
+					+ "data-code=\""+req.getCode()+"\" value=\"Decline\"/>");
 			String declineButton = sb.toString();
 
 			// Create an object, and inject the above HTML, to represent an
@@ -2701,214 +2670,6 @@ public class RESTHelpers {
 		// Return the next DataTable page
 		return nextPage;
 	}
-	
-	public static JsonObject convertHistoricQueueRequestToJsonObject(List<QueueRequest> requests, int totalRecords, int syncValue, int currentUserId) {
-		JsonArray dataTablePageEntries = new JsonArray();
-		for (QueueRequest req : requests) {			
-			//Dates
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-			Date start = req.getStartDate();
-			Date end = req.getEndDate();
-			String start1 = sdf.format(start);
-			String end1 = sdf.format(end);
-			
-			//
-			// Create an object, and inject the above HTML, to represent an
-			// entry in the DataTable
-			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(req.getQueueName()));
-			entry.add(new JsonPrimitive(req.getNodeCount()));
-			entry.add(new JsonPrimitive(start1));
-			entry.add(new JsonPrimitive(end1));
-			entry.add(new JsonPrimitive(req.getMessage()));
-
-			dataTablePageEntries.add(entry);
-		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecords);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
-	}
-	
-	/**
-	 * Given a list of users, creates a JsonObject that can be used to populate
-	 * a datatable client-side
-	 * 
-	 * @param requests The QueueRequests that will make up the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
-	 * @param currentUserId
-	 *            the ID of the user making the request for this datatable
-	 * @return A JsonObject that can be used to populate a datatable
-	 * @author Eric Burns
-	 */
-	public static JsonObject convertQueueRequestsToJsonObject(List<QueueRequest> requests, int totalRecords, int syncValue, int currentUserId, boolean isRequest) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
-		 */
-		JsonArray dataTablePageEntries = new JsonArray();
-		for (QueueRequest req : requests) {
-			StringBuilder sb = new StringBuilder();
-
-			// Space
-			Space space = Spaces.get(req.getSpaceId());
-			sb = new StringBuilder();
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(space.getId());
-			sb.append("\" prim=\"space\" />");
-			String hiddenSpaceId = sb.toString();
-			// Create the space "details" link and append the hidden input
-			// element
-			sb = new StringBuilder();
-			sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
-			sb.append(space.getParentSpace());
-			sb.append(",");
-			sb.append(space.getId());
-			sb.append(")\">");
-			sb.append(space.getName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenSpaceId);
-			String spaceLink = sb.toString();
-						
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-			Date start = req.getStartDate();
-			Date end = req.getEndDate();
-			String start1 = sdf.format(start);
-			String end1 = sdf.format(end);
-
-			if (isRequest) {
-				String hiddenUserId;
-				sb = new StringBuilder();
-
-				User user = Users.get(req.getUserId());
-				// Create the hidden input tag containing the user id
-				if (user.getId() == currentUserId) {
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(user.getId());
-					sb.append("\" name=\"currentUser\" id=\"uid" + user.getId()
-							+ "\" prim=\"user\"/>");
-					hiddenUserId = sb.toString();
-				} else {
-					sb.append("<input type=\"hidden\" value=\"");
-					sb.append(user.getId());
-					sb.append("\" id=\"uid" + user.getId()
-							+ "\" prim=\"user\"/>");
-					hiddenUserId = sb.toString();
-				}
-
-				// Create the user "details" link and append the hidden input
-				// element
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/user.jsp?id="));
-				sb.append(user.getId());
-				sb.append("\" target=\"_blank\">");
-				sb.append(user.getFullName());
-				RESTHelpers.addImg(sb);
-				sb.append(hiddenUserId);
-				String userLink = sb.toString();
-				
-				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"location.href='" + Util.docRoot("") + "secure/admin/queue.jsp?id=" + req.getId() + "'\" value=\"Y/N\"/>");
-				String approveButton = sb.toString();
-				log.debug(approveButton);
-
-
-
-				// Create an object, and inject the above HTML, to represent an
-				// entry in the DataTable
-				JsonArray entry = new JsonArray();
-				entry.add(new JsonPrimitive(userLink));
-				entry.add(new JsonPrimitive(spaceLink));
-				entry.add(new JsonPrimitive(req.getNodeCount()));	//req.getNodeCount()
-				entry.add(new JsonPrimitive(start1));
-				entry.add(new JsonPrimitive(end1));
-				entry.add(new JsonPrimitive(approveButton));
-
-				dataTablePageEntries.add(entry);
-			} else {
-				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"cancelReservation("+ req.getSpaceId() + "," + Queues.getIdByName(req.getQueueName()) + ")\" value=\"Cancel\"/>");
-				String cancelButton = sb.toString();
-				log.debug(cancelButton);
-
-				int minNode = Cluster.getMinNodeCount(req.getId());
-				int maxNode = Cluster.getMaxNodeCount(req.getId());
-				
-				// Create an object, and inject the above HTML, to represent an
-				// entry in the DataTable
-				JsonArray entry = new JsonArray();
-				entry.add(new JsonPrimitive(spaceLink));
-				entry.add(new JsonPrimitive(req.getQueueName()));
-				if (minNode != maxNode) {
-					entry.add(new JsonPrimitive(minNode + " - " + maxNode));
-				} else {
-					entry.add(new JsonPrimitive(maxNode));
-				}
-				entry.add(new JsonPrimitive(start1));
-				entry.add(new JsonPrimitive(end1));
-				entry.add(new JsonPrimitive(cancelButton));
-
-				dataTablePageEntries.add(entry);
-			}
-
-		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecords);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
-	}
-
-
-	/**
-	 * Copy a hierarchy of the space into another space
-	 * 
-	 * @param srcId
-	 *            The Id of the source space which is being copied.
-	 * @param desId
-	 *            The Id of the destination space which is copied into.
-	 * @param usrId
-	 *            The Id of the user doing the copy.
-	 * @return The Id of the root space of the copied hierarchy.
-	 * @author Ruoyu Zhang
-	 */
-	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
-		if (srcId == desId) {
-			throw new StarExecException("You can't copy a space into itself.");
-		}
-
-
-		Space sourceSpace = Spaces.get(srcId);
-		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
-		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
-		log.debug("Space tree built during space hierarchy copy:");
-		logSpaceTree(spaceTree);
-
-		return Spaces.copySpaceTree(spaceTree, desId, usrId);
-	}
-
-
 
 	private static void logSpaceTree(TreeNode<Space> tree) {
 		logSpaceTreeHelper(tree, "");
@@ -3024,23 +2785,77 @@ public class RESTHelpers {
 		nextPage.add("aaData", dataTablePageEntries);
 		return nextPage;
 	}
+	/**
+	 * Gets all pending community requests for a given community.
+	 * @param request The http request.
+	 * @param communityId The community to get pending requests for.
+	 * @return the new json object or null on error.
+	 * @author Albert Giegerich
+	 */
+	public static JsonObject getNextDataTablesPageForPendingCommunityRequestsForCommunity(HttpServletRequest httpRequest, int communityId) {
 
-	public static JsonObject getNextDataTablesPageForPendingQueueReservations(
-			HttpServletRequest request) {
 		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers
-				.getAttrMapQueueReservation(request);
-		if (null == attrMap) {
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(httpRequest);
+		if (attrMap == null) {
 			return null;
 		}
 
-		int currentUserId = SessionUtil.getUserId(request);
-		int totalRequests = Requests.getRequestCount();
-		List<QueueRequest> requests = Requests.getPendingQueueRequests(
-				attrMap.get(STARTING_RECORD), // Record to start at
-				attrMap.get(RECORDS_PER_PAGE) // Number of records to return
-				);
+		int totalRequests = 0; 
+		List<CommunityRequest> requests = null;
+		try {
+			requests = Requests.getPendingCommunityRequestsForCommunity(
+						attrMap.get(STARTING_RECORD),
+						attrMap.get(RECORDS_PER_PAGE),
+						communityId
+						);
+			totalRequests = Requests.getCommunityRequestCountForCommunity(communityId);
+		} catch (StarExecDatabaseException e) {
+			log.error("Could not successfully get community requests for community with id="+communityId, e);
+			return null;
+		}
 
+
+		return setupAttrMapAndConvertRequestsToJson(requests, totalRequests, attrMap, httpRequest);
+	}
+
+	/**
+	 * Gets all pending community requests. 
+	 * @param request The http request.
+	 * @author Albert Giegerich
+	 */
+	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest httpRequest) {
+		// Parameter Validation
+		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(httpRequest);
+		if (attrMap == null) {
+			return null;
+		}
+
+		int totalRequests = 0; 
+		List<CommunityRequest> requests = null;
+		try {
+			requests = Requests.getPendingCommunityRequests(
+					attrMap.get(STARTING_RECORD),
+					attrMap.get(RECORDS_PER_PAGE)
+					);
+			totalRequests = Requests.getCommunityRequestCount();
+		} catch (StarExecDatabaseException e) {
+			log.error("Could not successfully get community requests for all communities.", e);
+			return null;
+		}
+
+		return setupAttrMapAndConvertRequestsToJson(requests, totalRequests, attrMap, httpRequest);
+	}
+
+	/**
+	 * Provides an abstraction so the same code can be used when we want to get all pending community requests or
+	 * just requests for a given community.
+	 * @param request The http request.
+	 * @param getAllCommunityRequests True if we want all community requests, false if we only want ones for a specific community.
+	 * @param communityId The community to get pending requests for. Ignored if getAllCommunityRequests is false.
+	 * @author Unknown, Albert Giegerich
+	 */
+	private static JsonObject setupAttrMapAndConvertRequestsToJson(List<CommunityRequest> requests, 
+			int totalRequests, HashMap<String, Integer> attrMap, HttpServletRequest httpRequest) {
 		/**
 		 * Used to display the 'total entries' information at the bottom of the
 		 * DataTable; also indirectly controls whether or not the pagination
@@ -3054,209 +2869,7 @@ public class RESTHelpers {
 		else {
 			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
 		}
-		return convertQueueRequestsToJsonObject(requests, totalRequests,
-				attrMap.get(SYNC_VALUE), currentUserId, true);
-	}
-
-	
-	public static JsonObject getNextDataTablesPageForHistoricReservations(HttpServletRequest request) {
-		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		int currentUserId = SessionUtil.getUserId(request);
-		int totalHistoric = Requests.getHistoricCount();
-		List<QueueRequest> requests = Requests.getHistoricQueueReservations(
-				attrMap.get(STARTING_RECORD), // Record to start at
-				attrMap.get(RECORDS_PER_PAGE), // Number of records to return
-				attrMap.get(SORT_DIRECTION) == ASC? true : false,
-				attrMap.get(SORT_COLUMN),
-				request.getParameter(SEARCH_QUERY)
-				);
-
-		/**
-		 * Used to display the 'total entries' information at the bottom of the
-		 * DataTable; also indirectly controls whether or not the pagination
-		 * buttons are toggle-able
-		 */
-		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalHistoric);
-		}
-		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-		else {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
-		}
-		return convertHistoricQueueRequestToJsonObject(requests, totalHistoric,
-				attrMap.get(SYNC_VALUE), currentUserId);
-	}
-	
-	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest request) {
-		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		int currentUserId = SessionUtil.getUserId(request);
-		int totalRequests = Requests.getCommunityRequestCount();
-		List<CommunityRequest> requests = Requests.getPendingCommunityRequests(
-				attrMap.get(STARTING_RECORD),
-				attrMap.get(RECORDS_PER_PAGE)
-				);
-
-		/**
-		 * Used to display the 'total entries' information at the bottom of the
-		 * DataTable; also indirectly controls whether or not the pagination
-		 * buttons are toggle-able
-		 */
-		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalRequests);
-		}
-		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-		else {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
-		}
+		int currentUserId = SessionUtil.getUserId(httpRequest);
 		return convertCommunityRequestsToJsonObject(requests, totalRequests, attrMap.get(SYNC_VALUE), currentUserId);
 	}
-	
-	protected static JsonObject getNextdataTablesPageForManageNodes(List<java.sql.Date> dates, HttpServletRequest request) {		
-		JsonArray dataTablePageEntries = new JsonArray();
-		int total_node_count = Cluster.getNonPermanentNodeCount();
-		
-		//This hashmap tells us at what date did a queue experience its first non-zero count
-		HashMap<Integer, java.util.Date> nonzero_date = new HashMap<Integer, java.util.Date>();
-		//This hashmap tells us at what date did we experience the last non-zero count
-		HashMap<Integer, java.util.Date> last_date = new HashMap<Integer, java.util.Date>();
-		//This hashmap tells us if the request had a non-zero count on TODAY's date
-		List<Integer> starts_nonEmpty = new LinkedList<Integer>();
-		
-		List<Queue> queues = Queues.getAllNonPermanent();
-
-		for (java.sql.Date date : dates) {
-			if (queues!= null) {
-				for (Queue q : queues) {
-					if (q.getId() == Cluster.getDefaultQueueId()) {
-						continue;
-					}
-					int node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					
-					if (node_count > 0) {
-						if (!(nonzero_date.containsKey(q.getId()) )  ) {
-							nonzero_date.put(q.getId(), date);
-						}
-						if (last_date.containsKey(q.getId())) {
-							if (date.after(last_date.get(q.getId()))) {
-								last_date.remove(q.getId());
-							}
-						}
-					} else {
-						if (nonzero_date.containsKey(q.getId())) {
-							if (!(last_date.containsKey(q.getId()))) {
-								last_date.put(q.getId(), date);
-							}
-						}
-					}
-				}
-			}
-		}		
-		
-		int dateCount = 0;
-		for (java.util.Date date : dates ) {
-			dateCount += 1;
-			boolean conflict = false;
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-			String date1 = sdf.format(date);
-			
-	    	JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(date1));
-			int total = 0;
-			int node_count = Queues.getNodeCountOnDate(Cluster.getDefaultQueueId(), date);
-			total = total + node_count;
-			
-			//Get the total number of nodes that have been reserved
-			if (queues != null) {
-				for (Queue q : queues) {
-					node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					total = total + node_count;
-				}
-			}
-			
-			//set the number for the default queue to be all leftovers
-			int leftover_nodes = total_node_count - total;
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive(0));
-			} else {
-				entry.add(new JsonPrimitive(total_node_count - total));
-			}
-			
-			//Get the numbers for each respective queue
-			if (queues!= null) {
-				for (Queue q : queues) {
-					if (q.getId() == Cluster.getDefaultQueueId()) {
-						continue;
-					}
-					node_count = Queues.getNodeCountOnDate(q.getId(), date);
-					if (dateCount == 1 && node_count > 0) { starts_nonEmpty.add(q.getId()); }
-					int temp_nodeCount = Cluster.getTempNodeCountOnDate(q.getName(), date);
-					if (temp_nodeCount != -1) {
-						node_count = temp_nodeCount;
-					}
-					
-					if ( (starts_nonEmpty.indexOf(q.getId()) != -1) && (node_count == 0) && (dateCount == 1)) { conflict = true; }
-					
-					if (last_date.containsKey(q.getId())) {
-						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId()); // this is the date that the queue first had a non-zero node count
-						java.util.Date latest_date = last_date.get(q.getId()); // this is the date that the queue returned to 0
-						
-						if (date.after(earliest_nonZero_date) && date.before(latest_date)) {
-							if (node_count == 0) { conflict = true; }
-						}
-					} else if (nonzero_date.containsKey(q.getId())) {
-						java.util.Date earliest_nonZero_date = nonzero_date.get(q.getId());
-						
-						if (date.after(earliest_nonZero_date)) {
-							if (node_count == 0) { conflict = true; }
-						}
-					}		
-					
-					
-					entry.add(new JsonPrimitive(node_count));
-				}
-			}
-			
-			//Put the "total" at the end
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive (total)); // conflict #
-			} else {
-				entry.add(new JsonPrimitive(total_node_count)); //default total #
-			}
-			//Mark if conflicted
-			if (leftover_nodes < 0) {
-				entry.add(new JsonPrimitive("CONFLICT"));
-			} else if (leftover_nodes == 0 || conflict == true) {
-				entry.add(new JsonPrimitive("ZERO"));
-			} else {
-				entry.add(new JsonPrimitive("clear"));
-			}
-			dataTablePageEntries.add(entry);
-		}
-    	JsonObject nextPage=new JsonObject();
-
-	    nextPage.add("aaData", dataTablePageEntries);
-
-	   	return nextPage;
-	}
-
 }

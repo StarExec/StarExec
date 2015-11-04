@@ -2,7 +2,9 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.sql.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -14,17 +16,13 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Users;
 import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.QueueRequest;
-import org.starexec.data.to.User;
-import org.starexec.util.Mail;
+import org.starexec.data.to.Queue;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-
 
 
 /**
@@ -33,12 +31,14 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateQueue extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(AddSpace.class);	
+	private static final Logger log = Logger.getLogger(CreateQueue.class);	
 
-
-
-	private static final String id = "id";
-
+	// Request attributes
+	private static final String name = "name";
+	private static final String nodes = "node";
+	private static final String maxCpuTimeout="cpuTimeout";
+	private static final String maxWallTimeout="wallTimeout";
+	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -49,7 +49,7 @@ public class CreateQueue extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 
 		ValidatorStatusCode status=isRequestValid(request);
 		if (!status.isSuccess()) {
@@ -58,60 +58,90 @@ public class CreateQueue extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, status.getMessage());
 			return;
 		}
-		Integer requestId=  Integer.parseInt(request.getParameter(id));
-		QueueRequest req = Requests.getQueueRequest(requestId);
 		
-		String queue_name = req.getQueueName();
-		int queueUserId = req.getUserId();
-		Date start = req.getStartDate();
-		Date end = req.getEndDate();
+		
+		//String node_name = (String)request.getParameter(Nodes);
+		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 
-		//Add the queue, reserve the nodes, and approve the reservation
-		int newQueueId = Queues.add(queue_name + ".q",req.getCpuTimeout(),req.getWallTimeout());
-		Cluster.reserveNodes(req.getId(), start, end);
+		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
-		if(!Users.isAdmin(queueUserId)) {
-			// Notify user they've been approved	
-			Mail.sendReservationResults(req, true);
-			log.info(String.format("User [%s] has finished the approval process.", Users.get(req.getUserId()).getFullName()));
-			
-		} else if (Users.isAdmin(queueUserId)) {
-			log.info(String.format("Admin has finished the add queue process."));
-			
-		} else {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error approving the queue reservation");
+		log.debug("nodeIds = " + nodeIds);
+		LinkedList<String> nodeNames = new LinkedList<String>();
+		LinkedList<String> queueNames = new LinkedList<String>();
+		if (nodeIds != null) {
+		    for (int id : nodeIds) {
+				log.debug("id = " + id);
+				WorkerNode n = new WorkerNode();
+				n.setId(id);
+				n.setName(Cluster.getNodeNameById(id));
+				Queue q = Cluster.getQueueForNode(n);
+				NQ.put(n, q);
+	
+				nodeNames.add(Cluster.getNodeNameById(id));
+				if(q == null){
+				    queueNames.add(null);
+				}else{
+				    queueNames.add(q.getName());
+				}
+		    }
 		}
+		String queue_name = (String)request.getParameter(name);
+		log.debug("queue_name: " + queue_name);
 
-		if (newQueueId <= 0) {
+		String qName = queue_name+".q";
+	
+		//TODO : BUG when trying to create a queue using an orphaned node, seems to create queue with right node,
+		//returning wrong status code for some reason? seems related to cputimeout and wallclock timeout
+		String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
+		String[] qNames = queueNames.toArray(new String[queueNames.size()]);
+		boolean backend_success = R.BACKEND.createQueue(qName,nNames,qNames);
+
+		log.debug("backend_success: " + backend_success);
+
+		//reloads worker nodes and queues
+		Cluster.loadWorkerNodes();
+		Cluster.loadQueues();
+				
+		//DatabaseChanges
+		int queueId=Queues.getIdByName(qName);
+		log.debug("just added new queue with id = "+queueId);
+		
+		
+		Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
+		Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
+		
+		boolean success = Queues.updateQueueCpuTimeout(queueId, cpuTimeout);
+		success = success && Queues.updateQueueWallclockTimeout(queueId, wallTimeout);
+		if (!success) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
 		} else {
 			// On success, redirect to the space explorer so they can see changes
-			response.addCookie(new Cookie("New_ID", String.valueOf(newQueueId)));
-		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));	
-		}		
+		    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
+		}
 	}
 	
 	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
 		try {
 			int userId=SessionUtil.getUserId(request);
-			if (!Validator.isValidInteger(request.getParameter(id))) {
-				return new ValidatorStatusCode(false, "The request id needs to be a valid integer");
-			}
-			Integer requestId=  Integer.parseInt(request.getParameter(id));
-			QueueRequest req = Requests.getQueueRequest(requestId);
-			if (req==null) {
-				return new ValidatorStatusCode(false, "The queue request you are referencing could not be found");
-			}
-			String queueName = req.getQueueName();
-			// Make sure that the queue has a unique name
-			if(Queues.notUniquePrimitiveName(queueName)) {
-				return new ValidatorStatusCode(false,"The requested queue name is already in use. Please select another.");
+			String queueName = request.getParameter(name);
+			if (!Validator.isValidInteger(request.getParameter(maxCpuTimeout)) || !Validator.isValidInteger(request.getParameter(maxWallTimeout))) {
+				return new ValidatorStatusCode(false, "Timeouts need to be valid integers");
 			}
 			
-			return QueueSecurity.canUserMakeQueue(userId, queueName);
+			Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
+			Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
+			if (cpuTimeout<=0 || wallTimeout<=0) {
+				return new ValidatorStatusCode(false,"Timeouts need to be greater than 0.");
+			}
+			
+			
+			return	QueueSecurity.canUserMakeQueue(userId, queueName);
+
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
-		return new ValidatorStatusCode(false, "There was an internal error processing your request");
+		
+		return new ValidatorStatusCode(false, "Internal error processing queue creation request");
+		
 	}
 }

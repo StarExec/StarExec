@@ -875,6 +875,23 @@ public class SpaceSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	/**
+	 * Checks whether the given user is allowed to see the current new community requests
+	 * @param userId The ID of the user in question
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 */
+	public static ValidatorStatusCode canUserViewCommunityRequestsForCommunity(int userId, int communityId) {
+		Permission perm=Permissions.get(userId, communityId);
+		//must be a leader to make a space public
+		if (Users.hasAdminReadPrivileges(userId)) { 
+			return new ValidatorStatusCode(true);
+		} else if (!(perm == null) && perm.isLeader()) {
+			return new ValidatorStatusCode(true);
+		} else {
+			return new ValidatorStatusCode(false, "You do not have permission to perform this operation.");
+		}
+	}
 	
 	/**
 	 * Checks whether a user can update whether a space is public or private

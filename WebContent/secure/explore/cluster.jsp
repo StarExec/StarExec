@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="Compute Cluster" js="lib/jquery.dataTables.min, lib/jquery.jstree, explore/cluster, lib/jquery.progressbar.min" css="explore/cluster, common/table, explore/common">			
+<star:template title="Compute Cluster" js="lib/jquery.dataTables.min, lib/jquery.jstree, shared/sharedFunctions, explore/cluster, lib/jquery.progressbar.min" css="explore/cluster, common/table, explore/common, shared/cluster">
 	<div id="explorer">
 		<h3>Active Queues</h3>
 		<ul id="exploreList">
@@ -30,6 +30,11 @@
 			</table>
 			
 		</fieldset>	
+		<fieldset id="loadsField">
+			<legend>queue load</legend>
+			<button id="refreshLoads">refresh</button>
+			<textarea id="loadOutput"></textarea>
+		</fieldset>
 		<fieldset id="qstatField">
 			<legend>qstat output</legend>
 			<button id="refreshQstat">refresh</button>

@@ -122,7 +122,7 @@ CREATE TABLE benchmarks (
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (id),
-	CONSTRAINT benchmarks_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT benchmarks_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT benchmarks_bench_type FOREIGN KEY (bench_type) REFERENCES processors(id) ON DELETE SET NULL
 );
 
@@ -159,7 +159,7 @@ CREATE TABLE solvers (
 	recycled BOOLEAN DEFAULT FALSE,
 	executable_type INT DEFAULT 1, 
 	PRIMARY KEY (id),	
-	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
 );
 
@@ -186,7 +186,6 @@ CREATE TABLE queues (
 	slots_reserved INTEGER DEFAULT 0,
 	slots_free INTEGER DEFAULT 0,
 	slots_total INTEGER DEFAULT 0,
-	permanent BOOLEAN DEFAULT FALSE,
 	global_access BOOLEAN DEFAULT FALSE,
 	cpuTimeout INT DEFAULT 259200,
 	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
@@ -277,7 +276,7 @@ CREATE TABLE jobs (
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (id),
-	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION,
+	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
 );
 -- This table stores timeouts for individual pipeline stages for this job. 
@@ -355,6 +354,22 @@ CREATE TABLE jobpair_stage_data (
 	PRIMARY KEY (jobpair_id,stage_number),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
+);
+
+-- this table stores, for every user, the difference in time
+-- between that user's job pair wallclock timeouts and actual
+-- runtime. This data is used by the JobManager for scheduling pairs
+-- among different users. This data is stored only temporarily between calls
+-- to submitJobs. It is completely wiped out after each call,
+-- so data here is generally stored for only about 30 seconds
+-- at a time.
+CREATE TABLE jobpair_time_delta (
+	user_id INT NOT NULL,
+	queue_id INT NOT NULL,
+	time_delta INT DEFAULT 0,
+	PRIMARY KEY (user_id, queue_id),
+	CONSTRAINT jobpair_time_delta_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
+	CONSTRAINT jobpair_time_delta_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Stores all inputs to a particular job pair, outside of the primary benchmark
@@ -489,38 +504,6 @@ CREATE TABLE change_email_requests (
 	PRIMARY KEY (user_id),
 	UNIQUE KEY (code),
 	CONSTRAINT change_email_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-
-
--- Pending requests to reserve a queue
--- Author: Wyatt Kaiser
-CREATE TABLE queue_request (
-	id INT NOT NULL AUTO_INCREMENT,
-	user_id INT NOT NULL,
-	space_id INT NOT NULL,
-	queue_name VARCHAR(64) NOT NULL,
-	message TEXT NOT NULL,
-	created TIMESTAMP NOT NULL,	
-	cpuTimeout INT DEFAULT 259200,
-	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
-	approved BOOLEAN NOT NULL DEFAULT FALSE,
-	queue_id INT DEFAULT NULL,
-	PRIMARY KEY (id),
-	CONSTRAINT queue_request_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	CONSTRAINT queue_request_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
-	CONSTRAINT queue_request_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE
-);
-
-
--- Associates a queue request to a particular day, on which the queue will have some number of nodes
--- Author: Eric Burns
-CREATE TABLE queue_request_assoc (
-	node_count INT NOT NULL,
-	reserve_date DATE NOT NULL,
-	request_id INT NOT NULL,
-	PRIMARY KEY (reserve_date, request_id),
-	CONSTRAINT queue_request_assoc FOREIGN KEY (request_id) REFERENCES queue_request(id) ON DELETE CASCADE
 );
 
 -- Pending requests to reset a user's password

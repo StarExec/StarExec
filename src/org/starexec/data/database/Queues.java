@@ -3,10 +3,9 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -18,13 +17,12 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 
@@ -35,7 +33,15 @@ import org.starexec.util.PaginationQueryBuilder;
  */
 public class Queues {
 	private static final Logger log = Logger.getLogger(Queues.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 
+    /**
+     * @return returns the default queue name, default queue should always exist
+     */
+    public static String getDefaultQueueName(){
+    	return "all";
+    }
+	
 	/**
 	 * Removes a queue from the database and calls R.BACKEND.removeQueue
 	 * @param queueId The Id of the queue to remove.
@@ -44,39 +50,32 @@ public class Queues {
 	public static boolean removeQueue(int queueId) {
 	    
 	    Queue q=Queues.get(queueId);
-	    boolean permanent=q.getPermanent();
-	    String queueName = q.getName();
 		
 	    //Pause jobs that are running on the queue
 	    List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
 
 	    if (jobs != null) {
-		for (Job j : jobs) {
-		    Jobs.pause(j.getId());
-		}
+			for (Job j : jobs) {
+			    Jobs.pause(j.getId());
+			}
 	    }
 
 	    //Move associated Nodes back to default queue
 	    List<WorkerNode> nodes = Queues.getNodes(queueId);
-		
+
 	    if (nodes != null) {
-		for (WorkerNode n : nodes) {
-		    R.BACKEND.moveNode(R.SGE_ROOT,n.getName(),R.BACKEND.getDefaultQueueName(R.SGE_ROOT));
-		}
+			for (WorkerNode n : nodes) {
+			    R.BACKEND.moveNode(n.getName(), getDefaultQueueName());
+			}
 	    }
 		
 	    boolean success=true;
 		
 		
 	    /***** DELETE THE QUEUE *****/	
-	    //Database Change
-	    if (permanent) {
-		success=success && Queues.delete(queueId);
-
-	    } else {
-		success = success && Requests.DeleteReservation(queueId);
-	    }
-	    R.BACKEND.deleteQueue(R.SGE_ROOT,queueName);
+	    
+	    success=success && Queues.delete(queueId);
+	    R.BACKEND.deleteQueue(q.getName());
 			
 	    Cluster.loadWorkerNodes();
 	    Cluster.loadQueues();	
@@ -220,7 +219,7 @@ public class Queues {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
+			procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
 			procedure.setString(1, queueName);
 			procedure.setString(2, nodeName);
 			
@@ -340,15 +339,6 @@ public class Queues {
 	public static List<Queue> getAllAdmin() {
 	    return getQueues(-2);
 	}
-	
-	/**
-	 * Gets all queues in the starexec cluster (excluding 'permanent' queues)
-	 * @return A list of queues
-	 * @author Wyatt Kaiser
-	 */
-	public static List<Queue> getAllNonPermanent() {
-		return getQueues(-3);
-	}
 
 	/**
 	 * Gets a queue with detailed information (Id and name)
@@ -439,6 +429,11 @@ public class Queues {
 		return -1;		
 	}
 	
+	/**
+	 * Gets the ID of a queue given the name of the queue
+	 * @param queueName The exact name of the queue, including .q
+	 * @return The name, or null if it was not found.
+	 */
 	public static int getIdByName(String queueName) {
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -584,45 +579,7 @@ public class Queues {
 		}
 			return null;
 	}
-	
-	/**
-	 * For a particular queue reservation, gets the number of nodes in that reservation on a particular day
-	 * @param requestId The id of the request entry for the queue of interest
-	 * @param date
-	 * @return
-	 */
-	
-	 public static int getNodeCountOnDate(int requestId, java.util.Date date) {
-		Connection con = null;	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetNodeCountOnDate(?, ?)}");
-			procedure.setInt(1, requestId);
-			java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-			procedure.setDate(2, sqlDate);
-			
-			
-			results = procedure.executeQuery();
 
-			while(results.next()){
-				return results.getInt("count");
-			}			
-
-			return 0;			
-			
-		} catch (Exception e){			
-			log.error("GetNodeCountOnDate says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return 0;
-	}
-	
 	/**
 	 * Gets all nodes in the cluster that belong to the queue
 	 * @param id The id of the queue to get nodes for
@@ -700,8 +657,6 @@ public class Queues {
 			} else if (userId == -2) {
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
-			} else if (userId == -3) {
-				procedure = con.prepareCall("{CALL GetAllQueuesNonPermanent}");
 			} else {
 			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
 			    procedure.setInt(1, userId);
@@ -734,76 +689,53 @@ public class Queues {
 	
 	/**
 	 * Retrieves all of the queues that the given user has access to when running a job
-	 * @param userId
-	 * @return
+	 * @param userId Id of the user to get queues for
+	 * @return A list of queues, or null on error
 	 */
 	public static List<Queue> getQueuesForUser(int userId) {
+		final String method = "getQueuesForUser";
 		if (Users.isAdmin(userId)) {
+			logUtil.debug(method, "Getting queues for admin user.");
 			return getQueues(0);
 		} else {
+			logUtil.debug(method, "Getting queues for non-admin user.");
 			
-			
-			List<Space> spaces = Spaces.getAllSuperSpaces(userId);
-			
-			List<Queue> queues = new LinkedList<Queue>();
-			// First add all the queues that have been reserved for a 
-			// superspace that the user is a member of
-			if (spaces != null) {
-				for (Space s : spaces) {
-					queues.addAll(Queues.getQueuesForSpace(s.getId()));
+			Connection con = null;
+			ResultSet results = null;
+			CallableStatement procedure = null;
+			try {
+				con = Common.getConnection();
+				procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
+				procedure.setInt(1, userId);
+				results = procedure.executeQuery();
+				List<Queue> queues = new LinkedList<Queue>();
+				
+				while (results.next()) {
+					Queue q = new Queue();
+					q.setId(results.getInt("id"));
+					q.setName(results.getString("name"));
+					q.setStatus(results.getString("status"));
+					q.setGlobalAccess(results.getBoolean("global_access"));
+					q.setCpuTimeout(results.getInt("cpuTimeout"));
+					q.setWallTimeout(results.getInt("clockTimeout"));
+					queues.add(q);
 				}
+				return queues;
+			} catch (Exception e) {
+				log.error("GetQueuesForUser says " + e.getMessage(), e);
+			} finally {
+				Common.safeClose(con);
+				Common.safeClose(results);
+				Common.safeClose(procedure);
 			}
-			
-			//Then get the permanent queues for the user
-			queues.addAll(Queues.getPermanentQueuesForUser(userId));			
-			return queues;
-
+			return null;
 		}
-	}
-	
-	/**
-	 * Gets all of the permanent queues that the given user has access to for running a job
-	 * @param userId
-	 * @return
-	 */
-	
-	private static List<Queue> getPermanentQueuesForUser(int userId) {
-		Connection con = null;
-		ResultSet results = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetPermanentQueuesForUser(?)}");
-			procedure.setInt(1, userId);
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while (results.next()) {
-				Queue q = new Queue();
-				q.setId(results.getInt("id"));
-				q.setName(results.getString("name"));
-				q.setStatus(results.getString("status"));
-				q.setPermanent(results.getBoolean("permanent"));
-				q.setGlobalAccess(results.getBoolean("global_access"));
-				q.setCpuTimeout(results.getInt("cpuTimeout"));
-				q.setWallTimeout(results.getInt("clockTimeout"));
-				queues.add(q);
-			}
-			return queues;
-		} catch (Exception e) {
-			log.error("GetPermanentQueuesForUser says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
 	}
 
 	/**
 	 * Get all the queues that have been reserved for a particular space
-	 * @param spaceId
-	 * @return
+	 * @param spaceId The ID of the space to check
+	 * @return A list of valid queues or null on errors
 	 */
 	public static List<Queue> getQueuesForSpace(int spaceId) {
 		Connection con = null;
@@ -890,28 +822,27 @@ public class Queues {
 	}
 	
 	/**
-	 * Returns the number of job pairs running in the given queue that are owned by the given user
+	 * Returns the sum of wallclock timeouts for all pairs that are in the given queue (running
+	 * or enqueued) that are owned by the given user.
 	 * @param queueId The queue in question
-	 * @param userId The ID of the user who owns the pairs we are counting
-	 * @return The integer number of job pairs, or null on failure
+	 * @param userId The ID of the user who owns the pairs
+	 * @return The integer sum of wallclock timeouts, or null on failure
 	 */
 
-	public static Integer getSizeOfQueue(int queueId, int userId) {
+	public static Integer getUserLoadOnQueue(int queueId, int userId) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetQueueSizeByUser(?,?)}");					
+			 procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
 			procedure.setInt(1, queueId);					
 			procedure.setInt(2, userId);
 			 results = procedure.executeQuery();
 
-			Integer qSize = -1;
 			while(results.next()){
-				qSize = results.getInt("count");	
+				return results.getInt("queue_load");	
 			}							
-			return qSize;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -954,38 +885,6 @@ public class Queues {
 
 		return null;
 	}
-	
-	public static List<Queue> getUnreservedQueues(int userId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetUnreservedQueues(?)}");
-			procedure.setInt(1, userId);
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while(results.next()){
-				Queue q = new Queue();
-				q.setName(results.getString("name"));
-				q.setId(results.getInt("id"));	
-				q.setStatus(results.getString("status"));
-				queues.add(q);
-			}			
-						
-			return queues;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
 
 	/**
 	 * Gets all queues in the starexec cluster accessible by the user with the given id
@@ -995,7 +894,11 @@ public class Queues {
 
 	 */
 	public static List<Queue> getUserQueues(int userId) {
-	    return getQueues(userId);
+		if (Users.hasAdminReadPrivileges(userId)) {
+			return getAll();
+		} else {
+			return getQueues(userId);
+		}
 	}
 	
 	/**
@@ -1055,7 +958,7 @@ public class Queues {
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static boolean update(String name, HashMap<String, String> attributes) {
+	public static boolean update(String name, Map<String, String> attributes) {
 		Connection con = null;	
 		CallableStatement procAddCol = null;
 		CallableStatement procUpdateAttr = null;
@@ -1120,40 +1023,6 @@ public class Queues {
 		log.debug(String.format("Queue [%s] failed to be updated.", name));
 		return false;
 	}
-
-	/**
-	 * Updates the usage of the given queue
-	 * @param q The queue to update the useage for. Must have a name and usage attributes
-	 * @return True if the operation was a success, false otherwise.
-	 */
-	public static boolean updateUsage(Queue q) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			
-			 procedure = con.prepareCall("{CALL UpdateQueueUseage(?, ?, ?, ?, ?)}");
-			
-			procedure.setString(1, q.getName());
-			procedure.setInt(2, q.getSlotsTotal());
-			procedure.setInt(3, q.getSlotsAvailable());
-			procedure.setInt(4, q.getSlotsUsed());
-			procedure.setInt(5, q.getSlotsReserved());
-			procedure.executeUpdate();
-			
-			//log.debug(String.format("Updated usage for queue [%s] successfully [U%d/R%d/T%d]", q.getName(), q.getSlotsUsed(), q.getSlotsReserved(), q.getSlotsTotal()));
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		log.debug(String.format("Usage for queue [%s] failed to be updated.", q.getName()));
-		return false;
-	}
 	
 	/**
 	 * Checks to see whether the given name is already being used by a queue
@@ -1199,40 +1068,10 @@ public class Queues {
 	}
 	
 	/**
-	 * Checks to see whether the given queue is permanent
-	 * @param queueId The ID of the queue to check
-	 * @return True if the queue is permanent and false if it is not OR there is an error
-	 */
-	
-	public static boolean isQueuePermanent(int queueId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL IsQueuePermanent(?)}");
-			procedure.setInt(1, queueId);
-			
-			results = procedure.executeQuery();
-			while(results.next()) {
-				return results.getBoolean("permanent");
-			}
-		} catch (Exception e) {
-			log.error("IsQueuePermanent says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return false;
-	}
-	
-	/**
 	 * Updates the cpu timeout for an existing queue
-	 * @param queueId
-	 * @param timeout
-	 * @return
+	 * @param queueId The ID of the queue to update
+	 * @param timeout The timeout to set, in seconds
+	 * @return True on success and false on error
 	 */
 	public static boolean updateQueueCpuTimeout(int queueId, int timeout) {
 		Connection con=null;
@@ -1255,9 +1094,9 @@ public class Queues {
 	}
 	/**
 	 * Updates the wallclock timeout for an existing queue
-	 * @param queueId
-	 * @param timeout
-	 * @return
+	 * @param queueId The ID of the queue to update
+	 * @param timeout The new timeout, in seconds.
+	 * @return True on success and false on error.
 	 */
 	public static boolean updateQueueWallclockTimeout(int queueId, int timeout) {
 		Connection con=null;
@@ -1278,47 +1117,10 @@ public class Queues {
 		}
 		return false;
 	}
-	
-	/**
-	 * Makes a queue permanent by both setting the "permanent" flag to be true and 
-	 * also removing the queue's association from spaces.
-	 * @param queue_id
-	 * @return
-	 */
-	public static boolean makeQueuePermanent(int queue_id) {
-		Connection con = null;
-		CallableStatement MakePermanent = null;
-		CallableStatement DeleteAssociation = null;
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-			
-			//Set permanent flag in queues
-			MakePermanent = con.prepareCall("{CALL MakeQueuePermanent(?)}");
-			MakePermanent.setInt(1, queue_id);
-			MakePermanent.executeUpdate();
-			log.debug("successfully made this queue permanent = "+queue_id);
-			
-			//Delete from comm_queue
-			DeleteAssociation = con.prepareCall("{CALL RemoveQueueAssociation(?)}");
-			DeleteAssociation.setInt(1, queue_id);
-			DeleteAssociation.executeUpdate();
-			
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e) {
-			log.error("MakeQueuePermanent says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(MakePermanent);
-			Common.safeClose(DeleteAssociation);
-		}
-		return false;
-	}
-	
+
 	/**
 	 * Checks to see whether the given queue is global or not
-	 * @param queueId
+	 * @param queueId The ID of the queue to check
 	 * @return True if it is global, and false if it is not OR if there is an error
 	 */
 	
@@ -1348,8 +1150,8 @@ public class Queues {
 	
 	/**
 	 * Deletes a queue from the database
-	 * @param queueId
-	 * @return
+	 * @param queueId The ID of the queue to delete
+	 * @return True on success and false on error
 	 */
 
 	public static boolean delete(int queueId) {
@@ -1373,7 +1175,7 @@ public class Queues {
 	}
 	/**
 	 * Sets the global access column of the given queue to true
-	 * @param queueId
+	 * @param queueId The ID of the queue to check
 	 * @return True on success and false on failure
 	 */
 	public static boolean makeGlobal(int queueId) {
@@ -1397,7 +1199,7 @@ public class Queues {
 	
 	/**
 	 * Sets the global_access column of the given queue to false
-	 * @param queueId
+	 * @param queueId The ID of hte queue to remove
 	 * @return True on success and false on error
 	 */
 	public static boolean removeGlobal(int queueId) {
@@ -1419,7 +1221,11 @@ public class Queues {
 		return false;
 	}
 	
-	
+	/**
+	 * Sets the given queue to be the system test queue.
+	 * @param queueId The ID of the queue to make the test queue.
+	 * @return True on success and false on error.
+	 */
 	public static boolean setTestQueue(int queueId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -1442,7 +1248,7 @@ public class Queues {
 	
 	/**
 	 * Returns all.q, which is the one queue in the system that is always guaranteed to exist
-	 * @return
+	 * @return The default queue, or null if it could not be found.
 	 */
 	public static Queue getAllQ() {
 		return Queues.get(R.DEFAULT_QUEUE_ID);
@@ -1452,7 +1258,7 @@ public class Queues {
 	 * Gets the queue that should be used for running test jobs. If no such queue
 	 * is currently set, it will be set to all.q before returning. This is to ensure
 	 * a test queue is always set
-	 * @return
+	 * @return The id of the queue, or -1 on error
 	 */
 	public static int getTestQueue() {
 		Connection con=null;

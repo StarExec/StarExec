@@ -1,6 +1,5 @@
 package org.starexec.util;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -35,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -42,25 +42,8 @@ import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cache;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.JobPair;
 import org.starexec.test.TestUtil;
 
 public class Util {	
@@ -301,19 +284,17 @@ public class Util {
      */
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
-		FileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
-		List<FileItem> items = upload.parseRequest(request);
 		HashMap<String, Object> form = new HashMap<String, Object>();
-			
-		for(FileItem f : items) {
+		for (Part p : request.getParts()) {
+			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
-		    if(f.isFormField()) {
-			// Add the field name and field value to the hashmap
-			form.put(f.getFieldName(), f.getString());				
+		    if(!wrapper.isFile()) { //TODO: Check if this is a non-file or file
+				// Add the field name and field value to the hashmap
+				form.put(p.getName(), IOUtils.toString(p.getInputStream()));				
 		    } else {
-			// Else we've encountered a file, so add the FileItem to the hashmap
-			form.put(f.getFieldName(), f);					
+				// Else we've encountered a file, so add the entire wrapper to the HashMap.
+		    	// The wrapper provides all the relevant interface of a FileItem
+				form.put(p.getName(), wrapper);					
 		    }	
 		}
 			
@@ -439,12 +420,12 @@ public class Util {
 		@Override
 		    public void run() {
 		    try {
-			if (drainInputStream(b,p.getErrorStream()))
-				
-			    log.error("The process produced stderr output.");
-		    }
+				if (drainInputStream(b,p.getErrorStream()))
+				    log.error("The process produced stderr output.");
+					log.error(b.toString());
+			    }
 		    catch(Exception e) {
-			log.error("Error draining stderr from process: "+e.toString());
+		    	log.error("Error draining stderr from process: "+e.toString());
 		    }
 		}
 	    });
@@ -937,7 +918,18 @@ public class Util {
     	}
     	return false;
     }
-    
-    
+    /**
+     * Writes the given InputStream to the given file. The InputStream
+     * will be close on return
+     * @param stream The InputStream to copy
+     * @param outputFile The File to write to
+     * @throws IOException If there were any writing exceptions
+     */
+    public static void writeInputStreamToFile(InputStream stream, File outputFile) throws IOException {
+    	FileOutputStream output = new FileOutputStream(outputFile);
+    	IOUtils.copy(stream, output);
+    	stream.close();
+    	output.close();
+    }
     
 }

@@ -13,6 +13,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
@@ -21,6 +22,8 @@ import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+
+import com.google.gson.Gson;
 
 /**
  * Servlet that handles email verification for new users, emailing leaders
@@ -32,6 +35,7 @@ import org.starexec.util.Util;
 @SuppressWarnings("serial")
 public class Verify extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Verify.class);     
+	private static Gson gson = new Gson();
 	
 	
 	
@@ -106,16 +110,21 @@ public class Verify extends HttpServlet {
     private void handleAcceptance(HttpServletRequest request, HttpServletResponse response) throws IOException  {
     	String code = (String)request.getParameter(Mail.EMAIL_CODE);
 		String verdict = (String)request.getParameter(Mail.LEADER_RESPONSE);
+
+		boolean userWasApproved = verdict.equals(R.APPROVE_COMMUNITY_REQUEST);
 		
-		// Check if a leader has handled this acceptance email already
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
-		if(comRequest == null){
-			// If so, redirect them to the leader_response.jsp and tell them their response will be ignored
-		    response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp?result=dupLeaderResponse"));
-		    return;
+
+
+		// TODO Give requests that were sent by email parameter too.
+		boolean sentFromCommunityPage = Util.paramExists(R.SENT_FROM_COMMUNITY_PAGE, request);
+
+		boolean requestHasBeenHandled = checkIfRequestHasBeenHandled(response, comRequest, sentFromCommunityPage);
+		if (requestHasBeenHandled) {
+			return;
 		}
+
 		
-		boolean wasApproved = false;
 		boolean isRegistered = false;
 		
 		// See if the user is registered or not
@@ -128,38 +137,82 @@ public class Verify extends HttpServlet {
 		// Get name of community user is trying to join
 		String communityName = Spaces.getName(comRequest.getCommunityId());
 		
-		if(verdict.equals("approve")){			
-			// Add them to the community & remove the request from the database
-			wasApproved = Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
-			
-			if(wasApproved) {
-				
-				// Notify user they've been approved				
-				Mail.sendRequestResults(user, communityName, wasApproved, false);
-				
-				// Create a personal subspace for the user in the space they were admitted to
-				if(true == createPersonalSubspace(comRequest.getCommunityId(), user)){
-					log.info(String.format("Personal space successfully created for user [%s]", user.getFullName()));
-				}
-				
-				log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
-				response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
-			} 
-		} else if(verdict.equals("decline")) {
-			// Remove their entry from INVITES
-			Requests.declineCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
+		if(verdict.equals(R.APPROVE_COMMUNITY_REQUEST)){			
+			handleApproveCommunityRequest(response, user, comRequest, communityName, sentFromCommunityPage);
+		} else if(verdict.equals(R.DECLINE_COMMUNITY_REQUEST)) {
+			handleDeclineCommunityRequest(response, user, comRequest, isRegistered, communityName, sentFromCommunityPage);
+		}
+		log.debug("Finished handling community request.");
+    }
 
-			// Notify user they've been declined
-			if(isRegistered) {
-				Mail.sendRequestResults(user, communityName, false, false);	
+	private static boolean checkIfRequestHasBeenHandled(HttpServletResponse response, CommunityRequest comRequest, 
+			boolean sentFromCommunityPage) throws IOException 
+	{
+		// Check if a leader has handled this acceptance email already
+		if(comRequest == null){
+			// If so, redirect them to the leader_response.jsp and tell them their response will be ignored
+			if (sentFromCommunityPage) {
+				response.setContentType("application/json");
+				response.getWriter().write(gson.toJson(new ValidatorStatusCode(false, "This user already been declined/accepted.")));
 			} else {
-				Mail.sendRequestResults(user, communityName, false, true);
-			}					
-			
-			log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(), communityName));
+				response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp?result=dupLeaderResponse"));
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private static void handleApproveCommunityRequest(HttpServletResponse response, User user, CommunityRequest comRequest, 
+			String communityName, boolean sentFromCommunityPage) throws IOException
+	{
+		// Add them to the community & remove the request from the database
+		boolean successfullyApproved = Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
+
+		if (!successfullyApproved) {
+			log.error("Did not successfully approve user community request for user with id="+comRequest.getUserId()
+					+" even though an admin or community leader approved them.");
+			return;
+		}
+		
+		// Notify user they've been approved				
+		Mail.sendRequestResults(user, communityName, successfullyApproved, false);
+		
+		// Create a personal subspace for the user in the space they were admitted to
+		if(createPersonalSubspace(comRequest.getCommunityId(), user)){
+			log.info(String.format("Personal space successfully created for user [%s]", user.getFullName()));
+		}
+		
+		log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
+		if (sentFromCommunityPage) {
+			response.setContentType("application/json");
+			response.getWriter().write(gson.toJson(new ValidatorStatusCode(true, "The user has been successfully approved.")));
+		} else {
 			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
-    }
+	}
+
+	private static void handleDeclineCommunityRequest( HttpServletResponse response, User user, CommunityRequest comRequest, 
+			boolean isRegistered, String communityName, boolean sentFromCommunityPage) throws IOException
+	{
+		// Remove their entry from INVITES
+		Requests.declineCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
+
+		// Notify user they've been declined
+		if(isRegistered) {
+			Mail.sendRequestResults(user, communityName, false, false);	
+		} else {
+			Mail.sendRequestResults(user, communityName, false, true);
+		}					
+		
+		log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(), communityName));
+		if (sentFromCommunityPage) {
+			response.setContentType("application/json");
+			response.getWriter().write(gson.toJson(new ValidatorStatusCode(true, "The user has been successfully declined.")));
+		} else {
+			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
+		}
+	}
     
     /**
      * Handles the email verification hyperlinks and activates the given user

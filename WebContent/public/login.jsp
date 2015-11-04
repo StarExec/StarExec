@@ -1,6 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>	
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*" %>	
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<%
+	request.setAttribute("debug_mode", R.DEBUG_MODE_ACTIVE);
+%>
 
 <star:template title="Login" css="accounts/login">	
 	<script>
@@ -8,6 +12,12 @@
 			$('button').button();
 		});
 	</script>
+	<c:if test="${debug_mode}">
+		<p id="debugWarning">Notice: StarExec is currently down for maintenance. Logging in will not be possible until
+		StarExec is back online. Please try again later.</p>
+	</c:if>
+	
+	
 	<form method="POST" action="j_security_check" id="loginForm">	
 		<span id="uniqueLoginTag"></span>		
 		<fieldset>

@@ -8,14 +8,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-
-
-
-
-
-
-
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -43,7 +35,6 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.QueueRequest;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.Space;
@@ -481,7 +472,7 @@ public class ResourceLoader {
 	}
 	
 	/**
-	 * Loads a queue with the given timeouts into the database. The queue will be set as permanent
+	 * Loads a queue with the given timeouts into the database.
 	 * @param wallTimeout
 	 * @param cpuTimeout
 	 * @return
@@ -491,7 +482,7 @@ public class ResourceLoader {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
 			String [] empty=new String[0];
-			R.BACKEND.createPermanentQueue(R.SGE_ROOT,true,queueName, null,null);
+			R.BACKEND.createQueue(queueName, null,null);
 			
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();
@@ -502,8 +493,7 @@ public class ResourceLoader {
 				return null;
 			}
 			
-			boolean success = Queues.makeQueuePermanent(queueId);
-			success = success && Queues.updateQueueCpuTimeout(queueId, wallTimeout);
+			boolean success =  Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
 			
 			return Queues.get(queueId);

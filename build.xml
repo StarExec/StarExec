@@ -6,7 +6,7 @@
      See example.local.properties in this directory for an example. -->
 
 <!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump, Eric Burns -->
-<project name="starexec" default="war" basedir=".">
+<project name="starexec" default="epilog-test" basedir=".">
 
         <loadproperties srcFile="local.properties"/>
 
@@ -14,6 +14,7 @@
 	<property name="project-name" value="${appname}" />	
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-dir" value="src" />
+	<property name="data-to-source-dir" value="${source-dir}/org/starexec/data/to"/>
 	<property name="scripts-dir" value="scripts-common" />
 	<property name="build-dir" value="build" />
 	<property name="class-dir" value="${build-dir}/classes" />		
@@ -56,7 +57,8 @@
 	</target>
 	
 	<target name="compilestarcom" depends="cleanstarcom">
-		<javac debug="true" debuglevel="lines,vars,source" srcdir="${starcomsrc}" destdir="${starcom-comp}" classpathref="starcomclasspath"/>
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
+</javac>
 	</target>
 	
 	<!-- Builds a runnable jar with all necessasry libraries built in -->
@@ -218,16 +220,7 @@
 				<include name="**/*.xml"/>
 		   </fileset>
 		</replaceregexp>
-                
 
-
-
-
-
-		<!-- Update the job schema to use the current server and app -->
-	
-	
-		
 		<!-- Update the log4j config file to only record INFO level events  -->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
 	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
@@ -241,6 +234,23 @@
 			<fileset dir="WebContent"/>
 			<lib dir="${web-inf}/lib"/>			
 		</war>
+	</target>
+	
+	<target name="epilog-test" depends="war">
+		<!-- Execute JUnit tests -->
+		<path id="testpath">
+			<pathelement path="${class-dir}"/>
+			<fileset dir="${web-inf}/lib" includes="**/*.jar"/>
+			<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+			<fileset dir="local-lib" includes="**/*.jar"/>
+		</path>
+		<junit printsummary="yes" haltonfailure="yes">
+			<formatter type="plain"/>
+			<classpath refid="testpath"/>
+			<batchtest>
+				<fileset dir="${class-dir}" includes="**/junit/**/*.class"/>
+			</batchtest>
+        </junit>
 	</target>
 		
 </project>

@@ -1,8 +1,16 @@
+debugModeActive = false;
 $(document).ready(function(){
-
+	debugModeActive = parseBoolean($("#toggleDebugMode").attr("value"));
 	initUI();
-	
 });
+
+function setDebugText() {
+	if (debugModeActive) {
+		setJqueryButtonText("#toggleDebugMode", "Exit Debug Mode")
+	} else {
+		setJqueryButtonText("#toggleDebugMode", "Enable Debug Mode")
+	}
+}
 
 function initUI(){
 	$('#dialog-confirm-restart').hide();
@@ -10,6 +18,12 @@ function initUI(){
 	$("#restartStarExec").button({
 		icons: {
 			primary: "ui-icon-power"
+		}
+    });
+	
+	$("#toggleDebugMode").button({
+		icons: {
+			primary: "ui-icon-pencil"
 		}
     });
 	
@@ -24,6 +38,12 @@ function initUI(){
 			primary: "ui-icon-document"
 		}
 	});
+	
+	$("#clearLoadData").button({
+		icons: {
+			primary: "ui-icon-trash"
+		}
+    });
 	
 		
 	$("#restartStarExec").click(function(){
@@ -55,6 +75,32 @@ function initUI(){
 			}
 		});
 	});	
+	
+	$("#clearLoadData").click(function(){
+		$.post(
+				starexecRoot+"services/jobs/clearloadbalance/",
+				function(returnCode) {
+					parseReturnCode(returnCode);
+				},
+				"json"
+			);
+	});
+	
+	$("#toggleDebugMode").click(function(){
+		$.post(
+				starexecRoot+"services/starexec/debugmode/"+!debugModeActive,
+				function(returnCode) {
+					if (parseReturnCode(returnCode)) {
+						
+						debugModeActive=!debugModeActive;
+						setDebugText();
+					}
+				},
+				"json"
+			);
+	});
+	
+	setDebugText();
 }
 
 

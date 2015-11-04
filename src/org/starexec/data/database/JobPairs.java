@@ -1172,7 +1172,11 @@ public class JobPairs {
 		return jp;
 	}
 	
-	
+	/**
+	 * Sets the queuesub_time field of a job pair to the current time, as
+	 * obtained by calling NOW() in MySQL.
+	 * @param pairId The ID of the pair to set the queue sub time of.
+	 */
 	public static boolean setQueueSubTime(int pairId) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -1357,11 +1361,47 @@ public class JobPairs {
 		return false;
 	}
 	
-
-
+	/**
+	 * Reads all data for a specific queue from the jobpair_time_delta table and then clears
+	 * the data from that queue all inside a single transaction.
+	 * @param queueID The ID of the queue to get data for. If this is -1, gets and clears
+	 * all data
+	 * @return A HashMap mapping userIds to their time delta values.
+	 */
 	
-
-	
+	public static HashMap<Integer, Integer> getAndClearTimeDeltas(int queueID) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData(?)");
+			procedure.setInt(1, queueID);
+			results = procedure.executeQuery();
+			HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
+			while (results.next()) {
+				data.put(results.getInt("user_id"), results.getInt("time_delta"));
+			}
+			Common.safeClose(procedure);
+			procedure = con.prepareCall("CALL ClearJobpairTimeDeltaData(?)");
+			procedure.setInt(1, queueID);
+			procedure.executeUpdate();
+			
+			
+			Common.endTransaction(con);
+			return data;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			Common.doRollback(con);
+			return null;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+	}
 
 	/**
 	 * Update's a job pair's grid engine id
@@ -1467,7 +1507,7 @@ public class JobPairs {
     //TODO : marked for grid engine interface
     public static boolean killPair(int pairId, int execId) {
 	try {	
-	    R.BACKEND.killPair(R.SGE_ROOT,execId);
+	    R.BACKEND.killPair(execId);
 	    JobPairs.UpdateStatus(pairId, 21);
 	    return true;
 	} catch (Exception e) {

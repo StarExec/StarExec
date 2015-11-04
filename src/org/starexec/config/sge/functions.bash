@@ -197,8 +197,7 @@ function isPairRunning {
 		return 1
 	fi
 	HOST=${HOSTNAME:0:4}
-	
-	output=`ls /cluster/sge-6.2u5/default/spool/$HOST/active_jobs/`
+	output=`ls /cluster/gridengine-8.1.8/default/spool/$HOST/active_jobs/`
 	log "$output"
 	
 	#be conservative and say that the pair is running if we fail to check properly

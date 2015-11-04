@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.jobs.JobManager, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -10,7 +10,8 @@
 		User u = Users.get(userId);
 		if (!Users.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} 
+		}
+		request.setAttribute("debugModeActive", R.DEBUG_MODE_ACTIVE);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 	} catch (Exception e) {
@@ -23,13 +24,15 @@
 		<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
-				<li><button type="button" id="restartStarExec">restart StarExec</button></li>	
+				<li><button type="button" id="restartStarExec">restart StarExec</button></li>
+				<li><button type="button" id="toggleDebugMode" value="${debugModeActive}">Enable debug mode</button></li>
 				<li><a href="/${starexecRoot}/secure/admin/cache.jsp"><button type="button" id="manageCache">manage cache</button></a></li>  
-				<li><a href="/${starexecRoot}/secure/admin/logging.jsp"><button type="button" id="manageLogging">manage logging</button></a>
+				<li><a href="/${starexecRoot}/secure/admin/logging.jsp"><button type="button" id="manageLogging">manage logging</button></a></li>
+				<li><button type="button" id="clearLoadData">clear load balance data</button></li>
 			</ul>
 			<div id="dialog-confirm-restart" title="confirm restart">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>
 			</div>	
-		</fieldset>	
+		</fieldset>
 	</div>	
 </star:template>

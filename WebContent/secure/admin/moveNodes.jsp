@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.*;"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -38,7 +38,7 @@ try {
 					</tr>
 				</thead>
 				<tbody>
-					<tr id="queueName" class="noHover" title="what would you like to name your permanent queue?">
+					<tr id="queueName" class="noHover" title="what would you like to name your queue?">
 						<td class="label"><p>queue name</p></td>
 						<td>
 							<input type="hidden" name="name" value="${queueName}"/>
