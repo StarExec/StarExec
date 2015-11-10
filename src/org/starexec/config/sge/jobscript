@@ -6,9 +6,6 @@
 # The queue to submit to
 #$ -q $$QUEUE$$
 
-# Request exclusive access
-#$ -l excl=false
-
 # Enable resource limit signals
 #$ -notify
 
@@ -105,7 +102,45 @@ trap 'handleUsrTwo' USR2
 #==========================================================================
 # Execute (prolog will take care of data staging)
 
-findSandbox $JOB_ID
+whoami
+echo "STAREXEC Job Log"
+echo "(C) `date +%Y` The University of Iowa"
+echo "====================================="
+echo "date: `date`"
+echo "user: #$USER_ID"
+echo "sge job: #$JOB_ID"
+echo "pair id: $PAIR_ID"
+echo "execution host: $HOSTNAME"
+echo ""
+
+sendStatus $STATUS_PREPARING
+
+initSandbox "$JOB_ID"
+
+
+if ! isInteger $SANDBOX ; then
+        sendStatus $ERROR_RUNSCRIPT
+        sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+
+        log "unable to secure any sandbox for this job!"
+        exit 0
+fi
+
+if [ $SANDBOX -eq -1 ]
+then
+        sendStatus $ERROR_RUNSCRIPT
+        sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+
+        log "unable to secure any sandbox for this job!"
+        exit 0
+fi
+
+
+sendNode "$HOSTNAME" "$SANDBOX"
+cleanWorkspace 1
+sendStatus $STATUS_RUNNING
+setStartTime
+
 createLocalTmpDirectory
 
 $$STAGE_DEPENDENCY_ARRAY$$
@@ -294,7 +329,7 @@ else
 fi
 
 
-
+ls -l $OUT_DIR
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
@@ -375,9 +410,11 @@ STAGE_INDEX=$(($STAGE_INDEX+1))
 
 done
 
+setEndTime
+
+recordJobPairRun
+
+cleanWorkspace 0
 
 echo "Jobscript ending."
 
-#==========================================================================
-# Complete (epilog will take care or reporting and data saving) 
-#==========================================================================
