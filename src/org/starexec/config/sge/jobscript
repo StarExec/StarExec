@@ -76,16 +76,11 @@ NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 NUM_BENCH_INPUTS=$((${#BENCH_INPUT_PATHS[@]}-1)) # we terminate the array with an empty string, so the number is the size-1
 
-log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
-
-decodePathArrays
-
-
 #==========================================================================
 # Signal Traps
 #
 # These are just for the limits we are asking SGE to enforce.
-# For the ones runsolver is enforcing, the epilog will look in the
+# For the ones runsolver is enforcing, we will look in the
 # watcher.out file.
 #==========================================================================
 
@@ -142,6 +137,10 @@ sendStatus $STATUS_RUNNING
 setStartTime
 
 createLocalTmpDirectory
+
+log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
+
+decodePathArrays
 
 $$STAGE_DEPENDENCY_ARRAY$$
 
