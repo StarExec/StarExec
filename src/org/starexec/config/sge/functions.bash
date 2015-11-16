@@ -893,7 +893,7 @@ log "solver copy complete"
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
-		mkdir $OUT_DIR/preProcessor
+		mkdir -p $OUT_DIR/preProcessor
 		safeCpAll "copying preProcessor" "$PRE_PROCESSOR_PATH" $OUT_DIR/preProcessor
 		chmod -R gu+rwx $OUT_DIR/preProcessor
 		cd "$OUT_DIR"/preProcessor
