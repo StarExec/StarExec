@@ -69,7 +69,12 @@ public class GridEngineBackend implements Backend{
 			// Try to load the class, if it does not exist this will cause an exception instead of an error			
 			Class.forName("com.sun.grid.drmaa.SessionImpl");
 			session = SessionFactory.getFactory().getSession();
-			session.init("");
+			try {
+				session.init("");
+			} catch (Exception e) {
+				// ignoring any errors for initialization. Errors are thrown
+				// if a session already exists, but this does not impact functionality
+			}
 		    log.info("Created GridEngine session");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
