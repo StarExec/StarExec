@@ -20,6 +20,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -28,11 +29,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
@@ -231,6 +236,39 @@ public class Util {
     public static String getLineSeparator(){
 	return System.getProperty("line.separator");
     }
+
+	/**
+	 * Builds a new array of trimmed strings from an existing array.
+	 * @author Albert Giegerich
+	public static String[] trimEach(String[] untrimmed) {
+		final int sizeOfArrays = untrimmed.length;
+		String[] trimmed = new String[sizeOfArrays];
+		for (int i = 0; i < sizeOfArrays; i++) {
+			trimmed[i] = untrimmed[i].trim();
+		}	
+		return trimmed;
+	}
+	*/
+
+	public static List<String> csvToList(String csv) {
+		log.debug("Entering csvToList");
+		log.debug("Got csv: " + csv);
+		// trim whitespace off the ends of the input so we don't get blank elements when we split
+		csv = csv.trim();
+		List<String> csvList = new ArrayList<String>();
+		String[] splitCsv = csv.split(",");
+		for (int i = 0; i < splitCsv.length; i++) {
+			csvList.add(splitCsv[i].trim());
+		}
+		/*
+		List<String> csvList = Arrays.asList(csv.split(","))
+				.stream()
+				.map(s -> s.trim())
+				.collect(Collectors.toList());*/
+		
+		log.debug("csvList.size(): "+csvList.size());
+		return csvList;
+	}
 	
 	
 	
@@ -901,6 +939,61 @@ public class Util {
     
     	}
     }
+
+	/**
+	 * Gets the HTML for a web page as a String with query parameters.
+	 * @param url The url to get the page from.
+	 * @param queryParamaters A mapping of query parameters to their values.
+	 * @return the web page in string form.
+	 * @author Albert Giegerich
+	 */
+	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
+		// Initially contains the ? necessary for the query string.
+		StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
+		
+		for (String parameter : queryParameters.keySet()) {
+			String value = queryParameters.get(parameter);
+			queryStringJoiner.add(parameter+"="+value);
+		}
+
+		return getWebPage(url+queryStringJoiner.toString(), cookiesToSend);
+	}
+
+	/**
+	 * Gets the HTML for a web page as a String.
+	 * @param url The url to get the page from.
+	 * @return the web page in String form.
+	 * @throws IOException
+	 * @author Albert Giegerich
+	 */
+	public static String getWebPage(String url, List<Cookie> cookiesToSend) throws IOException {
+		String nextLine;
+		StringBuilder outputHtml = new StringBuilder();
+		URL inputUrl = new URL(url);
+		URLConnection urlConnection = inputUrl.openConnection();
+		if (cookiesToSend != null) {
+			String cookieString = buildCookieString(cookiesToSend);
+			urlConnection.setRequestProperty("Cookie", cookieString);
+		}
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()))) {
+			while ((nextLine = reader.readLine()) != null) {
+				outputHtml.append(nextLine);
+			}
+		} 
+		return outputHtml.toString();
+	}
+
+	/**
+	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send cookies.
+	 */
+	private static String buildCookieString(List<Cookie> cookies) {
+		StringJoiner cookieStringJoiner = new StringJoiner("; ");
+		for (Cookie cookie : cookies) {
+			cookieStringJoiner.add(cookie.getName()+"="+cookie.getValue());
+		}
+		return cookieStringJoiner.toString();
+	}
+
     /**
      * Attempts to copy the file at the end of the given URL to the given file, using a proxy
      * @param url

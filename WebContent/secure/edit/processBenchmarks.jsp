@@ -24,7 +24,7 @@ try {
 
 <star:template title="process benchmarks" css="common/delaySpinner, common/table, edit/processBenchmarks, edit/shared" js=" common/delaySpinner, lib/jquery.validate.min, edit/processBenchmarks ">
 	
-	<form id="processBenchForm" method="post" action="/${starexecRoot}/secure/process/benchmarks">
+	<form id="processBenchForm" method="post" action="${starexecRoot}/secure/process/benchmarks">
 	<input type="hidden" name="sid" id="sid" value="${sid}"/>
 	<fieldset>
 		<legend>benchmark processors</legend>
@@ -38,7 +38,7 @@ try {
 			<tbody>
 				<c:forEach var="proc" items="${procs}">
 					<tr>
-						<td><input name="pid" type="hidden" value="${proc.id}"/><a href="/${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/> </a></td>
+						<td><input name="pid" type="hidden" value="${proc.id}"/><a href="${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 					</tr>
 				</c:forEach>

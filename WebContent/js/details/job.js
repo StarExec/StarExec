@@ -6,25 +6,62 @@ var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
 var syncResults=false;
+var isLocalJobPage = false;
+
+var DETAILS_JOB = {}; 
 $(document).ready(function(){
 	jobId=$("#jobId").attr("value");
+	isLocalJobPage = $("#isLocalJobPage").attr("value") === "true";
+	setupGlobalPageVariables();
 	
-	//sets up buttons and so on
-	initUI();
+		//sets up buttons and so on
+		initUI();
 	
-	//sets up the job space tree on the left side of the page
-	initSpaceExplorer();
-	initDataTables();
+		//sets up the job space tree on the left side of the page
+		initSpaceExplorer();
+
+	if (!isLocalJobPage) {
+		initDataTables();
 	
-	//update the tables every 30 seconds
-	setInterval(function() {
-		pairTable.fnDraw(false);
-		refreshPanels();
-	},30000);
+		//update the tables every 30 seconds
+		if (!isLocalJobPage) {
+			setInterval(function() {
+				pairTable.fnDraw(false);
+				refreshPanels();
+			},30000);
+		}
 	
-	//puts data into the data tables
-	reloadTables($("#spaceId").attr("value"));
+		//puts data into the data tables
+		reloadTables($("#spaceId").attr("value"));
+	}
 });
+
+function setupGlobalPageVariables() {
+	'use strict';
+	var isLocalJobPage = $("#isLocalJobPage").attr("value") === "true";
+	DETAILS_JOB.summaryTableInitializer = getSummaryTableInitializer(isLocalJobPage);
+	DETAILS_JOB.pairTableInitializer = getPairTableInitializer(isLocalJobPage);
+	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData(isLocalJobPage);
+}
+
+function getSpaceExplorerJsonData(pageIsLocal) {
+	'use strict';
+	var spaceExplorerJsonData = {};
+	if (pageIsLocal) {
+		spaceExplorerJsonData = JSON.parse($('#jobSpaceTreeJson').attr('value'));
+	} else {
+		spaceExplorerJsonData = {
+			"ajax" : { 
+				"url" : starexecRoot+"services/space/" +jobId+ "/jobspaces/true",	// Where we will be getting json data from 
+				"data" : function (n) {
+					
+					return { id : n.attr ? n.attr("id") : 0}; // What the default space id should be
+				} 
+			} 
+		};
+	}
+	return spaceExplorerJsonData;
+}
 
 function setSyncResultsText() {
 	if (syncResults) {
@@ -70,17 +107,10 @@ function initSpaceExplorer() {
 	
 	$.jstree._themes = starexecRoot+"css/jstree/";
 	var id;
+
 	// Initialize the jstree plugin for the explorer list
 	$("#exploreList").jstree({  
-		"json_data" : { 
-			"ajax" : { 
-				"url" : starexecRoot+"services/space/" +jobId+ "/jobspaces/true",	// Where we will be getting json data from 
-				"data" : function (n) {
-					
-					return { id : n.attr ? n.attr("id") : 0}; // What the default space id should be
-				} 
-			} 
-		}, 
+		"json_data" : DETAILS_JOB.spaceExplorerJsonData, 
 		"themes" : { 
 			"theme" : "default", 					
 			"dots" : true, 
@@ -304,6 +334,12 @@ function initUI(){
 			primary: "ui-icon-newwin"
 		}
 	});
+
+	$("#downloadJobPageButton").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+	});
 	
 	$("#syncResults").button({
 		icons: {
@@ -313,6 +349,10 @@ function initUI(){
 
 	$("#matrixViewButton").click(function() {
 		popup(starexecRoot+'secure/details/jobMatrixView.jsp?id='+jobId+'&stage=1&jobSpaceId='+curSpaceId);
+	});
+
+	$("#downloadJobPageButton").click(function() {
+		createDownloadRequest("#downloadJobPageButton", "job_page");
 	});
 	
 	$("#syncResults").click(function() {
@@ -860,18 +900,8 @@ function initializePanels() {
 function initDataTables(){
 	extendDataTableFunctions();
 	//summary table
-	summaryTable=$('#solveTbl').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bSort": true,
-        "bPaginate": true,
-		"pagingType"    : "full_numbers",
-
-        "sAjaxSource"	: starexecRoot+"services/jobs/",
-        "sServerMethod" : "POST",
-        "fnServerData" : fnStatsPaginationHandler
-    });
+	
+	summaryTable=$('#solveTbl').dataTable(DETAILS_JOB.summaryTableInitializer);
 	
 	$("#solveTbl").on("mousedown", "tr", function(){
 		if (!$(this).hasClass("row_selected")) {
@@ -911,17 +941,7 @@ function initDataTables(){
 	});
 	
 	// Job pairs table
-	pairTable=$('#pairTbl').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-        "sAjaxSource"	: starexecRoot+"services/jobs/",
-        "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler 
-    });
+	pairTable=$('#pairTbl').dataTable(DETAILS_JOB.pairTableInitializer);
 	
 	setSortTable(pairTable);
 	
@@ -980,6 +1000,44 @@ function extendDataTableFunctions(){
 	};
 	
 	
+}
+
+function getPairTableInitializer(dataIsLocal) {
+	'use strict';
+	var pairTableInitializer = {
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": defaultPageSize,
+		"pagingType"    : "full_numbers",
+    };
+
+	if (!dataIsLocal) {
+		pairTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
+		pairTableInitializer.sServerMethod = "POST";
+		pairTableInitializer.bServerSide = true;
+		pairTableInitializer.fnServerData = fnPaginationHandler;
+	}
+	return pairTableInitializer;
+}
+
+function getSummaryTableInitializer(dataIsLocal) {
+	'use strict';
+	var summaryTableInitializer = {
+        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "iDisplayStart"	: 0,
+        "iDisplayLength": defaultPageSize,
+        "bSort"			: true,
+        "bPaginate"		: true,
+		"pagingType"    : "full_numbers",
+    };
+
+	if (!dataIsLocal) {
+        summaryTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
+        summaryTableInitializer.sServerMethod = "POST";
+        summaryTableInitializer.fnServerData = fnStatsPaginationHandler;
+	}
+
+	return summaryTableInitializer;
 }
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {

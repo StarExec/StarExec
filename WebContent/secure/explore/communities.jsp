@@ -14,9 +14,9 @@
 	request.setAttribute("hideCommunityRequests", hideCommunityRequests);
 	request.setAttribute("leaderResponseParameterName", Mail.LEADER_RESPONSE);
 	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);
-	request.setAttribute("approveCommunityRequestName", R.APPROVE_COMMUNITY_REQUEST);
-	request.setAttribute("declineCommunityRequestName", R.DECLINE_COMMUNITY_REQUEST);
-	request.setAttribute("sentFromCommunityPage", R.SENT_FROM_COMMUNITY_PAGE);
+	request.setAttribute("approveCommunityRequestName", Web.APPROVE_COMMUNITY_REQUEST);
+	request.setAttribute("declineCommunityRequestName", Web.DECLINE_COMMUNITY_REQUEST);
+	request.setAttribute("sentFromCommunityPage", Web.SENT_FROM_COMMUNITY_PAGE);
 %>
 
 <star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common">			

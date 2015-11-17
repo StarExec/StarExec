@@ -37,28 +37,28 @@
 <div id="helpTopics">
  <ul id="topicList">
   <li class="topicHeader">Exploring</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/explore/cluster.help">Checking cluster status</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/explore/statistics.help">Viewing community statistics</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/explore/spaces.help">Exploring spaces</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/explore/communities.help">Exploring communities</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/explore/cluster.help">Checking cluster status</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/explore/statistics.help">Viewing community statistics</a></li>
   <li class="topicHeader">Benchmarks</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/add/benchmarks.help">Adding benchmarks</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/details/benchmark.help">Accessing benchmarks</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/edit/benchmark.help">Editing benchmarks</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/add/benchmarks.help">Adding benchmarks</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/details/benchmark.help">Accessing benchmarks</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/edit/benchmark.help">Editing benchmarks</a></li>
   <li class="topicHeader">Solvers</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/add/solver.help">Adding solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/add/solver.help">Adding solvers</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/details/solver.help">Viewing solvers</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
   <li class="topicHeader">Jobs</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/add/job.help">Running jobs</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/details/job.help">Viewing results</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/add/job.help">Running jobs</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/details/job.help">Viewing results</a></li>
   <li class="topicHeader">Users</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/edit/account.help">Managing your account</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/edit/spacePermissions.help">Editing permissions</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/edit/account.help">Managing your account</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/edit/spacePermissions.help">Editing permissions</a></li>
   <li class="topicHeader">General</li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/input-restrictions.help">Input restrictions</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/linking-copying.help">Linking and copying</a></li>
-  <li class="subject"><a href="/${starexecRoot}/secure/help/removing-recycling-deleting.help">Removing, recycling, and deleting primitives</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/help/input-restrictions.help">Input restrictions</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/help/linking-copying.help">Linking and copying</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/help/removing-recycling-deleting.help">Removing, recycling, and deleting primitives</a></li>
 </ul>
 </div>
 	
@@ -69,7 +69,7 @@
  </p>
  <br>
  <p>You can also check our 
- <a href="/${starexecRoot}/public/quickReference.jsp">Quick Reference</a> guide.
+ <a href="${starexecRoot}/public/quickReference.jsp">Quick Reference</a> guide.
 </p>		
 </div>
 	

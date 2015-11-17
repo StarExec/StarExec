@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.constants.R;
+import org.starexec.constants.Web;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -111,13 +112,13 @@ public class Verify extends HttpServlet {
     	String code = (String)request.getParameter(Mail.EMAIL_CODE);
 		String verdict = (String)request.getParameter(Mail.LEADER_RESPONSE);
 
-		boolean userWasApproved = verdict.equals(R.APPROVE_COMMUNITY_REQUEST);
+		boolean userWasApproved = verdict.equals(Web.APPROVE_COMMUNITY_REQUEST);
 		
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
 
 
 		// TODO Give requests that were sent by email parameter too.
-		boolean sentFromCommunityPage = Util.paramExists(R.SENT_FROM_COMMUNITY_PAGE, request);
+		boolean sentFromCommunityPage = Util.paramExists(Web.SENT_FROM_COMMUNITY_PAGE, request);
 
 		boolean requestHasBeenHandled = checkIfRequestHasBeenHandled(response, comRequest, sentFromCommunityPage);
 		if (requestHasBeenHandled) {
@@ -137,9 +138,9 @@ public class Verify extends HttpServlet {
 		// Get name of community user is trying to join
 		String communityName = Spaces.getName(comRequest.getCommunityId());
 		
-		if(verdict.equals(R.APPROVE_COMMUNITY_REQUEST)){			
+		if(verdict.equals(Web.APPROVE_COMMUNITY_REQUEST)){			
 			handleApproveCommunityRequest(response, user, comRequest, communityName, sentFromCommunityPage);
-		} else if(verdict.equals(R.DECLINE_COMMUNITY_REQUEST)) {
+		} else if(verdict.equals(Web.DECLINE_COMMUNITY_REQUEST)) {
 			handleDeclineCommunityRequest(response, user, comRequest, isRegistered, communityName, sentFromCommunityPage);
 		}
 		log.debug("Finished handling community request.");

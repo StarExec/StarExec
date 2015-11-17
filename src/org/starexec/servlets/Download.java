@@ -2,13 +2,17 @@ package org.starexec.servlets;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
@@ -20,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.constants.Web;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
@@ -28,6 +33,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.security.BenchmarkSecurity;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
@@ -52,6 +58,12 @@ import org.starexec.util.JobToXMLer;
 @SuppressWarnings("serial")
 public class Download extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Download.class);	 
+	private static final String JS_FILE_TYPE = "js";
+	private static final String CSS_FILE_TYPE = "css";
+	private static final String PNG_FILE_TYPE = "png";
+	private static final String GIF_FILE_TYPE = "gif";
+	private static final String ICO_FILE_TYPE = "ico";
+	private static final String IMAGES_DIRECTORY_NAME = "images";
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -217,7 +229,13 @@ public class Download extends HttpServlet {
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success= handleJobOutputs(jobId, u.getId(), response,since);
 				
-			} else {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
+				handleJobPage(jobId, request, response);
+				// Just set success to true, handleJobPage will throw an exception if it is unsuccessful.
+				success = true;
+
+			}else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"invalid download type specified");
 				return;
 			}
@@ -735,6 +753,76 @@ public class Download extends HttpServlet {
 			return true;
 	}
 
+	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		File sandboxDirectory = null; 
+		try {
+			sandboxDirectory = Util.getRandomSandboxDirectory();
+
+			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
+			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
+			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
+			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES);
+			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, "loadingGraph, starlogo");
+			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, "loader");
+			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, "favicon");
+			putHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
+
+			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
+
+			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(), "Job"+String.valueOf(jobId)+"_page");
+		} catch (IOException e) {
+			throw new IOException("Could not get files for job page download", e);
+		} finally {
+			FileUtils.deleteDirectory(sandboxDirectory);
+		}
+	}
+
+	private static void putHtmlFileFromServerInSandbox(File sandboxDirectory, int jobId, HttpServletRequest request) throws IOException {
+		// Create a new html file in the sandbox.
+		File htmlFile = new File(sandboxDirectory, "job.html");
+		// Make an HTTP request to our own server to get the HTML for the job page and write it to the new html file.
+		String urlToGetJobPageFrom = R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME
+				+"/secure/details/job.jsp?id="+jobId+"&"+Web.LOCAL_JOB_PAGE_PARAMETER+"=true"; 
+		log.debug("Getting job page from "+urlToGetJobPageFrom);
+		List<Cookie> requestCookies = Arrays.asList(request.getCookies());
+		Map<String, String> queryParameters = new HashMap<String, String>();
+		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
+		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
+	}
+
+	private static void addFilesInDirectory(File containingDirectory, String filetype, String fileCsv) throws IOException {
+		// Create a new directory named after the filetype such as /js or /css
+		String filetypeDirectoryName = null;
+		if (filetype.equals(CSS_FILE_TYPE) || filetype.equals(JS_FILE_TYPE)) {
+			filetypeDirectoryName = filetype;
+		} else if (filetype.equals(PNG_FILE_TYPE) || filetype.equals(GIF_FILE_TYPE) || filetype.equals(ICO_FILE_TYPE)) {
+			filetypeDirectoryName = IMAGES_DIRECTORY_NAME;
+		} else {
+			throw new IOException("Attempted to copy unsupported file type: "+filetype);
+		}
+
+		File filetypeDirectory = new File(containingDirectory, filetypeDirectoryName); 
+
+		List<String> allFilePaths = Util.csvToList(fileCsv);
+
+		for (String filePath : allFilePaths) {
+			List<String> filesInHierarchy = new ArrayList<String>(Arrays.asList(filePath.split("/")));
+
+			// The last filename is the source file.
+			String sourceFile = filesInHierarchy.remove(filesInHierarchy.size() - 1);
+
+			File parentDirectory = filetypeDirectory;	
+			for (String directory : filesInHierarchy) {
+				File childDirectory = new File(parentDirectory, directory);
+				parentDirectory = childDirectory;
+			}
+			parentDirectory.mkdirs();
+			File fileOnServer = new File(R.STAREXEC_ROOT+filetypeDirectoryName+"/"+filePath+"."+filetype);
+			File fileToBeDownloaded = new File(parentDirectory, sourceFile+"."+filetype);
+			FileUtils.copyFile(fileOnServer, fileToBeDownloaded);
+		}
+	}
+
 	/**
 	 * Handles download of a single space or a hierarchy, return the name of compressed file containing the space.
 	 * @param space The space needed to be downloaded
@@ -919,6 +1007,7 @@ public class Download extends HttpServlet {
 			String type=request.getParameter(PARAM_TYPE);
 			
 
+			// TODO change all download types in this file to system constants in R
 			if (!(type.equals("solver") ||
 					type.equals("bench") ||
 					type.equals("spaceXML") ||
@@ -928,7 +1017,8 @@ public class Download extends HttpServlet {
 					type.equals("j_outputs") ||
 					type.equals("space") ||
 					type.equals("proc") ||
-					type.equals("jp_outputs"))) {
+					type.equals("jp_outputs") ||
+					type.equals(R.JOB_PAGE_DOWNLOAD_TYPE))) {
 
 				return new ValidatorStatusCode(false, "The supplied download type was not valid");
 			}
@@ -965,8 +1055,13 @@ public class Download extends HttpServlet {
 					if (!status.isSuccess()) {
 						return status;
 					}
+				} else if (type.equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+					int jobId=JobPairs.getPair(id).getJobId();
+					status = JobSecurity.canUserSeeJob(jobId, userId);
+					if (!status.isSuccess()) {
+						return status;
+					}
 				}
-
 			} else {
 				//expecting a comma-separated list
 				String ids=request.getParameter("id[]");

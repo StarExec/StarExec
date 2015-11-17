@@ -24,7 +24,7 @@
 %>
 
 <star:template title="upload a picture" css="add/picture" js="lib/jquery.validate.min, add/picture, lib/jquery.qtip.min">
-	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/pictures" id="upForm">
+	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/pictures" id="upForm">
 			<input type="hidden" name="type" value="${type}"/>
 	        <input type="hidden" name="Id" value="${Id}"/>
 		<fieldset>

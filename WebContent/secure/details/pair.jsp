@@ -83,7 +83,7 @@
 				<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>
-					<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a href="${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}  <img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 				</tr>				
 							
 				</c:if>
@@ -181,9 +181,9 @@
 				</c:choose>		
 			</fieldset>
 			<fieldset id="fieldOutput">		
-					<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> output</legend>			
+					<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> output</legend>			
 					<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
-					<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
+					<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>
 					<p class="caption">output may be truncated. 'popout' for the full output.</p>
 			</fieldset>
 		<c:if test="${moreThanOneStage}">
@@ -196,14 +196,14 @@
 
 	
 	<fieldset id="fieldLog">
-		<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> job log</legend>			
+		<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job log</legend>			
 		<textarea class=contentTextarea id="jpLog" readonly="readonly">${log}</textarea>
-		<a href="/${starexecRoot}/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
+		<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>			
 	</fieldset>
 	<fieldset id="fieldActions">
 	<legend>actions</legend>
-		<a href="/${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
-		<a href="/${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>
+		<a href="${starexecRoot}/secure/download?type=jp_output&id=${pair.id}" id="downLink">all output</a>
+		<a href="${starexecRoot}/secure/details/job.jsp?id=${job.id}" id="returnLink">return to ${job.name}</a>
 		<c:if test="${rerun}">
 			<button id="rerunPair">rerun pair</button>
 		</c:if>

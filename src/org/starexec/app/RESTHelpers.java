@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +17,8 @@ import org.starexec.data.database.Requests;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.JobSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Job;
@@ -42,6 +45,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
+import com.google.gson.Gson;
 
 /**
  * Holds all helper methods and classes for our restful web services
@@ -50,6 +54,7 @@ public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);
 	private static final int PAGE_SPACE_EXPLORER = 1;
 	private static final int PAGE_USER_DETAILS = 2;
+	private static Gson gson = new Gson();
 
 	// Job pairs and nodes aren't technically a primitive class according to how
 	// we've discussed primitives, but to save time and energy I've included
@@ -2451,7 +2456,7 @@ public class RESTHelpers {
 								+ spaceId + "&configid="
 								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
-				sb.append(js.getCorrectJobPairs() + "/" +js.getCompleteJobPairs());
+				sb.append(js.getCorrectOverCompleted());
 				RESTHelpers.addImg(sb);
 				String solvedLink = sb.toString();
 				
@@ -2553,6 +2558,38 @@ public class RESTHelpers {
 
 		// Return the next DataTable page
 		return nextPage;
+	}
+
+	public static String getJobSpacesJson(int parentId, int jobId, boolean makeSpaceTree, int userId) {	
+		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
+		List<JobSpace> subspaces=new ArrayList<JobSpace>();
+		log.debug("getting job spaces for panels");
+		//don't populate the subspaces if the user can't see the job
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		log.debug("got a request for parent space = "+parentId);
+		if (parentId>0) {
+			
+			subspaces=Spaces.getSubSpacesForJob(parentId,false);
+			
+			
+		} else {
+			//if the id given is 0, we want to get the root space
+			Job j=Jobs.get(jobId);
+			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
+			subspaces.add(s);
+		}
+		
+		log.debug("making next tree layer with "+subspaces.size()+" spaces");
+		if (makeSpaceTree) {
+			return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
+
+		} else {
+			return gson.toJson(subspaces);
+
+		}
 	}
 
 	public static JsonObject convertCommunityRequestsToJsonObject(List<CommunityRequest> requests, int totalRecords, int syncValue, int currentUserId) {

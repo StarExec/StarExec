@@ -25,7 +25,7 @@ try {
 %>
 
 <star:template title="create queue" js="add/queue, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin">	
-	<form id="addForm" method="POST" action="/${starexecRoot}/secure/add/queue" class="queue">
+	<form id="addForm" method="POST" action="${starexecRoot}/secure/add/queue" class="queue">
 		<fieldset id="fieldStep1">
 			<legend>Add a Queue</legend>
 			<table id="tblConfig" class="shaded contentTbl">

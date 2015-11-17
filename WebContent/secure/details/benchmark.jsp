@@ -164,9 +164,9 @@
 
 	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
-			<legend><img alt="loading" src="/${starexecRoot}/images/loader.gif"> contents</legend>
+			<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> contents</legend>
 			<textarea class="contentTextarea" id="benchContent" readonly="readonly" >${content}</textarea>	
-			<a href="/${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
+			<a href="${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">content may be truncated. 'popout' for larger text window.</p>
 		</fieldset>			
 	</c:if> 
@@ -175,11 +175,11 @@
 		<legend>actions</legend>
 	
 		<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
-			<a id="editLink" href="/${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>
+			<a id="editLink" href="${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>
 		</c:if>
 	 	
 		<c:if test="${downloadable || hasAdminReadPrivileges}">
-			<a id="downLink" href="/${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
+			<a id="downLink" href="${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
 		
 	</fieldset>

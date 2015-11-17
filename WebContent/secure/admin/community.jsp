@@ -19,8 +19,8 @@
 	// These will be used by the JavaScript.
 	request.setAttribute("leaderResponseParameterName", Mail.LEADER_RESPONSE);
 	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);
-	request.setAttribute("approveCommunityRequestName", R.APPROVE_COMMUNITY_REQUEST);
-	request.setAttribute("declineCommunityRequestName", R.DECLINE_COMMUNITY_REQUEST);
+	request.setAttribute("approveCommunityRequestName", Web.APPROVE_COMMUNITY_REQUEST);
+	request.setAttribute("declineCommunityRequestName", Web.DECLINE_COMMUNITY_REQUEST);
 	request.setAttribute("sentFromCommunityPage", R.SENT_FROM_COMMUNITY_PAGE);
 %>
 
@@ -36,7 +36,7 @@
 		<ul id="exploreList"></ul>
 		<div id="explorerAction">
 			<ul id="exploreActions">
-				<li><a type="btnRun" id="newCommunity" href="/${starexecRoot}/secure/add/space.jsp">Add New Community</a></li>
+				<li><a type="btnRun" id="newCommunity" href="${starexecRoot}/secure/add/space.jsp">Add New Community</a></li>
 			</ul>
 		</div>
 	</div>
@@ -45,8 +45,8 @@
 		<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
-				<li><a type="btnRun" id="removeCommLeader" href="/${starexecRoot}/secure/edit/community.jsp">remove community leader</a></li>
-				<li><a type="btnRun" id="promoteCommLeader" href="/${starexecRoot}/secure/edit/community.jsp">promote member to leader</a>			
+				<li><a type="btnRun" id="removeCommLeader" href="${starexecRoot}/secure/edit/community.jsp">remove community leader</a></li>
+				<li><a type="btnRun" id="promoteCommLeader" href="${starexecRoot}/secure/edit/community.jsp">promote member to leader</a>			
 			</ul>	
 		</fieldset>	
 		<fieldset  id="communityField">

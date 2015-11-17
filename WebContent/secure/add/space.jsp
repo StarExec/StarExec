@@ -24,7 +24,7 @@
 %>
 
 <star:template title="add subspace to ${space.name}" css="add/space" js="lib/jquery.validate.min, add/space">
-	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/space">	
+	<form id="addForm" method="post" action="${starexecRoot}/secure/add/space">	
 		<input type="hidden" name="parent" value="${space.id}"/>
 		<fieldset>
 			<legend>new space</legend>

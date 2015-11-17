@@ -122,7 +122,6 @@ public class RESTServices {
 	}
 	
 	
-	
 	/**
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id
@@ -133,36 +132,9 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @PathParam("spaceTree") boolean makeSpaceTree, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
-		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
-		List<JobSpace> subspaces=new ArrayList<JobSpace>();
-		log.debug("getting job spaces for panels");
-		//don't populate the subspaces if the user can't see the job
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		log.debug("got a request for parent space = "+parentId);
-		if (parentId>0) {
-			
-			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-			
-			
-		} else {
-			//if the id given is 0, we want to get the root space
-			Job j=Jobs.get(jobId);
-			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
-			subspaces.add(s);
-		}
-		
-		log.debug("making next tree layer with "+subspaces.size()+" spaces");
-		if (makeSpaceTree) {
-			return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
-
-		} else {
-			return gson.toJson(subspaces);
-
-		}
+		return RESTHelpers.getJobSpacesJson(parentId, jobId, makeSpaceTree, userId);
 	}
+
 
 	@GET
 	@Path("/space/isLeaf/{spaceId}")

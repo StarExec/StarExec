@@ -143,18 +143,18 @@
 		<fieldset id="actions">
 			<legend>actions</legend>
 			<ul id="actionList">
-				<li><a class="btnAdd" id="addSpace" href="/${starexecRoot}/secure/add/space.jsp">add subspace</a></li>
-				<li><a class="btnUp" id="uploadBench" href="/${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
-				<li><a class="btnUp" id="uploadSolver" href="/${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>				
-				<li><a class="btnRun" id="addJob" href="/${starexecRoot}/secure/add/job.jsp">create job</a></li>
-				<li><a class="btnRun" id="addQuickJob" href="/${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li>
+				<li><a class="btnAdd" id="addSpace" href="${starexecRoot}/secure/add/space.jsp">add subspace</a></li>
+				<li><a class="btnUp" id="uploadBench" href="${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
+				<li><a class="btnUp" id="uploadSolver" href="${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>				
+				<li><a class="btnRun" id="addJob" href="${starexecRoot}/secure/add/job.jsp">create job</a></li>
+				<li><a class="btnRun" id="addQuickJob" href="${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li>
 				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>				
-				<li><a class="btnUp" id="uploadXML" href="/${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
-				<li><a class="btnUp" id="uploadJobXML" href="/${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
-				<li><a class="btnEdit" id="editSpace" href="/${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
-				<li><a class="btnEdit" id="editSpacePermissions" href="/${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
+				<li><a class="btnUp" id="uploadXML" href="${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
+				<li><a class="btnUp" id="uploadJobXML" href="${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
+				<li><a class="btnEdit" id="editSpace" href="${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
+				<li><a class="btnEdit" id="editSpacePermissions" href="${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
-				<li><a class="btnRun" id="processBenchmarks" href="/${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
+				<li><a class="btnRun" id="processBenchmarks" href="${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
 			
 			

@@ -176,4 +176,8 @@ public class SolverStats extends Identifiable {
 	public void setJobSpaceId(int jobSpaceId) {
 		this.jobSpaceId = jobSpaceId;
 	}
+
+	public String getCorrectOverCompleted() {
+		return getCorrectJobPairs() + "/" + getCompleteJobPairs();
+	}
 }

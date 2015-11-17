@@ -21,7 +21,7 @@
 	}
 %>
 <star:template title="upload XML configuration for a job in ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner, lib/jquery.validate.min, add/batchSpace">
-	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/jobXML" id="upForm">
+	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/jobXML" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>upload your compressed file </legend>		

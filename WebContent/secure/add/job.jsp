@@ -52,7 +52,7 @@
 	</c:forEach>
 	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
 	
-	<form id="addForm" method="post" action="/${starexecRoot}/secure/add/job">	
+	<form id="addForm" method="post" action="${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" id="spaceIdInput" value="${space.id}"/>
 		<fieldset id="fieldStep1">
 			<legend>configure job</legend>

@@ -1,4 +1,4 @@
-var debugMode = false; //console.log statements are turned off by default
+var debugMode = true; //console.log statements are turned off by default
 
 //redirects the user to the quick job page (used if they clicked on "quick job" while not logged in
 cookie = $.cookie('redirectToQuickJob');
@@ -148,6 +148,7 @@ function showMessage(type, message, duration) {
 	
 	// Create a new DOM element to insert to display the message, and inject its classes and message
         var tmp="<div><img src='"+starexecRoot+"images/icons/exclaim.png' /></div>";
+	console.log(starexecRoot);
 	var msg = $(tmp).attr('class', type + " message");
 	$(msg).append(messageSpan);
 	$(msg).append(closeMessage);

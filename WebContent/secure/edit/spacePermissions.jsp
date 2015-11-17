@@ -235,7 +235,7 @@
 		</fieldset>
 		
 		<fieldset id="permissionActions">
-			<a id="exploreSpaces" href="/${starexecRoot}/secure/explore/spaces.jsp">return to space explorer</a>
+			<a id="exploreSpaces" href="${starexecRoot}/secure/explore/spaces.jsp">return to space explorer</a>
 			<a class="btnRun" id="makePublic">make public</a>
 		</fieldset>
 

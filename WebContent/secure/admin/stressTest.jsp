@@ -12,7 +12,7 @@
 	}
 %>
 <star:template title="create a stress test" css="admin/stressTest" js="lib/jquery.validate.min, admin/stressTest">
-	<form method="POST" action="/${starexecRoot}/secure/add/stressTest" id="createStressTestForm">
+	<form method="POST" action="${starexecRoot}/secure/add/stressTest" id="createStressTestForm">
 		<fieldset>
 			<legend>configure a stress test</legend>		
 			<table id="parameterTable" class="shaded">

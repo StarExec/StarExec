@@ -93,6 +93,6 @@
 			</tbody>
 		</table>
 	</fieldset>
-	<a id="returnLink" href="/${starexecRoot}/secure/explore/spaces.jsp">back</a>
+	<a id="returnLink" href="${starexecRoot}/secure/explore/spaces.jsp">back</a>
 
 </star:template>
