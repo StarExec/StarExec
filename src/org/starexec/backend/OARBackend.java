@@ -2,10 +2,11 @@ package org.starexec.backend;
 
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.starexec.util.Util;
 
 public class OARBackend implements Backend {
-
+	private static Logger log = Logger.getLogger(OARBackend.class);
 	@Override
 	public void initialize(String BACKEND_ROOT) {
 		// TODO Auto-generated method stub
@@ -51,13 +52,24 @@ public class OARBackend implements Backend {
 
 	@Override
 	public String getRunningJobsStatus() {
-		// TODO Auto-generated method stub
+		try {	
+			return Util.executeCommand("oarstat -f");
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		return null;
 	}
 
 	@Override
 	public String[] getWorkerNodes() {
-		// TODO Auto-generated method stub
+		try {	
+			//TODO: Ths will need to get parsed into the list of nodes
+			String nodes = Util.executeCommand("oarnodes -l");
+			
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		return null;
 	}
 
@@ -69,7 +81,13 @@ public class OARBackend implements Backend {
 
 	@Override
 	public String[] getQueues() {
-		// TODO Auto-generated method stub
+		try {	
+			//TODO: Ths will need to get parsed into the list of nodes. May also need sudo admin
+			String queues = Util.executeCommand("oarnotify -l");
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		return null;
 	}
 
