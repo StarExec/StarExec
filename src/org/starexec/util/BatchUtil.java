@@ -1,21 +1,16 @@
 package org.starexec.util;
 
 
-import java.sql.Timestamp;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.lang.StringBuilder;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

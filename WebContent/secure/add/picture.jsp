@@ -35,6 +35,7 @@
 					<td>picture location</td>
 					<td><input id="uploadPic" name="f" type="file" /></td>
 				</tr>
+				<tr>
 					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
 				</tr>
 			</table>																	

@@ -73,40 +73,7 @@ public class JobPairs {
 			Common.safeClose(procedure);
 		}
 		return false;
-	}
-	
-	
-	/**
-	 * Saves a job pair input in the database
-	 * @param pairId
-	 * @param inputNumber
-	 * @param benchId
-	 * @param con
-	 * @return
-	 */
-	private static boolean addJobPairInput(int pairId, int inputNumber, int benchId, Connection con) {
-		CallableStatement procedure=null;
-		try {
-			
-			procedure=con.prepareCall("{CALL AddJobPairInput(?,?,?)}");
-			procedure.setInt(1, pairId);
-			procedure.setInt(2,inputNumber);
-			procedure.setInt(3, benchId);
-			
-
-			procedure.executeUpdate();
-			
-
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
-	
-	
+	}	
 	
 	/**
 	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
@@ -208,48 +175,6 @@ public class JobPairs {
 			if (batchCounter > 0) {
 				procedure.executeBatch();
 			}
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-		
-	}
-	
-	
-	
-	/**
-	 * Adds a stage to a given job pair in the database
-	 * @param pairId
-	 * @param stageId
-	 * @param con
-	 * @return
-	 */
-	private static boolean addJobPairStage(int pairId, Integer stageId,int stageNumber, boolean primary,Solver s, Configuration c,int jobSpaceId, Connection con) {
-		CallableStatement procedure=null;
-		try {
-			
-			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?,?)}");
-			procedure.setInt(1, pairId);
-			if (stageId!=null) {
-				procedure.setInt(2,stageId);
-
-			} else {
-				procedure.setNull(2, java.sql.Types.INTEGER);
-			}
-			procedure.setInt(3,stageNumber);
-			procedure.setBoolean(4, primary);
-			procedure.setInt(5, s.getId());
-			procedure.setString(6,s.getName());
-			procedure.setInt(7,c.getId());
-			procedure.setString(8,c.getName());
-			procedure.setInt(9,jobSpaceId);
-			// Update the pair's ID so it can be used outside this method
-			procedure.executeUpdate();
-			
-
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);

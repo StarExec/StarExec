@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.SpaceXMLUploadStatus;
-import org.starexec.util.Validator;
 /**
  * Handles database interaction for the uploading Benchmarks Status Page.
  */

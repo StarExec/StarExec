@@ -1,5 +1,4 @@
 package org.starexec.test.integration.database; 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Assert;
-import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;

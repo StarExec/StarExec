@@ -1,22 +1,13 @@
 package org.starexec.servlets;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -407,14 +398,7 @@ public class UploadSolver extends HttpServlet {
 		returnArray[0] = solver_Success;
 		
 		return returnArray;
-	}	
-	
-	private int[] List(int i, int j) {
-		int[] answer=new int [2];
-		answer[0]=i;
-		answer[1]=j;
-		return answer;
-	}	
+	}
 	
 	/**
 	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.

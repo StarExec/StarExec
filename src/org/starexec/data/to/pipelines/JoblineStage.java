@@ -5,11 +5,8 @@ import java.util.Properties;
 
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
-import org.starexec.data.to.WorkerNode;
 
 /**
  * This class represents the set of results for a single stage of a jobline

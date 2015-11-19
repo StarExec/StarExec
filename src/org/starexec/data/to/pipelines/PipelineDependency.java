@@ -1,7 +1,5 @@
 package org.starexec.data.to.pipelines;
 
-import org.starexec.data.to.Solver.ExecutableType;
-
 public class PipelineDependency {
 	
 	

@@ -82,7 +82,7 @@ public class OARBackend implements Backend {
 	@Override
 	public String[] getQueues() {
 		try {	
-			//TODO: Ths will need to get parsed into the list of nodes. May also need sudo admin
+			//TODO: This will need to get parsed into the list of nodes. May also need sudo admin
 			String queues = Util.executeCommand("oarnotify -l");
 			
 		} catch (Exception e) {

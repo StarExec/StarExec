@@ -284,7 +284,6 @@
 								</span>
 							</td>
 						</tr>
-						</tr>
 						<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
 							<td>status</td>		
 							<c:if test="${isPaused}">
@@ -418,7 +417,7 @@
 				<div id="dialog-return-ids" title="return ids">
 					<p><span id="dialog-return-ids-txt"></span></p>
 					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
-					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br></p>
+					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
 				</div>
 				<div id="dialog-solverComparison" title="solver comparison chart">
 					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>

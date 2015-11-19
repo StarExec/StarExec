@@ -1,16 +1,11 @@
 package org.starexec.util.matrixView;
 
-import java.lang.Iterable;
-import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +14,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
-import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.Benchmark;
@@ -27,13 +21,10 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.compare.NameableComparators;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.LogUtil;
-import org.starexec.util.Util;
 
 
 /**

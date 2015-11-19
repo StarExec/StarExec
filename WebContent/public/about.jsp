@@ -19,15 +19,16 @@
 	</p>
 	
 	<p>StarExec allows 
-	<ul>
-	<li>community organizers to store, manage and make available
-	benchmark libraries;
-	</li>
-	<li>competition organizers to run logic solver competitions; and 
-	</li>
-	</li>community members to perform comparative evaluations of logic solvers 
-	on public or private benchmark problems.
-  </ul>
+		<ul>
+			<li>community organizers to store, manage and make available
+			benchmark libraries;
+			</li>
+			<li>competition organizers to run logic solver competitions; and 
+			<li>
+			community members to perform comparative evaluations of logic solvers 
+			on public or private benchmark problems.
+			</li>
+	  	</ul>
 	</p>
 
 	<p>The first public events ran on StarExec in Summer 2013 (CoCo 2013 and SMT-EVAL 2013). 

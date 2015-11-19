@@ -2,12 +2,8 @@ package org.starexec.util;
 
 import java.util.Enumeration;
 
-import org.apache.log4j.Category;
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.starexec.data.database.Jobs;
-import org.starexec.jobs.JobManager;
 
 public class LoggingManager {
 	private static final Logger log = Logger.getLogger(LoggingManager.class);

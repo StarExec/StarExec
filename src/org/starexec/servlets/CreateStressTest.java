@@ -2,8 +2,6 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -13,14 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;

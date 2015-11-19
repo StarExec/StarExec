@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.util.Util;
 
 public class DefaultSettings extends Identifiable {

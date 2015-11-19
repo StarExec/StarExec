@@ -1,14 +1,8 @@
 package org.starexec.test.integration.web;
 
-import java.util.List;
-
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;

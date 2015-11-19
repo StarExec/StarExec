@@ -1,9 +1,7 @@
 package org.starexec.test.integration.database;
 
-import java.io.File;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Processors;

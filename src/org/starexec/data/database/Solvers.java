@@ -21,18 +21,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.to.CacheType;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
-import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
-import org.starexec.util.Timer;
 import org.starexec.util.Util;
 
 /**

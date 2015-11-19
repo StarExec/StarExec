@@ -89,7 +89,7 @@ import="java.util.ArrayList,
 				<c:forEach var="solverConfig" varStatus="headerIndex" items="${matrix.getSolverConfigsByColumn()}">
 				<th class="solverHeader" width="120px">
 					<a href="${starexecRoot}/secure/details/solver.jsp?id=${solverConfig.getLeft().getId()}" target="_blank">
-						${matrix.getTruncatedColumnHeader(headerIndex.getIndex())}
+						${matrix.getTruncatedColumnHeader(headerIndex.getIndex())}</a>
 					<img class="extLink" src="${starexecRoot}/images/external.png">
 				</th>
 				</c:forEach>

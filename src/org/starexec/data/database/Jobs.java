@@ -39,7 +39,6 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
-import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;

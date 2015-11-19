@@ -1,6 +1,5 @@
 package org.starexec.util.matrixView;
 
-import org.starexec.data.to.Status;
 
 /**
  * Helper class for the matrix view of a job.

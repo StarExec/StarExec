@@ -1,6 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -22,17 +21,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.SpaceSecurity;
-import org.starexec.data.database.*;
 import org.starexec.data.to.*;
-import org.starexec.data.to.Status.StatusCode;
 import org.starexec.exceptions.StarExecException;
-/*import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-*/
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.dataStructures.TreeNode;
@@ -996,7 +987,6 @@ public class Spaces {
 
 
 		Space sourceSpace = Spaces.get(srcId);
-		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
 		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
 		log.debug("Space tree built during space hierarchy copy:");
 		logSpaceTree(spaceTree);

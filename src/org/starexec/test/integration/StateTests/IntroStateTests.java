@@ -2,22 +2,13 @@ package org.starexec.test.integration.StateTests;
 
 import java.util.List;
 import java.util.HashSet;
-import java.util.Set;
 
 import org.junit.Assert;
-import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.util.Util;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 public class IntroStateTests extends TestSequence {
