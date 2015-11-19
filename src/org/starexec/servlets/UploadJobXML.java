@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
-import org.starexec.data.database.Users;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;

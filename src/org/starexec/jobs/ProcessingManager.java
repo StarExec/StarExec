@@ -1,6 +1,5 @@
 package org.starexec.jobs;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.starexec.constants.R;
