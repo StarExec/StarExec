@@ -182,7 +182,7 @@ DROP PROCEDURE IF EXISTS AddUnvalidatedBenchmark;
 CREATE PROCEDURE AddUnvalidatedBenchmark(IN _id INT, IN _name VARCHAR(256), IN _error TEXT)
 	BEGIN
 		INSERT INTO unvalidated_benchmarks (status_id, bench_name, error_message)
-		VALUES (_id, _name, error_message);
+		VALUES (_id, _name, _error);
 	END //	
 	
 -- Gets direct count of unvalidated benchmarks if there are no more than maximum
