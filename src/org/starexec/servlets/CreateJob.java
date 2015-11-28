@@ -200,9 +200,7 @@ public class CreateJob extends HttpServlet {
 		String selection = request.getParameter(run);
 		String benchMethod = request.getParameter(benchChoice);
 		String traversalMethod = request.getParameter(traversal);
-		HashMap<Integer, String> SP=null;
 		//Depending on our run selection, handle each case differently
-		String error=null;
 		//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 		if (selection.equals("quickJob")) {
 			int solverId=Integer.parseInt(request.getParameter(solver));
@@ -215,12 +213,12 @@ public class CreateJob extends HttpServlet {
 		} else if (selection.equals("keepHierarchy")) {
 			log.debug("User selected keepHierarchy");
 			//Create the HashMap to be used for creating job-pair path
-			SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-			HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer,List<JobPair>>();
+			HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
 			log.debug("got all the subspaces for the job");		
 			spaces.add(0, Spaces.get(space));
 			
+			HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer,List<JobPair>>();
 			for (Space s : spaces) {
 			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
 			    
@@ -231,7 +229,6 @@ public class CreateJob extends HttpServlet {
 			//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2, and so on
 			if (traversalMethod.equals("depth")) {
 				JobManager.addJobPairsDepthFirst(j, spaceToPairs);
-				
 				//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
 			} else {
 				log.debug("adding pairs round robin");
@@ -240,17 +237,14 @@ public class CreateJob extends HttpServlet {
 			}
 		} else { //user selected "choose"
 			
-			SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+			HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 			if (benchMethod.equals("runAllBenchInSpace")) {
 			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, space, Spaces.getName(space),configIds);
-			    if (pairs==null) {
-			    	error="unable to get any job pairs for the space ID = "+space;
-			    } else {
+			    if (pairs!=null) {
 				    j.addJobPairs(pairs);
 			    }
-			
 			
 			}else if (benchMethod.equals("runAllBenchInHierarchy")) {
 				log.debug("got request to run all in bench hierarchy");
@@ -259,36 +253,19 @@ public class CreateJob extends HttpServlet {
 				
 				if (traversalMethod.equals("depth")) {
 					log.debug("User selected depth-first traversal");
-
 					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
 				} else {
 					log.debug("users selected round robin traversal");
 					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
-				}
-				// We chose to run the hierarchy, so add subspace benchmark IDs to the list.
-				if (j.getJobPairs().size() == 0) {
-					// No pairs in the job means no benchmarks in the hierarchy; error out
-					String message="Either no benchmarks were selected, or there are none available in the current space/hierarchy. Could not create job.";
-					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
-
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
-					return;
 				}
 			} else {
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
 				JobManager.buildJob(j, benchmarkIds, configIds, space, SP);
 			}
 		}
-		
-		if (error != null) {
-		    response.sendError(HttpServletResponse.SC_BAD_REQUEST, error);
-		    return;
-		}
-
 		if (j.getJobPairs().size() == 0) {
 			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
-
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 			// No pairs in the job means something went wrong; error out
 			return;

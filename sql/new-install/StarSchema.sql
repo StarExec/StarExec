@@ -609,6 +609,7 @@ CREATE TABLE unvalidated_benchmarks (
 	id INT NOT NULL AUTO_INCREMENT, 
     status_id INT REFERENCES benchmark_uploads(id) ON DELETE CASCADE,
     bench_name VARCHAR(256) NOT NULL,
+    error_message TEXT,
 	PRIMARY KEY (id)
 );
 

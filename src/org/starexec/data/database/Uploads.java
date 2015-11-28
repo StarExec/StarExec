@@ -3,10 +3,12 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.SpaceXMLUploadStatus;
 /**
@@ -19,9 +21,10 @@ public class Uploads {
 	 * Adds failed benchmark name to db
 	 * @param statusId - id of status object being changed
 	 * @param name 
+	 * @param errorMessage The string message explaining why this benchmark could not be validated
 	 * @return true if successful, false if not
 	 */
-	public static Boolean addFailedBenchmark(Integer statusId, String name){
+	public static Boolean addFailedBenchmark(Integer statusId, String name, String errorMessage){
 		if (statusId==null) {
 			return false;
 		}
@@ -31,10 +34,11 @@ public class Uploads {
 		try {
 			con = Common.getConnection();	
 				
-			procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?)}");
+			procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?, ?)}");
 		
 			procedure.setInt(1, statusId);
 			procedure.setString(2,name);
+			procedure.setString(3, errorMessage);
 			procedure.executeUpdate();			
 			return true;
 		} catch (Exception e){			
@@ -325,6 +329,33 @@ public class Uploads {
 	}
 	
 	/**
+	 * Accepts a result set currently pointing to a row containing a BenchmarkUploadStatus
+	 * and returns that status.
+	 * @param results The open resultset.
+	 * @return The BenchmarkUploadStatus
+	 * @throws SQLException 
+	 */
+	private static BenchmarkUploadStatus resultsToBenchmarkUploadStatus(ResultSet results) throws SQLException {
+		BenchmarkUploadStatus s = new BenchmarkUploadStatus();
+		s.setId(results.getInt("id"));
+		s.setCompletedBenchmarks(results.getInt("completed_benchmarks"));
+		s.setCompletedSpaces(results.getInt("completed_spaces"));
+		s.setFileExtractionComplete(results.getBoolean("file_extraction_complete"));
+		s.setProcessingBegun(results.getBoolean("processing_begun"));
+		s.setSpaceId(results.getInt("space_id"));
+		s.setTotalBenchmarks(results.getInt("total_benchmarks"));
+		s.setValidatedBenchmarks(results.getInt("validated_benchmarks"));
+		s.setTotalSpaces(results.getInt("total_spaces"));
+		s.setUploadDate(results.getTimestamp("upload_time"));
+		s.setUserId(results.getInt("user_id"));
+		s.setFileUploadComplete(results.getBoolean("file_upload_complete"));
+		s.setEverythingComplete(results.getBoolean("everything_complete"));
+		s.setErrorMessage(results.getString("error_message"));
+		s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
+		return s;
+	}
+	
+	/**
 	 * Gets the upload status object when given its id
 	 * @param statusId The id of the status to get information for
 	 * @return An upload status object
@@ -341,23 +372,7 @@ public class Uploads {
 			results = procedure.executeQuery();		
 			
 			if(results.next()){
-				BenchmarkUploadStatus s = new BenchmarkUploadStatus();
-				s.setId(results.getInt("id"));
-				s.setCompletedBenchmarks(results.getInt("completed_benchmarks"));
-				s.setCompletedSpaces(results.getInt("completed_spaces"));
-				s.setFileExtractionComplete(results.getBoolean("file_extraction_complete"));
-				s.setProcessingBegun(results.getBoolean("processing_begun"));
-				s.setSpaceId(results.getInt("space_id"));
-				s.setTotalBenchmarks(results.getInt("total_benchmarks"));
-				s.setValidatedBenchmarks(results.getInt("validated_benchmarks"));
-				s.setTotalSpaces(results.getInt("total_spaces"));
-				s.setUploadDate(results.getTimestamp("upload_time"));
-				s.setUserId(results.getInt("user_id"));
-				s.setFileUploadComplete(results.getBoolean("file_upload_complete"));
-				s.setEverythingComplete(results.getBoolean("everything_complete"));
-				s.setErrorMessage(results.getString("error_message"));
-				s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
-				return s;
+				return resultsToBenchmarkUploadStatus(results);
 			}														
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -375,7 +390,7 @@ public class Uploads {
 	 * @return An upload status object
 	 * @author Benton McCune
 	 */
-	public static List<String> getFailedBenches(int statusId) {
+	public static List<Benchmark> getFailedBenches(int statusId) {
 		
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -385,11 +400,71 @@ public class Uploads {
 			procedure = con.prepareCall("{CALL GetUnvalidatedBenchmarks(?)}");
 			procedure.setInt(1, statusId);					
 			results = procedure.executeQuery();		
-			List<String> badBenches = new LinkedList<String>();
+			List<Benchmark> badBenches = new LinkedList<Benchmark>();
 			while(results.next()){
-				badBenches.add(results.getString("bench_name"));
+				Benchmark b = new Benchmark();
+				b.setName(results.getString("bench_name"));
+				b.setId(results.getInt("id"));
+				badBenches.add(b);
 			}
 			return badBenches;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets the benchmark processor output for a particular benchmark that failed validation
+	 * @param id The ID of the invalid benchmark row
+	 * @return The output of the processor as a string. Returns null if it does not exist.
+	 */
+	public static String getInvalidBenchmarkErrorMessage(int id) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL GetInvalidBenchmarkMessage(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();		
+			if(results.next()){
+				return results.getString("error_message");
+			}
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Given the ID of a row of an invalid benchmark, return the containing
+	 * BenchmarkUploadStatus
+	 * @param id The ID of the invalid benchmark row
+	 * @return The BenchmarkUploadStatus, or null on error
+	 */
+	public static BenchmarkUploadStatus getUploadStatusForInvalidBenchmarkId(int id) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {			
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL GetUploadStatusForInvalidBenchmarkId(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();		
+			if(results.next()){
+				return resultsToBenchmarkUploadStatus(results);
+			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {

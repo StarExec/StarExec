@@ -11,7 +11,7 @@
 		int statusId = Integer.parseInt(request.getParameter("id"));
 
 		BenchmarkUploadStatus s = null;
-		List<String> bS = null;
+		List<Benchmark> bS = null;
 		if (Permissions.canUserSeeBenchmarkStatus(statusId, userId)) {
 	s = Uploads.getBenchmarkStatus(statusId);
 	bS = Uploads.getFailedBenches(statusId);
@@ -114,12 +114,14 @@
 				<thead>
 					<tr>
 						<th>name</th>
+						<th>output</th>
 					</tr>
 				</thead>
 				<tbody>
 					<c:forEach var="bench" items="${badBenches}">
 						<tr>
-							<td>${bench}</td>
+							<td>${bench.name}</td>
+							<td><a href="${starexecRoot}/services/uploads/stdout/${bench.id}">view</a></td>
 						</tr>
 					</c:forEach>
 				</tbody>

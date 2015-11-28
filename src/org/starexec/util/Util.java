@@ -367,7 +367,7 @@ public class Util {
     	for (int i=0;i<command.length;i++) {
     		newCommand[i+3]=command[i];
     	}
-    	return  executeCommand(newCommand,envp,workingDirectory);
+    	return executeCommand(newCommand,envp,workingDirectory);
     }
 	
     /**
@@ -445,28 +445,28 @@ public class Util {
 
 
     protected static String drainStreams(final Process p) {
-	    
-	/* to handle the separate streams of regular output and
-	   error output correctly, it is necessary to try draining
-	   them in parallel.  Otherwise, draining one can block
-	   and prevent the other from making progress as well (since
-	   the process cannot advance in that case). */
-	final StringBuffer b = new StringBuffer();
-	threadPool.execute(new Runnable() {
-		@Override
-		    public void run() {
-		    try {
-				if (drainInputStream(b,p.getErrorStream()))
-				    log.error("The process produced stderr output.");
-					log.error(b.toString());
+		    
+		/* to handle the separate streams of regular output and
+		   error output correctly, it is necessary to try draining
+		   them in parallel.  Otherwise, draining one can block
+		   and prevent the other from making progress as well (since
+		   the process cannot advance in that case). */
+		final StringBuffer b = new StringBuffer();
+		threadPool.execute(new Runnable() {
+			@Override
+			    public void run() {
+			    try {
+					if (drainInputStream(b,p.getErrorStream()))
+					    log.error("The process produced stderr output.");
+						log.error(b.toString());
+				    }
+			    catch(Exception e) {
+			    	log.error("Error draining stderr from process: "+e.toString());
 			    }
-		    catch(Exception e) {
-		    	log.error("Error draining stderr from process: "+e.toString());
-		    }
-		}
-	    });
-	drainInputStream(b,p.getInputStream());
-	return b.toString();
+			}
+		    });
+		drainInputStream(b,p.getInputStream());
+		return b.toString();
     }
 
 	

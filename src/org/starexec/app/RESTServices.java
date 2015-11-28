@@ -54,6 +54,7 @@ import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
+import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -240,6 +241,27 @@ public class RESTServices {
 		String qstat=R.BACKEND.getRunningJobsStatus();
 		if(!Util.isNullOrEmpty(qstat)) {
 			return qstat;
+		}
+
+		return "not available";
+	}
+	
+	
+	/**
+	 * @return a text string that holds the result of running qstat -f
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/uploads/stdout/{id}")
+	@Produces("text/plain")		
+	public String getInvalidUploadedBenchmarkOutput(@PathParam("id") int id, @Context HttpServletRequest request) {		
+		ValidatorStatusCode valid = UploadSecurity.canViewUnvalidatedBenchmarkOutput(SessionUtil.getUserId(request), id);
+		if (!valid.isSuccess()) {
+			return valid.getMessage();
+		}
+		String stdout=Uploads.getInvalidBenchmarkErrorMessage(id);
+		if(!Util.isNullOrEmpty(stdout)) {
+			return stdout;
 		}
 
 		return "not available";

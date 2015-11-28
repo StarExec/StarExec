@@ -766,10 +766,9 @@ public class Benchmarks {
 			}
 			else{
 				failedCounter++;
-				//TODO: Should we bin these like the other increments?
 				Uploads.incrementFailedBenchmarks(statusId,1);
 				if (failedCounter < R.MAX_FAILED_VALIDATIONS){
-					Uploads.addFailedBenchmark(statusId,b.getName());
+					Uploads.addFailedBenchmark(statusId,b.getName(), propstr);
 					String message = b.getName() + " failed validation";
 					log.warn(message);
 					Uploads.setBenchmarkErrorMessage(statusId, message);	
