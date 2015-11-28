@@ -2988,41 +2988,6 @@ public class RESTServices {
 		Util.threadPoolExecute(removeSubspacesProcess);
 		return gson.toJson(new ValidatorStatusCode(true, "Subspaces are being deleted."));
 	}
-
-	
-	/**
-	 * Only removes a subspace's association with a space, thereby removing the subspace
-	 * from the space
-	 * 
-	 * @return 	0: success,<br>
-	 * 			1: invalid parameters,<br>
-	 * 			2: insufficient permissions,<br>
-	 * 			3: error on the database level
-	 * @author Ben McCune
-	 */
-	@POST
-	@Path("/quickRemove/subspace")
-	@Produces("application/json")
-	public String quickRemoveSubspacesFromSpace(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
-		try{
-			// Extract the String subspace id's and convert them to Integers
-			for(String id : request.getParameterValues("selectedIds[]")){
-				selectedSubspaces.add(Integer.parseInt(id));
-			}
-		} catch(Exception e){
-			return gson.toJson(ERROR_IDS_NOT_GIVEN);
-		}
-		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(userId,selectedSubspaces);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-
-		// Remove the associations
-		
-		return Spaces.quickRemoveSubspaces(selectedSubspaces, SessionUtil.getUserId(request)) ? gson.toJson(new ValidatorStatusCode(true,"Subspace(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
-	}
 	/**
 	 * Updates the details of a solver. Solver id is required in the path. First
 	 * checks if the parameters of the update are valid, then performs the

@@ -220,14 +220,16 @@ public class SpaceSecurity {
 			if(null == perm || !perm.canRemoveSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to remove subspaces from this space");
 			}
-			if(!Permissions.get(userId, subspace.getId()).isLeader()){
+			Permission p = Permissions.get(userId, sid);
+			if(p==null || !p.isLeader()){
 				return new ValidatorStatusCode(false, "You cannot remove spaces that you are not a leader of");
 			}
 			
 			
-			for(Space subspace2 : Spaces.getSubSpaces(sid, userId)){
+			for(Space subspace2 : Spaces.getSubSpaceHierarchy(sid)){
 				// Ensure the user is the leader of that space
-				if(!Permissions.get(userId, subspace2.getId()).isLeader()){
+				p = Permissions.get(userId, subspace2.getId());
+				if(p==null || !p.isLeader()){
 					return new ValidatorStatusCode(false, "You cannot remove spaces that you are not a leader of");
 				}
 
