@@ -54,10 +54,17 @@ public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 	private static final LogUtil logUtil = new LogUtil(log);
 	
-	
-	private static String[] getSpaceNames(String path) {
+	/**
+	 * Returns a list of job spaces that are present in the given
+	 * path. Spaces are returned ordered from top level to
+	 * bottom level. An exception is thrown if the given
+	 * path is null or empty
+	 * @param path The / delimited path
+	 * @return
+	 */
+	private static String[] getSpaceNames(String path) throws IllegalArgumentException {
 		if (path==null || path=="") {
-			return new String[] {"job space"};
+			throw new IllegalArgumentException("Job paths cannot be empty");
 		}
 		return path.split(R.JOB_PAIR_PATH_DELIMITER);
 	}
@@ -219,56 +226,52 @@ public class Jobs {
 	 * @param pairs The list of pairs to make paths for
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
+	 * @throws Exception 
 	 */
-	public static Integer createJobSpacesForPairs(List<JobPair> pairs,Connection con) {
+	public static Integer createJobSpacesForPairs(List<JobPair> pairs,Connection con) throws Exception {
 		
 		//this hashmap maps every job space ID to the maximal number of stages
 		// of any pair that is in the hierarchy rooted at the job space
 		HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
-
-		try {
-			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
-			String topLevel="";
-			for (JobPair pair : pairs) {
-				//log.debug("finding spaces for a new pair with path = " +pair.getPath());
-				String[] spaces=getSpaceNames(pair.getPath());
-				StringBuilder curPathBuilder=new StringBuilder();
-				for (int i=0;i<spaces.length;i++) {
-					String name=spaces[i];
-					curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
-					curPathBuilder.append(name);
-					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
-						topLevel=curPathBuilder.toString(); 
-					}
-					
-					//if we need to create a new space
-					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
-						String parentPath=curPathBuilder.toString();
-						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
-							pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
-							int id=pathsToIds.get(curPathBuilder.toString());
-							idsToMaxStages.put(id, pair.getStages().size());
-							//associate the new space to its parent
-							
-							if (parentPath.length()>0) {
-								int parentId=pathsToIds.get(parentPath);
-								Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()),con);
-							}
-					}
-						int id=pathsToIds.get(curPathBuilder.toString());
-						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));					
+		HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
+		String topLevel="";
+		for (JobPair pair : pairs) {
+			//log.debug("finding spaces for a new pair with path = " +pair.getPath());
+			String[] spaces=getSpaceNames(pair.getPath());
+			StringBuilder curPathBuilder=new StringBuilder();
+			for (int i=0;i<spaces.length;i++) {
+				String name=spaces[i];
+				curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
+				curPathBuilder.append(name);
+				if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
+					topLevel=curPathBuilder.toString(); 
 				}
-					pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
 				
-			}
-				for (Integer id : idsToMaxStages.keySet()) {
-					Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id),con);
+				//if we need to create a new space
+				if (!pathsToIds.containsKey(curPathBuilder.toString())) {
+					String parentPath=curPathBuilder.toString();
+					parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
+						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
+						int id=pathsToIds.get(curPathBuilder.toString());
+						idsToMaxStages.put(id, pair.getStages().size());
+						//associate the new space to its parent
+						
+						if (parentPath.length()>0) {
+							int parentId=pathsToIds.get(parentPath);
+							Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()),con);
+						}
 				}
-			return pathsToIds.get(topLevel);
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+					int id=pathsToIds.get(curPathBuilder.toString());
+					idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));					
+			}
+				pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
+			
 		}
-		return null;
+			for (Integer id : idsToMaxStages.keySet()) {
+				Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id),con);
+			}
+		return pathsToIds.get(topLevel);
+
 	}
 	
 	/**

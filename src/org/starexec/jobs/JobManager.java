@@ -711,10 +711,8 @@ public abstract class JobManager {
 	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
-	 * @param SP A mapping of space IDs to space paths for every space in this job, with paths being relative to the space this job is
-	 * being created in. If null, the job will be flat, with every job pair in a single top level job space
 	 */
-	public static void buildJob(Job j, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId, HashMap<Integer, String> SP) {
+	public static void buildJob(Job j, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
@@ -739,13 +737,8 @@ public abstract class JobManager {
 				stage.setConfiguration(solver.getConfigurations().get(0));
 				pair.addStage(stage);
 				
-				
 				pair.setSpace(Spaces.get(spaceId));
-				if (SP!=null) {
-					pair.setPath(SP.get(spaceId));
-				} else {
-					pair.setPath(spaceName);
-				}
+				pair.setPath(spaceName);
 				j.addJobPair(pair);
 				
 			}

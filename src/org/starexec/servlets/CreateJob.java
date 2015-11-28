@@ -102,7 +102,7 @@ public class CreateJob extends HttpServlet {
 		}
 		List<Integer> benchmarkIds = new ArrayList<Integer>();
 		benchmarkIds.add(benchId);
-		JobManager.buildJob(j, benchmarkIds, configIds, sId, null);
+		JobManager.buildJob(j, benchmarkIds, configIds, sId);
 	}
 	/**
 	 * Tests a solver using default info for the space it is being uploaded in
@@ -260,7 +260,7 @@ public class CreateJob extends HttpServlet {
 				}
 			} else {
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
-				JobManager.buildJob(j, benchmarkIds, configIds, space, SP);
+				JobManager.buildJob(j, benchmarkIds, configIds, space);
 			}
 		}
 		if (j.getJobPairs().size() == 0) {

@@ -172,11 +172,8 @@ public class ResourceLoader {
 		}
 		List<Space> spaces=new ArrayList<Space>();
 		spaces.add(Spaces.get(spaceId));
-		HashMap<Integer,String> SP = new HashMap<Integer,String>();
-		SP.put(spaceId, Spaces.get(spaceId).getName());
-		log.debug("building a job with a total number of configs = "+configIds.size());
 
-		JobManager.buildJob(job, benchmarkIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
 		
 		Jobs.add(job, spaceId);
 		return job;
