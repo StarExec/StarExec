@@ -21,7 +21,7 @@
 	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);
 	request.setAttribute("approveCommunityRequestName", Web.APPROVE_COMMUNITY_REQUEST);
 	request.setAttribute("declineCommunityRequestName", Web.DECLINE_COMMUNITY_REQUEST);
-	request.setAttribute("sentFromCommunityPage", R.SENT_FROM_COMMUNITY_PAGE);
+	request.setAttribute("sentFromCommunityPage", Web.SENT_FROM_COMMUNITY_PAGE);
 %>
 
 <star:template title="${t_user.fullName}" js="admin/community, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, admin/admin">
