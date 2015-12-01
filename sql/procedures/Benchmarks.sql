@@ -135,16 +135,6 @@ CREATE PROCEDURE GetBenchmarkByIdIncludeDeletedAndRecycled(IN _id INT)
 		WHERE bench.id = _id;
 	END //
 	
--- Retrieves the upload status with the given id
--- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetBenchmarkUploadStatusById;
-CREATE PROCEDURE GetBenchmarkUploadStatusById(IN _id INT)
-	BEGIN
-		SELECT *
-		FROM benchmark_uploads 
-		WHERE id = _id;
-	END //
-	
 DROP PROCEDURE IF EXISTS GetXMLUploadStatusById;
 CREATE PROCEDURE GetXMLUploadStatusById(IN _id INT)
 	BEGIN

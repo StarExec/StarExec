@@ -8,11 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.owasp.esapi.ESAPI;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for user-defined websites

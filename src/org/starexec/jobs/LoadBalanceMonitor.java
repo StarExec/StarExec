@@ -1,18 +1,12 @@
 package org.starexec.jobs;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.starexec.constants.R;
-import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
 

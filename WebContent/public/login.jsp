@@ -32,15 +32,15 @@
 				<td><input type="password" name="j_password" /></td>
 			</tr>												
 			<tr>
-				<td><a href="/${starexecRoot}/public/password_reset.jsp">Forgot password?</a></td>
+				<td><a href="${starexecRoot}/public/password_reset.jsp">Forgot password?</a></td>
 				<td><button type="submit">Login</button></td>
 			</tr>
 			<tr> 
-				<td><a href="/${starexecRoot}/public/registration.jsp">New user?</a></td>
+				<td><a href="${starexecRoot}/public/registration.jsp">New user?</a></td>
 				<td></td>
 			</tr>
 			<tr> 
-				<td><a href="/${starexecRoot}/secure/j_security_check?j_username=public&j_password=public">Login as guest</a></td>
+				<td><a href="${starexecRoot}/secure/j_security_check?j_username=public&j_password=public">Login as guest</a></td>
 				<td></td>
 			</tr>
 		</table>

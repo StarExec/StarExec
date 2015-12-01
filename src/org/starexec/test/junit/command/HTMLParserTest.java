@@ -1,15 +1,8 @@
 package org.starexec.test.junit.command;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-
-
-
 
 import org.apache.http.Header;
-import org.apache.http.message.BasicNameValuePair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.starexec.command.HTMLParser;

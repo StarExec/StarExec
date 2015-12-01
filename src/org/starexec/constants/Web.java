@@ -1,0 +1,29 @@
+package org.starexec.constants;
+
+/**
+ * Class that stores our web-related constants.
+ */
+public final class Web {
+
+	/**
+	 * Private constructor to make the class un-instantiable.
+	 */
+	private Web() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
+	}
+
+	
+	public static final String APPROVE_COMMUNITY_REQUEST = "approve";
+	public static final String DECLINE_COMMUNITY_REQUEST = "decline";
+	// This is used as a AJAX parameter to identify requests that were sent from the community page
+	// versus requests that were sent from email to accept or decline join community requests
+	public static final String SENT_FROM_COMMUNITY_PAGE = "sentFromCommunityPage";
+	public static final String LOCAL_JOB_PAGE_PARAMETER = "localJobPage";
+
+	public static final String JOB_DETAILS_JS_FILES = "util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min";
+	public static final String GLOBAL_JS_FILES = "lib/jquery.min, lib/jquery-ui.min, lib/jquery.cookie, master";
+
+	public static final String JOB_DETAILS_CSS_FILES = "common/table, common/delaySpinner, explore/common, details/shared, details/job";
+	public static final String GLOBAL_CSS_FILES = "html5, jqueryui/jquery-ui, master, common/dataTable";
+
+}

@@ -4,28 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.starexec.app.RESTServices;
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Common;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
-import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.util.SessionUtil;
 import org.starexec.util.Validator;
 
 public class SpaceSecurity {
@@ -227,14 +220,16 @@ public class SpaceSecurity {
 			if(null == perm || !perm.canRemoveSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to remove subspaces from this space");
 			}
-			if(!Permissions.get(userId, subspace.getId()).isLeader()){
+			Permission p = Permissions.get(userId, sid);
+			if(p==null || !p.isLeader()){
 				return new ValidatorStatusCode(false, "You cannot remove spaces that you are not a leader of");
 			}
 			
 			
-			for(Space subspace2 : Spaces.getSubSpaces(sid, userId)){
+			for(Space subspace2 : Spaces.getSubSpaceHierarchy(sid)){
 				// Ensure the user is the leader of that space
-				if(!Permissions.get(userId, subspace2.getId()).isLeader()){
+				p = Permissions.get(userId, subspace2.getId());
+				if(p==null || !p.isLeader()){
 					return new ValidatorStatusCode(false, "You cannot remove spaces that you are not a leader of");
 				}
 

@@ -74,7 +74,7 @@
 				<tr title="the execution queue this job was submitted to">
 					<td>queue</td>	
 					<c:if test="${not empty job.queue}">
-					<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a href="${starexecRoot}/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 					</c:if>
 					<c:if test="${empty job.queue}">
 					<td>unknown</td>

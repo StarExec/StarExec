@@ -1068,7 +1068,6 @@ function removeSubspaces(selectedSubspaces){
 
 
 function makeRemoveSubspacesPost(selectedSubspaces, recyclePrims) {
-	log('user confirmed (in quickremove dialog) subspace deletion');
 	$.post(  starexecRoot+"services/remove/subspace",
 			{selectedIds : selectedSubspaces, recyclePrims : recyclePrims},					
 			function(returnCode) {

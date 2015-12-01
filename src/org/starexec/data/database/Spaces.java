@@ -1,6 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -22,17 +21,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.SpaceSecurity;
-import org.starexec.data.database.*;
 import org.starexec.data.to.*;
-import org.starexec.data.to.Status.StatusCode;
 import org.starexec.exceptions.StarExecException;
-/*import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-*/
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.dataStructures.TreeNode;
@@ -996,7 +987,6 @@ public class Spaces {
 
 
 		Space sourceSpace = Spaces.get(srcId);
-		List<Space> subSpaces = Spaces.getSubSpaces(srcId, usrId);
 		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
 		log.debug("Space tree built during space hierarchy copy:");
 		logSpaceTree(spaceTree);
@@ -1995,71 +1985,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Removes a list of subspaces from connection to parent
-	 * 
-	 * @param subspaceIds the list of subspaces to remove
-	 * @param parentSpaceId the id of the space to remove the subspaces from
-	 * @return true iff all subspaces in 'subspaceIds' are removed from the space referenced by 'spaceId',
-	 * false otherwise
-	 * @author Ben McCune
-	 */
-	public static boolean quickRemoveSubspace(int subspaceId, int userId, Connection con) {				
-		CallableStatement procedure = null;
-		try {		
-				 procedure = con.prepareCall("{CALL QuickRemoveSubspace(?)}");
-				procedure.setInt(1, subspaceId);
-				procedure.executeUpdate();		
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-	/**
-	 * Removes a list of subspaces from connection to parent
-	 * 
-	 * @param subspaceIds the list of subspaces to remove
-	 * @param parentSpaceId the id of the space to remove the subspaces from
-	 * @return true iff all subspaces in 'subspaceIds' are removed from the space referenced by 'spaceId',
-	 * false otherwise
-	 * @author Ben McCune
-	 */
-	public static boolean quickRemoveSubspaces(List<Integer> subspaceIds, int userId) {
-		
-		Connection con = null;			
-		
-		try {
-			con = Common.getConnection();
-			
-			// Instantiate a transaction so subspaces in 'subspaceIds' get removed in an all-or-none fashion
-			Common.beginTransaction(con);
-			
-			// For each subspace in the list of subspaces to be deleted...
-			for(int subspaceId : subspaceIds){				
-				Spaces.quickRemoveSubspace(subspaceId, userId, con);
-			}
-			
-			// Commit changes to database
-			Common.endTransaction(con);
-			
-			log.info("quick space deletion complete.");
-			
-			return true;
-		} catch (Exception e){			
-			log.error("quick remove supbspaces says " + e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-		}
-		
-		return false;
 	}
 	
 	/**

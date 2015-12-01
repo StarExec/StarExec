@@ -144,7 +144,7 @@
 		
 			<c:forEach var="site" items="${sites}">
 				<tr>
-					<td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a href="${site.url}" target="_blank">${site.name} <img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 					<td><a class="delWebsite" id="${site.id}">delete</a></td>
 				</tr>
 			
@@ -172,7 +172,7 @@
 				<tbody>
 				<c:forEach var="proc" items="${bench_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -180,7 +180,7 @@
 				</tbody>									
 			</table>
 		<span id="toggleBenchType" class="caption">+ add new</span>
-		<form id="newTypeForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
+		<form id="newTypeForm" class="newForm" enctype="multipart/form-data" method="POST" action="${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
 			<input type="hidden" name="type" value="bench"/>
@@ -323,7 +323,7 @@
 			<tbody>
 				<c:forEach var="proc" items="${pre_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -331,7 +331,7 @@
 			</tbody>																				
 		</table>
 		<span id="togglePreProcessor" class="caption">+ add new</span>
-		<form id="addPreProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
+		<form id="addPreProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
 			<input type="hidden" name="type" value="pre"/>
@@ -384,7 +384,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${post_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -392,7 +392,7 @@
 				</tbody>
 			</table>
 		<span id="togglePostProcessor" class="caption">+ add new</span>
-		<form id="addPostProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
+		<form id="addPostProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
 			<input type="hidden" name="type" value="post"/>
@@ -445,7 +445,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${update_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="/${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -453,7 +453,7 @@
 				</tbody>
 			</table>
 		<span id="toggleUpdateProcessor" class="caption">+ add new</span>
-		<form id="addUpdateProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="/${starexecRoot}/secure/processors/manager">			
+		<form id="addUpdateProcessorForm" class="newForm" enctype="multipart/form-data" method="POST" action="${starexecRoot}/secure/processors/manager">			
 			<input type="hidden" name="com" value="${com.id}"/>
 			<input type="hidden" name="action" value="add"/>
 			<input type="hidden" name="type" value="update"/>

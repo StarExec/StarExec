@@ -94,7 +94,7 @@
 			<tbody>
 			<c:forEach items="${sites}" var="s">
 				<tr>
-					<td><a href="${s.url}">${s.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a href="${s.url}">${s.name}<img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 					<td><a class="delWebsite" id="${s.id}">delete</a></td>
 				</tr>
 			</c:forEach>

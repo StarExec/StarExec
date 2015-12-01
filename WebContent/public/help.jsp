@@ -6,12 +6,12 @@
   <div id="support"><br>		
 	<ul id="support">
    	<li>
-			<a href="/${starexecRoot}/secure/help.jsp">On-page documentation</a>, 
+			<a href="${starexecRoot}/secure/help.jsp">On-page documentation</a>, 
 			also available (if logged in) via the Help link at the top of the page
 			<br><br>
 		</li>
 		<li>
-			<a href="/${starexecRoot}/public/quickReference.jsp">Quick Reference</a>
+			<a href="${starexecRoot}/public/quickReference.jsp">Quick Reference</a>
 			<br><br>
 		</li>
 		<li>
@@ -30,7 +30,7 @@
 			<br><br>
 		</li>
 		<li>
-			<a href="/${starexecRoot}/public/WebInterface.pdf">Web Interface Documentation</a> for making direct HTTP calls to Starexec
+			<a href="${starexecRoot}/public/WebInterface.pdf">Web Interface Documentation</a> for making direct HTTP calls to Starexec
 			<br><br>
 		</li>
   </ul>

@@ -6,9 +6,6 @@
 # The queue to submit to
 #$ -q $$QUEUE$$
 
-# Request exclusive access
-#$ -l excl=false
-
 # Enable resource limit signals
 #$ -notify
 
@@ -79,16 +76,11 @@ NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 NUM_BENCH_INPUTS=$((${#BENCH_INPUT_PATHS[@]}-1)) # we terminate the array with an empty string, so the number is the size-1
 
-log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
-
-decodePathArrays
-
-
 #==========================================================================
 # Signal Traps
 #
 # These are just for the limits we are asking SGE to enforce.
-# For the ones runsolver is enforcing, the epilog will look in the
+# For the ones runsolver is enforcing, we will look in the
 # watcher.out file.
 #==========================================================================
 
@@ -105,15 +97,57 @@ trap 'handleUsrTwo' USR2
 #==========================================================================
 # Execute (prolog will take care of data staging)
 
-findSandbox $JOB_ID
+whoami
+echo "STAREXEC Job Log"
+echo "(C) `date +%Y` The University of Iowa"
+echo "====================================="
+echo "date: `date`"
+echo "user: #$USER_ID"
+echo "sge job: #$JOB_ID"
+echo "pair id: $PAIR_ID"
+echo "execution host: $HOSTNAME"
+echo ""
+
+sendStatus $STATUS_PREPARING
+
+initSandbox "$JOB_ID"
+
+
+if ! isInteger $SANDBOX ; then
+        sendStatus $ERROR_RUNSCRIPT
+        sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+
+        log "unable to secure any sandbox for this job!"
+        exit 0
+fi
+
+if [ $SANDBOX -eq -1 ]
+then
+        sendStatus $ERROR_RUNSCRIPT
+        sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+
+        log "unable to secure any sandbox for this job!"
+        exit 0
+fi
+
+
+sendNode "$HOSTNAME" "$SANDBOX"
+cleanWorkspace 1
+sendStatus $STATUS_RUNNING
+setStartTime
+
 createLocalTmpDirectory
+
+log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
+
+decodePathArrays
 
 $$STAGE_DEPENDENCY_ARRAY$$
 
 
 # setup the memory limit for this stage
 
-#THIS ONLY NEEDS TO BE DONE ONCE
+#Gets the memory of the node in kilobytes
 NODE_MEM=$(vmstat -s | head -1 | sed 's/K total memory//')
 
 #then, convert kb to mb
@@ -218,8 +252,10 @@ fi
 SANDBOX_FOUND=true
 if [ $SANDBOX -eq 1 ] ; then
 	SANDBOX_PARAM="sandbox"
+	CORES="0-3"
 elif [ $SANDBOX -eq 2 ] ; then
 	SANDBOX_PARAM="sandbox2"
+	CORES="4-7"
 else
 	SANDBOX_FOUND=false
 fi
@@ -274,9 +310,9 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	pwd
 
 	# run runsolver
-	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
+	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
-	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores 0-3 -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
+	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
 
 	# If runsolver finishes then stop the killDeadlockedJobPair function.
 	log "Runsolver finished. Killing the defensive killall function."
@@ -294,7 +330,7 @@ else
 fi
 
 
-
+ls -l $OUT_DIR
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
@@ -375,9 +411,11 @@ STAGE_INDEX=$(($STAGE_INDEX+1))
 
 done
 
+setEndTime
+
+recordJobPairRun
+
+cleanWorkspace 0
 
 echo "Jobscript ending."
 
-#==========================================================================
-# Complete (epilog will take care or reporting and data saving) 
-#==========================================================================

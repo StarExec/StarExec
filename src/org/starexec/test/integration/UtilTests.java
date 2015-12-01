@@ -44,7 +44,7 @@ public class UtilTests extends TestSequence{
 		Assert.assertTrue(sandbox.exists());
 		for (File f : files) {
 			File sandboxFile=new File(sandbox,f.getName());
-			Assert.assertTrue(f.exists());
+			Assert.assertTrue(sandboxFile.exists());
 		}
 		FileUtils.deleteQuietly(sandbox);
 	}

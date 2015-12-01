@@ -2,8 +2,6 @@ package org.starexec.data.security;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Queue;

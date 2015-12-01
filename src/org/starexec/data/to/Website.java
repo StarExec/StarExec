@@ -1,6 +1,5 @@
 package org.starexec.data.to;
 
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 
 import com.google.gson.annotations.Expose;
 

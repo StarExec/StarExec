@@ -23,7 +23,7 @@
 	}
 %>
 <star:template title="add to ${solver.name}" css="add/configuration" js="lib/jquery.validate.min, add/configuration">
-	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/configurations" id="uploadConfigForm">
+	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/configurations" id="uploadConfigForm">
 		<input type="hidden" name="solverId" value="${solver.id}"/>
 		<fieldset id="upload">
 			<legend>upload a configuration</legend>		
@@ -53,7 +53,7 @@
 			<button class="uploadBtn" type="submit">upload</button>
 		</fieldset>
 	</form>
-	<form method="POST" action="/${starexecRoot}/secure/save/configurations" id="saveConfigForm">
+	<form method="POST" action="${starexecRoot}/secure/save/configurations" id="saveConfigForm">
 		<input type="hidden" name="solverId" value="${solver.id}"/>
 		<fieldset id="save">
 			<legend>write a configuration</legend>		

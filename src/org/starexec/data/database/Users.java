@@ -12,15 +12,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Solvers;
 import org.starexec.data.security.UserSecurity;
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
@@ -44,7 +40,7 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean associate(Connection con, int userId, int spaceId) throws Exception {
+	private static boolean associate(Connection con, int userId, int spaceId) throws Exception {
 		CallableStatement procedure= null;
 		try {
 			procedure = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
@@ -144,7 +140,7 @@ public class Users {
 	 * @throws Exception
 	 * @author Todd Elvers
 	 */
-	protected static boolean associate(Connection con, List<Integer> userIds, int spaceId) throws Exception {
+	private static boolean associate(Connection con, List<Integer> userIds, int spaceId) throws Exception {
 		for(int uid : userIds) {
 			Users.associate(con, uid, spaceId);
 		}

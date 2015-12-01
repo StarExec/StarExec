@@ -195,6 +195,7 @@ CREATE TABLE queues (
 
 -- All the SGE worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
+-- TODO: Do we actually want any node data except these three columns?
 CREATE TABLE nodes (
 	id INT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(128) NOT NULL,
@@ -609,6 +610,7 @@ CREATE TABLE unvalidated_benchmarks (
 	id INT NOT NULL AUTO_INCREMENT, 
     status_id INT REFERENCES benchmark_uploads(id) ON DELETE CASCADE,
     bench_name VARCHAR(256) NOT NULL,
+    error_message TEXT,
 	PRIMARY KEY (id)
 );
 

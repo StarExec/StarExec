@@ -2,7 +2,6 @@ package org.starexec.test.integration.database;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -26,7 +25,6 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.Util;
 
 
 //TODO: Test counting functions

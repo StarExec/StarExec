@@ -54,6 +54,7 @@ import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
+import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -122,7 +123,6 @@ public class RESTServices {
 	}
 	
 	
-	
 	/**
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id
@@ -133,36 +133,9 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @PathParam("spaceTree") boolean makeSpaceTree, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
-		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
-		List<JobSpace> subspaces=new ArrayList<JobSpace>();
-		log.debug("getting job spaces for panels");
-		//don't populate the subspaces if the user can't see the job
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		log.debug("got a request for parent space = "+parentId);
-		if (parentId>0) {
-			
-			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-			
-			
-		} else {
-			//if the id given is 0, we want to get the root space
-			Job j=Jobs.get(jobId);
-			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
-			subspaces.add(s);
-		}
-		
-		log.debug("making next tree layer with "+subspaces.size()+" spaces");
-		if (makeSpaceTree) {
-			return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
-
-		} else {
-			return gson.toJson(subspaces);
-
-		}
+		return RESTHelpers.getJobSpacesJson(parentId, jobId, makeSpaceTree, userId);
 	}
+
 
 	@GET
 	@Path("/space/isLeaf/{spaceId}")
@@ -268,6 +241,27 @@ public class RESTServices {
 		String qstat=R.BACKEND.getRunningJobsStatus();
 		if(!Util.isNullOrEmpty(qstat)) {
 			return qstat;
+		}
+
+		return "not available";
+	}
+	
+	
+	/**
+	 * @return a text string that holds the result of running qstat -f
+	 * @author Tyler Jensen
+	 */
+	@GET
+	@Path("/uploads/stdout/{id}")
+	@Produces("text/plain")		
+	public String getInvalidUploadedBenchmarkOutput(@PathParam("id") int id, @Context HttpServletRequest request) {		
+		ValidatorStatusCode valid = UploadSecurity.canViewUnvalidatedBenchmarkOutput(SessionUtil.getUserId(request), id);
+		if (!valid.isSuccess()) {
+			return valid.getMessage();
+		}
+		String stdout=Uploads.getInvalidBenchmarkErrorMessage(id);
+		if(!Util.isNullOrEmpty(stdout)) {
+			return stdout;
 		}
 
 		return "not available";
@@ -2993,41 +2987,6 @@ public class RESTServices {
 		};
 		Util.threadPoolExecute(removeSubspacesProcess);
 		return gson.toJson(new ValidatorStatusCode(true, "Subspaces are being deleted."));
-	}
-
-	
-	/**
-	 * Only removes a subspace's association with a space, thereby removing the subspace
-	 * from the space
-	 * 
-	 * @return 	0: success,<br>
-	 * 			1: invalid parameters,<br>
-	 * 			2: insufficient permissions,<br>
-	 * 			3: error on the database level
-	 * @author Ben McCune
-	 */
-	@POST
-	@Path("/quickRemove/subspace")
-	@Produces("application/json")
-	public String quickRemoveSubspacesFromSpace(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
-		try{
-			// Extract the String subspace id's and convert them to Integers
-			for(String id : request.getParameterValues("selectedIds[]")){
-				selectedSubspaces.add(Integer.parseInt(id));
-			}
-		} catch(Exception e){
-			return gson.toJson(ERROR_IDS_NOT_GIVEN);
-		}
-		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(userId,selectedSubspaces);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-
-		// Remove the associations
-		
-		return Spaces.quickRemoveSubspaces(selectedSubspaces, SessionUtil.getUserId(request)) ? gson.toJson(new ValidatorStatusCode(true,"Subspace(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	/**
 	 * Updates the details of a solver. Solver id is required in the path. First

@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;

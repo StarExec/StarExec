@@ -82,8 +82,6 @@ public class AddSpace extends HttpServlet {
 		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
 		int userId = SessionUtil.getUserId(request);
 
-		Permission usersPermissions = Permissions.get(userId, spaceId);		
-
 		// Make the space to be added and set it's basic information
 		Space s = new Space();
 		s.setName((String)request.getParameter(name));

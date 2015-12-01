@@ -10,7 +10,7 @@
 
 <star:template title="Password reset" css="accounts/password_reset" js="lib/jquery.validate.min, accounts/password_reset">	
 	<p>Enter your credentials to reset your password</p>
-	<form method="POST" action="/${starexecRoot}/public/reset_password" id="resetForm">	
+	<form method="POST" action="${starexecRoot}/public/reset_password" id="resetForm">	
 	<fieldset>			
 		<legend>Credentials</legend>
 		<table class="shaded">

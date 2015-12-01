@@ -88,9 +88,9 @@ import="java.util.ArrayList,
 				<th class="solverHeader benchmarksColumnHeader" width="120px">Benchmark</th>
 				<c:forEach var="solverConfig" varStatus="headerIndex" items="${matrix.getSolverConfigsByColumn()}">
 				<th class="solverHeader" width="120px">
-					<a href="/${starexecRoot}/secure/details/solver.jsp?id=${solverConfig.getLeft().getId()}" target="_blank">
-						${matrix.getTruncatedColumnHeader(headerIndex.getIndex())}
-					<img class="extLink" src="/${starexecRoot}/images/external.png">
+					<a href="${starexecRoot}/secure/details/solver.jsp?id=${solverConfig.getLeft().getId()}" target="_blank">
+						${matrix.getTruncatedColumnHeader(headerIndex.getIndex())}</a>
+					<img class="extLink" src="${starexecRoot}/images/external.png">
 				</th>
 				</c:forEach>
 			</tr>
@@ -99,16 +99,16 @@ import="java.util.ArrayList,
 			<c:forEach var="matrixRow" varStatus="rowIndex" items="${matrix.getInternalMatrixRepresentation()}">
 				<tr class="matrixBodyRow">
 					<td class="benchmarkHeader row${rowIndex.getIndex()}" width="120px">
-						<a href="/${starexecRoot}/secure/details/benchmark.jsp?id=${matrix.getBenchmarksByRow().get(rowIndex.getIndex()).getId()}" target="_blank">
+						<a href="${starexecRoot}/secure/details/benchmark.jsp?id=${matrix.getBenchmarksByRow().get(rowIndex.getIndex()).getId()}" target="_blank">
 							${matrix.getBenchmarksByRow().get(rowIndex.getIndex()).getName()}
-							<img class="extLink" src="/${starexecRoot}/images/external.png">
+							<img class="extLink" src="${starexecRoot}/images/external.png">
 						</a>
 					</td>
 					<c:forEach var="matrixElement" varStatus="columnIndex" items="${matrixRow}">
 						<c:choose>
 							<c:when test="${matrixElement != null}">
 							<td id="${matrixElement.getUniqueIdentifier()}" class="jobMatrixCell ${matrixElement.getStatus()} row${rowIndex.getIndex()} column${columnIndex.getIndex()}" width="120px">
-									<a href="/${starexecRoot}/secure/details/pair.jsp?id=${matrixElement.getJobPairId()}">
+									<a href="${starexecRoot}/secure/details/pair.jsp?id=${matrixElement.getJobPairId()}">
 										<span class="wallclock">${matrixElement.getWallclock()}</span>
 										<span class="cpuTimeWallclockDivider"> / </span>
 										<span class="memUsageWallclockDivider" hidden> / </span>

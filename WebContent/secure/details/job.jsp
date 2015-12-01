@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -6,8 +6,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int jobId = Integer.parseInt(request.getParameter("id"));
-				
-		
+
+
 		Job j=null;
 		if(Permissions.canUserSeeJob(jobId,userId)) {
 			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
@@ -49,7 +49,11 @@
 				long memory=j.getMaxMemory();
 				JobSpace s=Spaces.getJobSpace(jobSpaceId);
 				User u=Users.get(j.getUserId());
+
+				String jobSpaceTreeJson = RESTHelpers.getJobSpacesJson(jobSpaceId,j.getId(), true, userId);
+				//List<JobSpace> subspaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
 				
+				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
@@ -73,8 +77,9 @@
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
-				
 
+				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId, 1);
+				request.setAttribute("solverTableStats", solverTableStats);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 			}
@@ -98,6 +103,10 @@
 	<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
+	<c:if test="${isLocalJobPage}">
+		<span style="display:none" id="isLocalJobPage" value="${isLocalJobPage}"></span>
+		<span style="display:none" id="jobSpaceTreeJson" value="${jobSpaceTreeJson}"></span>
+	</c:if>
 	
 	<div id="explorer" class="jobDetails">
 		<h3>spaces</h3>
@@ -109,6 +118,7 @@
 			<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
 			
 			<button id="matrixViewButton" type="button">Matrix View</button>
+			<button id="downloadJobPageButton" type="button" style="display:none">Download Job Page</button>
 			
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>
@@ -164,16 +174,31 @@
 						</tr>
 					</thead>
 					<tbody>
-							<!-- This will be populated by the job pair pagination feature -->
+						<!-- This will be populated by the job pair pagination feature -->
+						<c:if test="${isLocalJobPage}">
+							<c:forEach var="stats" items="${solverTableStats}">
+								<tr>
+									<td>${stats.getSolver().getName()}</td>
+									<td>${stats.getConfiguration().getName()}</td>
+									<td>${stats.getCorrectOverCompleted()}</td>
+									<td>${stats.getIncorrectJobPairs()}</td>
+									<td>${stats.getResourceOutJobPairs()}</td>
+									<td>${stats.getFailedJobPairs()}</td>
+									<td>${stats.getUnknown()}</td>
+									<td>${stats.getIncompleteJobPairs()}</td>
+									<td>${Math.round(js.getWallTime()*100)/100.0}</td>
+								</tr>
+							</c:forEach>
+						</c:if>
 					</tbody>
 				</table>
 			</fieldset>
 			
 			<fieldset id="graphField">
 			<legend>graphs</legend> 
-			<img id="spaceOverview" src="/${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
+			<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
 				
-				<img id="solverComparison" width="300" height="300" src="/${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
+				<img id="solverComparison" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
 				<br>
 				<fieldset id="optionField">
 				<legend>options</legend> 
@@ -259,7 +284,6 @@
 								</span>
 							</td>
 						</tr>
-						</tr>
 						<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
 							<td>status</td>		
 							<c:if test="${isPaused}">
@@ -319,7 +343,7 @@
 						<tr title="the execution queue this job was submitted to">
 							<td>queue</td>	
 							<c:if test="${not empty job.queue}">
-							<td><a href="/${starexecRoot}/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+							<td><a href="${starexecRoot}/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 							</c:if>
 							<c:if test="${empty job.queue}">
 							<td>unknown</td>
@@ -350,9 +374,9 @@
 			<fieldset id="actionField">
 				<legend>actions</legend>
 				<ul id="actionList">
-					<li><a id="jobOutputDownload" href="/${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
-					<li><a id="jobXMLDownload" href="/${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
-					<li><a id="jobDownload" href="/${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
+					<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
+					<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
+					<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 					<c:if test="${isAdmin}">
 						<li><button type="button" id="clearCache">clear cache</button></li>
 						<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
@@ -360,7 +384,7 @@
 					
 					<c:if test="${job.userId == userId or isAdmin}"> 
 						<li><button type="button" id="deleteJob">delete job</button></li>
-						<li><a href="/${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+						<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
 							<c:if test="${isRunning}">
 								<li><button type="button" id="pauseJob">pause job</button></li>
 							</c:if>
@@ -393,7 +417,7 @@
 				<div id="dialog-return-ids" title="return ids">
 					<p><span id="dialog-return-ids-txt"></span></p>
 					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
-					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br></p>
+					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
 				</div>
 				<div id="dialog-solverComparison" title="solver comparison chart">
 					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>

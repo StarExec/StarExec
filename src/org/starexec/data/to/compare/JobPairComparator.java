@@ -5,7 +5,6 @@ import java.util.Comparator;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.pipelines.JoblineStage;
 
 public class JobPairComparator implements Comparator<JobPair> {

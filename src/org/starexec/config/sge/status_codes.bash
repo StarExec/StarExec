@@ -1,5 +1,5 @@
 # STAREXEC JOB STATUS CODES
-# These variables are defined for use in the prolog and epilog scripts
+# These variables are defined for use in the jobscript
 # They MUST correspond with the status codes defined in the starexec schema
 
 STATUS_UNKNOWN=0

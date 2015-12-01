@@ -78,7 +78,7 @@ try {
 	</div>
 	<c:if test="${ownerId == user.id}">
 		<a id="deleteConfig">delete</a>
-		<a id="editLink" href="/${starexecRoot}/secure/edit/configuration.jsp?id=${config.id}">edit</a>
+		<a id="editLink" href="${starexecRoot}/secure/edit/configuration.jsp?id=${config.id}">edit</a>
 	</c:if>
-	<a href="/${starexecRoot}/secure/details/solver.jsp?id=${solver.id}" id="returnLink<c:if test="${ownerId != user.id}">Margin</c:if>">back to ${solver.name}</a>
+	<a href="${starexecRoot}/secure/details/solver.jsp?id=${solver.id}" id="returnLink<c:if test="${ownerId != user.id}">Margin</c:if>">back to ${solver.name}</a>
 </star:template>

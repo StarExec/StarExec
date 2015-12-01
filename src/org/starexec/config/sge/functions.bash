@@ -11,8 +11,7 @@
 # 2/26/2012
 #
 # DESCRIPTION:
-# This is a script containing common functions used between
-# the prolog, epilog and jobscript
+# This is a script containing common functions used by the jobscript
 #
 # /////////////////////////////////////////////
 
@@ -445,7 +444,7 @@ function cleanWorkspace {
 	
 	
 	
-	#only delete the job script / lock files if we are in the epilog
+	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
 	if [ $1 -eq 0 ] ; then
 		log "cleaning up scripts and lock files"
@@ -894,7 +893,7 @@ log "solver copy complete"
 	
 	#doing benchmark preprocessing here if the pre_processor actually exists
 	if [ "$PRE_PROCESSOR_PATH" != "" ]; then
-		mkdir $OUT_DIR/preProcessor
+		mkdir -p $OUT_DIR/preProcessor
 		safeCpAll "copying preProcessor" "$PRE_PROCESSOR_PATH" $OUT_DIR/preProcessor
 		chmod -R gu+rwx $OUT_DIR/preProcessor
 		cd "$OUT_DIR"/preProcessor

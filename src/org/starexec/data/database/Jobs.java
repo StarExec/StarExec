@@ -39,7 +39,6 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
-import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
@@ -55,10 +54,17 @@ public class Jobs {
 	private static final Logger log = Logger.getLogger(Jobs.class);
 	private static final LogUtil logUtil = new LogUtil(log);
 	
-	
-	private static String[] getSpaceNames(String path) {
+	/**
+	 * Returns a list of job spaces that are present in the given
+	 * path. Spaces are returned ordered from top level to
+	 * bottom level. An exception is thrown if the given
+	 * path is null or empty
+	 * @param path The / delimited path
+	 * @return
+	 */
+	private static String[] getSpaceNames(String path) throws IllegalArgumentException {
 		if (path==null || path=="") {
-			return new String[] {"job space"};
+			throw new IllegalArgumentException("Job paths cannot be empty");
 		}
 		return path.split(R.JOB_PAIR_PATH_DELIMITER);
 	}
@@ -220,56 +226,52 @@ public class Jobs {
 	 * @param pairs The list of pairs to make paths for
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
+	 * @throws Exception 
 	 */
-	public static Integer createJobSpacesForPairs(List<JobPair> pairs,Connection con) {
+	public static Integer createJobSpacesForPairs(List<JobPair> pairs,Connection con) throws Exception {
 		
 		//this hashmap maps every job space ID to the maximal number of stages
 		// of any pair that is in the hierarchy rooted at the job space
 		HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
-
-		try {
-			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
-			String topLevel="";
-			for (JobPair pair : pairs) {
-				//log.debug("finding spaces for a new pair with path = " +pair.getPath());
-				String[] spaces=getSpaceNames(pair.getPath());
-				StringBuilder curPathBuilder=new StringBuilder();
-				for (int i=0;i<spaces.length;i++) {
-					String name=spaces[i];
-					curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
-					curPathBuilder.append(name);
-					if (topLevel.isEmpty()) { //if this is the first space we are making, it is the primary space
-						topLevel=curPathBuilder.toString(); 
-					}
-					
-					//if we need to create a new space
-					if (!pathsToIds.containsKey(curPathBuilder.toString())) {
-						String parentPath=curPathBuilder.toString();
-						parentPath=parentPath.substring(0,parentPath.lastIndexOf('/'));
-							pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(name,con));
-							int id=pathsToIds.get(curPathBuilder.toString());
-							idsToMaxStages.put(id, pair.getStages().size());
-							//associate the new space to its parent
-							
-							if (parentPath.length()>0) {
-								int parentId=pathsToIds.get(parentPath);
-								Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()),con);
-							}
-					}
-						int id=pathsToIds.get(curPathBuilder.toString());
-						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));					
-				}
-					pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
+		HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id 
+		int topLevelSpaceId = -1; // -1 indicates that it is not set
+		for (JobPair pair : pairs) {
+			//log.debug("finding spaces for a new pair with path = " +pair.getPath());
+			String[] spaces=getSpaceNames(pair.getPath());
+			StringBuilder curPathBuilder=new StringBuilder();
+			for (int i=0;i<spaces.length;i++) {
+				String jobSpaceName=spaces[i];
+				curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
+				curPathBuilder.append(jobSpaceName);
 				
-			}
-				for (Integer id : idsToMaxStages.keySet()) {
-					Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id),con);
+				//if we need to create a new space
+				if (!pathsToIds.containsKey(curPathBuilder.toString())) {
+					String parentPath=curPathBuilder.toString();
+					parentPath=parentPath.substring(0,parentPath.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
+						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(jobSpaceName,con));
+						int id=pathsToIds.get(curPathBuilder.toString());
+						if (topLevelSpaceId ==-1) {
+							topLevelSpaceId = id;
+						}
+						idsToMaxStages.put(id, pair.getStages().size());
+						//associate the new space to its parent
+						
+						if (parentPath.length()>0) {
+							int parentId=pathsToIds.get(parentPath);
+							Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()),con);
+						}
 				}
-			return pathsToIds.get(topLevel);
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+				int id=pathsToIds.get(curPathBuilder.toString());
+				idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), pair.getStages().size()));					
+			}
+			pair.setJobSpaceId(pathsToIds.get(curPathBuilder.toString()));
+			
 		}
-		return null;
+		for (Integer id : idsToMaxStages.keySet()) {
+			Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id),con);
+		}
+		return topLevelSpaceId;
+
 	}
 	
 	/**
@@ -314,7 +316,6 @@ public class Jobs {
 		PreparedStatement procedure=null;
 		try {			
 			log.debug("starting to add a new job with pair count =  "+job.getJobPairs().size());
-			long a = System.currentTimeMillis();
 			con = Common.getConnection();
 			
 			// gets the name of the root job space for this job
@@ -342,30 +343,23 @@ public class Jobs {
 			//we end the first transaction here so that we don't end up keeping a lock on the space tables
 			// for the entire duration of job creation
 			Common.endTransaction(con);
-			log.debug("end of first transaction took " + (System.currentTimeMillis() - a));
 			//creates the job space hierarchy for the job and returns the ID of the top level job space
-			int topLevel=createJobSpacesForPairs(job.getJobPairs(),con);
-			log.debug("adding job spaces took " + (System.currentTimeMillis() - a));
-
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(topLevel);
+			job.setPrimarySpace(createJobSpacesForPairs(job.getJobPairs(),con));
 			
 			//NOTE: By opening the transaction here, we are leaving open the possibility that some spaces
 			//will be created even if job creation fails. However, this prevents the job space and the space
 			//tables from being locked for the entire transaction, which may take a long time.
 			Common.beginTransaction(con);
 
-			
 			Jobs.addJob(con, job);
-			log.debug("adding job took " + (System.currentTimeMillis() - a));
 
 			// record the job being added in the reports table
 			Reports.addToEventOccurrencesNotRelatedToQueue("jobs initiated", 1);
 			// record the job being added for the queue it was added to
 			Reports.addToEventOccurrencesForQueue("jobs initiated", 1, job.getQueue().getName());
-			log.debug("to add job report took " + (System.currentTimeMillis() - a));
 
 			
 			log.debug("job added, associating next");
@@ -381,16 +375,12 @@ public class Jobs {
 				attrs.setJobId(job.getId());
 				Jobs.addJobStageAttributes(attrs,con);
 			}
-			log.debug("to add stage attrs took " + (System.currentTimeMillis() - a));
-
 			
 			log.debug("adding job pairs");
 			
 			//TODO: We should be batching the addition of pairs so we don't need to make so many SQL calls
 			
 			JobPairs.addJobPairs(con, job.getId(),job.getJobPairs());
-
-			log.debug("to add pairs took " + (System.currentTimeMillis() - a));
 
 			Common.endTransaction(con);
 			

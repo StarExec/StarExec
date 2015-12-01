@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,7 +23,6 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Configuration;
@@ -36,12 +34,10 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
-import org.starexec.jobs.LoadBalanceMonitor.UserLoadData;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
@@ -715,10 +711,8 @@ public abstract class JobManager {
 	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
-	 * @param SP A mapping of space IDs to space paths for every space in this job, with paths being relative to the space this job is
-	 * being created in. If null, the job will be flat, with every job pair in a single top level job space
 	 */
-	public static void buildJob(Job j, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId, HashMap<Integer, String> SP) {
+	public static void buildJob(Job j, List<Integer> benchmarkIds, List<Integer> configIds, Integer spaceId) {
 		// Retrieve all the benchmarks included in this job
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 
@@ -743,13 +737,8 @@ public abstract class JobManager {
 				stage.setConfiguration(solver.getConfigurations().get(0));
 				pair.addStage(stage);
 				
-				
 				pair.setSpace(Spaces.get(spaceId));
-				if (SP!=null) {
-					pair.setPath(SP.get(spaceId));
-				} else {
-					pair.setPath(spaceName);
-				}
+				pair.setPath(spaceName);
 				j.addJobPair(pair);
 				
 			}

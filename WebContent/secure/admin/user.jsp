@@ -22,7 +22,7 @@
 	<fieldset>
 		<legend>actions</legend>
 			<ul id="actionList">
-				<li><a type="btnRun" id="addUser" href="/${starexecRoot}/secure/add/user.jsp">Create New User</a></li>
+				<li><a type="btnRun" id="addUser" href="${starexecRoot}/secure/add/user.jsp">Create New User</a></li>
 			</ul>
 	</fieldset>	
 	<fieldset  id="userField">

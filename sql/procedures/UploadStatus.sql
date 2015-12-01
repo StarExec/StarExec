@@ -158,13 +158,31 @@ CREATE PROCEDURE SetBenchmarkErrorMessage(IN _id INT, IN _message TEXT)
 		WHERE id = _id;
 	END //	
 	
+-- Retrieves the upload status with the given id
+-- Author: Benton McCune
+DROP PROCEDURE IF EXISTS GetBenchmarkUploadStatusById;
+CREATE PROCEDURE GetBenchmarkUploadStatusById(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM benchmark_uploads 
+		WHERE id = _id;
+	END //	
+
+DROP PROCEDURE IF EXISTS GetUploadStatusForInvalidBenchmarkId;
+CREATE PROCEDURE GetUploadStatusForInvalidBenchmarkId(IN _id INT)
+	BEGIN
+		SELECT benchmark_uploads.* 
+		FROM benchmark_uploads JOIN unvalidated_benchmarks ON benchmark_uploads.id=status_id
+		WHERE unvalidated_benchmarks.id = _id;
+	END //
+	
 -- Updates status when  benchmark fails validation
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS AddUnvalidatedBenchmark;
-CREATE PROCEDURE AddUnvalidatedBenchmark(IN _id INT, IN _name VARCHAR(256))
+CREATE PROCEDURE AddUnvalidatedBenchmark(IN _id INT, IN _name VARCHAR(256), IN _error TEXT)
 	BEGIN
-		INSERT INTO unvalidated_benchmarks (status_id, bench_name)
-		VALUES (_id, _name);
+		INSERT INTO unvalidated_benchmarks (status_id, bench_name, error_message)
+		VALUES (_id, _name, _error);
 	END //	
 	
 -- Gets direct count of unvalidated benchmarks if there are no more than maximum
@@ -172,7 +190,7 @@ CREATE PROCEDURE AddUnvalidatedBenchmark(IN _id INT, IN _name VARCHAR(256))
 DROP PROCEDURE IF EXISTS UnvalidatedBenchmarkCount;
 CREATE PROCEDURE UnvalidatedBenchmarkCount(IN _status_id INT)
 	BEGIN
-		select count(*) from unvalidated_benchmarks 
+		select count(*) from unvalidated_benchmarks
 		WHERE status_id = _status_id;
 	END //	
 	
@@ -181,7 +199,7 @@ CREATE PROCEDURE UnvalidatedBenchmarkCount(IN _status_id INT)
 DROP PROCEDURE IF EXISTS GetUnvalidatedBenchmarks;
 CREATE PROCEDURE GetUnvalidatedBenchmarks(IN _status_id INT)
 	BEGIN
-		select bench_name from unvalidated_benchmarks 
+		select bench_name, id from unvalidated_benchmarks 
 		WHERE status_id = _status_id;
 	END //		
 	
@@ -249,4 +267,13 @@ CREATE PROCEDURE IncrementXMLCompletedSpaces(IN _id INT, IN _num INT)
 		SET completed_spaces = completed_spaces +  _num
 		WHERE id = _id;
 	END //
+
+-- Gets the error message for a particular row in the unvalidated benchmarks table
+DROP PROCEDURE IF EXISTS GetInvalidBenchmarkMessage;
+CREATE PROCEDURE GetInvalidBenchmarkMessage(IN _id INT)
+	BEGIN
+		SELECT error_message
+		FROM unvalidated_benchmarks
+		WHERE id = _id;
+	END //  
 DELIMITER ; -- This should always be at the end of this file

@@ -111,7 +111,7 @@ import="org.apache.commons.io.FileUtils,
 					<tbody>
 						<c:forEach items="${pastReports}" var="report">
 						<tr class="center">
-							<td><a href="/${starexecRoot}/services/reports/past/${report.getName()}"><c:out value="${report.getName()}"/></a></td>
+							<td><a href="${starexecRoot}/services/reports/past/${report.getName()}"><c:out value="${report.getName()}"/></a></td>
 						</tr>
 						</c:forEach>
 					</tbody>

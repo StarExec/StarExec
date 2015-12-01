@@ -31,7 +31,7 @@ if [ ! -d $1 ] ; then
 fi
 }
 
-echo "Copying the GridEngine epilog and prolog to $SGE_SCRIPT_DIR"
+echo "Copying the GridEngine scripts to $SGE_SCRIPT_DIR"
 mkdirIf $SGE_SCRIPT_DIR
 for f in src/org/starexec/config/sge/{jobscript,*.bash} ; do
   b=`basename $f`

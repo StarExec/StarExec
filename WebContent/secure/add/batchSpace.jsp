@@ -21,7 +21,7 @@
 	}
 %>
 <star:template title="upload XML representation of space hierarchy to ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner, lib/jquery.validate.min, add/batchSpace">
-	<form method="POST" enctype="multipart/form-data" action="/${starexecRoot}/secure/upload/space" id="upForm">
+	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/space" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>
 			<legend>upload your compressed file </legend>		

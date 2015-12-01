@@ -5,10 +5,6 @@ import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.safari.SafariDriver;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -19,8 +15,6 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
-
-import com.opera.core.systems.OperaDriver;
 
 public class UploadSolverTests extends TestSequence {
 	WebDriver driver=null;

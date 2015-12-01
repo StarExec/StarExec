@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.starexec.test.TestUtil;
 import org.starexec.util.Util;
 
 public class UtilTests {

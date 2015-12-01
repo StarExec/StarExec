@@ -41,7 +41,6 @@ public class SaveConfiguration extends HttpServlet {
     }
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	int userId = SessionUtil.getUserId(request);
     	try {	
 			// Parameter validation
     		ValidatorStatusCode status=this.isValidRequest(request);

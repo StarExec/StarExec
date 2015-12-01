@@ -27,7 +27,7 @@
 			  </fieldset>
 			  <fieldset id="graph" hidden>
 			  	<legend>graphs</legend>
-				<p align="center"><img id="communityOverview" src="/${starexecRoot}/images/loadingGraph.png" width="300" height="300" hidden /></p>
+				<p align="center"><img id="communityOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" hidden /></p>
 			  </fieldset>
 
 			     <fieldset id="options" hidden>

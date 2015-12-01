@@ -1,7 +1,6 @@
 package org.starexec.test.integration.database;
 
 import java.util.UUID;
-import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.data.database.*;

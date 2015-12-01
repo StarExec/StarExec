@@ -2,7 +2,6 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
@@ -16,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Queues;
 

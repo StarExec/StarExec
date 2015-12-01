@@ -1,10 +1,8 @@
 package org.starexec.util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
@@ -22,8 +20,6 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Pipelines;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
@@ -32,7 +28,6 @@ import org.starexec.data.to.pipelines.StageAttributes;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.starexec.servlets.Download;
 
 
 /**

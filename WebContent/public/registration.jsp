@@ -14,7 +14,7 @@
 <star:template title="User registration" css="common/pass_strength_meter, accounts/registration" js="lib/jquery.validate.min, lib/jquery.validate.password, accounts/registration">	
 	<p class="registration">Create a new user account</p>
 	<div id="javascriptDisabled">Javascript is required for most features in StarExec, please enable it and reload this page</div>
-	<form method="POST" action="/${starexecRoot}/public/registration/manager" id="regForm" class="registration">	
+	<form method="POST" action="${starexecRoot}/public/registration/manager" id="regForm" class="registration">	
 	<fieldset>			
 		<legend class="registration">User information</legend>
 		<table class="shaded">

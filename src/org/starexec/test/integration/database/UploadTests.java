@@ -38,11 +38,11 @@ public class UploadTests extends TestSequence {
 	private void failedBenchesTest() {
 		String benchName=TestUtil.getRandomAlphaString(50);
 		Assert.assertNotNull(Uploads.getFailedBenches(bs.getId()));
-		Assert.assertTrue(Uploads.addFailedBenchmark(bs.getId(), benchName));
-		List<String> failed=Uploads.getFailedBenches(bs.getId());
+		Assert.assertTrue(Uploads.addFailedBenchmark(bs.getId(), benchName, "invalid"));
+		List<Benchmark> failed=Uploads.getFailedBenches(bs.getId());
 		boolean found=false;
-		for (String s : failed) {
-			if (s.equals(benchName)) {
+		for (Benchmark s : failed) {
+			if (s.getName().equals(benchName)) {
 				found=true;
 				break;
 			}

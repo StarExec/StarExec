@@ -67,9 +67,9 @@
 	<table id="infoTable" uid="${userId}">
 		<tr>
 			<td id="picSection">
-				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">
+				<img id="showPicture" src="${starexecRoot}/secure/get/pictures?Id=${userId}&type=uthn" enlarge="${starexecRoot}/secure/get/pictures?Id=${userId}&type=uorg">
 		    	<ul>
-					<li><a class="btnUp" id="uploadPicture" href="/${starexecRoot}/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
+					<li><a class="btnUp" id="uploadPicture" href="${starexecRoot}/secure/add/picture.jsp?type=user&Id=${userId}">change</a></li>
 				</ul>
 			</td>
 		<td id="userDetail">
@@ -160,7 +160,7 @@
 			<tbody>
 			<c:forEach items="${sites}" var="s">
 				<tr>
-					<td><a href="${s.url}">${s.name}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a href="${s.url}">${s.name}<img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 					<td><a class="delWebsite" id="${s.id}">delete</a></td>
 				</tr>
 			</c:forEach>

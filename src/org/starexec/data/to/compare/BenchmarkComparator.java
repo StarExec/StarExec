@@ -3,7 +3,6 @@ package org.starexec.data.to.compare;
 import java.util.Comparator;
 
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Solver;
 
 public class BenchmarkComparator implements Comparator<Benchmark> {
 	private int column;

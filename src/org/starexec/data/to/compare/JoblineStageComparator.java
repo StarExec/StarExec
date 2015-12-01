@@ -2,7 +2,6 @@ package org.starexec.data.to.compare;
 
 import java.util.Comparator;
 
-import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.pipelines.JoblineStage;
 
 /**

@@ -45,7 +45,6 @@ import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 
@@ -173,11 +172,8 @@ public class ResourceLoader {
 		}
 		List<Space> spaces=new ArrayList<Space>();
 		spaces.add(Spaces.get(spaceId));
-		HashMap<Integer,String> SP = new HashMap<Integer,String>();
-		SP.put(spaceId, Spaces.get(spaceId).getName());
-		log.debug("building a job with a total number of configs = "+configIds.size());
 
-		JobManager.buildJob(job, benchmarkIds, configIds, spaceId, SP);
+		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
 		
 		Jobs.add(job, spaceId);
 		return job;

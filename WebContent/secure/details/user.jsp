@@ -72,13 +72,13 @@
 		<table id="infoTable">
 		<tr>
 			<td id="picSection">
-				<img id="showPicture" src="/${starexecRoot}/secure/get/pictures?Id=${t_user.id}&type=uthn" enlarge="/${starexecRoot}/secure/get/pictures?Id=${t_user.id}&type=uorg"><br>
+				<img id="showPicture" src="${starexecRoot}/secure/get/pictures?Id=${t_user.id}&type=uthn" enlarge="${starexecRoot}/secure/get/pictures?Id=${t_user.id}&type=uorg"><br>
 			</td>
 			<td id="userDetail" class="detail">
 			<table id="personal" class="shaded">
 				<tr>
 					<td>e-mail address</td>			
-					<td><a href="mailto:${t_user.email}">${t_user.email}<img class="extLink" src="/${starexecRoot}/images/external.png"/></a></td>
+					<td><a href="mailto:${t_user.email}">${t_user.email}<img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
 				</tr>				
 				<tr>
 					<td>institution</td>			
@@ -98,7 +98,7 @@
 					<td>		
 						<ul>
 							<c:forEach var="site" items="${sites}">
-								<li>${site}<img class="extLink" src="/${starexecRoot}/images/external.png"/></li>
+								<li>${site}<img class="extLink" src="${starexecRoot}/images/external.png"/></li>
 							</c:forEach>	
 						</ul>
 					</td>
@@ -213,8 +213,8 @@
 			<button id="showSpaceExplorer">show space explorer</button>
 			<button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the space explorer
 			on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">associate orphaned primitives with space</button>
-			<a id="editButton" href="/${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
-			<a id="recycleBinButton" href="/${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
+			<a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
+			<a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
 		
 		<div id="dialog-confirm-delete" title="confirm delete" class="dialog">

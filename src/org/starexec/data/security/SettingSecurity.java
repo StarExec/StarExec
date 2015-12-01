@@ -5,15 +5,12 @@ import java.util.List;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Settings;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
-import org.starexec.data.to.Space;
-import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
 public class SettingSecurity {

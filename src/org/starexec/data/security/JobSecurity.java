@@ -4,16 +4,12 @@ package org.starexec.data.security;
 import java.util.List;
 
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobStatus;
@@ -22,7 +18,6 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.util.Validator;
 
 public class JobSecurity {
 	

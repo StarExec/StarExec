@@ -415,16 +415,6 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 		
 	END //
 	
--- Removes only the association between a space and a subspace
--- Author: Ben McCune
-DROP PROCEDURE IF EXISTS QuickRemoveSubspace;
-CREATE PROCEDURE QuickRemoveSubspace(IN _subspaceId INT)
-	BEGIN
-		-- Remove the space
-		DELETE FROM set_assoc
-		WHERE child_id = _subspaceId;		
-	END //	
-	
 -- Updates the name of the space with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateSpaceName;

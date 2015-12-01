@@ -52,6 +52,7 @@ public class R {
     public static int PROCESSOR_NAME_LEN=64;
     public static int PROCESSOR_DESC_LEN=1024;
     public static int QUEUE_NAME_LEN=64;
+    public static int TEXT_FIELD_LEN = 65000;
 
 	// Matrix view settings
 	public static final int MATRIX_VIEW_COLUMN_HEADER = 18; // Limit on number of letters for Solver or config name
@@ -219,6 +220,7 @@ public class R {
     
     public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
     
+	// Role names
 	public static String DEVELOPER_ROLE_NAME="developer";
     public static String SUSPENDED_ROLE_NAME="suspended";
     public static String DEFAULT_USER_ROLE_NAME="user";
@@ -226,13 +228,8 @@ public class R {
     public static String TEST_ROLE_NAME="test";
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
+	public static final String JOB_PAGE_DOWNLOAD_TYPE = "job_page";
 	public static final String MATRIX_ELEMENT_ID_FORMAT ="%s%d-%s%d-%s%d"; 
-
-	public static final String APPROVE_COMMUNITY_REQUEST = "approve";
-	public static final String DECLINE_COMMUNITY_REQUEST = "decline";
-	// This is used as a AJAX parameter to identify requests that were sent from the community page
-	// versus requests that were sent from email to accept or decline join community requests
-	public static final String SENT_FROM_COMMUNITY_PAGE = "sentFromCommunityPage";
     
     //some proxy data
     public static String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
