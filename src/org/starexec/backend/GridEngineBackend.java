@@ -249,11 +249,11 @@ public class GridEngineBackend implements Backend{
 
     }
 
+    
+    
     /**
-
      * @param nodeName the name of a node
-     * @return an even-sized String[] representing a details map for a given node
-     * where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
+     * @return A HashMap of string keys to values
      */
     public Map<String,String> getNodeDetails(String nodeName){
 

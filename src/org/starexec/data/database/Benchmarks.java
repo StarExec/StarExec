@@ -768,6 +768,9 @@ public class Benchmarks {
 				failedCounter++;
 				Uploads.incrementFailedBenchmarks(statusId,1);
 				if (failedCounter < R.MAX_FAILED_VALIDATIONS){
+					if (propstr.length() > R.TEXT_FIELD_LEN) {
+						propstr = propstr.substring(0, R.TEXT_FIELD_LEN);
+					}
 					Uploads.addFailedBenchmark(statusId,b.getName(), propstr);
 					String message = b.getName() + " failed validation";
 					log.warn(message);

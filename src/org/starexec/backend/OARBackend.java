@@ -1,11 +1,24 @@
 package org.starexec.backend;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.starexec.util.Util;
 
 public class OARBackend implements Backend {
+	
+    private static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from OAR's node detail output
+
+    private static Pattern nodeKeyValPattern;
+ 	static {
+ 		// Compile the SGE output parsing patterns when this class is loaded
+ 		nodeKeyValPattern = Pattern.compile(NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
+
+ 	}
+    
+    
 	private static Logger log = Logger.getLogger(OARBackend.class);
 	@Override
 	public void initialize(String BACKEND_ROOT) {
@@ -30,6 +43,7 @@ public class OARBackend implements Backend {
 		return 0;
 	}
 
+	//TODO: Done, test
 	@Override
 	public boolean killPair(int execId) {
 		try{
@@ -40,6 +54,7 @@ public class OARBackend implements Backend {
 		}
 	}
 
+	//TODO: Done, test
 	@Override
 	public boolean killAll() {
 		try{
@@ -50,6 +65,7 @@ public class OARBackend implements Backend {
 		}
 	}
 
+	//TODO: Done, test
 	@Override
 	public String getRunningJobsStatus() {
 		try {	
@@ -60,22 +76,42 @@ public class OARBackend implements Backend {
 		return null;
 	}
 
+	//TODO: Done, test
 	@Override
 	public String[] getWorkerNodes() {
 		try {	
-			//TODO: Ths will need to get parsed into the list of nodes
 			String nodes = Util.executeCommand("oarnodes -l");
 			
-			
+    		return nodes.split(System.getProperty("line.separator"));
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
 		return null;
 	}
-
+	
+	//TODO: Done, test
 	@Override
 	public Map<String, String> getNodeDetails(String nodeName) {
-		// TODO Auto-generated method stub
+		try {	
+			String details = Util.executeCommand("oarnodes -sql \"network_address = '"+nodeName+"'\"");
+			
+			// Parse the output from the SGE call to get the key/value pairs for the node
+    		java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(details);
+
+    		Map<String, String> detailMap = new HashMap<String,String>();
+    		// For each match...
+    		while(matcher.find()) {
+    			// Split apart the key from the value
+    			String[] keyVal = matcher.group().split("=");
+    			
+    			// Add the results to the details list
+    			detailMap.put(keyVal[0], keyVal[1]);
+    		}
+
+    		return detailMap;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		return null;
 	}
 
