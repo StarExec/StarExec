@@ -89,26 +89,28 @@
 		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
-	
-	<target name="war" depends="zipstarcom">		
-		
+
+	<target name="register-commands" depends="">
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
 	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
 	    </tstamp>        
 	    <exec executable="svnversion" outputproperty="svnversion"/>
 	    <exec executable="whoami" outputproperty="whoami"/>
-		
+	</target>
+
+	<target name="compilestarexec" depends="register-commands">
 		<!-- Clear the build directory if it exists and re-make the dir -->
 		<delete dir="${build-dir}" />
 		<mkdir dir="${build-dir}" />
 		<mkdir dir="${class-dir}" />
-
 		<!-- Compile the source code to get the java classes -->
 		<javac debug="true" debuglevel="lines,vars,source" srcdir="src" destdir="${class-dir}" classpathref="classpath" nowarn="on">
 			<compilerarg value="-Xlint:unchecked"/>
 		</javac>
-
+	</target>
+	
+	<target name="war" depends="register-commands">		
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
 		<copy todir="${class-dir}/org/starexec/config">
@@ -235,8 +237,11 @@
 			<lib dir="${web-inf}/lib"/>			
 		</war>
 	</target>
+
+	<target name="skipcompilation" depends="war">
+	</target>
 	
-	<target name="epilog-test" depends="war">
+	<target name="epilog-test" depends="zipstarcom, compilestarexec, war">
 		<!-- Execute JUnit tests -->
 		<path id="testpath">
 			<pathelement path="${class-dir}"/>
