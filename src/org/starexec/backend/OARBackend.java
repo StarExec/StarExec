@@ -1,6 +1,8 @@
 package org.starexec.backend;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -167,6 +169,12 @@ public class OARBackend implements Backend {
 	public boolean moveNode(String nodeName, String queueName) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public List<Integer> getActiveExecutionIds() throws IOException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -1,7 +1,10 @@
 package org.starexec.backend;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -10,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.starexec.command.Validator;
 import org.starexec.util.Util;
 
 /**
@@ -618,5 +622,23 @@ public class GridEngineBackend implements Backend{
     	}
     	return false;
     }
+
+	@Override
+	public List<Integer> getActiveExecutionIds() throws IOException {
+		String output = Util.executeCommand("qstat -s a");
+		List<Integer> answer = new ArrayList<Integer>();
+		for (String s : output.split(System.getProperty("line.separator"))) {
+			for (String e : s.split("\\s+")) {
+				if (!e.isEmpty()) {
+					if (Validator.isValidInteger(e)) {
+						answer.add(Integer.parseInt(e));
+					}
+					break;
+				}
+			}
+		}
+		
+		return answer;
+	}
 
 }
