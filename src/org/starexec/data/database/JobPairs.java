@@ -1486,7 +1486,9 @@ public class JobPairs {
 			procedure.setInt(1, statusCode);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				pairs.add(JobPairs.resultToPair(results));
+				JobPair p = JobPairs.resultToPair(results);
+				p.getStatus().setCode(statusCode);
+				pairs.add(p);
 			}
 			return pairs;
 		} catch (Exception e) {
