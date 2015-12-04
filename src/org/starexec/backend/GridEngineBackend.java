@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -624,9 +626,9 @@ public class GridEngineBackend implements Backend{
     }
 
 	@Override
-	public List<Integer> getActiveExecutionIds() throws IOException {
+	public Set<Integer> getActiveExecutionIds() throws IOException {
 		String output = Util.executeCommand("qstat -s a");
-		List<Integer> answer = new ArrayList<Integer>();
+		Set<Integer> answer = new HashSet<Integer>();
 		for (String s : output.split(System.getProperty("line.separator"))) {
 			for (String e : s.split("\\s+")) {
 				if (!e.isEmpty()) {

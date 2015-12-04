@@ -107,8 +107,8 @@ public class LoadBalanceMonitor {
 
 	private Long minimum = null;
 	
-	// ten minutes
-	private Long loadDifferenceThreshold = 600l;
+	// thirty minutes in seconds
+	private Long loadDifferenceThreshold = 1800l;
 	
 	public Long getMin() {
 		List<UserLoadData> activeUsers = new ArrayList<UserLoadData>();
@@ -160,15 +160,14 @@ public class LoadBalanceMonitor {
 		}
 		if (loads.containsKey(userId)) {
 			UserLoadData d = loads.get(userId);
-			if (d.active()) {
-				return;
-			} else {
+			if (!d.active()) {
 				d.activate();
 				if (d.load < defaultLoad) {
 					d.load = defaultLoad;
 					d.minBasis = basis;
 				}
 			}
+			return;
 		}
 		loads.put(userId, new UserLoadData(userId, basis, defaultLoad));
 	}

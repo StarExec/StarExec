@@ -1,6 +1,7 @@
 package org.starexec.data.database;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -4926,4 +4927,25 @@ public class Jobs {
 		
 		return null;
 	}
+	
+	/**
+	 * This function takes all job pairs that
+	 * 1) Have status code 2-5, meaning they should be enqueued or running
+	 * 2) Are not currently listed in the backend
+	 * and sets them to status code 9. This basically takes pairs that
+	 * have somehow gotten stuck in a bad state and applies an error
+	 * status to them.
+	 * @throws IOException 
+	 */
+	public static void setBrokenPairsToErrorStatus() throws IOException {
+		List<JobPair> runningPairs = JobPairs.getPairsInBackend();
+		Set<Integer> sgeIDs = R.BACKEND.getActiveExecutionIds();
+		for (JobPair p : runningPairs) {
+			// if SGE does not think this pair should be running, kill it
+			if (!sgeIDs.contains(p.getGridEngineId())) {
+				JobPairs.setBrokenPairStatus(p);
+			}
+		}
+	}
+	
 }

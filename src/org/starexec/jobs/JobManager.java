@@ -231,7 +231,7 @@ public abstract class JobManager {
 			 */
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
-			int maxLoops=300;
+			int maxLoops=500;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
 				curLoops++;
@@ -279,7 +279,7 @@ public abstract class JobManager {
 						//skip if this user has many more pairs than some other user
 						log.debug("user "+s.job.getUserId()+" has a load of "+monitor.getLoad(s.job.getUserId()));
 						if (monitor.skipUser(s.job.getUserId())) {
-							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							log.info("excluding user with the following id from submitting more pairs "+s.job.getUserId());
 							break;
 						}
 

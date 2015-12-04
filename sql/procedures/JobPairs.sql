@@ -253,4 +253,24 @@ CREATE PROCEDURE ClearJobpairTimeDeltaData(IN _qid INT)
 		DELETE FROM jobpair_time_delta WHERE queue_id=_qid OR _qid=-1;
 	END //
 
+DROP PROCEDURE IF EXISTS GetJobPairsWithStatus;
+CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT)
+	BEGIN
+		SELECT * FROM job_pairs
+		WHERE status_code = _status;
+	END //
+	
+DROP PROCEDURE IF EXISTS SetBrokenPairStatus;
+CREATE PROCEDURE SetBrokenPairStatus(IN _pairId INT, IN _current_status INT, IN _new_status INT)
+	BEGIN
+		UPDATE jobpair_stage_data 
+		JOIN job_pairs ON jobpair_stage_data.jobpair_id = job_pairs.id
+		SET jobpair_stage_data.status_code = _new_status
+		WHERE jobpair_id=_pairId AND job_pairs.status_code=_current_status;
+		
+		UPDATE job_pairs
+		SET status_code = _new_status
+		WHERE id = _pairId AND status_code = _current_status;
+	END //
+
 DELIMITER ; -- this should always be at the end of the file

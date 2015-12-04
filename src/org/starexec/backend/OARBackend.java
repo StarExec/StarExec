@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -172,7 +173,7 @@ public class OARBackend implements Backend {
 	}
 
 	@Override
-	public List<Integer> getActiveExecutionIds() throws IOException {
+	public Set<Integer> getActiveExecutionIds() throws IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}

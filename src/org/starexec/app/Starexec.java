@@ -218,11 +218,15 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 		
-		final Runnable clearJobSpaceClosure = new RobustRunnable("clearJobSpaceClosure") {
+		final Runnable findBrokenJobPairs = new RobustRunnable("findBrokenJobPairs") {
 			@Override
 			protected void dorun() {
-				log.info("clearJobSpaceClosure (periodic)");
-				
+				log.info("findBrokenJobPairs (periodic)");
+				try {
+					Jobs.setBrokenPairsToErrorStatus();
+				} catch (IOException e) {
+					log.error(e.getMessage(), e);
+				}
 			}
 		};
 
@@ -291,8 +295,7 @@ public class Starexec implements ServletContextListener {
 
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
-		    // we are not doing anything for this task currently:
-		    //taskScheduler.scheduleAtFixedRate(clearJobSpaceClosure, 0, 1, TimeUnit.DAYS);
+		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 5, TimeUnit.SECONDS);
 		}
 		try {
 			PaginationQueries.loadPaginationQueries();

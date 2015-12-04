@@ -1467,4 +1467,84 @@ public class JobPairs {
 		}
 		return true;
 	}
+	
+	/**
+	 * Gets all job pairs in the database that have the given status code.
+	 * This should really only be called for rare codes like 2-5, as otherwise
+	 * it may read a very large number of pairs.
+	 * @param statusCode
+	 * @return
+	 */
+	public static List<JobPair> getPairsByStatus(int statusCode) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			List<JobPair> pairs = new ArrayList<JobPair>();
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL GetJobPairsWithStatus(?)}");
+			procedure.setInt(1, statusCode);
+			results=procedure.executeQuery();
+			if (results.next()) {
+				pairs.add(JobPairs.resultToPair(results));
+			}
+			return pairs;
+		} catch (Exception e) {
+			log.error("getPairsByStatus says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Sets the status code for a given pair and all of its stages to ERROR_SUBMIT_FAIL
+	 * if and only if the pair's status code in the database matches the status code
+	 * set in the given pair. This check is done to prevent a race condition in which
+	 * a pair that is actually not stuck (hence its status code has changed since the
+	 * pair was read) but is still set to the error status code.
+	 * @param p. The JobPair to affect. Must have ID and status code set
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setBrokenPairStatus(JobPair p) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results=null;
+		try {
+			con=Common.getConnection();
+			procedure=con.prepareCall("{CALL SetBrokenPairStatus(?, ?, ?)}");
+			procedure.setInt(1, p.getId());
+			procedure.setInt(2, p.getStatus().getCode().getVal());
+			procedure.setInt(3, Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
+			procedure.executeUpdate();
+			
+			return true;
+		} catch (Exception e) {
+			log.error("getPairsByStatus says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Gets all job pairs are currently under the jurisdiction of the 
+	 * backend. These are the pairs with status codes 2-5.
+	 * @return The list of job pairs. Stages will not be populated
+	 */
+	public static List<JobPair> getPairsInBackend() {
+		List<JobPair> pairs = new ArrayList<JobPair>();
+		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_ENQUEUED.getVal()));
+		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_PREPARING.getVal()));
+		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_RUNNING.getVal()));
+		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_FINISHING.getVal()));
+		return pairs;
+
+	}
 }

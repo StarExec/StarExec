@@ -3,6 +3,7 @@ package org.starexec.test.junit.backend;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.util.List;
+import java.util.Set;
 
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.junit.Before;
@@ -31,7 +32,7 @@ public class GridEngineBackendTests {
 		PowerMockito.mockStatic(Util.class);
 		System.setProperty("line.separator", "\n");
         BDDMockito.given(Util.executeCommand("qstat -s a")).willReturn(testSGEOutputString);
-		List<Integer> ids = backend.getActiveExecutionIds();
+		Set<Integer> ids = backend.getActiveExecutionIds();
 		Assert.assertTrue(ids.size()==3);
 		Assert.assertTrue(ids.contains(998));
 		Assert.assertTrue(ids.contains(999));
