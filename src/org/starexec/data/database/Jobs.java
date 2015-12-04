@@ -4938,11 +4938,16 @@ public class Jobs {
 	 * @throws IOException 
 	 */
 	public static void setBrokenPairsToErrorStatus() throws IOException {
+		// It is important that we read the database first and the backend second
+		// Otherwise, any pairs enqueued between these two lines would get marked
+		// as broken
 		List<JobPair> runningPairs = JobPairs.getPairsInBackend();
-		Set<Integer> sgeIDs = R.BACKEND.getActiveExecutionIds();
+		Set<Integer> backendIDs = R.BACKEND.getActiveExecutionIds();
 		for (JobPair p : runningPairs) {
 			// if SGE does not think this pair should be running, kill it
-			if (!sgeIDs.contains(p.getGridEngineId())) {
+			// the kill only happens if the pair's status has not been changed
+			// since getPairsInBackend() was called
+			if (!backendIDs.contains(p.getGridEngineId())) {
 				JobPairs.setBrokenPairStatus(p);
 			}
 		}

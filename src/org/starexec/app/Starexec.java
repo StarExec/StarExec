@@ -295,7 +295,7 @@ public class Starexec implements ServletContextListener {
 
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
-		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 5, TimeUnit.SECONDS);
+		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
 		}
 		try {
 			PaginationQueries.loadPaginationQueries();
