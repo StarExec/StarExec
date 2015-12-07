@@ -1,5 +1,6 @@
 package org.starexec.test.integration.database;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -18,6 +19,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -106,6 +108,22 @@ public class JobPairTests extends TestSequence {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		Assert.assertTrue(JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_UNKNOWN.getVal()));
 		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(),JobPairs.getPair(jp.getId()).getStatus().getCode().getVal());
+	}
+	
+	@StarexecTest
+	private void setBrokenPairsToErrorStatusTest() throws IOException {
+		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
+		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		Jobs.setBrokenPairsToErrorStatus();
+		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.ERROR_SUBMIT_FAIL);
+	}
+	
+	@StarexecTest
+	private void setBrokenPairsToErrorStatusNoChange() throws IOException {
+		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
+		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		Jobs.setBrokenPairsToErrorStatus();
+		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.ERROR_SUBMIT_FAIL);
 	}
 
 	@Override

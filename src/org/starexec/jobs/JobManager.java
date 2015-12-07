@@ -262,8 +262,6 @@ public abstract class JobManager {
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
-						// because we retrieve enough pairs for every job to fill the queue if possible, this 
-						// should mean that this job has been completely submitted.
 						it.remove();
 						continue;
 					}		
