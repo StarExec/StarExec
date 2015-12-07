@@ -27,70 +27,33 @@
 		<link rel="stylesheet" href="${starexecRoot}/css/${globalCssFile}.css" />
 	</c:forEach>
 	<c:if test="${not empty css}">	
-			<!--<c:choose>
-				<c:when test="${isLocalJobPage}"> -->
-					<!--
-					<link rel="stylesheet" href="./css/html5.css" />	
-					<link rel="stylesheet" href="./css/jqueryui/jquery-ui.css" />
-					<link rel="stylesheet" href="./css/master.css" />
-					<link rel="stylesheet" href="./css/common/dataTable.css" />
-					<c:forEach var="globalCssFile" items="${globalCssFiles}">
-						<link rel="stylesheet" href="./css/${globalCssFile}.css" />
-					</c:forEach>
-					<c:forEach var="cssFile" items="${fn:split(css, ',')}">
-						<link rel="stylesheet" href="./css/${fn:trim(cssFile)}.css"/>
-					</c:forEach>	
-				</c:when>
-				<c:otherwise>
-					<link rel="stylesheet" href="/${starexecRoot}/css/html5.css" />	
-					<link rel="stylesheet" href="/${starexecRoot}/css/jqueryui/jquery-ui.css" />
-					<link rel="stylesheet" href="/${starexecRoot}/css/master.css" />
-					<link rel="stylesheet" href="/${starexecRoot}/css/common/dataTable.css" />
-					-->
-					<c:forEach var="cssFile" items="${fn:split(css, ',')}">
-						<link rel="stylesheet" href="${starexecRoot}/css/${fn:trim(cssFile)}.css" />
-					</c:forEach>	
-				<!--</c:otherwise>
-			</c:choose>-->
+		<c:forEach var="cssFile" items="${fn:split(css, ',')}">
+			<link rel="stylesheet" href="${starexecRoot}/css/${fn:trim(cssFile)}.css" />
+		</c:forEach>	
 	</c:if>		
         <script> var starexecRoot="${starexecRoot}/";
-        		 var defaultPageSize=${pagesize}; </script>
+        		 var defaultPageSize=${pagesize}; 
+				 var isLocalJobPage = "${isLocalJobPage}" === "true";</script>
         
 	<!--[if lt IE 9]> 
 		
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script> 
 	<![endif]-->
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
+	<c:choose>
+		<c:when test="${isLocalJobPage}">
+			<script type="text/javascript" src="${starexecRoot}/js/lib/jquery.min.js"></script>	
+		</c:when>
+		<c:otherwise>
+			<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>	
+		</c:otherwise>
+	</c:choose>
 	<c:forEach var="globalJsFile" items="${globalJsFiles}">
 		<script type="text/javascript" src="${starexecRoot}/js/${globalJsFile}.js"></script>
 	</c:forEach>
 	<c:if test="${not empty js}">	
-		<!--
-		<c:choose>
-			<c:when test="${isLocalJobPage}">
-				<script src="./js/lib/jquery-ui.min.js"></script>
-				<script src="./js/lib/jquery.cookie.js"></script>
-				<script src="./js/master.js"></script>
-				<script src="./js/lib/jquery.min.js"></script>	
-				<c:forEach var="globalJsFile" items="${globalJsFiles}">
-					<script type="text/javascript" src="./js/${globalJsFile}.js"></script>
-				</c:forEach>
-				<c:forEach var="jsFile" items="${fn:split(js, ',')}">
-					<script type="text/javascript" src="./js/${fn:trim(jsFile)}.js"></script>
-				</c:forEach>	
-			</c:when>
-			<c:otherwise>
-				<script src="/${starexecRoot}/js/lib/jquery-ui.min.js"></script>
-				<script src="/${starexecRoot}/js/lib/jquery.cookie.js"></script>
-				<script src="/${starexecRoot}/js/master.js"></script>
-				-->
-				<c:forEach var="jsFile" items="${fn:split(js, ',')}">
-					<script type="text/javascript" src="${starexecRoot}/js/${fn:trim(jsFile)}.js"></script>
-				</c:forEach>	
-			<!--
-			</c:otherwise>
-		</c:choose>
-		-->
+		<c:forEach var="jsFile" items="${fn:split(js, ',')}">
+			<script type="text/javascript" src="${starexecRoot}/js/${fn:trim(jsFile)}.js"></script>
+		</c:forEach>	
 	</c:if>
 	<c:if test="${isProduction}">	
 		<script type="text/javascript">

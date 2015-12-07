@@ -31,7 +31,7 @@ recycled, it is no longer available to be used in jobs, but it does still exist 
 elect to restore primitives that have been recycled.</p>
 
 <p>Because recycled primitives still exist on disk, they do still count against your disk quota! To delete
-primitives that have been recycled, you can use <a href="/${starexecRoot}/secure/details/recycleBin.jsp">the recycle bin
+primitives that have been recycled, you can use <a href="${starexecRoot}/secure/details/recycleBin.jsp">the recycle bin
 page.</a> This page can be accessed by clicking the trashcan icon in the space explorer or by clicking the "manage recycle bin"
 button on your profile page. That page also allows you to restore primitives, which means removing them from the recycle bin
 and allowing them to be used normally.</p>
