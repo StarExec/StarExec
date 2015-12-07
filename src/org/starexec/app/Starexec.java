@@ -223,7 +223,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 				log.info("findBrokenJobPairs (periodic)");
 				try {
-					Jobs.setBrokenPairsToErrorStatus();
+					Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
 				} catch (IOException e) {
 					log.error(e.getMessage(), e);
 				}

@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
@@ -4937,12 +4938,12 @@ public class Jobs {
 	 * status to them.
 	 * @throws IOException 
 	 */
-	public static void setBrokenPairsToErrorStatus() throws IOException {
+	public static void setBrokenPairsToErrorStatus(Backend backend) throws IOException {
 		// It is important that we read the database first and the backend second
 		// Otherwise, any pairs enqueued between these two lines would get marked
 		// as broken
 		List<JobPair> runningPairs = JobPairs.getPairsInBackend();
-		Set<Integer> backendIDs = R.BACKEND.getActiveExecutionIds();
+		Set<Integer> backendIDs = backend.getActiveExecutionIds();
 		for (JobPair p : runningPairs) {
 			// if SGE does not think this pair should be running, kill it
 			// the kill only happens if the pair's status has not been changed
