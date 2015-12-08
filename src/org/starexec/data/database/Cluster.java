@@ -100,7 +100,6 @@ public class Cluster {
 	    Queues.clearQueueAssociations();
 	    Map<String,String> assoc = R.BACKEND.getQueueNodeAssociations();
 	    
-	    //only ever indexes an even number of elements, so if map.length == 5, will only look at first 4 elements and ignore fifth
 	    for(String node : assoc.keySet()){
 	    	Queues.associate(assoc.get(node), node);
 	    }
