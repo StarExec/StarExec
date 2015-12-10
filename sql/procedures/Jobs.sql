@@ -435,7 +435,6 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 		SELECT * FROM jobpair_stage_data 
 		JOIN (SELECT *
 		FROM job_pairs 
-		
 		WHERE job_id=_id AND (status_code = 1)
 		ORDER BY id ASC
 		LIMIT _limit) as job_pairs ON job_pairs.id = jobpair_stage_data.jobpair_id;

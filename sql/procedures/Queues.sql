@@ -35,11 +35,10 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
-		SELECT distinct jobs.id, user_id,name,seed,primary_space,
-		jobs.clockTimeout,jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp
-		FROM jobs
-		JOIN job_pairs ON job_pairs.job_id=jobs.id
-		WHERE status_code=1 and queue_id = _queueId;
+		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
+		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp 
+		FROM jobs WHERE queue_id = _queueId 
+		AND EXISTS (select 1 from job_pairs WHERE status_code=1 and job_id=jobs.id);
 	END //
 		
 -- Retrieves the number of enqueued job pairs for the given queue
