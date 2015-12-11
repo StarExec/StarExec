@@ -1787,10 +1787,6 @@ public class Solvers {
 		s.setDiskSize(results.getLong(prefix+"disk_size"));
 		s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
 
-		
-		
-		
-		
 		return s;
 	}
 	

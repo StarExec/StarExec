@@ -412,7 +412,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -426,7 +426,8 @@ public class Jobs {
 			procedure.setInt(8,job.getWallclockTimeout());
 			procedure.setLong(9, job.getMaxMemory());
 			procedure.setBoolean(10, job.timestampIsSuppressed());
-			procedure.registerOutParameter(11, java.sql.Types.INTEGER);	
+			procedure.setBoolean(11, job.isUsingDependencies());
+			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
@@ -3180,23 +3181,21 @@ public class Jobs {
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated). Gets all stages (except noops)
 	 * @param con The connection to make the query on 
-	 * @param jobId The id of the job to get pairs for
+	 * @param j The job to get pairs for. Must have id and using_dependencies set.
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
-    protected static List<JobPair> getPendingPairsDetailed(Connection con, int jobId,int limit) throws Exception {	
+	//TODO: This is too slow. We need to speed this up.
+    protected static List<JobPair> getPendingPairsDetailed(Connection con, Job j,int limit) throws Exception {	
 
 	CallableStatement procedure = null;
 	ResultSet results = null;
 	try {
 	    procedure = con.prepareCall("{CALL GetPendingJobPairsByJob(?,?)}");
-	    procedure.setInt(1, jobId);				
+	    procedure.setInt(1, j.getId());				
 	    procedure.setInt(2,limit);
 	    results = procedure.executeQuery();
 	    //we map ID's to  primitives so we don't need to query the database repeatedly for them
-	    HashMap<Integer, Solver> solvers=new HashMap<Integer,Solver>();
-	    HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-	    HashMap<Integer,Benchmark> benchmarks=new HashMap<Integer,Benchmark>();
 	    HashMap<Integer,JobPair> pairs= new HashMap<Integer,JobPair>();
 	    while(results.next()){
 				
@@ -3210,19 +3209,17 @@ public class Jobs {
 			    } else {
 			    	//we have never seen this pair and are getting it for the first time
 			    	jp = JobPairs.resultToPair(results);
-			    	Integer benchId=results.getInt("bench_id");
-				    if (benchId!=null) {
-						if (!benchmarks.containsKey(benchId)) {
-						    benchmarks.put(benchId,Benchmarks.get(benchId));
-						}
-									
-						jp.setBench(benchmarks.get(benchId));
-				    }
-				    Status s = new Status();
+			    	Status s = new Status();
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
 				    
-				    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId(),con));
+				    jp.setBench(Benchmarks.resultToBenchmark(results, "benchmarks"));
+				    
+				    if (j.isUsingDependencies()) {
+					    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId(),con));
+				    } else{
+				    	jp.setBenchInputPaths(new ArrayList<String>());
+				    }
 			    	pairs.put(currentJobPairId, jp);
 			    }
 
@@ -3239,16 +3236,11 @@ public class Jobs {
 			    c.setId(configId);
 			    c.setName(configName);
 			    stage.setConfiguration(c);
-	
+
 			    if (configId!=null) {
-					if (!configs.containsKey(configId)) {
-					    Solver s = Solvers.getSolverByConfig(con,configId, false);
-					    if (s != null) {
-							solvers.put(configId, s);
-							s.addConfiguration(c);
-					    }
-					}
-					stage.setSolver(solvers.get(configId) /* could be null, if Solver s above was null */);
+				    Solver s = Solvers.resultToSolver(results, "solvers");
+
+					stage.setSolver(s /* could be null, if Solver s above was null */);
 			    }			    
 			} 
 			catch (Exception e) {
@@ -3258,16 +3250,17 @@ public class Jobs {
 	    }
 				
 	    Common.safeClose(results);
-	    	    
+	    
 	    for (JobPair jp : pairs.values()) {
-	    	//populate all the dependencies for the pair
-		    HashMap<Integer,List<PipelineDependency>> deps=Pipelines.getDependenciesForJobPair(jp.getId(), con);
-		    for (JoblineStage stage : jp.getStages()) {
-		    	if (deps.containsKey(stage.getStageId())) {
-		    		stage.setDependencies(deps.get(stage.getStageId()));
-		    	}
-		    }
-
+	    	if (j.isUsingDependencies()) {
+	    		//populate all the dependencies for the pair
+			    HashMap<Integer,List<PipelineDependency>> deps=Pipelines.getDependenciesForJobPair(jp.getId(), con);
+			    for (JoblineStage stage : jp.getStages()) {
+			    	if (deps.containsKey(stage.getStageId())) {
+			    		stage.setDependencies(deps.get(stage.getStageId()));
+			    	}
+			    }
+	    	}
 		    //make sure all stages are in order
 
 	    	jp.sortStages();
@@ -3352,19 +3345,19 @@ public class Jobs {
 	/**
 	 * Gets all job pairs that are pending or were rejected (up to limit) for the given job and also populates its used resource TOs 
 	 * (Worker node, status, benchmark and solver WILL be populated). All stages are retrieved
-	 * @param jobId The id of the job to get pairs for
+	 * @param j The job to get pairs for. Must have id and using_dependencies set.
 	 * @param limit The maximum number of pairs to return. Used for efficiency
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Benton McCune
 	 */
-	public static List<JobPair> getPendingPairsDetailed(int jobId, int limit) {
+	public static List<JobPair> getPendingPairsDetailed(Job j, int limit) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getPendingPairsDetailed(con, jobId,limit);
+			return getPendingPairsDetailed(con, j, limit);
 		} catch (Exception e){			
-			log.error("getPendingPairsDetailed for job " + jobId + " says " + e.getMessage(), e);		
+			log.error("getPendingPairsDetailed for job " + j.getId() + " says " + e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}

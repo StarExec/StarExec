@@ -36,7 +36,7 @@ DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
 		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
-		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp 
+		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies
 		FROM jobs WHERE queue_id = _queueId 
 		AND EXISTS (select 1 from job_pairs WHERE status_code=1 and job_id=jobs.id);
 	END //
