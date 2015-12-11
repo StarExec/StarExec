@@ -16,7 +16,7 @@
 
 		final String starexecRoot = "starexecRoot";
 		if (isLocalJobPage) {
-			request.setAttribute(starexecRoot, "./");
+			request.setAttribute(starexecRoot, ".");
 		} else {
 			request.setAttribute(starexecRoot, "/" + R.STAREXEC_APPNAME);
 		}

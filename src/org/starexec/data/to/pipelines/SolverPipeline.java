@@ -69,6 +69,16 @@ public class SolverPipeline extends Identifiable implements Nameable {
 		
 		return inputs;
 	}
+	
+	public boolean usesDependencies() {
+		for (PipelineStage stage : stages) {
+			if (stage.getDependencies().size()>0) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 
 	public int getPrimaryStageNumber() {
 		return primaryStageId;

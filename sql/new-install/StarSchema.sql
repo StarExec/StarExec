@@ -275,6 +275,7 @@ CREATE TABLE jobs (
 	clockTimeout INT, 
 	maximum_memory BIGINT DEFAULT 1073741824,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
+	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

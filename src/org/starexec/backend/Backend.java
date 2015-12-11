@@ -1,6 +1,9 @@
 package org.starexec.backend;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This interface is how StarExec should communicate with whatever backend is being used
@@ -74,6 +77,13 @@ public interface Backend{
      * @return a string representing the status of jobs running on the system
      */
     public String getRunningJobsStatus();
+    
+    /**
+     * Gets execution codes for all jobs currently active (enqueued or running)
+     * @return array of active execution codes
+     * @throws IOException 
+     */
+    public Set<Integer> getActiveExecutionIds() throws IOException;
 
     /**
      * @return returns a list of names of all active worker nodes

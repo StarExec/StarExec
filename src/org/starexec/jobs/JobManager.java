@@ -198,8 +198,9 @@ public abstract class JobManager {
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
-				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job.getId(),limit).iterator();
-
+				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId());
+				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job,limit).iterator();
+				log.debug("finished call to getPendingPairsDetailed");
 				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 
 				schedule.add(s);
@@ -231,7 +232,7 @@ public abstract class JobManager {
 			 */
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
-			int maxLoops=300;
+			int maxLoops=500;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
 				curLoops++;
@@ -262,8 +263,6 @@ public abstract class JobManager {
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
-						// because we retrieve enough pairs for every job to fill the queue if possible, this 
-						// should mean that this job has been completely submitted.
 						it.remove();
 						continue;
 					}		
@@ -279,7 +278,7 @@ public abstract class JobManager {
 						//skip if this user has many more pairs than some other user
 						log.debug("user "+s.job.getUserId()+" has a load of "+monitor.getLoad(s.job.getUserId()));
 						if (monitor.skipUser(s.job.getUserId())) {
-							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							log.info("excluding user with the following id from submitting more pairs "+s.job.getUserId());
 							break;
 						}
 

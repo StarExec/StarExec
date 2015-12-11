@@ -54,6 +54,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	// Whether to suppress the timestamp produced by runsolver for this job.
 	private boolean suppressTimestamp;
 	
+	private boolean usingDependencies = false;
 	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
@@ -345,6 +346,14 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public boolean timestampIsSuppressed() {
 		return suppressTimestamp;
+	}
+
+	public boolean isUsingDependencies() {
+		return usingDependencies;
+	}
+
+	public void setUsingDependencies(boolean usingDependencies) {
+		this.usingDependencies = usingDependencies;
 	}
 
 	

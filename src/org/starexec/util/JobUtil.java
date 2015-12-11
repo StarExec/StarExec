@@ -576,7 +576,9 @@ public class JobUtil {
 						return -1;
 					}
 					SolverPipeline currentPipe=pipelines.get(pipeName);
-					
+					if (!job.isUsingDependencies() && currentPipe.usesDependencies()) {
+						job.setUsingDependencies(true);
+					}
 					//get the path of the job space for this pair. If empty, just use the root space
 					String path = jobLineElement.getAttribute("job-space-path");
 					if (path.equals("")) {

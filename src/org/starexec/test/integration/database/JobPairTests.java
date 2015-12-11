@@ -1,10 +1,17 @@
 package org.starexec.test.integration.database;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.junit.Assert;
+import org.mockito.Mockito;
+import org.starexec.backend.GridEngineBackend;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
@@ -18,6 +25,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
@@ -25,6 +33,8 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+
+import org.starexec.backend.Backend;
 
 public class JobPairTests extends TestSequence {
 
@@ -106,6 +116,26 @@ public class JobPairTests extends TestSequence {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		Assert.assertTrue(JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_UNKNOWN.getVal()));
 		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(),JobPairs.getPair(jp.getId()).getStatus().getCode().getVal());
+	}
+	
+	@StarexecTest
+	private void setBrokenPairsToErrorStatusTest() throws IOException {
+		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
+		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
+		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.ERROR_SUBMIT_FAIL);
+	}
+	
+	@StarexecTest
+	private void setBrokenPairsToErrorStatusNoChange() throws IOException {
+		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
+		HashSet<Integer> set = new HashSet<Integer>();
+		set.add(jp.getGridEngineId());
+		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		GridEngineBackend backend = Mockito.mock(GridEngineBackend.class);
+		Mockito.when(backend.getActiveExecutionIds()).thenReturn(set);
+		Jobs.setBrokenPairsToErrorStatus(backend);
+		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.STATUS_ENQUEUED);
 	}
 
 	@Override

@@ -428,17 +428,19 @@ CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	END //
 	
 -- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs
--- Author:Benton McCune
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
 CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
-		SELECT * FROM jobpair_stage_data 
+		SELECT *
+		FROM jobpair_stage_data 
 		JOIN (SELECT *
 		FROM job_pairs 
-		
 		WHERE job_id=_id AND (status_code = 1)
 		ORDER BY id ASC
-		LIMIT _limit) as job_pairs ON job_pairs.id = jobpair_stage_data.jobpair_id;
+		LIMIT _limit) as job_pairs ON job_pairs.id = jobpair_stage_data.jobpair_id
+		LEFT JOIN benchmarks ON benchmarks.id = job_pairs.bench_id
+		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id
@@ -597,10 +599,10 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
-CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, IN _suppressTimestamp BOOLEAN, OUT _id INT)
+CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, IN _suppressTimestamp BOOLEAN, IN _usingDeps INT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp)
-		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp);
+		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp, using_dependencies)
+		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	

@@ -21,7 +21,7 @@ In order to change leadership status, a community member must contact an admin.
 
 <p>
 <ol>
-<li>Navigate to the <a href="/${starexecRoot}/secure/edit/spacePermissions.jsp?id=1">edit permissions page</a></li>
+<li>Navigate to the <a href="${starexecRoot}/secure/edit/spacePermissions.jsp?id=1">edit permissions page</a></li>
 <li>Select the desired space</li>
 <li>Select a user</li>
 <li>You should see a table called "change permissions" appear.  If instead you see a table called "selected user permissions", you can't change permissions for this space/user pair.</li>

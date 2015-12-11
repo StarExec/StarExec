@@ -1,7 +1,12 @@
 package org.starexec.backend;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -22,14 +27,10 @@ public class OARBackend implements Backend {
 	private static Logger log = Logger.getLogger(OARBackend.class);
 	@Override
 	public void initialize(String BACKEND_ROOT) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
-	public void destroyIf() {
-		// TODO Auto-generated method stub
-		
+	public void destroyIf() {		
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class OARBackend implements Backend {
 	@Override
 	public Map<String, String> getNodeDetails(String nodeName) {
 		try {	
-			String details = Util.executeCommand("oarnodes -sql \"network_address = '"+nodeName+"'\"");
+			String details = Util.executeCommand("oarnodes --sql \"network_address = '"+nodeName+"'\"");
 			
 			// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(details);
@@ -115,12 +116,21 @@ public class OARBackend implements Backend {
 		return null;
 	}
 
+	
+	//TODO: Done, test
 	@Override
 	public String[] getQueues() {
 		try {	
 			//TODO: This will need to get parsed into the list of nodes. May also need sudo admin
 			String queues = Util.executeCommand("oarnotify -l");
-			
+			String[] lines = queues.split(System.getProperty("line.separator"));
+			List<String> names = new ArrayList<String>();
+			for (int i=0;i<lines.length;i+=4) {
+				if (lines[i+3].contains("= Active")) {
+					names.add(lines[i].trim());
+				}
+			}
+			return names.toArray(new String[names.size()]);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -151,22 +161,49 @@ public class OARBackend implements Backend {
 		return false;
 	}
 
+	//TODO: Done, test
 	@Override
 	public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames) {
-		// TODO Auto-generated method stub
+		try {
+			//TODO: Check different scheduling algorithms
+			Util.executeCommand("oarnotify --add_queue "+newQueueName+" 1 oar_sched_gantt_with_timesharing");
+			for (int i =0;i<nodeNames.length;i++) {
+				moveNode(nodeNames[i], newQueueName);
+			}
+			return true;
+		} catch (Exception e) {
+			
+		}
+		
 		return false;
 	}
-
+	
+	
+	//TODO: Done, test
 	@Override
 	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
-		// TODO Auto-generated method stub
+		for (int i = 0; i < nodeNames.length; i++) {
+			moveNode(nodeNames[i], destQueueName);
+		}
+		return false;
+	}
+	
+	//TODO: Done, test
+	@Override
+	public boolean moveNode(String nodeName, String queueName) {
+		try {
+			Util.executeCommand("oarnodesetting --sql \"network_address='"+nodeName+"'\" -p \"queue="+queueName+"\"");
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 		return false;
 	}
 
 	@Override
-	public boolean moveNode(String nodeName, String queueName) {
+	public Set<Integer> getActiveExecutionIds() throws IOException {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 
 }

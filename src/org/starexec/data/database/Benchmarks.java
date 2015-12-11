@@ -2222,7 +2222,7 @@ public class Benchmarks {
 	 * @throws SQLException
 	 */
 	
-	protected static Benchmark resultToBenchmark(ResultSet results, String prefix) throws SQLException {
+	public static Benchmark resultToBenchmark(ResultSet results, String prefix) throws SQLException {
 		Benchmark b = new Benchmark();
 		if (prefix==null || prefix=="") {
 			b.setId(results.getInt("id"));
