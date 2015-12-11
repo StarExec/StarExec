@@ -432,15 +432,11 @@ CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
 CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
-		SELECT *
-		FROM jobpair_stage_data 
-		JOIN (SELECT *
-		FROM job_pairs 
-		WHERE job_id=_id AND (status_code = 1)
-		ORDER BY id ASC
-		LIMIT _limit) as job_pairs ON job_pairs.id = jobpair_stage_data.jobpair_id
+		SELECT * FROM job_pairs
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		LEFT JOIN benchmarks ON benchmarks.id = job_pairs.bench_id
-		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id;
+		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id
+		WHERE job_id = _id AND job_pairs.status_code = 1 LIMIT _limit;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id
