@@ -198,8 +198,9 @@ public abstract class JobManager {
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
+				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId());
 				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job,limit).iterator();
-
+				log.debug("finished call to getPendingPairsDetailed");
 				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 
 				schedule.add(s);
