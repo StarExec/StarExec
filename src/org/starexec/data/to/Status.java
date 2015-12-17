@@ -10,15 +10,15 @@ import com.google.gson.annotations.Expose;
  * Represents a status for a job pair
  * @author Tyler Jensen
  */
+
+// Do NOT reuse codes 3, 5, and 6! We should always use completely new codes
+// for new statuses and never reuse deleted codes.
 public class Status {
 	public static enum StatusCode {
 		STATUS_UNKNOWN(0),
 		STATUS_PENDING_SUBMIT(1),
 		STATUS_ENQUEUED(2),
-		STATUS_PREPARING(3),
 		STATUS_RUNNING(4),
-		STATUS_FINISHING(5),
-		STATUS_WAIT_RESULTS(6),
 		STATUS_COMPLETE(7),
 		ERROR_SGE_REJECT(8),
 		ERROR_SUBMIT_FAIL(9),
@@ -80,14 +80,8 @@ public class Status {
 				return STATUS_PENDING_SUBMIT;
 			    case 2:
 				return STATUS_ENQUEUED;
-			    case 3:
-				return STATUS_PREPARING;
 			    case 4:
 				return STATUS_RUNNING;
-			    case 5:
-				return STATUS_FINISHING;
-			    case 6:
-				return STATUS_WAIT_RESULTS;
 			    case 7:
 				return STATUS_COMPLETE;
 			    case 8:
@@ -134,14 +128,8 @@ public class Status {
 			return "the job has been added to the starexec database but has not been submitted to the grid engine";
 		    case 2:
 			return "the job has been submitted to the grid engine and is waiting for an available execution host";
-		    case 3:
-			return "the jobs environment on an execution host is being prepared";
 		    case 4:
 			return "the job is currently being ran on an execution host";
-		    case 5:
-			return "the jobs output is being stored and its environment is being cleaned up";
-		    case 6:
-			return "the job has completed execution and is waiting for its runtime statistics and attributes from the grid engine";
 		    case 7:
 			return "the job has successfully completed execution and its statistics have been received from the grid engine";
 		    case 8:
@@ -185,14 +173,8 @@ public class Status {
 			return "pending submission";
 		    case 2:
 			return "enqueued";
-		    case 3:
-			return "preparing";
 		    case 4:
 			return "running";
-		    case 5:
-			return "finishing";
-		    case 6:
-			return "awaiting results";
 		    case 7:
 			return "complete";
 		    case 8:

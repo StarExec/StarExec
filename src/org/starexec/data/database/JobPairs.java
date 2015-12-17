@@ -1543,9 +1543,7 @@ public class JobPairs {
 	public static List<JobPair> getPairsInBackend() {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_ENQUEUED.getVal()));
-		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_PREPARING.getVal()));
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_RUNNING.getVal()));
-		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_FINISHING.getVal()));
 		return pairs;
 
 	}
