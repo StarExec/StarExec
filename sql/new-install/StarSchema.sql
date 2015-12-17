@@ -353,6 +353,7 @@ CREATE TABLE jobpair_stage_data (
 	KEY (job_space_id, solver_name),
 	-- KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
+	KEY (status_code),
 	PRIMARY KEY (jobpair_id,stage_number),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL
