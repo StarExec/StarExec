@@ -3212,8 +3212,9 @@ public class Jobs {
 			    	Status s = new Status();
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
-				    
-				    jp.setBench(Benchmarks.resultToBenchmark(results, "benchmarks"));
+				    Benchmark b = Benchmarks.resultToBenchmark(results, "benchmarks");
+				    b.setUsesDependencies(results.getInt("dependency_count")>0);
+				    jp.setBench(b);
 				    
 				    if (j.isUsingDependencies()) {
 					    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId(),con));

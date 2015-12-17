@@ -26,7 +26,7 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	private long diskSize;	
 	private boolean deleted;
 	private boolean recycled;
-	
+	private Boolean usesDependencies = null;
 	
 	public Benchmark() {
 		attributes=new Properties();
@@ -180,5 +180,13 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 
 	public boolean isRecycled() {
 		return recycled;
+	}
+
+	public Boolean getUsesDependencies() {
+		return usesDependencies;
+	}
+
+	public void setUsesDependencies(Boolean usesDependencies) {
+		this.usesDependencies = usesDependencies;
 	}
 }

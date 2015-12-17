@@ -375,7 +375,7 @@ public abstract class JobManager {
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
-			StageAttributes attrs=  job.getStageAttributesByStageNumber(stageNumber);
+			StageAttributes attrs= job.getStageAttributesByStageNumber(stageNumber);
 			stageCpuTimeouts.add(attrs.getCpuTimeout());
 			benchSuffixes.add(attrs.getBenchSuffix());
 			stageWallclockTimeouts.add(attrs.getWallclockTimeout());
@@ -418,8 +418,6 @@ public abstract class JobManager {
 			
 		}
 		
-		
-		
 		// General pair configuration
 		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
 		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
@@ -436,10 +434,10 @@ public abstract class JobManager {
 		
 		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
 		//Dependencies
-		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
+		if (pair.getBench().getUsesDependencies())
 		{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
-			writeDependencyFile(pair.getId(), pair.getBench().getId());
+			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pair.getBench().getId()));	
 		}
 		else{
 			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
@@ -580,12 +578,11 @@ public abstract class JobManager {
 	 * Writes a file containing benchmark dependencies ( note: these are NOT related to any of the pipeline dependencies)
 	 * to the jobin directory for the given pair and benchmark.
 	 * @param pairId
-	 * @param benchId
+	 * @param dependencies
 	 * @return
 	 * @throws Exception
 	 */
-	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
-		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
+	public static Boolean writeDependencyFile(Integer pairId, List<BenchmarkDependency> dependencies) throws Exception{		
 		StringBuilder sb = new StringBuilder();
 		String separator = ",,,";
 		for (BenchmarkDependency bd:dependencies)

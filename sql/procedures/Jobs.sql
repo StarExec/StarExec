@@ -432,9 +432,11 @@ CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
 CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
-		SELECT * FROM job_pairs FORCE INDEX (job_id_2) 
+		SELECT *, 
+		(SELECT count(*) FROM bench_dependency WHERE primary_bench_id = benchmarks.id) AS dependency_count
+		FROM job_pairs FORCE INDEX (job_id_2) 
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id 
-		LEFT JOIN benchmarks ON benchmarks.id = job_pairs.bench_id 
+		LEFT JOIN benchmarks ON benchmarks.id = job_pairs.bench_id
 		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id 
 		WHERE job_id = _id AND job_pairs.status_code = 1 ORDER BY job_pairs.id ASC LIMIT _limit;
 	END //	
