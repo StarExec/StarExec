@@ -62,9 +62,6 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE job_pairs SET status_code=_statusCode WHERE id=_jobPairId ;
 		IF (_statusCode>6 AND _statusCode<19) THEN
-			
-
-			
 			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId);
 			
 			-- this checks to see if the job is done and sets its completion id if so.
@@ -72,6 +69,9 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			IF (SELECT COUNT(*) FROM (select id from job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (status_code<7 || status_code>18) LIMIT 1) as theCount)=0 THEN
 				UPDATE jobs SET completed=CURRENT_TIMESTAMP WHERE id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId);
 			END IF;
+		END IF;
+		IF (_statusCode = 2) THEN
+			UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_id;
 		END IF;
 	END //
 	
@@ -175,13 +175,6 @@ CREATE PROCEDURE RemovePairFromCompletedTable(IN _id INT)
 		DELETE FROM job_pair_completion
 		WHERE pair_id=_id;
 	END //
-	
--- Sets the queue submission time to now for the pair with the given id
-DROP PROCEDURE IF EXISTS SetQueueSubTime;
-CREATE PROCEDURE SetQueueSubTime(IN _id INT)
-BEGIN
-	UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_id;
-END //
 
 -- Sets the queue submission time to now (the moment this is called) for the pair with the given id
 DROP PROCEDURE IF EXISTS SetPairStartTime;

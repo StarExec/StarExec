@@ -308,7 +308,6 @@ public abstract class JobManager {
 
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
-							JobPairs.setQueueSubTime(pair.getId());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
 							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
