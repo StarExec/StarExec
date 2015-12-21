@@ -105,11 +105,14 @@ public class LoadBalanceMonitor {
 	// such as a combination HashMap / PriorityQueue structure.
 	private HashMap<Integer, UserLoadData> loads = new HashMap<Integer, UserLoadData>();
 
-	private Long minimum = null;
 	
 	// thirty minutes in seconds
 	private Long loadDifferenceThreshold = 1800l;
 	
+	/**
+	 * Returns null if there are no active users
+	 * @return
+	 */
 	public Long getMin() {
 		List<UserLoadData> activeUsers = new ArrayList<UserLoadData>();
 		for (UserLoadData d : loads.values()) {
@@ -117,10 +120,10 @@ public class LoadBalanceMonitor {
 				activeUsers.add(d);
 			}
 		}
-		if (minimum == null && activeUsers.size()>0) {
-			minimum = Collections.min(activeUsers).load;
+		if (activeUsers.size()>0) {
+			return Collections.min(activeUsers).load;
 		}
-		return minimum;
+		return null;
 	}
 	
 	/**
@@ -140,11 +143,7 @@ public class LoadBalanceMonitor {
 	}
 	
 	
-	private void invalidateMin(long val) {
-		if (minimum!=null && minimum==val) {
-			minimum = null;
-		}
-	}
+	
 	
 	/**
 	 * Adds a new user to the set of users being managed. The initial load
@@ -154,7 +153,7 @@ public class LoadBalanceMonitor {
 	 * @param defaultLoad
 	 */
 	private void addUser(int userId, long defaultLoad, long basis) {
-		getMin();
+		Long minimum = getMin();
 		if (minimum == null) {
 			minimum = defaultLoad;
 		}
@@ -179,7 +178,6 @@ public class LoadBalanceMonitor {
 	private void removeUser(int userId) {
 		UserLoadData u = loads.get(userId);
 		if (u!=null && u.active()) {
-			invalidateMin(u.load);
 			u.inactivate();
 		}
 	}
@@ -223,8 +221,11 @@ public class LoadBalanceMonitor {
 			return;
 		}
 		// the minimum may change only if this user has the current minimum load
-		invalidateMin(loads.get(userId).load);
 		loads.get(userId).load = loads.get(userId).load + load;
+		if (loads.get(userId).load < 0) {
+			log.warn("User "+userId +" has load value set to less than 0!");
+			loads.get(userId).load = 0l;
+		}
 	}
 	
 	/**
@@ -262,7 +263,7 @@ public class LoadBalanceMonitor {
 	 * Determines whether a given user should be skipped, meaning they should not
 	 * be allowed to enqueue any more job pairs for the time being. A user is 
 	 * skipped whenever their load is substantially greater than the minimum load.
-	 * @param userId The ID of hte user to check
+	 * @param userId The ID of the user to check
 	 * @return True if the user should be skipped and false if not.
 	 */
 	public boolean skipUser(int userId) {
