@@ -38,7 +38,7 @@ CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
 		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies
 		FROM jobs WHERE queue_id = _queueId 
-		AND EXISTS (select 1 from job_pairs WHERE status_code=1 and job_id=jobs.id);
+		AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
 	END //
 		
 -- Retrieves the number of enqueued job pairs for the given queue
@@ -57,8 +57,7 @@ DROP PROCEDURE IF EXISTS GetUserLoadOnQueue;
 CREATE PROCEDURE GetUserLoadOnQueue(IN _queueId INT, IN _user INT)
 	BEGIN
 		SELECT SUM(jobs.clockTimeout) AS queue_load FROM job_pairs JOIN jobs ON job_pairs.job_id = jobs.id
-                WHERE (job_pairs.status_code=4 OR job_pairs.status_code=3
-                OR job_pairs.status_code=2 OR job_pairs.status_code=5)
+                WHERE (job_pairs.status_code=4 OR job_pairs.status_code=2)
                 AND jobs.queue_id = _queueId AND jobs.user_id=_user;
 	END //	
 	

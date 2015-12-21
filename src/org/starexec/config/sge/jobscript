@@ -108,7 +108,7 @@ echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
 echo ""
 
-sendStatus $STATUS_PREPARING
+sendStatus $STATUS_RUNNING
 
 initSandbox "$JOB_ID"
 
@@ -133,7 +133,6 @@ fi
 
 sendNode "$HOSTNAME" "$SANDBOX"
 cleanWorkspace 1
-sendStatus $STATUS_RUNNING
 setStartTime
 
 createLocalTmpDirectory

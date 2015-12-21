@@ -3212,8 +3212,9 @@ public class Jobs {
 			    	Status s = new Status();
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
-				    
-				    jp.setBench(Benchmarks.resultToBenchmark(results, "benchmarks"));
+				    Benchmark b = Benchmarks.resultToBenchmark(results, "benchmarks");
+				    b.setUsesDependencies(results.getInt("dependency_count")>0);
+				    jp.setBench(b);
 				    
 				    if (j.isUsingDependencies()) {
 					    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId(),con));
@@ -3534,11 +3535,7 @@ public class Jobs {
 	public static int countIncompletePairs(int jobId) {
 		return Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal()) +
 		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_ENQUEUED.getVal()) +
-		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_PREPARING.getVal()) +
-		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_FINISHING.getVal()) +
-		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_RUNNING.getVal()) +
-		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_WAIT_RESULTS.getVal());
-
+		Jobs.countPairsByStatus(jobId, Status.StatusCode.STATUS_RUNNING.getVal());
 	}
 	
 	/**

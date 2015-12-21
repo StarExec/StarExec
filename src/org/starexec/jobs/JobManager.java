@@ -9,9 +9,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -308,7 +310,6 @@ public abstract class JobManager {
 
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
-							JobPairs.setQueueSubTime(pair.getId());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
 							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
@@ -338,6 +339,18 @@ public abstract class JobManager {
 
     protected static String base64encode(String s) {
     	return new String(Base64.encodeBase64(s.getBytes()));
+    }
+    
+    public static String addParametersToJobscript(String jobScript, Map<String, String> replacements) {
+    	String[] current = new String[replacements.size()];
+    	String[] replace = new String[replacements.size()];
+    	int index = 0;
+    	for (String s : replacements.keySet()) {
+    		current[index] = s;
+    		replace[index] = replacements.get(s);
+    		index+=1;
+    	}
+    	return StringUtils.replaceEach(jobScript, current, replace);
     }
 
 	/**
@@ -376,7 +389,7 @@ public abstract class JobManager {
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
-			StageAttributes attrs=  job.getStageAttributesByStageNumber(stageNumber);
+			StageAttributes attrs= job.getStageAttributesByStageNumber(stageNumber);
 			stageCpuTimeouts.add(attrs.getCpuTimeout());
 			benchSuffixes.add(attrs.getBenchSuffix());
 			stageWallclockTimeouts.add(attrs.getWallclockTimeout());
@@ -416,17 +429,7 @@ public abstract class JobManager {
 					primaryPreprocessorPath=p.getFilePath();
 				}
 			}
-			
 		}
-		
-		
-		
-		// General pair configuration
-		jobScript = jobScript.replace("$$BENCH$$", base64encode(pair.getBench().getPath()));
-		jobScript = jobScript.replace("$$PAIRID$$", "" + pair.getId());	
-		jobScript = jobScript.replace("$$SPACE_PATH$$", pair.getPath());
-		
-		jobScript = jobScript.replace("$$PRIMARY_PREPROCESSOR_PATH$$",primaryPreprocessorPath);
 		File outputFile=new File(JobPairs.getFilePath(pair));
 		
 		//if there is exactly 1 stage, we use the old output format
@@ -434,43 +437,49 @@ public abstract class JobManager {
 			outputFile=outputFile.getParentFile();
 		}
 		
-		
-		jobScript = jobScript.replace("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
+		// maps from strings in the jobscript to the strings that should be filled in
+		HashMap<String, String> replacements = new HashMap<String, String>();
 		//Dependencies
-		if (Benchmarks.getBenchDependencies(pair.getBench().getId()).size() > 0)
+		if (pair.getBench().getUsesDependencies())
 		{
-			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "1");
-			writeDependencyFile(pair.getId(), pair.getBench().getId());
+			replacements.put("$$HAS_DEPENDS$$", "1");
+			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pair.getBench().getId()));	
 		}
 		else{
-			jobScript = jobScript.replace("$$HAS_DEPENDS$$", "0");
+			replacements.put("$$HAS_DEPENDS$$", "0");
 		}
-		// global Resource limits
-		jobScript = jobScript.replace("$$MAX_RUNTIME$$", "" + Util.clamp(1, R.MAX_PAIR_RUNTIME, job.getWallclockTimeout())); 
-		jobScript = jobScript.replace("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));		
-		log.debug("the current job pair has a memory = "+job.getMaxMemory());
-		jobScript = jobScript.replace("$$MAX_MEM$$",""+Util.bytesToMegabytes(job.getMaxMemory()));
+		replacements.put("$$BENCH$$", base64encode(pair.getBench().getPath()));
+		replacements.put("$$PAIRID$$", ""+pair.getId());
+		replacements.put("$$SPACE_PATH$$", pair.getPath());
+		replacements.put("$$PRIMARY_PREPROCESSOR_PATH$$", primaryPreprocessorPath);
+		replacements.put("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
+		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, R.MAX_PAIR_RUNTIME, job.getWallclockTimeout()));
+		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));
+		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
+		
+		
 		
 		// all arrays from above. Note that we are base64 encoding some for safety
-		jobScript=jobScript.replace("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
-		jobScript=jobScript.replace("$$CLOCK_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CLOCK_TIMEOUTS",stageWallclockTimeouts));
-		jobScript=jobScript.replace("$$MEM_LIMIT_ARRAY$$", numsToBashArray("STAGE_MEM_LIMITS",stageMemLimits));
-		jobScript=jobScript.replace("$$STAGE_NUMBER_ARRAY$$", numsToBashArray("STAGE_NUMBERS",stageNumbers));
-		jobScript=jobScript.replace("$$SOLVER_ID_ARRAY$$",numsToBashArray("SOLVER_IDS",solverIds));
-		jobScript=jobScript.replace("$$SOLVER_TIMESTAMP_ARRAY$$",toBashArray("SOLVER_TIMESTAMPS",solverTimestamps,false));
-		jobScript=jobScript.replace("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES",configNames,false));
-		jobScript=jobScript.replace("$$PRE_PROCESSOR_PATH_ARRAY$$",toBashArray("PRE_PROCESSOR_PATHS",preProcessorPaths,false));
-		jobScript=jobScript.replace("$$POST_PROCESSOR_PATH_ARRAY$$",toBashArray("POST_PROCESSOR_PATHS",postProcessorPaths,false));
-		jobScript=jobScript.replace("$$SPACE_ID_ARRAY$$",numsToBashArray("SPACE_IDS",spaceIds));
-		jobScript=jobScript.replace("$$SOLVER_NAME_ARRAY$$",toBashArray("SOLVER_NAMES",solverNames,true));
-		jobScript=jobScript.replace("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
-		jobScript=jobScript.replace("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
-		jobScript=jobScript.replace("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
-		jobScript=jobScript.replace("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
+		replacements.put("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
+		replacements.put("$$CLOCK_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CLOCK_TIMEOUTS",stageWallclockTimeouts));
+		replacements.put("$$MEM_LIMIT_ARRAY$$", numsToBashArray("STAGE_MEM_LIMITS",stageMemLimits));
+		replacements.put("$$STAGE_NUMBER_ARRAY$$", numsToBashArray("STAGE_NUMBERS",stageNumbers));
+		replacements.put("$$SOLVER_ID_ARRAY$$",numsToBashArray("SOLVER_IDS",solverIds));
+		replacements.put("$$SOLVER_TIMESTAMP_ARRAY$$",toBashArray("SOLVER_TIMESTAMPS",solverTimestamps,false));
+		replacements.put("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES",configNames,false));
+		replacements.put("$$PRE_PROCESSOR_PATH_ARRAY$$",toBashArray("PRE_PROCESSOR_PATHS",preProcessorPaths,false));
+		replacements.put("$$POST_PROCESSOR_PATH_ARRAY$$",toBashArray("POST_PROCESSOR_PATHS",postProcessorPaths,false));
+		replacements.put("$$SPACE_ID_ARRAY$$",numsToBashArray("SPACE_IDS",spaceIds));
+		replacements.put("$$SOLVER_NAME_ARRAY$$",toBashArray("SOLVER_NAMES",solverNames,true));
+		replacements.put("$$SOLVER_PATH_ARRAY$$",toBashArray("SOLVER_PATHS",solverPaths,true));
+		replacements.put("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
+		replacements.put("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
+		replacements.put("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
 		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
-		jobScript = jobScript.replace("$$SCRIPT_PATH$$",scriptPath);
-		jobScript = jobScript.replace("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
+		replacements.put("$$SCRIPT_PATH$$",scriptPath);
+		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
 		File f = new File(scriptPath);
+		jobScript = addParametersToJobscript(jobScript, replacements);
 
 		f.delete();		
 		f.getParentFile().mkdirs();
@@ -480,7 +489,6 @@ public abstract class JobManager {
 			log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
 			return "";
 		}
-		//log.debug("jobScript = " + jobScript);
 		
 		FileWriter out = new FileWriter(f);
 		out.write(jobScript);
@@ -581,12 +589,11 @@ public abstract class JobManager {
 	 * Writes a file containing benchmark dependencies ( note: these are NOT related to any of the pipeline dependencies)
 	 * to the jobin directory for the given pair and benchmark.
 	 * @param pairId
-	 * @param benchId
+	 * @param dependencies
 	 * @return
 	 * @throws Exception
 	 */
-	public static Boolean writeDependencyFile(Integer pairId, Integer benchId) throws Exception{		
-		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(benchId);
+	public static Boolean writeDependencyFile(Integer pairId, List<BenchmarkDependency> dependencies) throws Exception{		
 		StringBuilder sb = new StringBuilder();
 		String separator = ",,,";
 		for (BenchmarkDependency bd:dependencies)

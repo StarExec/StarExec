@@ -1098,29 +1098,6 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Sets the queuesub_time field of a job pair to the current time, as
-	 * obtained by calling NOW() in MySQL.
-	 * @param pairId The ID of the pair to set the queue sub time of.
-	 */
-	public static boolean setQueueSubTime(int pairId) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL SetQueueSubTime(?)}");
-			procedure.setInt(1, pairId);
-			procedure.executeUpdate();
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
-	
-	/**
 	 * Sets the status of a given job pair stage to the given status
 	 * @param pairId
 	 * @param statusCode
@@ -1265,7 +1242,9 @@ public class JobPairs {
 		return false;
 	}
 	
-	/**
+	/** Updates the status_code for a pair. If the pair is being set to enqueued,
+	 * also sets the pair's queue_sub_time. If the pair is being set to
+	 * a completed status, the pair's completion entry is updated.
 	 * @param pairId the id of the pair to update the status of
 	 * @param statusCode the status code to set for the pair
 	 * @return True if the operation was a success, false otherwise
@@ -1543,9 +1522,7 @@ public class JobPairs {
 	public static List<JobPair> getPairsInBackend() {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_ENQUEUED.getVal()));
-		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_PREPARING.getVal()));
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_RUNNING.getVal()));
-		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_FINISHING.getVal()));
 		return pairs;
 
 	}

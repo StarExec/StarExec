@@ -328,7 +328,8 @@ CREATE TABLE job_pairs (
 	KEY (job_space_id, bench_name),
 	KEY (node_id, status_code),
 	KEY (status_code), -- TODO: Do we actually want this change?
-	KEY (job_id, status_code), -- we very often get all pairs with a particular status code for a job
+	-- Name is what exists on Starexec: easier to use the name here than rename there.
+	KEY job_id_2 (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION -- not used as an index
 );
@@ -353,6 +354,7 @@ CREATE TABLE jobpair_stage_data (
 	KEY (job_space_id, solver_name),
 	-- KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
+	KEY (status_code),
 	PRIMARY KEY (jobpair_id,stage_number),
 	CONSTRAINT jobpair_stage_data_jobpair_id FOREIGN KEY (jobpair_id) REFERENCES job_pairs(id) ON DELETE CASCADE,
 	CONSTRAINT jobpair_stage_data_stage_id FOREIGN KEY (stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL

@@ -151,9 +151,6 @@
 			<fieldset id="fieldAttrs">
 				<legend>stage attributes</legend>	
 				<c:choose>
-					<c:when test="${stage.status.code == 'STATUS_WAIT_RESULTS'}">
-						<p>waiting for results. try again in 2 minutes.</p>
-					</c:when>
 					<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
 						<p>none</p>
 					</c:when>

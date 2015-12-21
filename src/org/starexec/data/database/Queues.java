@@ -2,7 +2,6 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -603,11 +602,12 @@ public class Queues {
      */
 	public static List<Job> getPendingJobs(int queueId) {
 		Connection con = null;		
-		PreparedStatement procedure = null;
+		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			procedure = con.prepareStatement("SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout, jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies FROM jobs WHERE queue_id = "+queueId+" AND EXISTS (select 1 from job_pairs WHERE status_code=1 and job_id=jobs.id);");
+			 procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
+			procedure.setInt(1, queueId);					
 			 results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
 
@@ -655,7 +655,6 @@ public class Queues {
 			if (userId == 0) {
 				//only gets the queues that have status "ACTIVE"
 			    procedure = con.prepareCall("{CALL GetAllQueues}");
-			    
 			} else if (userId == -2) {
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
