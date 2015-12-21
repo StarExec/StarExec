@@ -341,7 +341,7 @@ public abstract class JobManager {
     	return new String(Base64.encodeBase64(s.getBytes()));
     }
     
-    private static String addParametersToJobscript(String jobScript, Map<String, String> replacements) {
+    public static String addParametersToJobscript(String jobScript, Map<String, String> replacements) {
     	String[] current = new String[replacements.size()];
     	String[] replace = new String[replacements.size()];
     	int index = 0;

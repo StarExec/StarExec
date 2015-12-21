@@ -38,7 +38,7 @@ CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
 		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies
 		FROM jobs WHERE queue_id = _queueId 
-		AND EXISTS (select 1 from job_pairs WHERE status_code=1 and job_id=jobs.id);
+		AND EXISTS (select 1 FORCE INDEX (job_id_2) from job_pairs WHERE status_code=1 and job_id=jobs.id);
 	END //
 		
 -- Retrieves the number of enqueued job pairs for the given queue
