@@ -153,10 +153,6 @@ public class LoadBalanceMonitor {
 	 * @param defaultLoad
 	 */
 	private void addUser(int userId, long defaultLoad, long basis) {
-		Long minimum = getMin();
-		if (minimum == null) {
-			minimum = defaultLoad;
-		}
 		if (loads.containsKey(userId)) {
 			UserLoadData d = loads.get(userId);
 			if (!d.active()) {
@@ -188,16 +184,10 @@ public class LoadBalanceMonitor {
 	 * @param userIds
 	 */
 	public void setUsers(HashMap<Integer, Integer> userIdsToDefaults) {
-		List<Integer> usersToRemove = new ArrayList<Integer>();
 		for (Integer i : loads.keySet()) {
 			if (!userIdsToDefaults.containsKey(i)) {
-				// the user cannot be removed directly on this line because
-				// it would cause a concurrent modification exception.
-				usersToRemove.add(i);
+				removeUser(i);
 			}
-		}
-		for (Integer i : usersToRemove) {
-			removeUser(i);
 		}
 		// all new users are set to their default load plus the minimum
 		// at the time this was called. The min is added to prevent
@@ -236,6 +226,7 @@ public class LoadBalanceMonitor {
 		for (UserLoadData d : loads.values()) {
 			if (newBasis < d.minBasis) {
 				d.load = d.load - (d.minBasis - newBasis);
+				d.load = Math.max(0, d.load);
 				d.minBasis = newBasis;
 			}
 		}
