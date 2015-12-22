@@ -278,9 +278,13 @@ public abstract class JobManager {
 					int i = 0;
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
-						log.debug("user "+s.job.getUserId()+" has a load of "+monitor.getLoad(s.job.getUserId()));
 						if (monitor.skipUser(s.job.getUserId())) {
 							log.info("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							Long min = monitor.getMin();
+							if (min==null) {
+								min = -1l;
+							}
+							log.info("user had already submitted "+i+" pairs in this iteration. Load = "+monitor.getLoad(s.job.getUserId())+ " Min = " + min);
 							break;
 						}
 
