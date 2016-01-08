@@ -761,10 +761,25 @@ public class Download extends HttpServlet {
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, "loadingGraph, starlogo");
-			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, "loader");
+			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, "loadingGraph, starlogo, external");
+			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, "ajaxloader, loader");
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, "favicon");
 			putHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
+
+			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT+"css/jqueryui/images");
+			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
+			FileUtils.copyDirectoryToDirectory(serverCssJqueryUiImagesDirectory, sandboxCssJqueryUiDirectory);
+
+			File serverCssImagesDirectory = new File(R.STAREXEC_ROOT+"css/images");
+			File sandboxCssDirectory = new File(sandboxDirectory, "css/");
+			FileUtils.copyDirectoryToDirectory(serverCssImagesDirectory, sandboxCssDirectory);
+
+			File serverCssJstreeDirectory = new File(R.STAREXEC_ROOT+"css/jstree");
+			FileUtils.copyDirectoryToDirectory(serverCssJstreeDirectory, sandboxCssDirectory);
+
+			File serverImagesJstreeDirectory = new File(R.STAREXEC_ROOT+"images/jstree");
+			File sandboxImagesDirectory = new File(sandboxDirectory, "images/");
+			FileUtils.copyDirectoryToDirectory(serverImagesJstreeDirectory, sandboxImagesDirectory);
 
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
 

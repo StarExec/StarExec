@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
@@ -1007,7 +1008,49 @@ public class Jobs {
 		
 		return finalStats;
 	}
-	
+
+	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(Job job, int stageNumber) {
+		Map<Integer, List<SolverStats>> outputMap = buildJobSpaceIdToSolverStatsMap(job, stageNumber);
+		for (Integer jobspaceId : outputMap.keySet()) {
+			List<SolverStats> statsList = outputMap.get(jobspaceId);
+			for (SolverStats stats : statsList) {
+				stats.setWallTime(Math.round(stats.getWallTime()*100)/100.0);
+				stats.setCpuTime(Math.round(stats.getCpuTime()*100)/100.0);
+			}
+		}
+		return outputMap;
+	}
+
+	/**
+	 * Builds a mapping of job space ID's to the stats for the solvers in that job space.
+	 * @param jobId The id of the job that the jobspaces are in.
+	 * @param jobspaces the jobspaces to get solver stats for.
+	 * @param jobSpaceIdToPairMap a mapping of jobspace ids to the job pairs in that jobspace. Can be gotten with buildJobSpaceIdToJobPairMapForJob.
+	 * @see org.starexec.data.database.JobPairs#buildJobSpaceIdToJobPairMapForJob
+	 * @param stageNumber The stage to filter solver stats by
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMap( Job job, int stageNumber ) {
+		int jobId = job.getId();
+		int primaryJobSpaceId = job.getPrimarySpace();
+		Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = new HashMap<>();
+		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(primaryJobSpaceId, true);
+		jobSpaces.add(Spaces.getJobSpace(primaryJobSpaceId));
+		for (JobSpace jobspace : jobSpaces) {
+			int jobspaceId = jobspace.getId();
+			List<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobId, jobspaceId, stageNumber);
+			jobSpaceIdToSolverStatsMap.put(jobspaceId, stats);
+
+			/*
+			int jobspaceId = jobspace.getId();
+			List<JobPair> jobPairsInJobSpace = jobSpaceIdToPairMap.get(jobspaceId);
+			List<SolverStats> solverStatsForJobPairsInJobSpace = processPairsToSolverStats(jobPairsInJobSpace);
+			jobSpaceIdToSolverStatsMap.put(jobspaceId, solverStatsForJobPairsInJobSpace);
+			*/
+		}
+		return jobSpaceIdToSolverStatsMap;
+	}
+
 	/**
 	 * Gets a list of jobs belonging to a space (without its job pairs but with job pair statistics)
 	 * @param spaceId The id of the space to get jobs for

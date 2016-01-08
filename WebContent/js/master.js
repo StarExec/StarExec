@@ -90,7 +90,9 @@ $(document).ready(function(){
 		    return $(this); 				
 		}
 	}); 
-	checkForHelpFile();
+	if (!isLocalJobPage) {
+		checkForHelpFile();
+	}
 });
 
 function checkForHelpFile() {

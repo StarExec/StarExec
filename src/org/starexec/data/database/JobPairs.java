@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -16,7 +17,9 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
@@ -1357,6 +1360,48 @@ public class JobPairs {
 			Common.safeClose(procedure);
 		}
 		
+	}
+
+	public static Map<Integer, List<JobPair>> buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(Job job) {
+		Map<Integer, List<JobPair>> outputMap = buildJobSpaceIdToJobPairMapForJob(job);
+		roundWallclockAndCpuTimesInJobSpaceIdToJobPairMap(outputMap);
+		return outputMap;
+	}
+
+	private static void roundWallclockAndCpuTimesInJobSpaceIdToJobPairMap(Map<Integer, List<JobPair>> jobSpaceIdToJobPairMap) {
+		for (Integer jobSpaceId : jobSpaceIdToJobPairMap.keySet()) {
+			List<JobPair> jobPairs = jobSpaceIdToJobPairMap.get(jobSpaceId);
+			for (JobPair jp : jobPairs) {
+				jp.setPrimaryWallclockTime(Math.round(jp.getPrimaryWallclockTime()*100)/100.0);
+				jp.setPrimaryCpuTime(Math.round(jp.getPrimaryCpuTime()*100)/100.0);
+			}
+		}
+	}
+
+
+	/**
+	 * Builds a mapping of job space IDs to JobPairs in that JobSpace given the JobSpaces and JobPairs
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, List<JobPair>> buildJobSpaceIdToJobPairMapForJob(Job job) {
+		int jobId = job.getId();
+		int primaryJobSpaceId = job.getPrimarySpace();
+		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(primaryJobSpaceId, true);
+		jobSpaces.add(Spaces.getJobSpace(job.getPrimarySpace()));
+		List<JobPair> allJobPairsInJob = Jobs.getDetailed(jobId, 0).getJobPairs();
+		Map<Integer, List<JobPair>> jobSpaceIdToJobPairMap = new HashMap<>();
+		for (JobSpace js : jobSpaces) {
+			List<JobPair> jobPairsAssociatedWithJs = new ArrayList<>();
+			for (JobPair jp : allJobPairsInJob) {
+				if (jp.getJobSpaceId() == js.getId()) {
+					jobPairsAssociatedWithJs.add(jp);
+				}
+			}
+			if (!jobPairsAssociatedWithJs.isEmpty()) {
+				jobSpaceIdToJobPairMap.put(js.getId(), jobPairsAssociatedWithJs);
+			}
+		}
+		return jobSpaceIdToJobPairMap;
 	}
 	
 	/**

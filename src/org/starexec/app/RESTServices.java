@@ -809,6 +809,7 @@ public class RESTServices {
 	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
 	@Produces("application/json")	
 	public String getSpaceOverviewGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+		log.debug("Got request to get space overview graph.");
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from

@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
+//import java.util.StringJoiner;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,6 +73,7 @@ public class Util {
     	}
     	
     }
+
 	
     /**
      * Gives back a String that is the contents of the first n lines of the file where n always less
@@ -946,15 +947,25 @@ public class Util {
 	 * @author Albert Giegerich
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
-		// Initially contains the ? necessary for the query string.
-		StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
-		
-		for (String parameter : queryParameters.keySet()) {
-			String value = queryParameters.get(parameter);
-			queryStringJoiner.add(parameter+"="+value);
+		if (queryParameters.keySet().size() == 0) {
+			return url; 
 		}
 
-		return getWebPage(url+queryStringJoiner.toString(), cookiesToSend);
+		// Initially contains the ? necessary for the query string.
+		//StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
+		StringBuilder queryStringBuilder = new StringBuilder();
+
+		
+		queryStringBuilder.append("?");
+		for (String parameter : queryParameters.keySet()) {
+			String value = queryParameters.get(parameter);
+			queryStringBuilder.append(parameter+"="+value+"&");
+			//queryStringJoiner.add(parameter+"="+value);
+		}
+		// delete the last & character
+		queryStringBuilder.deleteCharAt(queryStringBuilder.length() - 1);
+
+		return getWebPage(url+queryStringBuilder.toString(), cookiesToSend);
 	}
 
 	/**
@@ -985,11 +996,15 @@ public class Util {
 	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send cookies.
 	 */
 	private static String buildCookieString(List<Cookie> cookies) {
-		StringJoiner cookieStringJoiner = new StringJoiner("; ");
+		//StringJoiner cookieStringJoiner = new StringJoiner("; ");
+		StringBuilder cookieStringBuilder = new StringBuilder();
 		for (Cookie cookie : cookies) {
-			cookieStringJoiner.add(cookie.getName()+"="+cookie.getValue());
+			cookieStringBuilder.append(cookie.getName()+"="+cookie.getValue() + ";");
 		}
-		return cookieStringJoiner.toString();
+		if (cookies.size() > 0) {
+			cookieStringBuilder.deleteCharAt(cookieStringBuilder.length() - 1);
+		}
+		return cookieStringBuilder.toString();
 	}
 
     /**

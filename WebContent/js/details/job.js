@@ -6,56 +6,93 @@ var lastValidSelectOption;
 var panelArray=null;
 var useWallclock=true;
 var syncResults=false;
-var isLocalJobPage = false;
-
 var DETAILS_JOB = {}; 
+
 $(document).ready(function(){
-	jobId=$("#jobId").attr("value");
-	isLocalJobPage = $("#isLocalJobPage").attr("value") === "true";
-	setupGlobalPageVariables();
+	log("DETAILS_JOB.starexecUrl: " + DETAILS_JOB.starexecUrl);
+	log("isLocalJobPage: " + isLocalJobPage);
+	log("starexecRoot: " + starexecRoot);
+	initializeGlobalPageVariables();
+	//sets up buttons and so on
+	initUI();
 	
-		//sets up buttons and so on
-		initUI();
-	
-		//sets up the job space tree on the left side of the page
-		initSpaceExplorer();
+
+	initSpaceExplorer();
+
+	initDataTables();
 
 	if (!isLocalJobPage) {
-		initDataTables();
-	
 		//update the tables every 30 seconds
-		if (!isLocalJobPage) {
-			setInterval(function() {
-				pairTable.fnDraw(false);
-				refreshPanels();
-			},30000);
-		}
-	
+		setInterval(function() {
+			pairTable.fnDraw(false);
+			refreshPanels();
+		},30000);
+
 		//puts data into the data tables
 		reloadTables($("#spaceId").attr("value"));
 	}
 });
 
-function setupGlobalPageVariables() {
+// Initializes the fields of the global DETAILS_JOB object.
+function initializeGlobalPageVariables() {
 	'use strict';
-	var isLocalJobPage = $("#isLocalJobPage").attr("value") === "true";
-	DETAILS_JOB.summaryTableInitializer = getSummaryTableInitializer(isLocalJobPage);
-	DETAILS_JOB.pairTableInitializer = getPairTableInitializer(isLocalJobPage);
-	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData(isLocalJobPage);
+	jobId=$("#jobId").attr("value");
+	DETAILS_JOB.starexecUrl = $("#starexecUrl").attr("value");
+	DETAILS_JOB.solverTableInitializer = getSolverTableInitializer();
+	DETAILS_JOB.pairTableInitializer = getPairTableInitializer();
+	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();
+	DETAILS_JOB.rootJobSpaceId = $("#spaceId").attr("value");
+	log(DETAILS_JOB.spaceExplorerJsonData);
 }
 
-function getSpaceExplorerJsonData(pageIsLocal) {
+function getPanelTableInitializer(jobId, spaceId) {
+	"use strict";
+	var panelTableInitializer = null;
+
+	if (isLocalJobPage && useWallclock) {
+		// get the JSON directly from the page if this is a local page.
+		panelTableInitializer = $.parseJSON($("#jobSpaceWallclockTimeSolverStats"+spaceId).attr("value"));
+	} else if (isLocalJobPage && !useWallclock) {
+		// get the JSON directly from the page if this is a local page.
+		panelTableInitializer = $.parseJSON($("#jobSpaceCpuTimeSolverStats"+spaceId).attr("value"));
+	} else {
+		// otherwise get it from the server
+		panelTableInitializer = {
+			"sDom"			: 'rt<"clear">',
+			"iDisplayStart"	: 0,
+			"iDisplayLength": 1000, // make sure we show every entry
+			"sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/",
+			"sServerMethod" : "POST",
+			"fnServerData"  : fnShortStatsPaginationHandler
+		};
+	}
+
+	return panelTableInitializer;
+}
+
+
+// Gets the JSON representation of the space explorer from the hidden <span> containing it.
+function getSpaceExplorerJsonData() {
 	'use strict';
 	var spaceExplorerJsonData = {};
-	if (pageIsLocal) {
-		spaceExplorerJsonData = JSON.parse($('#jobSpaceTreeJson').attr('value'));
+	if (isLocalJobPage) {
+		var jobSpaceTreeJsonText = $('#jobSpaceTreeJson').attr('value');
+		try {
+			spaceExplorerJsonData = {
+				"data": JSON.parse(jobSpaceTreeJsonText)
+			};
+		} catch (syntaxError) {
+			log("Caught syntax error when trying to call JSON.parse on: "+jobSpaceTreeJsonText);
+			return {};
+		}
 	} else {
 		spaceExplorerJsonData = {
 			"ajax" : { 
 				"url" : starexecRoot+"services/space/" +jobId+ "/jobspaces/true",	// Where we will be getting json data from 
 				"data" : function (n) {
-					
-					return { id : n.attr ? n.attr("id") : 0}; // What the default space id should be
+					return {
+						id : (n.attr ? n.attr("id") : 0)
+					}; // What the default space id should be
 				} 
 			} 
 		};
@@ -81,15 +118,14 @@ function refreshPanels(){
 function refreshStats(id){
 	//summaryTable.fnProcessingIndicator(true);
 	summaryTable.api().ajax.reload(function() {
-        updateGraphs();
+		updateGraphs();
 	},true);
-	
 }
 
 function createDownloadRequest(item,type,returnIds,getCompleted) {
 	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
-	token=Math.floor(Math.random()*100000000);
-	href = starexecRoot+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
+	var token=Math.floor(Math.random()*100000000);
+	var href = DETAILS_JOB.starexecUrl+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
 	if (typeof returnIds!= 'undefined' ) {
 		href=href+"&returnids="+returnIds;
 	}
@@ -109,6 +145,10 @@ function initSpaceExplorer() {
 	var id;
 
 	// Initialize the jstree plugin for the explorer list
+	/*$("#exploreList").bind("loaded.jstree", function() {
+		log("exploreList tree has finished loading.");
+		$("#exploreList").jstree("select_node", ".rootNode");
+	})*/
 	$("#exploreList").jstree({  
 		"json_data" : DETAILS_JOB.spaceExplorerJsonData, 
 		"themes" : { 
@@ -132,20 +172,24 @@ function initSpaceExplorer() {
 		"ui" : {			
 			"select_limit" : 1,			
 			"selected_parent_close" : "select_parent",			
-			"initially_select" : [ "1" ]			
+			"initially_select" : [ "#"+DETAILS_JOB.rootJobSpaceId ]			
 		},
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
-		// When a node is clicked, get its ID and display the info in the details pane
-		id = data.rslt.obj.attr("id");
-		name = data.rslt.obj.attr("name");
-		maxStages = data.rslt.obj.attr("maxStages");
-		setMaxStagesDropdown(parseInt(maxStages));
-		$("#spaceName").text($('.jstree-clicked').text());
-		$("#displayJobSpaceID").text("job space id  = "+id);
-		reloadTables(id);
-	}).on( "click", "a", function (event, data) { event.preventDefault();  });// This just disable's links in the node title	
+			// When a node is clicked, get its ID and display the info in the details pane
+			id = data.rslt.obj.attr("id");
+			name = data.rslt.obj.attr("name");
+			maxStages = data.rslt.obj.attr("maxStages");
+			setMaxStagesDropdown(parseInt(maxStages));
+			$("#spaceName").text($('.jstree-clicked').text());
+			$("#displayJobSpaceID").text("job space id  = "+id);
+			reloadTables(id);
+	}).on( "click", "a", function (event, data) { 
+		event.preventDefault();  // This just disable's links in the node title	
+	});
+	log("Initialized exploreList tree.");
+
 }
 
 function clearPanels() {
@@ -160,32 +204,38 @@ function clearPanels() {
 	panelArray=null;
 }
 
-
 function reloadTables(id) {
 	//we only need to update if we've actually selected a new space 
 	if (curSpaceId!=id) {
 		curSpaceId=id;
-		summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 		clearPanels();
-		pairTable.fnClearTable();
+		if (!isLocalJobPage) {
+			summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
+			pairTable.fnClearTable();
 		
-		//clear out the graphs
-		$("#solverChoice1").empty();
-		$("#solverChoice2").empty();
-		$("#spaceOverviewSelections").empty();
-		$("#spaceOverview").attr("src",starexecRoot+"/images/loadingGraph.png");
-		$("#solverComparison").attr("src",starexecRoot+"/images/loadingGraph.png");
-		
-		//tell the tables to display a "loading" indicator
-		summaryTable.fnProcessingIndicator(true);
-		
-		pairTable.fnProcessingIndicator(true);
-		refreshStats(id);
-		
+			//clear out the graphs
+			$("#solverChoice1").empty();
+			$("#solverChoice2").empty();
+			$("#spaceOverviewSelections").empty();
+			$("#spaceOverview").attr("src",starexecRoot+"/images/loadingGraph.png");
+			$("#solverComparison").attr("src",starexecRoot+"/images/loadingGraph.png");
+			
+			//tell the tables to display a "loading" indicator
+			summaryTable.fnProcessingIndicator(true);
+			
+			pairTable.fnProcessingIndicator(true);
+			refreshStats(id);
+			
+		} else {
+			$('[id$=pairTbl_wrapper]').hide();
+			$('#pairTblField').show();
+			$('#'+id+'pairTbl_wrapper').show();
+			$('[id$=solveTbl_wrapper]').hide();
+			$('#'+id+'solveTbl_wrapper').show();
+			log('showing id: '+id);
+		}
 		initializePanels();
-
 	}
-
 }
 
 function updateGraphs() {
@@ -228,11 +278,21 @@ function updateGraphs() {
 	}	
 }
 
-/**
- * Initializes the user-interface
- */
+function makeJobNameUneditable() {
+	// Gets rid of the '(click to edit)' part of the text.
+	$('#jobNameTitle').text('name');
+	$('#editJobNameWrapper').hide();
+}
+
+function makeJobDescriptionUneditable() {
+	$('#jobDescriptionTitle').text('description');
+	$('#editJobDescriptionWrapper').hide();
+}
+
+//
+//  Initializes the user-interface
+// 
 function initUI(){
-	
 	$('#dialog-confirm-delete').hide();
 	$('#dialog-confirm-pause').hide();
 	$('#dialog-confirm-resume').hide();
@@ -244,11 +304,22 @@ function initUI(){
 	$("#dialog-changeQueue").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
+	$(".cpuTime").hide();
 
-	setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
-	setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper', 'description');
+	if (!isLocalJobPage) {
+		setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
+		setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper', 
+				'description');
+	} else {
+		makeJobNameUneditable();
+		makeJobDescriptionUneditable();
+	}
 
-	
+	if (isLocalJobPage) {
+		$('#actionField').hide();
+		$('#matrixViewButton').hide();
+		$('#downloadJobPageButton').hide();
+	}
 
 	//for aesthetics, make the heights of the two option fields identical
 	$("#solverComparisonOptionField").height($("#spaceOverviewOptionField").height());
@@ -268,9 +339,10 @@ function initUI(){
 	$("#compareSolvers").hide();
 	
 	$("#compareSolvers").click(function(){
-		c1=$(".first_selected").find(".configLink").attr("id");
-		c2=$(".second_selected").find(".configLink").attr("id");
-		window.open(starexecRoot+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
+		'use strict';
+		var c1=$(".first_selected").find(".configLink").attr("id");
+		var c2=$(".second_selected").find(".configLink").attr("id");
+		window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
 	});
 
 	
@@ -281,18 +353,41 @@ function initUI(){
 		icons: {
 			primary: "ui-icon-arrowreturnthick-1-e"
 		}
-    });
-	
+	});
+		
 	$("#jobXMLDownload").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
 		}
-    });
+	});
 	
 	$('#clearCache').button( {
 		icons: {
 			secondary: "ui-icon-arrowrefresh-1-e"
 		}
+	});
+	$("#clearCache").click(function(){
+			
+			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
+			$("#dialog-warning").dialog({
+				modal: true,
+				width: 380,
+				height: 165,
+				buttons: {
+					'clear cache': function() {
+						$(this).dialog("close");
+							$.post(
+									starexecRoot+"services/cache/clear/stats/"+jobId+"/",
+									function(returnCode) {
+										s=parseReturnCode(returnCode);	
+							});
+															
+					},
+					"cancel": function() {
+						$(this).dialog("close");
+					}
+				}
+			});
 	});
 	
 	$('#recompileSpaces').button( {
@@ -300,12 +395,14 @@ function initUI(){
 			secondary: "ui-icon-arrowrefresh-1-e"
 		}
 	});
-	
-	$("#postProcess").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-n"
-		}
+	$("#recompileSpaces").click(function() {
+		$.get(
+				starexecRoot+"services/recompile/"+jobId,
+				function(returnCode) {
+					s=parseReturnCode(returnCode);	
+		});
 	});
+	
 	
 	$("#popoutPanels").button({
 		icons: {
@@ -340,21 +437,27 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
 	});
-	
-	$("#syncResults").button({
-		icons: {
-			primary: "ui-icon-gear"
-	}
-	});
-
-	$("#matrixViewButton").click(function() {
-		popup(starexecRoot+'secure/details/jobMatrixView.jsp?id='+jobId+'&stage=1&jobSpaceId='+curSpaceId);
-	});
 
 	$("#downloadJobPageButton").click(function() {
 		createDownloadRequest("#downloadJobPageButton", "job_page");
 	});
 	
+	$("#syncResults").button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+
+	$("#matrixViewButton").click(function() {
+		var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?id='+jobId+'&stage=1&jobSpaceId='+curSpaceId;
+		if (isLocalJobPage) {
+			window.location.href = url;
+		} else {
+			popup(url);
+		}
+	});
+
+
 	$("#syncResults").click(function() {
 		//just change the sync results boolean and update the button text.
 		syncResults=!syncResults;
@@ -377,37 +480,13 @@ function initUI(){
 			primary: "ui-icon-arrowthick-1-s"
 		}
     });
-	
-	$('#deleteJob').button({
-		icons: {
-			secondary: "ui-icon-minus"
-		}
-	});
-	
-	$('#pauseJob').button({
-		icons: {
-			secondary: "ui-icon-pause"
-		}
-	});
-	
-	
-	$('#resumeJob').button({
-		icons: {
-			secondary: "ui-icon-play"
-		}
-	});
-	
-	$('#changeQueue').button({
-		icons: {
-			secondary: "ui-icon-transferthick-e-w"
-		}
-	});
 
 	
 	$("#popoutPanels").click(function() {
 		// default to primary stage
-		window.open(starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId+"&stage=1");
+		window.open(DETAILS_JOB.starexecUrl+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId+"&stage=1");
 	});
+
 	$("#collapsePanels").click(function() {
 		$(".panelField").each(function() {
 			legend = $(this).children('legend:first');
@@ -417,6 +496,9 @@ function initUI(){
 			}
 		});
 	});
+
+
+
 	$("#openPanels").click(function() {
 		$(".panelField").each(function() {
 			legend = $(this).children('legend:first');
@@ -428,179 +510,39 @@ function initUI(){
 		});
 	});
 
-
-	$(".changeTime").click(function() {
-		useWallclock=!useWallclock;
-		setTimeButtonText();
-		refreshPanels();
-		refreshStats(curSpaceId);
-		pairTable.fnDraw(false);
-	});
-	$(".stageSelector").change(function() {
-		//set the value of all .stageSelectors to this one to sync them.
-		//this does not trigger the change event, which is good because it would loop forever
-		$(".stageSelector").val($(this).val());
-		pairTable.fnDraw(false);
-		refreshPanels();
-		refreshStats(curSpaceId);
-		
-	});
-	
-	$("#recompileSpaces").click(function() {
-		$.get(
-				starexecRoot+"services/recompile/"+jobId,
-				function(returnCode) {
-					s=parseReturnCode(returnCode);	
-		});
-	});
-	
-	$("#clearCache").click(function(){
-			
-			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');		
-			$("#dialog-warning").dialog({
-				modal: true,
-				width: 380,
-				height: 165,
-				buttons: {
-					'clear cache': function() {
-						$(this).dialog("close");
-							$.post(
-									starexecRoot+"services/cache/clear/stats/"+jobId+"/",
-									function(returnCode) {
-										s=parseReturnCode(returnCode);	
-							});
-															
-					},
-					"cancel": function() {
-						$(this).dialog("close");
-					}
-				}
-			});
-	});
-	
-	
-	$("#deleteJob").click(function(){
-		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
-		
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'OK': function() {
-					log('user confirmed job deletion.');
-					$('#dialog-confirm-delete').dialog('close');
-					
-					$.post(
-							starexecRoot+"services/delete/job",
-							{selectedIds: [getParameterByName("id")]},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location = starexecRoot+'secure/explore/spaces.jsp';
-
-								}
-								
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					log('user canceled job deletion');
-					$(this).dialog("close");
-				}
+		$(".changeTime").click(function() {
+			useWallclock=!useWallclock;
+			if (useWallclock) {
+				$('.cpuTime').hide();
+				$('.wallclockTime').show();
+			} else {
+				$('.cpuTime').show();
+				$('.wallclockTime').hide();
+			}
+			setTimeButtonText();
+			if (!isLocalJobPage) {
+				refreshPanels();
+				refreshStats(curSpaceId);
+				pairTable.fnDraw(false);
 			}
 		});
-	});
-	
-	$("#postProcess").click(function(){
-		$('#dialog-postProcess-txt').text('Please select a post-processor to use for this job.');
-		
-		$('#dialog-postProcess').dialog({
-			modal: true,
-			width: 380,
-			height: 200,
-			buttons: {
-				'OK': function() {
-					$('#dialog-postProcess').dialog('close');
-					showMessage("info","Beginning job pair processing. ",3000);
-					$.post(
-							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
-							function(returnCode) {
-								parseReturnCode(returnCode);
-								
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
+
+	if (!isLocalJobPage) {
+		$(".stageSelector").change(function() {
+			//set the value of all .stageSelectors to this one to sync them.
+			//this does not trigger the change event, which is good because it would loop forever
+			$(".stageSelector").val($(this).val());
+			pairTable.fnDraw(false);
+			refreshPanels();
+			refreshStats(curSpaceId);
 		});
-	});
-	
-	
-	$("#pauseJob").click(function(){
-		
-		$.post(
-				starexecRoot+"services/pause/job/" + getParameterByName("id"),
-				function(returnCode) {
-					s=parseReturnCode(returnCode);
-					if (s) {
-						document.location.reload(true);
+	}
 
-					}
-					
-				},
-				"json"
-		);
-	});
-	
-	$("#resumeJob").click(function(){
-		$.post(
-				starexecRoot+"services/resume/job/" + getParameterByName("id"),
-				function(returnCode) {
-					s=parseReturnCode(returnCode);
-					if (s) {
-						document.location.reload(true);
-
-					}
-					
-				},
-				"json"
-		);
-	});
-	
-	$("#changeQueue").click(function(){
-		$('#dialog-changeQueue-txt').text('Please select a new queue to use for this job.');
-		
-		$('#dialog-changeQueue').dialog({
-			modal: true,
-			width: 380,
-			height: 200,
-			buttons: {
-				'OK': function() {
-					$('#dialog-changeQueue').dialog('close');
-					$.post(
-							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									setTimeout(function(){document.location.reload(true);}, 1000);
-
-								}
-							},
-							"json"
-					);
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
-		});
-	});
-	
+	setupDeleteJobButton();
+	setupPauseJobButton();
+	setupResumeJobButton();
+	setupChangeQueueButton();
+	setupPostProcessButton();
 	
 	$('#jobDownload').unbind("click");
 	$('#jobDownload').click(function(e) {
@@ -637,10 +579,10 @@ function initUI(){
 	});
 		
 	//set teh two default solvers to compare
-	defaultSolver1 = $('#solverChoice1').attr('default');
+	var defaultSolver1 = $('#solverChoice1').attr('default');
 	$('#solverChoice1 option[value=' + defaultSolver1 + ']').prop('selected', true);
 	
-	defaultSolver2 = $('#solverChoice2').attr('default');
+	var defaultSolver2 = $('#solverChoice2').attr('default');
 	$('#solverChoice2 option[value=' + defaultSolver2 + ']').prop('selected', true);
 	
 	//set all fieldsets as expandable
@@ -657,12 +599,16 @@ function initUI(){
 	$("#subspaceSummaryField").expandable(false);
 	
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
-	$("#spaceOverviewUpdate").click(function() {
-	  	updateSpaceOverviewGraph();
-	});
-	$("#solverComparisonUpdate").click(function() {
-		updateSolverComparison(false);
-	});
+
+	if (!isLocalJobPage) {
+		$("#spaceOverviewUpdate").click(function() {
+			updateSpaceOverviewGraph();
+		});
+		$("#solverComparisonUpdate").click(function() {
+			updateSolverComparison(false);
+		});
+	}
+
 	$("#spaceOverviewSelections").change(function() {
 	        if ($(this).val().length > 5) {
 	          showMessage('error',"You may only choose a maximum of 5 solver / configuration pairs to display at one time",5000);
@@ -687,8 +633,171 @@ function initUI(){
 			height: 850
 		});
 	});
+
 	setTimeButtonText();
 }
+
+function setupDeleteJobButton() {
+	'use strict';
+	$('#deleteJob').button({
+		icons: {
+			secondary: "ui-icon-minus"
+		}
+	});
+	$("#deleteJob").click(function(){
+		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
+		
+		$('#dialog-confirm-delete').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					log('user confirmed job deletion.');
+					$('#dialog-confirm-delete').dialog('close');
+					
+					$.post(
+							starexecRoot+"services/delete/job",
+							{selectedIds: [getParameterByName("id")]},
+							function(returnCode) {
+								s=parseReturnCode(returnCode);
+								if (s) {
+									window.location = starexecRoot+'secure/explore/spaces.jsp';
+
+								}
+								
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					log('user canceled job deletion');
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+}
+
+function setupPauseJobButton() {
+	'use strict';
+	$('#pauseJob').button({
+		icons: {
+			secondary: "ui-icon-pause"
+		}
+	});
+	$("#pauseJob").click(function(){
+		
+		$.post(
+				starexecRoot+"services/pause/job/" + getParameterByName("id"),
+				function(returnCode) {
+					s=parseReturnCode(returnCode);
+					if (s) {
+						document.location.reload(true);
+
+					}
+					
+				},
+				"json"
+		);
+	});
+}
+
+function setupResumeJobButton() {
+	'use strict';
+	$('#resumeJob').button({
+		icons: {
+			secondary: "ui-icon-play"
+		}
+	});
+	$("#resumeJob").click(function(){
+		$.post(
+				starexecRoot+"services/resume/job/" + getParameterByName("id"),
+				function(returnCode) {
+					s=parseReturnCode(returnCode);
+					if (s) {
+						document.location.reload(true);
+
+					}
+					
+				},
+				"json"
+		);
+	});
+}
+
+function setupChangeQueueButton() {
+	'use strict';
+	$('#changeQueue').button({
+		icons: {
+			secondary: "ui-icon-transferthick-e-w"
+		}
+	});
+	$("#changeQueue").click(function(){
+		$('#dialog-changeQueue-txt').text('Please select a new queue to use for this job.');
+		
+		$('#dialog-changeQueue').dialog({
+			modal: true,
+			width: 380,
+			height: 200,
+			buttons: {
+				'OK': function() {
+					$('#dialog-changeQueue').dialog('close');
+					$.post(
+							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
+							function(returnCode) {
+								s=parseReturnCode(returnCode);
+								if (s) {
+									setTimeout(function(){document.location.reload(true);}, 1000);
+
+								}
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+}
+
+function setupPostProcessButton() {
+	'use strict';
+	$("#postProcess").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+	});
+	$("#postProcess").click(function(){
+		$('#dialog-postProcess-txt').text('Please select a post-processor to use for this job.');
+		
+		$('#dialog-postProcess').dialog({
+			modal: true,
+			width: 380,
+			height: 200,
+			buttons: {
+				'OK': function() {
+					$('#dialog-postProcess').dialog('close');
+					showMessage("info","Beginning job pair processing. ",3000);
+					$.post(
+							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
+							function(returnCode) {
+								parseReturnCode(returnCode);
+								
+							},
+							"json"
+					);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
+				}
+			}
+		});
+	});
+}
+
 
 function updateSpaceOverviewGraph() {
 	var configs = new Array();
@@ -736,6 +845,7 @@ function updateSpaceOverviewGraph() {
 function updateSolverComparison(big) {
 	config1=$("#solverChoice1 option:selected").attr("value");
 	config2=$("#solverChoice2 option:selected").attr("value");
+	log("solverComparison: Sending POST to starexecRoot"+ starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage());
 	
 	$.post(
 			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage(),
@@ -766,7 +876,6 @@ function updateSolverComparison(big) {
 			"text"
 	);
 }
-
 
 function setupJobNameAndDescriptionEditing(textSelector, inputSelector, buttonSelector, wrapperSelector, nameOrDescription) {
 	// Hide the wrapper when the page loads.
@@ -848,60 +957,77 @@ function getPanelTable(space) {
 
 function initializePanels() {
 	sentSpaceId=curSpaceId;
-	$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+sentSpaceId,function(spaces) {
-		panelArray=new Array();
-		var open=true;
-		if (spaces.length==0) {
-			$("#subspaceSummaryField").hide();
-		}else {
-			$("#subspaceSummaryField").show();
-			
-		}
-		
-		for (i=0;i<spaces.length;i++) {
-			
-			space=$(spaces[i]);
-			spaceName=space.attr("name");
-			spaceId=parseInt(space.attr("id"));
-			
-			child=getPanelTable(space);
-			//if the user has changed spaces since this request was sent, we don't want to continue
-			//generating panels for the old space.
-			if (sentSpaceId!=curSpaceId) {
-				return;
-			}
-			$("#panelActions").after(child); //put the table after the panelActions fieldset
-			
-			panelArray[i]=$("#panel"+spaceId).dataTable({
-		        "sDom"			: 'rt<"clear">',
-		        "iDisplayStart"	: 0,
-		        "iDisplayLength": 1000, // make sure we show every entry
-		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/",
-		        "sServerMethod" : "POST",
-		        "fnServerData" : fnShortStatsPaginationHandler
-		    });
-		}
-		
-		$(".viewSubspace").each(function() {
-			$(this).click(function() {
-				spaceId=$(this).parents("table.panel").attr("spaceId");
-				openSpace(spaceId);	
-			});
-			
-		});
-		$(".panelField").expandable(true);
-	});
-	
+	if (isLocalJobPage) {
+		var panelJson = $.parseJSON($("#subspacePanelJson"+sentSpaceId).attr("value"));
+		handleSpacesData(panelJson);
+	} else {
+		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+sentSpaceId, handleSpacesData);
+	}
 }
 
-/**
- * Initializes the DataTable objects
- */
+function handleSpacesData(spaces) {
+	panelArray=new Array();
+	var open=true;
+	if (spaces.length==0) {
+		$("#subspaceSummaryField").hide();
+	}else {
+		$("#subspaceSummaryField").show();
+		
+	}
+	
+	for (i=0;i<spaces.length;i++) {
+		
+		space=$(spaces[i]);
+		spaceName=space.attr("name");
+		spaceId=parseInt(space.attr("id"));
+		
+		child=getPanelTable(space);
+		//if the user has changed spaces since this request was sent, we don't want to continue
+		//generating panels for the old space.
+		if (sentSpaceId!=curSpaceId) {
+			return;
+		}
+		$("#panelActions").after(child); //put the table after the panelActions fieldset
+
+		var panelTableInitializer = getPanelTableInitializer(jobId, spaceId); 		
+
+		panelArray[i]=$("#panel"+spaceId).dataTable(panelTableInitializer);
+		$(".extLink").hide();
+
+		/*
+		panelArray[i]=$("#panel"+spaceId).dataTable({
+			"sDom"			: 'rt<"clear">',
+			"iDisplayStart"	: 0,
+			"iDisplayLength": 1000, // make sure we show every entry
+			"sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/",
+			"sServerMethod" : "POST",
+			"fnServerData"  : fnShortStatsPaginationHandler
+		});
+		*/
+	}
+	
+	$(".viewSubspace").each(function() {
+		$(this).click(function() {
+			spaceId=$(this).parents("table.panel").attr("spaceId");
+			openSpace(spaceId);	
+		});
+		
+	});
+	$(".panelField").expandable(true);
+}
+
+//
+//  Initializes the DataTable objects
+//
 function initDataTables(){
 	extendDataTableFunctions();
 	//summary table
 	
-	summaryTable=$('#solveTbl').dataTable(DETAILS_JOB.summaryTableInitializer);
+	if (isLocalJobPage) {
+		$('[id$=solveTbl]').dataTable(DETAILS_JOB.solverTableInitializer);
+	} else {
+		summaryTable=$("#solveTbl").dataTable(DETAILS_JOB.solverTableInitializer);
+	}
 	
 	$("#solveTbl").on("mousedown", "tr", function(){
 		if (!$(this).hasClass("row_selected")) {
@@ -941,7 +1067,11 @@ function initDataTables(){
 	});
 	
 	// Job pairs table
-	pairTable=$('#pairTbl').dataTable(DETAILS_JOB.pairTableInitializer);
+	if (isLocalJobPage) {
+		$('[id$=pairTbl]').dataTable(DETAILS_JOB.pairTableInitializer);
+	} else {
+		pairTable=$("#pairTbl").dataTable(DETAILS_JOB.pairTableInitializer);
+	}
 	
 	setSortTable(pairTable);
 	
@@ -963,18 +1093,17 @@ function initDataTables(){
 	//Set up row click to send to pair details page
 	$("#pairTbl tbody").on("click", "tr",  function(){
 		var pairId = $(this).find('input').val();
-		window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+		window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
 	});
 	
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
-	
 }
 
 
-/**
- * Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
- */
+//
+//Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
+//
 function extendDataTableFunctions(){
 	
 	// Allows manually turning on and off of the processing indicator (used for jobs table)
@@ -1002,16 +1131,16 @@ function extendDataTableFunctions(){
 	
 }
 
-function getPairTableInitializer(dataIsLocal) {
+function getPairTableInitializer() {
 	'use strict';
 	var pairTableInitializer = {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
-		"pagingType"    : "full_numbers",
+		"pagingType"    : "full_numbers"
     };
 
-	if (!dataIsLocal) {
+	if (!isLocalJobPage) {
 		pairTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
 		pairTableInitializer.sServerMethod = "POST";
 		pairTableInitializer.bServerSide = true;
@@ -1020,24 +1149,24 @@ function getPairTableInitializer(dataIsLocal) {
 	return pairTableInitializer;
 }
 
-function getSummaryTableInitializer(dataIsLocal) {
+function getSolverTableInitializer() {
 	'use strict';
-	var summaryTableInitializer = {
+	var solverTableInitializer = {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bSort"			: true,
         "bPaginate"		: true,
-		"pagingType"    : "full_numbers",
+		"pagingType"    : "full_numbers"
     };
 
-	if (!dataIsLocal) {
-        summaryTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
-        summaryTableInitializer.sServerMethod = "POST";
-        summaryTableInitializer.fnServerData = fnStatsPaginationHandler;
+	if (!isLocalJobPage) {
+        solverTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
+        solverTableInitializer.sServerMethod = "POST";
+        solverTableInitializer.fnServerData = fnStatsPaginationHandler;
 	}
 
-	return summaryTableInitializer;
+	return solverTableInitializer;
 }
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
@@ -1063,7 +1192,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
-	outSpaceId=curSpaceId;
+	var outSpaceId=curSpaceId;
 	$.post(  
 			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage(),
 			aoData,
@@ -1087,22 +1216,21 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	});
 }
 
-/**
- * Handles querying for pages in a given DataTable object
- * 
- * @param sSource the "sAjaxSource" of the calling table
- * @param aoData the parameters of the DataTable object to send to the server
- * @param fnCallback the function that actually maps the returned page to the DataTable object
- */
+//
+//  Handles querying for pages in a given DataTable object
+//  
+//  @param sSource the "sAjaxSource" of the calling table
+//  @param aoData the parameters of the DataTable object to send to the server
+//  @param fnCallback the function that actually maps the returned page to the DataTable object
+//
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
-	outSpaceId=curSpaceId;
+	var outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
 		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
 		aoData.push( { "name": "sort_dir", "value":isASC() } );
-
 	}
 	$.post(  
 			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),

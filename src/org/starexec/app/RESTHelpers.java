@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -248,8 +249,19 @@ public class RESTHelpers {
 			this.children = new LinkedList<JSTreeItem>();
 		}
 
+		public JSTreeItem(String name, int id, String state, String type, int maxStages, String cLass) {
+			this.data = name;
+			this.attr = new JSTreeAttribute(id, type,maxStages, cLass);
+			this.state = state;
+			this.children = new LinkedList<JSTreeItem>();
+		}
+
 		public List<JSTreeItem> getChildren() {
 			return children;
+		}
+
+		public void addChild(JSTreeItem child) {
+			children.add(child);
 		}
 	}
 
@@ -266,12 +278,15 @@ public class RESTHelpers {
 		private boolean global;
 		private int defaultQueueId;
 		private int maxStages;
+		// called cLass to bypass Java's class keyword. gson will lowercase the L
+		private String cLass;
 
 		
-		private void init(int id, String type,int maxStages) {
+		private void init(int id, String type,int maxStages, String cLass) {
 			this.id = id;
 			this.rel = type;
 			this.maxStages=maxStages;
+			this.cLass = cLass;
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
 				this.global = Queues.isQueueGlobal(id);
 			}
@@ -279,11 +294,15 @@ public class RESTHelpers {
 		}
 		
 		public JSTreeAttribute(int id, String type) {
-			init(id,type,0);
+			init(id,type,0, null);
 		}
 		
 		public JSTreeAttribute(int id, String type,int maxStages) {
-			init(id,type,maxStages);
+			init(id,type,maxStages, null);
+		}
+
+		public JSTreeAttribute(int id, String type,int maxStages, String cLass) {
+			init(id,type,maxStages, cLass);
 		}
 	}
 
@@ -1939,6 +1958,23 @@ public class RESTHelpers {
 		return nextPage;
 	}
 
+	/*
+	public static String getSpaceOverviewGraphPath(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds, int stageNumber) {
+		String chartPath = null;
+		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
+			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber);
+			if (chartPath.equals("big")) {
+				return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
+			}
+		} else {
+			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);
+		}
+
+		log.debug("chartPath = "+chartPath);
+		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
+	}
+	*/
+
 	/**
 
 	 * Generate the HTML for the next DataTable page of entries
@@ -2560,6 +2596,84 @@ public class RESTHelpers {
 		return nextPage;
 	}
 
+	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(int jobId, List<JobSpace> jobSpaces, int stageNumber, boolean wallclock) {
+		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
+		for (JobSpace jobSpace : jobSpaces) {
+			int jobSpaceId = jobSpace.getId();
+			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId, stageNumber);
+			JsonObject solverStatsJson = 
+				RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,true,wallclock);
+			if (solverStatsJson != null) {
+				jobSpaceIdToSolverStatsJsonMap.put(jobSpaceId, gson.toJson(solverStatsJson));
+			}
+		}
+		return jobSpaceIdToSolverStatsJsonMap;
+	}
+
+
+	public static Map<Integer, String> getJobSpaceIdToSubspaceJsonMap(int jobId, List<JobSpace> jobSpaces) {
+		Map<Integer, String> jobSpaceIdToSubspaceJsonMap = new HashMap<>();
+		for (JobSpace jobSpace : jobSpaces) {
+			String subspaceJson = RESTHelpers.getJobSpacesJson(jobSpace.getId(), jobId, false, Users.getAdmins().get(0).getId());
+			jobSpaceIdToSubspaceJsonMap.put(jobSpace.getId(), subspaceJson);
+		}
+		return jobSpaceIdToSubspaceJsonMap;
+	}
+
+	public static String getJobSpacesTreeJson(int parentId, int jobId, int userId) {
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
+			String output = gson.toJson(status);
+			log.debug("User cannot see job, getJobSpacesJson output: "+output);
+			return output;
+		}
+
+		List<JSTreeItem> subspaces = new ArrayList<JSTreeItem>();
+		buildFullJsTree(jobId, subspaces);
+
+		return gson.toJson(subspaces);
+	}
+
+
+	/**
+	 * Builds the entire JS tree for a jobspace rather than just a single level.
+	 * This method is needed for the local job page since we can't send GET requests
+	 * for single levels.
+	 * @author Albert Giegerich
+	 */
+	private static void buildFullJsTree(int jobId, List<JSTreeItem> root) {
+		buildFullJsTreeHelper(0, jobId, root, true);
+	}
+
+	/**
+	 * Helper method for buildFullJsTree
+	 * @see org.starexec.app.RESTHelpers#buildFullJsTree
+	 */
+	private static void buildFullJsTreeHelper(int parentId, int jobId, List<JSTreeItem> root, boolean firstRecursion) {
+		List<JobSpace> subspaces = new ArrayList<>();
+		if (parentId>0) {
+			subspaces = Spaces.getSubSpacesForJob(parentId,false);
+		} else {
+			//if the id given is 0, we want to get the root space
+			Job j=Jobs.get(jobId);
+			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
+			subspaces.add(s);
+		}
+
+		String className = (firstRecursion ? "rootNode" : null);
+
+		for (JobSpace js : subspaces) {
+			JSTreeItem node = null;
+			if (Spaces.getCountInJobSpace(js.getId()) > 0) {
+				node = new JSTreeItem(js.getName(), js.getId(), "closed", "space",js.getMaxStages(), className);
+			} else {
+				node = new JSTreeItem(js.getName(), js.getId(), "leaf","space",js.getMaxStages(), className);
+			}
+			root.add(node);
+			buildFullJsTreeHelper(js.getId(), jobId, node.getChildren(), false);
+		}
+	}
+
 	public static String getJobSpacesJson(int parentId, int jobId, boolean makeSpaceTree, int userId) {	
 		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
 		List<JobSpace> subspaces=new ArrayList<JobSpace>();
@@ -2567,14 +2681,13 @@ public class RESTHelpers {
 		//don't populate the subspaces if the user can't see the job
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
 		if (!status.isSuccess()) {
-			return gson.toJson(status);
+			String output = gson.toJson(status);
+			log.debug("User cannot see job, getJobSpacesJson output: "+output);
+			return output;
 		}
 		log.debug("got a request for parent space = "+parentId);
 		if (parentId>0) {
-			
 			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-			
-			
 		} else {
 			//if the id given is 0, we want to get the root space
 			Job j=Jobs.get(jobId);
@@ -2584,11 +2697,13 @@ public class RESTHelpers {
 		
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
 		if (makeSpaceTree) {
-			return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
-
+			String output = gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
+			log.debug("makeSpaceTree is true, getJobSpacesJson output: "+output);
+			return output;
 		} else {
-			return gson.toJson(subspaces);
-
+			String output = gson.toJson(subspaces);
+			log.debug("makeSpaceTree is false, getJobSpacesJson output: "+output);
+			return output;
 		}
 	}
 

@@ -347,6 +347,15 @@ public class JobPair extends Identifiable {
 		
 		return s.getCpuTime();
 	}
+
+	public void setPrimaryCpuTime(Double newCpuTime) {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return;
+		} else {
+			s.setCpuUsage(newCpuTime);
+		}
+	}
 	
 	/**
 	 * Returns the solver of the "priamry" stage of this jobline. Returns
@@ -360,6 +369,15 @@ public class JobPair extends Identifiable {
 		}
 		
 		return s.getWallclockTime();
+	}
+
+	public void setPrimaryWallclockTime(Double newWallclockTime) {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return;
+		} else {
+			s.setWallclockTime(newWallclockTime);
+		}
 	}
 	
 	/**
