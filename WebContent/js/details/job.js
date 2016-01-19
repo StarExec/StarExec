@@ -854,8 +854,8 @@ function updateSolverComparison(big) {
 				s=parseReturnCode(returnCode);
 				if (s) {
 					jsonObject=$.parseJSON(returnCode);
-					src=jsonObject.src;
-					map=jsonObject.map;
+					var src=jsonObject.src;
+					var map=jsonObject.map;
 					if (big) {
 						$("#bigSolverComparison").attr("src",src);
 						$("#bigSolverComparisonMap").remove();
