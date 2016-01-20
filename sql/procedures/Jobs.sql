@@ -796,37 +796,6 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 	
 	END //
 	
-	
--- Gets the wallclock timeout for the given job
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetWallclockTimeout;
-CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT, IN _stage INT)
-	BEGIN
-		SELECT clockTimeout
-		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_number=_stage;
-	END //
-	
--- Gets the cpu timeout for the given job
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetCpuTimeout;
-CREATE PROCEDURE GetCpuTimeout(IN _jobId INT, IN _stage INT)
-	BEGIN
-		SELECT cpuTimeout
-		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_number=_stage;
-	END //
-
--- Gets the maximum memory for the given job
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetMaxMemory;
-CREATE PROCEDURE GetMaxMemory(IN _jobId INT, IN _stage INT) 
-	BEGIN
-		SELECT maximum_memory
-		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_number=_stage;
-	END //
-	
 DROP PROCEDURE IF EXISTS SetJobStageParams;
 CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN _clock INT, IN _mem BIGINT, IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64))
 	BEGIN
@@ -881,17 +850,6 @@ CREATE PROCEDURE IsSystemPaused()
 		FROM system_flags;
 	END //
 	
--- Gets all jobs for which there is no queue on which the job is currently being run
-
-DROP PROCEDURE IF EXISTS GetUnRunnableJobs;
-CREATE PROCEDURE GetUnRunnableJobs()
-	BEGIN
-		SELECT DISTINCT id,name,deleted,paused,queue_id
-		FROM jobs
-		LEFT JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id
-		WHERE queue_id IS null OR queue_assoc.node_id IS NULL;
-	END //
-
 -- Permanently removes a job from the database
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RemoveJobFromDatabase;

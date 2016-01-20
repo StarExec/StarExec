@@ -731,74 +731,7 @@ public class Jobs {
 	public static Job get(int jobId) {
 		return get(jobId,false);
 	}
-	
 
-	/**
-	 * Gets the wallclock timeout for the given job and the given stage
-	 * @param jobId The ID of the job in question
-	 * @param stageNumber The stage number to get the timeout of
-	 * @return The wallclock timeout in seconds, or -1 on error
-	 */
-	
-	public static int getWallclockTimeout(int jobId, int stageNumber) {
-		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		int timeout=-1;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetWallclockTimeout(?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,stageNumber);
-
-			results=procedure.executeQuery();
-			if (results.next()) {
-				timeout=results.getInt("clockTimeout");
-			}
-		} catch (Exception e) {
-			log.error("getWallclockTimeout says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		
-		}
-		return timeout;
-	}
-	
-	/**
-	 * Gets the CPU timeout for the given job
-	 * @param jobId The ID of the job in question
-	 * @param stageNumber The stage number to get the cpu timeout of
-	 * @return The CPU timeout in seconds, or -1 on error
-	 */
-	
-	public static int getCpuTimeout(int jobId, int stageNumber) {
-		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		int timeout=-1;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetCpuTimeout(?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,stageNumber);
-
-			results=procedure.executeQuery();
-			if (results.next()) {
-				timeout=results.getInt("cpuTimeout");
-			}
-		} catch (Exception e) {
-			log.error("getCpuTimeout says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		
-		}
-		return timeout;
-	}
-	
 	/**
 	 * Adds the given StageAttributes to the database
 	 * @param attrs The attributes object to add
@@ -864,38 +797,6 @@ public class Jobs {
 		}
 		return false;
 		
-	}
-	
-	/**
-	 * Gets the maximum memory allowed for the given job in bytes
-	 * @param jobId The ID of the job in question
-	 * @param stageNumber The stage number to get the memory limit of
-	 * @return The maximum memory in bytes, or -1 on error
-	 */
-	
-	public static long getMaximumMemory(int jobId, int stageNumber) {
-		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		long memory=-1;
-		try {
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetMaxMemory(?,?)}");
-			procedure.setInt(1, jobId);
-			procedure.setInt(2,stageNumber);
-			results=procedure.executeQuery();
-			if (results.next()) {
-				memory=results.getLong("maximum_memory");
-			}
-		} catch (Exception e) {
-			log.error("getMaximumMemory says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		
-		}
-		return memory;
 	}
 
 	/**
@@ -3944,7 +3845,7 @@ public class Jobs {
 		//TODO : remember to change name of getGridEngineId
 		int execId = jp.getGridEngineId();
 		R.BACKEND.killPair(execId);
-		JobPairs.UpdateStatus(jp.getId(), 20);
+		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 	    }
 	    //Get the running job pairs and remove them
 	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
@@ -3952,7 +3853,7 @@ public class Jobs {
 		for (JobPair jp: jobPairsRunning) {
 		    int execId = jp.getGridEngineId();
 		    R.BACKEND.killPair(execId);
-		    JobPairs.UpdateStatus(jp.getId(), 20);
+		    JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 		}
 	    }
 	    log.debug("Deletion of paused job pairs from queue was succesful");
@@ -4809,42 +4710,6 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return false;
-	}
-
-	/**
-	 * Returns all of the jobs that can't currently be run because they have no queue
-	 * or the queue they are on has no nodes
-	 * @return A list of Job objects representing the unrunnable jobs
-	 */
-	public static List<Job> getUnRunnableJobs() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetUnRunnableJobs()}");
-			results = procedure.executeQuery();
-			
-			List<Job> jobs = new LinkedList<Job>();
-			while (results.next()) {
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setName(results.getString("name"));
-				j.setDeleted(results.getBoolean("deleted"));
-				j.setPaused(results.getBoolean("paused"));
-				j.setQueue(Queues.get(results.getInt("queue_id")));
-				jobs.add(j);
-			}
-			//if no results exist, the system is not globally paused
-			return jobs;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
 	}
 	
 	/**
