@@ -84,7 +84,7 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
 		} else if (attribute.equals("MaxMem")) {
-			if (!Validator.isValidDouble(newValue)) {
+			if (!Validator.isValidPosDouble(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
 			}
 			

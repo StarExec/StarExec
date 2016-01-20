@@ -170,7 +170,7 @@ public class AddSettingProfile extends HttpServlet {
 			return new ValidatorStatusCode(false, "invalid wallclock timeout");
 		}
 		
-		if (!Validator.isValidDouble(request.getParameter(MAX_MEMORY))) {
+		if (!Validator.isValidPosDouble(request.getParameter(MAX_MEMORY))) {
 			return new ValidatorStatusCode(false, "invalid maximum memory");
 		}
 		

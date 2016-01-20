@@ -178,18 +178,18 @@ public class ValidatorTests extends TestSequence {
 	}
 	@StarexecTest
 	private void DoubleRegexTest() {
-		Assert.assertTrue(Validator.isValidDouble("4.0"));
-		Assert.assertTrue(Validator.isValidDouble("-.9"));
-		Assert.assertTrue(Validator.isValidDouble("-4"));
-		Assert.assertTrue(Validator.isValidDouble("493."));
-		Assert.assertTrue(Validator.isValidDouble("-393.245"));
-		Assert.assertTrue(Validator.isValidDouble("4022.2935"));
-		Assert.assertFalse(Validator.isValidDouble("."));
-		Assert.assertFalse(Validator.isValidDouble("3.52.34"));
-		Assert.assertFalse(Validator.isValidDouble("-."));
-		Assert.assertFalse(Validator.isValidDouble("dsd"));
-		Assert.assertFalse(Validator.isValidDouble("3493.2de"));
-		Assert.assertFalse(Validator.isValidDouble(null));
+		Assert.assertTrue(Validator.isValidPosDouble("4.0"));
+		Assert.assertFalse(Validator.isValidPosDouble("-.9"));
+		Assert.assertFalse(Validator.isValidPosDouble("-4"));
+		Assert.assertTrue(Validator.isValidPosDouble("493."));
+		Assert.assertFalse(Validator.isValidPosDouble("-393.245"));
+		Assert.assertTrue(Validator.isValidPosDouble("4022.2935"));
+		Assert.assertFalse(Validator.isValidPosDouble("."));
+		Assert.assertFalse(Validator.isValidPosDouble("3.52.34"));
+		Assert.assertFalse(Validator.isValidPosDouble("-."));
+		Assert.assertFalse(Validator.isValidPosDouble("dsd"));
+		Assert.assertFalse(Validator.isValidPosDouble("3493.2de"));
+		Assert.assertFalse(Validator.isValidPosDouble(null));
 	}
 	@StarexecTest
 	private void EmailRegexTest() {

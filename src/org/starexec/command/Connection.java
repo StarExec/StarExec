@@ -1487,7 +1487,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getSolversInSpace(Integer spaceID) {
-		return getPrims(spaceID, null, false, "solvers");
+		return listPrims(spaceID, null, false, "solvers");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all benchmarks in the given
@@ -1498,7 +1498,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getBenchmarksInSpace(Integer spaceID) {
-		return getPrims(spaceID, null, false, "benchmarks");
+		return listPrims(spaceID, null, false, "benchmarks");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs in the given
@@ -1509,7 +1509,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getJobsInSpace(Integer spaceID) {
-		return getPrims(spaceID, null, false, "jobs");
+		return listPrims(spaceID, null, false, "jobs");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all users in the given
@@ -1520,7 +1520,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getUsersInSpace(Integer spaceID) {
-		return getPrims(spaceID, null, false, "users");
+		return listPrims(spaceID, null, false, "users");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all spaces in the given
@@ -1531,7 +1531,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getSpacesInSpace(Integer spaceID) {
-		return getPrims(spaceID, null, false, "spaces");
+		return listPrims(spaceID, null, false, "spaces");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all solvers the current user owns
@@ -1540,7 +1540,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getSolversByUser() {
-		return getPrims(null, null, true, "solvers");
+		return listPrims(null, null, true, "solvers");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all benchmarks the current user owns
@@ -1549,7 +1549,7 @@ public class Connection {
 	 */
 	
 	public HashMap<Integer,String> getBenchmarksByUser() {
-		return getPrims(null, null, true, "benchmarks");
+		return listPrims(null, null, true, "benchmarks");
 	}
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs the current user owns
@@ -1557,7 +1557,7 @@ public class Connection {
 	 * be negative, whereas all IDs must be positive.
 	 */
 	public HashMap<Integer,String> getJobsByUser() {
-		return getPrims(null, null, true, "jobs");
+		return listPrims(null, null, true, "jobs");
 	}
 
 	/**
@@ -1622,7 +1622,7 @@ public class Connection {
 	 * @return A HashMap mapping integer ids to string names
 	 * @author Eric Burns
 	 */
-	protected HashMap<Integer,String> getPrims(Integer spaceID, Integer limit, boolean forUser, String type) {
+	protected HashMap<Integer,String> listPrims(Integer spaceID, Integer limit, boolean forUser, String type) {
 		HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 		HashMap<Integer,String> prims=new HashMap<Integer,String>();
 		HttpResponse response = null;

@@ -233,19 +233,24 @@ public class Validator {
     	return true;
     }
     
-    /**
-     * Validates a string to ensure it can be treated as a double 
-     * @param s The string to validate as a double
-     * @return True if the string is numeric, false otherwise
-     */
-    public static boolean isValidDouble(String s) {
-    	try {
-    		Double.parseDouble(s);
-    		return true;
-    	} catch(Exception e) {
-    		return false;
-    	}
-    }
+	/**
+	 * Determines whether the given string represents a valid double that is greater than 0
+	 * @param str The string to check
+	 * @return True if valid, false otherwise.
+	 * @author Eric Burns
+	 */
+	
+	public static boolean isValidPosDouble(String str) {
+		try {
+			double check=Double.parseDouble(str);
+			if (check<=0) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
     
     /**
      * Validates a string to ensure it can be treated as a long 

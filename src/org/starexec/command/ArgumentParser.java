@@ -435,14 +435,15 @@ class ArgumentParser {
 	}
 	
 	/**
-	 * Lists the IDs and names of some kind of primitives in a given space
+	 * Lists the IDs and names of some kind of primitives in a given space or by user, depending on the
+	 * parameters given
 	 * @param urlParams Parameters to be encoded into the URL to send to the server
 	 * @param commandParams Parameters given by the user at the command line
 	 * @return An integer error code with 0 indicating success and a negative number indicating an
 	 * error
 	 * @author Eric Burns
 	 */
-	protected HashMap<Integer,String> getPrimsInSpace(String type,HashMap<String,String> commandParams) {
+	protected HashMap<Integer,String> listPrimsBySpaceOrUser(String type,HashMap<String,String> commandParams) {
 		HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 		
 		try {
@@ -467,8 +468,7 @@ class ArgumentParser {
 				return con.getSolverConfigs(id,limit);
 
 			}else{
-			    
-			       return con.getPrims(id, limit,commandParams.containsKey(C.PARAM_USER), type);
+			       return con.listPrims(id, limit,commandParams.containsKey(C.PARAM_USER), type);
 
 			}
 		

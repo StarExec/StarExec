@@ -19,8 +19,6 @@ public class C {
 	
 	
 	public static String URL_STAREXEC_BASE = "https://www.starexec.org/starexec/";
-	public static String URL_STARDEV_BASE = "http://stardev.cs.uiowa.edu/starexec/";
-	public static String URL_LOCAL_BASE = "http://localhost:8080/starexec/";
 	
 	public static String TYPE_SESSIONID="JSESSIONID=";
 	

@@ -442,7 +442,7 @@ class CommandParser {
 				}
 				for (String x : types) {
 					System.out.println(x.toUpperCase()+"\n");
-					answer=parser.getPrimsInSpace(type,commandParams);
+					answer=parser.listPrimsBySpaceOrUser(type,commandParams);
 					
 					//this block tests to see whether the answer actually indicates an error
 					if (answer.keySet().size()==1) {
@@ -461,7 +461,7 @@ class CommandParser {
 			else {
 				return Status.ERROR_BAD_COMMAND;
 			}
-			answer=parser.getPrimsInSpace(type,commandParams);
+			answer=parser.listPrimsBySpaceOrUser(type,commandParams);
 			//if we only have 1 key and it is negative, it represents an error code
 			if (answer.keySet().size()==1) {
 				for (int x : answer.keySet()) {

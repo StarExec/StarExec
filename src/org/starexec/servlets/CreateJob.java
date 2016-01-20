@@ -375,8 +375,8 @@ public class CreateJob extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 			
-			if(Util.paramExists(maxMemory, request) && !Validator.isValidDouble(request.getParameter(maxMemory))) {
-				return new ValidatorStatusCode(false, "The given maximum memory needs to be a valid double");
+			if(Util.paramExists(maxMemory, request) && !Validator.isValidPosDouble(request.getParameter(maxMemory))) {
+				return new ValidatorStatusCode(false, "The given maximum memory needs to be a positive number (decimals are permitted)");
 			}
 			if (!Util.paramExists(clockTimeout, request) || !Util.paramExists(cpuTimeout, request) || !Util.paramExists(maxMemory, request)) {
 				DefaultSettings s = Communities.getDefaultSettings(Integer.parseInt(request.getParameter(spaceId)));
