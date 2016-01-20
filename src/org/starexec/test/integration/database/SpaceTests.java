@@ -56,7 +56,6 @@ public class SpaceTests extends TestSequence {
 		
 	}
 	
-	//TODO: Test to make sure the solvers are no longer in there
 	@StarexecTest
 	private void removeSolversFromHierarchyTest() {
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
@@ -64,6 +63,21 @@ public class SpaceTests extends TestSequence {
 		List<Integer> si=new ArrayList<Integer>();
 		si.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolversFromHierarchy(si, subspace2.getId(), leader.getId()));
+		boolean found = false;
+		for (Solver s : Spaces.getDetails(subspace2.getId(), leader.getId()).getSolvers()) {
+			if (s.getId()==solver.getId()) {
+				found=true;
+				break;
+			}
+		}
+		Assert.assertFalse(found);
+		found = false;
+		for (Solver s : Spaces.getDetails(subspace3.getId(), leader.getId()).getSolvers()) {
+			if (s.getId()==solver.getId()) {
+				found=true;
+				break;
+			}
+		}
 	}
 	
 	

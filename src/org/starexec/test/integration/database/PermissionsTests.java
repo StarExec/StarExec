@@ -77,12 +77,16 @@ public class PermissionsTests extends TestSequence {
 	}
 	
 	
-	//TODO: Make this test stronger
 	@StarexecTest
 	private void GetSpaceDefaultTest() {
+		space.getPermission().setAddSolver(true);
+		space.getPermission().setAddSpace(false);
+		Spaces.updateDetails(owner.getId(), space);
 		Permission p=Permissions.getSpaceDefault(space.getId());
 		Assert.assertNotNull(p);
 		Assert.assertFalse(p.isLeader());
+		Assert.assertTrue(p.canAddSolver());
+		Assert.assertFalse(p.canAddSpace());
 	}
 	
 	

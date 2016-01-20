@@ -215,7 +215,6 @@ public class ResourceLoader {
 	 * @param userId The user that will be the owner of the new profile
 	 * @return
 	 */
-	//TODO: solver, benchmark, processors?
 	public static DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
 		Random rand=new Random();
 		DefaultSettings settings=new DefaultSettings();
