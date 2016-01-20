@@ -438,11 +438,11 @@ public class BenchmarkUploader extends HttpServlet {
 		final String method = "isRequestValid";
 		try {			
 																
-			if (!Validator.isValidInteger((String)form.get(BENCHMARK_TYPE))) {
+			if (!Validator.isValidPosInteger((String)form.get(BENCHMARK_TYPE))) {
 				return new ValidatorStatusCode(false, "The given benchmark processor ID is not a valid integer");
 			}
 			
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			if (!Validator.isValidBool((String)form.get(BENCH_DOWNLOADABLE))) {

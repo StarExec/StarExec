@@ -119,7 +119,7 @@ class ArgumentParser {
 	protected int createJob(HashMap<String,String> commandParams) {
 		try {
 			
-			int valid=Validator.isValidCreateJobRequest(commandParams);
+			int valid=CommandValidator.isValidCreateJobRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}			
@@ -189,7 +189,7 @@ class ArgumentParser {
 	protected int linkPrimitives(HashMap<String,String> commandParams, String type) {
 
 		try {
-			int valid=Validator.isValidCopyRequest(commandParams, type);
+			int valid=CommandValidator.isValidCopyRequest(commandParams, type);
 
 			if (valid<0) {
 				return valid;
@@ -228,7 +228,7 @@ class ArgumentParser {
 	protected List<Integer> copyPrimitives(HashMap<String,String> commandParams, String type) {
 		List<Integer> fail=new ArrayList<Integer>();
 		try {
-			int valid=Validator.isValidCopyRequest(commandParams, type);
+			int valid=CommandValidator.isValidCopyRequest(commandParams, type);
 			if (valid<0) {
 				fail.add(valid);
 				return fail;
@@ -253,7 +253,7 @@ class ArgumentParser {
 	
 	protected int createSubspace(HashMap<String,String> commandParams) {
 		try {
-			int valid=Validator.isValidCreateSubspaceRequest(commandParams);
+			int valid=CommandValidator.isValidCreateSubspaceRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -295,7 +295,7 @@ class ArgumentParser {
 	 */
 	protected int removePrimitive(HashMap<String,String> commandParams,String type) {
 		try {
-			int valid=Validator.isValidRemoveRequest(commandParams, type);
+			int valid=CommandValidator.isValidRemoveRequest(commandParams, type);
 			if (valid<0) {
 				return valid;
 			}
@@ -338,7 +338,7 @@ class ArgumentParser {
 	
 	private int pauseOrResumeJob(HashMap<String,String> commandParams, boolean pause) {
 		try {
-			int valid=Validator.isValidPauseOrResumeRequest(commandParams);
+			int valid=CommandValidator.isValidPauseOrResumeRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -351,7 +351,7 @@ class ArgumentParser {
 	
 	protected int rerunPair(HashMap<String,String> commandParams) {
 		try {
-			int valid=Validator.isValidRerunRequest(commandParams);
+			int valid=CommandValidator.isValidRerunRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -363,7 +363,7 @@ class ArgumentParser {
 	
 	protected int rerunJob(HashMap<String,String> commandParams) {
 		try {
-			int valid=Validator.isValidRerunRequest(commandParams);
+			int valid=CommandValidator.isValidRerunRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -383,7 +383,7 @@ class ArgumentParser {
 	
 	protected int deletePrimitive(HashMap<String,String> commandParams, String type) {
 		try {
-			int valid=Validator.isValidDeleteRequest(commandParams);
+			int valid=CommandValidator.isValidDeleteRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -406,7 +406,7 @@ class ArgumentParser {
 	
 	protected int downloadArchive(String type,Integer since,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
 		try {
-			int valid=Validator.isValidDownloadRequest(commandParams,type,since);
+			int valid=CommandValidator.isValidDownloadRequest(commandParams,type,since);
 			if (valid<0) {
 				return valid;
 			}
@@ -451,7 +451,7 @@ class ArgumentParser {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 			urlParams.put("id", commandParams.get(C.PARAM_ID));
 			urlParams.put(C.FORMPARAM_TYPE, type);
-			int valid=Validator.isValidGetPrimRequest(urlParams,commandParams);
+			int valid=CommandValidator.isValidGetPrimRequest(urlParams,commandParams);
 			if (valid<0) {
 				errorMap.put(valid, null);
 				return errorMap;
@@ -489,7 +489,7 @@ class ArgumentParser {
 	protected int setSpaceVisibility(HashMap<String,String> commandParams, boolean setPublic) {
 		try {
 			
-			int valid=Validator.isValidSetSpaceVisibilityRequest(commandParams);
+			int valid=CommandValidator.isValidSetSpaceVisibilityRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -514,7 +514,7 @@ class ArgumentParser {
 	 */
 	protected int setUserSetting(String setting, HashMap<String,String> commandParams) {
 		
-		int valid=Validator.isValidSetUserSettingRequest(setting,commandParams);
+		int valid=CommandValidator.isValidSetUserSettingRequest(setting,commandParams);
 		if (valid<0) {
 			return valid;
 		}
@@ -534,7 +534,7 @@ class ArgumentParser {
 	 */
 	
 	protected int uploadBenchmarks(HashMap<String, String> commandParams) {
-		int valid=Validator.isValidUploadBenchmarkRequest(commandParams);
+		int valid=CommandValidator.isValidUploadBenchmarkRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}
@@ -603,7 +603,7 @@ class ArgumentParser {
 	protected int uploadConfiguration(HashMap<String, String> commandParams) {
 		try {
 			
-			int valid=Validator.isValidUploadConfigRequest(commandParams);
+			int valid=CommandValidator.isValidUploadConfigRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -639,7 +639,7 @@ class ArgumentParser {
 	
 	private int uploadProcessor(HashMap<String, String> commandParams, String type) {
 		
-		int valid=Validator.isValidUploadProcessorRequest(commandParams);
+		int valid=CommandValidator.isValidUploadProcessorRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}
@@ -711,7 +711,7 @@ class ArgumentParser {
 		   List<Integer> fail=new ArrayList<Integer>();
 
     	try {
-			int valid=Validator.isValidUploadXMLRequest(commandParams);
+			int valid=CommandValidator.isValidUploadXMLRequest(commandParams);
 			if (valid<0) {
 				fail.add(valid);
 				return fail;
@@ -730,7 +730,7 @@ class ArgumentParser {
      * @return 0 on success and a negative error code otherwise
      */
     protected int printBenchStatus(HashMap<String,String> commandParams) {
-    	int valid = Validator.isValidPrintBenchUploadStatusRequest(commandParams);
+    	int valid = CommandValidator.isValidPrintBenchUploadStatusRequest(commandParams);
     	if (valid<0) {
     		return valid;
     	}
@@ -746,7 +746,7 @@ class ArgumentParser {
     protected Map<String, String> getPrimitiveAttributes(HashMap<String, String> commandParams, String type) {
     	HashMap<String,String> failMap=new HashMap<String,String>();
     	try{
-    		int valid = Validator.isValidGetPrimitiveAttributesRequest(commandParams);
+    		int valid = CommandValidator.isValidGetPrimitiveAttributesRequest(commandParams);
         	if (valid<0) {
         		failMap.put("-1", String.valueOf(valid));
         		return failMap;
@@ -772,7 +772,7 @@ class ArgumentParser {
 	 */
 	
 	protected int uploadSolver(HashMap<String, String> commandParams) {
-		int valid=Validator.isValidSolverUploadRequest(commandParams);
+		int valid=CommandValidator.isValidSolverUploadRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}

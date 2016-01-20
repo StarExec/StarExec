@@ -235,7 +235,7 @@ class CommandParser {
 					if (commandParams.containsKey(C.PARAM_OVERWRITE)) {
 						pollParams.put(C.PARAM_OVERWRITE, commandParams.remove(C.PARAM_OVERWRITE));
 					}
-					int valid=Validator.isValidPollJobRequest(pollParams);
+					int valid=CommandValidator.isValidPollJobRequest(pollParams);
 					if (valid<0) {
 						return valid;
 					}
@@ -568,7 +568,7 @@ class CommandParser {
 			System.out.println(C.HELP_MESSAGE);
 			return 0;
 		} else if (c.equals(C.COMMAND_SLEEP)) {
-			int valid=Validator.isValidSleepCommand(commandParams);
+			int valid=CommandValidator.isValidSleepCommand(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -585,7 +585,7 @@ class CommandParser {
 			if (parser!=null) {
 				return Status.ERROR_CONNECTION_EXISTS;
 			}
-			int valid=Validator.isValidLoginRequest(commandParams);
+			int valid=CommandValidator.isValidLoginRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -601,7 +601,7 @@ class CommandParser {
 			
 			return C.SUCCESS_LOGIN;
 		} else if (c.equals(C.COMMAND_RUNFILE)) {
-			int valid=Validator.isValidRunFileRequest(commandParams);
+			int valid=CommandValidator.isValidRunFileRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -707,7 +707,7 @@ class CommandParser {
 	 */
 	
 	protected int pollJob(HashMap<String,String> commandParams) {
-		int valid=Validator.isValidPollJobRequest(commandParams);
+		int valid=CommandValidator.isValidPollJobRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}
@@ -719,7 +719,7 @@ class CommandParser {
 			String extension=null;
 			
 			//separate the extension from the name of the file
-			for (String x : Validator.VALID_ARCHIVETYPES) {
+			for (String x : CommandValidator.VALID_ARCHIVETYPES) {
 				if (filename.endsWith(x)) {
 					extension="."+x;
 					baseFileName=filename.substring(0,filename.length()-x.length()-1);

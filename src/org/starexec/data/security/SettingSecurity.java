@@ -76,7 +76,7 @@ public class SettingSecurity {
 		
 				
 		if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
-			if (! Validator.isValidInteger(newValue)) {
+			if (! Validator.isValidPosInteger(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid integer");
 			}
 			int timeout=Integer.parseInt(newValue);

@@ -86,12 +86,12 @@ public class BenchmarkProcessor extends HttpServlet {
 	 */
 	private ValidatorStatusCode isValidProcessRequest(HttpServletRequest request) {
 		try {	
-			if(!Validator.isValidInteger((String)request.getParameter(PROCESSOR_ID))) {
+			if(!Validator.isValidPosInteger((String)request.getParameter(PROCESSOR_ID))) {
 				return new ValidatorStatusCode(false, "The processor ID needs to be a valid integer");
 			}
 			int userId=SessionUtil.getUserId(request);
 			
-			if(!Validator.isValidInteger((String)request.getParameter(SPACE_ID))) {
+			if(!Validator.isValidPosInteger((String)request.getParameter(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The space ID needs to be a valid integer");
 			}
 					

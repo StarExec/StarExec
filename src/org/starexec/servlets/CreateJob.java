@@ -352,7 +352,7 @@ public class CreateJob extends HttpServlet {
 	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			if(!Validator.isValidInteger(request.getParameter(spaceId))) {
+			if(!Validator.isValidPosInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
 
@@ -367,11 +367,11 @@ public class CreateJob extends HttpServlet {
 			}
 
 			// Make sure timeout an int
-			if(Util.paramExists(clockTimeout, request) && !Validator.isValidInteger(request.getParameter(clockTimeout))) {
+			if(Util.paramExists(clockTimeout, request) && !Validator.isValidPosInteger(request.getParameter(clockTimeout))) {
 				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
 			}
 
-			if(Util.paramExists(cpuTimeout, request) && !Validator.isValidInteger(request.getParameter(cpuTimeout))) {
+			if(Util.paramExists(cpuTimeout, request) && !Validator.isValidPosInteger(request.getParameter(cpuTimeout))) {
 				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 			
@@ -394,7 +394,7 @@ public class CreateJob extends HttpServlet {
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
 				
-				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
+				if(!Validator.isValidPosInteger(request.getParameter(postProcessor))) {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
 				postProc=Integer.parseInt(request.getParameter(postProcessor));
@@ -405,7 +405,7 @@ public class CreateJob extends HttpServlet {
 			}
 			
 			if(Util.paramExists(preProcessor, request)) {
-				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
+				if(!Validator.isValidPosInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
 				preProc=Integer.parseInt(request.getParameter(preProcessor));
@@ -415,7 +415,7 @@ public class CreateJob extends HttpServlet {
 			}
 
 			// Make sure the queue is a valid integer
-			if(!Validator.isValidInteger(request.getParameter(workerQueue))) {
+			if(!Validator.isValidPosInteger(request.getParameter(workerQueue))) {
 				return new ValidatorStatusCode(false, "The given queue ID needs to be a valid integer");
 			}
 			// Make sure the queue is a valid selection and user has access to it
@@ -434,7 +434,7 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
 				}
 				
-				if (!Validator.isValidInteger(request.getParameter(solver))) {
+				if (!Validator.isValidPosInteger(request.getParameter(solver))) {
 					return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
 				}
 				int solverId=Integer.parseInt(request.getParameter(solver));

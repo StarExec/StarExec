@@ -74,7 +74,7 @@ public class AddSettingProfile extends HttpServlet {
 		String rawUserIdOfOwner=request.getParameter(USER_ID_OF_OWNER);
 		log.debug(method+": userIdOfOwner="+rawUserIdOfOwner);
 
-		if (Validator.isValidInteger(rawUserIdOfOwner)) {
+		if (Validator.isValidPosInteger(rawUserIdOfOwner)) {
 			userIdOfOwner = Integer.parseInt(rawUserIdOfOwner);
 			d.setPrimId(userIdOfOwner);
 		} else {
@@ -103,33 +103,33 @@ public class AddSettingProfile extends HttpServlet {
 
 		
 		//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
-		if (Validator.isValidInteger(postId)) {
+		if (Validator.isValidPosInteger(postId)) {
 			int p=Integer.parseInt(postId);
 			if (p>0) {
 				d.setPostProcessorId(p);
 			}
 		}
-		if (Validator.isValidInteger(preId)) {
+		if (Validator.isValidPosInteger(preId)) {
 			int p=Integer.parseInt(preId);
 			if (p>0) {
 				d.setPreProcessorId(p);
 			}
 		}
-		if (Validator.isValidInteger(benchProcId)) {
+		if (Validator.isValidPosInteger(benchProcId)) {
 			int p=Integer.parseInt(benchProcId);
 			if (p>0) {
 				d.setBenchProcessorId(p);
 			}
 		}
 		log.debug("got sent the solver "+solver);
-		if (Validator.isValidInteger(solver)) {
+		if (Validator.isValidPosInteger(solver)) {
 			int p=Integer.parseInt(solver);
 			if (p>0) {
 				log.debug("setting the solver");
 				d.setSolverId(p);
 			}
 		}
-		if (Validator.isValidInteger(benchId)) {
+		if (Validator.isValidPosInteger(benchId)) {
 			int p=Integer.parseInt(benchId);
 			if (p>0) {
 				log.debug("setting the benchmark id = "+p);
@@ -163,10 +163,10 @@ public class AddSettingProfile extends HttpServlet {
 		if (!Validator.isValidBool(request.getParameter(DEPENDENCIES))) {
 			return new ValidatorStatusCode(false, "invalid dependency selection");
 		}
-		if (!Validator.isValidTimeout(request.getParameter(CPU_TIMEOUT))) {
+		if (!Validator.isValidPosInteger(request.getParameter(CPU_TIMEOUT))) {
 			return new ValidatorStatusCode(false, "invalid cpu timeout");
 		}
-		if (!Validator.isValidTimeout(request.getParameter(WALLCLOCK_TIMEOUT))) {
+		if (!Validator.isValidPosInteger(request.getParameter(WALLCLOCK_TIMEOUT))) {
 			return new ValidatorStatusCode(false, "invalid wallclock timeout");
 		}
 		
@@ -182,7 +182,7 @@ public class AddSettingProfile extends HttpServlet {
 		String benchId=request.getParameter(BENCH_PROCESSOR);
 		
 		//-1 is not an error-- it indicates that nothing was selected for all the following cases
-		if (Validator.isValidInteger(postId)) {
+		if (Validator.isValidPosInteger(postId)) {
 			int p=Integer.parseInt(postId);
 
 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
@@ -190,7 +190,7 @@ public class AddSettingProfile extends HttpServlet {
 				return status;
 			}
 		}
-		if (Validator.isValidInteger(preId)) {
+		if (Validator.isValidPosInteger(preId)) {
 			int p=Integer.parseInt(preId);
 
 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
@@ -198,14 +198,14 @@ public class AddSettingProfile extends HttpServlet {
 				return status;
 			}
 		}
-		if (Validator.isValidInteger(benchProcId)) {
+		if (Validator.isValidPosInteger(benchProcId)) {
 			int p=Integer.parseInt(benchProcId);
 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
 			if (!status.isSuccess() && p>0) {
 				return status;
 			}
 		}
-		if (Validator.isValidInteger(solver)) {
+		if (Validator.isValidPosInteger(solver)) {
 			int s=Integer.parseInt(solver);
 			if (s>0) {
 				//if we actually did select a solver
@@ -214,7 +214,7 @@ public class AddSettingProfile extends HttpServlet {
 				}
 			}
 		}
-		if (Validator.isValidInteger(benchId)) {
+		if (Validator.isValidPosInteger(benchId)) {
 			int b=Integer.parseInt(benchId);
 			if (b>0) {
 				if (!Permissions.canUserSeeBench(b, userId)) {
@@ -225,7 +225,7 @@ public class AddSettingProfile extends HttpServlet {
 		
 		//if a setting ID exists, this is an update. Otherwise, it is a new profile
 		if (Util.paramExists(SETTING_ID, request)) {
-			if (!Validator.isValidInteger(request.getParameter(SETTING_ID))) {
+			if (!Validator.isValidPosInteger(request.getParameter(SETTING_ID))) {
 				return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
 			}
 			int settingId=Integer.parseInt(request.getParameter(SETTING_ID));

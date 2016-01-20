@@ -112,7 +112,7 @@ public class UserSecurity {
 			}
 
 		} else if (attribute.equals("pagesize")) {
-			if(!Validator.isValidInteger(newVal) ) {
+			if(!Validator.isValidPosInteger(newVal) ) {
 				return new ValidatorStatusCode(false, "The new disk quota is not in the proper format. It must be an integer");
 			}
 			int n=Integer.parseInt(newVal);

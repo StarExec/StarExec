@@ -423,7 +423,7 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			//ensure the space ID is valid
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			
@@ -431,7 +431,7 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
 			
-			if (!Validator.isValidInteger((String)form.get(SOLVER_TYPE))) {
+			if (!Validator.isValidPosInteger((String)form.get(SOLVER_TYPE))) {
 				return new ValidatorStatusCode(false, "Executable Type needed to be sent as a valid integer");
 			}
 			ExecutableType type=ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE)));
@@ -493,7 +493,7 @@ public class UploadSolver extends HttpServlet {
 				//if the user gave a setting ID, then they need to have permission to use that profile
 				// otherwise, the community default is used
 				if (form.containsKey(SETTING_ID)) {
-					if (!Validator.isValidInteger((String)form.get(SETTING_ID))) {
+					if (!Validator.isValidPosInteger((String)form.get(SETTING_ID))) {
 						return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
 					}
 					settingsId=Integer.parseInt((String)form.get(SETTING_ID));

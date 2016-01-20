@@ -180,7 +180,7 @@ public class AddSpace extends HttpServlet {
 	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			if (!Validator.isValidInteger(request.getParameter(parentSpace))) {
+			if (!Validator.isValidPosInteger(request.getParameter(parentSpace))) {
 				return new ValidatorStatusCode(false,"The space ID needs to be an integer");
 			}
 			int spaceId = Integer.parseInt(request.getParameter(parentSpace));

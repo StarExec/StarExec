@@ -31,7 +31,7 @@ public class MessagePrinter {
 				System.out.println("Unknown error");
 			}
 			if(statusCode==Status.ERROR_MISSING_PARAM) {
-				System.out.println("Missing param = \"" + Validator.getMissingParam()+  "\"");
+				System.out.println("Missing param = \"" + CommandValidator.getMissingParam()+  "\"");
 			}
 		} else if (statusCode>0) {
 			String message=C.successMessages.get(statusCode);
@@ -46,7 +46,7 @@ public class MessagePrinter {
 	 * Prints a warning if the user gave and unnecessary parameters that were ignored
 	 */
 	protected static void printWarningMessages() {
-		List<String> up=Validator.getUnnecessaryParams();
+		List<String> up=CommandValidator.getUnnecessaryParams();
 		if (up.size()>0) {
 			System.out.print("WARNING: The following unnecessary parameters were ignored: ");
 			for (String x : up) {

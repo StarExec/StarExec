@@ -147,7 +147,7 @@ public class SaveConfiguration extends HttpServlet {
 			}
 			
 			
-			if (!Validator.isValidInteger((String)request.getParameter(SOLVER_ID))) {
+			if (!Validator.isValidPosInteger((String)request.getParameter(SOLVER_ID))) {
 				return new ValidatorStatusCode(false,"The supplied solver ID is not a valid integer");
 			}
 			

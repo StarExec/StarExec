@@ -199,7 +199,7 @@ public class UploadJobXML extends HttpServlet {
 				return new ValidatorStatusCode(false,"Missing field from the form for the file to upload or the space id");
 			}
 			
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The supplied space ID was not a valid integer");
 			}
 			

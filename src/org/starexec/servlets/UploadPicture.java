@@ -59,7 +59,7 @@ public class UploadPicture extends HttpServlet {
 
 			String rawUserIdOfOwner = (String)form.get(UploadPicture.ID);
 			int userIdOfOwner = 0;
-			if (Validator.isValidInteger(rawUserIdOfOwner)) {
+			if (Validator.isValidPosInteger(rawUserIdOfOwner)) {
 				userIdOfOwner = Integer.parseInt(rawUserIdOfOwner);
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User id for request was not an integer.");
@@ -173,7 +173,7 @@ public class UploadPicture extends HttpServlet {
 			if(!form.containsKey(PICTURE_FILE)) {
 				return new ValidatorStatusCode(false, "No picture was supplied");
 			}
-			if (!Validator.isValidInteger((String)form.get(ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(ID))) {
 				return new ValidatorStatusCode(false, "The supplied ID is not a valid integer");
 			}
 			String type=(String)form.get(TYPE);

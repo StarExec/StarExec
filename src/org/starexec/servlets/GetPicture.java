@@ -150,7 +150,7 @@ public class GetPicture extends HttpServlet{
     			return new ValidatorStatusCode(false, "The supplied type is not valid");
     		}
     		
-    		if (!Validator.isValidInteger(request.getParameter("Id"))) {
+    		if (!Validator.isValidPosInteger(request.getParameter("Id"))) {
     			return new ValidatorStatusCode(false, "The supplied id is not a valid integer");
     		}
         	

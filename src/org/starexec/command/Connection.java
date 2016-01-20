@@ -27,6 +27,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 
 import org.starexec.data.to.Permission;
+import org.starexec.util.Validator;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -283,7 +284,7 @@ public class Connection {
 			int returnCode=response.getStatusLine().getStatusCode();
 			
 			if (returnCode==302) {
-			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			int id=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id>0) {
 				return id;
 			} else {
@@ -330,7 +331,7 @@ public class Connection {
 			response=client.execute(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
-			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			int id=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id<=0) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
@@ -564,7 +565,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);		
 			response=client.execute(post);			
 			setSessionIDIfExists(response.getAllHeaders());			
-			int newID=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
+			int newID=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			//if the request was not successful
 			if (newID<=0) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
@@ -2052,7 +2053,7 @@ public class Connection {
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
-			if (!Validator.isValidZip(out)) {
+			if (!CommandValidator.isValidZip(out)) {
 				out.delete();
 				return Status.ERROR_INTERNAL; //we got back an invalid archive for some reason
 			}

@@ -1040,7 +1040,7 @@ public class Download extends HttpServlet {
 			
 			int userId=SessionUtil.getUserId(request);
 			if (!type.equals("jp_outputs")) {
-				if (!Validator.isValidInteger(request.getParameter(PARAM_ID))) {
+				if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
 					new ValidatorStatusCode(false, "The given id was not a valid integer");
 				}
 				int id=Integer.parseInt(request.getParameter(PARAM_ID));

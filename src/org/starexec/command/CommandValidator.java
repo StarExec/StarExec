@@ -12,20 +12,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.starexec.constants.R;
+import org.starexec.util.Validator;
 
-//TODO: A lot of the logic in this class can be safely checked on the backend (valid IDs, for instance).
-public class Validator {
+public class CommandValidator {
 	
 	/**which archives can we download from Starexec*/
 	public static String[] VALID_ARCHIVETYPES={"zip"};
-		
-	public static Pattern patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
+
 	
 	private static String missingParam=null;
 	private static List<String> unnecessaryParams=new ArrayList<String>();
@@ -98,11 +93,11 @@ public class Validator {
 				return Status.ERROR_MISSING_PARAM;
 			}
 			findUnnecessaryParams(allowedRemoveParams,commandParams);
-			if (!isValidPosInteger(commandParams.get(C.PARAM_FROM))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_FROM))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
-		if (!isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		return 0;
@@ -115,132 +110,16 @@ public class Validator {
 	 */
 	
 	public static int isValidDeleteRequest(HashMap<String,String> commandParams) {
-		if (! paramsExist(new String[]{C.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedDeleteParams,commandParams);
 		return 0;
 	}
-	
-	/**
-	 * Checks to see whether the given string is a valid integer, which can inclue long integers
-	 * @param str The string to check
-	 * @return the boolean answer
-	 */
-	public static boolean isValidInteger(String str) {
-		try {
-			Long.parseLong(str);
-			return true;
-		} catch(Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Determines whether the given string represents a valid id. Valid ids are integers greater than or equal to 0
-	 * @param str The string to check
-	 * @return True if valid, false otherwise.
-	 * @author Eric Burns
-	 */
-	
-	public static boolean isValidPosInteger(String str) {
-		try {
-			int check=Integer.parseInt(str);
-			if (check<0) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Determines whether the given string represents a valid double that is greater than or equal to 0
-	 * @param str The string to check
-	 * @return True if valid, false otherwise.
-	 * @author Eric Burns
-	 */
-	
-	public static boolean isValidPosDouble(String str) {
-		try {
-			double check=Double.parseDouble(str);
-			if (check<0) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Determines whether the given string represents a valid real number greater than or equal to 0
-	 * @param str The string to check
-	 * @return True if the string is valid and false otherwise
-	 */
-	public static boolean isValidPosNumber(String str) {
-		try {
-			double check=Double.parseDouble(str);
-			if (check<0) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Checks to see if the given name is valid on Starexec for a solver, benchmark, or job na,e
-	 * @param name The name to check
-	 * @return True if valid and false otherwise
-	 */
-	public static boolean isValidPrimName(String name){    	
-    	return patternPrimName.matcher(name).matches();    	
-    }
-    
-    /**
-	 * Validates an institution field
-	 * 
-	 * @param institute the institution to validate
-	 * @return true iff institute is less than R.INSTITUTION_LEN characters 
-	 * and not null or the empty string
-	 */
-	public static boolean isValidInstitution(String institute){		
-		return patternInstitution.matcher(institute).matches();		
-	}
-    
-    /**
-     * Validates a generic description and checks that it contains content and is less than 1024
-     * characters long. ALL characters are allowed in descriptions.
-     * 
-     * @param desc the description to check
-     * @return true iff name isn't null or empty and is less than 1024 characters
-     */
-    public static boolean isValidPrimDescription(String desc){
-    	return patternPrimDesc.matcher(desc).matches();
-    }
-    
-    /**
-     * Determines whether the given string is a valid comma-separated list of positive integers
-     * @param ids The string to check
-     * @return True if the string is a comma-separated list of positive integers, false otherwise
-     */
-    
-    public static boolean isValidPosIntegerList(String ids) {
-    	String[] idArray=ids.split(",");
-    	for (String id : idArray) {
-    		if (!isValidPosInteger(id)) {
-    			return false;
-    		}
-    	}
-    	
-    	return true;
-    }
+
     
     /**
      * Validates the given parameters to determine if they can be used to construct a valid
@@ -255,9 +134,9 @@ public class Validator {
     		return Status.ERROR_MISSING_PARAM;
     	}
     	
-    	if (!isValidPosIntegerList(commandParams.get(C.PARAM_ID)) 
-    			|| (commandParams.containsKey(C.PARAM_FROM) && !isValidPosInteger(commandParams.get(C.PARAM_FROM)))
-    			|| !isValidPosInteger(commandParams.get(C.PARAM_TO))) {
+    	if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID)) 
+    			|| (commandParams.containsKey(C.PARAM_FROM) && !Validator.isValidPosInteger(commandParams.get(C.PARAM_FROM)))
+    			|| !Validator.isValidPosInteger(commandParams.get(C.PARAM_TO))) {
     		return Status.ERROR_INVALID_ID;
     	}
     	
@@ -295,7 +174,7 @@ public class Validator {
 		}
 		
 		if (!type.equals("jp_outputs")) {
-			if (!Validator.isValidInteger(commandParams.get(C.PARAM_ID))) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 			} 
 		} else {
@@ -305,7 +184,7 @@ public class Validator {
 			}
 		}
 		if (commandParams.containsKey(C.PARAM_PROCID)) {
-			if (!Validator.isValidInteger(commandParams.get(C.PARAM_PROCID))) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_PROCID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
@@ -356,7 +235,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		
@@ -390,20 +269,6 @@ public class Validator {
 			File test=new File(commandParams.get(C.PARAM_FILE));
 			if (!test.exists()) {
 				return Status.ERROR_FILE_NOT_FOUND;
-			}
-		}
-		
-		//if a name is specified, it must conform to StarExec rules
-		if (commandParams.containsKey(C.PARAM_NAME)) {
-			if (!isValidPrimName(commandParams.get(C.PARAM_NAME))) {
-				return Status.ERROR_BAD_NAME;
-			}
-		}
-		
-		//if a description is specified, it must conform to StarExec rules
-		if (commandParams.containsKey(C.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(C.PARAM_DESC))) {
-				return Status.ERROR_BAD_DESCRIPTION;
 			}
 		}
 		return 0;
@@ -449,7 +314,7 @@ public class Validator {
 		if (!paramsExist(new String[]{C.PARAM_BENCHTYPE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosInteger(commandParams.get(C.PARAM_BENCHTYPE))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_BENCHTYPE))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedUploadBenchmarksParams,commandParams);
@@ -468,7 +333,7 @@ public class Validator {
 			return valid;
 		}
 		if (commandParams.containsKey(C.PARAM_TYPE)) {
-			if (!Validator.isValidInteger(commandParams.get(C.PARAM_TYPE))) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_TYPE))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
@@ -542,7 +407,7 @@ public class Validator {
 			if (commandParams.containsKey(C.PARAM_USER)) {
 				return Status.ERROR_ID_AND_USER;
 			}
-			if (!isValidPosInteger(commandParams.get(C.PARAM_ID))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 			
@@ -567,7 +432,7 @@ public class Validator {
 		if (!paramsExist(new String[] {C.PARAM_TIME},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosNumber(commandParams.get(C.PARAM_TIME))) {
+		if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_TIME))) {
 			return Status.ERROR_BAD_TIME;
 		}
 		findUnnecessaryParams(allowedSleepParams,commandParams);
@@ -595,53 +460,42 @@ public class Validator {
 		}
 		
 		if (commandParams.containsKey(C.PARAM_SEED)) {
-			if (!isValidInteger(commandParams.get(C.PARAM_SEED))) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_SEED))) {
 				return Status.ERROR_SEED;
 			}
 		}
 		
 		//all IDs should be integers greater than 0
-		if (!isValidPosInteger(commandParams.get(C.PARAM_ID)) ||
-				!isValidPosInteger(commandParams.get(C.PARAM_QUEUEID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID)) ||
+				!Validator.isValidPosInteger(commandParams.get(C.PARAM_QUEUEID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		if (commandParams.containsKey(C.PARAM_PROCID)) {
-			if (!isValidPosInteger(commandParams.get(C.PARAM_PROCID))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_PROCID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
 		if (commandParams.containsKey(C.PARAM_PREPROCID)) {
-			if (!isValidPosInteger(commandParams.get(C.PARAM_PREPROCID))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_PREPROCID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
 		
 		//timeouts should also be integers greater than 0
 		if (commandParams.containsKey(C.PARAM_CPUTIMEOUT)) {
-			if (!isValidPosInteger(commandParams.get(C.PARAM_CPUTIMEOUT))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_CPUTIMEOUT))) {
 				return Status.ERROR_INVALID_TIMEOUT;
 			}
 		}
 		
 		if (commandParams.containsKey(C.PARAM_WALLCLOCKTIMEOUT)) {
-			if (!isValidPosInteger(commandParams.get(C.PARAM_WALLCLOCKTIMEOUT))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_WALLCLOCKTIMEOUT))) {
 				return Status.ERROR_INVALID_TIMEOUT;
 			}
 		}
 		if (commandParams.containsKey(C.PARAM_MEMORY)) {
-			if (!isValidPosDouble(commandParams.get(C.PARAM_MEMORY))) {
+			if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_MEMORY))) {
 				return Status.ERROR_INVALID_MEMORY;
-			}
-		}
-		
-		if (commandParams.containsKey(C.PARAM_NAME)) {
-			if (!isValidPrimName(commandParams.get(C.PARAM_NAME))) {
-				return Status.ERROR_BAD_NAME;
-			}
-		}
-		if (commandParams.containsKey(C.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(C.PARAM_DESC))) {
-				return Status.ERROR_BAD_DESCRIPTION;
 			}
 		}
 		findUnnecessaryParams(allowedCreateJobParams,commandParams);
@@ -661,20 +515,10 @@ public class Validator {
 		if (! paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosInteger(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
-		
-		if (commandParams.containsKey(C.PARAM_NAME)) {
-			if (!isValidPrimName(commandParams.get(C.PARAM_NAME))) {
-				return Status.ERROR_BAD_NAME;
-			}
-		}
-		if (commandParams.containsKey(C.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(C.PARAM_DESC))) {
-				return Status.ERROR_BAD_DESCRIPTION;
-			}
-		}
+
 		findUnnecessaryParams(allowedCreateSubspaceParams,commandParams);
 		return 0;
 	}
@@ -690,7 +534,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedSetSpaceVisibilityParams,commandParams);
@@ -726,7 +570,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedPauseOrResumeParams,commandParams);
@@ -744,7 +588,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(C.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedRerunParams,commandParams);
@@ -762,7 +606,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosNumber(commandParams.get(C.PARAM_TIME))) {
+		if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_TIME))) {
 			return Status.ERROR_BAD_TIME;
 		}
 		
@@ -817,17 +661,7 @@ public class Validator {
 			missingParam=C.PARAM_VAL;
 			return Status.ERROR_MISSING_PARAM;
 		}
-		
-		if (setting.equals("firstname")|| setting.equals("lastname")) {
-			if(!isValidPrimName(newVal)){
-				return Status.ERROR_BAD_NAME;
-			}
-		} else if (setting.equals("institution")) {
-			if (!isValidInstitution(newVal)) {
-				return Status.ERROR_BAD_INSTITUTION;
-			}
-		}
-		
+
 		findUnnecessaryParams(allowedSetUserSettingParams,commandParams);
 		return 0;
 	}
@@ -842,7 +676,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if(!Validator.isValidInteger(commandParams.get(C.PARAM_ID))) {
+		if(!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		
@@ -861,7 +695,7 @@ public class Validator {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if(!Validator.isValidInteger(commandParams.get(C.PARAM_ID))) {
+		if(!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		

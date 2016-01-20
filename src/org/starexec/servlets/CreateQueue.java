@@ -118,7 +118,7 @@ public class CreateQueue extends HttpServlet {
 		try {
 			int userId=SessionUtil.getUserId(request);
 			String queueName = request.getParameter(name);
-			if (!Validator.isValidInteger(request.getParameter(maxCpuTimeout)) || !Validator.isValidInteger(request.getParameter(maxWallTimeout))) {
+			if (!Validator.isValidPosInteger(request.getParameter(maxCpuTimeout)) || !Validator.isValidPosInteger(request.getParameter(maxWallTimeout))) {
 				return new ValidatorStatusCode(false, "Timeouts need to be valid integers");
 			}
 			

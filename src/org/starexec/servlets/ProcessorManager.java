@@ -311,7 +311,7 @@ public class ProcessorManager extends HttpServlet {
 				return new ValidatorStatusCode(false,"The supplied description is invalid-- please refer to the help files to see the correct format");
 			}
 			
-			if(!Validator.isValidInteger((String)form.get(OWNING_COMMUNITY))) {
+			if(!Validator.isValidPosInteger((String)form.get(OWNING_COMMUNITY))) {
 
 				return new ValidatorStatusCode(false,"The given community ID is not a valid integer");
 			}

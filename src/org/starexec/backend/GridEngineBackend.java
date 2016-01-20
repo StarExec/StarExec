@@ -13,8 +13,8 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.starexec.command.Validator;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * This is a backend implementation that uses Sun Grid Engine

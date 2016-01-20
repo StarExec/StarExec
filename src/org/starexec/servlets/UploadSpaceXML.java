@@ -170,7 +170,7 @@ public class UploadSpaceXML extends HttpServlet {
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
 		try {
 			
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))){
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))){
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			Integer.parseInt((String)form.get(SPACE_ID));

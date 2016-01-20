@@ -149,7 +149,7 @@ public class Registration extends HttpServlet {
 	    		return new ValidatorStatusCode(false, "You need to supply a password");
 	    	}    	    	   
 		    
-	    	if (!Validator.isValidInteger(request.getParameter(Registration.USER_COMMUNITY))) {
+	    	if (!Validator.isValidPosInteger(request.getParameter(Registration.USER_COMMUNITY))) {
 	    		return new ValidatorStatusCode(false, "The given community id is not a valid integer");
 	    	}
 
