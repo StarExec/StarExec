@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.starexec.constants.R;
+
 class CommandParser {
 	
 	private ArgumentParser parser=null;
@@ -86,11 +88,11 @@ class CommandParser {
 		try {
 			Map<String,String> attrs=null;
 			if(c.equals(C.COMMAND_VIEWJOB)) {
-				attrs=parser.getPrimitiveAttributes(commandParams, "job");
+				attrs=parser.getPrimitiveAttributes(commandParams, R.JOB);
 			} else if (c.equals(C.COMMAND_VIEWSOLVER)) {
-				attrs=parser.getPrimitiveAttributes(commandParams, "solver");
+				attrs=parser.getPrimitiveAttributes(commandParams, R.SOLVER);
 			}  else if (c.equals(C.COMMAND_VIEWSPACE)) {
-				attrs=parser.getPrimitiveAttributes(commandParams, "space");
+				attrs=parser.getPrimitiveAttributes(commandParams, R.SPACE);
 			} else if (c.equals(C.COMMAND_VIEWBENCH)) {
 				attrs=parser.getPrimitiveAttributes(commandParams, "benchmark");
 			} else if (c.equals(C.COMMAND_VIEWPROCESSOR)) {
@@ -288,10 +290,10 @@ class CommandParser {
 			int serverStatus=0;
 			List<Integer> ids=null;
 			if (c.equals(C.COMMAND_COPYSOLVER)) {
-				ids=parser.copyPrimitives(commandParams,"solver");
+				ids=parser.copyPrimitives(commandParams,R.SOLVER);
 				serverStatus=Math.min(0, ids.get(0));
 			} else if (c.equals(C.COMMAND_LINKSOLVER)) {
-				serverStatus=parser.linkPrimitives(commandParams,"solver");
+				serverStatus=parser.linkPrimitives(commandParams,R.SOLVER);
 			}  else if (c.equals(C.COMMAND_COPYBENCH)) {
 				ids=parser.copyPrimitives(commandParams,"benchmark");
 				serverStatus=Math.min(0, ids.get(0));
@@ -299,10 +301,10 @@ class CommandParser {
 				serverStatus=parser.linkPrimitives(commandParams, "benchmark");;
 			} else if (c.equals(C.COMMAND_COPYSPACE)) {
 				
-				ids=parser.copyPrimitives(commandParams,"space");
+				ids=parser.copyPrimitives(commandParams,R.SPACE);
 				serverStatus=Math.min(0, ids.get(0));
 			} else if (c.equals(C.COMMAND_LINKJOB)) {
-				serverStatus=parser.linkPrimitives(commandParams,"job");
+				serverStatus=parser.linkPrimitives(commandParams,R.JOB);
 			} else if (c.equals(C.COMMAND_LINKUSER)) {
 				serverStatus=parser.linkPrimitives(commandParams, "user");
 			}
@@ -338,11 +340,11 @@ class CommandParser {
 			if (c.equals(C.COMMAND_REMOVEBENCHMARK)) {
 				serverStatus=parser.removePrimitive(commandParams, "benchmark");
 			} else if (c.equals(C.COMMAND_REMOVESOLVER) || c.equals(C.COMMAND_DELETEPOSTPROC)) {
-				serverStatus=parser.removePrimitive(commandParams, "solver");
+				serverStatus=parser.removePrimitive(commandParams, R.SOLVER);
 			}  else if (c.equals(C.COMMAND_REMOVEUSER)) {
 				serverStatus=parser.removePrimitive(commandParams,"user");
 			} else if(c.equals(C.COMMAND_REMOVEJOB))  {
-				serverStatus=parser.removePrimitive(commandParams, "job");
+				serverStatus=parser.removePrimitive(commandParams, R.JOB);
 			} else if (c.equals(C.COMMAND_REMOVESUBSPACE)) {
 				serverStatus=parser.removePrimitive(commandParams,"subspace");
 			
@@ -374,11 +376,11 @@ class CommandParser {
 			} else if (c.equals(C.COMMAND_DELETEBENCHPROC) || c.equals(C.COMMAND_DELETEPOSTPROC)) {
 				serverStatus=parser.deletePrimitive(commandParams, "processor");
 			} else if (c.equals(C.COMMAND_DELETESOLVER)) {
-				serverStatus=parser.deletePrimitive(commandParams,"solver");
+				serverStatus=parser.deletePrimitive(commandParams,R.SOLVER);
 			} else if(c.equals(C.COMMAND_DELETECONFIG))  {
 				serverStatus=parser.deletePrimitive(commandParams, "configuration");
 			} else if (c.equals(C.COMMAND_DELETEJOB)) {
-				serverStatus=parser.deletePrimitive(commandParams,"job");
+				serverStatus=parser.deletePrimitive(commandParams,R.JOB);
 			}
 			else {
 				return Status.ERROR_BAD_COMMAND;
@@ -744,7 +746,7 @@ class CommandParser {
 				nextName=baseFileName+"-info"+String.valueOf(infoCounter)+extension;
 				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
 				since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
-				status=parser.downloadArchive("job",since,null,null,commandParams);
+				status=parser.downloadArchive(R.JOB,since,null,null,commandParams);
 				if (status!=C.SUCCESS_NOFILE) {
 					infoCounter+=1;
 				} else {
@@ -761,7 +763,7 @@ class CommandParser {
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
 				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
 				since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
-				status=parser.downloadArchive("j_outputs",since,null,null, commandParams);
+				status=parser.downloadArchive(R.JOB_OUTPUT,since,null,null, commandParams);
 				if (status!=C.SUCCESS_NOFILE) {
 					outputCounter+=1;
 				} else {
@@ -808,48 +810,48 @@ class CommandParser {
 			Boolean hierarchy=null;
 			Integer since=null;
 			if (c.equals(C.COMMAND_GETJOBOUT)) {
-				type="j_outputs";
+				type=R.JOB_OUTPUT;
 			} else if (c.equals(C.COMMAND_GETJOBINFO)) {
-				type="job";
+				type=R.JOB;
 			} else if (c.equals(C.COMMAND_GETSPACEXML)) {
-				type="spaceXML";
+				type=R.SPACE_XML;
 				
 			} else if (c.equals(C.COMMAND_GETJOBXML)){
-			        type="jobXML";
+			        type=R.JOB_XML;
 
 			} else if (c.equals(C.COMMAND_GETSPACE)) {
 				hierarchy=false;
-				type="space";
+				type=R.SPACE;
 				
 			} else if (c.equals(C.COMMAND_GETSPACEHIERARCHY)) {
 				hierarchy=true;
-				type="space";
+				type=R.SPACE;
 				
 			} else if (c.equals(C.COMMAND_GETPOSTPROC)) {
-				type="proc";
+				type=R.PROCESSOR;
 				procClass="post";
 				
 			} else if (c.equals(C.COMMAND_GETBENCHPROC)) {
-				type="proc";
-				procClass="bench";
+				type=R.PROCESSOR;
+				procClass=R.BENCHMARK;
 				
 			}else if (c.equals(C.COMMAND_GETPREPROC)) {
-				type="proc";
+				type=R.PROCESSOR;
 				procClass="pre";
 				
 			} else if (c.equals(C.COMMAND_GETBENCH)) {
-				type="bench";
+				type=R.BENCHMARK;
 				
 			} else if (c.equals(C.COMMAND_GETSOLVER)) {
-				type="solver";
+				type=R.SOLVER;
 				
 			} else if (c.equals(C.COMMAND_GETJOBPAIR)) {
-				type="jp_output";
+				type=R.PAIR_OUTPUT;
 				
 			} else if (c.equals(C.COMMAND_GETJOBPAIRS)) {
-				type="jp_outputs";
+				type=R.JOB_OUTPUTS;
 			} else if (c.equals(C.COMMAND_GETNEWJOBINFO)) {
-				type="job";
+				type=R.JOB;
 				//Note: The reason the parameter "since" is not being taken from R.PARAM_SINCE
 				//is that it is actually expected on StarExec-- it is not a command line parameter,
 				//even though that parameter also happens to be "since"
@@ -859,7 +861,7 @@ class CommandParser {
 					since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 				}
 			} else if (c.equals(C.COMMAND_GETNEWJOBOUT)) {
-				type="j_outputs";
+				type=R.JOB_OUTPUT;
 				if (commandParams.containsKey(C.PARAM_SINCE)) {
 					since=Integer.parseInt(commandParams.get(C.PARAM_SINCE));
 				} else {

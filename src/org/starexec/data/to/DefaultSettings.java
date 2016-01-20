@@ -7,7 +7,6 @@ import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
 
 public class DefaultSettings extends Identifiable {
-	private static Logger log=Logger.getLogger(DefaultSettings.class);
 	public enum SettingType {
 		USER(0), COMMUNITY(1);
 		

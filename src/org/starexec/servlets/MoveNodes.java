@@ -2,7 +2,6 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -20,7 +19,6 @@ import org.starexec.data.database.Queues;
 
 
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 

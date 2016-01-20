@@ -1,9 +1,6 @@
 package org.starexec.command;
 
 import java.util.HashMap;
-
-import org.starexec.constants.R;
-
 /**
  * This class holds constants specific to StarexecCommand
  * @author Eric

@@ -477,7 +477,6 @@ public class ResourceLoader {
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
-			String [] empty=new String[0];
 			R.BACKEND.createQueue(queueName, null,null);
 			
 			//reloads worker nodes and queues

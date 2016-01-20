@@ -2872,7 +2872,7 @@ public class Jobs {
 				curSolver=results.getInt("config.solver_id");
 				JoblineStage stage=JobPairs.resultToStage(results);
 				if (!discoveredSolvers.containsKey(curSolver)) {
-					Solver solver= Solvers.resultToSolver(results,"solver");				
+					Solver solver= Solvers.resultToSolver(results,R.SOLVER);				
 					stage.setSolver(solver);
 					discoveredSolvers.put(curSolver, solver);
 				}

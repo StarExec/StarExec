@@ -1229,10 +1229,10 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
 			return gson.toJson(Websites.getAllForJavascript(userId, WebsiteType.USER));
-		} else if(type.equals("space")){
+		} else if(type.equals(R.SPACE)){
 			//SolverSecurity.canAssociateWebsite(solverId, userId, name)
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
-		} else if (type.equals("solver")) {
+		} else if (type.equals(R.SOLVER)) {
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
@@ -1259,7 +1259,7 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			success = Websites.add(id, url, name,WebsiteType.USER);
-		} else if (type.equals("space")) {
+		} else if (type.equals(R.SPACE)) {
 			// Make sure this user is capable of adding a website to the space
 			ValidatorStatusCode status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
 			if (!status.isSuccess()) {
@@ -1269,7 +1269,7 @@ public class RESTServices {
 			log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
 			success = Websites.add(id, url, name, WebsiteType.SPACE);
 			
-		} else if (type.equals("solver")) {
+		} else if (type.equals(R.SOLVER)) {
 			//Make sure this user is the solver owner
 			ValidatorStatusCode status=SolverSecurity.canAssociateWebsite(id, userId,name,url);
 			if (!status.isSuccess()) {
@@ -4198,7 +4198,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getGsonPrimitive(@Context HttpServletRequest request, @PathParam("id") int id, @PathParam("type") String type) {
 		int userId=SessionUtil.getUserId(request);
-		if (type.equals("solver")) {
+		if (type.equals(R.SOLVER)) {
 			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
@@ -4210,14 +4210,14 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id,false));
-		} else if (type.equals("job")) {
+		} else if (type.equals(R.JOB)) {
 			ValidatorStatusCode status=JobSecurity.canGetJsonJob(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Jobs.getIncludeDeleted(id));
 			
- 		} else if (type.equals("space")) {
+ 		} else if (type.equals(R.SPACE)) {
  			ValidatorStatusCode status=SpaceSecurity.canGetJsonSpace(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);

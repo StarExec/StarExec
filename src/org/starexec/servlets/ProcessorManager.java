@@ -60,7 +60,6 @@ public class ProcessorManager extends HttpServlet {
 	private static final String ADD_ACTION = "add";
 	
 	private static final String PROCESSOR_TYPE = "type";
-	private static final String BENCH_TYPE = "bench";
 	private static final String PRE_PROCESS_TYPE = "pre";
 	private static final String POST_PROCESS_TYPE = "post";
         private static final String UPDATE_PROCESS_TYPE = "update";
@@ -241,7 +240,7 @@ public class ProcessorManager extends HttpServlet {
 			return ProcessorType.POST;
 		} else if (type.equals(PRE_PROCESS_TYPE)) {
 			 return ProcessorType.PRE;
-		} else if(type.equals(BENCH_TYPE)) {
+		} else if(type.equals(R.BENCHMARK)) {
 			return ProcessorType.BENCH;
 		} else if(type.equals(UPDATE_PROCESS_TYPE)) {
 		    return ProcessorType.UPDATE;
@@ -319,7 +318,7 @@ public class ProcessorManager extends HttpServlet {
 			String procType = (String)form.get(PROCESSOR_TYPE);
 			if(procType==null || !procType.equals(POST_PROCESS_TYPE) && 
 			   !procType.equals(PRE_PROCESS_TYPE) && 
-			   !procType.equals(BENCH_TYPE) && !procType.equals(UPDATE_PROCESS_TYPE)) {
+			   !procType.equals(R.BENCHMARK) && !procType.equals(UPDATE_PROCESS_TYPE)) {
 
 				return new ValidatorStatusCode(false,"The given processor type is invalid");
 			}

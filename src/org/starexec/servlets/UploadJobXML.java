@@ -47,7 +47,7 @@ public class UploadJobXML extends HttpServlet {
 	private static final String UPLOAD_FILE = "f";
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-	private static final String SPACE_ID = "space";
+	private static final String SPACE_ID = R.SPACE;
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String method = "doPost";
@@ -108,7 +108,6 @@ public class UploadJobXML extends HttpServlet {
 	}
 
 	private boolean userMayUploadJobXML(int userId, int spaceId) {
-		final String method = "userMayUploadJobXML";
 		Permission userPermissions = Permissions.get(userId, spaceId);
 		if (userPermissions == null || !userPermissions.canAddJob()) {
 			return false;	

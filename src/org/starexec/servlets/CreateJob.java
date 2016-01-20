@@ -54,7 +54,6 @@ public class CreateJob extends HttpServlet {
 	private static final String configs = "configs";
 	private static final String run = "runChoice";
 	private static final String benchChoice = "benchChoice";
-	private static final String benchmarks = "bench";
 	private static final String cpuTimeout = "cpuTimeout";
 	private static final String clockTimeout = "wallclockTimeout";
 	private static final String spaceId = "sid";
@@ -66,7 +65,6 @@ public class CreateJob extends HttpServlet {
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
 	private static final String benchName = "benchName";
-	private static final String solver = "solver";
 
 
 
@@ -203,8 +201,8 @@ public class CreateJob extends HttpServlet {
 		//Depending on our run selection, handle each case differently
 		//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 		if (selection.equals("quickJob")) {
-			int solverId=Integer.parseInt(request.getParameter(solver));
-			String benchText=request.getParameter(benchmarks);
+			int solverId=Integer.parseInt(request.getParameter(R.SOLVER));
+			String benchText=request.getParameter(R.BENCHMARK);
 			String bName=request.getParameter(benchName);
 			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
 			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
@@ -259,7 +257,7 @@ public class CreateJob extends HttpServlet {
 					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 				}
 			} else {
-				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(benchmarks));
+				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
 				JobManager.buildJob(j, benchmarkIds, configIds, space);
 			}
 		}
@@ -430,14 +428,14 @@ public class CreateJob extends HttpServlet {
 
 			if (request.getParameter(run).equals("quickJob")) {
 				//we only need to check to see if the space is valid if a space was actually specified
-				if (!Util.paramExists(benchmarks, request)) {
+				if (!Util.paramExists(R.BENCHMARK, request)) {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
 				}
 				
-				if (!Validator.isValidPosInteger(request.getParameter(solver))) {
+				if (!Validator.isValidPosInteger(request.getParameter(R.SOLVER))) {
 					return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
 				}
-				int solverId=Integer.parseInt(request.getParameter(solver));
+				int solverId=Integer.parseInt(request.getParameter(R.SOLVER));
 				if (!Permissions.canUserSeeSolver(solverId, userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
 				}
@@ -456,11 +454,11 @@ public class CreateJob extends HttpServlet {
 
 				// Check to see if we have a valid list of benchmark ids
 				if (request.getParameter(benchChoice).equals("runChosenFromSpace")){
-					if (!Validator.isValidIntegerList(request.getParameterValues(benchmarks))) {
+					if (!Validator.isValidIntegerList(request.getParameterValues(R.BENCHMARK))) {
 						return new ValidatorStatusCode(false, "All selected benchmark IDs need to be valid integers");
 					}
 				}
-				List<Integer> benchmarkIds=Util.toIntegerList(request.getParameterValues(benchmarks));
+				List<Integer> benchmarkIds=Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
 				if (request.getParameter(benchChoice).equals("runChosenFromSpace") && benchmarkIds.size() == 0) {
 					return new ValidatorStatusCode(false, "You need to chose at least one benchmark to run a job");
 				}

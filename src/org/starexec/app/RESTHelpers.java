@@ -97,10 +97,10 @@ public class RESTHelpers {
 
 			if (Spaces.getCountInSpace(space.getId(), userID, true) > 0) {
 				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						"space");
+						R.SPACE);
 			} else {
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						"space");
+						R.SPACE);
 			}
 
 			list.add(t);
@@ -126,12 +126,12 @@ public class RESTHelpers {
 			if (Spaces.getCountInJobSpace(space.getId()) > 0) {
 				log.debug("the max stages for this job space is "+space.getMaxStages());
 				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						"space",space.getMaxStages());
+						R.SPACE,space.getMaxStages());
 				
 			} else {
 				log.debug("the max stages for this job space is "+space.getMaxStages());
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						"space",space.getMaxStages());
+						R.SPACE,space.getMaxStages());
 			}
 			
 			list.add(t);
@@ -215,7 +215,7 @@ public class RESTHelpers {
 
 		for (Space space : communities) {
 			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(),
-					"leaf", "space");
+					"leaf", R.SPACE);
 			list.add(t);
 		}
 
@@ -2648,9 +2648,9 @@ public class RESTHelpers {
 		for (JobSpace js : subspaces) {
 			JSTreeItem node = null;
 			if (Spaces.getCountInJobSpace(js.getId()) > 0) {
-				node = new JSTreeItem(js.getName(), js.getId(), "closed", "space",js.getMaxStages(), className);
+				node = new JSTreeItem(js.getName(), js.getId(), "closed", R.SPACE,js.getMaxStages(), className);
 			} else {
-				node = new JSTreeItem(js.getName(), js.getId(), "leaf","space",js.getMaxStages(), className);
+				node = new JSTreeItem(js.getName(), js.getId(), "leaf",R.SPACE,js.getMaxStages(), className);
 			}
 			root.add(node);
 			buildFullJsTreeHelper(js.getId(), jobId, node.getChildren(), false);

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Users;
@@ -33,12 +34,10 @@ public class AddSettingProfile extends HttpServlet {
 	private static String POST_PROCESSOR = "postp";
 	private static String PRE_PROCESSOR ="prep";
 	private static String BENCH_PROCESSOR ="benchp";
-	private static String SOLVER="solver";
 	private static String NAME="name";
 	private static String CPU_TIMEOUT="cpu";
 	private static String WALLCLOCK_TIMEOUT="wall";
 	private static String DEPENDENCIES="dep";
-	private static String BENCH_ID="bench";
 	private static String MAX_MEMORY="mem";
 	private static String SETTING_ID= "settingId"; //this is set if we are doing an update only
 	private static String USER_ID_OF_OWNER = "userIdOfOwner";
@@ -96,10 +95,10 @@ public class AddSettingProfile extends HttpServlet {
 		
 		//the next attributes do not necessarily need to be set, as they can be null
 		String postId=request.getParameter(POST_PROCESSOR);
-		String solver=request.getParameter(SOLVER);
+		String solver=request.getParameter(R.SOLVER);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
-		String benchId=request.getParameter(BENCH_ID);
+		String benchId=request.getParameter(R.BENCHMARK);
 
 		
 		//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
@@ -175,7 +174,7 @@ public class AddSettingProfile extends HttpServlet {
 		}
 		
 		String postId=request.getParameter(POST_PROCESSOR);
-		String solver=request.getParameter(SOLVER);
+		String solver=request.getParameter(R.SOLVER);
 		log.debug("got sent the solver "+solver);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);

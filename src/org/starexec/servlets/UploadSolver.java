@@ -60,7 +60,7 @@ public class UploadSolver extends HttpServlet {
     private static final String SOLVER_DESC = "desc";
     private static final String SOLVER_DESC_FILE = "d";
     private static final String SOLVER_DOWNLOADABLE = "dlable";
-    private static final String SPACE_ID = "space";
+    private static final String SPACE_ID = R.SPACE;
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
     private static final String UPLOAD_METHOD="upMethod";
@@ -476,7 +476,7 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
 			}
 			
-			int spaceId=Integer.parseInt((String)form.get("space"));
+			int spaceId=Integer.parseInt((String)form.get(R.SPACE));
 			Permission userPermissions = SessionUtil.getPermission(request, spaceId);
 			if (userPermissions == null || !userPermissions.canAddSolver()) {
 				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");

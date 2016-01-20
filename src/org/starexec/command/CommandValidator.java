@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.starexec.constants.R;
 import org.starexec.util.Validator;
 
 public class CommandValidator {
@@ -143,12 +144,12 @@ public class CommandValidator {
     	//the hierarchy parameter is also acceptable if the type is either solver or space
     	if (type.equals("user")) {
     		findUnnecessaryParams(allowedCopyUserParams,commandParams);
-    	} else if (type.equals("space")) {
+    	} else if (type.equals(R.SPACE)) {
     		findUnnecessaryParams(allowedCopySpaceParams,commandParams);
-    	} else if (type.equals("solver")) {
+    	} else if (type.equals(R.SOLVER)) {
     		findUnnecessaryParams(allowedCopySolverParams,commandParams);
 
-    	} else if (type.equals("benchmark") || type.equals("job")) {
+    	} else if (type.equals("benchmark") || type.equals(R.JOB)) {
     		findUnnecessaryParams(allowedCopyBenchmarkParams,commandParams);
     	}
     	
@@ -159,7 +160,7 @@ public class CommandValidator {
 	/**
 	 * Checks to see if the parameters given by the user comprise a valid download request
 	 * @param commandParams Params given by the user
-	 * @param type The type of the download ("solver", "benchmark", or so on)
+	 * @param type The type of the download (R.SOLVER, "benchmark", or so on)
 	 * @param since If the download type is new job output, since is the completion ID to retrieve results after
 	 * @return A status code as defined in Status.java
 	 */
@@ -173,7 +174,7 @@ public class CommandValidator {
 			return Status.ERROR_INVALID_FILEPATH;
 		}
 		
-		if (!type.equals("jp_outputs")) {
+		if (!type.equals(R.JOB_OUTPUTS)) {
 			if (!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 			} 
@@ -197,11 +198,11 @@ public class CommandValidator {
 				return Status.ERROR_FILE_EXISTS;
 			}
 		}
-		if (type.equals("job")) {
+		if (type.equals(R.JOB)) {
 			findUnnecessaryParams(allowedDownloadCSVParams,commandParams);
-		} else if  (type.equals("space")) {
+		} else if  (type.equals(R.SPACE)) {
 			findUnnecessaryParams(allowedDownloadSpaceParams,commandParams);
-		}  else if (type.equals("spaceXML")) {
+		}  else if (type.equals(R.SPACE_XML)) {
 			findUnnecessaryParams(allowedDownloadSpaceXMLParams,commandParams);
 		}
 		else {

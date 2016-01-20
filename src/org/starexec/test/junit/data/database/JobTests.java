@@ -10,7 +10,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.JobStatus;
-import org.starexec.util.Util;
 
 
 @RunWith(PowerMockRunner.class)

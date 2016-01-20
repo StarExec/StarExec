@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 
 class ArgumentParser {
@@ -412,7 +413,7 @@ class ArgumentParser {
 			}
 			String location=commandParams.get(C.PARAM_OUTPUT_FILE);
 
-			if (type.equals("jp_outputs")) {
+			if (type.equals(R.JOB_OUTPUTS)) {
 				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(C.PARAM_ID));
 				return con.downloadJobPairs(ids, location);
 			} else { 
@@ -694,7 +695,7 @@ class ArgumentParser {
 	 */
 	
 	protected int uploadBenchProc(HashMap<String,String> commandParams) {
-		return uploadProcessor(commandParams, "bench");
+		return uploadProcessor(commandParams, R.BENCHMARK);
 	}
 	
 	

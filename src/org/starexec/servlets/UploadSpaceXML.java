@@ -44,7 +44,7 @@ public class UploadSpaceXML extends HttpServlet {
 	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);	
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-    private static final String SPACE_ID = "space";
+    private static final String SPACE_ID = R.SPACE;
     private static final String UPLOAD_FILE = "f";
 
     

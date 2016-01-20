@@ -56,7 +56,7 @@ public class BenchmarkUploader extends HttpServlet {
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
 	// Request attributes
-	private static final String SPACE_ID = "space";
+	private static final String SPACE_ID = R.SPACE;
 	private static final String UPLOAD_METHOD = "upMethod";
 	private static final String BENCHMARK_FILE = "benchFile";
 	private static final String BENCHMARK_TYPE = "benchType";
@@ -473,7 +473,7 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 			
 			
-			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get(R.SPACE)));
 
 			logUtil.trace(method, "perm="+perm);
 			logUtil.trace(method, "uploadMethod="+uploadMethod);

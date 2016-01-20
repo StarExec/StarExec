@@ -111,7 +111,7 @@ public class BatchUtil {
      *  @param updates whether or not to convert benchmarks to updates
      *  @return spacesElement for the xml file to represent space hierarchy of input space	 *  
      */	
-    public Element generateSpacesXML(Space space, int userId, boolean includeAttributes, boolean updates, int upid){		
+    private Element generateSpacesXML(Space space, int userId, boolean includeAttributes, boolean updates, int upid){		
 		log.debug("Generating Space XML for space " + space.getId());
 		Element spacesElement=null;
 	
@@ -136,7 +136,7 @@ public class BatchUtil {
 	 *  @param updates whether or not to convert benchmarks to updates
 	 *  @return spaceElement for xml file to represent space hierarchy of input space 
 	 */	
-    public Element generateSpaceXML(Space space, int userId, boolean includeAttributes, boolean updates, int upid){		
+    private Element generateSpaceXML(Space space, int userId, boolean includeAttributes, boolean updates, int upid){		
 		log.debug("Generating Space XML for space " + space.getId());
 		
 		Element spaceElement = doc.createElement("Space");
@@ -358,7 +358,7 @@ public class BatchUtil {
 	 *  @throws ParserConfigurationException
 	 *  @throws IOException   
 	 */	
-	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
+	private Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
 		factory.setNamespaceAware(true);
@@ -555,7 +555,7 @@ public class BatchUtil {
 	 * @param userId id of user making request
 	 * @return Integer the id of the new space or -1 on error
 	 */
-	public Integer createSpaceFromElement(Element spaceElement, int parentId, int userId, Integer statusId){
+	private Integer createSpaceFromElement(Element spaceElement, int parentId, int userId, Integer statusId){
 		Space space = new Space();
 		space.setName(spaceElement.getAttribute("name"));
 		Permission permission = new Permission(true);//default permissions
@@ -935,7 +935,7 @@ public class BatchUtil {
 				log.debug("Got here writing text to text.txt" + update.text);
 				w.write(update.text);
 				w.flush();
-
+				w.close();
 				
 				String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
 				File processFile = new File(sb, new File(up.getFilePath()).getName());

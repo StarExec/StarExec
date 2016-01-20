@@ -116,7 +116,7 @@ public class UploadPicture extends HttpServlet {
 				sb.append(id);
 				fileName = sb.toString();
 				redir = Util.docRoot("secure/edit/account.jsp");
-			} else if (type.equals("solver")) {
+			} else if (type.equals(R.SOLVER)) {
 				sb.delete(0, sb.length());
 				sb.append("/solvers/Pic");
 				sb.append(id);			
@@ -177,7 +177,7 @@ public class UploadPicture extends HttpServlet {
 				return new ValidatorStatusCode(false, "The supplied ID is not a valid integer");
 			}
 			String type=(String)form.get(TYPE);
-			if (type==null || (!type.equals("solver") && !type.equals("user") && !type.equals("benchmark"))) {
+			if (type==null || (!type.equals(R.SOLVER) && !type.equals("user") && !type.equals("benchmark"))) {
 				return new ValidatorStatusCode(false, "The supplied image type is not valid");
 			}
 			

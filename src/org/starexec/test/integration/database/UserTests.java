@@ -216,6 +216,7 @@ public class UserTests extends TestSequence {
 	 * Tests that a user's solver directory is deleted when the user is deleted.
 	 * @author Albert Giegerich
 	 */
+	@StarexecTest
 	private void DeleteUserDeletesUsersSolverDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
 		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 

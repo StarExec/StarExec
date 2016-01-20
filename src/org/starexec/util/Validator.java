@@ -318,7 +318,7 @@ public class Validator {
     }
     
     public static boolean isValidPictureType(String type) {
-    	return (type.equals("user") || type.equals("benchmark") || type.equals("solver"));
+    	return (type.equals("user") || type.equals("benchmark") || type.equals(R.SOLVER));
     }
     
     /**
