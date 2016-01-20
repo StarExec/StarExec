@@ -63,7 +63,6 @@ public class CreateQueue extends HttpServlet {
 		//String node_name = (String)request.getParameter(Nodes);
 		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 
-		HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
 		
 		log.debug("nodeIds = " + nodeIds);
 		LinkedList<String> nodeNames = new LinkedList<String>();
@@ -71,12 +70,7 @@ public class CreateQueue extends HttpServlet {
 		if (nodeIds != null) {
 		    for (int id : nodeIds) {
 				log.debug("id = " + id);
-				WorkerNode n = new WorkerNode();
-				n.setId(id);
-				n.setName(Cluster.getNodeNameById(id));
-				Queue q = Cluster.getQueueForNode(n);
-				NQ.put(n, q);
-	
+				Queue q = Cluster.getQueueForNode(id);
 				nodeNames.add(Cluster.getNodeNameById(id));
 				if(q == null){
 				    queueNames.add(null);

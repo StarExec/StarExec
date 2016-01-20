@@ -504,10 +504,10 @@ public class Cluster {
 
 	/**
 	 * Gets the queue that owns the given node
-	 * @param node The node to check
+	 * @param nodeId The node to check
 	 * @return The queue, or null if none exists or on error.
 	 */
-	public static Queue getQueueForNode(WorkerNode node) {
+	public static Queue getQueueForNode(int nodeId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -515,7 +515,7 @@ public class Cluster {
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL GetQueueForNode(?)}");
-			procedure.setInt(1, node.getId());
+			procedure.setInt(1, nodeId);
 			results = procedure.executeQuery();
 			Queue q = new Queue();
 			while (results.next()){

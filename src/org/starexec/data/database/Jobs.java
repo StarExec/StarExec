@@ -3498,7 +3498,6 @@ public class Jobs {
 	 */
 	public static JobStatus getJobStatusCode(int jobId) {
 		JobStatus status=new JobStatus();
-		
 		try {
 			int a=Jobs.isJobPausedOrKilled(jobId);
 			if (a==1) {

@@ -62,11 +62,11 @@ public class UserTests extends TestSequence {
 
 	}
 	
-	//TODO: Confirm the password was actually updated correctly?
 	@StarexecTest
 	private void setPasswordTest() {
 		String randomPass=TestUtil.getRandomPassword();
 		Assert.assertTrue(Users.updatePassword(user1.getId(), randomPass));
+		Assert.assertEquals(Hash.hashPassword(randomPass), Users.getPassword(user1.getId()));
 	}
 	
 	@StarexecTest

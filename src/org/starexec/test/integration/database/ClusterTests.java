@@ -49,7 +49,7 @@ public class ClusterTests extends TestSequence {
 	
 	@StarexecTest
 	private void getQueueForNode() {
-		Assert.assertEquals(allQueue.getId(),Cluster.getQueueForNode(n).getId());
+		Assert.assertEquals(allQueue.getId(),Cluster.getQueueForNode(n.getId()).getId());
 	}
 	
 	@StarexecTest
