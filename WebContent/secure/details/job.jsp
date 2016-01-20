@@ -148,7 +148,6 @@
 			<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
 			
 			<button id="matrixViewButton" type="button">Matrix View</button>
-			<button id="downloadJobPageButton" type="button">Download Job Page</button>
 				
 			
 			<fieldset id="statsErrorField">
@@ -472,6 +471,7 @@
 					<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
 					<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 					<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
+					<li><button id="downloadJobPageButton" type="button">download job page</button></li>
 					<c:if test="${isAdmin}">
 						<li><button type="button" id="clearCache">clear cache</button></li>
 						<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
