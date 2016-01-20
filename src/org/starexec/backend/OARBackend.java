@@ -155,9 +155,18 @@ public class OARBackend implements Backend {
 		return false;
 	}
 
+	
+	// TODO: Done, Test
 	@Override
 	public boolean deleteQueue(String queueName) {
-		// TODO Auto-generated method stub
+		try {
+			//Unassign all the nodes that were in this queue, making sure they are assigned to nothing.
+			Util.executeCommand("oarnodesetting --sql \"queue='"+queueName+"'\" -p \"queue=null\"");
+			Util.executeCommand("oarnotify --remove_queue "+queueName);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 		return false;
 	}
 
@@ -172,7 +181,7 @@ public class OARBackend implements Backend {
 			}
 			return true;
 		} catch (Exception e) {
-			
+			log.error(e.getMessage(), e);
 		}
 		
 		return false;

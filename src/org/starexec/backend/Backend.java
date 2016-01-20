@@ -90,6 +90,8 @@ public interface Backend{
      */
     public String[] getWorkerNodes();
 
+    
+    //TODO: Do we actually need this function?
     /**
      * @param nodeName the name of a node
      * @return an even-sized String[] representing a details map for a given node
@@ -103,6 +105,9 @@ public interface Backend{
      */
     public String[] getQueues();
 
+    
+    
+    //TODO: Do we actually need this function?
     /**
      * @param name the name of a node
      * @return a map of queue detail keys to values
