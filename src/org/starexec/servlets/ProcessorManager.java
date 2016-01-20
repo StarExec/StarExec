@@ -7,7 +7,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -155,31 +154,7 @@ public class ProcessorManager extends HttpServlet {
 			}
 		}
 	}
-	
-	/**
-	 * Sets all processors that are in the proper new format to executable
-	 */
-	public static void setAllProcessorsExecutable() {
-		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
-		for (ProcessorType type : types) {
-			List<Processor> procs=Processors.getAll(type);
-			for (Processor p : procs) {
-				try {
-					setAllFilesExecutable(new File(p.getFilePath()));
-					//File exec=new File(p.getExecutablePath());
-					//if (!exec.setExecutable(true, false)) {			
-					//	log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
-					//}
-				} catch (Exception e) {
-					log.error("error setting processor executable id = "+p.getId());
-					log.error(e.getMessage(),e);
-				}
-				
-				
-				
-			}
-		}
-	}
+
 	
 	/**
 	 * Parses through form items and builds a new Processor object from it. Then it is
@@ -206,7 +181,6 @@ public class ProcessorManager extends HttpServlet {
 			File archiveFile=null;
 
 			URL processorUrl = null;
-			String processorName = null;
 
 			if (uploadMethod == null) {
 				// TODO modify StarExecCommand so it specifies an upload method.

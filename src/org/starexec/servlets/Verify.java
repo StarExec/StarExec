@@ -111,8 +111,6 @@ public class Verify extends HttpServlet {
     private void handleAcceptance(HttpServletRequest request, HttpServletResponse response) throws IOException  {
     	String code = (String)request.getParameter(Mail.EMAIL_CODE);
 		String verdict = (String)request.getParameter(Mail.LEADER_RESPONSE);
-
-		boolean userWasApproved = verdict.equals(Web.APPROVE_COMMUNITY_REQUEST);
 		
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
 

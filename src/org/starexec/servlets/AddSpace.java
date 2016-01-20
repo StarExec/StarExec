@@ -36,7 +36,6 @@ import org.starexec.util.Validator;
 @SuppressWarnings("serial")
 public class AddSpace extends HttpServlet {		
 	private static final Logger log = Logger.getLogger(AddSpace.class);	
-	private static final LogUtil logUtil = new LogUtil(log);
 
 	// Request attributes
 	private static final String parentSpace = "parent";
@@ -69,7 +68,6 @@ public class AddSpace extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		final String method = "doPost";
 		// Make sure the request is valid
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {

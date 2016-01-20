@@ -2547,7 +2547,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			}
 			
 			ids.addAll(newIds);
-			//TODO: Consider refactoring this to reduce the number of calls that get made
 			Uploads.incrementCompletedSpaces(statusId,1);		
 			return ids;
 		}

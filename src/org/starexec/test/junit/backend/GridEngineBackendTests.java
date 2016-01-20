@@ -1,19 +1,15 @@
 package org.starexec.test.junit.backend;
 
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.util.List;
 import java.util.Set;
 
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.starexec.backend.GridEngineBackend;
-import org.starexec.jobs.LoadBalanceMonitor;
 import org.starexec.util.Util;
 import org.testng.Assert;
 

@@ -321,7 +321,7 @@ public class Util {
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
-		    if(!wrapper.isFile()) { //TODO: Check if this is a non-file or file
+		    if(!wrapper.isFile()) { 
 				// Add the field name and field value to the hashmap
 				form.put(p.getName(), IOUtils.toString(p.getInputStream()));				
 		    } else {
