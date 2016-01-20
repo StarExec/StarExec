@@ -109,18 +109,19 @@ public class JobTests extends TestSequence {
 	
 	
 	
-	//TODO: Right now, this test is basically just checking to see if the method throws errors. Since the status of the job
-	//changes over time, it's hard to know what the status of the job actually should be
+	// this just checks to see whether the function throws errors: more detailed logic testing
+	// is handled in a TODO: unit test
 	@StarexecTest
 	private void GetStatusTest() {
 		Assert.assertNotNull(Jobs.getJobStatusCode(job.getId()));
 	}
 	
-	//TODO: This test also just checks for errors
 	@StarexecTest
-	private void IsSystemPaused() {
-		Jobs.isSystemPaused();
-		
+	private void PauseAndResumeAllTest() {
+		Assert.assertTrue(Jobs.pauseAll());
+		Assert.assertTrue(Jobs.isSystemPaused());
+		Assert.assertTrue(Jobs.resumeAll());
+		Assert.assertFalse(Jobs.isSystemPaused());
 	}
 	
 	@StarexecTest
