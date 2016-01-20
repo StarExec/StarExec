@@ -21,6 +21,13 @@ function initUI(){
 		}
     });
 	
+	$("#clearStatsCache").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	
+	
 	$("#toggleDebugMode").button({
 		icons: {
 			primary: "ui-icon-pencil"
@@ -75,6 +82,19 @@ function initUI(){
 			}
 		});
 	});	
+	
+	
+	$("#clearStatsCache").click(function() {
+		$.post(
+			starexecRoot+"services/cache/clearStats",
+			{},
+			function(returnCode) {
+				parseReturnCode(returnCode);
+
+			},
+			"json"
+		);
+	});
 	
 	$("#clearLoadData").click(function(){
 		$.post(

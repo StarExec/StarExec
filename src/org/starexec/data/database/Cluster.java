@@ -330,7 +330,7 @@ public class Cluster {
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static boolean updateNode(String name, Map<String, String> attributes) {
+	private static boolean updateNode(String name, Map<String, String> attributes) {
 		Connection con = null;			
 		CallableStatement procAddNode = null;
 		CallableStatement procAddCol = null;

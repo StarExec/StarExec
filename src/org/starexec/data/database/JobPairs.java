@@ -106,28 +106,6 @@ public class JobPairs {
 		return null;
 	}
 	
-	/**
-	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
-	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)
-	 * @param pairId
-	 * @return
-	 */
-	
-	public static List<String> getJobPairInputPaths(int pairId) {
-		Connection con=null;
-		try {
-			con=Common.getConnection();
-			return getJobPairInputPaths(pairId, con);
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			
-		}
-		
-		return null;
-	}
-	
 	
 	/**
 	 * Adds all the jobline stages for all of the given pairs to the database

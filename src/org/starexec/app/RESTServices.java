@@ -28,7 +28,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cache;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
@@ -4000,23 +3999,6 @@ public class RESTServices {
 	 * @return
 	 */
 	@POST
-	@Path("/cache/clearAll")
-	@Produces("application/json")
-	public String clearCache(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		return Cache.deleteAllCache() ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
-	}
-	
-	/**
-	 * Clears every entry from the cache
-	 * @param request
-	 * @return
-	 */
-	@POST
 	@Path("/cache/clearStats")
 	@Produces("application/json")
 	public String clearStatsCache(@Context HttpServletRequest request) {
@@ -4028,31 +4010,6 @@ public class RESTServices {
 		
 		return Jobs.removeAllCachedJobStats() ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
-	
-	/**
-	 * 
-	 */
-	@POST
-	@Path("/cache/clearTypes")
-	@Produces("application/json")
-	public String clearCacheTypes(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		
-		
-		List<Integer> types=Util.toIntegerList(request.getParameterValues("selectedTypes[]"));		
-		boolean success=true;
-		for (Integer i : types) {
-			success= success && Cache.deleteCacheOfType(CacheType.getType(i));
-		}
-		
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
-	}
-	
-
 	
 	@POST
 	@Path("/suspend/user/{userId}")

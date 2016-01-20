@@ -46,15 +46,11 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.Cache;
 import org.starexec.test.TestUtil;
 
 public class Util {	
     private static final Logger log = Logger.getLogger(Util.class);
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
-
-
-  
     
     /**
      * Checks to see if the two given objects are equal without throwing any null pointers.
@@ -653,19 +649,7 @@ public class Util {
 	    log.warn(e.getMessage(), e);
 	}
     }
-    /** Deletes all the cached files that have not been accessed in the given amount of days
-     * @daysSinceLastAccess The number of days a file should have gone without being accessed to delete
-     * @author Eric Burns
-     */
-    public static void clearOldCachedFiles(int daysSinceLastAccess) {
-	log.debug("calling clearOldCachedFiles (periodic)");
-	try {
-	    Cache.deleteOldPaths(daysSinceLastAccess);
-	} catch (Exception e) {
-	    log.error("clearOldCachedFiles says "+e.getMessage(),e);
-	}
-		
-    }
+   
 	
 	
     /**
