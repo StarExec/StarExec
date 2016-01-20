@@ -1353,9 +1353,8 @@ public class RESTServices {
 		if (testNames==null || testNames.length==0) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		for (String testName : testNames) {
-			TestManager.executeTests(testNames);
-		}
+		TestManager.executeTests(testNames);
+		
 			
 		return gson.toJson(new ValidatorStatusCode(true,"Testing started successfully"));
 			

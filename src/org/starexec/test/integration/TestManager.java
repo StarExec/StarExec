@@ -120,8 +120,7 @@ public class TestManager {
 		return TestManager.getTestSequence(sequenceName).getTestResults();
 	}
 	/**
-	 * Executes the test that has the given name. If no such test exists, 
-	 * returns false
+	 * Executes the tests that have the given name.
 	 * @param testName The name of the test that should be run
 	 * @return True if the test could be found, false otherwise
 	 */
