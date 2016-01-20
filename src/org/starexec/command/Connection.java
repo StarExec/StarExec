@@ -366,6 +366,7 @@ public class Connection {
 			entity.addTextBody("name", name);
 			entity.addTextBody("desc",desc);
 			entity.addTextBody("com",communityID.toString());
+			entity.addTextBody("uploadMethod", "local");
 			FileBody fileBody = new FileBody(f);
 			entity.addPart("file", fileBody);
 			
