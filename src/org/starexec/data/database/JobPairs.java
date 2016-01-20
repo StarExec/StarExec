@@ -1064,7 +1064,7 @@ public class JobPairs {
 
 		jp.setId(result.getInt("job_pairs.id"));
 		jp.setJobId(result.getInt("job_pairs.job_id"));
-		jp.setGridEngineId(result.getInt("job_pairs.sge_id"));	
+		jp.setBackendExecId(result.getInt("job_pairs.sge_id"));	
 		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
 		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
 		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
@@ -1289,20 +1289,20 @@ public class JobPairs {
 	}
 
 	/**
-	 * Update's a job pair's grid engine id
+	 * Update's a job pair's backend execution ID (SGE, OAR, or so on)
 	 * @param pairId The id of the pair to update
-	 * @param sgeId The grid engine id to set for the pair
+	 * @param execId The backend id to set for the pair
 	 * @return True if the operation was a success, false otherwise.
 	 */
-	public static boolean updateGridEngineId(int pairId, int sgeId) {
+	public static boolean updateBackendExecId(int pairId, int execId) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();									
-			procedure = con.prepareCall("{CALL SetSGEJobId(?, ?)}");
+			procedure = con.prepareCall("{CALL SetBackendExecId(?, ?)}");
 
 			procedure.setInt(1, pairId);
-			procedure.setInt(2, sgeId);			
+			procedure.setInt(2, execId);			
 			procedure.executeUpdate();			
 
 			return true;
@@ -1431,7 +1431,6 @@ public class JobPairs {
      * @param execId
      * @return
      */
-    //TODO : marked for grid engine interface
     public static boolean killPair(int pairId, int execId) {
 	try {	
 	    R.BACKEND.killPair(execId);

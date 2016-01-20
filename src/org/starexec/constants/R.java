@@ -197,9 +197,7 @@ public class R {
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
 	
     // BACKEND configurations
-    //TODO : The name and meaning of SGE_ROOT should be changed, it should no longer be SGE specific but rather be the BACKEND_ROOT
-    public static String SGE_ROOT = null; // root directory for SGE
-    //TODO : SGE_ACCOUNTING_FILE should be changed, it should no longer be SGE specific but rather be BACKEND_ACCOUNTING_ROOT (backends should be able to provide job stats)
+    public static String BACKEND_ROOT = null; // root directory for SGE
     public static String SGE_ACCOUNTING_FILE = null;  						// The absolute path to the SGE accounting file that holds job statistics
     public static int MAX_PAIR_RUNTIME = 86400;  							// The largest possible amount of time a job pair can run before being terminated (in seconds)
     public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)

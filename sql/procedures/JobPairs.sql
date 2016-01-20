@@ -138,13 +138,13 @@ CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 		ORDER BY attr_key ASC;
 	END //
 	
--- Updates a job pair's sge id
+-- Updates a job pair's backend ID (SGE, OAR, or so on).
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS SetSGEJobId;
-CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
+DROP PROCEDURE IF EXISTS SetBackendExecId;
+CREATE PROCEDURE SetBackendExecId(IN _jobPairId INT, IN _execId INT)
 	BEGIN
 		UPDATE job_pairs
-		SET sge_id=_sgeId
+		SET sge_id=_execId
 		WHERE id=_jobPairId;
 	END //
 	

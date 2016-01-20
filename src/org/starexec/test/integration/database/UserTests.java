@@ -28,6 +28,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Hash;
 
 
 //TODO: Test pagination functions
@@ -450,10 +451,10 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(pageSize+1,Users.getDefaultPageSize(user1.getId()));
 	}
 	
-	//TODO: Make this stronger?
 	@StarexecTest
 	private void GetPasswordTest() {
 		Assert.assertNotNull(Users.getPassword(user1.getId()));
+		Assert.assertEquals(Hash.hashPassword(user1.getPassword()), Users.getPassword(user1.getId()));
 		
 	}
 	

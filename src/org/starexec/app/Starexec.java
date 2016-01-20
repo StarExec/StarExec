@@ -104,7 +104,7 @@ public class Starexec implements ServletContextListener {
 		
 		
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
-		    R.BACKEND.initialize(R.SGE_ROOT);
+		    R.BACKEND.initialize(R.BACKEND_ROOT);
 
 		}
 		

@@ -17,7 +17,7 @@ import org.starexec.data.to.pipelines.SolverPipeline;
  */
 public class JobPair extends Identifiable {	
 	private int jobId = -1;
-	private int gridEngineId = -1;
+	private int backendExecId = -1;
 	
 
 
@@ -92,15 +92,15 @@ public class JobPair extends Identifiable {
 	/**
 	 * @return the actual job id of this pair in the grid engine
 	 */
-	public int getGridEngineId() {
-		return gridEngineId;
+	public int getBackendExecId() {
+		return backendExecId;
 	}
 	
 	/**
 	 * @param gridEngineId the grid engine id to set for this pair
 	 */
-	public void setGridEngineId(int gridEngineId) {
-		this.gridEngineId = gridEngineId;
+	public void setBackendExecId(int gridEngineId) {
+		this.backendExecId = gridEngineId;
 	}
 		
 	

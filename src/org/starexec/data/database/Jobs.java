@@ -1242,7 +1242,7 @@ public class Jobs {
 			while(results.next()){
 				JobPair jp = new JobPair();
 				jp.setId(results.getInt("id"));
-				jp.setGridEngineId(results.getInt("sge_id"));
+				jp.setBackendExecId(results.getInt("sge_id"));
 				
 				returnList.add(jp);
 			}			
@@ -3007,7 +3007,7 @@ public class Jobs {
 				return true;
 			}
 			if (status.getCode().getVal()<StatusCode.STATUS_COMPLETE.getVal()) {
-				JobPairs.killPair(pairId, p.getGridEngineId());
+				JobPairs.killPair(pairId, p.getBackendExecId());
 			}
 			JobPairs.removePairFromCompletedTable(pairId);
 			JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
@@ -3129,7 +3129,6 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
-	//TODO: This is too slow. We need to speed this up.
     protected static List<JobPair> getPendingPairsDetailed(Connection con, Job j,int limit) throws Exception {	
 
 	CallableStatement procedure = null;
@@ -3332,7 +3331,7 @@ public class Jobs {
 			while(results.next()){
 				JobPair jp = new JobPair();
 				jp.setId(results.getInt("id"));
-				jp.setGridEngineId(results.getInt("sge_id"));
+				jp.setBackendExecId(results.getInt("sge_id"));
 				
 				returnList.add(jp);
 			}			
@@ -3762,7 +3761,7 @@ public class Jobs {
 			
 			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 			for (JobPair jp : jobPairsEnqueued) {
-				JobPairs.killPair(jp.getId(), jp.getGridEngineId());
+				JobPairs.killPair(jp.getId(), jp.getBackendExecId());
 			}
 			
 			log.debug("deletion of killed job pairs from the queue was successful");
@@ -3842,8 +3841,7 @@ public class Jobs {
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 	    for (JobPair jp : jobPairsEnqueued) {
-		//TODO : remember to change name of getGridEngineId
-		int execId = jp.getGridEngineId();
+		int execId = jp.getBackendExecId();
 		R.BACKEND.killPair(execId);
 		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 	    }
@@ -3851,7 +3849,7 @@ public class Jobs {
 	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 	    if (jobPairsRunning != null) {
 		for (JobPair jp: jobPairsRunning) {
-		    int execId = jp.getGridEngineId();
+		    int execId = jp.getBackendExecId();
 		    R.BACKEND.killPair(execId);
 		    JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 		}
@@ -4846,7 +4844,7 @@ public class Jobs {
 			// if SGE does not think this pair should be running, kill it
 			// the kill only happens if the pair's status has not been changed
 			// since getPairsInBackend() was called
-			if (!backendIDs.contains(p.getGridEngineId())) {
+			if (!backendIDs.contains(p.getBackendExecId())) {
 				JobPairs.setBrokenPairStatus(p);
 			}
 		}

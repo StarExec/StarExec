@@ -320,8 +320,7 @@ public abstract class JobManager {
 
 							//TODO : need a better way to handle error codes
 							if(!R.BACKEND.isError(execId)){
-							    //TODO : remember to change name of update gridEngineId to update execId or something similar
-							    JobPairs.updateGridEngineId(pair.getId(),execId);
+							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
 							    JobPairs.setPairStatus(pair.getId(),errorCode);
 							}

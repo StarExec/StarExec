@@ -42,7 +42,7 @@
                         <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             			<!-- SGE Configuration -->
             
-			<property key="SGE_ROOT" value="/cluster/gridengine-8.1.8" />
+			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
 			<property key="SGE_STATISTICS_PERIOD" value="45" />
 			<property key="SGE_ACCOUNTING_FILE" value="/cluster/gridengine-8.1.8/default/common/accounting" />
