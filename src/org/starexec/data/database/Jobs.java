@@ -3890,19 +3890,19 @@ public class Jobs {
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
 			R.BACKEND.killAll();
-			List<Job> jobs = new LinkedList<Job>();		
+			List<Integer> jobs = new LinkedList<Integer>();		
 			jobs = Jobs.getRunningJobs();
 			if (jobs != null) {
-				for (Job j : jobs) {
+				for (Integer jobId : jobs) {
 					//Get the enqueued job pairs and remove them
-					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(j.getId());
+					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 					if (jobPairsEnqueued != null) {
 						for (JobPair jp : jobPairsEnqueued) {
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
 					//Get the running job pairs and remove them
-					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(j.getId());
+					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 					log.debug("JPR = " + jobPairsRunning);
 					if (jobPairsRunning != null) {
 						for (JobPair jp: jobPairsRunning) {
@@ -4641,34 +4641,21 @@ public class Jobs {
 	}
 	/**
 	 * Gets all the jobs on the system that currently have pairs pending or running
+	 * and which are not currently paused or killed
 	 * @return A list of Job objects for the running jobs. Pairs are not populated
 	 */
-	//TODO: This does not seem to be working
-	public static List<Job> getRunningJobs() {
+	public static List<Integer> getRunningJobs() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetAllJobs()}");
+			procedure = con.prepareCall("{CALL GetRunningJobs()}");
 			results = procedure.executeQuery();
 			
-			List<Job> jobs = new LinkedList<Job>();
+			List<Integer> jobs = new LinkedList<Integer>();
 			while (results.next()) {
-				if (results.getString("status").equals("incomplete")) {
-					Job j = new Job();
-					j.setId(results.getInt("id"));
-					j.setUserId(results.getInt("user_id"));
-					j.setName(results.getString("name"));	
-					j.setPrimarySpace(results.getInt("primary_space"));
-					j.setDescription(results.getString("description"));				
-					j.setCreateTime(results.getTimestamp("created"));	
-					j.setCompleteTime(results.getTimestamp("completed"));
-
-					j.setSeed(results.getLong("seed"));
-
-					jobs.add(j);
-				}
+				jobs.add(results.getInt("id"));
 			}
 			return jobs;
 		} catch (Exception e) {

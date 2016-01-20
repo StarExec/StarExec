@@ -802,28 +802,13 @@ CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN
 		INSERT INTO job_stage_params (job_id, stage_number,cpuTimeout,clockTimeout,maximum_memory, space_id, post_processor, pre_processor, bench_suffix) VALUES (_jobId, _stage,_cpu,_clock,_mem,_space,_postProc,_preProc, _suffix);
 	END //
 	
-DROP PROCEDURE IF EXISTS GetAllJobs;
-CREATE PROCEDURE GetAllJobs()
+-- Gets the ID of every job along with its status
+DROP PROCEDURE IF EXISTS GetRunningJobs;
+CREATE PROCEDURE GetRunningJobs()
 	BEGIN
-		SELECT 	id,
-				user_id,
-				name,
-				queue_id,
-				created,
-				description,
-				deleted,
-				paused,
-				killed,
-				completed,
-				primary_space,
-				seed,
-				GetJobStatus(id) 		AS status,
-				GetTotalPairs(id) 		AS totalPairs,
-				GetCompletePairs(id)	AS completePairs,
-				GetPendingPairs(id)		AS pendingPairs,
-				GetErrorPairs(id)		AS errorPairs
-				
-		FROM jobs;
+		SELECT id, GetJobStatus(id) AS status
+		FROM jobs
+		WHERE status="incomplete" AND paused=false AND killed=false;
 	END //
 
 DROP PROCEDURE IF EXISTS SetJobName;

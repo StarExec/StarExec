@@ -110,7 +110,7 @@ public class JobTests extends TestSequence {
 	
 	
 	// this just checks to see whether the function throws errors: more detailed logic testing
-	// is handled in a TODO: unit test
+	// is handled in a unit test
 	@StarexecTest
 	private void GetStatusTest() {
 		Assert.assertNotNull(Jobs.getJobStatusCode(job.getId()));
