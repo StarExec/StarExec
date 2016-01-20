@@ -34,7 +34,7 @@ public class MessagePrinter {
 				System.out.println("Missing param = \"" + Validator.getMissingParam()+  "\"");
 			}
 		} else if (statusCode>0) {
-			String message=R.successMessages.get(statusCode);
+			String message=C.successMessages.get(statusCode);
 			if (message!=null) {
 				System.out.println(message);
 			}

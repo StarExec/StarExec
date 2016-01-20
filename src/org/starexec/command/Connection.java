@@ -98,7 +98,7 @@ public class Connection {
 	 */
 	
 	public Connection(String user, String pass) {
-		setBaseURL(R.URL_STAREXEC_BASE);
+		setBaseURL(C.URL_STAREXEC_BASE);
 		setUsername(user);
 		setPassword(pass);
 		initializeComponents();
@@ -108,7 +108,7 @@ public class Connection {
 	 * Creates a new connection to the default StarExec instance as a guest user
 	 */
 	public Connection() {
-		setBaseURL(R.URL_STAREXEC_BASE);
+		setBaseURL(C.URL_STAREXEC_BASE);
 		setUsername("public");
 		setPassword("public");
 		initializeComponents();
@@ -183,7 +183,7 @@ public class Connection {
 	 */
 	
 	private int setSessionIDIfExists(Header [] headers) {
-		String id=HTMLParser.extractCookie(headers, R.TYPE_SESSIONID);
+		String id=HTMLParser.extractCookie(headers, C.TYPE_SESSIONID);
 		if (id==null) {
 			return -1;
 		}
@@ -238,7 +238,7 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			
-			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADBENCHMARKS);
+			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADBENCHMARKS);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			entity.addTextBody("space",spaceID.toString());
 			entity.addTextBody("localOrURL",upMethod);
@@ -291,7 +291,7 @@ public class Connection {
 			}
 			
 			} else {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 		} catch (Exception e) {
@@ -312,7 +312,7 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			
-			HttpPost post=new HttpPost(baseURL+R.URL_UPLOADCONFIG);
+			HttpPost post=new HttpPost(baseURL+C.URL_UPLOADCONFIG);
 			if (desc==null) {
 				desc="";
 			}
@@ -332,7 +332,7 @@ public class Connection {
 			setSessionIDIfExists(response.getAllHeaders());
 			int id=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id<=0) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 			
@@ -359,7 +359,7 @@ public class Connection {
 		File f = new File(filePath); //file is also required
 		HttpResponse response = null;
 		try {
-			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADPROCESSOR);
+			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADPROCESSOR);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			entity.addTextBody("action","add");
 			entity.addTextBody("type",type);
@@ -379,7 +379,7 @@ public class Connection {
 						
 			//we are expecting to be redirected to the page for the processor
 			if (response.getStatusLine().getStatusCode()!=302) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 			int id=Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
@@ -447,9 +447,9 @@ public class Connection {
 	    List<Integer> ids=new ArrayList<Integer>();
 	    HttpResponse response = null;
 		try {
-		    String ext = R.URL_UPLOADSPACE;
+		    String ext = C.URL_UPLOADSPACE;
 			if(isJobXML){
-			    ext = R.URL_UPLOADJOBXML;
+			    ext = C.URL_UPLOADJOBXML;
 			}
 			HttpPost post=new HttpPost(baseURL+ext);
 			post=(HttpPost) setHeaders(post);
@@ -469,7 +469,7 @@ public class Connection {
 			int code = response.getStatusLine().getStatusCode();
 			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 			    ids.add(Status.ERROR_SERVER);  
 				return ids;
 			}
@@ -567,7 +567,7 @@ public class Connection {
 			int newID=Validator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			//if the request was not successful
 			if (newID<=0) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
 			return newID;
@@ -594,7 +594,7 @@ public class Connection {
 	 */
 	protected int uploadSolver(String name, String desc,String descMethod,Integer spaceID,String filePath, Boolean downloadable, Boolean runTestJob,Integer settingId,Integer type) {
 		try {
-			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
+			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADSOLVER);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("f", fileBody);
@@ -622,7 +622,7 @@ public class Connection {
 	 */
 	public int uploadSolverFromURL(String name, String desc,String descMethod, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		try {
-			HttpPost post = new HttpPost(baseURL+R.URL_UPLOADSOLVER);
+			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADSOLVER);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			entity.addTextBody("url",url);
 			entity.addTextBody("upMethod","URL");
@@ -786,7 +786,7 @@ public class Connection {
 	protected int deletePrimitives(List<Integer> ids, String type) {
 		HttpResponse response = null;
 		try {
-			HttpPost post=new HttpPost(baseURL+R.URL_DELETEPRIMITIVE+"/"+type);
+			HttpPost post=new HttpPost(baseURL+C.URL_DELETEPRIMITIVE+"/"+type);
 			post=(HttpPost) setHeaders(post);
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
 			for (Integer id :ids) {
@@ -845,7 +845,7 @@ public class Connection {
 	public int getUserID() {
 		HttpResponse response = null;
 		try {
-			HttpGet get=new HttpGet(baseURL+R.URL_GETID);
+			HttpGet get=new HttpGet(baseURL+C.URL_GETID);
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());
@@ -868,7 +868,7 @@ public class Connection {
 	protected int setSpaceVisibility(Integer spaceID,Boolean hierarchy, Boolean setPublic) {
 		HttpResponse response = null;
 		try {
-			HttpPost post=new HttpPost(baseURL+R.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
+			HttpPost post=new HttpPost(baseURL+C.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
 			post=(HttpPost) setHeaders(post);
 			response=client.execute(post);
 			setSessionIDIfExists(response.getAllHeaders());
@@ -896,7 +896,7 @@ public class Connection {
 		HttpResponse response = null;
 		try {	
 			int userId=getUserID();
-			String url=baseURL+R.URL_USERSETTING+setting+"/"+userId+"/"+val;
+			String url=baseURL+C.URL_USERSETTING+setting+"/"+userId+"/"+val;
 			url=url.replace(" ", "%20"); //encodes white space, which can't be used in a URL
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
@@ -948,7 +948,7 @@ public class Connection {
 	public int rerunJob(Integer jobID) {
 		HttpResponse response = null;
 		try {
-			String URL=baseURL+R.URL_RERUNJOB;
+			String URL=baseURL+C.URL_RERUNJOB;
 			URL=URL.replace("{id}", jobID.toString());
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
@@ -983,7 +983,7 @@ public class Connection {
 	public int rerunPair(Integer pairID) {
 		HttpResponse response = null;
 		try {
-			String URL=baseURL+R.URL_RERUNPAIR;
+			String URL=baseURL+C.URL_RERUNPAIR;
 			URL=URL.replace("{id}", pairID.toString());
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
@@ -1019,7 +1019,7 @@ public class Connection {
 	protected int pauseOrResumeJob(Integer jobID, boolean pause) {
 		HttpResponse response = null;
 		try {
-			String URL=baseURL+R.URL_PAUSEORRESUME;
+			String URL=baseURL+C.URL_PAUSEORRESUME;
 			if (pause) {
 				URL=URL.replace("{method}", "pause");
 			} else {
@@ -1119,10 +1119,10 @@ public class Connection {
 		try {
 			HttpPost post = null;
 			if (type.equalsIgnoreCase("subspace")) {
-				post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type);
+				post=new HttpPost(baseURL+C.URL_REMOVEPRIMITIVE+"/"+type);
 
 			} else {
-				post=new HttpPost(baseURL+R.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
+				post=new HttpPost(baseURL+C.URL_REMOVEPRIMITIVE+"/"+type+"/"+spaceID.toString());
 
 			}
 			//first sets username and password data into HTTP POST request
@@ -1163,7 +1163,7 @@ public class Connection {
 	public boolean logout() {
 		HttpResponse response = null;
 		try {
-			HttpPost post=new HttpPost(baseURL+R.URL_LOGOUT);
+			HttpPost post=new HttpPost(baseURL+C.URL_LOGOUT);
 			post=(HttpPost) setHeaders(post);
 			response=client.execute(post);
 			return true;
@@ -1183,13 +1183,13 @@ public class Connection {
 	public int login() {
 		HttpResponse response = null;
 		try {
-			HttpGet get = new HttpGet(baseURL+R.URL_HOME);
+			HttpGet get = new HttpGet(baseURL+C.URL_HOME);
 			response=client.execute(get);
-			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
+			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
 			response.getEntity().getContent().close();
 			if (!this.isValid()) {
 				//if the user specified their own URL, it is probably the problem.
-				if (!baseURL.equals(R.URL_STAREXEC_BASE)) {
+				if (!baseURL.equals(C.URL_STAREXEC_BASE)) {
 					return Status.ERROR_BAD_URL;
 				}
 				return Status.ERROR_INTERNAL;
@@ -1200,7 +1200,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("j_username", username));
 			params.add(new BasicNameValuePair("j_password",password));
 			params.add(new BasicNameValuePair("cookieexists","false"));
-			HttpPost post = new HttpPost(baseURL+R.URL_LOGIN);
+			HttpPost post = new HttpPost(baseURL+C.URL_LOGIN);
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			post=(HttpPost) setHeaders(post);
 			
@@ -1211,11 +1211,11 @@ public class Connection {
 			
 			//On success, starexec will try to redirect, but we don't want that here
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
-			get = new HttpGet(baseURL+R.URL_HOME);
+			get = new HttpGet(baseURL+C.URL_HOME);
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
 			
-			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),R.TYPE_SESSIONID);
+			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
 			
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
@@ -1369,16 +1369,16 @@ public class Connection {
 		try {
 			String urlExtension;
 			if (type.equals("solver")) {
-				urlExtension=R.URL_COPYSOLVER;
+				urlExtension=C.URL_COPYSOLVER;
 			} else if (type.equals("space")) {
-				urlExtension=R.URL_COPYSPACE;
+				urlExtension=C.URL_COPYSPACE;
 			} else if (type.equals("job")) {
-				urlExtension=R.URL_COPYJOB;
+				urlExtension=C.URL_COPYJOB;
 			} else if (type.equals("user")) {
-				urlExtension=R.URL_COPYUSER;
+				urlExtension=C.URL_COPYUSER;
 			}
 			else {
-				urlExtension=R.URL_COPYBENCH;
+				urlExtension=C.URL_COPYBENCH;
 			}
 			
 			urlExtension=urlExtension.replace("{spaceID}", newSpaceID.toString());
@@ -1460,7 +1460,7 @@ public class Connection {
 				
 			}
 			
-			HttpPost post = new HttpPost(baseURL+R.URL_ADDSPACE);
+			HttpPost post = new HttpPost(baseURL+C.URL_ADDSPACE);
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			post=(HttpPost) setHeaders(post);
 			
@@ -1570,7 +1570,7 @@ public class Connection {
 	HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 	HashMap<Integer,String> prims=new HashMap<Integer,String>();
 	try{
-	    String serverURL = baseURL+R.URL_GETSOLVERCONFIGS;
+	    String serverURL = baseURL+C.URL_GETSOLVERCONFIGS;
 	    
 	    HttpPost post=new HttpPost(serverURL);
 	    post=(HttpPost) setHeaders(post);
@@ -1631,7 +1631,7 @@ public class Connection {
 			
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 			
-			urlParams.put(R.FORMPARAM_TYPE, type);
+			urlParams.put(C.FORMPARAM_TYPE, type);
 		
 			String URL=null;
 			if (forUser) {
@@ -1641,11 +1641,11 @@ public class Connection {
 					return errorMap;
 				}
 				
-				urlParams.put(R.FORMPARAM_ID, String.valueOf(id));
-				URL=baseURL+R.URL_GETUSERPRIM;
+				urlParams.put(C.FORMPARAM_ID, String.valueOf(id));
+				URL=baseURL+C.URL_GETUSERPRIM;
 			} else {
-				urlParams.put(R.FORMPARAM_ID, spaceID.toString());
-				URL=baseURL+R.URL_GETPRIM;
+				urlParams.put(C.FORMPARAM_ID, spaceID.toString());
+				URL=baseURL+C.URL_GETPRIM;
 			}
 			//in the absence of limit, we want all the primitives
 			int maximum=Integer.MAX_VALUE;
@@ -1669,7 +1669,7 @@ public class Connection {
 			}
 			
 			
-			URL=URL.replace("{id}", urlParams.get(R.PARAM_ID));
+			URL=URL.replace("{id}", urlParams.get(C.PARAM_ID));
 			URL=URL.replace("{type}", urlParams.get("type"));
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
@@ -1767,7 +1767,7 @@ public class Connection {
 		HttpResponse response=null;
 		try {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
-			urlParams.put(R.FORMPARAM_TYPE, "jp_outputs");
+			urlParams.put(C.FORMPARAM_TYPE, "jp_outputs");
 			StringBuilder sb=new StringBuilder();
 			for (Integer id : pairIds) {
 				sb.append(id);
@@ -1776,13 +1776,13 @@ public class Connection {
 			String ids=sb.substring(0,sb.length()-1);
 			
 			for (Integer id : pairIds) {
-				urlParams.put(R.FORMPARAM_ID+"[]",ids);
+				urlParams.put(C.FORMPARAM_ID+"[]",ids);
 			}
 			
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
 			
-			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+R.URL_DOWNLOAD,urlParams));
+			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+C.URL_DOWNLOAD,urlParams));
 			
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
@@ -1800,7 +1800,7 @@ public class Connection {
 			}
 			
 			if (!fileFound) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
@@ -1958,13 +1958,13 @@ public class Connection {
 		HttpResponse response=null;
 		try {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
-			urlParams.put(R.FORMPARAM_TYPE, type);
-			urlParams.put(R.FORMPARAM_ID, id.toString());
+			urlParams.put(C.FORMPARAM_TYPE, type);
+			urlParams.put(C.FORMPARAM_ID, id.toString());
 			if (type.equals("space")) {
 				urlParams.put("hierarchy",hierarchy.toString());
 			}
 			if (since!=null) {
-				urlParams.put(R.FORMPARAM_SINCE,since.toString());
+				urlParams.put(C.FORMPARAM_SINCE,since.toString());
 			}
 			if (procClass!=null) {
 				urlParams.put("procClass", procClass);
@@ -1992,7 +1992,7 @@ public class Connection {
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
 			
-			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+R.URL_DOWNLOAD,urlParams));
+			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+C.URL_DOWNLOAD,urlParams));
 			
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
@@ -2013,7 +2013,7 @@ public class Connection {
 			}
 			
 			if (!fileFound) {
-				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 			
@@ -2022,7 +2022,7 @@ public class Connection {
 			Integer pairsFound=null;
 			Integer oldPairs=null;
 			//if we're sending 'since,' it means this is a request for new job data
-			if (urlParams.containsKey(R.FORMPARAM_SINCE)) {
+			if (urlParams.containsKey(C.FORMPARAM_SINCE)) {
 				
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
@@ -2035,11 +2035,11 @@ public class Connection {
 				//indicates there was no new information
 				if (lastSeen<=since) {
 					if (done) {
-						return R.SUCCESS_JOBDONE;
+						return C.SUCCESS_JOBDONE;
 					}
 					
 					//don't save empty files
-					return R.SUCCESS_NOFILE;
+					return C.SUCCESS_NOFILE;
 				}
 			}
 			
@@ -2060,13 +2060,13 @@ public class Connection {
 			
 			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
-			if (urlParams.containsKey(R.FORMPARAM_SINCE) && lastSeen>=0) {
+			if (urlParams.containsKey(C.FORMPARAM_SINCE) && lastSeen>=0) {
 				
-				if (urlParams.get(R.FORMPARAM_TYPE).equals("job")) {
+				if (urlParams.get(C.FORMPARAM_TYPE).equals("job")) {
 					this.setJobInfoCompletion(id, lastSeen);
 					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");					
 					
-				} else if (urlParams.get(R.FORMPARAM_TYPE).equals("j_outputs")) {
+				} else if (urlParams.get(C.FORMPARAM_TYPE).equals("j_outputs")) {
 					this.setJobOutCompletion(id, lastSeen);
 
 					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
@@ -2074,7 +2074,7 @@ public class Connection {
 				}
 			}
 			if (done) {
-				return R.SUCCESS_JOBDONE;
+				return C.SUCCESS_JOBDONE;
 			}
 			return 0;
 		} catch (Exception e) {
@@ -2118,7 +2118,7 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			
-			String URL=baseURL+R.URL_GET_BENCH_UPLOAD_STATUS;
+			String URL=baseURL+C.URL_GET_BENCH_UPLOAD_STATUS;
 			URL=URL.replace("{statusId}",statusId.toString());
 			HttpGet get=new HttpGet(URL);
 			get=(HttpGet) setHeaders(get);
@@ -2172,7 +2172,7 @@ public class Connection {
 				traversalMethod="robin";
 			}
 			
-			HttpPost post=new HttpPost(baseURL+R.URL_POSTJOB);
+			HttpPost post=new HttpPost(baseURL+C.URL_POSTJOB);
 			
 			post=(HttpPost) setHeaders(post);
 			
@@ -2189,7 +2189,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair("seed",seed.toString()));
-			params.add(new BasicNameValuePair(R.FORMPARAM_TRAVERSAL,traversalMethod));
+			params.add(new BasicNameValuePair(C.FORMPARAM_TRAVERSAL,traversalMethod));
 			if (maxMemory!=null) {
 				params.add(new BasicNameValuePair("maxMem",String.valueOf(maxMemory)));
 			}
@@ -2217,7 +2217,7 @@ public class Connection {
 				return Integer.parseInt(id);
 			}
 			
-			setLastError(HTMLParser.extractCookie(response.getAllHeaders(), R.STATUS_MESSAGE_COOKIE));
+			setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 			return Status.ERROR_SERVER;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -2350,7 +2350,7 @@ public class Connection {
 		HashMap<String, String> failMap=new HashMap<String,String>();
 		HttpResponse response=null;
 		try {
-			HttpGet get=new HttpGet(baseURL+R.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
+			HttpGet get=new HttpGet(baseURL+C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
 			setSessionIDIfExists(get.getAllHeaders());

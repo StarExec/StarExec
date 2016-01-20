@@ -42,13 +42,13 @@ class ArgumentParser {
 		String base=null;
 		String username="";
 		String password="";
-		if (commandParams.containsKey(R.PARAM_BASEURL)) {
-			base=commandParams.get(R.PARAM_BASEURL);
+		if (commandParams.containsKey(C.PARAM_BASEURL)) {
+			base=commandParams.get(C.PARAM_BASEURL);
 		} 
-		if (!commandParams.get(R.PARAM_USER).equals(R.PARAM_GUEST)) {
-			username=commandParams.get(R.PARAM_USER);
+		if (!commandParams.get(C.PARAM_USER).equals(C.PARAM_GUEST)) {
+			username=commandParams.get(C.PARAM_USER);
 			
-			password=commandParams.get(R.PARAM_PASSWORD);
+			password=commandParams.get(C.PARAM_PASSWORD);
 		} else {
 			username="public";
 			password="public";
@@ -126,52 +126,52 @@ class ArgumentParser {
 			Integer wallclock=null;
 			Integer cpu=null;
 			Double maxMemory=null;
-			if (commandParams.containsKey(R.PARAM_WALLCLOCKTIMEOUT)) {
-				wallclock=Integer.parseInt(commandParams.get(R.PARAM_WALLCLOCKTIMEOUT));
+			if (commandParams.containsKey(C.PARAM_WALLCLOCKTIMEOUT)) {
+				wallclock=Integer.parseInt(commandParams.get(C.PARAM_WALLCLOCKTIMEOUT));
 			}
-			if (commandParams.containsKey(R.PARAM_CPUTIMEOUT)) {
-				cpu=Integer.parseInt(commandParams.get(R.PARAM_CPUTIMEOUT));
+			if (commandParams.containsKey(C.PARAM_CPUTIMEOUT)) {
+				cpu=Integer.parseInt(commandParams.get(C.PARAM_CPUTIMEOUT));
 			}
-			if (commandParams.containsKey(R.PARAM_MEMORY)) {
-				maxMemory=Double.parseDouble(commandParams.get(R.PARAM_MEMORY));
+			if (commandParams.containsKey(C.PARAM_MEMORY)) {
+				maxMemory=Double.parseDouble(commandParams.get(C.PARAM_MEMORY));
 			}
 			Boolean useDepthFirst=true;
-			if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
-				if (commandParams.get(R.PARAM_TRAVERSAL).equals(R.ARG_ROUNDROBIN)) {
+			if (commandParams.containsKey(C.PARAM_TRAVERSAL)) {
+				if (commandParams.get(C.PARAM_TRAVERSAL).equals(C.ARG_ROUNDROBIN)) {
 					useDepthFirst=false;
 				}
 			}
 			String postProcId="-1";
 			String preProcId="-1";
-			if (commandParams.containsKey(R.PARAM_PROCID)) {
-				postProcId=commandParams.get(R.PARAM_PROCID);
+			if (commandParams.containsKey(C.PARAM_PROCID)) {
+				postProcId=commandParams.get(C.PARAM_PROCID);
 			}
-			if (commandParams.containsKey(R.PARAM_PREPROCID)) {
-				preProcId=commandParams.get(R.PARAM_PREPROCID);
+			if (commandParams.containsKey(C.PARAM_PREPROCID)) {
+				preProcId=commandParams.get(C.PARAM_PREPROCID);
 			}
 						
 			String name=getDefaultName("");
 			String desc="";
-			if (commandParams.containsKey(R.PARAM_NAME)) {
-				name=commandParams.get(R.PARAM_NAME);
+			if (commandParams.containsKey(C.PARAM_NAME)) {
+				name=commandParams.get(C.PARAM_NAME);
 			}
 			
-			if (commandParams.containsKey(R.PARAM_DESC)) {
-				desc=commandParams.get(R.PARAM_DESC);
+			if (commandParams.containsKey(C.PARAM_DESC)) {
+				desc=commandParams.get(C.PARAM_DESC);
 			}
 			boolean startPaused=false;
-			if (commandParams.containsKey(R.PARAM_PAUSED)) {
+			if (commandParams.containsKey(C.PARAM_PAUSED)) {
 				startPaused=true;
 			}
 			long seed=0;
-			if (commandParams.containsKey(R.PARAM_SEED)) {
-				seed=Long.parseLong(commandParams.get(R.PARAM_SEED));
+			if (commandParams.containsKey(C.PARAM_SEED)) {
+				seed=Long.parseLong(commandParams.get(C.PARAM_SEED));
 			}
 			//TODO: Support suppress timestamps param
-			return con.createJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), name,
+			return con.createJob(Integer.parseInt(commandParams.get(C.PARAM_ID)), name,
 					desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId),
-					Integer.parseInt(commandParams.get(R.PARAM_QUEUEID)),wallclock,
-					cpu,useDepthFirst,maxMemory,startPaused,seed, commandParams.containsKey(R.PARAM_SUPPRESS_TIMESTAMPS));
+					Integer.parseInt(commandParams.get(C.PARAM_QUEUEID)),wallclock,
+					cpu,useDepthFirst,maxMemory,startPaused,seed, commandParams.containsKey(C.PARAM_SUPPRESS_TIMESTAMPS));
 
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -195,11 +195,11 @@ class ArgumentParser {
 				return valid;
 			}
 			
-			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(C.PARAM_ID));
 
 			return con.linkPrimitives(ids,getParamFrom(commandParams),
-						  Integer.parseInt(commandParams.get(R.PARAM_TO)),
-					commandParams.containsKey(R.PARAM_HIERARCHY),type);
+						  Integer.parseInt(commandParams.get(C.PARAM_TO)),
+					commandParams.containsKey(C.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -211,7 +211,7 @@ class ArgumentParser {
      * @param commandParams The parameters given by the user at the command line.
      * @return the from parameter's integer value, or null if there is no such parameter. */     
     protected Integer getParamFrom(HashMap<String,String> commandParams) {
-	String sfrom = commandParams.get(R.PARAM_FROM);
+	String sfrom = commandParams.get(C.PARAM_FROM);
 	Integer ifrom = null;
 	if (sfrom != null)
 	    ifrom = Integer.parseInt(sfrom);
@@ -233,10 +233,10 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
-			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(R.PARAM_ID));
+			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(C.PARAM_ID));
 			return con.copyPrimitives(ids,getParamFrom(commandParams),
-						  Integer.parseInt(commandParams.get(R.PARAM_TO)),
-						  commandParams.containsKey(R.PARAM_HIERARCHY),type);
+						  Integer.parseInt(commandParams.get(C.PARAM_TO)),
+						  commandParams.containsKey(C.PARAM_HIERARCHY),type);
 		
 		} catch (Exception e) {
 			fail.add(Status.ERROR_INTERNAL);
@@ -260,26 +260,26 @@ class ArgumentParser {
 			
 			String name=getDefaultName("");
 			
-			if (commandParams.containsKey(R.PARAM_NAME)) {
-				name=commandParams.get(R.PARAM_NAME);
+			if (commandParams.containsKey(C.PARAM_NAME)) {
+				name=commandParams.get(C.PARAM_NAME);
 			}
 			String desc="";
-			if (commandParams.containsKey(R.PARAM_DESC)) {
-				desc=commandParams.get(R.PARAM_DESC);
+			if (commandParams.containsKey(C.PARAM_DESC)) {
+				desc=commandParams.get(C.PARAM_DESC);
 			}
 			
 			Boolean locked=false;
-			if (commandParams.containsKey(R.PARAM_LOCKED)) {
+			if (commandParams.containsKey(C.PARAM_LOCKED)) {
 				locked=true;
 			}
 			Permission p=new Permission(false);
-			for (String x : R.PARAMS_PERMS) {
+			for (String x : C.PARAMS_PERMS) {
 				
-				if (commandParams.containsKey(x) || commandParams.containsKey(R.PARAM_ENABLE_ALL_PERMISSIONS)) {
+				if (commandParams.containsKey(x) || commandParams.containsKey(C.PARAM_ENABLE_ALL_PERMISSIONS)) {
 					p.setPermissionOn(x);
 				}
 			}
-			return con.createSubspace(name, desc, Integer.parseInt(commandParams.get(R.PARAM_ID)), p, locked);
+			return con.createSubspace(name, desc, Integer.parseInt(commandParams.get(C.PARAM_ID)), p, locked);
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -301,10 +301,10 @@ class ArgumentParser {
 			}
 			Integer fromSpace = -1;
 			if (!type.equals("subspace")) {
-				fromSpace = Integer.parseInt(commandParams.get(R.PARAM_FROM));
+				fromSpace = Integer.parseInt(commandParams.get(C.PARAM_FROM));
 			}
-			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
-			return con.removePrimitives(ids, fromSpace, type, commandParams.containsKey(R.PARAM_RECYCLE_PRIMS));
+			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(C.PARAM_ID));
+			return con.removePrimitives(ids, fromSpace, type, commandParams.containsKey(C.PARAM_RECYCLE_PRIMS));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -342,7 +342,7 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			return con.pauseOrResumeJob(Integer.parseInt(commandParams.get(R.PARAM_ID)), pause);
+			return con.pauseOrResumeJob(Integer.parseInt(commandParams.get(C.PARAM_ID)), pause);
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL; 
 		}
@@ -355,7 +355,7 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			return con.rerunPair(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+			return con.rerunPair(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL; 
 		}
@@ -367,7 +367,7 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			return con.rerunJob(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+			return con.rerunJob(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL; 
 		}
@@ -388,7 +388,7 @@ class ArgumentParser {
 				return valid;
 			}
 			
-			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
+			List<Integer> ids=CommandParser.convertToIntList(commandParams.get(C.PARAM_ID));
 			return con.deletePrimitives(ids, type);
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -410,21 +410,21 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			String location=commandParams.get(R.PARAM_OUTPUT_FILE);
+			String location=commandParams.get(C.PARAM_OUTPUT_FILE);
 
 			if (type.equals("jp_outputs")) {
-				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(R.PARAM_ID));
+				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(C.PARAM_ID));
 				return con.downloadJobPairs(ids, location);
 			} else { 
-				Integer id=Integer.parseInt(commandParams.get(R.PARAM_ID));		
+				Integer id=Integer.parseInt(commandParams.get(C.PARAM_ID));		
 				Integer updateId=null;
-				if (commandParams.containsKey(R.PARAM_PROCID)) {
-					updateId=Integer.parseInt(commandParams.get(R.PARAM_PROCID));
+				if (commandParams.containsKey(C.PARAM_PROCID)) {
+					updateId=Integer.parseInt(commandParams.get(C.PARAM_PROCID));
 				}
 				//First, put in the request for the server to generate the desired archive			
-				return con.downloadArchive(id, type, since, location, commandParams.containsKey(R.PARAM_EXCLUDE_SOLVERS),
-						commandParams.containsKey(R.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(R.PARAM_INCLUDE_IDS),
-						hierarchy,procClass,commandParams.containsKey(R.PARAM_ONLY_COMPLETED),commandParams.containsKey(R.PARAM_GET_ATTRIBUTES),updateId);
+				return con.downloadArchive(id, type, since, location, commandParams.containsKey(C.PARAM_EXCLUDE_SOLVERS),
+						commandParams.containsKey(C.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(C.PARAM_INCLUDE_IDS),
+						hierarchy,procClass,commandParams.containsKey(C.PARAM_ONLY_COMPLETED),commandParams.containsKey(C.PARAM_GET_ATTRIBUTES),updateId);
 			}
 			
 
@@ -448,8 +448,8 @@ class ArgumentParser {
 		try {
 			
 			HashMap<String,String> urlParams=new HashMap<String,String>();
-			urlParams.put("id", commandParams.get(R.PARAM_ID));
-			urlParams.put(R.FORMPARAM_TYPE, type);
+			urlParams.put("id", commandParams.get(C.PARAM_ID));
+			urlParams.put(C.FORMPARAM_TYPE, type);
 			int valid=Validator.isValidGetPrimRequest(urlParams,commandParams);
 			if (valid<0) {
 				errorMap.put(valid, null);
@@ -457,18 +457,18 @@ class ArgumentParser {
 			}
 			Integer id=-1;
 			Integer limit = null;
-			if (commandParams.containsKey(R.PARAM_ID)) {
-				id=Integer.parseInt(commandParams.get(R.PARAM_ID));
+			if (commandParams.containsKey(C.PARAM_ID)) {
+				id=Integer.parseInt(commandParams.get(C.PARAM_ID));
 			}
-			if(commandParams.containsKey(R.PARAM_LIMIT)){
-			    limit=Integer.parseInt(commandParams.get(R.PARAM_LIMIT));
+			if(commandParams.containsKey(C.PARAM_LIMIT)){
+			    limit=Integer.parseInt(commandParams.get(C.PARAM_LIMIT));
 			}
 			if(type.equals("solverconfigs")){
 				return con.getSolverConfigs(id,limit);
 
 			}else{
 			    
-			       return con.getPrims(id, limit,commandParams.containsKey(R.PARAM_USER), type);
+			       return con.getPrims(id, limit,commandParams.containsKey(C.PARAM_USER), type);
 
 			}
 		
@@ -494,11 +494,11 @@ class ArgumentParser {
 				return valid;
 			}
 			Boolean hierarchy=false;
-			if (commandParams.containsKey(R.PARAM_HIERARCHY)) {
+			if (commandParams.containsKey(C.PARAM_HIERARCHY)) {
 				hierarchy=true;
 			}			
 			
-			return con.setSpaceVisibility(Integer.parseInt(commandParams.get(R.PARAM_ID)), hierarchy, setPublic);
+			return con.setSpaceVisibility(Integer.parseInt(commandParams.get(C.PARAM_ID)), hierarchy, setPublic);
 			
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -518,7 +518,7 @@ class ArgumentParser {
 		if (valid<0) {
 			return valid;
 		}
-		String newVal=commandParams.get(R.PARAM_VAL);		
+		String newVal=commandParams.get(C.PARAM_VAL);		
 		return con.setUserSetting(setting, newVal);
 		
 	}
@@ -545,45 +545,45 @@ class ArgumentParser {
 		Boolean depLinked=false;
 		
 		//if the dependency parameter exists, we're using the dependencies it specifies
-		if (commandParams.containsKey(R.PARAM_DEPENDENCY)) {
+		if (commandParams.containsKey(C.PARAM_DEPENDENCY)) {
 			dependency=true;
-			depRoot=commandParams.get(R.PARAM_DEPENDENCY);
-			if (commandParams.containsKey(R.PARAM_LINKED)) {
+			depRoot=commandParams.get(C.PARAM_DEPENDENCY);
+			if (commandParams.containsKey(C.PARAM_LINKED)) {
 				depLinked=true;
 			}
 		}
 		
-		String type=commandParams.get(R.PARAM_BENCHTYPE);
-		String space= commandParams.get(R.PARAM_ID);
+		String type=commandParams.get(C.PARAM_BENCHTYPE);
+		String space= commandParams.get(C.PARAM_ID);
 
 		
 		//don't preserve hierarchy by default, but do so if the hierarchy parameter is present
 		boolean hierarchy=false;
-		if (commandParams.containsKey(R.PARAM_HIERARCHY)) {
+		if (commandParams.containsKey(C.PARAM_HIERARCHY)) {
 			hierarchy=true;
 		}
 		
 		String url="";
 		String upMethod="local";
 		//if a url is present, the file should be taken from the url
-		if (commandParams.containsKey(R.PARAM_URL)) {
-			if (commandParams.containsKey(R.PARAM_FILE)) {
+		if (commandParams.containsKey(C.PARAM_URL)) {
+			if (commandParams.containsKey(C.PARAM_FILE)) {
 				return Status.ERROR_FILE_AND_URL;
 			}
 			upMethod="URL";
-			url=commandParams.get(R.PARAM_URL);
+			url=commandParams.get(C.PARAM_URL);
 		}
 		Boolean downloadable=false;
-		if (commandParams.containsKey(R.PARAM_DOWNLOADABLE)) {
+		if (commandParams.containsKey(C.PARAM_DOWNLOADABLE)) {
 			downloadable=true;
 		}
 		Permission p=new Permission();
-		for (String x : R.PARAMS_PERMS) {
-			if (commandParams.containsKey(x) || commandParams.containsKey(R.PARAM_ENABLE_ALL_PERMISSIONS)) {
+		for (String x : C.PARAMS_PERMS) {
+			if (commandParams.containsKey(x) || commandParams.containsKey(C.PARAM_ENABLE_ALL_PERMISSIONS)) {
 				p.setPermissionOn(x);
 			}
 		}
-		return con.uploadBenchmarks(commandParams.get(R.PARAM_FILE), Integer.parseInt(type), Integer.parseInt(space), 
+		return con.uploadBenchmarks(commandParams.get(C.PARAM_FILE), Integer.parseInt(type), Integer.parseInt(space), 
 				upMethod, p, url, downloadable,
 				hierarchy, dependency, depLinked,Integer.parseInt(depRoot));
 		
@@ -607,19 +607,19 @@ class ArgumentParser {
 			if (valid<0) {
 				return valid;
 			}
-			File f=new File(commandParams.get(R.PARAM_FILE));
+			File f=new File(commandParams.get(C.PARAM_FILE));
 			String name=getDefaultName(f.getName()+" ");
 			String desc="";
 			
-			if (commandParams.containsKey(R.PARAM_NAME)) {
-				name=commandParams.get(R.PARAM_NAME);
+			if (commandParams.containsKey(C.PARAM_NAME)) {
+				name=commandParams.get(C.PARAM_NAME);
 			}
 			
-			if (commandParams.containsKey(R.PARAM_DESC)) {
-				desc=commandParams.get(R.PARAM_DESC);
+			if (commandParams.containsKey(C.PARAM_DESC)) {
+				desc=commandParams.get(C.PARAM_DESC);
 			}
 			
-			return con.uploadConfiguration(name, desc, commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)));
+			return con.uploadConfiguration(name, desc, commandParams.get(C.PARAM_FILE), Integer.parseInt(commandParams.get(C.PARAM_ID)));
 			
 			
 		} catch (Exception e) {
@@ -645,20 +645,20 @@ class ArgumentParser {
 		}
 		
 		
-		String community= commandParams.get(R.PARAM_ID); //id is one of the required parameters		
+		String community= commandParams.get(C.PARAM_ID); //id is one of the required parameters		
 		
 		//if a name is given explicitly, use it instead
-		String name=getDefaultName(new File(commandParams.get(R.PARAM_FILE)).getName());
-		if (commandParams.containsKey(R.PARAM_NAME)) {
-			name=commandParams.get(R.PARAM_NAME);
+		String name=getDefaultName(new File(commandParams.get(C.PARAM_FILE)).getName());
+		if (commandParams.containsKey(C.PARAM_NAME)) {
+			name=commandParams.get(C.PARAM_NAME);
 		}
 		
 		//If there is a description, get it
 		String desc = "";
-		if (commandParams.containsKey(R.PARAM_DESC)) {
-			desc=commandParams.get(R.PARAM_DESC);			
+		if (commandParams.containsKey(C.PARAM_DESC)) {
+			desc=commandParams.get(C.PARAM_DESC);			
 		}
-		return con.uploadProcessor(name, desc, commandParams.get(R.PARAM_FILE), Integer.parseInt(community), type);
+		return con.uploadProcessor(name, desc, commandParams.get(C.PARAM_FILE), Integer.parseInt(community), type);
 		
 		
 	}
@@ -716,7 +716,7 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
-			return con.uploadXML(commandParams.get(R.PARAM_FILE), Integer.parseInt(commandParams.get(R.PARAM_ID)),isJobXML);
+			return con.uploadXML(commandParams.get(C.PARAM_FILE), Integer.parseInt(commandParams.get(C.PARAM_ID)),isJobXML);
 			
 		} catch (Exception e) {		  
 		    fail.add(Status.ERROR_INTERNAL);
@@ -734,7 +734,7 @@ class ArgumentParser {
     	if (valid<0) {
     		return valid;
     	}
-    	String status=con.getBenchmarkUploadStatus(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+    	String status=con.getBenchmarkUploadStatus(Integer.parseInt(commandParams.get(C.PARAM_ID)));
     	if (status!=null) {
     		System.out.println(status);
     		return 0;
@@ -751,7 +751,7 @@ class ArgumentParser {
         		failMap.put("-1", String.valueOf(valid));
         		return failMap;
         	}
-    		int id=Integer.parseInt(commandParams.get(R.PARAM_ID));
+    		int id=Integer.parseInt(commandParams.get(C.PARAM_ID));
     		
     		return con.getPrimitiveAttributes(id, type);
     	} catch (Exception e) {
@@ -779,51 +779,51 @@ class ArgumentParser {
 		File f=null;
 		String name = getDefaultName("");
 		String desc = "";
-		String space= commandParams.get(R.PARAM_ID); //id is one of the required parameters
+		String space= commandParams.get(C.PARAM_ID); //id is one of the required parameters
 		String upMethod="local";
 		String url="";
 		String descMethod="upload";
 		Boolean downloadable=false;
 		Boolean runTestJob=false;
 		//if a url is present, the file should be taken from the url
-		if (commandParams.containsKey(R.PARAM_URL)) {
+		if (commandParams.containsKey(C.PARAM_URL)) {
 			upMethod="URL";
-			url=commandParams.get(R.PARAM_URL);
+			url=commandParams.get(C.PARAM_URL);
 		} else {
-			f = new File(commandParams.get(R.PARAM_FILE));
+			f = new File(commandParams.get(C.PARAM_FILE));
 			//name defaults to the name of the file plus the date if none is given
 			name=getDefaultName(f.getName()+" ");							
 		}
 		
 		//if a name is given explicitly, use it instead
-		if (commandParams.containsKey(R.PARAM_NAME)) {
-			name=commandParams.get(R.PARAM_NAME);
+		if (commandParams.containsKey(C.PARAM_NAME)) {
+			name=commandParams.get(C.PARAM_NAME);
 		}
 		
 		//d is the key used for directly sending a string description
-		if (commandParams.containsKey(R.PARAM_DESC)) {
+		if (commandParams.containsKey(C.PARAM_DESC)) {
 			descMethod="text";
-			desc=commandParams.get(R.PARAM_DESC);
+			desc=commandParams.get(C.PARAM_DESC);
 			
 		//df is the "description file" key, which should have a filepath value
-		} else if (commandParams.containsKey(R.PARAM_DESCRIPTION_FILE)) {
+		} else if (commandParams.containsKey(C.PARAM_DESCRIPTION_FILE)) {
 			descMethod="file";
-			desc=commandParams.get(R.PARAM_DESCRIPTION_FILE); // set the description to be the filepath
+			desc=commandParams.get(C.PARAM_DESCRIPTION_FILE); // set the description to be the filepath
 		}
 		
-		if (commandParams.containsKey(R.PARAM_DOWNLOADABLE)) {
+		if (commandParams.containsKey(C.PARAM_DOWNLOADABLE)) {
 			downloadable=true;
 		}
-		if (commandParams.containsKey(R.PARAM_RUN)) {
+		if (commandParams.containsKey(C.PARAM_RUN)) {
 			runTestJob=true;
 		}
 		Integer settingId=null;
-		if (commandParams.containsKey(R.PARAM_SETTING)) {
-			settingId=Integer.parseInt(R.PARAM_SETTING);
+		if (commandParams.containsKey(C.PARAM_SETTING)) {
+			settingId=Integer.parseInt(C.PARAM_SETTING);
 		}
 		Integer type=1;
-		if (commandParams.containsKey(R.PARAM_TYPE)) {
-			type=Integer.parseInt(commandParams.get(R.PARAM_TYPE));
+		if (commandParams.containsKey(C.PARAM_TYPE)) {
+			type=Integer.parseInt(commandParams.get(C.PARAM_TYPE));
 		}
 		if (upMethod.equals("local")) {
 			return con.uploadSolver(name, desc,descMethod, Integer.parseInt(space), f.getAbsolutePath(), downloadable,runTestJob,settingId,type);

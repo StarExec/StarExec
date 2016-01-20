@@ -121,7 +121,6 @@ public class OARBackend implements Backend {
 	@Override
 	public String[] getQueues() {
 		try {	
-			//TODO: This will need to get parsed into the list of nodes. May also need sudo admin
 			String queues = Util.executeCommand("oarnotify -l");
 			String[] lines = queues.split(System.getProperty("line.separator"));
 			List<String> names = new ArrayList<String>();

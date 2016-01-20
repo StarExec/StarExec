@@ -43,7 +43,7 @@ public class Shell {
 				MessagePrinter.printStatusMessage(status,parser);
 				MessagePrinter.printWarningMessages();
 				//if the user typed 'exit,' quit the program
-				if (status==R.SUCCESS_EXIT) {
+				if (status==C.SUCCESS_EXIT) {
 					return;
 				} 
 			}
@@ -62,7 +62,7 @@ public class Shell {
 	public static void main(String[] args) {
 		
 		Shell shell=new Shell();
-		System.out.println("Last update = "+R.VERSION); // version is just the date of the last update.
+		System.out.println("Last update = "+C.VERSION); // version is just the date of the last update.
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
 			shell.parser.runFile(args[0], false);

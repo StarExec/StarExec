@@ -2,12 +2,14 @@ package org.starexec.command;
 
 import java.util.HashMap;
 
+import org.starexec.constants.R;
+
 /**
- * This class holds constants for the StarexecCommand file.
+ * This class holds constants specific to StarexecCommand
  * @author Eric
  *
  */
-public class R {
+public class C {
 	
 	public static String VERSION="September 08, 2015";
 	
@@ -24,7 +26,6 @@ public class R {
 	
 	public static String URL_HOME= "secure/index.jsp";
 	public static String URL_LOGIN= "secure/j_security_check";
-	public static String URL_SPACES= "secure/explore/spaces";
 	public static String URL_DOWNLOAD = "secure/download";
 	public static String URL_LOGOUT="services/session/logout";
 	public static String URL_USERSETTING="services/edit/user/";
@@ -37,7 +38,6 @@ public class R {
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space/changePublic";
 	public static String URL_UPLOADCONFIG="secure/upload/configurations";
-	public static String URL_ADDJOB="secure/add/job.jsp";
 	public static String URL_POSTJOB="secure/add/job";
         public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
@@ -75,48 +75,6 @@ public class R {
 		successMessages.put(SUCCESS_LOGOUT, "Logout successful");
 		successMessages.put(SUCCESS_LOGIN, "Login successful");
 	}
-	
-	
-	
-	//constants and regular expressions from StarExec for validation
-	
-	 //maximum length properties
-	//TODO: These are already specified in constants/R.java, and they should not be duplicated here.
-	//they're being duplicated because they need to be included in the StarexecCommand build, but we need a better way
-    public static int SPACE_NAME_LEN=255;
-    public static int SPACE_DESC_LEN=1024;
-    public static int USER_FIRST_LEN=32;
-    public static int USER_LAST_LEN=32;
-    public static int INSTITUTION_LEN=64;
-    public static int EMAIL_LEN=64;
-    public static int PASSWORD_LEN=20;
-    public static int MSG_LEN=512;
-    public static int BENCH_NAME_LEN=250;
-    public static int BENCH_DESC_LEN=1024;
-    public static int CONFIGURATION_NAME_LEN=64;
-    public static int CONFIGURATION_DESC_LEN=1024;
-    public static int SOLVER_NAME_LEN=64;
-    public static int SOLVER_DESC_LEN=1024;
-    public static int JOB_NAME_LEN=64;
-    public static int JOB_DESC_LEN=1024;
-    public static int URL_LEN=128;
-    public static int PROCESSOR_NAME_LEN=64;
-    public static int PROCESSOR_DESC_LEN=1024;
-    
-    //Regex patterns
-    public static String BOOLEAN_PATTERN="true|false";
-    public static String LONG_PATTERN="^\\-?\\d+$";
-    public static String USER_NAME_PATTERN="^[A-Za-z\\-\\s']{2," +String.valueOf(USER_FIRST_LEN)+ "}$";
-    public static String INSTITUTION_PATTERN="^[\\w\\-\\s']{2," +String.valueOf(INSTITUTION_LEN) +"}$";
-    public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
-    public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
-    public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
-    
-    public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$";
-    public static String PRIMITIVE_DESC_PATTERN="^.{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
-    public static String PASSWORD_PATTERN="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$";
-
-
 	// Comment
 	
 	public static final String COMMENT_SYMBOL = "#";
@@ -278,11 +236,7 @@ public class R {
 	public static String FORMPARAM_TYPE="type";
 	public static String FORMPARAM_SINCE="since";
 	public static String FORMPARAM_ID="id";
-	public static String FORMPARAM_TRAVERSAL="traversal";
-	
-	public static String FORMARG_ROUNDROBIN="robin";
-	public static String FORMARG_DEPTHFIRST="depth";
-	
+	public static String FORMPARAM_TRAVERSAL="traversal";	
 	
     public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
 

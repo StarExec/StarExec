@@ -78,8 +78,8 @@ public class Status {
 		messages.put(ERROR_COMMAND_FILE_TERMINATING, "An error was encountered: the file of commands may not have been completed");
 		messages.put(ERROR_NAME_NOT_UNIQUE, "All primitives in a given space must have unique names");
 		messages.put(ERROR_INSUFFICIENT_QUOTA, "You do not have the required disk quota to copy the primitive");
-		messages.put(ERROR_BAD_TRAVERSAL_TYPE, "The traversal must be either depth-first ("+R.ARG_DEPTHFIRST+") or round-robin ("+R.ARG_ROUNDROBIN+")");
-		messages.put(ERROR_ID_AND_USER, "Only one of "+R.PARAM_ID+" and "+R.PARAM_USER+" is allowed");
+		messages.put(ERROR_BAD_TRAVERSAL_TYPE, "The traversal must be either depth-first ("+C.ARG_DEPTHFIRST+") or round-robin ("+C.ARG_ROUNDROBIN+")");
+		messages.put(ERROR_ID_AND_USER, "Only one of "+C.PARAM_ID+" and "+C.PARAM_USER+" is allowed");
 		messages.put(ERROR_NO_USER_PRIMS,"User primitives can only be obtained for jobs, solvers, and benchmarks");
 		messages.put(ERROR_INTERNAL, "Internal error while handling command");
 		messages.put(ERROR_INVALID_MEMORY, "Memory is measured in gigabytes, and it can not be negative");
