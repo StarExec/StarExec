@@ -37,6 +37,8 @@
     </path>
 	<path id="starcomclasspath">
 		<fileset dir="${starcomlib}" includes="**/*.jar"/>
+		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+
 	</path>
 	
 	<!-- Action for compiling the project and building the WAR file.
@@ -81,6 +83,8 @@
 		    <zipfileset dir="${starcomlib}" includes="httpmime-4.3.4.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="gson-2.3.jar"/>
+	            <zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+
 		</jar>
 	</target>
 		
