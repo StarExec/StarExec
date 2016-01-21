@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+//import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
@@ -1044,6 +1045,40 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
 	}
 
+	/**
+	 * @param benchmarkId The id of the benchmark to generate an anonymous public URL for.
+	 * @param request The http request.
+	 * @author Albert Giegerich
+	 */
+	/*
+	@POST
+	@Path( "/anonymousLink/benchmark/{benchmarkId}" )
+	@Produces( "application/json" )
+	public String getAnonymousLinkForBenchmark( @PathParam("benchmarkId") int benchmarkId, @Context HttpServletRequest request ) {
+
+		int userId = SessionUtil.getUserId(request);
+
+		ValidatorStatusCode status = BenchmarkSecurity.canUserGetAnonymousLink( benchmarkId, userId );
+
+		try {
+			// Check if user has permission to get an anonymous link for this benchmark.
+			if ( status.isSuccess() ) {
+				// Generate a unique id to be part of the link URL and store it in the DB
+				final String uniqueId = UUID.randomUUID().toString();
+				AnonymousLinks.addAnonymousLink( uniqueId, benchmarkId );
+
+				// Return the URL with the UUID as a parameter.
+				return gson.toJson( R.STAREXEC_URL_PREFIX + R.STAREXEC_ROOT + "secure/details/benchmark.jsp?anonId=" + uniqueId );
+			} else {
+				// Return the failed security check status.
+				return gson.toJson( status );
+			}
+		} catch ( StarExecDatabaseException e ) {
+			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
+		}
+	}
+	*/
+
 	@POST
 	@Path("/job/edit/name/{jobId}/{newName}")
 	@Produces("application/json")
@@ -1229,10 +1264,10 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
 			return gson.toJson(Websites.getAllForJavascript(userId, WebsiteType.USER));
-		} else if(type.equals(R.SPACE)){
+		} else if(type.equals("space")){
 			//SolverSecurity.canAssociateWebsite(solverId, userId, name)
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
-		} else if (type.equals(R.SOLVER)) {
+		} else if (type.equals("solver")) {
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
@@ -1259,7 +1294,7 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			success = Websites.add(id, url, name,WebsiteType.USER);
-		} else if (type.equals(R.SPACE)) {
+		} else if (type.equals("space")) {
 			// Make sure this user is capable of adding a website to the space
 			ValidatorStatusCode status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
 			if (!status.isSuccess()) {
@@ -1269,7 +1304,7 @@ public class RESTServices {
 			log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
 			success = Websites.add(id, url, name, WebsiteType.SPACE);
 			
-		} else if (type.equals(R.SOLVER)) {
+		} else if (type.equals("solver")) {
 			//Make sure this user is the solver owner
 			ValidatorStatusCode status=SolverSecurity.canAssociateWebsite(id, userId,name,url);
 			if (!status.isSuccess()) {
@@ -1353,8 +1388,9 @@ public class RESTServices {
 		if (testNames==null || testNames.length==0) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		TestManager.executeTests(testNames);
-		
+		for (String testName : testNames) {
+			TestManager.executeTests(testNames);
+		}
 			
 		return gson.toJson(new ValidatorStatusCode(true,"Testing started successfully"));
 			
@@ -3992,6 +4028,7 @@ public class RESTServices {
 		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
+	
 	/**
 	 * Clears every entry from the cache
 	 * @param request
@@ -4009,6 +4046,7 @@ public class RESTServices {
 		
 		return Jobs.removeAllCachedJobStats() ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
+	
 	
 	@POST
 	@Path("/suspend/user/{userId}")
@@ -4198,7 +4236,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getGsonPrimitive(@Context HttpServletRequest request, @PathParam("id") int id, @PathParam("type") String type) {
 		int userId=SessionUtil.getUserId(request);
-		if (type.equals(R.SOLVER)) {
+		if (type.equals("solver")) {
 			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
@@ -4210,14 +4248,14 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id,false));
-		} else if (type.equals(R.JOB)) {
+		} else if (type.equals("job")) {
 			ValidatorStatusCode status=JobSecurity.canGetJsonJob(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Jobs.getIncludeDeleted(id));
 			
- 		} else if (type.equals(R.SPACE)) {
+ 		} else if (type.equals("space")) {
  			ValidatorStatusCode status=SpaceSecurity.canGetJsonSpace(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
