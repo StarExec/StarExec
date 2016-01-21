@@ -71,7 +71,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			END IF;
 		END IF;
 		IF (_statusCode = 2) THEN
-			UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_id;
+			UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_jobPairId;
 		END IF;
 	END //
 	
