@@ -81,7 +81,7 @@ public class PermissionsTests extends TestSequence {
 	private void GetSpaceDefaultTest() {
 		space.getPermission().setAddSolver(true);
 		space.getPermission().setAddSpace(false);
-		Spaces.updateDetails(owner.getId(), space);
+		Spaces.updateDetails(admin.getId(), space);
 		Permission p=Permissions.getSpaceDefault(space.getId());
 		Assert.assertNotNull(p);
 		Assert.assertFalse(p.isLeader());

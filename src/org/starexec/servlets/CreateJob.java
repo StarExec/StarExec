@@ -392,7 +392,7 @@ public class CreateJob extends HttpServlet {
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
 				
-				if(!Validator.isValidPosInteger(request.getParameter(postProcessor))) {
+				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
 				postProc=Integer.parseInt(request.getParameter(postProcessor));
@@ -403,7 +403,7 @@ public class CreateJob extends HttpServlet {
 			}
 			
 			if(Util.paramExists(preProcessor, request)) {
-				if(!Validator.isValidPosInteger(request.getParameter(preProcessor))) {
+				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
 				preProc=Integer.parseInt(request.getParameter(preProcessor));
