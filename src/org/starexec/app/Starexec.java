@@ -14,6 +14,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.starexec.backend.*;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
@@ -82,6 +83,7 @@ public class Starexec implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
+		R.BACKEND = new GridEngineBackend();
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());

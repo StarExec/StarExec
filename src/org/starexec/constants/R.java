@@ -2,7 +2,8 @@ package org.starexec.constants;
 import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
-import org.starexec.backend.*;
+//TODO: Would be good to remove this dependency on the backend in this file.
+import org.starexec.backend.Backend;
 
 /**
  * Class which holds static resources (R) available for use
@@ -24,7 +25,7 @@ public class R {
 		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
     }
 
-    public static Backend BACKEND = new GridEngineBackend();
+    public static Backend BACKEND = null;
 	
     //maximum length properties
     public static int SPACE_NAME_LEN=250;

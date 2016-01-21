@@ -34,8 +34,7 @@ import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
 
-/*TODO:
-	Download[new job info, new job output]
+/*TODO: Download[new job info, new job output]
 */
 public class StarexecCommandTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(TestSequence.class);	
