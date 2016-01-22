@@ -140,7 +140,7 @@ public class PermissionsTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspace(space.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Solvers.deleteAndRemoveSolver(solver2.getId());
 		for (Integer i : benchmarks) {

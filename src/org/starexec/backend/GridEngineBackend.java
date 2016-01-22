@@ -24,10 +24,8 @@ import org.starexec.util.Validator;
 public class GridEngineBackend implements Backend{
     // SGE Configurations, see GridEngineBackend
     private static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
-    private static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
     private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
     private static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
     private static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
@@ -41,16 +39,11 @@ public class GridEngineBackend implements Backend{
     private String BACKEND_ROOT = null;
     
     // The regex patterns used to parse SGE output
- 	private static Pattern nodeKeyValPattern;
- 	private static Pattern queueKeyValPattern;
  	private static Pattern queueAssocPattern;
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded
- 		nodeKeyValPattern = Pattern.compile(NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
- 		queueKeyValPattern = Pattern.compile(QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
  		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
-
  	}
     
     /**
@@ -188,9 +181,8 @@ public class GridEngineBackend implements Backend{
 }
 }
 
-    /**
-
-     * @param execId an int that identifies the pair to be killed, should match what is returned by submitScript
+    /** 
+     * Kills all running pairs
      * @return true if successful, false otherwise
      * kills a jobpair
      */

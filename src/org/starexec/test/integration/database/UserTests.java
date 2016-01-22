@@ -545,8 +545,8 @@ public class UserTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId());
-		Spaces.removeSubspaces(comm.getId());
+		Spaces.removeSubspace(space.getId());
+		Spaces.removeSubspace(comm.getId());
 		
 	}
 	

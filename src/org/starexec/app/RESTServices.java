@@ -3490,7 +3490,6 @@ public class RESTServices {
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
-				//TODO: Should this return a list of ids of every space in the hierarchy?
 				int newSpaceId;
 				try {
 					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId);

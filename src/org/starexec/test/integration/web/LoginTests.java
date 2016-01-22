@@ -77,7 +77,7 @@ public class LoginTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspaces(s.getId());
+		Spaces.removeSubspace(s.getId());
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
 		
 	}

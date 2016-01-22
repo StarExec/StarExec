@@ -244,8 +244,8 @@ public class SolverSecurityTests extends TestSequence {
 		Users.deleteUser(regular.getId(),admin.getId());
 		Users.deleteUser(owner.getId(), admin.getId());
 		
-		Spaces.removeSubspaces(tempCommunity.getId());
-		Spaces.removeSubspaces(tempCommunity2.getId());
+		Spaces.removeSubspace(tempCommunity.getId());
+		Spaces.removeSubspace(tempCommunity2.getId());
 
 	
 	}

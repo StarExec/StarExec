@@ -171,7 +171,7 @@ public class SpaceTests extends TestSequence {
 			}
 		}
 
-		Spaces.removeSubspaces(subspace3.getId());
+		Spaces.removeSubspace(subspace3.getId());
 	}
 
 	private static void assertSpacesAreCopies(Space space, Space otherSpace) {
@@ -251,7 +251,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(space1Path, SP.get(space1.getId()));
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 		
-		Spaces.removeSubspaces(space1.getId());
+		Spaces.removeSubspace(space1.getId());
 	}
 	
 	@StarexecTest
@@ -389,10 +389,10 @@ public class SpaceTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
 		
-		Spaces.removeSubspaces(subspace.getId());
-		Spaces.removeSubspaces(subspace2.getId());
-		Spaces.removeSubspaces(subspace3.getId());
-		boolean success=Spaces.removeSubspaces(community.getId());
+		Spaces.removeSubspace(subspace.getId());
+		Spaces.removeSubspace(subspace2.getId());
+		Spaces.removeSubspace(subspace3.getId());
+		boolean success=Spaces.removeSubspace(community.getId());
 		try {
 			Users.deleteUser(leader.getId(),admin.getId());
 			Users.deleteUser(member1.getId(),admin.getId());

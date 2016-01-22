@@ -142,8 +142,8 @@ public class RequestsTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspaces(comm.getId());
-		Spaces.removeSubspaces(comm2.getId());
+		Spaces.removeSubspace(comm.getId());
+		Spaces.removeSubspace(comm2.getId());
 		Users.deleteUser(registeredUser.getId(), admin.getId());
 		Users.deleteUser(requestedUser.getId(), admin.getId());
 		

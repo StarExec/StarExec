@@ -69,7 +69,7 @@ public class UploadBenchmarksTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		driver.quit();
-		Spaces.removeSubspaces(s.getId());
+		Spaces.removeSubspace(s.getId());
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
 		
 		
