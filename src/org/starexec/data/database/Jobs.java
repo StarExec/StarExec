@@ -380,9 +380,7 @@ public class Jobs {
 			}
 			
 			log.debug("adding job pairs");
-			
-			//TODO: We should be batching the addition of pairs so we don't need to make so many SQL calls
-			
+						
 			JobPairs.addJobPairs(con, job.getId(),job.getJobPairs());
 
 			Common.endTransaction(con);

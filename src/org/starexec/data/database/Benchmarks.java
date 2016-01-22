@@ -235,10 +235,13 @@ public class Benchmarks {
 	 * we are not introducing benchmark dependencies.
 	 * @param benchmarks The list of benchmarks to add
 	 * @param spaceId The space the benchmarks will belong to. If null, they will not be added to any space.
-	 * @return A list of IDs of the new benchmarks if true, and null otherwise.
 	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
 
 	 * @author Tyler Jensen
+	 * @throws StarExecDatabaseException If any exceptions occur during execution, they will be logged and this
+	 * will be thrown
+	 * @return A list of IDs of the new benchmarks if true, and null otherwise.
+
 	 */
 	public static List<Integer> add(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws StarExecDatabaseException {
 		final String method = "add";
@@ -954,6 +957,7 @@ public class Benchmarks {
 
 	/**
 	 * Deletes each benchmark in a list of benchmarks
+	 * @param benchmarksToDelete The list of benchmarks to delete. Each must have an ID set.
 	 * @author Albert Giegerich
 	 */
 	public static void deleteEach(List<Benchmark> benchmarksToDelete) {
@@ -2481,7 +2485,6 @@ public class Benchmarks {
      * @param hierarchy whether to process the hierarchy rooted at the space with the given ID, or just that space
      * @param userId the ID of the user requesting re-processing
      * @param clearOldAttrs true iff we should drop the old attributes we had from any earlier processing
-     * @param isCommunityLeader true iff the user with the given userID is a community leader 
      * @author Eric Burns
      * @return The ID of an UploadStatus object for tracking progress of this request
      */

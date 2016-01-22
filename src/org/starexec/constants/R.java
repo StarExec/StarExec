@@ -2,7 +2,6 @@ package org.starexec.constants;
 import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
-//TODO: Would be good to remove this dependency on the backend in this file.
 import org.starexec.backend.Backend;
 
 /**

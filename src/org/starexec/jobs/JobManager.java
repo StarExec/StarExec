@@ -316,13 +316,12 @@ public abstract class JobManager {
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
-							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
 
 							//TODO : need a better way to handle error codes
 							if(!R.BACKEND.isError(execId)){
 							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
-							    JobPairs.setPairStatus(pair.getId(),errorCode);
+							    JobPairs.setPairStatus(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
 							}
 							queueSize++; 
 						} catch(Exception e) {

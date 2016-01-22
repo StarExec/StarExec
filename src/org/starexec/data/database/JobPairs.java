@@ -177,8 +177,6 @@ public class JobPairs {
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 			
-			//TODO: It is not possible to do batch processing when we are using out parameters
-			//Should we rework this do avoid needing an out parameter? Generating ids would be one possibility
 			for (JobPair pair : pairs) {
 				procedure.setInt(1, jobId);
 				procedure.setInt(2, pair.getBench().getId());

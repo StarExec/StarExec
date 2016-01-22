@@ -298,7 +298,6 @@ public class Pipelines {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		//TODO: A more complex algorithm may be needed in the future if we are getting a large number of pipelines in every job
 		for (Integer i : pipeIds) {
 			pipes.add(Pipelines.getFullPipeline(i));
 		}

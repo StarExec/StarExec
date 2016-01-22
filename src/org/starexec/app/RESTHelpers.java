@@ -57,9 +57,9 @@ public class RESTHelpers {
 	private static final int PAGE_USER_DETAILS = 2;
 	private static Gson gson = new Gson();
 
-	// Job pairs and nodes aren't technically a primitive class according to how
-	// we've discussed primitives, but to save time and energy I've included
-	// them here as such
+	/** Job pairs and nodes aren't technically a primitive class according to how
+	 we've discussed primitives, but to save time and energy I've included
+	 them here as such*/
 	public enum Primitive {
 		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE
 	}
@@ -730,7 +730,7 @@ public class RESTHelpers {
 	 * @param wallclock True to use wallclock time, false to use CPU time
 	 * @param syncResults If true, excludes job pairs for which the benchmark has not been worked on by every solver in the space
 	 * @param stageNumber If <=0, gets the primary stage
-	 * @return
+	 * @return JsonObject encapsulating pairs to display in the next table page
 	 */
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
@@ -824,7 +824,7 @@ public class RESTHelpers {
 	 * Benchmarks in public spaces, and Benchmarks in spaces the user is also in.
 	 * @param userId
 	 * @param request
-	 * @return
+	 * @return JsonObject encapsulating next page of benchmarks to display
 	 */
 	public static JsonObject getNextDataTablesPageOfBenchmarksByUser(int userId, HttpServletRequest request) {
 		log.debug("called getNextDataTablesPageOfBenchmarksByUser");
@@ -881,7 +881,7 @@ public class RESTHelpers {
 	 * solvers in public spaces, and solvers in spaces the user is also in.
 	 * @param userId
 	 * @param request
-	 * @return
+	 * @return JsonObject encapsulating next page of solvers to display
 	 */
 	public static JsonObject getNextDataTablesPageOfSolversByUser(int userId, HttpServletRequest request) {
 		
@@ -937,7 +937,8 @@ public class RESTHelpers {
 	 * @param configId2
 	 * @param request
 	 * @param wallclock
-	 * @return
+	 * @param stageNumber 
+	 * @return JsonObject encapsulating next page of solver comparisons to display
 	 */
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
 			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock, int stageNumber) {
@@ -2602,7 +2603,14 @@ public class RESTHelpers {
 		}
 		return jobSpaceIdToSubspaceJsonMap;
 	}
-
+	
+	/**
+	 * Gets a JSON representation of a job space tree
+	 * @param parentId
+	 * @param jobId
+	 * @param userId
+	 * @return
+	 */
 	public static String getJobSpacesTreeJson(int parentId, int jobId, int userId) {
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
 		if (!status.isSuccess()) {

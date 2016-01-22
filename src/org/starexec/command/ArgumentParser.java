@@ -168,7 +168,6 @@ class ArgumentParser {
 			if (commandParams.containsKey(C.PARAM_SEED)) {
 				seed=Long.parseLong(commandParams.get(C.PARAM_SEED));
 			}
-			//TODO: Support suppress timestamps param
 			return con.createJob(Integer.parseInt(commandParams.get(C.PARAM_ID)), name,
 					desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId),
 					Integer.parseInt(commandParams.get(C.PARAM_QUEUEID)),wallclock,
