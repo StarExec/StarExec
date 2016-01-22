@@ -92,7 +92,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 			SELECT COUNT(*) AS jobPairCount
 			FROM job_pairs
 			JOIN jobpair_stage_data ON (jobpair_stage_data.pair_id = job_pairs.id)
-			WHERE job_space_id=_jobSpaceId AND stage_number = _stageNumber
+			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND stage_number = _stageNumber
 			AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.config_name		LIKE	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.solver_name		LIKE	CONCAT('%', _query, '%')
@@ -102,7 +102,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 			SELECT COUNT(*) AS jobPairCount
 			FROM job_pairs
 			JOIN jobpair_stage_data ON (jobpair_stage_data.pair_id = job_pairs.id)
-			WHERE job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
+			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
 			AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.config_name		LIKE	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.solver_name		LIKE	CONCAT('%', _query, '%')

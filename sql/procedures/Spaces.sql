@@ -34,18 +34,7 @@ CREATE PROCEDURE SetJobSpaceMaxStages(IN _id INT, IN _max INT)
 	BEGIN
 		UPDATE job_spaces SET max_stages=_max WHERE id=_id;
 	END //
-	
 
-	
-
--- Gets the id of every job space in the database
-DROP PROCEDURE IF EXISTS GetAllJobSpaceIds;
-CREATE PROCEDURE GetAllJobSpaceIds()
-	BEGIN
-		SELECT id FROM job_spaces;
-	END //
-
-	
 -- Clears entries from the job_space_closure table that are older than the given time
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS ClearOldJobClosureEntries;
@@ -146,17 +135,6 @@ CREATE PROCEDURE GetAllSpaces()
 		SELECT name, id, locked, description
 		FROM spaces;
 	END //
-
--- Gets all superspaces of spaces a user is in
-DROP PROCEDURE IF EXISTS GetAllSuperSpacesByUser;
-CREATE PROCEDURE GetAllSuperSpacesByUser(IN _userId INT)
-	BEGIN
-		SELECT distinct ancestor AS id
-                FROM user_assoc JOIN closure ON user_assoc.space_id = closure.descendant
-                WHERE user_assoc.user_id = _userId;
-	END //
-
-
 
 -- Returns all spaces a user can see in the hierarchy rooted at the given space
 -- Author: Eric Burns
