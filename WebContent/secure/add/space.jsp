@@ -38,11 +38,11 @@
 				<tbody>
 					<tr>
 						<td class="label"><p>name</p></td>
-						<td><input id="txtName" name="name" type="text" length=${nameLength}></input></td>
+						<td><input id="txtName" name="name" type="text" length="${nameLength}"></input></td>
 					</tr>
 					<tr>
 						<td class="label"><p>description</p></td>
-						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false" length=${descLength}></textarea></td>
+						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false" length="${descLength}"></textarea></td>
 					</tr>
 					<tr>
 						<td class="label"><p>default</p></td>

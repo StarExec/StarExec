@@ -3,22 +3,22 @@
 
 <star:template title="StarExec" css="about">
 
-	<p id="advisory">StarExec is a cross community logic solving service
-	developed at the University of Iowa under the direction of principal
-	investigators Aaron Stump (Iowa), Geoff Sutcliffe (University
-	of Miami), and Cesare Tinelli (Iowa).
-  </p>
+ 	<p id="advisory">StarExec is a cross community logic solving service
+		developed at the University of Iowa under the direction of principal
+		investigators Aaron Stump (Iowa), Geoff Sutcliffe (University
+		of Miami), and Cesare Tinelli (Iowa).
+ 	</p>
 	
 	<p>Its main goal is to facilitate the experimental evaluation of logic
-	solvers, broadly understood as automated tools based on formal reasoning.
-	The service is designed to provide a single piece of storage and computing
-	infrastructure to logic solving communities and their members. 
-	It aims at reducing duplication of effort and resources as well as 
-	enabling individual researchers or groups with no access to comparable
-	 infrastructure. 
+		solvers, broadly understood as automated tools based on formal reasoning.
+		The service is designed to provide a single piece of storage and computing
+		infrastructure to logic solving communities and their members. 
+		It aims at reducing duplication of effort and resources as well as 
+		enabling individual researchers or groups with no access to comparable
+		infrastructure. 
 	</p>
 	
-	<p>StarExec allows 
+	<p>StarExec allows </p> 
 		<ul>
 			<li>community organizers to store, manage and make available
 			benchmark libraries;
@@ -29,7 +29,6 @@
 			on public or private benchmark problems.
 			</li>
 	  	</ul>
-	</p>
 
 	<p>The first public events ran on StarExec in Summer 2013 (CoCo 2013 and SMT-EVAL 2013). 
   Several more will run in Summer 2014.
@@ -48,7 +47,6 @@
 	</p>
   <h2>StarExec Advisory Committee</h2>
   
-  <p>
 	<ul>
 		<li>Nikolaj Bjørner (Microsoft Research)</li>
 		<li>Ewen Denney (NASA Ames)</li>
@@ -58,7 +56,6 @@
 		<li>Daniel Le Berre (University of Artois)</li>
 		<li>Johannes Waldmann (Leipzig University of Applied Sciences)</li>
 	</ul>
-	</p>
 
   <h2>Credits</h2>
 
