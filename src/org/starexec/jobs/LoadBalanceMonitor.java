@@ -71,25 +71,41 @@ public class LoadBalanceMonitor {
 		}
 		
 		/**
+		 * Calculates what a user's load would be right now if they were to 
+		 * be activated. If they are already active, this is just their load value.
+		 * Otherwise, it is their load value decayed in a linear fashion over time
+		 * since they were inactivated
+		 * @return Long load value
+		 */
+		public long calculateLoadDecay() {
+			if (this.active()) {
+				return load;
+			}
+			Date now = new Date();
+			Date then = inactiveDateTime;
+			inactiveDateTime = null;
+			// gets the number of hours between the two times, truncated down
+			// to the nearest hour.
+			Long hours = (now.getTime() - then.getTime())/ (1000*60*60);
+			if (hours<=2) {
+				return load;
+			}
+			// simple linear decay function that will reduce load to 0 after one week
+			Long loadDecay = this.load - (this.load *  hours / (24*7));
+			if (loadDecay<0) {
+				return 0;
+			}
+			return loadDecay;
+			
+		}
+		
+		/**
 		 * If this user is inactive, activates them and updates their
 		 * load accordingly
 		 */
 		public void activate() {
 			if (!this.active()) {
-				Date now = new Date();
-				Date then = inactiveDateTime;
-				inactiveDateTime = null;
-				// gets the number of hours between the two times, truncated down
-				// to the nearest hour.
-				Long hours = (now.getTime() - then.getTime())/ (1000*60*60) -5;
-				if (hours<=2) {
-					return;
-				}
-				// simple linear decay function that will reduce load to 0 after one week
-				this.load -= this.load *  hours / (24*7);
-				if (load<0) {
-					load = 0l;
-				}
+				this.load = calculateLoadDecay();
 			}
 		}
 	}
@@ -110,8 +126,9 @@ public class LoadBalanceMonitor {
 	private Long loadDifferenceThreshold = 1800l;
 	
 	/**
-	 * Returns null if there are no active users
-	 * @return
+	 * Gets the minimum load value among all active users. Inactive users
+	 * are excluded.
+	 * @return Minimum value among all active users. Returns null if there are no active users
 	 */
 	public Long getMin() {
 		List<UserLoadData> activeUsers = new ArrayList<UserLoadData>();
@@ -132,7 +149,7 @@ public class LoadBalanceMonitor {
 	 * production code, as the load values are manipulated internally by functions like
 	 * setUsers.
 	 * @param userId
-	 * @return
+	 * @return Long load value for the given user. Null if that user does not exist.
 	 */
 	public Long getLoad(int userId) {
 		UserLoadData d = loads.get(userId);
@@ -181,7 +198,7 @@ public class LoadBalanceMonitor {
 	/**
 	 * Sets the list of users managed by this monitor to the given set
 	 * of users.
-	 * @param userIds
+	 * @param userIdsToDefaults Mapping of user ids to values to add to their default load.
 	 */
 	public void setUsers(HashMap<Integer, Integer> userIdsToDefaults) {
 		for (Integer i : loads.keySet()) {
@@ -204,7 +221,7 @@ public class LoadBalanceMonitor {
 	/**
 	 * Updates the load associated with a given user
 	 * @param userId ID of user to affect. Nothing happens if the user does not already exist.
-	 * @param load. Increases user load if positive, decreases user load if negative.
+	 * @param load Increases user load if positive, decreases user load if negative.
 	 */
 	public void changeLoad(int userId, long load) {
 		if (!loads.containsKey(userId)) {
@@ -264,7 +281,12 @@ public class LoadBalanceMonitor {
 	
 	private String stringRepresentation = null;
 	
+	
 	private String userLoadDataAsString(UserLoadData d) {
+		Long loadDecay = d.calculateLoadDecay();
+		if (loadDecay==0) {
+			return "";
+		}
 		StringBuilder sb = new StringBuilder();
 		User u = Users.get(d.userId);
 		sb.append(u.getFullName());
@@ -272,7 +294,7 @@ public class LoadBalanceMonitor {
 		if (!d.active()) {
 			sb.append("(inactive) ");
 		}
-		sb.append(": load = " + d.load);
+		sb.append(": load = " + loadDecay);
 		return sb.toString();
 	}
 	
@@ -297,8 +319,11 @@ public class LoadBalanceMonitor {
 		// updates user load values to take into account actual job pair runtimes.
 		
 		for (UserLoadData d : getSortedDataList()) {
-			sb.append(userLoadDataAsString(d));
-			sb.append("\n");
+			String loadData = userLoadDataAsString(d);
+			if (!loadData.isEmpty()) {
+				sb.append(userLoadDataAsString(d));
+				sb.append("\n");
+			}
 		}
 		sb.append("\n");		
 		stringRepresentation = sb.toString();
