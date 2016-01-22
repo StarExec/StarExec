@@ -97,7 +97,7 @@ public class Cluster {
 	 */
 	public static Boolean setQueueAssociationsInDb() {
 	    Queues.clearQueueAssociations();
-	    Map<String,String> assoc = R.BACKEND.getQueueNodeAssociations();
+	    Map<String,String> assoc = R.BACKEND.getNodeQueueAssociations();
 	    
 	    for(String node : assoc.keySet()){
 	    	Queues.associate(assoc.get(node), node);

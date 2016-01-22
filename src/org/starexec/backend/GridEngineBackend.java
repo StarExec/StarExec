@@ -273,12 +273,10 @@ public class GridEngineBackend implements Backend{
 
      /**
 
-     * @return an array that represents queue-node assocations: [queueName1,nodeName1,queueName1,nodeName2,queueName2,nodeName3]
+     * @return a map from node name to queue name
      * the queue and node names should match the names returned when calling getWorkerNodes and getQueues.
-     * queue names are found in the even-indexed positions, node name otherwise. 
-     *  a queue at index i is associated with the node at index i + 1
      */
-    public Map<String,String> getQueueNodeAssociations(){
+    public Map<String,String> getNodeQueueAssociations(){
 	
     	try {
     		String[] envp = new String[2];

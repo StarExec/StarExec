@@ -99,7 +99,7 @@ public interface Backend{
     /**
      * @return a map from node name to queue name
      */
-    public Map<String, String> getQueueNodeAssociations();
+    public Map<String, String> getNodeQueueAssociations();
 
     /**
      * @return true if sucessful, false otherwise

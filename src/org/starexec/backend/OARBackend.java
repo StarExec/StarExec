@@ -6,13 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.starexec.util.Util;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 public class OARBackend implements Backend {
-	
+	private static Gson gson = new Gson();
+
     private static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from OAR's node detail output
 
     private static Pattern nodeKeyValPattern;
@@ -109,14 +116,33 @@ public class OARBackend implements Backend {
 	}
 
 	@Override
-	public Map<String, String> getQueueNodeAssociations() {
-		// TODO Auto-generated method stub
+	public Map<String, String> getNodeQueueAssociations() {
+		try {
+			String json = Util.executeCommand("oarnodes -J");
+			JsonObject object = new JsonParser().parse(json).getAsJsonObject();
+			HashMap<String, String> nodesToQueues = new HashMap<String, String>();
+			for (Entry<String, JsonElement> s : object.entrySet()) {
+				nodesToQueues.put(s.getValue().getAsJsonObject().get("network_address").getAsString(),
+						s.getValue().getAsJsonObject().get("queue").getAsString());
+			}
+			return nodesToQueues;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		return null;
 	}
 
+	//TODO: Done, Test
 	@Override
 	public boolean clearNodeErrorStates() {
-		// TODO Auto-generated method stub
+		try {
+			
+			//TODO: This may need to be something else, like only if state = suspected
+			Util.executeCommand("oarnodesetting --sql \"state='Suspected'\" -s \"Alive\"");
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 		return false;
 	}
 
