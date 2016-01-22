@@ -253,39 +253,6 @@ public class GridEngineBackend implements Backend{
 
     }
 
-    
-    
-    /**
-     * @param nodeName the name of a node
-     * @return A HashMap of string keys to values
-     */
-    public Map<String,String> getNodeDetails(String nodeName){
-
-    	try {
-    		// Call SGE to get details for the given node
-    		String results = Util.executeCommand(NODE_DETAILS_COMMAND + nodeName);
-
-    		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineBackend.nodeKeyValPattern.matcher(results);
-
-    		Map<String, String> detailMap = new HashMap<String,String>();
-    		// For each match...
-    		while(matcher.find()) {
-    			// Split apart the key from the value
-    			String[] keyVal = matcher.group().split("=");
-    			
-    			// Add the results to the details list
-    			detailMap.put(keyVal[0], keyVal[1]);
-    		}
-
-    		return detailMap;
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
-    	}
-    	return null;
-		
-
-    }
 
     /**
 
@@ -302,37 +269,6 @@ public class GridEngineBackend implements Backend{
     	}
     	return null;
 
-    }
-
-    /**
-     * @param nodeName the name of a node
-     * @return an even-sized String[] representing a details map for a given queue
-     *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
-     */
-    public Map<String,String> getQueueDetails(String nodeName){
-    	try {
-    		// Call SGE to get details for the given node
-    		String results = Util.executeCommand(QUEUE_DETAILS_COMMAND + nodeName);
-
-    		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineBackend.queueKeyValPattern.matcher(results);
-
-    		Map<String, String> detailsMap = new HashMap<String, String>();
-    		// For each match...
-    		while(matcher.find()) {
-    			// Split apart the key from the value
-    			String[] keyVal = matcher.group().split("\\s+");
-    			
-    			// Add the results to the details list
-    			detailsMap.put(keyVal[0], keyVal[1]);
-    		}
-
-    		return detailsMap;
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
-    	}
-    	return null;
-		
     }
 
      /**

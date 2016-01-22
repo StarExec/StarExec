@@ -91,33 +91,6 @@ public class OARBackend implements Backend {
 	
 	//TODO: Done, test
 	@Override
-	public Map<String, String> getNodeDetails(String nodeName) {
-		try {	
-			String details = Util.executeCommand("oarnodes --sql \"network_address = '"+nodeName+"'\"");
-			
-			// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = nodeKeyValPattern.matcher(details);
-
-    		Map<String, String> detailMap = new HashMap<String,String>();
-    		// For each match...
-    		while(matcher.find()) {
-    			// Split apart the key from the value
-    			String[] keyVal = matcher.group().split("=");
-    			
-    			// Add the results to the details list
-    			detailMap.put(keyVal[0], keyVal[1]);
-    		}
-
-    		return detailMap;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		return null;
-	}
-
-	
-	//TODO: Done, test
-	@Override
 	public String[] getQueues() {
 		try {	
 			String queues = Util.executeCommand("oarnotify -l");
@@ -132,12 +105,6 @@ public class OARBackend implements Backend {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
-		return null;
-	}
-
-	@Override
-	public Map<String, String> getQueueDetails(String name) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

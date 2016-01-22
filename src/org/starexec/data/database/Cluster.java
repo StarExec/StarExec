@@ -40,7 +40,7 @@ public class Cluster {
 				String name = lines[i];
 				log.debug("Updating info for node "+name);
 				// In the database, update the attributes for the node
-				Cluster.updateNode(name,  R.BACKEND.getNodeDetails(name));				
+				Cluster.addNodeIfNotExists(name);				
 				// Set the node as active (because we just saw it!)
 				Cluster.setNodeStatus(name, R.NODE_STATUS_ACTIVE);
 			}
@@ -75,10 +75,9 @@ public class Cluster {
 			for (int i = 0; i < queueNames.length; i++) {
 			    String name = queueNames[i];
 
-			    log.debug("Loading details for queue "+name);
-
-			    // In the database, update the attributes for the queue
-			    Queues.update(name,  R.BACKEND.getQueueDetails(name));
+			    // adds queue if it does not already exist: max timeouts are used by
+			    // default for queues that don't exist
+				Queues.add(name,R.DEFAULT_MAX_TIMEOUT,R.DEFAULT_MAX_TIMEOUT);
 
 			    // Set the queue as active since we just saw it
 			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
@@ -321,63 +320,31 @@ public class Cluster {
 
 	
 	/**
-	 * Takes in a node name and a hashmap representing an attribute for the node and its value. This method
-	 * will add a column to the database for the attribute if it does not exist. If it does exist, the attribute
-	 * for the given node is updated with the current value. If the given node does not exist, it is added to the database,
-	 * or else all of its attributes are updated.
+	 * Takes in a node name and adds it to the database if it doesn't aleady exist
 	 * @param name The name of the worker node to update/add
-	 * @param attributes A list of key/value attributes to add/update for the node
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	private static boolean updateNode(String name, Map<String, String> attributes) {
+	private static boolean addNodeIfNotExists(String name) {
 		Connection con = null;			
-		CallableStatement procAddNode = null;
-		CallableStatement procAddCol = null;
-		CallableStatement procUpdateAttr= null;
+		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			
-			// All or nothing!
-			Common.beginTransaction(con);
-			
-			procAddNode = con.prepareCall("{CALL AddNode(?)}");
-			procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
-			procUpdateAttr = con.prepareCall("{CALL UpdateNodeAttr(?, ?, ?)}");	
+			procedure = con.prepareCall("{CALL AddNode(?)}");
 			
 			// First, add the node (MySQL will ignore this if it already exists)
-			procAddNode.setString(1, name);
-			procAddNode.executeUpdate();
-			
-			// For each attribute for the node...
-			for(Entry<String, String> keyVal : attributes.entrySet()) {				
-				// Add a column for the attribute (MySQL will ignore if the column already exists)
-				procAddCol.setString(1, R.MYSQL_DATABASE);
-				procAddCol.setString(2, "nodes");				
-				// Must add _ to column name in case the name conflicts with an SQL keyword
-				procAddCol.setString(3, "_" + keyVal.getKey());
-				procAddCol.setString(4, "VARCHAR(64)");
-				procAddCol.execute();
-				
-				// Then update the column with the attribute's value for this node
-				procUpdateAttr.setString(1, name);				
-				// Must add _ to column name/value in case it conflicts with an SQL keyword
-				procUpdateAttr.setString(2, "_" + keyVal.getKey());
-				procUpdateAttr.setString(3, "_" +keyVal.getValue());
-				procUpdateAttr.executeUpdate();
-			}
+			procedure.setString(1, name);
+			procedure.executeUpdate();
 						
-			// Done, commit the changes
-			Common.endTransaction(con);			
+			// Done, commit the changes	
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procAddCol);
-			Common.safeClose(procUpdateAttr);
-			Common.safeClose(procAddNode);
+			Common.safeClose(procedure);
 		}
 		
 		log.debug(String.format("Node [%s] failed to be updated.", name));

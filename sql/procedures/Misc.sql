@@ -4,24 +4,6 @@
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 
--- Adds a new column to the specified table only if it doesn't already exist.
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddColumnUnlessExists;
-CREATE PROCEDURE AddColumnUnlessExists(IN dbName tinytext, IN tableName tinytext, IN fieldName tinytext, IN fieldDef text)
-	BEGIN
-		IF NOT EXISTS 
-			(SELECT * FROM information_schema.COLUMNS
-			WHERE column_name=fieldName
-			AND table_name=tableName
-			AND table_schema=dbName)
-		THEN
-			SET @addColumn = CONCAT('ALTER TABLE ', dbName, '.', tableName,
-			' ADD COLUMN ', fieldName, ' ', fieldDef);
-			PREPARE stmt FROM @addColumn;
-			EXECUTE stmt;
-		END IF;
-	END //
-
 -- Adds a new historical record to the logins table which tracks all user logins
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS LoginRecord;

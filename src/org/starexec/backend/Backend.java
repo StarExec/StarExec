@@ -90,28 +90,10 @@ public interface Backend{
     public String[] getWorkerNodes();
 
     
-    //TODO: Do we actually need this function?
-    /**
-     * @param nodeName the name of a node
-     * @return an even-sized String[] representing a details map for a given node
-     * where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
-     * 
-     */
-    public Map<String, String> getNodeDetails(String nodeName);
-
     /**
      * @return returns a list of all active queue names
      */
     public String[] getQueues();
-
-    
-    
-    //TODO: Do we actually need this function?
-    /**
-     * @param name the name of a node
-     * @return a map of queue detail keys to values
-     */
-    public Map<String,String> getQueueDetails(String name);
 
 
     /**
