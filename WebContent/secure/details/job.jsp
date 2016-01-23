@@ -288,9 +288,11 @@
 				<legend>job pairs</legend>	
 				<fieldset id="pairActions" class="tableActions">
 					<button class="changeTime">Use CPU Time</button>
-					<button title="sorts pairs by their ids, which is the order they are submitted to be run" asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
-					<button title="sorts pairs in the order they finished running" asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
-					<button title="show only job pairs that have been solved by every solver/configuration combination in this space" id="syncResults">synchronize results</button>
+					<c:if test="${!isLocalJobPage}">
+						<button title="sorts pairs by their ids, which is the order they are submitted to be run" asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
+						<button title="sorts pairs in the order they finished running" asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
+						<button title="show only job pairs that have been solved by every solver/configuration combination in this space" id="syncResults">synchronize results</button>
+					</c:if>
 					<label class="stageSelectorLabel" for="subspaceSummaryStageSelector">Stage: </label>
 					<select id="pairTableStageSelector" class="stageSelector">
 						<option value="0">Primary</option>
@@ -537,10 +539,7 @@
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 								<option value="${i}">${i}</option>
 							</c:forEach>
-							
 						</select> 
-					
-					
 					</p>
 				</div>
 				<div id="dialog-changeQueue" title="change queue">
