@@ -74,7 +74,7 @@ public class Users {
 	 * Gets the user preference for a default dataTables page size
 	 * @param userId The ID of the user having the setting changed
 	 * @param newSize the number of elements in a default table page
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean setDefaultPageSize(int userId,int newSize) {
 		Connection con=null;
@@ -101,7 +101,8 @@ public class Users {
 	/**
 	 * Gets the user preference for a default dataTables page size
 	 * @param userId
-	 * @return
+	 * @return The integer default page size for the given user, or 10 (the system default) if
+	 * none could be found.
 	 */
 	public static int getDefaultPageSize(int userId) {
 		Connection con=null;
@@ -171,7 +172,16 @@ public class Users {
 		return false;
 	}
 	
-	
+	/**
+	 * Associates the given users with the given space
+	 * @param userIds The users to add to the space. Nothing will happen if they are already present
+	 * @param spaceId The ID of the space to add users to
+	 * @param hierarchy True to add users to every space in the hierarchy rooted at spaceId, and
+	 * false to only do the single space
+	 * @param requestUserId The ID of the user making the request. If hierarchy is true, this is used
+	 * to determine which subspaces to impact
+	 * @return True on success and false otherwise
+	 */
 	public static boolean associate(List<Integer> userIds, int spaceId, boolean hierarchy, int requestUserId) {
 		if (!hierarchy) {
 			return associate(userIds, spaceId);
@@ -324,13 +334,16 @@ public class Users {
 	}
 
 	/**
-	 *
+	 * @return A list of all users that will receive the Starexec report email
 	 */
 	public static List<User> getAllUsersSubscribedToReports() {
 		return getUserListFromQuery("{CALL GetAllUsersSubscribedToReports()}");
 
 	}
 
+	/**
+	 * @return A list of all the admins in the system
+	 */
 	public static List<User> getAdmins() {
 		return getUserListFromQuery("{CALL GetAdmins()}");
 	}
@@ -715,7 +728,7 @@ public class Users {
 	 * request for the next page of Users in their DataTables object
 	 * 
 	 * @param startingRecord the record to start getting the next page of Users from
-	 * @param recordesPerpage how many records to return (i.e. 10, 25, 50, or 100 records)
+	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
 	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
 	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
 	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)	 
@@ -1092,8 +1105,8 @@ public class Users {
 	
 	/**
 	 * Completely deletes a user from the database. 
-	 * @param userIdToDelete The ID of the user to delete
-	 * @param userIdMakingRequest The ID of the user trying to perform the deletion
+	 * @param userToDeleteId The ID of the user to delete
+	 * @param userMakingRequestId The ID of the user trying to perform the deletion
 	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
@@ -1185,13 +1198,18 @@ public class Users {
 	/**
 	 * Checks to see whether the given user is an admin
 	 * @param userId
-	 * @return
+	 * @return True if the user is an admin and false otherwise (including if there was an error)
 	 */
 	public static boolean isAdmin(int userId) {
 		User u=Users.get(userId);
 		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
 	}
 
+	/**
+	 * Checks to see whether the given user is a developer
+	 * @param userId
+	 * @return True if the user is a developer and false otherwise (including if there was an error)
+	 */
 	public static boolean isDeveloper(int userId) {
 		User u = Users.get(userId);
 		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
@@ -1199,6 +1217,8 @@ public class Users {
 
 	/**
 	 * Checks to see if a user can view admin only pages.
+	 * @param userId
+	 * @return True if the user is either an admin or developer and false otherwise
 	 * @author Albert Giegerich
 	 */
 	public static boolean hasAdminReadPrivileges(int userId) {
@@ -1207,6 +1227,8 @@ public class Users {
 
 	/**
 	 * Checks to see whether a user can make admin-only changes to the website/backend.
+	 * @param userId
+	 * @return True if the user is an admin and false otherwise
 	 * @author Albert Giegerich
 	 */
 	public static boolean hasAdminWritePrivileges(int userId) {
@@ -1216,7 +1238,7 @@ public class Users {
 	/**
 	 * Checks to see whether the given user is the public user
 	 * @param userId
-	 * @return
+	 * @return True if the given user is the public (guest) user
 	 */
 	
 	public static boolean isPublicUser(int userId) {
@@ -1227,7 +1249,7 @@ public class Users {
 	/**
 	 * Checks to see whether the given user is a test user
 	 * @param userId
-	 * @return
+	 * @return True if the user has the test role and false otherwise (including errors)
 	 */
 	public static boolean isTestUser(int userId) {
 		User u=Users.get(userId);
@@ -1237,7 +1259,7 @@ public class Users {
 	/**
 	 * Checks to see whether the given user is unauthorized
 	 * @param userId
-	 * @return
+	 * @return True if the user has yet to be accepted by a community and false otherwise
 	 */
 	public static boolean isUnauthorized(int userId) {
 		User u=Users.get(userId);
@@ -1247,7 +1269,7 @@ public class Users {
 	/**
 	 * Checks to see whether the given user is suspended
 	 * @param userId
-	 * @return
+	 * @return True if the user has been suspended by an admin and false otherwise
 	 */
 	public static boolean isSuspended(int userId) {
 		User u=Users.get(userId);
@@ -1257,14 +1279,17 @@ public class Users {
 	/**
 	 * Checks to see whether the given user is a normal user
 	 * @param userId
-	 * @return
+	 * @return True if the use has the 'user' role and false for any other role
 	 */
 	public static boolean isNormalUser(int userId) {
 		User u=Users.get(userId);
 		return u!=null && u.getRole().equals(R.DEFAULT_USER_ROLE_NAME);
 	}
 	
-	
+	/**
+		@return The user with the configurable test user role. Returns null
+		if no such user exists
+	 */
 	public static User getTestUser() {
 		User u=Users.get(R.TEST_USER_ID);
 		if (u==null) {
@@ -1272,7 +1297,12 @@ public class Users {
 		}
 		return u;
 	}
-	
+	/**
+	 * Adds the given user to the database
+	 * @param user The user to add. The user's password should be in plaintext and will be hashed
+	 * before being added
+	 * @return The ID of the new user
+	 */
 	public static int add(User user) {
 		log.debug("beginning to add user...");
 		log.debug("pass = " + user.getPassword());
@@ -1340,7 +1370,14 @@ public class Users {
 		}		
 		return false;
 	}
-
+	
+	/**
+	 * Updates a user's preferences regarding whether to receive weekly emails
+	 * containing Starexec reports
+	 * @param userId
+	 * @param willBeSubscribed True to subscribe and false to unsubscribe
+	 * @return True on success and false otherwise
+	 */
 	public static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
 		Connection con = null;
 		CallableStatement procedure= null;
@@ -1367,7 +1404,7 @@ public class Users {
 	 * NOTE: The old role of the user is not stored, so if they are later reinstated, they will always be 
 	 * set to 'user,' regardless of their old role!
 	 * @param userId
-	 * @return
+	 * @return True on success or false otherwise
 	 */
 	public static boolean suspend(int userId) {
 		return changeUserRole(userId,R.SUSPENDED_ROLE_NAME);
@@ -1375,16 +1412,25 @@ public class Users {
 	/**
 	 * Sets the role of the given user back to 'user'
 	 * @param userId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean reinstate(int userId) {
 		return changeUserRole(userId, R.DEFAULT_USER_ROLE_NAME);
 	}	
-
+	/**
+	 * Sign up the given user to receive weekly email Starexec reports
+	 * @param userId
+	 * @return True on success and false otherwise
+	 */
 	public static boolean subscribeToReports(int userId) {
 		return setUserReportSubscription(userId, true); 
 	}
 
+	/**
+	 * Unsubscribe the given user from receiving weekly email Starexec reports
+	 * @param userId
+	 * @return True on success and false otherwise
+	 */
 	public static boolean unsubscribeFromReports(int userId) {
 		return setUserReportSubscription(userId, false); 
 	}

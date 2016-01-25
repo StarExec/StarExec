@@ -130,7 +130,7 @@ public class Websites {
 	 * cross site scripting attack
 	 * @param id
 	 * @param webType
-	 * @return
+	 * @return The list of website, where strings have been HTML escaped
 	 */
 	public static List<Website> getAllForHTML(int id, WebsiteType webType) {
 		List<Website> sites=getAll(id,webType);
@@ -142,6 +142,15 @@ public class Websites {
 		return answer;
 	}
 	
+	/**
+	 * Gets all websites for the given entity, where escaping has been done
+	 * so that strings like the website name / url have been escaped such that
+	 * they can be safely embedded into Javascript.
+	 * @param id
+	 * @param webType
+	 * @return The list of websites, where strings have been Javascript escaped
+	 */
+	
 	public static List<Website> getAllForJavascript(int id, WebsiteType webType) {
 		List<Website> sites=getAll(id,webType);
 		List<Website> answer=new ArrayList<Website>();
@@ -152,6 +161,11 @@ public class Websites {
 		return answer;
 	}
 	
+	/**
+	 * Returns the website with the given primary ID
+	 * @param websiteId
+	 * @return The website, or null on error
+	 */
 	public static Website getWebsite(int websiteId) {
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -204,7 +218,6 @@ public class Websites {
 	 * Returns a list of websites associated with the given entity based on its type
 	 * @param id The id of the entity to get websites for
 	 * @param webType The type of entity to get websites for (solver, user or space)
-	 * @param javascriptSafe If true, websites with their attributes escaped such that they 
 	 * are safe for insertion into javascript
 	 * @return A list of websites associated with the entity
 	 * @author Tyler Jensen
