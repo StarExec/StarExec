@@ -1891,6 +1891,11 @@ public class Jobs {
 			while (results.next()) {
 				
 				JobPair jp=idsToPairs.get(results.getInt("job_pairs.id"));
+				if (jp==null) {
+					log.error("could not get a pair for id = "+results.getInt("job_pairs.id"));
+					log.error("id found in mapping = "+idsToPairs.containsKey(results.getInt("job_pairs.id")));
+					continue;
+				}
 				JoblineStage stage=new JoblineStage();
 				stage.setStageNumber(results.getInt("stage_number"));
 				stage.setCpuUsage(results.getDouble("jobpair_stage_data.cpu"));
@@ -1948,9 +1953,7 @@ public class Jobs {
 				jp.addStage(stage);
 
 			}
-			
 
-			
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
