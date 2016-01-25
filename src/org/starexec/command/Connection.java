@@ -1993,7 +1993,6 @@ public class Connection {
 			
 			boolean fileFound=false;
 			
-			System.out.println(response.getStatusLine().getStatusCode());
 			for (Header x : response.getAllHeaders()) {
 				if (x.getName().equals("Content-Disposition")) {
 					fileFound=true;
@@ -2067,7 +2066,6 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_INTERNAL;
 		} finally {
@@ -2352,7 +2350,6 @@ public class Connection {
 			}
 			return JsonHandler.getJsonAttributes(json.getAsJsonObject());
 		} catch (Exception e) {
-			e.printStackTrace();
 			failMap.put("-1", String.valueOf(Status.ERROR_INTERNAL));
 			return failMap;
 		} finally {
