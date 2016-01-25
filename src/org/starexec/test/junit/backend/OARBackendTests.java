@@ -3,6 +3,7 @@ package org.starexec.test.junit.backend;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Before;
@@ -41,6 +42,8 @@ public class OARBackendTests {
 	private static String oarnodesJSONResults = 
 "{\"4\" : {\"network_address\" : \"stardev.cs.uiowa.edu\","+"\"queue\" : \"all\" },\"1\" : {\"network_address\" : \"n001\",\"queue\" : \"test\"}}";
 	
+	
+	private static String oarstatJSONResults = "{ \"8\" : { \"types\" : [], \"Job_Id\" : \"8\" }, \"1\" : {\"Job_Id\" : \"1\"}}";
 	@Before
 	public void initialize() {
 		PowerMockito.mockStatic(Util.class);
@@ -63,5 +66,14 @@ public class OARBackendTests {
 		Assert.assertEquals(2,nodesToQueues.size());
 		Assert.assertEquals("all", nodesToQueues.get("stardev.cs.uiowa.edu"));
 		Assert.assertEquals("test", nodesToQueues.get("n001"));
+	}
+	
+	@Test
+	public void getActiveExecutionIdsTest() throws IOException {
+		BDDMockito.given(Util.executeCommand("oarstat -J")).willReturn(oarstatJSONResults);
+		Set<Integer> ans = backend.getActiveExecutionIds();
+		Assert.assertTrue(ans.contains(8));
+		Assert.assertTrue(ans.contains(1));
+		Assert.assertTrue(ans.size()==2);
 	}
 }

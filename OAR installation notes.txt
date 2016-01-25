@@ -1,0 +1,36 @@
+These are one-time steps we would need to take to get OAR up and running on
+Starexec.
+
+1) Create the queue column for resources. OAR does have a notion of associating
+resources (nodes) with queues by default, but it does support custom attributes.
+This basically adds a column for 'queue' to the resources table, helping us
+enforce our 1-1 relationship between nodes and queues.
+
+oarproperty -a queue -c
+
+
+2) Create all.q, along with any other queues that are expected at the time
+we're migrating to OAR. OAR may come with a few default queues of its own: these
+should be deleted from the database. All Starexec queues should use the same
+priority (1 is reasonable) and the same scheduling algorithm.
+It is probably easiest to do this directly in the OAR database.
+
+delete from queues; -- delete all existing OAR queues
+
+-- insert a new queue. Repeat for any other necessary queues.
+insert into queues values ('all.q', 1,'oar_sched_gnatt_with_timesharing', 'Active');
+
+3) Add resources
+
+TODO:
+
+4) Disable OAR admission rules. Basically, OAR does a bunch of validation and
+and chooses a bunch of defaults that we do not need for our purposes. Again
+in the OAR database, we can just execute
+
+update admission_rules SET enabled = 'NO';
+
+
+
+TODO: Remove below
+oarsub -q all.q -l /nodes=1 -p "queue='all.q'"

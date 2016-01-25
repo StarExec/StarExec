@@ -3,6 +3,7 @@ package org.starexec.backend;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,6 @@ public class OARBackend implements Backend {
 		return 0;
 	}
 
-	//TODO: Done, test
 	@Override
 	public boolean killPair(int execId) {
 		try{
@@ -49,11 +49,10 @@ public class OARBackend implements Backend {
 		}
 	}
 
-	//TODO: Done, test
 	@Override
 	public boolean killAll() {
 		try{
-		    Util.executeCommand("oardel --sql 'true'");	
+		    Util.executeCommand(new String[] {"oardel","--sql","true"});	
 		    return true;
 		} catch (Exception e) {
 		    return false;
@@ -181,7 +180,17 @@ public class OARBackend implements Backend {
 
 	@Override
 	public Set<Integer> getActiveExecutionIds() throws IOException {
-		// TODO Auto-generated method stub
+		try {
+			String json = Util.executeCommand("oarstat -J");
+			JsonObject object = new JsonParser().parse(json).getAsJsonObject();
+			Set<Integer> ids = new HashSet<Integer>();
+			for (Entry<String, JsonElement> s : object.entrySet()) {
+				ids.add(s.getValue().getAsJsonObject().get("Job_Id").getAsInt());
+			}
+			return ids;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 		return null;
 	}
 
