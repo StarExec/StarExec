@@ -166,7 +166,7 @@ public class OARBackend implements Backend {
 	public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames) {
 		try {
 			//TODO: Check different scheduling algorithms
-			Util.executeCommand("oarnotify --add_queue "+newQueueName+" 1 oar_sched_gantt_with_timesharing");
+			Util.executeCommand("oarnotify --add_queue "+newQueueName+",1,oar_sched_gantt_with_timesharing");
 			for (int i =0;i<nodeNames.length;i++) {
 				moveNode(nodeNames[i], newQueueName);
 			}
