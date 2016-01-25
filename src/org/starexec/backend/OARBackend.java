@@ -88,7 +88,6 @@ public class OARBackend implements Backend {
 	public String[] getWorkerNodes() {
 		try {	
 			String nodes = Util.executeCommand("oarnodes -l");
-			
     		return nodes.split(System.getProperty("line.separator"));
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -138,7 +137,7 @@ public class OARBackend implements Backend {
 		try {
 			
 			//TODO: This may need to be something else, like only if state = suspected
-			Util.executeCommand("oarnodesetting --sql \"state='Suspected'\" -s \"Alive\"");
+			Util.executeCommand(new String[] {"oarnodesetting","--sql","state='Suspected'","-s","Alive"});
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -152,7 +151,7 @@ public class OARBackend implements Backend {
 	public boolean deleteQueue(String queueName) {
 		try {
 			//Unassign all the nodes that were in this queue, making sure they are assigned to nothing.
-			Util.executeCommand("oarnodesetting --sql \"queue='"+queueName+"'\" -p \"queue=null\"");
+			Util.executeCommand(new String[] {"oarnodesetting","--sql","queue='"+queueName+"'","-p","queue=null"});
 			Util.executeCommand("oarnotify --remove_queue "+queueName);
 			return true;
 		} catch (Exception e) {
@@ -161,15 +160,12 @@ public class OARBackend implements Backend {
 		return false;
 	}
 
-	//TODO: Done, test
 	@Override
 	public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames) {
 		try {
 			//TODO: Check different scheduling algorithms
 			Util.executeCommand("oarnotify --add_queue "+newQueueName+",1,oar_sched_gantt_with_timesharing");
-			for (int i =0;i<nodeNames.length;i++) {
-				moveNode(nodeNames[i], newQueueName);
-			}
+			moveNodes(newQueueName, nodeNames, sourceQueueNames);
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -192,7 +188,7 @@ public class OARBackend implements Backend {
 	@Override
 	public boolean moveNode(String nodeName, String queueName) {
 		try {
-			Util.executeCommand("oarnodesetting --sql \"network_address='"+nodeName+"'\" -p \"queue="+queueName+"\"");
+			Util.executeCommand(new String [] {"oarnodesetting","--sql","network_address='"+nodeName+"'","-p","queue="+queueName});
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
