@@ -17,19 +17,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class OARBackend implements Backend {
-	private static Gson gson = new Gson();
-
-    private static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from OAR's node detail output
-
-    private static Pattern nodeKeyValPattern;
- 	static {
- 		// Compile the SGE output parsing patterns when this class is loaded
- 		nodeKeyValPattern = Pattern.compile(NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
-
- 	}
-    
-    
+public class OARBackend implements Backend {    
 	private static Logger log = Logger.getLogger(OARBackend.class);
 	@Override
 	public void initialize(String BACKEND_ROOT) {
@@ -83,7 +71,6 @@ public class OARBackend implements Backend {
 		return null;
 	}
 
-	//TODO: Done, test
 	@Override
 	public String[] getWorkerNodes() {
 		try {	
@@ -95,7 +82,6 @@ public class OARBackend implements Backend {
 		return null;
 	}
 	
-	//TODO: Done, test
 	@Override
 	public String[] getQueues() {
 		try {	
@@ -146,7 +132,6 @@ public class OARBackend implements Backend {
 	}
 
 	
-	// TODO: Done, Test
 	@Override
 	public boolean deleteQueue(String queueName) {
 		try {
@@ -175,7 +160,6 @@ public class OARBackend implements Backend {
 	}
 	
 	
-	//TODO: Done, test
 	@Override
 	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
 		for (int i = 0; i < nodeNames.length; i++) {
@@ -184,7 +168,6 @@ public class OARBackend implements Backend {
 		return false;
 	}
 	
-	//TODO: Done, test
 	@Override
 	public boolean moveNode(String nodeName, String queueName) {
 		try {
