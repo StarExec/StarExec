@@ -52,18 +52,21 @@ public class OARBackend implements Backend {
 	@Override
 	public boolean killAll() {
 		try{
-		    Util.executeCommand(new String[] {"oardel","--sql","true"});	
+			for (Integer i : this.getActiveExecutionIds()) {
+				if (!killPair(i)) {
+					log.error("ERROR: Unable to kill pair with execution id: " +i);
+				}
+			}
 		    return true;
 		} catch (Exception e) {
 		    return false;
 		}
 	}
 
-	//TODO: Done, test
 	@Override
 	public String getRunningJobsStatus() {
 		try {	
-			return Util.executeCommand("oarstat -f");
+			return Util.executeCommand("oarstat");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
