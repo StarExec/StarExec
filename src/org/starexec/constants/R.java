@@ -149,6 +149,7 @@ public class R {
     public static String REPORT_HOST = "starexec1.star.cs.uiowa.edu";  // where to report job status updates during jobs
 	
     // Global path information
+    public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
     public static String STAREXEC_DATA_DIR = null;   						// the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
