@@ -254,10 +254,12 @@
 			<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 			<fileset dir="local-lib" includes="**/*.jar"/>
 		</path>
+		<delete dir="junittestoutput"/>
+		<mkdir dir="junittestoutput"/>
 		<junit printsummary="yes" haltonfailure="yes">
 			<formatter type="plain"/>
 			<classpath refid="testpath"/>
-			<batchtest>
+			<batchtest todir="junittestoutput">
 				<fileset dir="${class-dir}" includes="**/junit/**/*.class"/>
 			</batchtest>
         </junit>
