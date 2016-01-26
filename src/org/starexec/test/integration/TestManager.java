@@ -266,12 +266,12 @@ public class TestManager {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
-				File file=new File(R.JOB_OUTPUT_DIR);
+				File file=new File(R.getJobOutputDir());
 				log.debug("calling deleteQuietly");
 				FileUtils.deleteQuietly(file);
 				log.debug("finished calling deleteQuietly");
 				file.mkdir();
-				file=new File(R.NEW_JOB_OUTPUT_DIR);
+				file=new File(R.getNewJobOutputDirectory());
 				log.debug("calling deleteQuietly on new output");
 
 				FileUtils.deleteQuietly(file);

@@ -1180,7 +1180,7 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersSolverDirectory(int userId) {
-		String pathToSolverDirectory = R.SOLVER_PATH + "/" + userId;
+		String pathToSolverDirectory = R.getSolverPath() + "/" + userId;
 		Util.safeDeleteDirectory(pathToSolverDirectory);
 	}
 
@@ -1190,7 +1190,7 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersBenchmarkDirectory(int userId) {
-		String pathToBenchmarkDirectory = R.BENCHMARK_PATH + "/" + userId;
+		String pathToBenchmarkDirectory = R.getBenchmarkPath() + "/" + userId;
 		Util.safeDeleteDirectory(pathToBenchmarkDirectory);
 	}
 

@@ -447,7 +447,7 @@ public class Solvers {
 		newSolver.setType(s.getType());
 		File solverDirectory=new File(s.getPath());
 		
-		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		File uniqueDir = new File(R.getSolverPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, newSolver.getName());
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		uniqueDir.mkdirs();
@@ -2085,7 +2085,7 @@ public class Solvers {
 	}
 	
 	public static String getDefaultSolverPath(int userId,String solverName) {
-		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		File uniqueDir = new File(R.getSolverPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, solverName);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		return uniqueDir.getAbsolutePath();
@@ -2097,7 +2097,7 @@ public class Solvers {
 	 */
 	public static File getSolverBuildOutput(int solverId) {
 		try {
-			File buildFile=new File(R.SOLVER_BUILD_OUTPUT_DIR,""+solverId);
+			File buildFile=new File(R.getSolverBuildOutputDir(),""+solverId);
 			buildFile=new File(buildFile,R.SOLVER_BUILD_OUTPUT);
 			return buildFile;
 		} catch (Exception e) {

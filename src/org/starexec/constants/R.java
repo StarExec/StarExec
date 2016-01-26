@@ -24,7 +24,48 @@ public class R {
 		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
     }
 
-    public static Backend BACKEND = null;
+    public static String getBenchmarkPath() {
+		return STAREXEC_DATA_DIR + "/Benchmarks"; 
+	}
+
+	public static String getSolverPath() {
+		return STAREXEC_DATA_DIR +"/Solvers";
+	}
+
+	public static String getJobInboxDir() {
+		return STAREXEC_DATA_DIR + "/jobin";
+	}
+
+	public static String getJobOutputDir() {
+		return STAREXEC_DATA_DIR + "/jobout";
+	}
+
+	public static String getNewJobOutputDirectory() {
+		return STAREXEC_DATA_DIR + "/joboutput";
+	}
+
+
+	public static String getProcessorDir() {
+		return STAREXEC_DATA_DIR +"/processor_scripts";
+	}
+
+	public static String getPicturePath() {
+		return STAREXEC_DATA_DIR + "/pictures";
+	}
+	
+	public static String getSolverBuildOutputDir() {
+		return getSolverPath()+"/buildoutput";
+	}
+
+	public static String getJobLogDir() {
+		return getNewJobOutputDirectory()+"/logs";
+	}
+
+	public static String getBatchSpaceXMLDir() {
+		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
+	}
+
+	public static Backend BACKEND = null;
 	
     //maximum length properties
     public static int SPACE_NAME_LEN=250;
@@ -108,24 +149,12 @@ public class R {
     public static String REPORT_HOST = "starexec1.star.cs.uiowa.edu";  // where to report job status updates during jobs
 	
     // Global path information
-    public static String SOLVER_PATH = null;								// The top-level directory in which to save the solver file(s)
-    public static String SOLVER_BUILD_OUTPUT_DIR=null;                      // The top-level directory in which to save solver build script output
-    public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
-    public static String BENCHMARK_PATH = null;								// The top-level directory in which to save the benchmark file(s)
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
-    public static String STAREXEC_DATA_DIR = null;   // the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
-    public static String JOBPAIR_INPUT_DIR = null;
-    public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts after they are created
-    public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
-    public static String NEW_JOB_OUTPUT_DIR= null;
-    public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from backend scripts when job runs)
-    public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
+    public static String STAREXEC_DATA_DIR = null;   						// the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
     public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
     public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading
     public static String SPACE_XML_SCHEMA_RELATIVE_LOC = null;						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
-    public static String PICTURE_PATH = null;								// Where the pictures are located
-    public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = null;
 	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node

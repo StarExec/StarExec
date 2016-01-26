@@ -256,7 +256,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
 	public static File getProcessorDirectory(int communityId, String procName) {
-		File uniqueDir = new File(R.PROCESSOR_DIR, "" + communityId);
+		File uniqueDir = new File(R.getProcessorDir(), "" + communityId);
 		//use the date to make sure the directory is unique
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		uniqueDir = new File(uniqueDir, procName);

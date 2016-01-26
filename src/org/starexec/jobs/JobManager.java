@@ -477,7 +477,7 @@ public abstract class JobManager {
 		replacements.put("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
 		replacements.put("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		replacements.put("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
-		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
+		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
 		File f = new File(scriptPath);
@@ -606,7 +606,7 @@ public abstract class JobManager {
 			sb.append("\n");
 		}
 
-		String dependFilePath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.DEPENDFILE_FORMAT, pairId));
+		String dependFilePath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.DEPENDFILE_FORMAT, pairId));
 		File f = new File(dependFilePath);
 		f.createNewFile();
 

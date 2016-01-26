@@ -193,7 +193,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 7,true);
+				Util.clearOldFiles(R.getJobLogDir(), 7,true);
 			}
 		};
 		/*  Create a task that deletes job scripts older than 3 days */
@@ -201,8 +201,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobScriptTask (periodic)");
-				Util.clearOldFiles(R.JOB_INBOX_DIR,1,false);
-				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1,false);
+				Util.clearOldFiles(R.getJobInboxDir(),1,false);
 			}
 		};
 		/**

@@ -124,7 +124,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @return File object representing the new directory
 	 */
 	public static File getDirectoryForBenchmarkUpload(int userId, String name) {
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		if (name!=null) {
 			uniqueDir = new File(uniqueDir, name);
@@ -361,7 +361,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 					
 		// Create a unique path the zip file will be extracted to
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
 		// Create the paths on the filesystem
 		uniqueDir.mkdirs();

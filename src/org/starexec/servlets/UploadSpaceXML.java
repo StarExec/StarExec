@@ -117,7 +117,7 @@ public class UploadSpaceXML extends HttpServlet {
 						log.debug("Handling Upload of XML File from User " + userId);
 						PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
 						// Don't need to keep file long - just using download directory
-						File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "" + userId);
+						File uniqueDir = new File(R.getBatchSpaceXMLDir(), "" + userId);
 						uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
 						uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 						

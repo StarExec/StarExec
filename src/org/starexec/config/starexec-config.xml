@@ -11,24 +11,13 @@
 			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<property key="SPACE_XML_SCHEMA_RELATIVE_LOC" value="public/batchSpaceSchema.xsd" /> 
-			<property key="BENCHMARK_PATH" value="/home/starexec/Benchmarks" />
-			<property key="SOLVER_PATH" value="/home/starexec/Solvers" />
-			<property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/Solvers/buildoutput"/>
-			<property key="PROCESSOR_DIR" value="/home/starexec/processor_scripts" />											
-			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />
-			<property key="JOB_INBOX_DIR" value="/home/starexec/jobin" />
-			<property key="JOB_OUTPUT_DIR" value="/home/starexec/jobout" />
-			<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/joboutput"/>	
-			<property key="JOBPAIR_INPUT_DIR" value="/home/starexec/jobpairs"/>
-			<property key="JOB_LOG_DIR" value="/home/starexec/joboutput/logs" />
+			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />	
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
 			<property key="SOLVER_BIN_DIR" value="/bin" />
 			<property key="SOLVER_BUILD_OUTPUT" value="starexec_build_log"/>;
 			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />	
 			<property key="CACHED_FILE_DIR" value="/secure/cache"/>
 			<property key="JOBGRAPH_FILE_DIR" value="/secure/jobgraphs"/>
-			<property key="PICTURE_PATH" value="/home/starexec/pictures" /> 
-			<property key="BATCH_SPACE_XML_DIR" value="/home/starexec/batchSpace/uploads" /> 	
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
@@ -87,17 +76,7 @@
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_astump"/>
-                <property key="BENCHMARK_PATH" value="/home/astump/starexec_astump_data/Benchmarks" />
-                <property key="SOLVER_PATH" value="/home/astump/starexec_astump_data/Solvers" />
-                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/astump/starexec_astump_data/Solvers/buildoutput"/>
-                <property key="PROCESSOR_DIR" value="/home/astump/starexec_astump_data/processor_scripts" />           
-		<property key="STAREXEC_DATA_DIR" value="/home/astump/starexec_astump_data" />
-                <property key="JOB_INBOX_DIR" value="/home/astump/starexec_astump_data/jobin" />
-                <property key="JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/jobout" />     
-		<property key="NEW_JOB_OUTPUT_DIR" value="/home/astump/starexec_astump_data/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/astump/starexec_astump_data/joboutput/logs" />
-                <property key="PICTURE_PATH" value="/home/astump/starexec_astump_data/pictures" /> 
-                <property key="BATCH_SPACE_XML_DIR" value="/home/astump/starexec_astump_data/batchSpace/uploads" />           
+		<property key="STAREXEC_DATA_DIR" value="/home/astump/starexec_astump_data" />	
 		</class>
 	</configuration>
 	<configuration name="stardev_tinelli" inherit="stardev">
@@ -109,17 +88,7 @@
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_tinelli"/>
-                <property key="BENCHMARK_PATH" value="/home/tinelli/starexec_tinelli_data/Benchmarks" />
-                <property key="SOLVER_PATH" value="/home/tinelli/starexec_tinelli_data/Solvers" />
-                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/tinelli/starexec_tinelli_data/Solvers/buildoutput"/>
-                <property key="PROCESSOR_DIR" value="/home/tinelli/starexec_tinelli_data/processor_scripts" />           
-		<property key="STAREXEC_DATA_DIR" value="/home/tinelli/starexec_tinelli_data" />
-                <property key="JOB_INBOX_DIR" value="/home/tinelli/starexec_tinelli_data/jobin" />
-                <property key="JOB_OUTPUT_DIR" value="/home/tinelli/starexec_tinelli_data/jobout" />     
-		<property key="NEW_JOB_OUTPUT_DIR" value="/home/tinelli/starexec_tinelli_data/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/tinelli/starexec_tinelli_data/joboutput/logs" />
-                <property key="PICTURE_PATH" value="/home/tinelli/starexec_tinelli_data/pictures" /> 
-                <property key="BATCH_SPACE_XML_DIR" value="/home/tinelli/starexec_tinelli_data/batchSpace/uploads" />           
+		<property key="STAREXEC_DATA_DIR" value="/home/tinelli/starexec_tinelli_data" />	
 		</class>
 	</configuration>
 	<configuration name="stardev_eaburns" inherit="stardev">
@@ -130,40 +99,20 @@
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_eaburns"/>
-                <property key="BENCHMARK_PATH" value="/home/starexec/starexec_eaburns/data_dir/Benchmarks" />
-                <property key="SOLVER_PATH" value="/home/starexec/starexec_eaburns/data_dir/Solvers" />
-                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/Solvers/buildoutput"/>
-                <property key="PROCESSOR_DIR" value="/home/starexec/starexec_eaburns/data_dir/processor_scripts" />           
 		<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_eaburns/data_dir" />
-                <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobin" />
-                <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/jobout" />     
-		<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_eaburns/data_dir/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_eaburns/data_dir/joboutput/logs" />
-                <property key="PICTURE_PATH" value="/home/starexec/starexec_eaburns/data_dir/pictures" /> 
-                <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_eaburns/data_dir/batchSpace/uploads" />           
 		</class>
 	</configuration>
-	<configuration name="stardev_alubinus" inherit="stardev">^M
-                <class name="org.starexec.constants.R">^M
-                <!-- MYSQL Configuration -->   ^M
-                <property key="MYSQL_DATABASE" value="starexec_alubinus" />^M
+	<configuration name="stardev_alubinus" inherit="stardev">
+                <class name="org.starexec.constants.R">
+                <!-- MYSQL Configuration -->
+                <property key="MYSQL_DATABASE" value="starexec_alubinus" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_alubinus?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />^M
-                <property key="PUBLIC_USER_ID" value="3" /> ^M
-                <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />^M
-                <property key="STAREXEC_APPNAME" value="starexec_alubinus"/>^M
-                <property key="BENCHMARK_PATH" value="/home/starexec/starexec_alubinus/data_dir/Benchmarks" />^M
-                <property key="SOLVER_PATH" value="/home/starexec/starexec_alubinus/data_dir/Solvers" />^M
-                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/starexec_alubinus/data_dir/Solvers/buildoutput"/>^M
-                <property key="PROCESSOR_DIR" value="/home/starexec/starexec_alubinus/data_dir/processor_scripts" />           ^M
-                <property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_alubinus/data_dir" />^M
-                <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_alubinus/data_dir/jobin" />^M
-                <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_alubinus/data_dir/jobout" />     ^M
-                <property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_alubinus/data_dir/joboutput"/> ^M
-                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_alubinus/data_dir/joboutput/logs" />^M
-                <property key="PICTURE_PATH" value="/home/starexec/starexec_alubinus/data_dir/pictures" /> ^M
-                <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_alubinus/data_dir/batchSpace/uploads" />           ^M
-                </class>^M
-        </configuration>^M
+                <property key="PUBLIC_USER_ID" value="3" />
+                <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
+                <property key="STAREXEC_APPNAME" value="starexec_alubinus"/>
+                <property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_alubinus/data_dir" />
+                </class>
+        </configuration>
 	<configuration name="stardev_agiegerich" inherit="stardev">
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
@@ -172,17 +121,7 @@
 				<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_agiegerich"/>
-                <property key="BENCHMARK_PATH" value="/home/starexec/starexec_agiegerich/data_dir/Benchmarks" />
-                <property key="SOLVER_PATH" value="/home/starexec/starexec_agiegerich/data_dir/Solvers" />
-                <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/Solvers/buildoutput"/>
-                <property key="PROCESSOR_DIR" value="/home/starexec/starexec_agiegerich/data_dir/processor_scripts" />           
 				<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_agiegerich/data_dir" />
-                <property key="JOB_INBOX_DIR" value="/home/starexec/starexec_agiegerich/data_dir/jobin" />
-                <property key="JOB_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/jobout" />     
-				<property key="NEW_JOB_OUTPUT_DIR" value="/home/starexec/starexec_agiegerich/data_dir/joboutput"/>	
-                <property key="JOB_LOG_DIR" value="/home/starexec/starexec_agiegerich/data_dir/joboutput/logs" />
-                <property key="PICTURE_PATH" value="/home/starexec/starexec_agiegerich/data_dir/pictures" /> 
-                <property key="BATCH_SPACE_XML_DIR" value="/home/starexec/starexec_agiegerich/data_dir/batchSpace/uploads" />           
 		</class>
 	</configuration>
    <!-- local development configurations should inherit from this -->
@@ -207,16 +146,9 @@
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 
-	  <property key="BENCHMARK_PATH" value="/home/astump/lstarexec/benchmarks" /> 
-	  <property key="SOLVER_PATH" value="/home/astump/lstarexec/solvers" /> 
-	  <property key="SOLVER_BUILD_OUTPUT_DIR" value="/home/astump/lstarexec/solvers/buildoutput"/>
 	  <property key="CONFIG_PATH" value="/home/astump/starexec/src/org/starexec/config" /> 
-	  <property key="JOB_INBOX_DIR" value="/home/astump/lstarexec/jobs" /> 
-	  <property key="NODE_WORKING_DIR" value="/home/astump/lstarexec/nodes" /> 
 	  <property key="SOLVER_BIN_DIR" value="/bin" />   
 	  <property key="DOWNLOAD_FILE_DIR" value="/secure/files/" />
-	  <property key="PICTURE_PATH" value="/home/astump/lstarexec/pictures" />
-	  <property key="BATCH_SPACE_XML_DIR" value="/home/astump/lstarexec/batch/uploads" />  
  <!--   Misc. Configuration     --> 
 	  <property key="CONTACT_EMAIL" value="aaron.stump@gmail.com" />    
 	  <property key="PUBLIC_USER_ID" value="3" /> 
@@ -236,18 +168,9 @@
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 
-	  <property key="BENCHMARK_PATH" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\benchmarks" /> 
-	  <property key="SOLVER_PATH" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\solvers" /> 
-	  <property key="SOLVER_BUILD_OUTPUT_DIR" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\solvers\\buildoutput"/>
 	  <property key="CONFIG_PATH" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\src\\org\\starexec\\config" /> 
-	  <property key="JOB_INBOX_DIR" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\jobs" /> 
-	  <property key="NODE_WORKING_DIR" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\nodes" /> 
-	  <property key="BENCH_TYPE_DIR" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\types" /> 
 	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
-	  <property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />
-	  <property key="PICTURE_PATH" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\pictures" />
-	  
-	  <property key="BATCH_SPACE_XML_DIR" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\starexec_res\\batch\\uploads" />  
+	  <property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />	  
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="eric-burns@uiowa.edu" />    

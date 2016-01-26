@@ -220,7 +220,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesUsersSolverDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
 		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
-		File tempUsersSolverDirectory = new File(R.SOLVER_PATH+"/"+tempUser.getId());
+		File tempUsersSolverDirectory = new File(R.getSolverPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersSolverDirectory.exists());
 
 		try {
@@ -261,7 +261,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesUsersBenchmarkDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
 		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
-		File tempUsersBenchmarkDirectory = new File(R.BENCHMARK_PATH+"/"+tempUser.getId());
+		File tempUsersBenchmarkDirectory = new File(R.getBenchmarkPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersBenchmarkDirectory.exists());
 
 		try {
@@ -342,7 +342,7 @@ public class UserTests extends TestSequence {
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertNotNull(tempJob);	
 
-		File jobDirectory = new File(R.NEW_JOB_OUTPUT_DIR +"/"+ tempJob.getId());
+		File jobDirectory = new File(R.getNewJobOutputDirectory() +"/"+ tempJob.getId());
 		// Make the job directory since ResourceLoader isn't actually running the job.
 		jobDirectory.mkdir();
 

@@ -139,7 +139,7 @@ public class UploadPicture extends HttpServlet {
 			}
 			
 			sb.delete(0, sb.length());
-			sb.append(R.PICTURE_PATH);
+			sb.append(R.getPicturePath());
 			sb.append(File.separator);
 			sb.append(fileName);
 			sb.append("_org.jpg");
@@ -149,7 +149,7 @@ public class UploadPicture extends HttpServlet {
 			item.write(archiveFile);
 
 			sb.delete(0, sb.length());
-			sb.append(R.PICTURE_PATH);
+			sb.append(R.getPicturePath());
 			sb.append(File.separator);
 			sb.append(fileName);
 			sb.append("_thn.jpg");

@@ -183,26 +183,23 @@ public class Util {
 	File file=new File(R.STAREXEC_DATA_DIR);
 	file.mkdir();
 		
-	file=new File(R.JOB_INBOX_DIR);
+	file=new File(R.getJobInboxDir());
 	file.mkdir();
-	file=new File(R.JOB_LOG_DIR);
+	file=new File(R.getJobLogDir());
 	file.mkdir();
-	file=new File(R.JOB_OUTPUT_DIR);
+	file=new File(R.getJobOutputDir());
 	file.mkdir();
-	
-	file=new File(R.JOBPAIR_INPUT_DIR);
+	file=new File(R.getBenchmarkPath());
 	file.mkdir();
-	file=new File(R.BENCHMARK_PATH);
+	file=new File(R.getSolverPath());
 	file.mkdir();
-	file=new File(R.SOLVER_PATH);
+	file=new File(R.getSolverBuildOutputDir());
 	file.mkdir();
-	file=new File(R.SOLVER_BUILD_OUTPUT_DIR);
+	file=new File(R.getProcessorDir());
 	file.mkdir();
-	file=new File(R.PROCESSOR_DIR);
+	file=new File(R.getNewJobOutputDirectory());
 	file.mkdir();
-	file=new File(R.NEW_JOB_OUTPUT_DIR);
-	file.mkdir();
-	file=new File(R.PICTURE_PATH);
+	file=new File(R.getPicturePath());
 	file.mkdir();
 		
 		
