@@ -43,6 +43,8 @@ public class OARBackendTests {
 "{\"4\" : {\"network_address\" : \"stardev.cs.uiowa.edu\","+"\"queue\" : \"all\" },\"1\" : {\"network_address\" : \"n001\",\"queue\" : \"test\"}}";
 	
 	
+	private static String submitScriptResults = "preline\nOAR_JOB_ID=23\npostline";
+	
 	private static String oarstatJSONResults = "{ \"8\" : { \"types\" : [], \"Job_Id\" : \"8\" }, \"1\" : {\"Job_Id\" : \"1\"}}";
 	@Before
 	public void initialize() {
@@ -75,5 +77,13 @@ public class OARBackendTests {
 		Assert.assertTrue(ans.contains(8));
 		Assert.assertTrue(ans.contains(1));
 		Assert.assertTrue(ans.size()==2);
+	}
+	
+	@Test
+	public void submitScriptGetIdTest() throws IOException {
+		BDDMockito.given(Util.executeCommand(new String[] {"oarsub","-O", "","-E","","-d","",
+				"-l","/nodes=1/slots=1","-S",""})).willReturn(submitScriptResults);
+		int id = backend.submitScript("", "", "");
+		Assert.assertEquals(id, 23);
 	}
 }

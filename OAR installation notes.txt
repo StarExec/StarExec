@@ -1,13 +1,18 @@
 These are one-time steps we would need to take to get OAR up and running on
 Starexec.
 
-1) Create the queue column for resources. OAR does have a notion of associating
+1) Create the queue and slots columns for resources. OAR does have a notion of associating
 resources (nodes) with queues by default, but it does support custom attributes.
 This basically adds a column for 'queue' to the resources table, helping us
 enforce our 1-1 relationship between nodes and queues.
 
 oarproperty -a queue -c
 
+Also, we need to add some measurement of the resources available on each node.
+Since we always simply run 2 pairs per node, and SGE already uses a notion of
+slots, it is easy to just add a slots property that will always be a constant 2.
+
+oarproperty -a slots
 
 2) Create all.q, along with any other queues that are expected at the time
 we're migrating to OAR. OAR may come with a few default queues of its own: these
@@ -22,6 +27,10 @@ insert into queues values ('all.q', 1,'oar_sched_gnatt_with_timesharing', 'Activ
 
 3) Add resources
 
+Every node should have 2 slots.
+
+UPDATE resources SET slots=2;
+
 TODO:
 
 4) Disable OAR admission rules. Basically, OAR does a bunch of validation and
@@ -29,4 +38,3 @@ and chooses a bunch of defaults that we do not need for our purposes. Again
 in the OAR database, we can just execute
 
 update admission_rules SET enabled = 'NO';
-

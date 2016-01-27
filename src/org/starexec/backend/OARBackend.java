@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.starexec.util.Util;
@@ -21,6 +23,18 @@ import com.google.gson.JsonParser;
  */
 public class OARBackend implements Backend {    
 	private static Logger log = Logger.getLogger(OARBackend.class);
+	
+	private static String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
+	
+	
+	
+    // The regex patterns used to parse SGE output
+ 	private static Pattern jobIdPattern;
+
+ 	static {
+ 		// Compile the SGE output parsing patterns when this class is loaded
+ 		jobIdPattern = Pattern.compile(JOB_ID_PATTERN, Pattern.CASE_INSENSITIVE);
+ 	}
 	@Override
 	public void initialize(String BACKEND_ROOT) {
 		//no initialization required
@@ -39,7 +53,14 @@ public class OARBackend implements Backend {
 	@Override
 	public int submitScript(String scriptPath, String workingDirectoryPath, String logPath) {
 		try {
-			Util.executeCommand("oarsub "+scriptPath);
+			String output = Util.executeCommand(new String[]{"oarsub","-O", logPath,"-E",logPath,"-d",workingDirectoryPath,
+					"-l","/nodes=1/slots=1","-S",scriptPath});
+			Matcher jobId = jobIdPattern.matcher(output);
+			if (jobId.find()) {
+				return Integer.parseInt(jobId.group(1));
+			} else {
+				log.warn("could not find any job ID for this submission!");
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
@@ -126,12 +147,9 @@ public class OARBackend implements Backend {
 		return null;
 	}
 
-	//TODO: Done, Test
 	@Override
 	public boolean clearNodeErrorStates() {
-		try {
-			
-			//TODO: This may need to be something else, like only if state = suspected
+		try {			
 			Util.executeCommand(new String[] {"oarnodesetting","--sql","state='Suspected'","-s","Alive"});
 			return true;
 		} catch (Exception e) {
