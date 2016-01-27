@@ -30,7 +30,3 @@ in the OAR database, we can just execute
 
 update admission_rules SET enabled = 'NO';
 
-
-
-TODO: Remove below
-oarsub -q all.q -l /nodes=1 -p "queue='all.q'" subtest.sh

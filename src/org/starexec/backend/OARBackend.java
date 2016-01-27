@@ -8,24 +8,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.starexec.util.Util;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+/**
+ * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
+ */
 public class OARBackend implements Backend {    
 	private static Logger log = Logger.getLogger(OARBackend.class);
 	@Override
 	public void initialize(String BACKEND_ROOT) {
+		//no initialization required
 	}
 
 	@Override
-	public void destroyIf() {		
+	public void destroyIf() {
+		//no deconstruction required
 	}
 
 	@Override
@@ -35,8 +38,12 @@ public class OARBackend implements Backend {
 
 	@Override
 	public int submitScript(String scriptPath, String workingDirectoryPath, String logPath) {
-		// TODO Auto-generated method stub
-		return 0;
+		try {
+			Util.executeCommand("oarsub "+scriptPath);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+		return -1;
 	}
 
 	@Override
@@ -191,7 +198,12 @@ public class OARBackend implements Backend {
 				ids.add(s.getValue().getAsJsonObject().get("Job_Id").getAsInt());
 			}
 			return ids;
-		} catch (Exception e) {
+		} catch (com.google.gson.stream.MalformedJsonException e) {
+			// this exception will get thrown whenever there is nothing running and oarstat -J
+			// is executed, so we can return the empty set
+			return new HashSet<Integer>();
+		}
+		catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		return null;

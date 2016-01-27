@@ -123,31 +123,22 @@ public class GridEngineBackend implements Backend{
      **/
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
-	JobTemplate sgeTemplate = null;
-
+    		JobTemplate sgeTemplate = null;
 		try {
-			sgeTemplate = null;		
-
 			// Set up the grid engine template
 			sgeTemplate = session.createJobTemplate();
-
 
 			// DRMAA needs to be told to expect a shell script and not a binary
 			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
 
-
 			// Tell the job where it will deal with files
 			sgeTemplate.setWorkingDirectory(workingDirectoryPath);
 
-
-
 			sgeTemplate.setOutputPath(":" + logPath);
 			
-
 			// Tell the job where the script to be executed is
 			sgeTemplate.setRemoteCommand(scriptPath);	        
 			
-
 			// Actually submit the job to the grid engine
 			String id = session.runJob(sgeTemplate);
 			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath)); 
