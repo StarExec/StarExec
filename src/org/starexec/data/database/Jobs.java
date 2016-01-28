@@ -879,7 +879,7 @@ public class Jobs {
 			log.debug("stats already cached in database");
 			return stats;
 		}
-		//we will cache the stats only if the job is complete before
+		//we will cache the stats only if the job is complete
 		boolean isJobComplete=Jobs.isJobComplete(jobId);
 
 		//otherwise, we need to compile the stats
@@ -2212,6 +2212,9 @@ public class Jobs {
 	 * @author Eric Burns
 	 * @param stageNumber The number of the stage that we are concerned with. If <=0, the primary stage is obtained
 	 */
+	
+	//TODO: Rewrite so this takes in two config IDs instead of one: we are using two database calls where only one
+	// is needed
 	public static List<JobPair> getJobPairsForSolverComparisonGraph(int jobSpaceId, int configId, int stageNumber) {
 		try {			
 			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);

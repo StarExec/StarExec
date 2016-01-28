@@ -268,7 +268,7 @@ function updateGraphs() {
 			
 			$("#solverChoice1").children("option:first").prop("selected",true);
 			$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
-			updateSolverComparison(false);
+			updateSolverComparison(300, "white");
 		} else {
 			$("#solverComparison").hide();
 			$("#solverComparisonOptionField").hide();
@@ -605,7 +605,7 @@ function initUI(){
 			updateSpaceOverviewGraph();
 		});
 		$("#solverComparisonUpdate").click(function() {
-			updateSolverComparison(false);
+			updateSolverComparison(300, "white");
 		});
 	}
 
@@ -842,13 +842,13 @@ function updateSpaceOverviewGraph() {
 
 
 //big is a boolean that determines whether we should get the big or the small map
-function updateSolverComparison(big) {
+function updateSolverComparison(size, color) {
 	var config1=$("#solverChoice1 option:selected").attr("value");
 	var config2=$("#solverChoice2 option:selected").attr("value");
 	log("solverComparison: Sending POST to starexecRoot"+ starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage());
 	
 	$.post(
-			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage(),
+			starexecRoot+"services/jobs/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+"/"+color+"/"+getSelectedStage(),
 			{},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -864,7 +864,7 @@ function updateSolverComparison(big) {
 						$("#solverComparison").attr("src",src);
 						$("#solverComparisonMap").remove();
 						$("#graphField").append(map);
-						updateSolverComparison(true);
+						updateSolverComparison(800, "black");
 					}
 					
 				} else {

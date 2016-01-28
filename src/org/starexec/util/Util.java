@@ -1,5 +1,6 @@
 package org.starexec.util;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -15,6 +16,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Throwable;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
@@ -86,6 +88,23 @@ public class Util {
     	}
     	
     }
+    /**
+     * 
+     * @param c The string color
+     * @return The Java color corresponding to the string, or null if no such color exists
+     * Obtained at (http://stackoverflow.com/questions/2854043/converting-a-string-to-color-in-java)
+     */
+    public static Color getColorFromString(String c) {
+    	Color color;
+    	try {
+    	    Field field = Class.forName("java.awt.Color").getField(c);
+    	    color = (Color)field.get(null);
+    	} catch (Exception e) {
+    	    color = null; // Not defined
+    	}
+    	return color;
+    }
+    
 
 	/**
 	 * Handles request/response logic for details/benchmark

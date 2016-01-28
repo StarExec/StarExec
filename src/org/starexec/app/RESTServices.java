@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -926,21 +927,33 @@ public class RESTServices {
 	 * an image map linking points to benchmarks
 	 */
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}/{stageNum}")
+	@Path("/jobs/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{edgeLengthInPixels}/{axisColor}/{stageNum}")
 	@Produces("application/json")	
-	public String getSolverComparisonGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {		
+	public String getSolverComparisonGraph(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,
+			@PathParam("config1") int config1, @PathParam("config2") int config2, 
+			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,@PathParam("axisColor") String axisColor, @Context HttpServletRequest request) {		
 		final String methodName = "getSolverComparisonGraph";
 		logUtil.entry(methodName);
 	        
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
-		ValidatorStatusCode status= JobSecurity.canUserSeeJob(jobId, userId);
+		//TODO: This needs to be fixed
+		ValidatorStatusCode status= JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large,stageNumber);
+		Color c = Util.getColorFromString(axisColor);
+		if (c==null) {
+			return gson.toJson(new ValidatorStatusCode(false,"The given color is not valid"));
+		}
+		if (edgeLengthInPixels<=0 || edgeLengthInPixels>2000) {
+			return gson.toJson(new ValidatorStatusCode(false, "The given size is not valid: please choose an integer from 1-2000"));
+					
+		}
+		
+		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber);
 		if (chartPath==null) {
 			return gson.toJson(ERROR_DATABASE);
 		}

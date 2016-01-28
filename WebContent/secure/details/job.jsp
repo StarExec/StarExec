@@ -254,7 +254,7 @@
 					<legend>graphs</legend> 
 					<%--<img id="spaceOverview" src="" width="300" height="300" />--%>
 					<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
-					<img id="solverComparison" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
+					<img id="solverComparison" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap300" />
 					<br>
 					<fieldset id="optionField">
 						<legend>options</legend> 
@@ -517,8 +517,8 @@
 					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
 				</div>
 				<div id="dialog-solverComparison" title="solver comparison chart">
-					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>
-					<map id="bigSolverComparisonMap"></map>
+					<img src="" id="bigSolverComparison" usemap="#solverComparisonMap800"/>
+					<map id="solverComparisonMap800"></map>
 				</div>
 				<div id="dialog-warning" title="warning">
 					<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>

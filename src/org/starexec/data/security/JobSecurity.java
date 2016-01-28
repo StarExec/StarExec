@@ -37,6 +37,20 @@ public class JobSecurity {
 	}
 	
 	/**
+	 * Checks to see whether the user is allowed to look at details of a given job space.
+	 * This is equivalent to checking whether the user can see the job that owns the job
+	 * space
+	 * @param jobSpaceId The ID of the job space
+	 * @param userId The ID of the user that wants to view details of the job space
+	 * @return A ValidatorStatusCode that will have true if the operation is allowed
+	 * and false otherwise
+	 */
+	//TODO: This needs to be filled in
+	public static ValidatorStatusCode canUserSeeJobSpace(int jobSpaceId, int userId) {
+		return new ValidatorStatusCode(false);
+	}
+	
+	/**
 	 * Checks to see if the given user has permission to see the details of the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
