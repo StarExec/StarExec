@@ -631,10 +631,12 @@ CREATE TABLE unvalidated_benchmarks (
 -- Author: Eric Burns
 CREATE TABLE job_spaces (
 	id INT NOT NULL AUTO_INCREMENT,
+	job_id INT,
 	name VARCHAR(255),
 	max_stages INT DEFAULT 1, -- This columns stores the maximum number of stages any job pair has
 							  -- anywhere in the job space hierarchy rooted at this job space
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+	CONSTRAINT job_spaces_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 -- The set of all associations between each job space and it's descendants

@@ -65,7 +65,7 @@ public class MatrixTests extends TestSequence {
 		nonOwner=ResourceLoader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		Spaces.addJobSpace(space.getName());
+		
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
@@ -76,6 +76,7 @@ public class MatrixTests extends TestSequence {
 											   cpuTimeout,wallclockTimeout,gbMemory);
 		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, 
 												benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
+		Spaces.addJobSpace(space.getName(), job.getId());
 		Assert.assertNotNull(Jobs.get(job.getId()));
 	}
 

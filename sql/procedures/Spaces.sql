@@ -22,10 +22,10 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(255), IN _desc TEXT, IN _locked TINYI
 -- Adds a new job space with the given information
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS AddJobSpace;
-CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), OUT id INT)
+CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), IN _job_id INT, OUT id INT)
 	BEGIN		
-		INSERT INTO job_spaces (name)
-		VALUES (_name);
+		INSERT INTO job_spaces (name, job_id)
+		VALUES (_name, job_id);
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 

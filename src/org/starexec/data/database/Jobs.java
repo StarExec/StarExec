@@ -131,7 +131,7 @@ public class Jobs {
 						continue; //means we've already added this space
 					}
 					
-					int newJobSpaceId=Spaces.addJobSpace(spaceName);
+					int newJobSpaceId=Spaces.addJobSpace(spaceName, jobId);
 					if (index==0) {
 						primarySpaceId=newJobSpaceId;
 					}
@@ -155,7 +155,7 @@ public class Jobs {
 			//there seem to be some jobs with no pairs somehow, so this just prevents
 			//a red error screen when viewing them
 			if (p.size()==0) {
-				primarySpaceId=Spaces.addJobSpace("job space");
+				primarySpaceId=Spaces.addJobSpace("job space", jobId);
 				Spaces.updateJobSpaceClosureTable(primarySpaceId);
 			}
 			
@@ -231,7 +231,7 @@ public class Jobs {
 	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 * @throws Exception 
 	 */
-	public static Integer createJobSpacesForPairs(List<JobPair> pairs,Connection con) throws Exception {
+	public static Integer createJobSpacesForPairs(int jobId,List<JobPair> pairs,Connection con) throws Exception {
 		
 		//this hashmap maps every job space ID to the maximal number of stages
 		// of any pair that is in the hierarchy rooted at the job space
@@ -251,7 +251,7 @@ public class Jobs {
 				if (!pathsToIds.containsKey(curPathBuilder.toString())) {
 					String parentPath=curPathBuilder.toString();
 					parentPath=parentPath.substring(0,parentPath.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
-						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(jobSpaceName,con));
+						pathsToIds.put(curPathBuilder.toString(),Spaces.addJobSpace(jobSpaceName,jobId,con));
 						int id=pathsToIds.get(curPathBuilder.toString());
 						if (topLevelSpaceId ==-1) {
 							topLevelSpaceId = id;
@@ -291,7 +291,7 @@ public class Jobs {
 			Common.beginTransaction(con);
 			List<JobPair> pairs=Jobs.getPairsSimple(jobId);
 			
-			int topLevel=createJobSpacesForPairs(pairs,con);
+			int topLevel=createJobSpacesForPairs(jobId,pairs,con);
 			Jobs.updatePrimarySpace(jobId, topLevel,con);
 			JobPairs.updateJobSpaces(pairs,con);
 			Common.endTransaction(con);
@@ -350,15 +350,16 @@ public class Jobs {
 		
 			log.debug("finished getting subspaces, adding job");
 			//the primary space of a job should be a job space ID instead of a space ID
-			job.setPrimarySpace(createJobSpacesForPairs(job.getJobPairs(),con));
 			
+			
+
+			Jobs.addJob(con, job);
+			job.setPrimarySpace(createJobSpacesForPairs(job.getId(),job.getJobPairs(),con));
+			Jobs.updatePrimarySpace(job.getId(), job.getPrimarySpace(),con);
 			//NOTE: By opening the transaction here, we are leaving open the possibility that some spaces
 			//will be created even if job creation fails. However, this prevents the job space and the space
 			//tables from being locked for the entire transaction, which may take a long time.
 			Common.beginTransaction(con);
-
-			Jobs.addJob(con, job);
-
 			// record the job being added in the reports table
 			Reports.addToEventOccurrencesNotRelatedToQueue("jobs initiated", 1);
 			// record the job being added for the queue it was added to

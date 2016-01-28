@@ -209,12 +209,12 @@ public class Spaces {
 	 * @return The ID of the newly created job space, or -1 on failure
 	 * @author Eric Burns
 	 */
-	public static int addJobSpace(String name) {
+	public static int addJobSpace(String name, int jobId) {
 		Connection con = null;
 		log.debug("adding new job space with name = "+name);
 		try {
 			con=Common.getConnection();
-			int newSpaceId=addJobSpace(name,con);
+			int newSpaceId=addJobSpace(name,jobId,con);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("addJobSpace says "+e.getMessage(),e);
@@ -385,15 +385,16 @@ public class Spaces {
 	 * @return The ID of the new job space, or -1 if the addition was not successful
 	 * 
 	 */
-	public static int addJobSpace(String name, Connection con) {
+	public static int addJobSpace(String name,int jobId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			// Add the space with the default permissions
-			CallableStatement procAddSpace = con.prepareCall("{CALL AddJobSpace(?, ?)}");	
-			procAddSpace.setString(1, name);
-			procAddSpace.registerOutParameter(2, java.sql.Types.INTEGER);		
-			procAddSpace.executeUpdate();
-			int newSpaceId = procAddSpace.getInt(2);
+			procedure = con.prepareCall("{CALL AddJobSpace(?,?,?)}");	
+			procedure.setString(1, name);
+			procedure.setInt(2, jobId);;
+			procedure.registerOutParameter(3, java.sql.Types.INTEGER);		
+			procedure.executeUpdate();
+			int newSpaceId = procedure.getInt(3);
 			
 			return newSpaceId;
 		} catch (Exception e) {
