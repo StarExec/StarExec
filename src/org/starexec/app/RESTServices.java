@@ -9,8 +9,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import java.sql.SQLException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-//import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
@@ -926,7 +929,8 @@ public class RESTServices {
 	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}/{stageNum}")
 	@Produces("application/json")	
 	public String getSolverComparisonGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {		
-
+		final String methodName = "getSolverComparisonGraph";
+		logUtil.entry(methodName);
 	        
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
@@ -1046,38 +1050,93 @@ public class RESTServices {
 	}
 
 	/**
-	 * @param benchmarkId The id of the benchmark to generate an anonymous public URL for.
+	 * @param primitiveType The type of primitive (solver, bench, etc) that we're going to generate a link for.
+	 * @param primitive The id of the primitive to generate an anonymous public URL for.
+	 * @param hidePrimitiveName Whether or not the name of the primitive should be hidden on the anonymous page.
 	 * @param request The http request.
+	 * 
 	 * @author Albert Giegerich
 	 */
-	/*
 	@POST
-	@Path( "/anonymousLink/benchmark/{benchmarkId}" )
+	@Path( "/anonymousLink/{primitiveType}/{primitiveId}/{hidePrimitiveName}" )
 	@Produces( "application/json" )
-	public String getAnonymousLinkForBenchmark( @PathParam("benchmarkId") int benchmarkId, @Context HttpServletRequest request ) {
+	public String getAnonymousLinkForPrimitive( 
+			@PathParam("primitiveType") String primitiveType,
+			@PathParam("primitiveId") int primitiveId, 
+			@PathParam("hidePrimitiveName") boolean hidePrimitiveName,
+			@Context HttpServletRequest request ) {
+
+		final String methodName = "getAnonymousLinkForPrimitive";
+		logUtil.entry( methodName );
+		logUtil.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
+				", hidePrimitiveName = " + hidePrimitiveName );
+
 
 		int userId = SessionUtil.getUserId(request);
 
-		ValidatorStatusCode status = BenchmarkSecurity.canUserGetAnonymousLink( benchmarkId, userId );
+		ValidatorStatusCode status = GeneralSecurity.canUserGetAnonymousLinkForPrimitive( userId, primitiveType, primitiveId );
 
 		try {
 			// Check if user has permission to get an anonymous link for this benchmark.
 			if ( status.isSuccess() ) {
-				// Generate a unique id to be part of the link URL and store it in the DB
-				final String uniqueId = UUID.randomUUID().toString();
-				AnonymousLinks.addAnonymousLink( uniqueId, benchmarkId );
+				log.debug( "User with id=" + userId + " is allowed to create anonymous link for primitive.");
 
-				// Return the URL with the UUID as a parameter.
-				return gson.toJson( R.STAREXEC_URL_PREFIX + R.STAREXEC_ROOT + "secure/details/benchmark.jsp?anonId=" + uniqueId );
+				// Create a new Gson that won't encode the = sign as \u003d
+				Gson tempGson = new GsonBuilder().disableHtmlEscaping().create();
+
+				// Return a link associated with the primitive.
+				String anonymousLinkForPrimitive = createAnonymousLinkForPrimitive( primitiveType, primitiveId, hidePrimitiveName );
+				return tempGson.toJson( new ValidatorStatusCode( true, anonymousLinkForPrimitive ));
 			} else {
+				log.debug( "User with id=" + userId + " is not allowed to create anonymous link for primitive.");
 				// Return the failed security check status.
 				return gson.toJson( status );
 			}
-		} catch ( StarExecDatabaseException e ) {
+		} catch ( SQLException e ) {
 			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
 		}
 	}
-	*/
+
+	/**
+	 * Creates a new anonymous link for a given primitive.
+	 * @author Albert Giegerich
+	 */
+	private String createAnonymousLinkForPrimitive( 
+			final String primitiveType, 
+			final int primitiveId, 
+			final boolean hidePrimitiveName ) throws SQLException {
+
+		String primitiveUrlName = getPrimitiveUrlName( primitiveType );
+
+		// The entire url for the link except for a unique code that will be appended to the end.
+		final String urlPrefix = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + "/" + R.STAREXEC_APPNAME + 
+								 "/secure/details/" + primitiveUrlName + ".jsp?anonId=";
+
+		// If the anonymous link for this primitive is already in the database, retrieve and return it.
+		Optional<String> optionalUniqueId = AnonymousLinks.getAnonymousLinkCode( primitiveType, primitiveId, hidePrimitiveName );
+		if ( optionalUniqueId.isPresent() ) {
+			return urlPrefix + optionalUniqueId.get();
+		}
+
+		// Generate a unique id to be part of the link URL and store it in the database.
+		final String uniqueId = UUID.randomUUID().toString();
+		AnonymousLinks.addAnonymousLink( uniqueId, primitiveType, primitiveId, hidePrimitiveName );
+
+		// Return the URL with the UUID as a parameter.
+		return urlPrefix + uniqueId; 
+	}
+
+	/**
+	 * Returns the name of the url path used for the given primitive type.
+	 * @author Albert Giegerich
+	 */
+	private String getPrimitiveUrlName( final String primitiveType ) {
+		if ( primitiveType.equals( "bench" )) {
+			return "benchmark";
+		} else {
+			return primitiveType;
+		}
+	}
 
 	@POST
 	@Path("/job/edit/name/{jobId}/{newName}")

@@ -1,13 +1,21 @@
 package org.starexec.data.security;
 
+import org.apache.log4j.Logger;
+
 import org.owasp.esapi.ESAPI;
+
+import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.Hash;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
+
 public class GeneralSecurity {
+
+	private static final Logger log = Logger.getLogger(GeneralSecurity.class);			
+
 	/**
 	 * Checks to see if the given user has permission to restart Starexec
 	 * @param userId The ID of the user making the request
@@ -148,6 +156,26 @@ public class GeneralSecurity {
 		
 		
 		return new ValidatorStatusCode(true);
+	}
+
+	/**
+	 * Checks if a user can generate a public anonymous link for a given primitive.
+	 * @param userId The id of the user making the request for the link.
+	 * @param primitiveType The type of the primitive. (Benchmark, Solver, etc.)
+	 * @param primitiveId The id of the primitive.
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserGetAnonymousLinkForPrimitive( int userId, String primitiveType, int primitiveId ) {
+		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
+		if ( Users.isAdmin( userId )) {
+			return new ValidatorStatusCode( true );
+		} else if ( primitiveType.equals( R.BENCHMARK )) {
+			log.debug( "Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
+			return BenchmarkSecurity.canUserGetAnonymousLink( primitiveId, userId );
+		} else {
+			// TODO Add branches for all primitive types.
+			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this primitive." );
+		}
 	}
 	
 }

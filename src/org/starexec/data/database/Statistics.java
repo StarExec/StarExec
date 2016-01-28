@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
@@ -35,17 +36,19 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
+
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.Status;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.pipelines.JoblineStage;
 
 import com.google.gson.JsonObject;
 import com.mysql.jdbc.ResultSetMetaData;
@@ -56,6 +59,7 @@ import com.mysql.jdbc.ResultSetMetaData;
  */
 public class Statistics {
 	private static final Logger log = Logger.getLogger(Jobs.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 	
 	
 	/**
@@ -271,6 +275,9 @@ public class Statistics {
 	 */
 	
 	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large, int stageNumber) {
+		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
+		logUtil.entry(methodName);
+
 		try {
 			List<JobPair> pairs1=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configId1,stageNumber);
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
@@ -306,10 +313,14 @@ public class Statistics {
 	
 	@SuppressWarnings("deprecation")
 	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, boolean large, int stageNumber) {
+		final String methodName = "makeSolverComparisonChart( List<JobPair>, List<JobPair>, boolean, int )";
+		logUtil.entry( methodName );
+		logUtil.debug( methodName, "large = " + large + ", stageNumber = " + stageNumber );
 		try {
 			
 			//there are no points if either list of pairs is empty
 			if (pairs1.size()==0 || pairs2.size()==0) {
+				logUtil.debug( methodName, "An input list has no jobpairs, returning null" );
 				return null;
 			}
 			HashMap<Integer, JobPair> pairs2Map=new HashMap<Integer,JobPair>();
@@ -397,6 +408,7 @@ public class Statistics {
 			
 			
 			String filename=UUID.randomUUID().toString()+".png";
+			logUtil.debug( methodName, "The filename for the graph is: " +  filename );
 			File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
 			
 			

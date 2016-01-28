@@ -843,8 +843,8 @@ function updateSpaceOverviewGraph() {
 
 //big is a boolean that determines whether we should get the big or the small map
 function updateSolverComparison(big) {
-	config1=$("#solverChoice1 option:selected").attr("value");
-	config2=$("#solverChoice2 option:selected").attr("value");
+	var config1=$("#solverChoice1 option:selected").attr("value");
+	var config2=$("#solverChoice2 option:selected").attr("value");
 	log("solverComparison: Sending POST to starexecRoot"+ starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage());
 	
 	$.post(
@@ -853,7 +853,7 @@ function updateSolverComparison(big) {
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {
-					jsonObject=$.parseJSON(returnCode);
+					var jsonObject=$.parseJSON(returnCode);
 					var src=jsonObject.src;
 					var map=jsonObject.map;
 					if (big) {

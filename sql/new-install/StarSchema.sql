@@ -501,6 +501,16 @@ CREATE TABLE community_requests (
 	CONSTRAINT community_requests_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
+CREATE TABLE anonymous_links (
+	unique_id VARCHAR(36) NOT NULL,
+	primitive_id INT NOT NULL,
+	primitive_type VARCHAR(36),
+	hide_primitive_name BOOLEAN,
+
+	PRIMARY KEY (unique_id),
+	UNIQUE KEY (primitive_id, primitive_type, hide_primitive_name)
+);
+
 CREATE TABLE change_email_requests (
 	user_id INT NOT NULL,
 	new_email VARCHAR(64) NOT NULL,
