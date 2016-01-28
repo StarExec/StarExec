@@ -273,43 +273,30 @@ public class SpaceTests extends TestSequence {
 		//of course, it should actually be a community
 		Assert.assertTrue(Communities.isCommunity(community.getId()));
 	}
-	
-	@StarexecTest
-	private void getDefaultCpuTimeoutTest() {
-		int timeout=Communities.getDefaultCpuTimeout(community.getId());
-		if (timeout<=0) {
-			Assert.fail("Timeout was not greater than 0");
-		}
-	}
+
 	@StarexecTest 
 	private void updateDefaultCpuTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 		
-		int timeout=Communities.getDefaultCpuTimeout(community.getId());
+		int timeout=Communities.getDefaultSettings(community.getId()).getCpuTimeout();
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout+1));
-		Assert.assertEquals(timeout+1, Communities.getDefaultCpuTimeout(community.getId()));
+		Assert.assertEquals(timeout+1, Communities.getDefaultSettings(community.getId()).getCpuTimeout());
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout));
 	}
-	@StarexecTest
-	private void getDefaultWallclockTimeoutTest() {
-		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
-		if (timeout<=0) {
-			Assert.fail("Timeout was not greater than 0");
-		}
-	}
+
 	@StarexecTest
 	private void updateDefaultWallclockTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 
-		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
+		int timeout=Communities.getDefaultSettings(community.getId()).getWallclockTimeout();
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout+1));
-		Assert.assertEquals(timeout+1, Communities.getDefaultWallclockTimeout(community.getId()));
+		Assert.assertEquals(timeout+1, Communities.getDefaultSettings(community.getId()).getWallclockTimeout());
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout));
 	}
 	
 	@StarexecTest
 	private void getDefaultMemoryLimit() {
-		long limit=Communities.getDefaultMaxMemory(community.getId());
+		long limit=Communities.getDefaultSettings(community.getId()).getMaxMemory();
 		if (limit<=0) {
 			Assert.fail("Memory limit was not greater than 0");
 		}

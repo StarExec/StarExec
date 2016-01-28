@@ -37,7 +37,7 @@ import org.starexec.util.Util;
 /*TODO: Download[new job info, new job output]
 */
 public class StarexecCommandTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(TestSequence.class);	
+	private static final Logger log = Logger.getLogger(StarexecCommandTests.class);	
 	private Connection con;
 	private Space space1=null; //will contain both solvers and benchmarks
 	private Space space2=null;

@@ -58,7 +58,7 @@ import com.mysql.jdbc.ResultSetMetaData;
  * @author Tyler Jensen
  */
 public class Statistics {
-	private static final Logger log = Logger.getLogger(Jobs.class);
+	private static final Logger log = Logger.getLogger(Statistics.class);
 	private static final LogUtil logUtil = new LogUtil(log);
 	
 	

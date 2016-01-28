@@ -27,7 +27,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CommunityRequester extends HttpServlet {
-	private static final Logger log = Logger.getLogger(CommunityRequest.class);	
+	private static final Logger log = Logger.getLogger(CommunityRequester.class);	
 	private String errorMessage;
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

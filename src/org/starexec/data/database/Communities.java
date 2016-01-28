@@ -290,32 +290,12 @@ public class Communities {
 			Common.safeClose(procedure);
 		}
     }
-
-  
- 
-	
-	public static int getDefaultCpuTimeout(int id) {
-		return getDefaultSettings(id).getCpuTimeout();
-	}
-	
-	public static int getDefaultWallclockTimeout(int id) {
-		return getDefaultSettings(id).getWallclockTimeout();
-	}
-	
-	public static int getDefaultPostProcessorId(int id) {
-		return getDefaultSettings(id).getPostProcessorId();
-	}
-	
-	public static long getDefaultMaxMemory(int id) {
-		return getDefaultSettings(id).getMaxMemory();
-		
-	}
 	
 	/**
 	 * Given a DefaultSettings object with all of its fields yet, adds the
 	 * settings object to the database
 	 * @param d
-	 * @return
+	 * @return The ID of the new settings profile, or -1 on error
 	 */
 	
 	public static int createNewDefaultSettings(DefaultSettings d) {
@@ -405,8 +385,7 @@ public class Communities {
 	
 	/**
 	 * Gets a space with minimal information (only details about the space itself)
-	 * @param spaceId The id of the space to get information for
-	 * @param userId The id of the user requesting the space (used for permissions check)
+	 * @param id The id of the space to get information for
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
@@ -474,7 +453,9 @@ public class Communities {
 	}
 	
 	
-	
+	/**
+	 * @return The test community as specified in the configuration, or null if none exists
+	 */
 	public static Space getTestCommunity() {
 		Space s=Communities.getDetails(R.TEST_COMMUNITY_ID);
 		if (s==null) {

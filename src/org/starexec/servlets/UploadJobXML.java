@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
 public class UploadJobXML extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);
+	private static final Logger log = Logger.getLogger(UploadJobXML.class);
 	private static final LogUtil logUtil = new LogUtil(log);
 	private static final String UPLOAD_FILE = "f";
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);

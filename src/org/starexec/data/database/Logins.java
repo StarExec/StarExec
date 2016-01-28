@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  */
 public class Logins {
 
-	private static final Logger log = Logger.getLogger(Reports.class);
+	private static final Logger log = Logger.getLogger(Logins.class);
 
 	/**
 	 * Gets the number of unique user logins in the logins table.
