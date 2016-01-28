@@ -840,15 +840,13 @@ function updateSpaceOverviewGraph() {
 	);
 }
 
-
-//big is a boolean that determines whether we should get the big or the small map
+//size is in pixels and color is a string
 function updateSolverComparison(size, color) {
 	var config1=$("#solverChoice1 option:selected").attr("value");
 	var config2=$("#solverChoice2 option:selected").attr("value");
-	log("solverComparison: Sending POST to starexecRoot"+ starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+big+"/"+getSelectedStage());
 	
 	$.post(
-			starexecRoot+"services/jobs/" + curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+"/"+color+"/"+getSelectedStage(),
+			starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+"/"+color+"/"+getSelectedStage(),
 			{},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -856,19 +854,17 @@ function updateSolverComparison(size, color) {
 					var jsonObject=$.parseJSON(returnCode);
 					var src=jsonObject.src;
 					var map=jsonObject.map;
-					if (big) {
-						$("#bigSolverComparison").attr("src",src);
-						$("#bigSolverComparisonMap").remove();
+					$("#solverComparison"+size).attr("src",src);
+					$("#solverComparisonMap"+size).remove();
+					if (size==800) {
 						$("#dialog-solverComparison").append(map);
 					} else {
-						$("#solverComparison").attr("src",src);
-						$("#solverComparisonMap").remove();
 						$("#graphField").append(map);
 						updateSolverComparison(800, "black");
 					}
 					
 				} else {
-					$("#solverComparison").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+					$("#solverComparison300").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 
 				}
 				
