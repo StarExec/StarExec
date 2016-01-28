@@ -619,7 +619,7 @@ function initUI(){
 	        }
 	      
 	});
-	$("#solverComparison").click(function() {
+	$("#solverComparison300").click(function() {
 		$('#dialog-solverComparison').dialog({
 			modal: true,
 			width: 850,
@@ -846,7 +846,7 @@ function updateSolverComparison(size, color) {
 	var config2=$("#solverChoice2 option:selected").attr("value");
 	
 	$.post(
-			starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+"/"+color+"/"+getSelectedStage(),
+			starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage(),
 			{},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
