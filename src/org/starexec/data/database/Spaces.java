@@ -381,17 +381,19 @@ public class Spaces {
 	/**
 	 * Adds a new job space to the job space table
 	 * @param name The name of the job space
+	 * @param jobId The ID of the job this job space belongs to
 	 * @param con The open connection to make the call on
 	 * @return The ID of the new job space, or -1 if the addition was not successful
 	 * 
 	 */
 	public static int addJobSpace(String name,int jobId, Connection con) {
 		CallableStatement procedure = null;
+		log.debug("adding new job space with name = "+name+" and id = "+jobId);
 		try {
 			// Add the space with the default permissions
 			procedure = con.prepareCall("{CALL AddJobSpace(?,?,?)}");	
 			procedure.setString(1, name);
-			procedure.setInt(2, jobId);;
+			procedure.setInt(2, jobId);
 			procedure.registerOutParameter(3, java.sql.Types.INTEGER);		
 			procedure.executeUpdate();
 			int newSpaceId = procedure.getInt(3);
