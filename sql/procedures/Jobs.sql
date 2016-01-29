@@ -862,4 +862,16 @@ CREATE PROCEDURE GetAllJobPairBenchmarkInputsByJob(IN _jobId INT)
 		WHERE job_pairs.job_id=_jobId ORDER BY input_number ASC;
 	END //
 	
+DROP PROCEDURE IF EXISTS GetAllJobs;
+CREATE PROCEDURE GetAllJobs()
+	BEGIN
+		SELECT id, primary_space FROM jobs;
+	END //
+	
+DROP PROCEDURE IF EXISTS UpdateJobSpaceJobId;
+CREATE PROCEDURE UpdateJobSpaceJobId(IN _spaceId INT, IN _jobId INT)
+	BEGIN
+		UPDATE job_spaces SET job_id=_jobId WHERE id=_spaceId;
+	END //
+	
 DELIMITER ; -- this should always be at the end of the file

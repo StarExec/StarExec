@@ -304,6 +304,8 @@ public class Starexec implements ServletContextListener {
 			log.error("unable to correctly load pagination queries");
 			log.error(e.getMessage(),e);
 		}
+		//TODO: Delete once the backfill is complete
+		Jobs.setJobIdForAllJobSpaces();
 	}
 	
 }

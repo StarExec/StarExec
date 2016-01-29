@@ -4840,5 +4840,88 @@ public class Jobs {
 			}
 		}
 	}
+	/**
+	 * Returns a list of every job in the system. Used to backfill the job_id
+	 * column in the job_spaces table
+	 * @return A list of every job, where only ID and primary_space are populated
+	 * TODO: Delete after the backfill
+	 */
+	public static List<Job> getAllJobs() {
+		Connection con=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			List<Job> jobs = new ArrayList<Job>();
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllJobs()}");
+			results = procedure.executeQuery();
+			while (results.next()) {
+				Job j = new Job();
+				j.setId(results.getInt("id"));
+				j.setPrimarySpace(results.getInt("primary_space"));
+				jobs.add(j);
+			}
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	/**
+	 * Updates the job_id column for a job space. Used to backfill the column
+	 * @param spaceId
+	 * @param jobId
+	 * @return
+	 * TODO: Delete after the backfill
+	 */
+	public static boolean updateJobSpaceJobId(int spaceId, int jobId) {
+		Connection con=null;
+		CallableStatement procedure = null;
+		log.debug("called backfill for space and job: "+spaceId+" "+jobId);
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL UpdateJobSpaceJobId(?,?)}");
+			procedure.setInt(1, spaceId);
+			procedure.setInt(2, jobId);
+			procedure.executeQuery();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
 	
+	/**
+	 * This is a function designed to be executed once, backfilling the
+	 * job_id column in the job_spaces table.
+	 * @return True on success and false otherwise
+	 * TODO: Delete this function once it runs
+	 */
+	public static boolean setJobIdForAllJobSpaces() {
+		try {
+			List<Job> jobs = getAllJobs();
+			log.debug("found this many jobs to backfill: "+jobs.size());
+			for (Job j : jobs) {
+				log.debug("the primary space is " +j.getPrimarySpace());
+				JobSpace s = new JobSpace();
+				s.setId(j.getPrimarySpace());
+				List<JobSpace> spaces = Spaces.getSubSpacesForJob(j.getPrimarySpace(),true);
+				spaces.add(s);
+				log.debug("found this many job spaces to backfill: "+spaces.size());
+				for (JobSpace space : spaces) {
+					updateJobSpaceJobId(space.getId(), j.getId());
+				}
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return false;
+	}
 }

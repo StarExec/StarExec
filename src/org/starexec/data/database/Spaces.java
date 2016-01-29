@@ -1114,6 +1114,7 @@ public class Spaces {
 				JobSpace s = new JobSpace();
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
+				s.setJobId(results.getInt("job_id"));
 				s.setMaxStages(results.getInt("max_stages"));
 				return s;
 			}														
