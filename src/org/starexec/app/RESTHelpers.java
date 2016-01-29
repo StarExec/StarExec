@@ -724,7 +724,6 @@ public class RESTHelpers {
 	/**
 	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
 	 * 
-	 * @param jobId The ID of the job
 	 * @param jobSpaceId The ID of the job space
 	 * @param request
 	 * @param wallclock True to use wallclock time, false to use CPU time
@@ -732,7 +731,7 @@ public class RESTHelpers {
 	 * @param stageNumber If <=0, gets the primary stage
 	 * @return JsonObject encapsulating pairs to display in the next table page
 	 */
-	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
 		int totalJobPairs = Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId,stageNumber);
 
@@ -783,8 +782,7 @@ public class RESTHelpers {
 	    															
 	    			jobSpaceId,
 	    			stageNumber,
-	    			wallclock,
-	    			jobId
+	    			wallclock
 			);
 			
 		} else {
@@ -991,7 +989,7 @@ public class RESTHelpers {
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock, int stageNumber) {
+			int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock, int stageNumber) {
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
 				Primitive.JOB_PAIR, request);
 		if (null == attrMap) {
@@ -1027,7 +1025,6 @@ public class RESTHelpers {
 																			// ASC)
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
-						jobId, // Parent space id
 						jobSpaceId, configId,type,wallclock,stageNumber);
 		
 		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber);

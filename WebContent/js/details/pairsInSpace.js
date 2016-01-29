@@ -128,7 +128,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock+"/"+getSelectedStage(),
+			sSource + "pairs/pagination/"+spaceId+"/"+configId+"/"+curType+"/"+useWallclock+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

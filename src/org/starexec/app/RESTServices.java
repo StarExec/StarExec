@@ -606,12 +606,14 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
+	@Path("/jobs/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
 	@Produces("application/json")	
-	public String getJobPairsInSpaceHierarchyByConfigPaginated(@PathParam("id") int jobId,@PathParam("stageNumber") int stageNumber, @PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+	public String getJobPairsInSpaceHierarchyByConfigPaginated(@PathParam("stageNumber") int stageNumber,
+			@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,
+			@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -620,7 +622,7 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type,wallclock,stageNumber);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobSpaceId,configId, request,type,wallclock,stageNumber);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -781,18 +783,18 @@ public class RESTServices {
 	 */
 
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
+	@Path("/jobs/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("stageNumber") int stageNumber,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("stageNumber") int stageNumber,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status = JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status = JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock,syncResults,stageNumber);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,syncResults,stageNumber);
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {

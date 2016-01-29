@@ -1659,7 +1659,6 @@ public class Jobs {
 	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
 	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
 	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
-	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The job space that contains the job pairs
 	 * @param configId The ID of the configuration responsible for the job pairs
 	 * @param totals A size 2 int array that, upon return, will contain in the first slot the total number
@@ -1671,9 +1670,9 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
-			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId, String type, boolean wallclock, int stageNumber) {
+			int indexOfColumnSortedBy, String searchQuery,int jobSpaceId, int configId, String type, boolean wallclock, int stageNumber) {
 		
-		return Jobs.getJobPairsForTableInJobSpaceHierarchy(jobId, jobSpaceId, startingRecord, recordsPerPage, isSortedASC, searchQuery, indexOfColumnSortedBy, configId, stageNumber, type);
+		return Jobs.getJobPairsForTableInJobSpaceHierarchy(jobSpaceId, startingRecord, recordsPerPage, isSortedASC, searchQuery, indexOfColumnSortedBy, configId, stageNumber, type);
 		
 		//return getJobPairsForNextPage(pairs,startingRecord,recordsPerPage,isSortedASC,indexOfColumnSortedBy,searchQuery,type,wallclock,stageNumber,totals);
 	}
@@ -1792,7 +1791,6 @@ public class Jobs {
 	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
 	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
 	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param jobId the id of the Job to get the Job Pairs of
 	 * @return a list of 10, 25, 50, or 100 Job Pairs containing the minimal amount of data necessary
 	 * @param jobSpaceId The ID of the job space containing the pairs in question
 	 * @param stageNumber The stage number to get data for
@@ -1800,13 +1798,14 @@ public class Jobs {
 	 * @author Todd Elvers
 	 */
 	
-	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock,int jobId) {
+	public static List<JobPair> getJobPairsForNextPageInJobSpace(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int stageNumber,boolean wallclock) {
 		Connection con = null;	
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		if (searchQuery==null) {
 			searchQuery="";
 		}
+		int jobId = Spaces.getJobSpace(jobSpaceId).getId();
 		try {
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getJobPairOrderColumn(indexOfColumnSortedBy,wallclock), isSortedASC);
 			con = Common.getConnection();
@@ -2143,7 +2142,6 @@ public class Jobs {
 	/**
 	 * Gets all the job pairs necessary to view in a datatable for a job space. All job pairs returned
 	 * use the given configuration in the given stage
-	 * @param jobId The id of the job in question
 	 * @param jobSpaceId The id of the job_space id in question
 	 * @param startingRecord The index of the first record to retrieve
 	 * @param recordsPerPage  The number of records to get
@@ -2156,7 +2154,7 @@ public class Jobs {
 	 * @return The job pairs to use in the next page of the table
 	 */
 
-	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobId,int jobSpaceId,int startingRecord,int recordsPerPage,
+	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobSpaceId,int startingRecord,int recordsPerPage,
 			boolean isSortedASC, String searchQuery, int indexOfColumnSortedBy,int configId, int stageNumber,String type) {
 		final String method = "getJobPairsForTableInJobSpaceHierarchy";
 		logUtil.entry(method);
@@ -2166,9 +2164,11 @@ public class Jobs {
 		if (searchQuery==null) {
 			searchQuery="";
 		}
+		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
 		try {
 			
 			con = Common.getConnection();
+			
 			if (indexOfColumnSortedBy == 7) {
 				isSortedASC = !isSortedASC;
 			}

@@ -1229,7 +1229,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		aoData.push( { "name": "sort_dir", "value":isASC() } );
 	}
 	$.post(  
-			sSource + jobId + "/pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),
+			sSource + "pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request
