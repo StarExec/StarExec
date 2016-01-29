@@ -47,13 +47,13 @@
 				int wallclock=j.getWallclockTimeout();
 				int cpu=j.getCpuTimeout();
 				long memory=j.getMaxMemory();
-				JobSpace s=Spaces.getJobSpace(jobSpaceId);
+				JobSpace jobSpace=Spaces.getJobSpace(jobSpaceId);
 
 				User u=Users.get(j.getUserId());
 
 				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId);
 				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
-				jobSpaces.add(s);
+				jobSpaces.add(jobSpace);
 				request.setAttribute("jobSpaces", jobSpaces);
 				Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
 				request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
@@ -74,7 +74,7 @@
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
-				request.setAttribute("jobspace",s);
+				request.setAttribute("jobspace",jobSpace);
 				request.setAttribute("isPaused", isPaused);
 				request.setAttribute("isAdminPaused", isAdminPaused);
 				request.setAttribute("isKilled", isKilled);
@@ -96,7 +96,7 @@
 				request.setAttribute("seed",j.getSeed());
 				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
 
-				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId, 1);
+				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, 1);
 				request.setAttribute("solverTableStats", solverTableStats);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
