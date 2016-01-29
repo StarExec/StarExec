@@ -2316,11 +2316,7 @@ public class Jobs {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null;
-		
-		
-		
-		//return getJobsForNextPage(startingRecord,recordsPerPage, isSortedASC, indexOfColumnSortedBy, searchQuery, userId,"GetNextPageOfUserJobs");
+		return null;		
 	}
 	
 	/**
