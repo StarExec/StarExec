@@ -9,9 +9,11 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
@@ -45,9 +47,9 @@ public class JobSecurity {
 	 * @return A ValidatorStatusCode that will have true if the operation is allowed
 	 * and false otherwise
 	 */
-	//TODO: This needs to be filled in
 	public static ValidatorStatusCode canUserSeeJobSpace(int jobSpaceId, int userId) {
-		return new ValidatorStatusCode(false);
+		JobSpace s = Spaces.getJobSpace(jobSpaceId);
+		return canUserSeeJob(s.getJobId(), userId);
 	}
 	
 	/**

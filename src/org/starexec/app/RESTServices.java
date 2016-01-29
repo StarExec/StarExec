@@ -597,7 +597,6 @@ public class RESTServices {
 	/**
 	 * Returns the next page of entries for a job pairs table. This is used on the pairsInSpace page
 	 *
-	 * @param jobId the id of the job to get the next page of job pairs for
 	 * @param jobspaceid The id of the job space at the root if the hierarchy we want pairs for
 	 * @param type The type of pairs to return
 	 * @param request the object containing the DataTable information
@@ -938,7 +937,6 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
-		//TODO: This needs to be fixed
 		ValidatorStatusCode status= JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
