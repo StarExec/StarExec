@@ -35,12 +35,8 @@ public class R {
 	public static String getJobInboxDir() {
 		return STAREXEC_DATA_DIR + "/jobin";
 	}
-
-	public static String getJobOutputDir() {
-		return STAREXEC_DATA_DIR + "/jobout";
-	}
-
-	public static String getNewJobOutputDirectory() {
+	
+	public static String getJobOutputDirectory() {
 		return STAREXEC_DATA_DIR + "/joboutput";
 	}
 
@@ -58,7 +54,7 @@ public class R {
 	}
 
 	public static String getJobLogDir() {
-		return getNewJobOutputDirectory()+"/logs";
+		return getJobOutputDirectory()+"/logs";
 	}
 
 	public static String getBatchSpaceXMLDir() {

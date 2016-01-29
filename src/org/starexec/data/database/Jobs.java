@@ -1204,7 +1204,7 @@ public class Jobs {
 	
 	public static String getDirectory(int jobId) {
 		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file=new File(R.getNewJobOutputDirectory(),String.valueOf(jobId));
+		File file=new File(R.getJobOutputDirectory(),String.valueOf(jobId));
 		return file.getAbsolutePath();
 	}
 	

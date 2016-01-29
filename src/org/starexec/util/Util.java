@@ -367,8 +367,6 @@ public class Util {
 	file.mkdir();
 	file=new File(R.getJobLogDir());
 	file.mkdir();
-	file=new File(R.getJobOutputDir());
-	file.mkdir();
 	file=new File(R.getBenchmarkPath());
 	file.mkdir();
 	file=new File(R.getSolverPath());
@@ -377,7 +375,7 @@ public class Util {
 	file.mkdir();
 	file=new File(R.getProcessorDir());
 	file.mkdir();
-	file=new File(R.getNewJobOutputDirectory());
+	file=new File(R.getJobOutputDirectory());
 	file.mkdir();
 	file=new File(R.getPicturePath());
 	file.mkdir();

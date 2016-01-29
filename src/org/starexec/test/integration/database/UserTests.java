@@ -342,7 +342,7 @@ public class UserTests extends TestSequence {
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertNotNull(tempJob);	
 
-		File jobDirectory = new File(R.getNewJobOutputDirectory() +"/"+ tempJob.getId());
+		File jobDirectory = new File(R.getJobOutputDirectory() +"/"+ tempJob.getId());
 		// Make the job directory since ResourceLoader isn't actually running the job.
 		jobDirectory.mkdir();
 
