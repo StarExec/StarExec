@@ -460,16 +460,18 @@ public class Queues {
 	
 	private static String getPairOrderColumnForClusterPage(int indexOrder) {
 		if (indexOrder==0) {
-			return "jobs.name";
+			return "queuesub_time";
 		} else if (indexOrder==1) {
-			return "users.first_name, users.last_name";
+			return "jobs.name";
 		} else if (indexOrder==2) {
-			return "bench_name";
+			return "users.first_name, users.last_name";
 		} else if (indexOrder==3) {
-			return "solver_name";
+			return "bench_name";
 		} else if (indexOrder==4) {
-			return "config_name";
+			return "solver_name";
 		} else if (indexOrder==5) {
+			return "config_name";
+		} else if (indexOrder==6) {
 			return "path";
 		}
 		
@@ -521,7 +523,7 @@ public class Queues {
 				jp.setPath(results.getString("job_pairs.path"));
 				jp.setJobId(results.getInt("job_pairs.job_id"));
 				jp.setId(results.getInt("job_pairs.id"));
-
+				jp.setQueueSubmitTime(results.getTimestamp("job_pairs.queuesub_time"));
 				Status stat = new Status();
 				//enqueued by definition, so we don't want to retrieve extra data from the db
 				stat.setCode(StatusCode.STATUS_ENQUEUED);

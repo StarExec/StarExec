@@ -1637,17 +1637,16 @@ public class RESTHelpers {
     		sb.append(j.getPrimarySolver().getConfigurations().get(0).getName());
     		RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
-			
-			String path = j.getPath();
-			
+						
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(j.getQueueSubmitTimeSafe().toString()));
     		entry.add(new JsonPrimitive(jobLink));
     		entry.add(new JsonPrimitive(userLink));
     		entry.add(new JsonPrimitive(benchLink));
     		entry.add(new JsonPrimitive(solverLink));
     		entry.add(new JsonPrimitive(configLink));
-    		entry.add(new JsonPrimitive(path));
+    		entry.add(new JsonPrimitive(j.getPath()));
     		dataTablePageEntries.add(entry);
     	}
 		

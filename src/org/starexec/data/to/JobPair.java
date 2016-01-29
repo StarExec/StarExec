@@ -179,9 +179,20 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * @return the time the pair was submitted to the sge queue
+	 * @return the time the pair was submitted to the queue
 	 */
 	public Timestamp getQueueSubmitTime() {
+		return queueSubmitTime;
+	}
+	
+	/**
+	 * @return the time the pair was submitted to the queue.
+	 * If the internal value is null, returns the current time
+	 */
+	public Timestamp getQueueSubmitTimeSafe() {
+		if (queueSubmitTime==null) {
+			return new Timestamp(System.currentTimeMillis());
+		}
 		return queueSubmitTime;
 	}
 
