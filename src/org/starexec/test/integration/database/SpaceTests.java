@@ -170,8 +170,6 @@ public class SpaceTests extends TestSequence {
 				}
 			}
 		}
-
-		Spaces.removeSubspace(subspace3.getId());
 	}
 
 	private static void assertSpacesAreCopies(Space space, Space otherSpace) {
