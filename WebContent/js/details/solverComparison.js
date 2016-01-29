@@ -82,7 +82,7 @@ function extendDataTableFunctions(){
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(  
-			sSource + jobId + "/comparisons/pagination/"+spaceId+"/"+c1+"/"+c2+"/"+useWallclock,
+			sSource +"comparisons/pagination/"+spaceId+"/"+c1+"/"+c2+"/"+useWallclock,
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

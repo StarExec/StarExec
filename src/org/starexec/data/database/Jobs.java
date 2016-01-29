@@ -872,8 +872,8 @@ public class Jobs {
 	 * @param jobSpaceId The ID of the job space we are getting stats for
 	 */
 
-	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(int jobId,int jobSpaceId, int stageNumber) {
-		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(jobSpaceId,stageNumber);
+	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber) {
+		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(space.getId(),stageNumber);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
@@ -881,21 +881,21 @@ public class Jobs {
 			return stats;
 		}
 		//we will cache the stats only if the job is complete
-		boolean isJobComplete=Jobs.isJobComplete(jobId);
+		boolean isJobComplete=Jobs.isJobComplete(space.getJobId());
 
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(jobSpaceId);
+		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(space.getId());
 		
 		
 		//compiles pairs into solver stats
 		List<SolverStats> newStats=processPairsToSolverStats(pairs);
 		for (SolverStats s : newStats) {
-			s.setJobSpaceId(jobSpaceId);
+			s.setJobSpaceId(space.getId());
 		}
 		//caches the job stats so we do not need to compute them again in the future
 		if (isJobComplete) {
-			saveStats(jobId,newStats);
+			saveStats(space.getJobId(),newStats);
 		}
 		
 		//next, we simply filter down the stats to the ones for the given stage.
@@ -930,23 +930,15 @@ public class Jobs {
 	 * @param stageNumber The stage to filter solver stats by
 	 * @author Albert Giegerich
 	 */
-	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMap( Job job, int stageNumber ) {
-		int jobId = job.getId();
+	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMap(Job job, int stageNumber ) {
 		int primaryJobSpaceId = job.getPrimarySpace();
 		Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = new HashMap<>();
 		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(primaryJobSpaceId, true);
 		jobSpaces.add(Spaces.getJobSpace(primaryJobSpaceId));
 		for (JobSpace jobspace : jobSpaces) {
 			int jobspaceId = jobspace.getId();
-			List<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobId, jobspaceId, stageNumber);
+			List<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber);
 			jobSpaceIdToSolverStatsMap.put(jobspaceId, stats);
-
-			/*
-			int jobspaceId = jobspace.getId();
-			List<JobPair> jobPairsInJobSpace = jobSpaceIdToPairMap.get(jobspaceId);
-			List<SolverStats> solverStatsForJobPairsInJobSpace = processPairsToSolverStats(jobPairsInJobSpace);
-			jobSpaceIdToSolverStatsMap.put(jobspaceId, solverStatsForJobPairsInJobSpace);
-			*/
 		}
 		return jobSpaceIdToSolverStatsMap;
 	}
@@ -1512,7 +1504,6 @@ public class Jobs {
 	 * @param isSortedASC Whether to sort ASC (true) or DESC (false)
 	 * @param indexOfColumnSortedBy The column of the datatable to sort on 
 	 * @param searchQuery A search query to match against the pair's solver, config, or benchmark
-	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The ID of the root job space of the job space hierarchy to get data for
 	 * @param configId1 The ID of the first configuration of the comparision 
 	 * @param configId2 The ID of the second configuraiton of the comparison
@@ -1524,7 +1515,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(int startingRecord, int recordsPerPage, boolean isSortedASC, 
-			int indexOfColumnSortedBy, String searchQuery, int jobId, int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock, int stageNumber) {
+			int indexOfColumnSortedBy, String searchQuery, int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock, int stageNumber) {
 		List<JobPair> pairs=Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);
 		List<JobPair> pairs1=new ArrayList<JobPair>();
 		List<JobPair> pairs2=new ArrayList<JobPair>();

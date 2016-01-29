@@ -77,7 +77,7 @@ function getFinishedJobPairsFromServer(done, dataTable) {
 		return;
 	} else {
 		$.get(
-			starexecRoot+'services/matrix/finished/'+jobId+'/'+jobSpaceId+'/'+stageNumber,
+			starexecRoot+'services/matrix/finished/'+jobSpaceId+'/'+stageNumber,
 			'',
 			function(data) {
 				log(data);

@@ -628,10 +628,16 @@ public class RESTServices {
 	}
 
 	@GET
-	@Path("/matrix/finished/{jobId}/{jobSpaceId}/{stageId}")
+	@Path("/matrix/finished/{jobSpaceId}/{stageId}")
 	@Produces("application/json")
-	public String getFinishedJobPairsForMatrix(@PathParam("jobId") int jobId, @PathParam("jobSpaceId") int jobSpaceId, 
+	public String getFinishedJobPairsForMatrix(@PathParam("jobSpaceId") int jobSpaceId, 
 											   @PathParam("stageId") int stageId, @Context HttpServletRequest request) {
+		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
+		int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode valid =JobSecurity.canUserSeeJob(jobId, userId);
+		if (!valid.isSuccess()) {
+			return gson.toJson(valid);
+		}
 		final String method = "getFinishedJobPairsForMatrix";
 		logUtil.entry(method);
 		logUtil.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageId);
@@ -753,18 +759,18 @@ public class RESTServices {
 	}
 
 	@POST
-	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
+	@Path("/jobs/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
 	@Produces("application/json")	
-	public String getSolverComparisonsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+	public String getSolverComparisonsPaginated(@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		int stageNumber=0;
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock,stageNumber);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobSpaceId,config1,config2, request,wallclock,stageNumber);
 		log.debug("got the next data table page for the solver comparision web page ");
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -811,14 +817,15 @@ public class RESTServices {
 	 */
 	
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
-	@Produces("application/json")	
-	public String getSpaceOverviewGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+	@Path("/jobs/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
+	@Produces("application/json")
+	//TODO: Remove usage of 'big' attribute
+	public String getSpaceOverviewGraph(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		log.debug("Got request to get space overview graph.");
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -977,19 +984,20 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
+	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(space.getJobId(), userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId,stageNumber);
+		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(space,stageNumber);
 
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,shortFormat,wallclock);
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,space,shortFormat,wallclock);
 
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		

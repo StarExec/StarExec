@@ -810,7 +810,7 @@ function updateSpaceOverviewGraph() {
 	}
 	
 	$.post(
-			starexecRoot+"services/jobs/" + jobId + "/" + curSpaceId+"/graphs/spaceOverview/"+getSelectedStage(),
+			starexecRoot+"services/jobs/" + curSpaceId+"/graphs/spaceOverview/"+getSelectedStage(),
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);

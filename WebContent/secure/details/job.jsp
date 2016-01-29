@@ -51,8 +51,6 @@
 
 				User u=Users.get(j.getUserId());
 
-
-				//String jobSpaceTreeJson = RESTHelpers.getJobSpacesJson(0, j.getId(), true, userId);
 				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId);
 				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
 				jobSpaces.add(s);
@@ -60,10 +58,10 @@
 				Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
 				request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
 				Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
-					RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(j.getId(), jobSpaces, 1, false);
+					RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
 				request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
 				Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
-						RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(j.getId(), jobSpaces, 1, true);
+						RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
 				request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
 
 				Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
