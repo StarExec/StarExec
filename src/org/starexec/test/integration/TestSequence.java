@@ -163,7 +163,7 @@ public abstract class TestSequence {
 				double a=System.currentTimeMillis();
 				try {
 					m.setAccessible(true);
-					m.invoke(this, null);
+					m.invoke(this, (Object[])null);
 					t.getStatus().setCode(TestStatus.TestStatusCode.STATUS_SUCCESS.getVal());
 					t.setTime(System.currentTimeMillis()-a);
 					t.addMessage("test executed without errors");
