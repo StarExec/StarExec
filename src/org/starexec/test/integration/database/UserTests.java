@@ -220,7 +220,7 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesUsersSolverDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
-		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId());
 		File tempUsersSolverDirectory = new File(R.getSolverPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersSolverDirectory.exists());
 
