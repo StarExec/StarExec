@@ -24,6 +24,10 @@ public class UserSecurity {
 		if (!(visitingUserIsOwner || visitingUserHasAdminPrivileges)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a website here.");
 		}
+		if (Users.isPublicUser(visitingUserId)) {
+			return new ValidatorStatusCode(false, "The guest user profile cannot be updated");
+		}
+		
 		
 		if (!Validator.isValidWebsiteName(name)) {
 			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the correct format");
@@ -42,6 +46,9 @@ public class UserSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canDeleteWebsite(int userId,int websiteId){
+		if (Users.isPublicUser(userId)) {
+			return new ValidatorStatusCode(false, "The guest user profile cannot be updated");
+		}
 		
 		List<Website> websites=Websites.getAll(userId,WebsiteType.USER);
 		boolean websiteInSpace=false;
@@ -89,6 +96,9 @@ public class UserSecurity {
 		
 		if (userIdBeingUpdated!=userIdCallingUpdate && !admin) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+		if (Users.isPublicUser(userIdCallingUpdate)) {
+			return new ValidatorStatusCode(false, "The guest user profile cannot be updated");
 		}
 		
 		if (attribute.equals("firstname") || attribute.equals("lastname")) {

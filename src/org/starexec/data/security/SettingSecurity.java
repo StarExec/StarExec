@@ -18,7 +18,7 @@ public class SettingSecurity {
 	public static boolean canUserAddOrSeeProfile(int userIdOfOwner, int userIdOfCaller) {
 		boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
 		boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
-		if ( !(callerIsOwner || callerIsAdmin) ) {
+		if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 			return false;
 		} 
 		return true;
@@ -53,6 +53,9 @@ public class SettingSecurity {
 		if (d.getType()==SettingType.USER) {
 			if (d.getPrimId()!=userId && !Users.isAdmin(userId)) {
 				return new ValidatorStatusCode(false, "You may not update default setting profiles of other users");
+			}
+			if (Users.isPublicUser(userId)) {
+				return new ValidatorStatusCode(false, "Settings for guests cannot be updated");
 			}
 		} else {
 			Permission perm = Permissions.get(userId, d.getPrimId());		

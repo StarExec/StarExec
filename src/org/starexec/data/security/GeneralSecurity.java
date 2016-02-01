@@ -141,6 +141,9 @@ public class GeneralSecurity {
 		if ( !(userIsChangingOwnPassword || userIsAdmin) ) {
 			return new ValidatorStatusCode(false, "You do not have permission to change this user's password.");
 		}
+		if (Users.isPublicUser(userIdMakingRequest)) {
+			return new ValidatorStatusCode(false, "Passwords for guests cannot be changed");
+		}
 		String hashedPass = Hash.hashPassword(oldPass);
 		String databasePass = Users.getPassword(userId);
 		if (!hashedPass.equals(databasePass)) {

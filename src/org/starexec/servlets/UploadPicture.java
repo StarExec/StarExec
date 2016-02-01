@@ -69,13 +69,10 @@ public class UploadPicture extends HttpServlet {
 
 			boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
 			boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
-			if ( !(callerIsOwner || callerIsAdmin) ) {
+			if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You cannot change this user's picture.");
 				return;
 			}
-
-
-
 			
 			ValidatorStatusCode status=this.isRequestValid(form);
 			// If the request is valid
