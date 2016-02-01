@@ -1179,7 +1179,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	}
 	var outSpaceId=curSpaceId;
 	$.post(  
-			sSource + jobId+"/solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage(),
+			sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage(),
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
