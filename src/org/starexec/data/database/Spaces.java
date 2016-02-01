@@ -1799,6 +1799,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
 				s.setMaxStages(results.getInt("max_stages"));
+				s.setJobId(results.getInt("job_id"));
 				subSpaces.add(s);
 			}
 			
