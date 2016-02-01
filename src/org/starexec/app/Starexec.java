@@ -110,7 +110,6 @@ public class Starexec implements ServletContextListener {
 
 		}
 		
-
 		System.setProperty("http.proxyHost",R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort",R.HTTP_PROXY_PORT);
 
@@ -276,6 +275,21 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 		
+		//TODO: Delete once the backfill is complete
+		final Runnable backfillJobIdColumn = new RobustRunnable("backfillJobIdColumn") {
+			@Override
+			protected void dorun() {
+				try {
+					log.info("running backfill of job_id in job_spaces table");
+					Jobs.setJobIdForAllJobSpaces();				
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		};
+		
+		
+		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
 		
@@ -287,7 +301,6 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
-
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 
 		    // checks every day if reports need to be sent 
@@ -296,6 +309,9 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
 		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
+		    
+		    //TODO: This is a one-time task: it can be removed after a deploy to Starexec
+		    taskScheduler.schedule(backfillJobIdColumn, 0, TimeUnit.SECONDS);
 		}
 		try {
 			PaginationQueries.loadPaginationQueries();
@@ -304,8 +320,7 @@ public class Starexec implements ServletContextListener {
 			log.error("unable to correctly load pagination queries");
 			log.error(e.getMessage(),e);
 		}
-		//TODO: Delete once the backfill is complete
-		Jobs.setJobIdForAllJobSpaces();
+		
 	}
 	
 }
