@@ -315,7 +315,7 @@ CREATE TABLE job_pairs (
 	bench_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
-	queuesub_time TIMESTAMP DEFAULT 0,
+	queuesub_time TIMESTAMP(3) DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
 	exit_status INT,

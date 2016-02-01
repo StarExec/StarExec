@@ -67,6 +67,7 @@ public class UserTests extends TestSequence {
 		String randomPass=TestUtil.getRandomPassword();
 		Assert.assertTrue(Users.updatePassword(user1.getId(), randomPass));
 		Assert.assertEquals(Hash.hashPassword(randomPass), Users.getPassword(user1.getId()));
+		user1.setPassword(randomPass);
 	}
 	
 	@StarexecTest
