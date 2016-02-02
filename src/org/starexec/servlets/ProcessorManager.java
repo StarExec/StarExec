@@ -7,7 +7,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -61,7 +60,6 @@ public class ProcessorManager extends HttpServlet {
 	private static final String ADD_ACTION = "add";
 	
 	private static final String PROCESSOR_TYPE = "type";
-	private static final String BENCH_TYPE = "bench";
 	private static final String PRE_PROCESS_TYPE = "pre";
 	private static final String POST_PROCESS_TYPE = "post";
         private static final String UPDATE_PROCESS_TYPE = "update";
@@ -155,31 +153,7 @@ public class ProcessorManager extends HttpServlet {
 			}
 		}
 	}
-	
-	/**
-	 * Sets all processors that are in the proper new format to executable
-	 */
-	public static void setAllProcessorsExecutable() {
-		ProcessorType[] types={ProcessorType.BENCH, ProcessorType.POST, ProcessorType.PRE, ProcessorType.DEFAULT};
-		for (ProcessorType type : types) {
-			List<Processor> procs=Processors.getAll(type);
-			for (Processor p : procs) {
-				try {
-					setAllFilesExecutable(new File(p.getFilePath()));
-					//File exec=new File(p.getExecutablePath());
-					//if (!exec.setExecutable(true, false)) {			
-					//	log.warn("Could not set processor as executable: " + exec.getAbsolutePath());
-					//}
-				} catch (Exception e) {
-					log.error("error setting processor executable id = "+p.getId());
-					log.error(e.getMessage(),e);
-				}
-				
-				
-				
-			}
-		}
-	}
+
 	
 	/**
 	 * Parses through form items and builds a new Processor object from it. Then it is
@@ -206,12 +180,7 @@ public class ProcessorManager extends HttpServlet {
 			File archiveFile=null;
 
 			URL processorUrl = null;
-			String processorName = null;
 
-			if (uploadMethod == null) {
-				// TODO modify StarExecCommand so it specifies an upload method.
-				uploadMethod = LOCAL_UPLOAD_METHOD;
-			}
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				// Save the uploaded file to disk
 				PartWrapper processorFile = (PartWrapper)form.get(PROCESSOR_FILE);
@@ -271,7 +240,7 @@ public class ProcessorManager extends HttpServlet {
 			return ProcessorType.POST;
 		} else if (type.equals(PRE_PROCESS_TYPE)) {
 			 return ProcessorType.PRE;
-		} else if(type.equals(BENCH_TYPE)) {
+		} else if(type.equals(R.BENCHMARK)) {
 			return ProcessorType.BENCH;
 		} else if(type.equals(UPDATE_PROCESS_TYPE)) {
 		    return ProcessorType.UPDATE;
@@ -287,7 +256,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
 	public static File getProcessorDirectory(int communityId, String procName) {
-		File uniqueDir = new File(R.PROCESSOR_DIR, "" + communityId);
+		File uniqueDir = new File(R.getProcessorDir(), "" + communityId);
 		//use the date to make sure the directory is unique
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		uniqueDir = new File(uniqueDir, procName);
@@ -315,10 +284,7 @@ public class ProcessorManager extends HttpServlet {
 
 			boolean goodExtension=false;
 			String fileName = null;
-			if (uploadMethod == null) {
-				// TODO modify StarExecCommand so that it specifies an upload method
-				uploadMethod = LOCAL_UPLOAD_METHOD;
-			}
+			
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				fileName = ((PartWrapper)form.get(PROCESSOR_FILE)).getName();
 			} else {
@@ -344,7 +310,7 @@ public class ProcessorManager extends HttpServlet {
 				return new ValidatorStatusCode(false,"The supplied description is invalid-- please refer to the help files to see the correct format");
 			}
 			
-			if(!Validator.isValidInteger((String)form.get(OWNING_COMMUNITY))) {
+			if(!Validator.isValidPosInteger((String)form.get(OWNING_COMMUNITY))) {
 
 				return new ValidatorStatusCode(false,"The given community ID is not a valid integer");
 			}
@@ -352,7 +318,7 @@ public class ProcessorManager extends HttpServlet {
 			String procType = (String)form.get(PROCESSOR_TYPE);
 			if(procType==null || !procType.equals(POST_PROCESS_TYPE) && 
 			   !procType.equals(PRE_PROCESS_TYPE) && 
-			   !procType.equals(BENCH_TYPE) && !procType.equals(UPDATE_PROCESS_TYPE)) {
+			   !procType.equals(R.BENCHMARK) && !procType.equals(UPDATE_PROCESS_TYPE)) {
 
 				return new ValidatorStatusCode(false,"The given processor type is invalid");
 			}

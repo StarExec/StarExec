@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.ArrayList, java.util.List, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.Map, java.util.ArrayList, java.util.List, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -47,17 +47,34 @@
 				int wallclock=j.getWallclockTimeout();
 				int cpu=j.getCpuTimeout();
 				long memory=j.getMaxMemory();
-				JobSpace s=Spaces.getJobSpace(jobSpaceId);
+				JobSpace jobSpace=Spaces.getJobSpace(jobSpaceId);
+
 				User u=Users.get(j.getUserId());
 
-				String jobSpaceTreeJson = RESTHelpers.getJobSpacesJson(jobSpaceId,j.getId(), true, userId);
-				//List<JobSpace> subspaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
-				
+				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId);
+				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
+				jobSpaces.add(jobSpace);
+				request.setAttribute("jobSpaces", jobSpaces);
+				Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
+				request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
+				Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
+					RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
+				request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
+				Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
+						RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
+				request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
+
+				Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
+				request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
+				Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
+						Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
+
+				request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
-				request.setAttribute("jobspace",s);
+				request.setAttribute("jobspace",jobSpace);
 				request.setAttribute("isPaused", isPaused);
 				request.setAttribute("isAdminPaused", isAdminPaused);
 				request.setAttribute("isKilled", isKilled);
@@ -77,8 +94,9 @@
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
+				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
 
-				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId, 1);
+				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, 1);
 				request.setAttribute("solverTableStats", solverTableStats);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -103,9 +121,19 @@
 	<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
+	<span style="display:none" id="starexecUrl" value="${starexecUrl}"></span>
 	<c:if test="${isLocalJobPage}">
 		<span style="display:none" id="isLocalJobPage" value="${isLocalJobPage}"></span>
-		<span style="display:none" id="jobSpaceTreeJson" value="${jobSpaceTreeJson}"></span>
+		<span style="display:none" id="jobSpaceTreeJson" value='${jobSpaceTreeJson}'></span>
+		<c:forEach var="jsIdKey" items="${jobSpaceIdToSubspaceJsonMap.keySet()}">
+			<span style='display:none' id='subspacePanelJson${jsIdKey}' value='${jobSpaceIdToSubspaceJsonMap.get(jsIdKey)}'></span>
+		</c:forEach>
+		<c:forEach var="jsIdKey" items="${jobSpaceIdToCpuTimeSolverStatsJsonMap.keySet()}">
+			<span style='display:none' id='jobSpaceCpuTimeSolverStats${jsIdKey}' value='${jobSpaceIdToCpuTimeSolverStatsJsonMap.get(jsIdKey)}'></span>
+		</c:forEach>
+		<c:forEach var="jsIdKey" items="${jobSpaceIdToWallclockTimeSolverStatsJsonMap.keySet()}">
+			<span style='display:none' id='jobSpaceWallclockTimeSolverStats${jsIdKey}' value='${jobSpaceIdToWallclockTimeSolverStatsJsonMap.get(jsIdKey)}'></span>
+		</c:forEach>
 	</c:if>
 	
 	<div id="explorer" class="jobDetails">
@@ -118,13 +146,13 @@
 			<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
 			
 			<button id="matrixViewButton" type="button">Matrix View</button>
-			<button id="downloadJobPageButton" type="button" style="display:none">Download Job Page</button>
+				
 			
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
 			</fieldset>
-						 
+					 
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
 				<fieldset id="panelActions" class="tableActions">
@@ -138,94 +166,118 @@
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 								<option value="${i}">${i}</option>
 							</c:forEach>
-							
 						</select> 
 				</fieldset>
 			</fieldset>
 			
 			<fieldset id="solverSummaryField">
-			<legend>solver summary</legend>
-			<fieldset id="statActions" class="tableActions">
-				<button class="changeTime">Use CPU Time</button>
-				<label class="stageSelectorLabel" for="solverSummaryStageSelector">Stage: </label>
-				<select id="solverSummaryStageSelector" class="stageSelector">
+				<legend>solver summary</legend>
+				<fieldset id="statActions" class="tableActions">
+					<button class="changeTime">Use CPU Time</button>
+					<label class="stageSelectorLabel" for="solverSummaryStageSelector">Stage: </label>
+					<select id="solverSummaryStageSelector" class="stageSelector">
 						<option value="0">Primary</option>
-							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
-								<option value="${i}">${i}</option>
-							</c:forEach>	
-							
-				</select> 
-				<button id="compareSolvers">compare selected solvers</button>
-				
-			</fieldset>
-				<table id="solveTbl" class="shaded">
-					<thead>
-						<tr>
-							<th class="solverHead">solver</th>
-							<th class="configHead">config</th>
-							<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span></th>
-							<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
-							<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
-							<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
-							
-							<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
-							<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
-							<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
-						</tr>
-					</thead>
-					<tbody>
-						<!-- This will be populated by the job pair pagination feature -->
-						<c:if test="${isLocalJobPage}">
-							<c:forEach var="stats" items="${solverTableStats}">
+						<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+							<option value="${i}">${i}</option>
+						</c:forEach>	
+					</select> 
+					<button id="compareSolvers">compare selected solvers</button>
+				</fieldset>
+				<c:choose>	
+					<c:when test="${isLocalJobPage}">
+						<c:forEach var="jobspaceIdKey" items="${jobSpaceIdToSolverStatsMap.keySet()}">
+							<table id="${jobspaceIdKey}solveTbl" class="shaded">
+								<thead>
+									<tr>
+										<th class="solverHead">solver</th>
+										<th class="configHead">config</th>
+										<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span></th>
+										<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
+										<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+										<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
+										
+										<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
+										<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
+										<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
+									</tr>
+								</thead>
+								<tbody>
+									<!-- This will be populated by the job pair pagination feature -->
+									<c:forEach var="stats" items="${jobSpaceIdToSolverStatsMap.get(jobspaceIdKey)}">
+										<tr>
+											<td>${stats.getSolver().getName()}</td>
+											<td>${stats.getConfiguration().getName()}</td>
+											<td>${stats.getCorrectOverCompleted()}</td>
+											<td>${stats.getIncorrectJobPairs()}</td>
+											<td>${stats.getResourceOutJobPairs()}</td>
+											<td>${stats.getFailedJobPairs()}</td>
+											<td>${stats.getUnknown()}</td>
+											<td>${stats.getIncompleteJobPairs()}</td>
+											<td>
+												<span class="wallclockTime">${stats.getWallTime()}</span>
+												<span class="cpuTime">${stats.getCpuTime()}</span>
+											</td>
+										</tr>
+									</c:forEach>
+								</tbody>
+							</table>
+						</c:forEach>
+					</c:when>
+					<c:otherwise>
+						<table id="solveTbl" class="shaded">
+							<thead>
 								<tr>
-									<td>${stats.getSolver().getName()}</td>
-									<td>${stats.getConfiguration().getName()}</td>
-									<td>${stats.getCorrectOverCompleted()}</td>
-									<td>${stats.getIncorrectJobPairs()}</td>
-									<td>${stats.getResourceOutJobPairs()}</td>
-									<td>${stats.getFailedJobPairs()}</td>
-									<td>${stats.getUnknown()}</td>
-									<td>${stats.getIncompleteJobPairs()}</td>
-									<td>${Math.round(js.getWallTime()*100)/100.0}</td>
+									<th class="solverHead">solver</th>
+									<th class="configHead">config</th>
+									<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span></th>
+									<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
+									<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+									<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
+									
+									<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
+									<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
+									<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
 								</tr>
-							</c:forEach>
-						</c:if>
-					</tbody>
-				</table>
+							</thead>
+							<tbody>
+								<!-- This will be populated by the job pair pagination feature -->
+							</tbody>
+						</table>
+					</c:otherwise>
+				</c:choose>
 			</fieldset>
 			
-			<fieldset id="graphField">
-			<legend>graphs</legend> 
-			<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
-				
-				<img id="solverComparison" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap" />
-				<br>
-				<fieldset id="optionField">
-				<legend>options</legend> 
-					<fieldset id="spaceOverviewOptionField">
-						<legend>space overview options</legend>
-						
-						<input type="checkbox" id="logScale"/> <span>use log scale</span>
-						 
-						<select multiple size="5" id="spaceOverviewSelections">
-						
-						</select>
-						<button id="spaceOverviewUpdate" type="button">Update</button>
+			<c:if test="${!isLocalJobPage}">
+				<fieldset id="graphField">
+					<legend>graphs</legend> 
+					<%--<img id="spaceOverview" src="" width="300" height="300" />--%>
+					<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
+					<img id="solverComparison300" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap300" />
+					<br>
+					<fieldset id="optionField">
+						<legend>options</legend> 
+						<fieldset id="spaceOverviewOptionField">
+							<legend>space overview options</legend>
+							
+							<input type="checkbox" id="logScale"/> <span>use log scale</span>
+							 
+							<select multiple size="5" id="spaceOverviewSelections">
+							
+							</select>
+							<button id="spaceOverviewUpdate" type="button">Update</button>
+						</fieldset>
+						<fieldset id="solverComparisonOptionField">
+							<legend>solver comparison options</legend>
+							<select id="solverChoice1">
+							
+							</select>
+							<select id="solverChoice2">
+							</select>
+							<button id="solverComparisonUpdate" type="button">Update</button>
+						</fieldset>
 					</fieldset>
-					<fieldset id="solverComparisonOptionField">
-						<legend>solver comparison options</legend>
-						<select id="solverChoice1">
-						
-						</select>
-						<select id="solverChoice2">
-						</select>
-						<button id="solverComparisonUpdate" type="button">Update</button>
-					</fieldset>
-					
-					
-					
 				</fieldset>
-			</fieldset>
+			</c:if>
 			<fieldset id="errorField">
 				<legend>job pairs</legend>
 				<p>There are too many job pairs in this space to display. Please navigate to a subspace with fewer pairs.</p>
@@ -234,36 +286,73 @@
 				<legend>job pairs</legend>	
 				<fieldset id="pairActions" class="tableActions">
 					<button class="changeTime">Use CPU Time</button>
-					<button title="sorts pairs by their ids, which is the order they are submitted to be run" asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
-					<button title="sorts pairs in the order they finished running" asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
-					<button title="show only job pairs that have been solved by every solver/configuration combination in this space" id="syncResults">synchronize results</button>
+					<c:if test="${!isLocalJobPage}">
+						<button title="sorts pairs by their ids, which is the order they are submitted to be run" asc="true" class="sortButton" id="idSort" value="6">sort by id</button>
+						<button title="sorts pairs in the order they finished running" asc="true" class="sortButton" id="completionSort" value="7">sort by completion order</button>
+						<button title="show only job pairs that have been solved by every solver/configuration combination in this space" id="syncResults">synchronize results</button>
+					</c:if>
 					<label class="stageSelectorLabel" for="subspaceSummaryStageSelector">Stage: </label>
-						<select id="pairTableStageSelector" class="stageSelector">
-							<option value="0">Primary</option>
-							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
-								<option value="${i}">${i}</option>
-							</c:forEach>
-							
-						</select> 
-				</fieldset>
-				<table id="pairTbl" class="shaded">
-					<thead>
-						<tr>
-							<th class="benchHead">benchmark</th>
-							<th>solver</th>
-							<th>config</th>
-							<th>status</th>
-							<th>time</th>
-							<th>result</th>	
-						</tr>		
-					</thead>	
-					<tbody>
-						<!-- This will be populated by the job pair pagination feature -->
-					</tbody>
-				</table>
+					<select id="pairTableStageSelector" class="stageSelector">
+						<option value="0">Primary</option>
+						<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+							<option value="${i}">${i}</option>
+						</c:forEach>
+						
+					</select> 
+					</fieldset>
+				<c:choose>
+					<c:when test="${isLocalJobPage}">
+						<c:forEach var="jsId" items="${jobSpaceIdToPairMap.keySet()}">
+							<table id="${jsId}pairTbl" class="shaded">
+								<thead>
+									<tr>
+										<th class="benchHead">benchmark</th>
+										<th>solver</th>
+										<th>config</th>
+										<th>status</th>
+										<th>time</th>
+										<th>result</th>	
+									</tr>		
+								</thead>	
+								<tbody>
+									<c:forEach var="pair" items="${jobSpaceIdToPairMap.get(jsId)}">
+										<tr>
+											<td>${pair.getBench().getName()}</td>
+											<td>${pair.getPrimarySolver().getName()}</td>
+											<td>${pair.getPrimaryConfiguration().getName()}</td>
+											<td>${pair.getPrimaryStage().getStatus().getStatus()} (${pair.getPrimaryStage().getStatus().getCode().getVal()})</td>
+											<td>
+												<span class="wallclockTime">${pair.getPrimaryWallclockTime()}</span>
+												<span class="cpuTime">${pair.getPrimaryCpuTime()}</span> s
+											</td>
+
+											<td>${pair.getPrimaryStage().getStarexecResult()}</td>
+										</tr>
+									</c:forEach>
+									<!-- This will be populated by the job pair pagination feature -->
+								</tbody>
+							</table>
+						</c:forEach>
+					</c:when>
+					<c:otherwise>
+						<table id="pairTbl" class="shaded">
+							<thead>
+								<tr>
+									<th class="benchHead">benchmark</th>
+									<th>solver</th>
+									<th>config</th>
+									<th>status</th>
+									<th>time</th>
+									<th>result</th>	
+								</tr>		
+							</thead>	
+							<tbody>
+								<!-- This will be populated by the job pair pagination feature -->
+							</tbody>
+						</table>
+					</c:otherwise>
+				</c:choose>
 			</fieldset>
-		
-			
 			<fieldset id="detailField">
 				<legend>job overview</legend>
 				<table id="detailTbl" class="shaded">
@@ -275,7 +364,7 @@
 					</thead>
 					<tbody>
 						<tr title="the job's name">
-							<td>name (click to edit)</td>
+							<td id="jobNameTitle">name (click to edit)</td>
 							<td id="jobName">
 								<span id="jobNameText">${job.name}</span>
 								<span id="editJobNameWrapper">
@@ -301,7 +390,7 @@
 		
 						</tr>
 						<tr title="the job creator's description for this job">
-							<td>description (click to edit)</td>			
+							<td id="jobDescriptionTitle">description (click to edit)</td>			
 							<td>
 								<span id="jobDescriptionText">${job.description}</span>
 								<span id="editJobDescriptionWrapper">
@@ -343,7 +432,12 @@
 						<tr title="the execution queue this job was submitted to">
 							<td>queue</td>	
 							<c:if test="${not empty job.queue}">
-							<td><a href="${starexecRoot}/secure/explore/cluster.jsp">${job.queue.name} <img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
+								<td>
+									<a href="${starexecRoot}/secure/explore/cluster.jsp">
+										${job.queue.name} 
+										<%-- <img class="extLink" src="${starexecRoot}/images/external.png"/> --%>
+									</a>
+								</td>
 							</c:if>
 							<c:if test="${empty job.queue}">
 							<td>unknown</td>
@@ -377,6 +471,7 @@
 					<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
 					<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 					<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
+					<li><button id="downloadJobPageButton" type="button">download job page</button></li>
 					<c:if test="${isAdmin}">
 						<li><button type="button" id="clearCache">clear cache</button></li>
 						<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
@@ -420,8 +515,8 @@
 					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
 				</div>
 				<div id="dialog-solverComparison" title="solver comparison chart">
-					<img src="" id="bigSolverComparison" usemap="#bigSolverComparisonMap"/>
-					<map id="bigSolverComparisonMap"></map>
+					<img src="" id="solverComparison800" usemap="#solverComparisonMap800"/>
+					<map id="solverComparisonMap800"></map>
 				</div>
 				<div id="dialog-warning" title="warning">
 					<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
@@ -442,10 +537,7 @@
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 								<option value="${i}">${i}</option>
 							</c:forEach>
-							
 						</select> 
-					
-					
 					</p>
 				</div>
 				<div id="dialog-changeQueue" title="change queue">

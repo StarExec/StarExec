@@ -187,8 +187,8 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId());
-		Spaces.removeSubspaces(space2.getId());
+		Spaces.removeSubspace(space.getId());
+		Spaces.removeSubspace(space2.getId());
 
 		
 		

@@ -106,7 +106,7 @@ public class WebsiteTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		Solvers.deleteAndRemoveSolver(solver.getId());
-		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspace(space.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		
 	}

@@ -2,7 +2,6 @@ package org.starexec.servlets;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -20,7 +19,6 @@ import org.starexec.data.database.Queues;
 
 
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
@@ -61,9 +59,7 @@ public class MoveNodes extends HttpServlet {
 
 	    String queueName = (String)request.getParameter(name);
 	    List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
-		
-	    HashMap<WorkerNode, Queue> NQ = new HashMap<WorkerNode, Queue>();
-		
+				
 	    log.debug("nodeIds = " + nodeIds);
 	    
 	    LinkedList<String> nodeNames = new LinkedList<String>();
@@ -71,21 +67,14 @@ public class MoveNodes extends HttpServlet {
 
 	    if (nodeIds != null) {
 		for (int id : nodeIds) {
-
-		    //TODO: don't need to make WorkerNode, can get queue by node id
-		    WorkerNode n = new WorkerNode();
-		    n.setId(id);
-		    n.setName(Cluster.getNodeNameById(id));
-		    Queue q = Cluster.getQueueForNode(n);
-		    NQ.put(n, q);
-
+		    Queue q = Cluster.getQueueForNode(id);
 		    nodeNames.add(Cluster.getNodeNameById(id));
 		    if(q == null){
-			queueNames.add(null);
+		    	queueNames.add(null);
 		    } else{
-			queueNames.add(q.getName());
-			//Need to call this in prepartion for moving the nodes
-			Queues.pauseJobsIfOneWorker(q);
+		    	queueNames.add(q.getName());
+		    	//Need to call this in prepartion for moving the nodes
+		    	Queues.pauseJobsIfOneWorker(q);
 		    }
 
 		}

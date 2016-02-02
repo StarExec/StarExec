@@ -3,6 +3,9 @@ package org.starexec.command;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 
 /**
  * This class is the entry point for StarexecCommand. It allows either the execution of an interactive shell
@@ -43,7 +46,7 @@ public class Shell {
 				MessagePrinter.printStatusMessage(status,parser);
 				MessagePrinter.printWarningMessages();
 				//if the user typed 'exit,' quit the program
-				if (status==R.SUCCESS_EXIT) {
+				if (status==C.SUCCESS_EXIT) {
 					return;
 				} 
 			}
@@ -60,9 +63,10 @@ public class Shell {
 	 * to a file to run. Any other arguments are not correct.
 	 */
 	public static void main(String[] args) {
-		
+		// log4j is not used for StarexecCommand
+		Logger.getRootLogger().setLevel(Level.OFF);
 		Shell shell=new Shell();
-		System.out.println("Last update = "+R.VERSION); // version is just the date of the last update.
+		System.out.println("Last update = "+C.VERSION); // version is just the date of the last update.
 		//if we get a single argument, it's a file we should try to run
 		if (args.length==1) {
 			shell.parser.runFile(args[0], false);

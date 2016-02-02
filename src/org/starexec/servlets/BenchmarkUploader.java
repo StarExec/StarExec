@@ -56,7 +56,7 @@ public class BenchmarkUploader extends HttpServlet {
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
 	// Request attributes
-	private static final String SPACE_ID = "space";
+	private static final String SPACE_ID = R.SPACE;
 	private static final String UPLOAD_METHOD = "upMethod";
 	private static final String BENCHMARK_FILE = "benchFile";
 	private static final String BENCHMARK_TYPE = "benchType";
@@ -124,7 +124,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @return File object representing the new directory
 	 */
 	public static File getDirectoryForBenchmarkUpload(int userId, String name) {
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		if (name!=null) {
 			uniqueDir = new File(uniqueDir, name);
@@ -361,7 +361,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 					
 		// Create a unique path the zip file will be extracted to
-		File uniqueDir = new File(R.BENCHMARK_PATH, "" + userId);
+		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
 		// Create the paths on the filesystem
 		uniqueDir.mkdirs();
@@ -438,11 +438,11 @@ public class BenchmarkUploader extends HttpServlet {
 		final String method = "isRequestValid";
 		try {			
 																
-			if (!Validator.isValidInteger((String)form.get(BENCHMARK_TYPE))) {
+			if (!Validator.isValidPosInteger((String)form.get(BENCHMARK_TYPE))) {
 				return new ValidatorStatusCode(false, "The given benchmark processor ID is not a valid integer");
 			}
 			
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			if (!Validator.isValidBool((String)form.get(BENCH_DOWNLOADABLE))) {
@@ -473,7 +473,7 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 			
 			
-			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get("space")));
+			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get(R.SPACE)));
 
 			logUtil.trace(method, "perm="+perm);
 			logUtil.trace(method, "uploadMethod="+uploadMethod);

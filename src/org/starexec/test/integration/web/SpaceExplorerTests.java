@@ -181,8 +181,8 @@ public class SpaceExplorerTests extends TestSequence {
 	protected void teardown() throws Exception {
 		driver.quit();
 
-		Spaces.removeSubspaces(space1.getId());
-		Spaces.removeSubspaces(space2.getId());
+		Spaces.removeSubspace(space1.getId());
+		Spaces.removeSubspace(space2.getId());
 
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		

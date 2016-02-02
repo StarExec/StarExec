@@ -12,69 +12,61 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.starexec.constants.R;
+import org.starexec.util.Validator;
 
-//TODO: A lot of the logic in this class can be safely checked on the backend (valid IDs, for instance).
-public class Validator {
+public class CommandValidator {
 	
 	/**which archives can we download from Starexec*/
 	public static String[] VALID_ARCHIVETYPES={"zip"};
-	
-	
-	public static Pattern patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
-	public static Pattern patternInteger = Pattern.compile(R.LONG_PATTERN);
-	public static Pattern patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternPrimName = Pattern.compile(R.PRIMITIVE_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
-	public static Pattern patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
-	public static Pattern patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
-	public static Pattern patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
+
 	
 	private static String missingParam=null;
 	private static List<String> unnecessaryParams=new ArrayList<String>();
 	
 	//the following lists specify the parameters, either required or optional, that are accepted by a certain
 	//command or set of commands
-	private static String[] allowedRemoveParams=new String[]{R.PARAM_ID,R.PARAM_FROM};
-	private static String[] allowedRemoveSubspaceParams = new String[] {R.PARAM_ID, R.PARAM_RECYCLE_PRIMS};
-	private static String[] allowedDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE};
-	private static String[] allowedDownloadSpaceXMLParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_GET_ATTRIBUTES,R.PARAM_PROCID};
+	private static String[] allowedRemoveParams=new String[]{C.PARAM_ID,C.PARAM_FROM};
+	private static String[] allowedRemoveSubspaceParams = new String[] {C.PARAM_ID, C.PARAM_RECYCLE_PRIMS};
+	private static String[] allowedDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE};
+	private static String[] allowedDownloadSpaceXMLParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_GET_ATTRIBUTES,C.PARAM_PROCID};
 
-	private static String[] allowedNewDownloadParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_SINCE};
-	private static String[] allowedDownloadSpaceParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_EXCLUDE_BENCHMARKS,R.PARAM_EXCLUDE_SOLVERS};
-	private static String[] allowedDownloadCSVParams=new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_OVERWRITE,R.PARAM_INCLUDE_IDS, R.PARAM_ONLY_COMPLETED};
-	private static String[] allowedSetUserSettingParams=new String[]{R.PARAM_VAL};
-	private static String[] allowedSetSpaceVisibilityParams=new String[]{R.PARAM_ID,R.PARAM_HIERARCHY};
-	private static String[] allowedLoginParams=new String[]{R.PARAM_USER,R.PARAM_PASSWORD,R.PARAM_BASEURL};
-	private static String[] allowedDeleteParams=new String[]{R.PARAM_ID};
-    private static String[] allowedCopyUserParams=new String[]{R.PARAM_TO,R.PARAM_ID,R.PARAM_HIERARCHY};
-	private static String[] allowedCopySpaceParams=new String[]{R.PARAM_TO,R.PARAM_ID, R.PARAM_FROM};
+	private static String[] allowedNewDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_SINCE};
+	private static String[] allowedDownloadSpaceParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_EXCLUDE_BENCHMARKS,C.PARAM_EXCLUDE_SOLVERS};
+	private static String[] allowedDownloadCSVParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_INCLUDE_IDS, C.PARAM_ONLY_COMPLETED};
+	private static String[] allowedSetUserSettingParams=new String[]{C.PARAM_VAL};
+	private static String[] allowedSetSpaceVisibilityParams=new String[]{C.PARAM_ID,C.PARAM_HIERARCHY};
+	private static String[] allowedLoginParams=new String[]{C.PARAM_USER,C.PARAM_PASSWORD,C.PARAM_BASEURL};
+	private static String[] allowedDeleteParams=new String[]{C.PARAM_ID};
+    private static String[] allowedCopyUserParams=new String[]{C.PARAM_TO,C.PARAM_ID,C.PARAM_HIERARCHY};
+	private static String[] allowedCopySpaceParams=new String[]{C.PARAM_TO,C.PARAM_ID, C.PARAM_FROM};
 
-    private static String[] allowedCopySolverParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO,R.PARAM_HIERARCHY};
-    private static String[] allowedCopyBenchmarkParams=new String[]{R.PARAM_ID,R.PARAM_FROM,R.PARAM_TO};
-	private static String[] allowedPollJobParams=new String[]{R.PARAM_OUTPUT_FILE,R.PARAM_ID,R.PARAM_TIME,R.PARAM_OVERWRITE};
-	private static String[] allowedRunFileParams=new String[]{R.PARAM_FILE,R.PARAM_VERBOSE};
-	private static String[] allowedSleepParams=new String[]{R.PARAM_TIME};
-	private static String[] allowedPauseOrResumeParams=new String[]{R.PARAM_ID};
-	private static String[] allowedRerunParams=new String[]{R.PARAM_ID};
+    private static String[] allowedCopySolverParams=new String[]{C.PARAM_ID,C.PARAM_FROM,C.PARAM_TO,C.PARAM_HIERARCHY};
+    private static String[] allowedCopyBenchmarkParams=new String[]{C.PARAM_ID,C.PARAM_FROM,C.PARAM_TO};
+	private static String[] allowedPollJobParams=new String[]{C.PARAM_OUTPUT_FILE,C.PARAM_ID,C.PARAM_TIME,C.PARAM_OVERWRITE};
+	private static String[] allowedRunFileParams=new String[]{C.PARAM_FILE,C.PARAM_VERBOSE};
+	private static String[] allowedSleepParams=new String[]{C.PARAM_TIME};
+	private static String[] allowedPauseOrResumeParams=new String[]{C.PARAM_ID};
+	private static String[] allowedRerunParams=new String[]{C.PARAM_ID};
 
-	private static String[] allowedCreateSubspaceParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,
-		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
-	private static String[] allowedCreateJobParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_WALLCLOCKTIMEOUT,
-		R.PARAM_CPUTIMEOUT,R.PARAM_QUEUEID,R.PARAM_PROCID, R.PARAM_TRAVERSAL, R.PARAM_MEMORY,R.PARAM_PAUSED, R.PARAM_SEED, R.PARAM_SUPPRESS_TIMESTAMPS};
-	private static String[] allowedUploadSolverParams=new String[]{R.PARAM_ID,R.PARAM_TYPE,R.PARAM_PREPROCID,R.PARAM_FILE,R.PARAM_URL,R.PARAM_NAME,R.PARAM_DESC,
-		R.PARAM_DESCRIPTION_FILE,R.PARAM_DOWNLOADABLE, R.PARAM_RUN, R.PARAM_SETTING};
-	private static String[] allowedUploadBenchmarksParams= new String[] {R.PARAM_ID,R.PARAM_BENCHTYPE, R.PARAM_FILE,R.PARAM_URL,
-		R.PARAM_DESC,R.PARAM_DESCRIPTION_FILE,R.PARAM_DEPENDENCY,R.PARAM_DOWNLOADABLE,R.PARAM_HIERARCHY,R.PARAM_LINKED,
-		R.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
-	private static String[] allowedUploadProcessorParams=new String[]{R.PARAM_ID,R.PARAM_NAME,R.PARAM_DESC,R.PARAM_FILE};
-	private static String[] allowedUploadConfigParams=new String[] {R.PARAM_FILE,R.PARAM_ID,R.PARAM_FILE,R.PARAM_DESC};
-    private static String[] allowedUploadXMLParams=new String[]{R.PARAM_ID,R.PARAM_FILE};
-    private static String[] allowedPrintStatusParams=new String[]{R.PARAM_ID};
-    private static String[] allowedGetPrimitiveAttributesParams=new String[]{R.PARAM_ID};
+	private static String[] allowedCreateSubspaceParams=new String[]{C.PARAM_ID,C.PARAM_NAME,C.PARAM_DESC,
+		C.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
+	private static String[] allowedCreateJobParams=new String[]{C.PARAM_ID,C.PARAM_NAME,C.PARAM_DESC,C.PARAM_WALLCLOCKTIMEOUT,
+		C.PARAM_CPUTIMEOUT,C.PARAM_QUEUEID,C.PARAM_PROCID, C.PARAM_TRAVERSAL, C.PARAM_MEMORY,C.PARAM_PAUSED, C.PARAM_SEED, C.PARAM_SUPPRESS_TIMESTAMPS};
+	private static String[] allowedUploadSolverParams=new String[]{C.PARAM_ID,C.PARAM_TYPE,C.PARAM_PREPROCID,C.PARAM_FILE,C.PARAM_URL,C.PARAM_NAME,C.PARAM_DESC,
+		C.PARAM_DESCRIPTION_FILE,C.PARAM_DOWNLOADABLE, C.PARAM_RUN, C.PARAM_SETTING};
+	private static String[] allowedUploadBenchmarksParams= new String[] {C.PARAM_ID,C.PARAM_BENCHTYPE, C.PARAM_FILE,C.PARAM_URL,
+		C.PARAM_DESC,C.PARAM_DESCRIPTION_FILE,C.PARAM_DEPENDENCY,C.PARAM_DOWNLOADABLE,C.PARAM_HIERARCHY,C.PARAM_LINKED,
+		C.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
+	private static String[] allowedUploadProcessorParams=new String[]{C.PARAM_ID,C.PARAM_NAME,C.PARAM_DESC,C.PARAM_FILE};
+	private static String[] allowedUploadConfigParams=new String[] {C.PARAM_FILE,C.PARAM_ID,C.PARAM_FILE,C.PARAM_DESC};
+    private static String[] allowedUploadXMLParams=new String[]{C.PARAM_ID,C.PARAM_FILE};
+    private static String[] allowedPrintStatusParams=new String[]{C.PARAM_ID};
+    private static String[] allowedGetPrimitiveAttributesParams=new String[]{C.PARAM_ID};
 
-	private static String[] allowedLSParams=new String[]{R.PARAM_ID,R.PARAM_LIMIT,R.PARAM_USER}; 
+	private static String[] allowedLSParams=new String[]{C.PARAM_ID,C.PARAM_LIMIT,C.PARAM_USER}; 
 	
 	/**
 	 * Gets the missing paramter that was last seen. If none has been seen yet, returns null.
@@ -92,21 +84,21 @@ public class Validator {
 	 */
 	public static int isValidRemoveRequest(HashMap<String,String> commandParams, String type) {
 		if (type.equals("subspace")) {
-			if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+			if (!paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 				return Status.ERROR_MISSING_PARAM;
 			}
 			findUnnecessaryParams(allowedRemoveSubspaceParams,commandParams);
 
 		} else {
-			if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_FROM},commandParams)) {
+			if (!paramsExist(new String[]{C.PARAM_ID,C.PARAM_FROM},commandParams)) {
 				return Status.ERROR_MISSING_PARAM;
 			}
 			findUnnecessaryParams(allowedRemoveParams,commandParams);
-			if (!isValidPosInteger(commandParams.get(R.PARAM_FROM))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_FROM))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
-		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		return 0;
@@ -119,132 +111,16 @@ public class Validator {
 	 */
 	
 	public static int isValidDeleteRequest(HashMap<String,String> commandParams) {
-		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedDeleteParams,commandParams);
 		return 0;
 	}
-	
-	/**
-	 * Checks to see whether the given string is a valid integer, which can inclue long integers
-	 * @param str The string to check
-	 * @return the boolean answer
-	 */
-	public static boolean isValidInteger(String str) {
-		try {
-			Long.parseLong(str);
-			return true;
-		} catch(Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Determines whether the given string represents a valid id. Valid ids are integers greater than or equal to 0
-	 * @param str The string to check
-	 * @return True if valid, false otherwise.
-	 * @author Eric Burns
-	 */
-	
-	public static boolean isValidPosInteger(String str) {
-		try {
-			int check=Integer.parseInt(str);
-			if (check<0) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Determines whether the given string represents a valid double that is greater than or equal to 0
-	 * @param str The string to check
-	 * @return True if valid, false otherwise.
-	 * @author Eric Burns
-	 */
-	
-	public static boolean isValidPosDouble(String str) {
-		try {
-			double check=Double.parseDouble(str);
-			if (check<0) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Determines whether the given string represents a valid real number greater than or equal to 0
-	 * @param str The string to check
-	 * @return True if the string is valid and false otherwise
-	 */
-	public static boolean isValidPosNumber(String str) {
-		try {
-			double check=Double.parseDouble(str);
-			if (check<0) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
-	/**
-	 * Checks to see if the given name is valid on Starexec for a solver, benchmark, or job na,e
-	 * @param name The name to check
-	 * @return True if valid and false otherwise
-	 */
-	public static boolean isValidPrimName(String name){    	
-    	return patternPrimName.matcher(name).matches();    	
-    }
-    
-    /**
-	 * Validates an institution field
-	 * 
-	 * @param institute the institution to validate
-	 * @return true iff institute is less than R.INSTITUTION_LEN characters 
-	 * and not null or the empty string
-	 */
-	public static boolean isValidInstitution(String institute){		
-		return patternInstitution.matcher(institute).matches();		
-	}
-    
-    /**
-     * Validates a generic description and checks that it contains content and is less than 1024
-     * characters long. ALL characters are allowed in descriptions.
-     * 
-     * @param desc the description to check
-     * @return true iff name isn't null or empty and is less than 1024 characters
-     */
-    public static boolean isValidPrimDescription(String desc){
-    	return patternPrimDesc.matcher(desc).matches();
-    }
-    
-    /**
-     * Determines whether the given string is a valid comma-separated list of positive integers
-     * @param ids The string to check
-     * @return True if the string is a comma-separated list of positive integers, false otherwise
-     */
-    
-    public static boolean isValidPosIntegerList(String ids) {
-    	String[] idArray=ids.split(",");
-    	for (String id : idArray) {
-    		if (!isValidPosInteger(id)) {
-    			return false;
-    		}
-    	}
-    	
-    	return true;
-    }
+
     
     /**
      * Validates the given parameters to determine if they can be used to construct a valid
@@ -255,25 +131,25 @@ public class Validator {
      */
 	
     public static int isValidCopyRequest(HashMap<String,String> commandParams, String type) {
-    	if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_TO},commandParams)) {
+    	if (!paramsExist(new String[]{C.PARAM_ID,C.PARAM_TO},commandParams)) {
     		return Status.ERROR_MISSING_PARAM;
     	}
     	
-    	if (!isValidPosIntegerList(commandParams.get(R.PARAM_ID)) 
-    			|| (commandParams.containsKey(R.PARAM_FROM) && !isValidPosInteger(commandParams.get(R.PARAM_FROM)))
-    			|| !isValidPosInteger(commandParams.get(R.PARAM_TO))) {
+    	if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID)) 
+    			|| (commandParams.containsKey(C.PARAM_FROM) && !Validator.isValidPosInteger(commandParams.get(C.PARAM_FROM)))
+    			|| !Validator.isValidPosInteger(commandParams.get(C.PARAM_TO))) {
     		return Status.ERROR_INVALID_ID;
     	}
     	
     	//the hierarchy parameter is also acceptable if the type is either solver or space
     	if (type.equals("user")) {
     		findUnnecessaryParams(allowedCopyUserParams,commandParams);
-    	} else if (type.equals("space")) {
+    	} else if (type.equals(R.SPACE)) {
     		findUnnecessaryParams(allowedCopySpaceParams,commandParams);
-    	} else if (type.equals("solver")) {
+    	} else if (type.equals(R.SOLVER)) {
     		findUnnecessaryParams(allowedCopySolverParams,commandParams);
 
-    	} else if (type.equals("benchmark") || type.equals("job")) {
+    	} else if (type.equals("benchmark") || type.equals(R.JOB)) {
     		findUnnecessaryParams(allowedCopyBenchmarkParams,commandParams);
     	}
     	
@@ -284,32 +160,32 @@ public class Validator {
 	/**
 	 * Checks to see if the parameters given by the user comprise a valid download request
 	 * @param commandParams Params given by the user
-	 * @param type The type of the download ("solver", "benchmark", or so on)
+	 * @param type The type of the download (R.SOLVER, "benchmark", or so on)
 	 * @param since If the download type is new job output, since is the completion ID to retrieve results after
 	 * @return A status code as defined in Status.java
 	 */
 	public static int isValidDownloadRequest(HashMap<String,String>commandParams,String type,Integer since) {
-		if (!paramsExist(new String[]{R.PARAM_ID,R.PARAM_OUTPUT_FILE},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		String outputLocale=commandParams.get(R.PARAM_OUTPUT_FILE);
+		String outputLocale=commandParams.get(C.PARAM_OUTPUT_FILE);
 		if (outputLocale==null) {
 			return Status.ERROR_INVALID_FILEPATH;
 		}
 		
-		if (!type.equals("jp_outputs")) {
-			if (!Validator.isValidInteger(commandParams.get(R.PARAM_ID))) {
+		if (!type.equals(R.JOB_OUTPUTS)) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 			} 
 		} else {
-			if (!Validator.isValidPosIntegerList(commandParams.get(R.PARAM_ID))) {
+			if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 
 			}
 		}
-		if (commandParams.containsKey(R.PARAM_PROCID)) {
-			if (!Validator.isValidInteger(commandParams.get(R.PARAM_PROCID))) {
+		if (commandParams.containsKey(C.PARAM_PROCID)) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_PROCID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
@@ -318,15 +194,15 @@ public class Validator {
 		File testFile=new File(outputLocale);
 		
 		if (testFile.exists()) {
-			if (!commandParams.containsKey(R.PARAM_OVERWRITE)) {
+			if (!commandParams.containsKey(C.PARAM_OVERWRITE)) {
 				return Status.ERROR_FILE_EXISTS;
 			}
 		}
-		if (type.equals("job")) {
+		if (type.equals(R.JOB)) {
 			findUnnecessaryParams(allowedDownloadCSVParams,commandParams);
-		} else if  (type.equals("space")) {
+		} else if  (type.equals(R.SPACE)) {
 			findUnnecessaryParams(allowedDownloadSpaceParams,commandParams);
-		}  else if (type.equals("spaceXML")) {
+		}  else if (type.equals(R.SPACE_XML)) {
 			findUnnecessaryParams(allowedDownloadSpaceXMLParams,commandParams);
 		}
 		else {
@@ -352,28 +228,28 @@ public class Validator {
 	private static int isValidUploadRequest(HashMap<String,String> commandParams, boolean archiveRequired) {
 		
 		//an ID and either a URL or a file is required for every upload
-		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (! paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!commandParams.containsKey(R.PARAM_FILE) && !commandParams.containsKey(R.PARAM_URL)) {
-			missingParam=R.PARAM_FILE+" or "+R.PARAM_URL;
+		if (!commandParams.containsKey(C.PARAM_FILE) && !commandParams.containsKey(C.PARAM_URL)) {
+			missingParam=C.PARAM_FILE+" or "+C.PARAM_URL;
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		
 		//if both a file and a url is specified, the upload is ambiguous-- only one or the other should be present
-		if (commandParams.containsKey(R.PARAM_FILE) && commandParams.containsKey(R.PARAM_URL)) {
+		if (commandParams.containsKey(C.PARAM_FILE) && commandParams.containsKey(C.PARAM_URL)) {
 			return Status.ERROR_FILE_AND_URL;
 		}
 		
 		//if a file is specified (and it might not be if a URL is used), make sure that it 
 		//exists and that it is of a valid extension
-		if (commandParams.containsKey(R.PARAM_FILE)) {
-			String filePath=commandParams.get(R.PARAM_FILE);
-			File test=new File(commandParams.get(R.PARAM_FILE));
+		if (commandParams.containsKey(C.PARAM_FILE)) {
+			String filePath=commandParams.get(C.PARAM_FILE);
+			File test=new File(commandParams.get(C.PARAM_FILE));
 			boolean archiveGood=false;
 			if (!test.exists()) {
 				return Status.ERROR_FILE_NOT_FOUND;
@@ -390,24 +266,10 @@ public class Validator {
 		}
 		
 		//if a description file is specified, make sure it exists
-		if (commandParams.containsKey(R.PARAM_DESCRIPTION_FILE)) {
-			File test=new File(commandParams.get(R.PARAM_FILE));
+		if (commandParams.containsKey(C.PARAM_DESCRIPTION_FILE)) {
+			File test=new File(commandParams.get(C.PARAM_FILE));
 			if (!test.exists()) {
 				return Status.ERROR_FILE_NOT_FOUND;
-			}
-		}
-		
-		//if a name is specified, it must conform to StarExec rules
-		if (commandParams.containsKey(R.PARAM_NAME)) {
-			if (!isValidPrimName(commandParams.get(R.PARAM_NAME))) {
-				return Status.ERROR_BAD_NAME;
-			}
-		}
-		
-		//if a description is specified, it must conform to StarExec rules
-		if (commandParams.containsKey(R.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(R.PARAM_DESC))) {
-				return Status.ERROR_BAD_DESCRIPTION;
 			}
 		}
 		return 0;
@@ -430,7 +292,7 @@ public class Validator {
 		}
 		
 		//if no file exists, it must mean that only a url was specified
-		if (!commandParams.containsKey(R.PARAM_FILE)) {
+		if (!commandParams.containsKey(C.PARAM_FILE)) {
 			return Status.ERROR_URL_NOT_ALLOWED;
 		}
 		
@@ -450,10 +312,10 @@ public class Validator {
 		}
 		
 		
-		if (!paramsExist(new String[]{R.PARAM_BENCHTYPE},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_BENCHTYPE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosInteger(commandParams.get(R.PARAM_BENCHTYPE))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_BENCHTYPE))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedUploadBenchmarksParams,commandParams);
@@ -471,8 +333,8 @@ public class Validator {
 		if (valid<0) {
 			return valid;
 		}
-		if (commandParams.containsKey(R.PARAM_TYPE)) {
-			if (!Validator.isValidInteger(commandParams.get(R.PARAM_TYPE))) {
+		if (commandParams.containsKey(C.PARAM_TYPE)) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_TYPE))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
@@ -539,19 +401,19 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 	public static int isValidGetPrimRequest(HashMap<String,String> urlParams,HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID},commandParams) && !paramsExist(new String[]{R.PARAM_USER},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID},commandParams) && !paramsExist(new String[]{C.PARAM_USER},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (commandParams.containsKey(R.PARAM_ID)) {
-			if (commandParams.containsKey(R.PARAM_USER)) {
+		if (commandParams.containsKey(C.PARAM_ID)) {
+			if (commandParams.containsKey(C.PARAM_USER)) {
 				return Status.ERROR_ID_AND_USER;
 			}
-			if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 			
 		} else {
-			String type=urlParams.get(R.FORMPARAM_TYPE);
+			String type=urlParams.get(C.FORMPARAM_TYPE);
 			if (!type.equals("jobs") && !type.equals("benchmarks") &&!type.equals("solvers")) {
 				return Status.ERROR_NO_USER_PRIMS;
 			}
@@ -568,10 +430,10 @@ public class Validator {
 	 */
 	
 	public static int isValidSleepCommand(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[] {R.PARAM_TIME},commandParams)) {
+		if (!paramsExist(new String[] {C.PARAM_TIME},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosNumber(commandParams.get(R.PARAM_TIME))) {
+		if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_TIME))) {
 			return Status.ERROR_BAD_TIME;
 		}
 		findUnnecessaryParams(allowedSleepParams,commandParams);
@@ -587,65 +449,54 @@ public class Validator {
 	
 	public static int isValidCreateJobRequest(HashMap<String,String> commandParams) {
 		//Job creation must include a space ID, a processor ID, and a queue ID
-		if (! paramsExist(new String[]{R.PARAM_ID,R.PARAM_QUEUEID},commandParams)) {
+		if (! paramsExist(new String[]{C.PARAM_ID,C.PARAM_QUEUEID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (commandParams.containsKey(R.PARAM_TRAVERSAL)) {
-			String traversalMethod=commandParams.get(R.PARAM_TRAVERSAL);
-			if (!traversalMethod.equals(R.ARG_ROUNDROBIN) && !traversalMethod.equals(R.ARG_DEPTHFIRST)) {
+		if (commandParams.containsKey(C.PARAM_TRAVERSAL)) {
+			String traversalMethod=commandParams.get(C.PARAM_TRAVERSAL);
+			if (!traversalMethod.equals(C.ARG_ROUNDROBIN) && !traversalMethod.equals(C.ARG_DEPTHFIRST)) {
 				return Status.ERROR_BAD_TRAVERSAL_TYPE;
 			}
 		}
 		
-		if (commandParams.containsKey(R.PARAM_SEED)) {
-			if (!isValidInteger(commandParams.get(R.PARAM_SEED))) {
+		if (commandParams.containsKey(C.PARAM_SEED)) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_SEED))) {
 				return Status.ERROR_SEED;
 			}
 		}
 		
 		//all IDs should be integers greater than 0
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID)) ||
-				!isValidPosInteger(commandParams.get(R.PARAM_QUEUEID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID)) ||
+				!Validator.isValidPosInteger(commandParams.get(C.PARAM_QUEUEID))) {
 			return Status.ERROR_INVALID_ID;
 		}
-		if (commandParams.containsKey(R.PARAM_PROCID)) {
-			if (!isValidPosInteger(commandParams.get(R.PARAM_PROCID))) {
+		if (commandParams.containsKey(C.PARAM_PROCID)) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_PROCID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
-		if (commandParams.containsKey(R.PARAM_PREPROCID)) {
-			if (!isValidPosInteger(commandParams.get(R.PARAM_PREPROCID))) {
+		if (commandParams.containsKey(C.PARAM_PREPROCID)) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_PREPROCID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		}
 		
 		//timeouts should also be integers greater than 0
-		if (commandParams.containsKey(R.PARAM_CPUTIMEOUT)) {
-			if (!isValidPosInteger(commandParams.get(R.PARAM_CPUTIMEOUT))) {
+		if (commandParams.containsKey(C.PARAM_CPUTIMEOUT)) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_CPUTIMEOUT))) {
 				return Status.ERROR_INVALID_TIMEOUT;
 			}
 		}
 		
-		if (commandParams.containsKey(R.PARAM_WALLCLOCKTIMEOUT)) {
-			if (!isValidPosInteger(commandParams.get(R.PARAM_WALLCLOCKTIMEOUT))) {
+		if (commandParams.containsKey(C.PARAM_WALLCLOCKTIMEOUT)) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_WALLCLOCKTIMEOUT))) {
 				return Status.ERROR_INVALID_TIMEOUT;
 			}
 		}
-		if (commandParams.containsKey(R.PARAM_MEMORY)) {
-			if (!isValidPosDouble(commandParams.get(R.PARAM_MEMORY))) {
+		if (commandParams.containsKey(C.PARAM_MEMORY)) {
+			if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_MEMORY))) {
 				return Status.ERROR_INVALID_MEMORY;
-			}
-		}
-		
-		if (commandParams.containsKey(R.PARAM_NAME)) {
-			if (!isValidPrimName(commandParams.get(R.PARAM_NAME))) {
-				return Status.ERROR_BAD_NAME;
-			}
-		}
-		if (commandParams.containsKey(R.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(R.PARAM_DESC))) {
-				return Status.ERROR_BAD_DESCRIPTION;
 			}
 		}
 		findUnnecessaryParams(allowedCreateJobParams,commandParams);
@@ -662,23 +513,13 @@ public class Validator {
 	 */
 	public static int isValidCreateSubspaceRequest(HashMap<String,String> commandParams) {
 		
-		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (! paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
-		
-		if (commandParams.containsKey(R.PARAM_NAME)) {
-			if (!isValidPrimName(commandParams.get(R.PARAM_NAME))) {
-				return Status.ERROR_BAD_NAME;
-			}
-		}
-		if (commandParams.containsKey(R.PARAM_DESC)) {
-			if (!isValidPrimDescription(commandParams.get(R.PARAM_DESC))) {
-				return Status.ERROR_BAD_DESCRIPTION;
-			}
-		}
+
 		findUnnecessaryParams(allowedCreateSubspaceParams,commandParams);
 		return 0;
 	}
@@ -690,11 +531,11 @@ public class Validator {
 	 * @author Eric Burns
 	 */
 	public static int isValidSetSpaceVisibilityRequest(HashMap<String,String> commandParams) {
-		if (! paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (! paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedSetSpaceVisibilityParams,commandParams);
@@ -707,12 +548,12 @@ public class Validator {
 	 * @return A status code as defined in Status.java
 	 */
 	public static int isValidLoginRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_USER},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_USER},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!commandParams.get(R.PARAM_USER).equals(R.PARAM_GUEST)) {
-			if (!paramsExist(new String[] {R.PARAM_PASSWORD},commandParams)) {
+		if (!commandParams.get(C.PARAM_USER).equals(C.PARAM_GUEST)) {
+			if (!paramsExist(new String[] {C.PARAM_PASSWORD},commandParams)) {
 				return Status.ERROR_MISSING_PARAM;
 			}
 		}
@@ -726,11 +567,11 @@ public class Validator {
 	 * @return A status code as defined in Status.java
 	 */
 	public static int isValidPauseOrResumeRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID}, commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedPauseOrResumeParams,commandParams);
@@ -744,11 +585,11 @@ public class Validator {
 	 * @return A status code as defined in Status.java
 	 */
 	public static int isValidRerunRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID}, commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosInteger(commandParams.get(R.PARAM_ID))) {
+		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		findUnnecessaryParams(allowedRerunParams,commandParams);
@@ -762,15 +603,15 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 	public static int isValidPollJobRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[] {R.PARAM_ID,R.PARAM_OUTPUT_FILE,R.PARAM_TIME}, commandParams)) {
+		if (!paramsExist(new String[] {C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_TIME}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if (!isValidPosNumber(commandParams.get(R.PARAM_TIME))) {
+		if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_TIME))) {
 			return Status.ERROR_BAD_TIME;
 		}
 		
-		String outputLocale=commandParams.get(R.PARAM_OUTPUT_FILE);
+		String outputLocale=commandParams.get(C.PARAM_OUTPUT_FILE);
 		if (outputLocale==null) {
 			return Status.ERROR_INVALID_FILEPATH;
 		}
@@ -779,7 +620,7 @@ public class Validator {
 		File testFile=new File(outputLocale);
 		
 		if (testFile.exists()) {
-			if (!commandParams.containsKey(R.PARAM_OVERWRITE)) {
+			if (!commandParams.containsKey(C.PARAM_OVERWRITE)) {
 				return Status.ERROR_FILE_EXISTS;
 			}
 		}
@@ -794,10 +635,10 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 	public static int isValidRunFileRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[] {R.PARAM_FILE},commandParams)) {
+		if (!paramsExist(new String[] {C.PARAM_FILE},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		File file=new File(commandParams.get(R.PARAM_FILE));
+		File file=new File(commandParams.get(C.PARAM_FILE));
 		if (!file.exists()) {
 			return Status.ERROR_FILE_NOT_FOUND;
 		}
@@ -812,26 +653,16 @@ public class Validator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 	public static int isValidSetUserSettingRequest(String setting, HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_VAL},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_VAL},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
-		String newVal=commandParams.get(R.PARAM_VAL);
+		String newVal=commandParams.get(C.PARAM_VAL);
 
 		if (newVal==null) {
-			missingParam=R.PARAM_VAL;
+			missingParam=C.PARAM_VAL;
 			return Status.ERROR_MISSING_PARAM;
 		}
-		
-		if (setting.equals("firstname")|| setting.equals("lastname")) {
-			if(!isValidPrimName(newVal)){
-				return Status.ERROR_BAD_NAME;
-			}
-		} else if (setting.equals("institution")) {
-			if (!isValidInstitution(newVal)) {
-				return Status.ERROR_BAD_INSTITUTION;
-			}
-		}
-		
+
 		findUnnecessaryParams(allowedSetUserSettingParams,commandParams);
 		return 0;
 	}
@@ -842,11 +673,11 @@ public class Validator {
 	 * @return A status code as defined in Status.java
 	 */
 	public static int isValidPrintBenchUploadStatusRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if(!Validator.isValidInteger(commandParams.get(R.PARAM_ID))) {
+		if(!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		
@@ -861,11 +692,11 @@ public class Validator {
 	 * @return A status code as defined in Status
 	 */
 	public static int isValidGetPrimitiveAttributesRequest(HashMap<String,String> commandParams) {
-		if (!paramsExist(new String[]{R.PARAM_ID},commandParams)) {
+		if (!paramsExist(new String[]{C.PARAM_ID},commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
-		if(!Validator.isValidInteger(commandParams.get(R.PARAM_ID))) {
+		if(!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 			return Status.ERROR_INVALID_ID;
 		}
 		

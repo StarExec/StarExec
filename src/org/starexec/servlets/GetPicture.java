@@ -45,7 +45,7 @@ public class GetPicture extends HttpServlet{
 		// Check what type is the request, and generate file in different folders according to it.
     	String defaultPicFilename = new String();
     	String picFilename = new String();
-    	String pictureDir = R.PICTURE_PATH;
+    	String pictureDir = R.getPicturePath();
     	StringBuilder sb = new StringBuilder();
     	
 		if (request.getParameter("type").equals("uthn")) {
@@ -150,7 +150,7 @@ public class GetPicture extends HttpServlet{
     			return new ValidatorStatusCode(false, "The supplied type is not valid");
     		}
     		
-    		if (!Validator.isValidInteger(request.getParameter("Id"))) {
+    		if (!Validator.isValidPosInteger(request.getParameter("Id"))) {
     			return new ValidatorStatusCode(false, "The supplied id is not a valid integer");
     		}
         	

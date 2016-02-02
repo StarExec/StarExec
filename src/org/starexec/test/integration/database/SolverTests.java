@@ -157,8 +157,8 @@ public class SolverTests extends TestSequence {
 	@Override
 	protected void teardown() {
 		Solvers.deleteAndRemoveSolver(solver.getId());
-		Spaces.removeSubspaces(space1.getId());
-		Spaces.removeSubspaces(space2.getId());		
+		Spaces.removeSubspace(space1.getId());
+		Spaces.removeSubspace(space2.getId());		
 	}
 		
 	

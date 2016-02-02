@@ -109,18 +109,19 @@ public class JobTests extends TestSequence {
 	
 	
 	
-	//TODO: Right now, this test is basically just checking to see if the method throws errors. Since the status of the job
-	//changes over time, it's hard to know what the status of the job actually should be
+	// this just checks to see whether the function throws errors: more detailed logic testing
+	// is handled in a unit test
 	@StarexecTest
 	private void GetStatusTest() {
 		Assert.assertNotNull(Jobs.getJobStatusCode(job.getId()));
 	}
 	
-	//TODO: This test also just checks for errors
 	@StarexecTest
-	private void IsSystemPaused() {
-		Jobs.isSystemPaused();
-		
+	private void PauseAndResumeAllTest() {
+		Assert.assertTrue(Jobs.pauseAll());
+		Assert.assertTrue(Jobs.isSystemPaused());
+		Assert.assertTrue(Jobs.resumeAll());
+		Assert.assertFalse(Jobs.isSystemPaused());
 	}
 	
 	@StarexecTest
@@ -299,7 +300,7 @@ public class JobTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Processors.delete(postProc.getId());
-		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspace(space.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());

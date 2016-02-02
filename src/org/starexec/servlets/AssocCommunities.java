@@ -25,7 +25,7 @@ import org.starexec.util.Util;
  */
 @SuppressWarnings("serial")
 public class AssocCommunities extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(AddSpace.class);	
+	private static final Logger log = Logger.getLogger(AssocCommunities.class);	
 
 	// Request attributes
 	private static final String name = "name";

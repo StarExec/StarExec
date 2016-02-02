@@ -315,7 +315,7 @@ CREATE TABLE job_pairs (
 	bench_name VARCHAR(255),
 	status_code TINYINT DEFAULT 0,
 	node_id INT,
-	queuesub_time TIMESTAMP DEFAULT 0,
+	queuesub_time TIMESTAMP(3) DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
 	exit_status INT,
@@ -501,6 +501,16 @@ CREATE TABLE community_requests (
 	CONSTRAINT community_requests_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
 );
 
+CREATE TABLE anonymous_links (
+	unique_id VARCHAR(36) NOT NULL,
+	primitive_id INT NOT NULL,
+	primitive_type VARCHAR(36),
+	hide_primitive_name BOOLEAN,
+
+	PRIMARY KEY (unique_id),
+	UNIQUE KEY (primitive_id, primitive_type, hide_primitive_name)
+);
+
 CREATE TABLE change_email_requests (
 	user_id INT NOT NULL,
 	new_email VARCHAR(64) NOT NULL,
@@ -621,10 +631,12 @@ CREATE TABLE unvalidated_benchmarks (
 -- Author: Eric Burns
 CREATE TABLE job_spaces (
 	id INT NOT NULL AUTO_INCREMENT,
+	job_id INT,
 	name VARCHAR(255),
 	max_stages INT DEFAULT 1, -- This columns stores the maximum number of stages any job pair has
 							  -- anywhere in the job space hierarchy rooted at this job space
-	PRIMARY KEY (id)
+	PRIMARY KEY (id),
+	CONSTRAINT job_spaces_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 -- The set of all associations between each job space and it's descendants

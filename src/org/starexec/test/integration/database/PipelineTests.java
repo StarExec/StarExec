@@ -62,7 +62,7 @@ public class PipelineTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		Solvers.deleteAndRemoveSolver(s.getId());
-		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspace(space.getId());
 		Pipelines.deletePipelineFromDatabase(pipe.getId());
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
 		

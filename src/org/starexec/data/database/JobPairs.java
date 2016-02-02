@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -16,7 +17,9 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
@@ -26,7 +29,10 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.util.Util;
 
-
+/**
+ * Contains handles on database queries for retrieving and updating
+ * job pairs.
+ */
 public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
 	
@@ -79,7 +85,8 @@ public class JobPairs {
 	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
 	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)
 	 * @param pairId
-	 * @return
+	 * @param con An open database connection to make calls on
+	 * @return A list of strings pointing to the inputs for this pair, or null on error.
 	 */
 	public static List<String> getJobPairInputPaths(int pairId, Connection con) {
 		CallableStatement procedure=null;
@@ -100,28 +107,6 @@ public class JobPairs {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null;
-	}
-	
-	/**
-	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
-	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)
-	 * @param pairId
-	 * @return
-	 */
-	
-	public static List<String> getJobPairInputPaths(int pairId) {
-		Connection con=null;
-		try {
-			con=Common.getConnection();
-			return getJobPairInputPaths(pairId, con);
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-			
-		}
-		
 		return null;
 	}
 	
@@ -196,8 +181,6 @@ public class JobPairs {
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 			
-			//TODO: It is not possible to do batch processing when we are using out parameters
-			//Should we rework this do avoid needing an out parameter? Generating ids would be one possibility
 			for (JobPair pair : pairs) {
 				procedure.setInt(1, jobId);
 				procedure.setInt(2, pair.getBench().getId());
@@ -235,10 +218,9 @@ public class JobPairs {
     /**
      * Finds the standard output of a job pair and returns it as a string. Null
      * is returned if the output doesn't exist or cannot be found
-     * @param jobId The id of the job the pair is apart of
      * @param pairId The pair to get output for
+     * @param stageNumber The stage to get pair info for
      * @param limit The maximum number of lines to return
-     * @param path The path to the job pair file
      * @return All console output from a job pair run for the given pair
      */
     public static String getStdOut(int pairId,int stageNumber,int limit) {		
@@ -252,7 +234,8 @@ public class JobPairs {
 	/**
 	 * Returns all pairs that are waiting on post processing. Returns a hashmap mapping
 	 * job pair IDs to post processors
-	 * @return
+	 * @return A list of triples containing pair id, stage number, post processor id that
+	 * represents all stages that need to be processed.
 	 */
 	public static List<PairStageProcessorTriple> getAllPairsForProcessing() {
 		Connection con=null;
@@ -288,6 +271,7 @@ public class JobPairs {
 	 * add the properties to the pair attributes table, and removes
 	 * the pair from the processing job pairs table
 	 * @param pairId The ID of the pair to process
+	 * @param stageNumber
 	 * @param processorId The ID of the processor to use
 	 * @return True on success, false on error
 	 */
@@ -392,6 +376,7 @@ public class JobPairs {
 	 * Adds the list of attributes to the given job pair. If old attributes
 	 * have the same keys as new ones, the old ones are replaced
 	 * @param pairId The ID of the pair to add attributes to
+	 * @param stageId The ID of the stage to add attributes for.
 	 * @param attributes The key/value attributes
 	 * @param con The open connection to make the call on
 	 * @return True on success, false on error
@@ -415,6 +400,7 @@ public class JobPairs {
 	/**
 	 * Adds a set of attributes to a job pair
 	 * @param pairId The id of the job pair the attribute is for
+	 * @param stageId the ID of the stage to add attributes to
 	 * @param attributes The attributes to add to the job pair
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
@@ -500,16 +486,14 @@ public class JobPairs {
 		return filteredPairs;
 	}
 	/**
-	 * Checks whether a given pair is correct
-	 * @param jp
+	 * Checks whether a given stage is correct
+	 * @param stage
 	 * @return
 	 * -1 == pair is not complete (as in, does not have STATUS_COMPLETE)
 	 * 0 == pair is correct
 	 * 1 == pair is incorrect
 	 * 2 == pair is unknown
 	 */
-	
-	
 	public static int isPairCorrect(JoblineStage stage) {
 	    StatusCode statusCode=stage.getStatus().getCode();
 
@@ -732,10 +716,9 @@ public class JobPairs {
 	
 	/**
 	 * Gets the path to the output file for the given job pair and stage
-	 * 
 	 * @param pairId
 	 * @param stageNumber
-	 * @return
+	 * @return The absolute file path to the output for the given stage of the given pair
 	 */
 	
 	public static String getFilePath(int pairId, int stageNumber) {
@@ -795,7 +778,8 @@ public class JobPairs {
 	/**
 	 * Returns the absolute path to where the log for a pair is stored given the pair.
 	 * @param pair
-	 * @return
+	 * @return The absolute path to the log file for the given pair, or null if it could not 
+	 * be found
 	 */
 	public static String getLogFilePath(JobPair pair) {
 		try {
@@ -818,7 +802,7 @@ public class JobPairs {
 	 * The fields do NOT need to be populated for given stage, ONLY the primary stage
 	 * @param pair
 	 * @param stageNumber A number >=1 representing the stage of this pair
-	 * @return
+	 * @return The absolute file path to the output file for the given stage of the given pair
 	 */
 	public static String getFilePath(JobPair pair, int stageNumber) {
 		String path=getFilePath(pair); //this is the path to the top level directory of the pair
@@ -831,7 +815,7 @@ public class JobPairs {
 			
 			
 		} else {
-			//if we get down here, it means that c
+			//if we get down here, it means that this pair did NOT use stages.
 			return path; 
 		}
 	}
@@ -1083,7 +1067,7 @@ public class JobPairs {
 
 		jp.setId(result.getInt("job_pairs.id"));
 		jp.setJobId(result.getInt("job_pairs.job_id"));
-		jp.setGridEngineId(result.getInt("job_pairs.sge_id"));	
+		jp.setBackendExecId(result.getInt("job_pairs.sge_id"));	
 		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
 		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
 		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
@@ -1099,10 +1083,11 @@ public class JobPairs {
 	
 	/**
 	 * Sets the status of a given job pair stage to the given status
-	 * @param pairId
-	 * @param statusCode
-	 * @param con
-	 * @return
+	 * @param pairId The ID of the pair to update
+	 * @param stageNumber The number of the stage to update
+	 * @param statusCode The code to give the stage
+	 * @param con An open database connection to make the call on
+	 * @return True on success and false on error
 	 */
 	public static boolean setPairStageStatus(int pairId, int statusCode, int stageNumber, Connection con) {
 		CallableStatement procedure= null;
@@ -1129,7 +1114,7 @@ public class JobPairs {
 	 * @param statusCode
 	 * @param stageNumber
 	 * @param con
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean setLaterPairStageStatus(int pairId, int statusCode, int stageNumber, Connection con) {
 		CallableStatement procedure= null;
@@ -1155,8 +1140,7 @@ public class JobPairs {
 	 * @param pairId
 	 * @param statusCode
 	 * @param stageNumber
-	 * @param con
-	 * @return
+	 * @return True on success and false on error
 	 */
 	
 	public static boolean setLaterPairStageStatus(int pairId, int statusCode, int stageNumber) {
@@ -1177,7 +1161,7 @@ public class JobPairs {
 	 * Sets the status code of every stage for the given pair to the given code
 	 * @param pairId
 	 * @param statusCode
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean setAllPairStageStatus(int pairId, int statusCode) {
 		return setLaterPairStageStatus(pairId,statusCode,-1);
@@ -1187,7 +1171,8 @@ public class JobPairs {
 	 * Sets the status code of every stage for the given pair to the given code
 	 * @param pairId
 	 * @param statusCode
-	 * @return
+	 * @param con An open connection to make calls on
+	 * @return True on success and false on error
 	 */
 	public static boolean setAllPairStageStatus(int pairId, int statusCode, Connection con) {
 		return setLaterPairStageStatus(pairId,statusCode,-1,con);
@@ -1200,7 +1185,7 @@ public class JobPairs {
 	 * @param pairId
 	 * @param statusCode
 	 * @param con
-	 * @return
+	 * @return True on success and false on error
 	 */
 	public static boolean setPairStatus(int pairId, int statusCode, Connection con) {
 		CallableStatement procedure= null;
@@ -1221,8 +1206,9 @@ public class JobPairs {
 	}
 	
 	
-	/**
+	/** Updates the status code for a given stage of a specific pair.
 	 * @param pairId the id of the pair to update the status of
+	 * @param stageNumber The stage to update
 	 * @param statusCode the status code to set for the pair
 	 * @return True if the operation was a success, false otherwise
 	 */
@@ -1308,20 +1294,20 @@ public class JobPairs {
 	}
 
 	/**
-	 * Update's a job pair's grid engine id
+	 * Update's a job pair's backend execution ID (SGE, OAR, or so on)
 	 * @param pairId The id of the pair to update
-	 * @param sgeId The grid engine id to set for the pair
+	 * @param execId The backend id to set for the pair
 	 * @return True if the operation was a success, false otherwise.
 	 */
-	public static boolean updateGridEngineId(int pairId, int sgeId) {
+	public static boolean updateBackendExecId(int pairId, int execId) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();									
-			procedure = con.prepareCall("{CALL SetSGEJobId(?, ?)}");
+			procedure = con.prepareCall("{CALL SetBackendExecId(?, ?)}");
 
 			procedure.setInt(1, pairId);
-			procedure.setInt(2, sgeId);			
+			procedure.setInt(2, execId);			
 			procedure.executeUpdate();			
 
 			return true;
@@ -1358,11 +1344,62 @@ public class JobPairs {
 		}
 		
 	}
+
+	/**
+	 * Calls buildJobSpaceIdtoJobPairMapForJob, and then rounds all cpu and wallclock times before returning
+	 * results
+	 * @param job
+	 * @return Identical to buildJobSpaceIdtoJobPairMapForJob, but with rounded times
+	 */
+	public static Map<Integer, List<JobPair>> buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(Job job) {
+		Map<Integer, List<JobPair>> outputMap = buildJobSpaceIdToJobPairMapForJob(job);
+		roundWallclockAndCpuTimesInJobSpaceIdToJobPairMap(outputMap);
+		return outputMap;
+	}
+
+	private static void roundWallclockAndCpuTimesInJobSpaceIdToJobPairMap(Map<Integer, List<JobPair>> jobSpaceIdToJobPairMap) {
+		for (Integer jobSpaceId : jobSpaceIdToJobPairMap.keySet()) {
+			List<JobPair> jobPairs = jobSpaceIdToJobPairMap.get(jobSpaceId);
+			for (JobPair jp : jobPairs) {
+				jp.setPrimaryWallclockTime(Math.round(jp.getPrimaryWallclockTime()*100)/100.0);
+				jp.setPrimaryCpuTime(Math.round(jp.getPrimaryCpuTime()*100)/100.0);
+			}
+		}
+	}
+
+
+	/**
+	 * Builds a mapping of job space IDs to JobPairs in that JobSpace given the JobSpaces and JobPairs
+	 * @param job The job to work on
+	 * @return The mapping of job space IDs to in that job space
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, List<JobPair>> buildJobSpaceIdToJobPairMapForJob(Job job) {
+		int jobId = job.getId();
+		int primaryJobSpaceId = job.getPrimarySpace();
+		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(primaryJobSpaceId, true);
+		jobSpaces.add(Spaces.getJobSpace(job.getPrimarySpace()));
+		List<JobPair> allJobPairsInJob = Jobs.getDetailed(jobId, 0).getJobPairs();
+		Map<Integer, List<JobPair>> jobSpaceIdToJobPairMap = new HashMap<>();
+		for (JobSpace js : jobSpaces) {
+			List<JobPair> jobPairsAssociatedWithJs = new ArrayList<>();
+			for (JobPair jp : allJobPairsInJob) {
+				if (jp.getJobSpaceId() == js.getId()) {
+					jobPairsAssociatedWithJs.add(jp);
+				}
+			}
+			if (!jobPairsAssociatedWithJs.isEmpty()) {
+				jobSpaceIdToJobPairMap.put(js.getId(), jobPairsAssociatedWithJs);
+			}
+		}
+		return jobSpaceIdToJobPairMap;
+	}
 	
 	/**
 	 * Given a list of JobPair objects that have their jobSpaceIds set, updates the database
 	 * to reflect these new job space ids
 	 * @param jobPairs The pairs to update
+	 * @param con An open connection to make calls on
 	 * @return True on success and false otherwise
 	 * @author Eric Burns
 	 */
@@ -1403,16 +1440,15 @@ public class JobPairs {
 	
 
     /**
-     * Kills the given job pair
+     * Kills the given job pair and updates the status for the pair to
      * @param pairId
      * @param execId
-     * @return
+     * @return True on success and false otherwise
      */
-    //TODO : marked for grid engine interface
     public static boolean killPair(int pairId, int execId) {
 	try {	
 	    R.BACKEND.killPair(execId);
-	    JobPairs.UpdateStatus(pairId, 21);
+	    JobPairs.UpdateStatus(pairId, Status.StatusCode.STATUS_KILLED.getVal());
 	    return true;
 	} catch (Exception e) {
 	    log.error(e.getMessage(),e);
@@ -1450,9 +1486,9 @@ public class JobPairs {
 	/**
 	 * Gets all job pairs in the database that have the given status code.
 	 * This should really only be called for rare codes like 2-5, as otherwise
-	 * it may read a very large number of pairs.
+	 * it may read a very large number of pairs and be very slow.
 	 * @param statusCode
-	 * @return
+	 * @return A list of all pairs with the given status code
 	 */
 	public static List<JobPair> getPairsByStatus(int statusCode) {
 		Connection con=null;
@@ -1487,7 +1523,7 @@ public class JobPairs {
 	 * set in the given pair. This check is done to prevent a race condition in which
 	 * a pair that is actually not stuck (hence its status code has changed since the
 	 * pair was read) but is still set to the error status code.
-	 * @param p. The JobPair to affect. Must have ID and status code set
+	 * @param p The JobPair to affect. Must have ID and status code set
 	 * @return True on success and false otherwise
 	 */
 	public static boolean setBrokenPairStatus(JobPair p) {

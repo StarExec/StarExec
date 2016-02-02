@@ -4,7 +4,7 @@ public class JobSpace extends Identifiable implements Nameable{
 	private String name;
 	private Integer parentSpace;
 	private Integer maxStages;
-	
+	private Integer jobId;
 	public JobSpace() {
 		
 	}
@@ -37,5 +37,13 @@ public class JobSpace extends Identifiable implements Nameable{
 
 	public void setMaxStages(Integer maxStages) {
 		this.maxStages = maxStages;
+	}
+
+	public Integer getJobId() {
+		return jobId;
+	}
+
+	public void setJobId(Integer jobId) {
+		this.jobId = jobId;
 	}
 }

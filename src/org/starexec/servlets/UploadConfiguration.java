@@ -177,7 +177,7 @@ public class UploadConfiguration extends HttpServlet {
 				return new ValidatorStatusCode(false, "No configuration file was given");
 			}
 			
-			if (!Validator.isValidInteger((String)configAttrMap.get(SOLVER_ID))) {
+			if (!Validator.isValidPosInteger((String)configAttrMap.get(SOLVER_ID))) {
 				return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
 			}
 

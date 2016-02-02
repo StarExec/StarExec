@@ -11,6 +11,13 @@ $(document).ready(function(){
 		icons: {
 			secondary: "ui-icon-arrowthick-1-s"
     }});
+
+	$('#anonymousLink').button({
+		icons: {
+			// TODO change to something more appropriate
+			secondary: "ui-icon-arrowthick-1-s"
+		}
+	});
 	
 	$('#editLink').button({
 		icons: {

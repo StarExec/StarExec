@@ -17,7 +17,6 @@ public class Validator {
 
 	// Compiled patterns used for validation	
 	private static Pattern patternBoolean;
-	private static Pattern patternInteger;	
 	private static Pattern patternUserName;
 	private static Pattern patternInstitution;
 	private static Pattern patternEmail;
@@ -28,7 +27,6 @@ public class Validator {
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
 	private static Pattern patternDate;
-	private static Pattern patternDouble;
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	
     public static void initialize() {
@@ -37,7 +35,6 @@ public class Validator {
     		log.error("Validator was initialized before patterns were loaded from configuration");    		
     	} else {    		
 	    	patternBoolean = Pattern.compile(R.BOOLEAN_PATTERN, Pattern.CASE_INSENSITIVE);										
-	    	patternInteger = Pattern.compile(R.LONG_PATTERN);
 	    	patternUserName = Pattern.compile(R.USER_NAME_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternInstitution = Pattern.compile(R.INSTITUTION_PATTERN, Pattern.CASE_INSENSITIVE);
 	    	patternEmail = Pattern.compile(R.EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
@@ -48,7 +45,6 @@ public class Validator {
 	    	patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 	    	patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
 	    	patternDate = Pattern.compile(R.DATE_PATTERN);
-	    	patternDouble=Pattern.compile(R.DOUBLE_PATTERN);
 	    	log.debug("Validator patterns successfully compiled");
     	}
     }
@@ -221,31 +217,45 @@ public class Validator {
     		return false;
     	}
     }
+	
+	/**
+	 * Determines whether the given string represents a valid id. Valid ids are integers greater than or equal to 0
+	 * @param str The string to check
+	 * @return True if valid, false otherwise.
+	 * @author Eric Burns
+	 */
+	
+	public static boolean isValidPosInteger(String str) {
+		try {
+			int check=Integer.parseInt(str);
+			if (check<0) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
     
-    public static boolean isValidTimeout(String s) {
-    	if (!isValidInteger(s)) {
-    		return false;
-    	}
-    	int x=Integer.parseInt(s);
-    	if (x<=0) {
-    		return false;
-    	}
-    	return true;
-    }
-    
-    /**
-     * Validates a string to ensure it can be treated as a double 
-     * @param s The string to validate as a double
-     * @return True if the string is numeric, false otherwise
-     */
-    public static boolean isValidDouble(String s) {
-    	try {
-    		Double.parseDouble(s);
-    		return true;
-    	} catch(Exception e) {
-    		return false;
-    	}
-    }
+	/**
+	 * Determines whether the given string represents a valid double that is greater than 0
+	 * @param str The string to check
+	 * @return True if valid, false otherwise.
+	 * @author Eric Burns
+	 */
+	
+	public static boolean isValidPosDouble(String str) {
+		try {
+			double check=Double.parseDouble(str);
+			if (check<=0) {
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
     
     /**
      * Validates a string to ensure it can be treated as a long 
@@ -288,8 +298,27 @@ public class Validator {
     	return true;
     }
     
+
+    
+    /**
+     * Determines whether the given string is a valid comma-separated list of positive integers
+     * @param ids The string to check
+     * @return True if the string is a comma-separated list of positive integers, false otherwise
+     */
+    
+    public static boolean isValidPosIntegerList(String ids) {
+    	String[] idArray=ids.split(",");
+    	for (String id : idArray) {
+    		if (!Validator.isValidPosInteger(id)) {
+    			return false;
+    		}
+    	}
+    	
+    	return true;
+    }
+    
     public static boolean isValidPictureType(String type) {
-    	return (type.equals("user") || type.equals("benchmark") || type.equals("solver"));
+    	return (type.equals("user") || type.equals("benchmark") || type.equals(R.SOLVER));
     }
     
     /**

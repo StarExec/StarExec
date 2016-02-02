@@ -316,14 +316,12 @@ public abstract class JobManager {
 							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
-							int errorCode = StatusCode.ERROR_SGE_REJECT.getVal();
 
 							//TODO : need a better way to handle error codes
 							if(!R.BACKEND.isError(execId)){
-							    //TODO : remember to change name of update gridEngineId to update execId or something similar
-							    JobPairs.updateGridEngineId(pair.getId(),execId);
+							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
-							    JobPairs.setPairStatus(pair.getId(),errorCode);
+							    JobPairs.setPairStatus(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
 							}
 							queueSize++; 
 						} catch(Exception e) {
@@ -479,7 +477,7 @@ public abstract class JobManager {
 		replacements.put("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
 		replacements.put("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		replacements.put("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
-		String scriptPath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.JOBFILE_FORMAT, pair.getId()));
+		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
 		File f = new File(scriptPath);
@@ -608,7 +606,7 @@ public abstract class JobManager {
 			sb.append("\n");
 		}
 
-		String dependFilePath = String.format("%s/%s", R.JOB_INBOX_DIR, String.format(R.DEPENDFILE_FORMAT, pairId));
+		String dependFilePath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.DEPENDFILE_FORMAT, pairId));
 		File f = new File(dependFilePath);
 		f.createNewFile();
 

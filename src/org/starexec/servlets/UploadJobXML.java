@@ -42,12 +42,12 @@ import org.apache.log4j.Logger;
 public class UploadJobXML extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);
+	private static final Logger log = Logger.getLogger(UploadJobXML.class);
 	private static final LogUtil logUtil = new LogUtil(log);
 	private static final String UPLOAD_FILE = "f";
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-	private static final String SPACE_ID = "space";
+	private static final String SPACE_ID = R.SPACE;
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String method = "doPost";
@@ -108,7 +108,6 @@ public class UploadJobXML extends HttpServlet {
 	}
 
 	private boolean userMayUploadJobXML(int userId, int spaceId) {
-		final String method = "userMayUploadJobXML";
 		Permission userPermissions = Permissions.get(userId, spaceId);
 		if (userPermissions == null || !userPermissions.canAddJob()) {
 			return false;	
@@ -132,7 +131,7 @@ public class UploadJobXML extends HttpServlet {
 			// Don't need to keep file long - just using download directory
 			
 			// TODO Should we use the same directory as batchSpaces with a slightly different name for job xml uploads?
-			File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "Job" + userId);
+			File uniqueDir = new File(R.getBatchSpaceXMLDir(), "Job" + userId);
 			uniqueDir = new File(uniqueDir, "TEMP_JOB_XML_FOLDER_");
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 			
@@ -199,7 +198,7 @@ public class UploadJobXML extends HttpServlet {
 				return new ValidatorStatusCode(false,"Missing field from the form for the file to upload or the space id");
 			}
 			
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The supplied space ID was not a valid integer");
 			}
 			

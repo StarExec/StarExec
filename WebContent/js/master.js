@@ -1,4 +1,4 @@
-var debugMode = true; //console.log statements are turned off by default
+var debugMode = false; //console.log statements are turned off by default
 
 //redirects the user to the quick job page (used if they clicked on "quick job" while not logged in
 cookie = $.cookie('redirectToQuickJob');
@@ -90,7 +90,9 @@ $(document).ready(function(){
 		    return $(this); 				
 		}
 	}); 
-	checkForHelpFile();
+	if (!isLocalJobPage) {
+		checkForHelpFile();
+	}
 });
 
 function checkForHelpFile() {

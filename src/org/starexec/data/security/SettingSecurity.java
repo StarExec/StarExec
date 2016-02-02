@@ -18,7 +18,7 @@ public class SettingSecurity {
 	public static boolean canUserAddOrSeeProfile(int userIdOfOwner, int userIdOfCaller) {
 		boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
 		boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
-		if ( !(callerIsOwner || callerIsAdmin) ) {
+		if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 			return false;
 		} 
 		return true;
@@ -54,6 +54,9 @@ public class SettingSecurity {
 			if (d.getPrimId()!=userId && !Users.isAdmin(userId)) {
 				return new ValidatorStatusCode(false, "You may not update default setting profiles of other users");
 			}
+			if (Users.isPublicUser(userId)) {
+				return new ValidatorStatusCode(false, "Settings for guests cannot be updated");
+			}
 		} else {
 			Permission perm = Permissions.get(userId, d.getPrimId());		
 			if(perm == null || !perm.isLeader()) {
@@ -76,7 +79,7 @@ public class SettingSecurity {
 		
 				
 		if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
-			if (! Validator.isValidInteger(newValue)) {
+			if (! Validator.isValidPosInteger(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid integer");
 			}
 			int timeout=Integer.parseInt(newValue);
@@ -84,7 +87,7 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
 		} else if (attribute.equals("MaxMem")) {
-			if (!Validator.isValidDouble(newValue)) {
+			if (!Validator.isValidPosDouble(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
 			}
 			

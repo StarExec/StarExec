@@ -5,8 +5,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
@@ -462,16 +460,18 @@ public class Queues {
 	
 	private static String getPairOrderColumnForClusterPage(int indexOrder) {
 		if (indexOrder==0) {
-			return "jobs.name";
+			return "queuesub_time";
 		} else if (indexOrder==1) {
-			return "users.first_name, users.last_name";
+			return "jobs.name";
 		} else if (indexOrder==2) {
-			return "bench_name";
+			return "users.first_name, users.last_name";
 		} else if (indexOrder==3) {
-			return "solver_name";
+			return "bench_name";
 		} else if (indexOrder==4) {
-			return "config_name";
+			return "solver_name";
 		} else if (indexOrder==5) {
+			return "config_name";
+		} else if (indexOrder==6) {
 			return "path";
 		}
 		
@@ -523,7 +523,7 @@ public class Queues {
 				jp.setPath(results.getString("job_pairs.path"));
 				jp.setJobId(results.getInt("job_pairs.job_id"));
 				jp.setId(results.getInt("job_pairs.id"));
-
+				jp.setQueueSubmitTime(results.getTimestamp("job_pairs.queuesub_time"));
 				Status stat = new Status();
 				//enqueued by definition, so we don't want to retrieve extra data from the db
 				stat.setCode(StatusCode.STATUS_ENQUEUED);
@@ -946,82 +946,6 @@ public class Queues {
 		}
 		
 		log.debug(String.format("Status for queue [%s] failed to be updated.", (name == null) ? "ALL" : name));
-		return false;
-	}
-
-	/**
-	 * Takes in a queue name and a hashmap representing queue attributes their values. This method will add a column 
-	 * to the database for the attribute if it does not exist. If it does exist, the attribute for the given queue is 
-	 * updated with the current value. If the given queue does not exist, it is added to the database, or else all of 
-	 * its attributes are updated.
-	 * @param name The name of the queue to update/add
-	 * @param attributes A list of key/value attributes to add/update for the queue
-	 * @return True if the operation was a success, false otherwise.
-	 * @author Tyler Jensen
-	 */
-	public static boolean update(String name, Map<String, String> attributes) {
-		Connection con = null;	
-		CallableStatement procAddCol = null;
-		CallableStatement procUpdateAttr = null;
-		try {
-			int id=Queues.getIdByName(name);
-			//if the queue exists, get its existing timeouts
-			int cpuTimeout=R.DEFAULT_MAX_TIMEOUT;
-			int wallTimeout=R.DEFAULT_MAX_TIMEOUT;
-			if (id>0) {
-				Queue q=Queues.get(id);
-				cpuTimeout=q.getCpuTimeout();
-				wallTimeout=q.getWallTimeout();
-			}else {
-				log.debug("the current queue does not exist in the database");
-			}
-			con = Common.getConnection();
-		
-			// All or nothing!
-			Common.beginTransaction(con);
-			
-			add(con,name,cpuTimeout,wallTimeout);
-			 procAddCol = con.prepareCall("{CALL AddColumnUnlessExists(?, ?, ?, ?)}");
-			 procUpdateAttr = con.prepareCall("{CALL UpdateQueueAttr(?, ?, ?)}");	
-			
-			
-			// For each attribute for the queue...
-			for(Entry<String, String> keyVal : attributes.entrySet()) {				
-				// Add a column for the attribute (MySQL will ignore if the column already exists)
-				procAddCol.setString(1, R.MYSQL_DATABASE);
-				procAddCol.setString(2, "queues");
-				// Must add _ to column name/value in case it conflicts with an SQL keyword
-				procAddCol.setString(3, "_" + keyVal.getKey());
-				procAddCol.setString(4, "VARCHAR(64)");
-				procAddCol.execute();
-				
-				// Then update the column with the attribute's value for this node
-				procUpdateAttr.setString(1, name);				
-				// Must add _ to column name/value in case it conflicts with an SQL keyword
-				procUpdateAttr.setString(2, "_" + keyVal.getKey());
-				//we need to make sure the value isn't too long to fit in the field.
-				String value=keyVal.getValue();
-				if (value.length()>63) {
-					log.debug("queue id = "+id+ " had queue attribute "+keyVal.getKey()+" had value that was too long = "+value);
-					value=value.substring(0,63);
-				}
-				procUpdateAttr.setString(3, "_" + value);
-				procUpdateAttr.executeUpdate();
-			}
-						
-			// Done, commit the changes
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procUpdateAttr);
-			Common.safeClose(procAddCol);
-		}
-		
-		log.debug(String.format("Queue [%s] failed to be updated.", name));
 		return false;
 	}
 	

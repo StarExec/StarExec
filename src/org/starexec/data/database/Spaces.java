@@ -103,7 +103,7 @@ public class Spaces {
 	 * the root space will be the first id and the given space will be the last. The ids are ordered along
 	 * the hierarchy. If the root (or anything smaller) is given, a size 1 list containing the root id is returned
 	 * @param spaceId The ID of the space to get the chain for
-	 * @return
+	 * @return Ordered list of spaces tracing from root to given space.
 	 * @author Eric Burns
 	 */
 	public static List<Integer> getChainToRoot(int spaceId) {
@@ -160,6 +160,14 @@ public class Spaces {
 		return -1;
 	}
 	
+	/**
+	 * For a given job space, set the maximum number of stages that occur in any job space
+	 * under that space
+	 * @param jobSpaceId The ID of the job space
+	 * @param maxStages The maximum number of stages
+	 * @param con An open connection to make the call on
+	 * @return True on success and false on error
+	 */
 	public static boolean setJobSpaceMaxStages(int jobSpaceId, int maxStages, Connection con) {
 		CallableStatement procedure=null;
 		try {
@@ -201,12 +209,12 @@ public class Spaces {
 	 * @return The ID of the newly created job space, or -1 on failure
 	 * @author Eric Burns
 	 */
-	public static int addJobSpace(String name) {
+	public static int addJobSpace(String name, int jobId) {
 		Connection con = null;
 		log.debug("adding new job space with name = "+name);
 		try {
 			con=Common.getConnection();
-			int newSpaceId=addJobSpace(name,con);
+			int newSpaceId=addJobSpace(name,jobId,con);
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("addJobSpace says "+e.getMessage(),e);
@@ -308,7 +316,7 @@ public class Spaces {
 	 * Adds every entry necessary in the closure table where the given space is the root.
 	 * If the entries are already present, this function just returns true
 	 * @param jobSpaceId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean updateJobSpaceClosureTable(int jobSpaceId) {
 		int callID=new Random().nextInt();
@@ -373,19 +381,22 @@ public class Spaces {
 	/**
 	 * Adds a new job space to the job space table
 	 * @param name The name of the job space
+	 * @param jobId The ID of the job this job space belongs to
 	 * @param con The open connection to make the call on
 	 * @return The ID of the new job space, or -1 if the addition was not successful
 	 * 
 	 */
-	public static int addJobSpace(String name, Connection con) {
+	public static int addJobSpace(String name,int jobId, Connection con) {
 		CallableStatement procedure = null;
+		log.debug("adding new job space with name = "+name+" and id = "+jobId);
 		try {
 			// Add the space with the default permissions
-			CallableStatement procAddSpace = con.prepareCall("{CALL AddJobSpace(?, ?)}");	
-			procAddSpace.setString(1, name);
-			procAddSpace.registerOutParameter(2, java.sql.Types.INTEGER);		
-			procAddSpace.executeUpdate();
-			int newSpaceId = procAddSpace.getInt(2);
+			procedure = con.prepareCall("{CALL AddJobSpace(?,?,?)}");	
+			procedure.setString(1, name);
+			procedure.setInt(2, jobId);
+			procedure.registerOutParameter(3, java.sql.Types.INTEGER);		
+			procedure.executeUpdate();
+			int newSpaceId = procedure.getInt(3);
 			
 			return newSpaceId;
 		} catch (Exception e) {
@@ -404,37 +415,32 @@ public class Spaces {
 	 * 
 	 * @param parent The parent space that is the 'root' of the new subtree to be added
 	 * @param userId The user that will own the new spaces and benchmarks
+	 * @param statusId ID of a benchmark upload status to update with space information
 	 * @return A list of the new benchmark IDs if successful, and null otherwise
+	 * @throws Exception Any exceptions thrown when traversing spaces or adding benchmarks
 	 * @author Tyler Jensen
 	 */
 	public static List<Integer> addWithBenchmarks(Space parent, int userId, int statusId) throws Exception{
 		ArrayList<Integer> ids=new ArrayList<Integer>();
 		log.info("adding with benchmarks and no dependencies for user " + userId);
-		try {
-			// We'll be doing everything with a single connection so we can roll back if needed
-			
-			// For each subspace...
-			log.info("about to begin traversing (no deps)");
-			for(Space s : parent.getSubspaces()) {
-				// Apply the recursive algorithm to add each subspace
-				ids.addAll(Spaces.traverse(s, parent.getId(), userId, statusId));
-			}
-
-			// Add any new benchmarks in the space to the database			
-			
-			if (parent.getBenchmarks().size() > 0){
-				log.info("adding benchmarks in main space");
-				ids.addAll(Benchmarks.add(parent.getBenchmarks(), parent.getId(), statusId));
-			}
-
-			// We're done (notice that 'parent' is never added because it should already exist)
-					
-			return ids;
-		} catch (Exception e){			
-			//log.error(e.getMessage(), e);
-			throw e;
-			
-		} 
+		// We'll be doing everything with a single connection so we can roll back if needed
+		
+		// For each subspace...
+		log.info("about to begin traversing (no deps)");
+		for(Space s : parent.getSubspaces()) {
+			// Apply the recursive algorithm to add each subspace
+			ids.addAll(Spaces.traverse(s, parent.getId(), userId, statusId));
+		}
+		// Add any new benchmarks in the space to the database			
+		
+		if (parent.getBenchmarks().size() > 0){
+			log.info("adding benchmarks in main space");
+			ids.addAll(Benchmarks.add(parent.getBenchmarks(), parent.getId(), statusId));
+		}
+		// We're done (notice that 'parent' is never added because it should already exist)
+				
+		return ids;
+		
 		
 		
 	}
@@ -449,6 +455,8 @@ public class Spaces {
 	 * @param userId The user that will own the new spaces and benchmarks
 	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statements
+	 * @param statusId ID of a benchmark upload status to update with space information
+
 	 * @return A list of benchmark IDs if successful, and null otherwise
 	 * @author Benton McCune
 	 */
@@ -518,7 +526,7 @@ public class Spaces {
 	 * @author Eric Burns
 	 */
 	
-	public static boolean associateJobSpaces(int parentId, int childId, Connection con) throws Exception {
+	public static boolean associateJobSpaces(int parentId, int childId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			log.debug("associating parent job space "+parentId+" with child job space "+childId);
@@ -538,6 +546,7 @@ public class Spaces {
 	/**
 	 * Gets a space with minimal information (only details about the space itself)
 	 * @param spaceId The id of the space to get information for
+	 * @param con The open connection to make the call on.
 	 * @return A space object consisting of shallow information about the space
 	 * @author Tyler Jensen
 	 */
@@ -545,9 +554,9 @@ public class Spaces {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {			
-			 procedure = con.prepareCall("{CALL GetSpaceById(?)}");
+			procedure = con.prepareCall("{CALL GetSpaceById(?)}");
 			procedure.setInt(1, spaceId);					
-			 results = procedure.executeQuery();		
+			results = procedure.executeQuery();		
 			
 			if(results.next()){
 				Space s = new Space();
@@ -589,29 +598,6 @@ public class Spaces {
 			Common.safeClose(con);
 		}
 		
-		return null;
-	}
-	
-	public static List<Integer> getAllJobSpaces() {
-		Connection con=null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			List<Integer> ids=new ArrayList<Integer>();
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetAllJobSpaceIds()}");
-			results=procedure.executeQuery();
-			while (results.next()) {
-				ids.add(results.getInt("id"));
-			}
-			return ids;
-		} catch (Exception e ) {
-			log.error(e.getMessage(),e);
-		}finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
 		return null;
 	}
 	
@@ -804,6 +790,7 @@ public class Spaces {
 	 * 
 	 * @param spaceId the id of the space to count the Spaces in
 	 * @param userId the id of the user making the request
+	 * @param hierarchy True to count down the full space hierarchy and false to count only directly under the space
 	 * @return the number of Spaces
 	 * @author Todd Elvers
 	 */
@@ -971,14 +958,12 @@ public class Spaces {
 	/**
 	 * Copy a hierarchy of the space into another space
 	 * 
-	 * @param srcId
-	 *            The Id of the source space which is being copied.
-	 * @param desId
-	 *            The Id of the destination space which is copied into.
-	 * @param usrId
-	 *            The Id of the user doing the copy.
+	 * @param srcId The Id of the source space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
 	 * @return The Id of the root space of the copied hierarchy.
 	 * @author Ruoyu Zhang
+	 * @throws StarExecException If the source and destination are the same
 	 */
 	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
 		if (srcId == desId) {
@@ -1014,6 +999,7 @@ public class Spaces {
 
 	/**
 	 * Copies a whole space tree.
+	 * @param spaceTree The tree to copy
 	 * @param desId the id of the space which will be the parent of the root of the space tree.
 	 * @param usrId the id of the user who is copying the space tree.
 	 * @return the id of the root of the new space tree.
@@ -1128,6 +1114,7 @@ public class Spaces {
 				JobSpace s = new JobSpace();
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
+				s.setJobId(results.getInt("job_id"));
 				s.setMaxStages(results.getInt("max_stages"));
 				return s;
 			}														
@@ -1399,7 +1386,14 @@ public class Spaces {
 		return null;
 	}
 	
-	
+	/**
+	 * Given a space ID and a space path of the form "subspace1name/subspace2name/subspace3name"...
+	 * returns the ID of the space that is at the end of the path. In other words, this function searches
+	 * down through the space hierarchy using a path rooted at the given space
+	 * @param rootSpaceId
+	 * @param path
+	 * @return The ID of the space identified by the path, or -1 if it does not exist. Returns null on error
+	 */
 	public static Integer getSubSpaceIDByPath(Integer rootSpaceId, String path) {
 		Connection con=null;
 		try {
@@ -1419,6 +1413,7 @@ public class Spaces {
 	 * @param spaceId id of parent space
 	 * @param userId id of user making request
 	 * @param subSpaceName name of subspace that is being sought
+	 * @param con The open connection to make the call on
 	 * @return subspaceId id of found subspace, or -1 if none exist
 	 * @author Benton McCune
 	 */
@@ -1497,6 +1492,15 @@ public class Spaces {
 public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName) {
 	return getSubSpaceIDbyName(spaceId,-1,subSpaceName);
 }
+
+/**
+ * Gets the id of all subspaces of the given space with a particular name
+ * @param spaceId ID of the parent space
+ * @param subSpaceName Name of the subspace that is being looked for
+ * @param con The open connection to make the call on
+ * @return The id of the subspace with the given name, or -1 if none exist
+ * @author Eric Burns
+ */
 
 public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Connection con) {
 	return getSubSpaceIDbyName(spaceId,-1,subSpaceName,con);
@@ -1583,7 +1587,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Recursively returns all of the spaces in the subspace hierarchy rooted at spaceId
 	 * @param spaceId
-	 * @return
+	 * @return The list of spaces
 	 */
 	public static List<Space> getSubSpaceHierarchy(int spaceId) {
 		Connection con=null;
@@ -1737,7 +1741,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param jobSpaceId The id of the space to get the subspaces of
 	 * @param recursive Whether to get all subspaces (true) or only the first level (false)
 	 * @return the list of subspaces of the given space used in the given job
-	 * @throws Exception
 	 * @author Eric Burns
 	 */
 	public static List<JobSpace> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
@@ -1796,6 +1799,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
 				s.setMaxStages(results.getInt("max_stages"));
+				s.setJobId(results.getInt("job_id"));
 				subSpaces.add(s);
 			}
 			
@@ -1946,8 +1950,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * Check if there already exists a primitive has the same name as given by prim in the space.
 	 * @param prim The content of the primitive, such as a job's name
 	 * @param space_id The if of the space needed to be checked
-	 * @param type The type of the primitive
-	 *        1: subspace
 	 * @return True when there exists a primitive with the same name.
 	 * @author Ruoyu Zhang
 	 */
@@ -2198,7 +2200,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param solverIds The IDs of the solvers to remove
 	 * @param rootSpaceId The ID of the root space of the hierarchy
 	 * @param userId
-	 * @return
+	 * @return True on success and false if there was an error
 	 */
 	public static boolean removeSolversFromHierarchy(List<Integer> solverIds,int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
@@ -2217,7 +2219,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * nothing (all solvers from all spaces, or nothing)
 	 * 
 	 * @param solverIds a list containing the id's of the solvers to remove
-	 * @param subspaceIds a list containing the id's of the spaces to remove them from
+	 * @param subspaces a list containing the id's of the spaces to remove them from
 	 * @return true iff all given solvers are removed from all given spaces
 	 * 
 	 * @author Skylar Stark
@@ -2272,7 +2274,12 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		}
 	}
 	
-	public static boolean removeSubspaces(int subspaceId) {
+	/**
+	 * Removes a single space from the database
+	 * @param subspaceId The space to remove
+	 * @return True on success and false otherwise
+	 */
+	public static boolean removeSubspace(int subspaceId) {
 		List<Integer> spaceId=new ArrayList<Integer>();
 		spaceId.add(subspaceId);
 		return removeSubspaces(spaceId);
@@ -2283,7 +2290,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * in an all-or-none fashion (creates a transaction)
 	 * 
 	 * @param subspaceIds the list of subspaces to remove
-	 * @param parentSpaceId the id of the space to remove the subspaces from
 	 * @return true iff all subspaces in 'subspaceIds' are removed from the space referenced by 'spaceId',
 	 * false otherwise
 	 * @author Todd Elvers
@@ -2426,7 +2432,9 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Set a space to be public or private
 	 * @param spaceId the Id of space to be set public or private
+	 * @param usrId The ID of the user making the request
 	 * @param pbc true denote the space to be set public, false to be set private 
+	 * @param hierarchy True to set the entire hierarchy public / private and false to do only this space
 	 * @return true if successful
 	 * @author Ruoyu Zhang
 	 */
@@ -2472,6 +2480,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param userId The ID of the user making the request
 	 * @param spaces The list of spaces, all of which must be subspaces of the rootSpaceId
 	 * @param rootSpaceId The ID of the space to root the paths at
+	 * @return A mapping from from space ids to the string paths for those spaces
 	 */
 	public static HashMap<Integer,String> spacePathCreate(int userId, List<Space> spaces, int rootSpaceId) {
 		
@@ -2547,7 +2556,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			}
 			
 			ids.addAll(newIds);
-			//TODO: Consider refactoring this to reduce the number of calls that get made
 			Uploads.incrementCompletedSpaces(statusId,1);		
 			return ids;
 		}
@@ -2753,6 +2761,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	
 	/**
 	 * Return all the communities that are not already associated with a queue
+	 * @param queue_id The ID of the queue to get communities for
+	 * @return A list of communities not associated with the given queue
 	 */
 	public static List<Space> getNonAttachedCommunities(int queue_id) {
 		Connection con = null;			
@@ -2823,39 +2833,11 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		ids.addAll(recGetStickyLeaders(Spaces.getParentSpace(spaceId)));
 		return ids;
 	}
-	public static List<Space> getAllSuperSpaces(int userId) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetAllSuperSpacesByUser(?)}");
-			procedure.setInt(1, userId);					
-			results = procedure.executeQuery();			
-			
-			List<Space> spaces = new LinkedList<Space>();
-			
-			while (results.next()) {
-				Space s = new Space();
-				s.setId(results.getInt("id"));				
-				spaces.add(s);
-			}
-			
-			return spaces;			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		return null;
-	}
+
 	/**
 	 * Determines whether the given space ID is the ID of the root space
 	 * @param spaceId
-	 * @return
+	 * @return True if the given spaceis the root and false otherwise
 	 */
 	public static boolean isRoot(int spaceId) {
 		return 1==spaceId;

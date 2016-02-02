@@ -16,6 +16,7 @@
 			<table id="details" class="shaded">
 				<thead>
 					<tr>
+						<th>Submit Time</th>
 						<th>Job</th>
 						<th>User</th>	
 						<th id="benchHead">Benchmark</th>

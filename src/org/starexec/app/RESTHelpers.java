@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,9 +57,9 @@ public class RESTHelpers {
 	private static final int PAGE_USER_DETAILS = 2;
 	private static Gson gson = new Gson();
 
-	// Job pairs and nodes aren't technically a primitive class according to how
-	// we've discussed primitives, but to save time and energy I've included
-	// them here as such
+	/** Job pairs and nodes aren't technically a primitive class according to how
+	 we've discussed primitives, but to save time and energy I've included
+	 them here as such*/
 	public enum Primitive {
 		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE
 	}
@@ -96,10 +97,10 @@ public class RESTHelpers {
 
 			if (Spaces.getCountInSpace(space.getId(), userID, true) > 0) {
 				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						"space");
+						R.SPACE);
 			} else {
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						"space");
+						R.SPACE);
 			}
 
 			list.add(t);
@@ -125,12 +126,12 @@ public class RESTHelpers {
 			if (Spaces.getCountInJobSpace(space.getId()) > 0) {
 				log.debug("the max stages for this job space is "+space.getMaxStages());
 				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						"space",space.getMaxStages());
+						R.SPACE,space.getMaxStages());
 				
 			} else {
 				log.debug("the max stages for this job space is "+space.getMaxStages());
 				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						"space",space.getMaxStages());
+						R.SPACE,space.getMaxStages());
 			}
 			
 			list.add(t);
@@ -214,7 +215,7 @@ public class RESTHelpers {
 
 		for (Space space : communities) {
 			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(),
-					"leaf", "space");
+					"leaf", R.SPACE);
 			list.add(t);
 		}
 
@@ -248,8 +249,19 @@ public class RESTHelpers {
 			this.children = new LinkedList<JSTreeItem>();
 		}
 
+		public JSTreeItem(String name, int id, String state, String type, int maxStages, String cLass) {
+			this.data = name;
+			this.attr = new JSTreeAttribute(id, type,maxStages, cLass);
+			this.state = state;
+			this.children = new LinkedList<JSTreeItem>();
+		}
+
 		public List<JSTreeItem> getChildren() {
 			return children;
+		}
+
+		public void addChild(JSTreeItem child) {
+			children.add(child);
 		}
 	}
 
@@ -266,12 +278,15 @@ public class RESTHelpers {
 		private boolean global;
 		private int defaultQueueId;
 		private int maxStages;
+		// called cLass to bypass Java's class keyword. gson will lowercase the L
+		private String cLass;
 
 		
-		private void init(int id, String type,int maxStages) {
+		private void init(int id, String type,int maxStages, String cLass) {
 			this.id = id;
 			this.rel = type;
 			this.maxStages=maxStages;
+			this.cLass = cLass;
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
 				this.global = Queues.isQueueGlobal(id);
 			}
@@ -279,11 +294,15 @@ public class RESTHelpers {
 		}
 		
 		public JSTreeAttribute(int id, String type) {
-			init(id,type,0);
+			init(id,type,0, null);
 		}
 		
 		public JSTreeAttribute(int id, String type,int maxStages) {
-			init(id,type,maxStages);
+			init(id,type,maxStages, null);
+		}
+
+		public JSTreeAttribute(int id, String type,int maxStages, String cLass) {
+			init(id,type,maxStages, cLass);
 		}
 	}
 
@@ -705,15 +724,14 @@ public class RESTHelpers {
 	/**
 	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
 	 * 
-	 * @param jobId The ID of the job
 	 * @param jobSpaceId The ID of the job space
 	 * @param request
 	 * @param wallclock True to use wallclock time, false to use CPU time
 	 * @param syncResults If true, excludes job pairs for which the benchmark has not been worked on by every solver in the space
 	 * @param stageNumber If <=0, gets the primary stage
-	 * @return
+	 * @return JsonObject encapsulating pairs to display in the next table page
 	 */
-	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobId, int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
+	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
 		int totalJobPairs = Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId,stageNumber);
 
@@ -764,26 +782,8 @@ public class RESTHelpers {
 	    															
 	    			jobSpaceId,
 	    			stageNumber,
-	    			wallclock,
-	    			jobId
+	    			wallclock
 			);
-			//long b = System.currentTimeMillis();
-			//TODO: This is a timing test-- remove
-			/*Jobs.getJobPairsForNextPageInJobSpace(
-	    			attrMap.get(STARTING_RECORD),						// Record to start at  
-	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    			attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    			request.getParameter(SEARCH_QUERY), 				// Search query
-	    															
-	    			jobSpaceId,
-	    			stageNumber,
-	    			wallclock,
-	    			jobId
-			);*/
-			//long c = System.currentTimeMillis();
-			//log.debug("the old technique took this many millis = "+ (c-b));
-			//log.debug("the new technique took this many millis = " +(b-a));
 			
 		} else {
 			log.debug("returning synchronized results");
@@ -822,7 +822,7 @@ public class RESTHelpers {
 	 * Benchmarks in public spaces, and Benchmarks in spaces the user is also in.
 	 * @param userId
 	 * @param request
-	 * @return
+	 * @return JsonObject encapsulating next page of benchmarks to display
 	 */
 	public static JsonObject getNextDataTablesPageOfBenchmarksByUser(int userId, HttpServletRequest request) {
 		log.debug("called getNextDataTablesPageOfBenchmarksByUser");
@@ -879,7 +879,7 @@ public class RESTHelpers {
 	 * solvers in public spaces, and solvers in spaces the user is also in.
 	 * @param userId
 	 * @param request
-	 * @return
+	 * @return JsonObject encapsulating next page of solvers to display
 	 */
 	public static JsonObject getNextDataTablesPageOfSolversByUser(int userId, HttpServletRequest request) {
 		
@@ -935,10 +935,11 @@ public class RESTHelpers {
 	 * @param configId2
 	 * @param request
 	 * @param wallclock
-	 * @return
+	 * @param stageNumber 
+	 * @return JsonObject encapsulating next page of solver comparisons to display
 	 */
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock, int stageNumber) {
+			int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock, int stageNumber) {
 		
 		
 		try {
@@ -966,7 +967,6 @@ public class RESTHelpers {
 																				// ASC)
 							attrMap.get(SORT_COLUMN), // Column sorted on
 							request.getParameter(SEARCH_QUERY), // Search query
-							jobId, // Parent space id
 							jobSpaceId, configId1,configId2, totals,wallclock,stageNumber);
 			
 			totalComparisons = totals[0];
@@ -988,7 +988,7 @@ public class RESTHelpers {
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
-			int jobId, int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock, int stageNumber) {
+			int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock, int stageNumber) {
 		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
 				Primitive.JOB_PAIR, request);
 		if (null == attrMap) {
@@ -1024,7 +1024,6 @@ public class RESTHelpers {
 																			// ASC)
 						attrMap.get(SORT_COLUMN), // Column sorted on
 						request.getParameter(SEARCH_QUERY), // Search query
-						jobId, // Parent space id
 						jobSpaceId, configId,type,wallclock,stageNumber);
 		
 		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber);
@@ -1638,17 +1637,16 @@ public class RESTHelpers {
     		sb.append(j.getPrimarySolver().getConfigurations().get(0).getName());
     		RESTHelpers.addImg(sb);
 			String configLink = sb.toString();
-			
-			String path = j.getPath();
-			
+						
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(j.getQueueSubmitTimeSafe().toString()));
     		entry.add(new JsonPrimitive(jobLink));
     		entry.add(new JsonPrimitive(userLink));
     		entry.add(new JsonPrimitive(benchLink));
     		entry.add(new JsonPrimitive(solverLink));
     		entry.add(new JsonPrimitive(configLink));
-    		entry.add(new JsonPrimitive(path));
+    		entry.add(new JsonPrimitive(j.getPath()));
     		dataTablePageEntries.add(entry);
     	}
 		
@@ -1938,6 +1936,23 @@ public class RESTHelpers {
 		// Return the next DataTable page
 		return nextPage;
 	}
+
+	/*
+	public static String getSpaceOverviewGraphPath(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds, int stageNumber) {
+		String chartPath = null;
+		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
+			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber);
+			if (chartPath.equals("big")) {
+				return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
+			}
+		} else {
+			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);
+		}
+
+		log.debug("chartPath = "+chartPath);
+		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
+	}
+	*/
 
 	/**
 
@@ -2413,7 +2428,7 @@ public class RESTHelpers {
 
 	public static JsonObject convertSolverStatsToJsonObject(
 			List<SolverStats> stats, int totalRecords,
-			int totalRecordsAfterQuery, int syncValue, int spaceId, int jobId, boolean shortFormat, boolean wallTime) {
+			int totalRecordsAfterQuery, int syncValue, JobSpace space,boolean shortFormat, boolean wallTime) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2453,8 +2468,8 @@ public class RESTHelpers {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=solved&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
+								+ space.getId() + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getCorrectOverCompleted());
 				RESTHelpers.addImg(sb);
@@ -2464,8 +2479,8 @@ public class RESTHelpers {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=wrong&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
+								+ space.getId() + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getIncorrectJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2474,8 +2489,8 @@ public class RESTHelpers {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=resource&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
+								+ space.getId() + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getResourceOutJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2484,8 +2499,8 @@ public class RESTHelpers {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=failed&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
+								+ space.getId() + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getFailedJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2494,8 +2509,8 @@ public class RESTHelpers {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
+								+ space.getId() + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getUnknown());
 				RESTHelpers.addImg(sb);
@@ -2504,8 +2519,8 @@ public class RESTHelpers {
 				sb = new StringBuilder();
 				sb.append("<a href=\""
 						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=incomplete&sid="
-								+ spaceId + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + jobId+"&stagenum="+js.getStageNumber()));
+								+ space.getId() + "&configid="
+								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
 				sb.append("\" target=\"_blank\" >");
 				sb.append(js.getIncompleteJobPairs());
 				RESTHelpers.addImg(sb);
@@ -2560,6 +2575,90 @@ public class RESTHelpers {
 		return nextPage;
 	}
 
+	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock) {
+		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
+		for (JobSpace jobSpace : jobSpaces) {
+			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber);
+			JsonObject solverStatsJson = 
+				RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpace,true,wallclock);
+			if (solverStatsJson != null) {
+				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
+			}
+		}
+		return jobSpaceIdToSolverStatsJsonMap;
+	}
+
+
+	public static Map<Integer, String> getJobSpaceIdToSubspaceJsonMap(int jobId, List<JobSpace> jobSpaces) {
+		Map<Integer, String> jobSpaceIdToSubspaceJsonMap = new HashMap<>();
+		for (JobSpace jobSpace : jobSpaces) {
+			String subspaceJson = RESTHelpers.getJobSpacesJson(jobSpace.getId(), jobId, false, Users.getAdmins().get(0).getId());
+			jobSpaceIdToSubspaceJsonMap.put(jobSpace.getId(), subspaceJson);
+		}
+		return jobSpaceIdToSubspaceJsonMap;
+	}
+	
+	/**
+	 * Gets a JSON representation of a job space tree
+	 * @param parentId
+	 * @param jobId
+	 * @param userId
+	 * @return
+	 */
+	public static String getJobSpacesTreeJson(int parentId, int jobId, int userId) {
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
+		if (!status.isSuccess()) {
+			String output = gson.toJson(status);
+			log.debug("User cannot see job, getJobSpacesJson output: "+output);
+			return output;
+		}
+
+		List<JSTreeItem> subspaces = new ArrayList<JSTreeItem>();
+		buildFullJsTree(jobId, subspaces);
+
+		return gson.toJson(subspaces);
+	}
+
+
+	/**
+	 * Builds the entire JS tree for a jobspace rather than just a single level.
+	 * This method is needed for the local job page since we can't send GET requests
+	 * for single levels.
+	 * @author Albert Giegerich
+	 */
+	private static void buildFullJsTree(int jobId, List<JSTreeItem> root) {
+		buildFullJsTreeHelper(0, jobId, root, true);
+	}
+
+	/**
+	 * Helper method for buildFullJsTree
+	 * @see org.starexec.app.RESTHelpers#buildFullJsTree
+	 */
+	private static void buildFullJsTreeHelper(int parentId, int jobId, List<JSTreeItem> root, boolean firstRecursion) {
+		List<JobSpace> subspaces = new ArrayList<>();
+		if (parentId>0) {
+			subspaces = Spaces.getSubSpacesForJob(parentId,false);
+		} else {
+			//if the id given is 0, we want to get the root space
+			Job j=Jobs.get(jobId);
+			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
+			subspaces.add(s);
+		}
+
+		String className = (firstRecursion ? "rootNode" : null);
+
+		for (JobSpace js : subspaces) {
+			JSTreeItem node = null;
+			if (Spaces.getCountInJobSpace(js.getId()) > 0) {
+				node = new JSTreeItem(js.getName(), js.getId(), "closed", R.SPACE,js.getMaxStages(), className);
+			} else {
+				node = new JSTreeItem(js.getName(), js.getId(), "leaf",R.SPACE,js.getMaxStages(), className);
+			}
+			root.add(node);
+			buildFullJsTreeHelper(js.getId(), jobId, node.getChildren(), false);
+		}
+	}
+
 	public static String getJobSpacesJson(int parentId, int jobId, boolean makeSpaceTree, int userId) {	
 		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
 		List<JobSpace> subspaces=new ArrayList<JobSpace>();
@@ -2567,14 +2666,13 @@ public class RESTHelpers {
 		//don't populate the subspaces if the user can't see the job
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
 		if (!status.isSuccess()) {
-			return gson.toJson(status);
+			String output = gson.toJson(status);
+			log.debug("User cannot see job, getJobSpacesJson output: "+output);
+			return output;
 		}
 		log.debug("got a request for parent space = "+parentId);
 		if (parentId>0) {
-			
 			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-			
-			
 		} else {
 			//if the id given is 0, we want to get the root space
 			Job j=Jobs.get(jobId);
@@ -2584,11 +2682,13 @@ public class RESTHelpers {
 		
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
 		if (makeSpaceTree) {
-			return gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
-
+			String output = gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
+			log.debug("makeSpaceTree is true, getJobSpacesJson output: "+output);
+			return output;
 		} else {
-			return gson.toJson(subspaces);
-
+			String output = gson.toJson(subspaces);
+			log.debug("makeSpaceTree is false, getJobSpacesJson output: "+output);
+			return output;
 		}
 	}
 

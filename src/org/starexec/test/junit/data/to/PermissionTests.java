@@ -1,4 +1,4 @@
-package org.starexec.test.junit.database.to;
+package org.starexec.test.junit.data.to;
 
 import java.util.List;
 

@@ -7,6 +7,7 @@
 		   job_pairs.job_id,
 		   job_pairs.bench_id,
 		   job_pairs.bench_name,
+		   job_pairs.queuesub_time,
 		   jobpair_stage_data.solver_id,
 		   jobpair_stage_data.solver_name,
 		   jobpair_stage_data.config_id,

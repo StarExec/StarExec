@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
@@ -35,17 +36,19 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
+
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.Status;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.pipelines.JoblineStage;
 
 import com.google.gson.JsonObject;
 import com.mysql.jdbc.ResultSetMetaData;
@@ -55,7 +58,8 @@ import com.mysql.jdbc.ResultSetMetaData;
  * @author Tyler Jensen
  */
 public class Statistics {
-	private static final Logger log = Logger.getLogger(Jobs.class);
+	private static final Logger log = Logger.getLogger(Statistics.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 	
 	
 	/**
@@ -261,16 +265,20 @@ public class Statistics {
 	/**
 	 * Creates a chart that compares the running times of two solver/configuration pairs
 	 * on benchmarks that they both completed for a given job in a given space
-	 * @param jobId The job ID to look at
 	 * @param configId1 The first configuration ID (which is used to get the first solver)
 	 * @param configId2 The second configuration ID (which is used to get the second solver)
-	 * @param spaceId The ID  of the space containing all the jobs
+	 * @param edgeLengthInPixels Side length of the graph, which is square
+	 * @param axisColor The color to make the axis titles and labels
+	 * @param jobSpaceId The ID  of the space containing all the jobs
 	 * @return A list of strings of size 2, where the first string is the path to the new graph
 	 * and the second string is an HTML image map. Returns null on failure.
 	 * @author Eric Burns
 	 */
 	
-	public static List<String> makeSolverComparisonChart(int jobId, int configId1, int configId2, int jobSpaceId, boolean large, int stageNumber) {
+	public static List<String> makeSolverComparisonChart(int configId1, int configId2, int jobSpaceId, int edgeLengthInPixels, Color axisColor, int stageNumber) {
+		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
+		logUtil.entry(methodName);
+
 		try {
 			List<JobPair> pairs1=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configId1,stageNumber);
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
@@ -284,7 +292,7 @@ public class Statistics {
 				answer.add("big");
 				return answer;
 			}
-			return makeSolverComparisonChart(pairs1,pairs2, large,stageNumber);
+			return makeSolverComparisonChart(pairs1,pairs2, edgeLengthInPixels, axisColor,stageNumber);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}
@@ -297,7 +305,9 @@ public class Statistics {
 	 * that they both solved.
 	 * @param pairs1 A list of job pairs from a single solver/configuration pair
 	 * @param pairs2 A list of job pairs from a single solver/configuration pair
-	 * @param large Whether the graph will be the larger or smaller graph on Starexec (needs to be changed to a pixel size + an Axis color, this is a very bad abstraction)
+	 * @param edgeLengthInPixels Side length of the graph, which is square
+	 * @param axisColor The color to make the axis titles and labels
+	 * @param stageNumber Stage number to get data for
 	 * @return A size 2 List of String objects, with the first string being the path
 	 * to the new graph and the second string being an HTML image map for the graph.
 	 * Returns null on error
@@ -305,11 +315,13 @@ public class Statistics {
 	 */
 	
 	@SuppressWarnings("deprecation")
-	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, boolean large, int stageNumber) {
+	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, 
+			int edgeLengthInPixels, Color axisColor, int stageNumber) {
 		try {
 			
 			//there are no points if either list of pairs is empty
 			if (pairs1.size()==0 || pairs2.size()==0) {
+				log.debug("An input list has no jobpairs, returning null" );
 				return null;
 			}
 			HashMap<Integer, JobPair> pairs2Map=new HashMap<Integer,JobPair>();
@@ -397,34 +409,23 @@ public class Statistics {
 			
 			
 			String filename=UUID.randomUUID().toString()+".png";
+			log.debug("The filename for the graph is: " +  filename );
 			File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
 			
 			
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
-			if (!large) {
-				//we're displaying the small graph on black, so we want white axes
-				plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
-				plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
-				plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
-				plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
-				ChartUtilities.saveChartAsPNG(output, chart, 300, 300,info);
-			} else {
-				//the large graph is getting displayed on white, so we need black axes
-				plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
-				plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
-				plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
-				plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
-				ChartUtilities.saveChartAsPNG(output, chart, 800, 800,info);
-			}
-		
+			//we're displaying the small graph on black, so we want white axes
+			plot.getDomainAxis().setTickLabelPaint(axisColor);
+			plot.getDomainAxis().setLabelPaint(axisColor);
+			plot.getRangeAxis().setTickLabelPaint(axisColor);
+			plot.getRangeAxis().setLabelPaint(axisColor);
+			ChartUtilities.saveChartAsPNG(output, chart, edgeLengthInPixels, edgeLengthInPixels,info);
 			StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
 			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
 			String map;
-			if (!large) {
-				map=ChartUtilities.getImageMap("solverComparisonMap", info,tag,url);
-			} else {
-				map=ChartUtilities.getImageMap("bigSolverComparisonMap", info,tag,url);
-			}
+			
+			map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
+			
 			
 			log.debug("solver comparison chart created succesfully, returning filepath ");
 			List<String> answer=new ArrayList<String>();

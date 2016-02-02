@@ -26,7 +26,7 @@
 			<ul id="actionList">
 				<li><button type="button" id="restartStarExec">restart StarExec</button></li>
 				<li><button type="button" id="toggleDebugMode" value="${debugModeActive}">Enable debug mode</button></li>
-				<li><a href="${starexecRoot}/secure/admin/cache.jsp"><button type="button" id="manageCache">manage cache</button></a></li>  
+				<li><button id="clearStatsCache">Clear Job Stats</button></li>
 				<li><a href="${starexecRoot}/secure/admin/logging.jsp"><button type="button" id="manageLogging">manage logging</button></a></li>
 				<li><button type="button" id="clearLoadData">clear load balance data</button></li>
 			</ul>

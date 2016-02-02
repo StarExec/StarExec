@@ -381,7 +381,6 @@ public class Permissions {
 			return Permissions.getFullPermission();
 		}
 		
-		//TODO: What exactly are the permissions for the public user?
 		if (Users.isPublicUser(userId)) {
 			if (Spaces.isPublicSpace(spaceId)) {
 				return Permissions.getEmptyPermission();

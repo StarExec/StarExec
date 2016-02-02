@@ -49,7 +49,7 @@ At the bottom of the right hand side</p>
 		<li>upload and download xml representations of space hierarchies - an upload will create the space hierarchy
 		using already existing benchmarks and solvers.</li>
 		<li>edit space - edit basic information about the space
-		<li>upload solver</li>
+		<li>upload solver
 
 			<ul id="support">
 				<li>upload a compressed directory that contains at least one configuration(run script) that will tell starexec how to run your
@@ -60,6 +60,7 @@ At the bottom of the right hand side</p>
 		    	<li>Your script has access to a few different arguments and environmental variables, the most important being $1, the
 		    	absolute path the the benchmark input file</li>
 		    </ul>
+		</li>
 	</ul>
 </div>
 	

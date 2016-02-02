@@ -36,6 +36,22 @@ public class BenchmarkSecurity {
 		return new ValidatorStatusCode(true);
 		
 	}
+
+	/**
+	 * Checks to see whether the given userId can get an anonymous public link for the benchmark.
+	 * @param benchmarkId The id of the benchmark for which an anonymous link is being requested.
+	 * @param userId The id of the user attempting to generate an anonymous link.
+	 * @return A status code indicating if the user can generate a link.
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserGetAnonymousLink( int benchmarkId, int userId ) {
+		Benchmark bench = Benchmarks.get( benchmarkId );
+		if ( !userOwnsBenchOrIsAdmin( bench, userId )) {
+			return new ValidatorStatusCode( false, "You do not have permission to generate an anonymous link for this benchmark." );
+		} else { 	
+			return new ValidatorStatusCode( true );
+		}
+	}
 	
 	/**
 	 * Checks to see whether the given user is allowed to see the contents of the given 

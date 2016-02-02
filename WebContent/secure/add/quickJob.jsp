@@ -131,7 +131,7 @@
 						<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 							<td class="label"><p>pre processor</p></td>
 							<td>					
-								<select class="preProcessSetting" id="preProcess" name="preProcess"">
+								<select class="preProcessSetting" id="preProcess" name="preProcess">
 									<option value="-1" selected="selected">none</option>
 									<c:forEach var="proc" items="${preProcs}">
 											<option value="${proc.id}">${proc.name} (${proc.id})</option>

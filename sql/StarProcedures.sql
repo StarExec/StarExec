@@ -3,6 +3,7 @@
 
 USE starexec;
 
+source procedures/AnonymousLinks.sql
 source procedures/Benchmarks.sql;
 source procedures/Cluster.sql;
 source procedures/Communities.sql;
@@ -22,12 +23,5 @@ source procedures/Cache.sql;
 source procedures/Settings.sql;
 source procedures/UploadStatus.sql;
 source procedures/Pipelines.sql;
-source procedures/pagination/PairPagination.sql;
-source procedures/pagination/pairsInSpacePagination.sql;
 
-source procedures/pagination/JobPagination.sql;
-source procedures/pagination/SolverPagination.sql;
-source procedures/pagination/BenchmarkPagination.sql;
-source procedures/pagination/UserPagination.sql;
-source procedures/pagination/SpacePagination.sql;
 source procedures/pagination/RequestPagination.sql;

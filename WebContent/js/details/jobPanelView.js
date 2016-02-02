@@ -114,7 +114,7 @@ function initializePanels() {
 		        "sDom"			: 'rt<"clear">',
 		        "iDisplayStart"	: 0,
 		        "iDisplayLength": 1000, // make sure we show every entry
-		        "sAjaxSource"	: starexecRoot+"services/jobs/" + jobId+"/solvers/pagination/"+spaceId+"/true/",
+		        "sAjaxSource"	: starexecRoot+"services/jobs/solvers/pagination/"+spaceId+"/true/",
 		        "sServerMethod" : "POST",
 		        "fnServerData" : fnShortStatsPaginationHandler
 		    });

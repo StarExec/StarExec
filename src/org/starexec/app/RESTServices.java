@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,8 +10,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import java.sql.SQLException;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -27,8 +31,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cache;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
@@ -593,7 +597,6 @@ public class RESTServices {
 	/**
 	 * Returns the next page of entries for a job pairs table. This is used on the pairsInSpace page
 	 *
-	 * @param jobId the id of the job to get the next page of job pairs for
 	 * @param jobspaceid The id of the job space at the root if the hierarchy we want pairs for
 	 * @param type The type of pairs to return
 	 * @param request the object containing the DataTable information
@@ -603,12 +606,14 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
+	@Path("/jobs/pairs/pagination/{jobSpaceId}/{configId}/{type}/{wallclock}/{stageNumber}")
 	@Produces("application/json")	
-	public String getJobPairsInSpaceHierarchyByConfigPaginated(@PathParam("id") int jobId,@PathParam("stageNumber") int stageNumber, @PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
+	public String getJobPairsInSpaceHierarchyByConfigPaginated(@PathParam("stageNumber") int stageNumber,
+			@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,
+			@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -617,16 +622,22 @@ public class RESTServices {
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobId,jobSpaceId,configId, request,type,wallclock,stageNumber);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(jobSpaceId,configId, request,type,wallclock,stageNumber);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
 	@GET
-	@Path("/matrix/finished/{jobId}/{jobSpaceId}/{stageId}")
+	@Path("/matrix/finished/{jobSpaceId}/{stageId}")
 	@Produces("application/json")
-	public String getFinishedJobPairsForMatrix(@PathParam("jobId") int jobId, @PathParam("jobSpaceId") int jobSpaceId, 
+	public String getFinishedJobPairsForMatrix(@PathParam("jobSpaceId") int jobSpaceId, 
 											   @PathParam("stageId") int stageId, @Context HttpServletRequest request) {
+		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
+		int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode valid =JobSecurity.canUserSeeJob(jobId, userId);
+		if (!valid.isSuccess()) {
+			return gson.toJson(valid);
+		}
 		final String method = "getFinishedJobPairsForMatrix";
 		logUtil.entry(method);
 		logUtil.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageId);
@@ -748,18 +759,18 @@ public class RESTServices {
 	}
 
 	@POST
-	@Path("/jobs/{id}/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
+	@Path("/jobs/comparisons/pagination/{jobSpaceId}/{config1}/{config2}/{wallclock}")
 	@Produces("application/json")	
-	public String getSolverComparisonsPaginated(@PathParam("id") int jobId,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
+	public String getSolverComparisonsPaginated(@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		int stageNumber=0;
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobId,jobSpaceId,config1,config2, request,wallclock,stageNumber);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(jobSpaceId,config1,config2, request,wallclock,stageNumber);
 		log.debug("got the next data table page for the solver comparision web page ");
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -778,18 +789,18 @@ public class RESTServices {
 	 */
 
 	@POST
-	@Path("/jobs/{id}/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
+	@Path("/jobs/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
 	@Produces("application/json")	
-	public String getJobPairsPaginated(@PathParam("id") int jobId,@PathParam("stageNumber") int stageNumber,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
+	public String getJobPairsPaginated(@PathParam("stageNumber") int stageNumber,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status = JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status = JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobId,jobSpaceId, request,wallclock,syncResults,stageNumber);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,syncResults,stageNumber);
 		if (nextDataTablesPage==null) {
 			return gson.toJson(ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
@@ -806,13 +817,15 @@ public class RESTServices {
 	 */
 	
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
-	@Produces("application/json")	
-	public String getSpaceOverviewGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+	@Path("/jobs/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
+	@Produces("application/json")
+	//TODO: Remove usage of 'big' attribute
+	public String getSpaceOverviewGraph(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
+		log.debug("Got request to get space overview graph.");
 		int userId = SessionUtil.getUserId(request);
 		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -922,20 +935,32 @@ public class RESTServices {
 	 * an image map linking points to benchmarks
 	 */
 	@POST
-	@Path("/jobs/{id}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{large}/{stageNum}")
+	@Path("/jobs/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{edgeLengthInPixels}/{axisColor}/{stageNum}")
 	@Produces("application/json")	
-	public String getSolverComparisonGraph(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @PathParam("large") boolean large, @Context HttpServletRequest request) {		
-
+	public String getSolverComparisonGraph(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,
+			@PathParam("config1") int config1, @PathParam("config2") int config2, 
+			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,@PathParam("axisColor") String axisColor, @Context HttpServletRequest request) {		
+		final String methodName = "getSolverComparisonGraph";
+		logUtil.entry(methodName);
 	        
 		int userId = SessionUtil.getUserId(request);
 		List<String> chartPath = null;
 		
-		ValidatorStatusCode status= JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status= JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(jobId,config1,config2,jobSpaceId,large,stageNumber);
+		Color c = Util.getColorFromString(axisColor);
+		if (c==null) {
+			return gson.toJson(new ValidatorStatusCode(false,"The given color is not valid"));
+		}
+		if (edgeLengthInPixels<=0 || edgeLengthInPixels>2000) {
+			return gson.toJson(new ValidatorStatusCode(false, "The given size is not valid: please choose an integer from 1-2000"));
+					
+		}
+		
+		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber);
 		if (chartPath==null) {
 			return gson.toJson(ERROR_DATABASE);
 		}
@@ -959,19 +984,20 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/{id}/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
+	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("id") int jobId,@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJob(space.getJobId(), userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobId, jobSpaceId,stageNumber);
+		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(space,stageNumber);
 
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpaceId,jobId,shortFormat,wallclock);
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,space,shortFormat,wallclock);
 
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
@@ -1042,6 +1068,95 @@ public class RESTServices {
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
+	}
+
+	/**
+	 * @param primitiveType The type of primitive (solver, bench, etc) that we're going to generate a link for.
+	 * @param primitive The id of the primitive to generate an anonymous public URL for.
+	 * @param hidePrimitiveName Whether or not the name of the primitive should be hidden on the anonymous page.
+	 * @param request The http request.
+	 * 
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path( "/anonymousLink/{primitiveType}/{primitiveId}/{hidePrimitiveName}" )
+	@Produces( "application/json" )
+	public String getAnonymousLinkForPrimitive( 
+			@PathParam("primitiveType") String primitiveType,
+			@PathParam("primitiveId") int primitiveId, 
+			@PathParam("hidePrimitiveName") boolean hidePrimitiveName,
+			@Context HttpServletRequest request ) {
+
+		final String methodName = "getAnonymousLinkForPrimitive";
+		logUtil.entry( methodName );
+		logUtil.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
+				", hidePrimitiveName = " + hidePrimitiveName );
+
+
+		int userId = SessionUtil.getUserId(request);
+
+		ValidatorStatusCode status = GeneralSecurity.canUserGetAnonymousLinkForPrimitive( userId, primitiveType, primitiveId );
+
+		try {
+			// Check if user has permission to get an anonymous link for this benchmark.
+			if ( status.isSuccess() ) {
+				log.debug( "User with id=" + userId + " is allowed to create anonymous link for primitive.");
+
+				// Create a new Gson that won't encode the = sign as \u003d
+				Gson tempGson = new GsonBuilder().disableHtmlEscaping().create();
+
+				// Return a link associated with the primitive.
+				String anonymousLinkForPrimitive = createAnonymousLinkForPrimitive( primitiveType, primitiveId, hidePrimitiveName );
+				return tempGson.toJson( new ValidatorStatusCode( true, anonymousLinkForPrimitive ));
+			} else {
+				log.debug( "User with id=" + userId + " is not allowed to create anonymous link for primitive.");
+				// Return the failed security check status.
+				return gson.toJson( status );
+			}
+		} catch ( SQLException e ) {
+			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
+		}
+	}
+
+	/**
+	 * Creates a new anonymous link for a given primitive.
+	 * @author Albert Giegerich
+	 */
+	private String createAnonymousLinkForPrimitive( 
+			final String primitiveType, 
+			final int primitiveId, 
+			final boolean hidePrimitiveName ) throws SQLException {
+
+		String primitiveUrlName = getPrimitiveUrlName( primitiveType );
+
+		// The entire url for the link except for a unique code that will be appended to the end.
+		final String urlPrefix = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + "/" + R.STAREXEC_APPNAME + 
+								 "/secure/details/" + primitiveUrlName + ".jsp?anonId=";
+
+		// If the anonymous link for this primitive is already in the database, retrieve and return it.
+		Optional<String> optionalUniqueId = AnonymousLinks.getAnonymousLinkCode( primitiveType, primitiveId, hidePrimitiveName );
+		if ( optionalUniqueId.isPresent() ) {
+			return urlPrefix + optionalUniqueId.get();
+		}
+
+		// Generate a unique id to be part of the link URL and store it in the database.
+		final String uniqueId = UUID.randomUUID().toString();
+		AnonymousLinks.addAnonymousLink( uniqueId, primitiveType, primitiveId, hidePrimitiveName );
+
+		// Return the URL with the UUID as a parameter.
+		return urlPrefix + uniqueId; 
+	}
+
+	/**
+	 * Returns the name of the url path used for the given primitive type.
+	 * @author Albert Giegerich
+	 */
+	private String getPrimitiveUrlName( final String primitiveType ) {
+		if ( primitiveType.equals( "bench" )) {
+			return "benchmark";
+		} else {
+			return primitiveType;
+		}
 	}
 
 	@POST
@@ -3455,7 +3570,6 @@ public class RESTServices {
 			}
 		} else {
 			for (int id : selectedSubSpaces) {
-				//TODO: Should this return a list of ids of every space in the hierarchy?
 				int newSpaceId;
 				try {
 					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId);
@@ -3993,22 +4107,6 @@ public class RESTServices {
 		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
-	/**
-	 * Clears every entry from the cache
-	 * @param request
-	 * @return
-	 */
-	@POST
-	@Path("/cache/clearAll")
-	@Produces("application/json")
-	public String clearCache(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		return Cache.deleteAllCache() ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
-	}
 	
 	/**
 	 * Clears every entry from the cache
@@ -4028,30 +4126,6 @@ public class RESTServices {
 		return Jobs.removeAllCachedJobStats() ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
-	/**
-	 * 
-	 */
-	@POST
-	@Path("/cache/clearTypes")
-	@Produces("application/json")
-	public String clearCacheTypes(@Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-		
-		
-		List<Integer> types=Util.toIntegerList(request.getParameterValues("selectedTypes[]"));		
-		boolean success=true;
-		for (Integer i : types) {
-			success= success && Cache.deleteCacheOfType(CacheType.getType(i));
-		}
-		
-		return success ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
-	}
-	
-
 	
 	@POST
 	@Path("/suspend/user/{userId}")

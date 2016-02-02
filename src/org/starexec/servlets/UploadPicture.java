@@ -59,7 +59,7 @@ public class UploadPicture extends HttpServlet {
 
 			String rawUserIdOfOwner = (String)form.get(UploadPicture.ID);
 			int userIdOfOwner = 0;
-			if (Validator.isValidInteger(rawUserIdOfOwner)) {
+			if (Validator.isValidPosInteger(rawUserIdOfOwner)) {
 				userIdOfOwner = Integer.parseInt(rawUserIdOfOwner);
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "User id for request was not an integer.");
@@ -69,13 +69,10 @@ public class UploadPicture extends HttpServlet {
 
 			boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
 			boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
-			if ( !(callerIsOwner || callerIsAdmin) ) {
+			if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You cannot change this user's picture.");
 				return;
 			}
-
-
-
 			
 			ValidatorStatusCode status=this.isRequestValid(form);
 			// If the request is valid
@@ -116,7 +113,7 @@ public class UploadPicture extends HttpServlet {
 				sb.append(id);
 				fileName = sb.toString();
 				redir = Util.docRoot("secure/edit/account.jsp");
-			} else if (type.equals("solver")) {
+			} else if (type.equals(R.SOLVER)) {
 				sb.delete(0, sb.length());
 				sb.append("/solvers/Pic");
 				sb.append(id);			
@@ -139,7 +136,7 @@ public class UploadPicture extends HttpServlet {
 			}
 			
 			sb.delete(0, sb.length());
-			sb.append(R.PICTURE_PATH);
+			sb.append(R.getPicturePath());
 			sb.append(File.separator);
 			sb.append(fileName);
 			sb.append("_org.jpg");
@@ -149,7 +146,7 @@ public class UploadPicture extends HttpServlet {
 			item.write(archiveFile);
 
 			sb.delete(0, sb.length());
-			sb.append(R.PICTURE_PATH);
+			sb.append(R.getPicturePath());
 			sb.append(File.separator);
 			sb.append(fileName);
 			sb.append("_thn.jpg");
@@ -173,11 +170,11 @@ public class UploadPicture extends HttpServlet {
 			if(!form.containsKey(PICTURE_FILE)) {
 				return new ValidatorStatusCode(false, "No picture was supplied");
 			}
-			if (!Validator.isValidInteger((String)form.get(ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(ID))) {
 				return new ValidatorStatusCode(false, "The supplied ID is not a valid integer");
 			}
 			String type=(String)form.get(TYPE);
-			if (type==null || (!type.equals("solver") && !type.equals("user") && !type.equals("benchmark"))) {
+			if (type==null || (!type.equals(R.SOLVER) && !type.equals("user") && !type.equals("benchmark"))) {
 				return new ValidatorStatusCode(false, "The supplied image type is not valid");
 			}
 			

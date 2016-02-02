@@ -28,6 +28,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Hash;
 
 
 //TODO: Test pagination functions
@@ -61,11 +62,12 @@ public class UserTests extends TestSequence {
 
 	}
 	
-	//TODO: Confirm the password was actually updated correctly?
 	@StarexecTest
 	private void setPasswordTest() {
 		String randomPass=TestUtil.getRandomPassword();
 		Assert.assertTrue(Users.updatePassword(user1.getId(), randomPass));
+		Assert.assertEquals(Hash.hashPassword(randomPass), Users.getPassword(user1.getId()));
+		user1.setPassword(randomPass);
 	}
 	
 	@StarexecTest
@@ -215,10 +217,11 @@ public class UserTests extends TestSequence {
 	 * Tests that a user's solver directory is deleted when the user is deleted.
 	 * @author Albert Giegerich
 	 */
+	@StarexecTest
 	private void DeleteUserDeletesUsersSolverDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
-		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
-		File tempUsersSolverDirectory = new File(R.SOLVER_PATH+"/"+tempUser.getId());
+		ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId());
+		File tempUsersSolverDirectory = new File(R.getSolverPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersSolverDirectory.exists());
 
 		try {
@@ -259,7 +262,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesUsersBenchmarkDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
 		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
-		File tempUsersBenchmarkDirectory = new File(R.BENCHMARK_PATH+"/"+tempUser.getId());
+		File tempUsersBenchmarkDirectory = new File(R.getBenchmarkPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersBenchmarkDirectory.exists());
 
 		try {
@@ -340,7 +343,7 @@ public class UserTests extends TestSequence {
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertNotNull(tempJob);	
 
-		File jobDirectory = new File(R.NEW_JOB_OUTPUT_DIR +"/"+ tempJob.getId());
+		File jobDirectory = new File(R.getJobOutputDirectory() +"/"+ tempJob.getId());
 		// Make the job directory since ResourceLoader isn't actually running the job.
 		jobDirectory.mkdir();
 
@@ -450,10 +453,10 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(pageSize+1,Users.getDefaultPageSize(user1.getId()));
 	}
 	
-	//TODO: Make this stronger?
 	@StarexecTest
 	private void GetPasswordTest() {
 		Assert.assertNotNull(Users.getPassword(user1.getId()));
+		Assert.assertEquals(Hash.hashPassword(user1.getPassword()), Users.getPassword(user1.getId()));
 		
 	}
 	
@@ -543,8 +546,8 @@ public class UserTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspaces(space.getId());
-		Spaces.removeSubspaces(comm.getId());
+		Spaces.removeSubspace(space.getId());
+		Spaces.removeSubspace(comm.getId());
 		
 	}
 	

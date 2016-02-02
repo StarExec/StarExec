@@ -107,7 +107,7 @@
 	<c:if test="${hasAdminReadPrivileges}">
 		<fieldset>
 			<legend>user disk quota</legend>
-				<table id="diskUsageTable" class="shaded" uid=${userId}>
+				<table id="diskUsageTable" class="shaded" uid="${userId}">
 					<thead>
 						<tr>
 							<th>attribute</th>

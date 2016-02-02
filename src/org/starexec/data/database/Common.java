@@ -85,6 +85,9 @@ public class Common {
 		}
 	}		
 	
+	/**
+	 * Logs the total number of connections idle and active at the time this is called
+	 */
 	public static void logConnectionsOpen() {
 		log.debug("connection counts  = "+dataPool.getIdle()+" "+dataPool.getActive());
 		log.debug((connectionsOpened-connectionsClosed));
@@ -124,7 +127,7 @@ public class Common {
 	
 	/**
 	 * Gets information on the data pool.  Used to track down connection leak.
-	 * Returns true if not nearing max active connections
+	 * @return Returns true if not nearing max active connections
 	 */
 	public static Boolean getDataPoolData(){
 		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");

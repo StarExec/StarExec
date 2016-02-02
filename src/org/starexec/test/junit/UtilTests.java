@@ -1,5 +1,6 @@
 package org.starexec.test.junit;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.junit.Assert;
@@ -86,4 +87,17 @@ public class UtilTests {
 		
 		Assert.assertEquals(0, Util.bytesToMegabytes(3));
 	}
+	@Test
+	public void getColorFromStringTest() {
+		Color c = Util.getColorFromString("black");
+		Assert.assertEquals(0, c.getGreen());
+		Assert.assertEquals(0, c.getBlue());
+		Assert.assertEquals(0, c.getRed());
+	}
+	@Test
+	public void getNullColorFromStringTest() {
+		Color c = Util.getColorFromString("fakecolor");
+		Assert.assertEquals(null, c);
+	}
+	
 }

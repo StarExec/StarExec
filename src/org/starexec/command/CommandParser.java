@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.starexec.constants.R;
+
 class CommandParser {
 	
 	private ArgumentParser parser=null;
@@ -85,19 +87,19 @@ class CommandParser {
 	protected int handleViewCommand(String c, HashMap<String,String> commandParams) {
 		try {
 			Map<String,String> attrs=null;
-			if(c.equals(R.COMMAND_VIEWJOB)) {
-				attrs=parser.getPrimitiveAttributes(commandParams, "job");
-			} else if (c.equals(R.COMMAND_VIEWSOLVER)) {
-				attrs=parser.getPrimitiveAttributes(commandParams, "solver");
-			}  else if (c.equals(R.COMMAND_VIEWSPACE)) {
-				attrs=parser.getPrimitiveAttributes(commandParams, "space");
-			} else if (c.equals(R.COMMAND_VIEWBENCH)) {
+			if(c.equals(C.COMMAND_VIEWJOB)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, R.JOB);
+			} else if (c.equals(C.COMMAND_VIEWSOLVER)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, R.SOLVER);
+			}  else if (c.equals(C.COMMAND_VIEWSPACE)) {
+				attrs=parser.getPrimitiveAttributes(commandParams, R.SPACE);
+			} else if (c.equals(C.COMMAND_VIEWBENCH)) {
 				attrs=parser.getPrimitiveAttributes(commandParams, "benchmark");
-			} else if (c.equals(R.COMMAND_VIEWPROCESSOR)) {
+			} else if (c.equals(C.COMMAND_VIEWPROCESSOR)) {
 				attrs=parser.getPrimitiveAttributes(commandParams, "processor");
-			} else if (c.equals(R.COMMAND_VIEWCONFIGURATION)) {
+			} else if (c.equals(C.COMMAND_VIEWCONFIGURATION)) {
 				attrs=parser.getPrimitiveAttributes(commandParams, "configuration");
-			} else if (c.equals(R.COMMAND_VIEWQUEUE)) {
+			} else if (c.equals(C.COMMAND_VIEWQUEUE)) {
 				attrs=parser.getPrimitiveAttributes(commandParams,"queue");
 			}
 			else {
@@ -130,15 +132,15 @@ class CommandParser {
 		try {
 			int serverStatus=0;
 			
-			if(c.equals(R.COMMAND_SETFIRSTNAME)) {
+			if(c.equals(C.COMMAND_SETFIRSTNAME)) {
 				serverStatus=parser.setUserSetting("firstname",commandParams);
-			} else if (c.equals(R.COMMAND_SETLASTNAME)) {
+			} else if (c.equals(C.COMMAND_SETLASTNAME)) {
 				serverStatus=parser.setUserSetting("lastname",commandParams);
-			}  else if (c.equals(R.COMMAND_SETINSTITUTION)) {
+			}  else if (c.equals(C.COMMAND_SETINSTITUTION)) {
 				serverStatus=parser.setUserSetting("institution",commandParams);
-			} else if (c.equals(R.COMMAND_SETSPACEPUBLIC)) {
+			} else if (c.equals(C.COMMAND_SETSPACEPUBLIC)) {
 				serverStatus=parser.setSpaceVisibility(commandParams, true);
-			} else if (c.equals(R.COMMAND_SETSPACEPRIVATE)) {
+			} else if (c.equals(C.COMMAND_SETSPACEPRIVATE)) {
 				serverStatus=parser.setSpaceVisibility(commandParams, false);
 			}
 			else {
@@ -169,18 +171,18 @@ class CommandParser {
 		    List<Integer> ids=null;
 			int serverStatus;
 
-			if (c.equals(R.COMMAND_PUSHBENCHMARKS)) {
+			if (c.equals(C.COMMAND_PUSHBENCHMARKS)) {
 				serverStatus=parser.uploadBenchmarks(commandParams);
-			} else if (c.equals(R.COMMAND_PUSHBENCHPROC)) {
+			} else if (c.equals(C.COMMAND_PUSHBENCHPROC)) {
 				serverStatus=parser.uploadBenchProc(commandParams);
-			} else if (c.equals(R.COMMAND_PUSHPOSTPROC)) {
+			} else if (c.equals(C.COMMAND_PUSHPOSTPROC)) {
 				serverStatus=parser.uploadPostProc(commandParams);
-			} else if (c.equals(R.COMMAND_PUSHPREPROC)) {
+			} else if (c.equals(C.COMMAND_PUSHPREPROC)) {
 				serverStatus=parser.uploadPreProc(commandParams);
-			}else if (c.equals(R.COMMAND_PUSHSOLVER)) {
+			}else if (c.equals(C.COMMAND_PUSHSOLVER)) {
 				serverStatus=parser.uploadSolver(commandParams);
-			}  else if (c.equals(R.COMMAND_PUSHSPACEXML) || c.equals(R.COMMAND_PUSHJOBXML)) {
-				boolean isJobXML= c.equals(R.COMMAND_PUSHJOBXML);
+			}  else if (c.equals(C.COMMAND_PUSHSPACEXML) || c.equals(C.COMMAND_PUSHJOBXML)) {
+				boolean isJobXML= c.equals(C.COMMAND_PUSHJOBXML);
 			    ids=parser.uploadXML(commandParams,isJobXML);
 			    if (ids.size()==0){
 			    	serverStatus=Status.ERROR_INTERNAL;
@@ -188,7 +190,7 @@ class CommandParser {
 			    	//if the first value is positive, it is an id and we were successful. Otherwise, it is an error code
 			    	serverStatus=Math.min(0, ids.get(0));
 			    }
-			} else if (c.equals(R.COMMAND_PUSHCONFIGRUATION)) {
+			} else if (c.equals(C.COMMAND_PUSHCONFIGRUATION)) {
 				serverStatus=parser.uploadConfiguration(commandParams);
 			}
 			else {
@@ -225,17 +227,17 @@ class CommandParser {
 			int serverStatus=0;
 			
 			boolean isPollJob=false;
-			if (c.equals(R.COMMAND_CREATEJOB)) {
-				if (commandParams.containsKey(R.PARAM_TIME) || commandParams.containsKey(R.PARAM_OUTPUT_FILE)) {
+			if (c.equals(C.COMMAND_CREATEJOB)) {
+				if (commandParams.containsKey(C.PARAM_TIME) || commandParams.containsKey(C.PARAM_OUTPUT_FILE)) {
 					HashMap<String,String> pollParams=new HashMap<String,String>();
 					isPollJob=true;
-					pollParams.put(R.PARAM_TIME, commandParams.remove(R.PARAM_TIME));
-					pollParams.put(R.PARAM_OUTPUT_FILE, commandParams.remove(R.PARAM_OUTPUT_FILE));
-					pollParams.put(R.PARAM_ID, "1");
-					if (commandParams.containsKey(R.PARAM_OVERWRITE)) {
-						pollParams.put(R.PARAM_OVERWRITE, commandParams.remove(R.PARAM_OVERWRITE));
+					pollParams.put(C.PARAM_TIME, commandParams.remove(C.PARAM_TIME));
+					pollParams.put(C.PARAM_OUTPUT_FILE, commandParams.remove(C.PARAM_OUTPUT_FILE));
+					pollParams.put(C.PARAM_ID, "1");
+					if (commandParams.containsKey(C.PARAM_OVERWRITE)) {
+						pollParams.put(C.PARAM_OVERWRITE, commandParams.remove(C.PARAM_OVERWRITE));
 					}
-					int valid=Validator.isValidPollJobRequest(pollParams);
+					int valid=CommandValidator.isValidPollJobRequest(pollParams);
 					if (valid<0) {
 						return valid;
 					}
@@ -247,14 +249,14 @@ class CommandParser {
 					if (returnIDsOnUpload) {
 						System.out.println("id="+id);
 					}
-					pollParams.put(R.PARAM_ID, String.valueOf(id));
+					pollParams.put(C.PARAM_ID, String.valueOf(id));
 					System.out.println("Job created, polling has begun");
 					serverStatus=pollJob(pollParams);
 				} else {
 					serverStatus=parser.createJob(commandParams);
 				}
 				
-			} else if (c.equals(R.COMMAND_CREATESUBSPACE)) {
+			} else if (c.equals(C.COMMAND_CREATESUBSPACE)) {
 				serverStatus=parser.createSubspace(commandParams);
 			} 
 			else {
@@ -287,23 +289,23 @@ class CommandParser {
 		try {
 			int serverStatus=0;
 			List<Integer> ids=null;
-			if (c.equals(R.COMMAND_COPYSOLVER)) {
-				ids=parser.copyPrimitives(commandParams,"solver");
+			if (c.equals(C.COMMAND_COPYSOLVER)) {
+				ids=parser.copyPrimitives(commandParams,R.SOLVER);
 				serverStatus=Math.min(0, ids.get(0));
-			} else if (c.equals(R.COMMAND_LINKSOLVER)) {
-				serverStatus=parser.linkPrimitives(commandParams,"solver");
-			}  else if (c.equals(R.COMMAND_COPYBENCH)) {
+			} else if (c.equals(C.COMMAND_LINKSOLVER)) {
+				serverStatus=parser.linkPrimitives(commandParams,R.SOLVER);
+			}  else if (c.equals(C.COMMAND_COPYBENCH)) {
 				ids=parser.copyPrimitives(commandParams,"benchmark");
 				serverStatus=Math.min(0, ids.get(0));
-			} else if(c.equals(R.COMMAND_LINKBENCH))  {
+			} else if(c.equals(C.COMMAND_LINKBENCH))  {
 				serverStatus=parser.linkPrimitives(commandParams, "benchmark");;
-			} else if (c.equals(R.COMMAND_COPYSPACE)) {
+			} else if (c.equals(C.COMMAND_COPYSPACE)) {
 				
-				ids=parser.copyPrimitives(commandParams,"space");
+				ids=parser.copyPrimitives(commandParams,R.SPACE);
 				serverStatus=Math.min(0, ids.get(0));
-			} else if (c.equals(R.COMMAND_LINKJOB)) {
-				serverStatus=parser.linkPrimitives(commandParams,"job");
-			} else if (c.equals(R.COMMAND_LINKUSER)) {
+			} else if (c.equals(C.COMMAND_LINKJOB)) {
+				serverStatus=parser.linkPrimitives(commandParams,R.JOB);
+			} else if (c.equals(C.COMMAND_LINKUSER)) {
 				serverStatus=parser.linkPrimitives(commandParams, "user");
 			}
 			else {
@@ -335,15 +337,15 @@ class CommandParser {
 			int serverStatus=0;
 			
 			//the types specified below must match the types given in RESTServices.java
-			if (c.equals(R.COMMAND_REMOVEBENCHMARK)) {
+			if (c.equals(C.COMMAND_REMOVEBENCHMARK)) {
 				serverStatus=parser.removePrimitive(commandParams, "benchmark");
-			} else if (c.equals(R.COMMAND_REMOVESOLVER) || c.equals(R.COMMAND_DELETEPOSTPROC)) {
-				serverStatus=parser.removePrimitive(commandParams, "solver");
-			}  else if (c.equals(R.COMMAND_REMOVEUSER)) {
+			} else if (c.equals(C.COMMAND_REMOVESOLVER) || c.equals(C.COMMAND_DELETEPOSTPROC)) {
+				serverStatus=parser.removePrimitive(commandParams, R.SOLVER);
+			}  else if (c.equals(C.COMMAND_REMOVEUSER)) {
 				serverStatus=parser.removePrimitive(commandParams,"user");
-			} else if(c.equals(R.COMMAND_REMOVEJOB))  {
-				serverStatus=parser.removePrimitive(commandParams, "job");
-			} else if (c.equals(R.COMMAND_REMOVESUBSPACE)) {
+			} else if(c.equals(C.COMMAND_REMOVEJOB))  {
+				serverStatus=parser.removePrimitive(commandParams, R.JOB);
+			} else if (c.equals(C.COMMAND_REMOVESUBSPACE)) {
 				serverStatus=parser.removePrimitive(commandParams,"subspace");
 			
 			}
@@ -369,16 +371,16 @@ class CommandParser {
 		try {
 			int serverStatus=0;
 			
-			if (c.equals(R.COMMAND_DELETEBENCH)) {
+			if (c.equals(C.COMMAND_DELETEBENCH)) {
 				serverStatus=parser.deletePrimitive(commandParams, "benchmark");
-			} else if (c.equals(R.COMMAND_DELETEBENCHPROC) || c.equals(R.COMMAND_DELETEPOSTPROC)) {
+			} else if (c.equals(C.COMMAND_DELETEBENCHPROC) || c.equals(C.COMMAND_DELETEPOSTPROC)) {
 				serverStatus=parser.deletePrimitive(commandParams, "processor");
-			} else if (c.equals(R.COMMAND_DELETESOLVER)) {
-				serverStatus=parser.deletePrimitive(commandParams,"solver");
-			} else if(c.equals(R.COMMAND_DELETECONFIG))  {
+			} else if (c.equals(C.COMMAND_DELETESOLVER)) {
+				serverStatus=parser.deletePrimitive(commandParams,R.SOLVER);
+			} else if(c.equals(C.COMMAND_DELETECONFIG))  {
 				serverStatus=parser.deletePrimitive(commandParams, "configuration");
-			} else if (c.equals(R.COMMAND_DELETEJOB)) {
-				serverStatus=parser.deletePrimitive(commandParams,"job");
+			} else if (c.equals(C.COMMAND_DELETEJOB)) {
+				serverStatus=parser.deletePrimitive(commandParams,R.JOB);
 			}
 			else {
 				return Status.ERROR_BAD_COMMAND;
@@ -417,32 +419,32 @@ class CommandParser {
 		try {
 			HashMap<Integer,String> answer=new HashMap<Integer,String>();
 			String type="";
-			if (c.equals(R.COMMAND_LISTSOLVERS)) {
+			if (c.equals(C.COMMAND_LISTSOLVERS)) {
 				type="solvers";
 				
-			} else if (c.equals(R.COMMAND_LISTBENCHMARKS)) {
+			} else if (c.equals(C.COMMAND_LISTBENCHMARKS)) {
 				type="benchmarks";
 				
-			} else if (c.equals(R.COMMAND_LISTSOLVERCONFIGS)){
+			} else if (c.equals(C.COMMAND_LISTSOLVERCONFIGS)){
 			    type="solverconfigs";
-			}else if (c.equals(R.COMMAND_LISTJOBS)) {
+			}else if (c.equals(C.COMMAND_LISTJOBS)) {
 				type="jobs";
 				
-			} else if(c.equals(R.COMMAND_LISTUSERS)) {
+			} else if(c.equals(C.COMMAND_LISTUSERS)) {
 				type="users";
 				
-			} else if(c.equals(R.COMMAND_LISTSUBSPACES)) {
+			} else if(c.equals(C.COMMAND_LISTSUBSPACES)) {
 				type="spaces";
-			} else if (c.equals(R.COMMAND_LISTPRIMITIVES)) {
+			} else if (c.equals(C.COMMAND_LISTPRIMITIVES)) {
 				String[] types;
-				if (commandParams.containsKey(R.PARAM_USER)) {
+				if (commandParams.containsKey(C.PARAM_USER)) {
 					types=new String[] {"solvers","benchmarks","jobs"};
 				} else {
 					types=new String[] {"solvers","benchmarks","jobs","users","spaces"};
 				}
 				for (String x : types) {
 					System.out.println(x.toUpperCase()+"\n");
-					answer=parser.getPrimsInSpace(type,commandParams);
+					answer=parser.listPrimsBySpaceOrUser(type,commandParams);
 					
 					//this block tests to see whether the answer actually indicates an error
 					if (answer.keySet().size()==1) {
@@ -461,7 +463,7 @@ class CommandParser {
 			else {
 				return Status.ERROR_BAD_COMMAND;
 			}
-			answer=parser.getPrimsInSpace(type,commandParams);
+			answer=parser.listPrimsBySpaceOrUser(type,commandParams);
 			//if we only have 1 key and it is negative, it represents an error code
 			if (answer.keySet().size()==1) {
 				for (int x : answer.keySet()) {
@@ -507,7 +509,7 @@ class CommandParser {
 				
 				//either of the following two statuses indicate that we should stop
 				//processing the file
-				if (status==R.SUCCESS_EXIT) {
+				if (status==C.SUCCESS_EXIT) {
 					return status;
 				}
 				if (status==Status.ERROR_CONNECTION_LOST) {
@@ -533,7 +535,7 @@ class CommandParser {
 			parser.logout();
 			parser=null;
 		}
-		return R.SUCCESS_EXIT;
+		return C.SUCCESS_EXIT;
 	}
 	
 	/**
@@ -552,7 +554,7 @@ class CommandParser {
 		command=command.trim();
 		
 		// Empty lines and comments are equivalent.
-		if (command.length()==0 || command.startsWith(R.COMMENT_SYMBOL)) {
+		if (command.length()==0 || command.startsWith(C.COMMENT_SYMBOL)) {
 			return 0;
 		}
 		
@@ -562,30 +564,30 @@ class CommandParser {
 		if (commandParams==null) {
 			return Status.ERROR_BAD_ARGS;
 		}
-		if (command.equalsIgnoreCase(R.COMMAND_EXIT)) {
+		if (command.equalsIgnoreCase(C.COMMAND_EXIT)) {
 			return exit();
-		} else if (c.equals(R.COMMAND_HELP)) {
-			System.out.println(R.HELP_MESSAGE);
+		} else if (c.equals(C.COMMAND_HELP)) {
+			System.out.println(C.HELP_MESSAGE);
 			return 0;
-		} else if (c.equals(R.COMMAND_SLEEP)) {
-			int valid=Validator.isValidSleepCommand(commandParams);
+		} else if (c.equals(C.COMMAND_SLEEP)) {
+			int valid=CommandValidator.isValidSleepCommand(commandParams);
 			if (valid<0) {
 				return valid;
 			}
 			try {
-				Thread.sleep((long)Double.parseDouble(commandParams.get(R.PARAM_TIME))*1000);
+				Thread.sleep((long)Double.parseDouble(commandParams.get(C.PARAM_TIME))*1000);
 			} catch (Exception e) {
 				//do nothing-- we shouldn't ever get here
 			}
 			
 			return 0;
-		} else if(c.equals(R.COMMAND_LOGIN)) {
+		} else if(c.equals(C.COMMAND_LOGIN)) {
 			
 			//don't allow a login if we have a session already-- they should logout first
 			if (parser!=null) {
 				return Status.ERROR_CONNECTION_EXISTS;
 			}
-			int valid=Validator.isValidLoginRequest(commandParams);
+			int valid=CommandValidator.isValidLoginRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
@@ -599,23 +601,23 @@ class CommandParser {
 				return valid;
 			}
 			
-			return R.SUCCESS_LOGIN;
-		} else if (c.equals(R.COMMAND_RUNFILE)) {
-			int valid=Validator.isValidRunFileRequest(commandParams);
+			return C.SUCCESS_LOGIN;
+		} else if (c.equals(C.COMMAND_RUNFILE)) {
+			int valid=CommandValidator.isValidRunFileRequest(commandParams);
 			if (valid<0) {
 				return valid;
 			}
-			return this.runFile(commandParams.get(R.PARAM_FILE),commandParams.containsKey(R.PARAM_VERBOSE));
+			return this.runFile(commandParams.get(C.PARAM_FILE),commandParams.containsKey(C.PARAM_VERBOSE));
 			
-		} else if (c.equals(R.COMMAND_IGNOREIDS)) {
+		} else if (c.equals(C.COMMAND_IGNOREIDS)) {
 			returnIDsOnUpload=false;
 			return 0;
-		} else if (c.equals(R.COMMAND_RETURNIDS)) {
+		} else if (c.equals(C.COMMAND_RETURNIDS)) {
 			returnIDsOnUpload=true;
 			return 0;
-		} else if (c.equals(R.COMMAND_VIEWALL)) {
+		} else if (c.equals(C.COMMAND_VIEWALL)) {
 			printVerbosePrimDetails=true;
-		} else if (c.equals(R.COMMAND_VIEWLIMITED)) {
+		} else if (c.equals(C.COMMAND_VIEWLIMITED)) {
 			printVerbosePrimDetails=false;
 		}
 		int status;
@@ -623,23 +625,23 @@ class CommandParser {
 			return Status.ERROR_NOT_LOGGED_IN;
 		}
 		
-		if (c.equals(R.COMMAND_LOGOUT)) {
+		if (c.equals(C.COMMAND_LOGOUT)) {
 			parser.logout();
 			parser=null;
 			
-			return R.SUCCESS_LOGOUT;
+			return C.SUCCESS_LOGOUT;
 			
-		} else if (c.equals(R.COMMAND_POLLJOB)) {
+		} else if (c.equals(C.COMMAND_POLLJOB)) {
 			status=pollJob(commandParams);
-		} else if (c.equals(R.COMMAND_RESUMEJOB)) {
+		} else if (c.equals(C.COMMAND_RESUMEJOB)) {
 			status=parser.resumeJob(commandParams);
-		} else if (c.equals(R.COMMAND_PAUSEJOB)) {
+		} else if (c.equals(C.COMMAND_PAUSEJOB)) {
 			status=parser.pauseJob(commandParams);
-		} else if (c.equals(R.COMMAND_RERUNPAIR)) {
+		} else if (c.equals(C.COMMAND_RERUNPAIR)) {
 			status=parser.rerunPair(commandParams);
-		} else if (c.equals(R.COMMAND_GET_BENCH_UPLOAD_STATUS)) {
+		} else if (c.equals(C.COMMAND_GET_BENCH_UPLOAD_STATUS)) {
 			status=parser.printBenchStatus(commandParams);
-		}	else if (c.equals(R.COMMAND_RERUNJOB)) {
+		}	else if (c.equals(C.COMMAND_RERUNJOB)) {
 
 			status=parser.rerunJob(commandParams);
 		} else if (c.startsWith("get")) {
@@ -707,19 +709,19 @@ class CommandParser {
 	 */
 	
 	protected int pollJob(HashMap<String,String> commandParams) {
-		int valid=Validator.isValidPollJobRequest(commandParams);
+		int valid=CommandValidator.isValidPollJobRequest(commandParams);
 		if (valid<0) {
 			return valid;
 		}
 		
 		try {
 			
-			String filename=commandParams.get(R.PARAM_OUTPUT_FILE);
+			String filename=commandParams.get(C.PARAM_OUTPUT_FILE);
 			String baseFileName="";
 			String extension=null;
 			
 			//separate the extension from the name of the file
-			for (String x : Validator.VALID_ARCHIVETYPES) {
+			for (String x : CommandValidator.VALID_ARCHIVETYPES) {
 				if (filename.endsWith(x)) {
 					extension="."+x;
 					baseFileName=filename.substring(0,filename.length()-x.length()-1);
@@ -730,8 +732,8 @@ class CommandParser {
 			}
 			int infoCounter=1;
 			int outputCounter=1;
-			double interval=Double.valueOf(commandParams.get(R.PARAM_TIME))*1000;
-			commandParams.remove(R.PARAM_TIME);
+			double interval=Double.valueOf(commandParams.get(C.PARAM_TIME))*1000;
+			commandParams.remove(C.PARAM_TIME);
 			
 			String nextName;
 			int status;
@@ -742,16 +744,16 @@ class CommandParser {
 			Integer since;
 			while (true) {
 				nextName=baseFileName+"-info"+String.valueOf(infoCounter)+extension;
-				commandParams.put(R.PARAM_OUTPUT_FILE, nextName);
-				since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
-				status=parser.downloadArchive("job",since,null,null,commandParams);
-				if (status!=R.SUCCESS_NOFILE) {
+				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
+				since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
+				status=parser.downloadArchive(R.JOB,since,null,null,commandParams);
+				if (status!=C.SUCCESS_NOFILE) {
 					infoCounter+=1;
 				} else {
-					System.out.println(R.successMessages.get(R.SUCCESS_NOFILE));
+					System.out.println(C.successMessages.get(C.SUCCESS_NOFILE));
 
 				}
-				if (status==R.SUCCESS_JOBDONE) {
+				if (status==C.SUCCESS_JOBDONE) {
 					
 					infoDone=true;
 				
@@ -759,16 +761,16 @@ class CommandParser {
 					return status;
 				}
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
-				commandParams.put(R.PARAM_OUTPUT_FILE, nextName);
-				since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
-				status=parser.downloadArchive("j_outputs",since,null,null, commandParams);
-				if (status!=R.SUCCESS_NOFILE) {
+				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
+				since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
+				status=parser.downloadArchive(R.JOB_OUTPUT,since,null,null, commandParams);
+				if (status!=C.SUCCESS_NOFILE) {
 					outputCounter+=1;
 				} else {
-					System.out.println(R.successMessages.get(R.SUCCESS_NOFILE));
+					System.out.println(C.successMessages.get(C.SUCCESS_NOFILE));
 				}
 				
-				if (status==R.SUCCESS_JOBDONE) {
+				if (status==C.SUCCESS_JOBDONE) {
 					outputDone=true;
 				}
 				
@@ -807,63 +809,63 @@ class CommandParser {
 			String type=null;
 			Boolean hierarchy=null;
 			Integer since=null;
-			if (c.equals(R.COMMAND_GETJOBOUT)) {
-				type="j_outputs";
-			} else if (c.equals(R.COMMAND_GETJOBINFO)) {
-				type="job";
-			} else if (c.equals(R.COMMAND_GETSPACEXML)) {
-				type="spaceXML";
+			if (c.equals(C.COMMAND_GETJOBOUT)) {
+				type=R.JOB_OUTPUT;
+			} else if (c.equals(C.COMMAND_GETJOBINFO)) {
+				type=R.JOB;
+			} else if (c.equals(C.COMMAND_GETSPACEXML)) {
+				type=R.SPACE_XML;
 				
-			} else if (c.equals(R.COMMAND_GETJOBXML)){
-			        type="jobXML";
+			} else if (c.equals(C.COMMAND_GETJOBXML)){
+			        type=R.JOB_XML;
 
-			} else if (c.equals(R.COMMAND_GETSPACE)) {
+			} else if (c.equals(C.COMMAND_GETSPACE)) {
 				hierarchy=false;
-				type="space";
+				type=R.SPACE;
 				
-			} else if (c.equals(R.COMMAND_GETSPACEHIERARCHY)) {
+			} else if (c.equals(C.COMMAND_GETSPACEHIERARCHY)) {
 				hierarchy=true;
-				type="space";
+				type=R.SPACE;
 				
-			} else if (c.equals(R.COMMAND_GETPOSTPROC)) {
-				type="proc";
+			} else if (c.equals(C.COMMAND_GETPOSTPROC)) {
+				type=R.PROCESSOR;
 				procClass="post";
 				
-			} else if (c.equals(R.COMMAND_GETBENCHPROC)) {
-				type="proc";
-				procClass="bench";
+			} else if (c.equals(C.COMMAND_GETBENCHPROC)) {
+				type=R.PROCESSOR;
+				procClass=R.BENCHMARK;
 				
-			}else if (c.equals(R.COMMAND_GETPREPROC)) {
-				type="proc";
+			}else if (c.equals(C.COMMAND_GETPREPROC)) {
+				type=R.PROCESSOR;
 				procClass="pre";
 				
-			} else if (c.equals(R.COMMAND_GETBENCH)) {
-				type="bench";
+			} else if (c.equals(C.COMMAND_GETBENCH)) {
+				type=R.BENCHMARK;
 				
-			} else if (c.equals(R.COMMAND_GETSOLVER)) {
-				type="solver";
+			} else if (c.equals(C.COMMAND_GETSOLVER)) {
+				type=R.SOLVER;
 				
-			} else if (c.equals(R.COMMAND_GETJOBPAIR)) {
-				type="jp_output";
+			} else if (c.equals(C.COMMAND_GETJOBPAIR)) {
+				type=R.PAIR_OUTPUT;
 				
-			} else if (c.equals(R.COMMAND_GETJOBPAIRS)) {
-				type="jp_outputs";
-			} else if (c.equals(R.COMMAND_GETNEWJOBINFO)) {
-				type="job";
+			} else if (c.equals(C.COMMAND_GETJOBPAIRS)) {
+				type=R.JOB_OUTPUTS;
+			} else if (c.equals(C.COMMAND_GETNEWJOBINFO)) {
+				type=R.JOB;
 				//Note: The reason the parameter "since" is not being taken from R.PARAM_SINCE
 				//is that it is actually expected on StarExec-- it is not a command line parameter,
 				//even though that parameter also happens to be "since"
-				if (commandParams.containsKey(R.FORMPARAM_SINCE)) {
-					since=Integer.parseInt(commandParams.get(R.PARAM_SINCE));
+				if (commandParams.containsKey(C.FORMPARAM_SINCE)) {
+					since=Integer.parseInt(commandParams.get(C.PARAM_SINCE));
 				} else {
-					since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+					since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 				}
-			} else if (c.equals(R.COMMAND_GETNEWJOBOUT)) {
-				type="j_outputs";
-				if (commandParams.containsKey(R.PARAM_SINCE)) {
-					since=Integer.parseInt(commandParams.get(R.PARAM_SINCE));
+			} else if (c.equals(C.COMMAND_GETNEWJOBOUT)) {
+				type=R.JOB_OUTPUT;
+				if (commandParams.containsKey(C.PARAM_SINCE)) {
+					since=Integer.parseInt(commandParams.get(C.PARAM_SINCE));
 				} else {
-					since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(R.PARAM_ID)));
+					since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 				}
 				
 			}

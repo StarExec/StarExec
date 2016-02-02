@@ -56,7 +56,6 @@ public class SpaceTests extends TestSequence {
 		
 	}
 	
-	//TODO: Test to make sure the solvers are no longer in there
 	@StarexecTest
 	private void removeSolversFromHierarchyTest() {
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
@@ -64,6 +63,21 @@ public class SpaceTests extends TestSequence {
 		List<Integer> si=new ArrayList<Integer>();
 		si.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolversFromHierarchy(si, subspace2.getId(), leader.getId()));
+		boolean found = false;
+		for (Solver s : Spaces.getDetails(subspace2.getId(), leader.getId()).getSolvers()) {
+			if (s.getId()==solver.getId()) {
+				found=true;
+				break;
+			}
+		}
+		Assert.assertFalse(found);
+		found = false;
+		for (Solver s : Spaces.getDetails(subspace3.getId(), leader.getId()).getSolvers()) {
+			if (s.getId()==solver.getId()) {
+				found=true;
+				break;
+			}
+		}
 	}
 	
 	
@@ -156,8 +170,6 @@ public class SpaceTests extends TestSequence {
 				}
 			}
 		}
-
-		Spaces.removeSubspaces(subspace3.getId());
 	}
 
 	private static void assertSpacesAreCopies(Space space, Space otherSpace) {
@@ -237,7 +249,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(space1Path, SP.get(space1.getId()));
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 		
-		Spaces.removeSubspaces(space1.getId());
+		Spaces.removeSubspace(space1.getId());
 	}
 	
 	@StarexecTest
@@ -259,43 +271,30 @@ public class SpaceTests extends TestSequence {
 		//of course, it should actually be a community
 		Assert.assertTrue(Communities.isCommunity(community.getId()));
 	}
-	
-	@StarexecTest
-	private void getDefaultCpuTimeoutTest() {
-		int timeout=Communities.getDefaultCpuTimeout(community.getId());
-		if (timeout<=0) {
-			Assert.fail("Timeout was not greater than 0");
-		}
-	}
+
 	@StarexecTest 
 	private void updateDefaultCpuTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 		
-		int timeout=Communities.getDefaultCpuTimeout(community.getId());
+		int timeout=Communities.getDefaultSettings(community.getId()).getCpuTimeout();
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout+1));
-		Assert.assertEquals(timeout+1, Communities.getDefaultCpuTimeout(community.getId()));
+		Assert.assertEquals(timeout+1, Communities.getDefaultSettings(community.getId()).getCpuTimeout());
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout));
 	}
-	@StarexecTest
-	private void getDefaultWallclockTimeoutTest() {
-		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
-		if (timeout<=0) {
-			Assert.fail("Timeout was not greater than 0");
-		}
-	}
+
 	@StarexecTest
 	private void updateDefaultWallclockTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
 
-		int timeout=Communities.getDefaultWallclockTimeout(community.getId());
+		int timeout=Communities.getDefaultSettings(community.getId()).getWallclockTimeout();
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout+1));
-		Assert.assertEquals(timeout+1, Communities.getDefaultWallclockTimeout(community.getId()));
+		Assert.assertEquals(timeout+1, Communities.getDefaultSettings(community.getId()).getWallclockTimeout());
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout));
 	}
 	
 	@StarexecTest
 	private void getDefaultMemoryLimit() {
-		long limit=Communities.getDefaultMaxMemory(community.getId());
+		long limit=Communities.getDefaultSettings(community.getId()).getMaxMemory();
 		if (limit<=0) {
 			Assert.fail("Memory limit was not greater than 0");
 		}
@@ -375,10 +374,10 @@ public class SpaceTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
 		
-		Spaces.removeSubspaces(subspace.getId());
-		Spaces.removeSubspaces(subspace2.getId());
-		Spaces.removeSubspaces(subspace3.getId());
-		boolean success=Spaces.removeSubspaces(community.getId());
+		Spaces.removeSubspace(subspace.getId());
+		Spaces.removeSubspace(subspace2.getId());
+		Spaces.removeSubspace(subspace3.getId());
+		boolean success=Spaces.removeSubspace(community.getId());
 		try {
 			Users.deleteUser(leader.getId(),admin.getId());
 			Users.deleteUser(member1.getId(),admin.getId());

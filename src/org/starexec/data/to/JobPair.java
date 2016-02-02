@@ -17,7 +17,7 @@ import org.starexec.data.to.pipelines.SolverPipeline;
  */
 public class JobPair extends Identifiable {	
 	private int jobId = -1;
-	private int gridEngineId = -1;
+	private int backendExecId = -1;
 	
 
 
@@ -92,15 +92,15 @@ public class JobPair extends Identifiable {
 	/**
 	 * @return the actual job id of this pair in the grid engine
 	 */
-	public int getGridEngineId() {
-		return gridEngineId;
+	public int getBackendExecId() {
+		return backendExecId;
 	}
 	
 	/**
 	 * @param gridEngineId the grid engine id to set for this pair
 	 */
-	public void setGridEngineId(int gridEngineId) {
-		this.gridEngineId = gridEngineId;
+	public void setBackendExecId(int gridEngineId) {
+		this.backendExecId = gridEngineId;
 	}
 		
 	
@@ -179,9 +179,20 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * @return the time the pair was submitted to the sge queue
+	 * @return the time the pair was submitted to the queue
 	 */
 	public Timestamp getQueueSubmitTime() {
+		return queueSubmitTime;
+	}
+	
+	/**
+	 * @return the time the pair was submitted to the queue.
+	 * If the internal value is null, returns the current time
+	 */
+	public Timestamp getQueueSubmitTimeSafe() {
+		if (queueSubmitTime==null) {
+			return new Timestamp(System.currentTimeMillis());
+		}
 		return queueSubmitTime;
 	}
 
@@ -347,6 +358,15 @@ public class JobPair extends Identifiable {
 		
 		return s.getCpuTime();
 	}
+
+	public void setPrimaryCpuTime(Double newCpuTime) {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return;
+		} else {
+			s.setCpuUsage(newCpuTime);
+		}
+	}
 	
 	/**
 	 * Returns the solver of the "priamry" stage of this jobline. Returns
@@ -360,6 +380,15 @@ public class JobPair extends Identifiable {
 		}
 		
 		return s.getWallclockTime();
+	}
+
+	public void setPrimaryWallclockTime(Double newWallclockTime) {
+		JoblineStage s= getPrimaryStage();
+		if (s==null) {
+			return;
+		} else {
+			s.setWallclockTime(newWallclockTime);
+		}
 	}
 	
 	/**

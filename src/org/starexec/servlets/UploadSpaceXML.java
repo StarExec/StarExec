@@ -44,7 +44,7 @@ public class UploadSpaceXML extends HttpServlet {
 	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);	
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-    private static final String SPACE_ID = "space";
+    private static final String SPACE_ID = R.SPACE;
     private static final String UPLOAD_FILE = "f";
 
     
@@ -117,7 +117,7 @@ public class UploadSpaceXML extends HttpServlet {
 						log.debug("Handling Upload of XML File from User " + userId);
 						PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
 						// Don't need to keep file long - just using download directory
-						File uniqueDir = new File(R.BATCH_SPACE_XML_DIR, "" + userId);
+						File uniqueDir = new File(R.getBatchSpaceXMLDir(), "" + userId);
 						uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
 						uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 						
@@ -170,7 +170,7 @@ public class UploadSpaceXML extends HttpServlet {
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
 		try {
 			
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))){
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))){
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			Integer.parseInt((String)form.get(SPACE_ID));

@@ -125,27 +125,6 @@ CREATE PROCEDURE GetQueueDetails(IN _id INT)
 		WHERE id=_id;
 	END // 
 	
--- Updates a node's attribute (assuming the column already exists)
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateNodeAttr;
-CREATE PROCEDURE UpdateNodeAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64), IN _fieldVal VARCHAR(64))
-	BEGIN	
-		SET @updateAttr = CONCAT('UPDATE nodes SET ', _fieldName, '="', _fieldVal,'" WHERE name="', _name, '"');
-		PREPARE stmt FROM @updateAttr;
-		EXECUTE stmt;		
-	END // 
-	
-	
--- Updates a queues's attribute (assuming the column already exists)
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateQueueAttr;
-CREATE PROCEDURE UpdateQueueAttr(IN _name VARCHAR(64), IN _fieldName VARCHAR(64), IN _fieldVal VARCHAR(64))
-	BEGIN	
-		SET @updateAttr = CONCAT('UPDATE queues SET ', _fieldName, '="', _fieldVal,'" WHERE name="', _name, '"');
-		PREPARE stmt FROM @updateAttr;
-		EXECUTE stmt;		
-	END // 
-	
 -- Updates a queues's usage stats
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateQueueUseage;

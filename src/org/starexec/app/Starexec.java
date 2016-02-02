@@ -14,6 +14,7 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.starexec.backend.*;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
@@ -82,6 +83,7 @@ public class Starexec implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
+		R.BACKEND = new GridEngineBackend();
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
@@ -104,11 +106,10 @@ public class Starexec implements ServletContextListener {
 		
 		
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
-		    R.BACKEND.initialize(R.SGE_ROOT);
+		    R.BACKEND.initialize(R.BACKEND_ROOT);
 
 		}
 		
-
 		System.setProperty("http.proxyHost",R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort",R.HTTP_PROXY_PORT);
 
@@ -177,7 +178,6 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("clearTemporaryFilesTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
-				Util.clearOldCachedFiles(14);
 				//even though we're clearing unused cache files, they still might build up for a variety
 				//of reasons. To stay robust, we should probably still clear out very old ones
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR).getAbsolutePath(), 60,false);
@@ -192,7 +192,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.JOB_LOG_DIR, 7,true);
+				Util.clearOldFiles(R.getJobLogDir(), 7,true);
 			}
 		};
 		/*  Create a task that deletes job scripts older than 3 days */
@@ -200,8 +200,7 @@ public class Starexec implements ServletContextListener {
 			@Override
 			protected void dorun() {
 			    log.info("clearJobScriptTask (periodic)");
-				Util.clearOldFiles(R.JOB_INBOX_DIR,1,false);
-				Util.clearOldFiles(R.JOBPAIR_INPUT_DIR, 1,false);
+				Util.clearOldFiles(R.getJobInboxDir(),1,false);
 			}
 		};
 		/**
@@ -276,6 +275,21 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 		
+		//TODO: Delete once the backfill is complete
+		final Runnable backfillJobIdColumn = new RobustRunnable("backfillJobIdColumn") {
+			@Override
+			protected void dorun() {
+				try {
+					log.info("running backfill of job_id in job_spaces table");
+					Jobs.setJobIdForAllJobSpaces();				
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		};
+		
+		
+		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
 		
@@ -287,7 +301,6 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
 		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
 		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
-
 		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
 
 		    // checks every day if reports need to be sent 
@@ -296,6 +309,9 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
 		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
+		    
+		    //TODO: This is a one-time task: it can be removed after a deploy to Starexec
+		    taskScheduler.schedule(backfillJobIdColumn, 0, TimeUnit.SECONDS);
 		}
 		try {
 			PaginationQueries.loadPaginationQueries();
@@ -304,6 +320,7 @@ public class Starexec implements ServletContextListener {
 			log.error("unable to correctly load pagination queries");
 			log.error(e.getMessage(),e);
 		}
+		
 	}
 	
 }

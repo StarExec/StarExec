@@ -33,7 +33,7 @@
 		<br />
 		<p>Thanks for your patience!</p>
 		<p>You will be automatically logged out in 20 seconds.</p>
-		<script language="javascript">
+		<script>
 			setTimeout(logout, 20000);
 		</script>
 	</c:if>
@@ -43,7 +43,7 @@
 		</p>
 		<br />
 		<p>You will be automatically logged out in 20 seconds.</p>
-		<script language="javascript">
+		<script>
 			setTimeout(logout, 20000);
 		</script>
 	</c:if>

@@ -5,6 +5,8 @@
 
 # The queue to submit to
 #$ -q $$QUEUE$$
+#OAR -q $$QUEUE$$
+#OAR -p queue='$$QUEUE$$'
 
 # Enable resource limit signals
 #$ -notify

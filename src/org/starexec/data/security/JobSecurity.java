@@ -9,9 +9,11 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
+import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
@@ -34,6 +36,20 @@ public class JobSecurity {
 		}
 		
 		return new ValidatorStatusCode(true);
+	}
+	
+	/**
+	 * Checks to see whether the user is allowed to look at details of a given job space.
+	 * This is equivalent to checking whether the user can see the job that owns the job
+	 * space
+	 * @param jobSpaceId The ID of the job space
+	 * @param userId The ID of the user that wants to view details of the job space
+	 * @return A ValidatorStatusCode that will have true if the operation is allowed
+	 * and false otherwise
+	 */
+	public static ValidatorStatusCode canUserSeeJobSpace(int jobSpaceId, int userId) {
+		JobSpace s = Spaces.getJobSpace(jobSpaceId);
+		return canUserSeeJob(s.getJobId(), userId);
 	}
 	
 	/**

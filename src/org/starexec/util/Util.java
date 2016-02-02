@@ -1,5 +1,6 @@
 package org.starexec.util;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -15,10 +16,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Throwable;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,14 +32,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
+import java.util.Optional;
 import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.FileUtils;
@@ -45,16 +50,26 @@ import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
+
 import org.starexec.constants.R;
-import org.starexec.data.database.Cache;
+import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Communities;
+import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Users;
+import org.starexec.data.security.BenchmarkSecurity;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkDependency;
+import org.starexec.data.to.Space;
 import org.starexec.test.TestUtil;
+import org.starexec.util.LogUtil;
 
 public class Util {	
     private static final Logger log = Logger.getLogger(Util.class);
+	private static final LogUtil logUtil = new LogUtil( log );
+
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
-
-
-  
     
     /**
      * Checks to see if the two given objects are equal without throwing any null pointers.
@@ -73,6 +88,167 @@ public class Util {
     	}
     	
     }
+    /**
+     * 
+     * @param c The string color
+     * @return The Java color corresponding to the string, or null if no such color exists
+     * Obtained at (http://stackoverflow.com/questions/2854043/converting-a-string-to-color-in-java)
+     */
+    public static Color getColorFromString(String c) {
+    	Color color;
+    	try {
+    	    Field field = Class.forName("java.awt.Color").getField(c);
+    	    color = (Color)field.get(null);
+    	} catch (Exception e) {
+    	    color = null; // Not defined
+    	}
+    	return color;
+    }
+    
+
+	/**
+	 * Handles request/response logic for details/benchmark
+	 * @author Albert Giegerich
+	 */
+	public static void handleAnonymousBenchPage( String uniqueId, HttpServletRequest request, HttpServletResponse response ) 
+			throws IOException, SQLException {
+		Optional<Integer> benchmarkId = AnonymousLinks.getIdOfPrimitiveAssociatedWithLink( uniqueId );	
+		Optional<Boolean> hideBenchmark = AnonymousLinks.isPrimitiveNameHidden( uniqueId );
+
+		if ( benchmarkId.isPresent() && hideBenchmark.isPresent() ) {
+			setRequestAttributes( true, hideBenchmark.get(), benchmarkId.get(), request, response );
+		} else {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");	
+		}
+	}
+
+	public static void handleNonAnonymousBenchPage( HttpServletRequest request, HttpServletResponse response ) throws IOException {
+
+		int benchId = Integer.parseInt(request.getParameter("id"));
+		setRequestAttributes( false, false, benchId, request, response );
+		
+		/*
+		Benchmark b = null;
+		TreeMap<String,String> attrs = new TreeMap<String,String>();
+		List<BenchmarkDependency> deps = new ArrayList<BenchmarkDependency>();
+		if(Permissions.canUserSeeBench(benchId, userId)) {
+			b = Benchmarks.get(benchId, true, false);
+			attrs = Benchmarks.getSortedAttributes(benchId);
+			deps = Benchmarks.getBenchDependencies(benchId);
+		}		
+		
+		if(b != null) {
+			request.setAttribute("usr", Users.get(b.getUserId()));
+			request.setAttribute("bench", b);
+			request.setAttribute("diskSize", Util.byteCountToDisplaySize(b.getDiskSize()));		
+			request.setAttribute("hasAdminReadPrivileges",Users.hasAdminReadPrivileges(userId));
+			Space s = Communities.getDetails(b.getType().getCommunityId());
+			if (s==null) {
+				s=new Space();
+				s.setName("none");
+			}
+			request.setAttribute("com", s);
+			request.setAttribute("depends", deps);
+			request.setAttribute("attributes",attrs);
+			boolean down=BenchmarkSecurity.canUserDownloadBenchmark(benchId,userId).isSuccess();
+			
+			request.setAttribute("downloadable",down);
+			String content=GeneralSecurity.getHTMLSafeString(Benchmarks.getContents(b,100));
+			request.setAttribute("content",content);
+		} else {
+			if (Benchmarks.isBenchmarkDeleted(benchId)) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been deleted. You likely want to remove it from your spaces");
+			} else if (Benchmarks.isBenchmarkRecycled(benchId))  {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the recycle bin by its owner.");
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");	
+			}
+					
+		}
+		*/
+	}
+
+	/**
+	 * Sets up request attributes to be used on the jsp template.
+	 * @author Albert Giegerich and Unknown
+	 */
+	private static void setRequestAttributes(
+			boolean isAnonymousPage, 
+			boolean hideBenchmarkName,
+			Integer benchId, 
+			HttpServletRequest request, 
+			HttpServletResponse response ) throws IOException {
+		
+		final String methodName = "setRequestAttributes";
+		logUtil.entry( methodName );
+
+		// Set to true so anonymous user will be able to see the bench.
+		boolean userCanSeeBench = true;
+
+		// Set downloadable to true so anonymous user can view contents of benchmark.
+		boolean downloadable = true;
+
+		if ( !isAnonymousPage ) {
+			int userId = SessionUtil.getUserId( request );
+			userCanSeeBench = Permissions.canUserSeeBench( benchId, userId );
+			request.setAttribute( "hasAdminReadPrivileges", Users.hasAdminReadPrivileges( userId ));
+			downloadable = BenchmarkSecurity.canUserDownloadBenchmark( benchId,userId ).isSuccess();
+		}
+		request.setAttribute( "downloadable", downloadable );
+
+		// Send an error message if the user isn't allowed to see the benchmark.
+		if ( !userCanSeeBench ) {
+			response.sendError( HttpServletResponse.SC_NOT_FOUND, "You do not have permission to view this benchmark." );
+			return;
+		} 	
+
+		// Get the benchmark, if it can't be gotten send an error message telling the user why.
+		Benchmark b = Benchmarks.get( benchId, true, false );
+		if ( b == null ) {
+			sendErrorMessage( benchId, response );
+			return;
+		}
+
+		// Set the page title to be the name of the benchmark if we're showing the benchmark name.
+		final String benchPageTitleAttributeName = "benchPageTitle";
+		if ( hideBenchmarkName ) {
+			request.setAttribute( benchPageTitleAttributeName, "" );
+		} else {
+			request.setAttribute( benchPageTitleAttributeName, b.getName() );
+		}
+
+		TreeMap<String,String> attrs = Benchmarks.getSortedAttributes(benchId);
+		List<BenchmarkDependency> deps = Benchmarks.getBenchDependencies(benchId);
+		request.setAttribute( "usr", Users.get( b.getUserId() ));
+		request.setAttribute( "bench", b );
+		request.setAttribute( "diskSize", Util.byteCountToDisplaySize( b.getDiskSize() ));		
+
+		Space s = Communities.getDetails( b.getType().getCommunityId() );
+		if ( s == null ) {
+			s = new Space();
+			s.setName( "none" );
+		}
+
+		request.setAttribute( "com", s );
+		request.setAttribute( "depends", deps );
+		request.setAttribute( "attributes", attrs );
+		
+		String content = GeneralSecurity.getHTMLSafeString( Benchmarks.getContents( b, 100 ));
+		request.setAttribute( "content", content );
+	}
+
+	private static void sendErrorMessage( int benchId, HttpServletResponse response ) throws IOException {
+		if (Benchmarks.isBenchmarkDeleted(benchId)) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, 
+				"This benchmark has been deleted. You likely want to remove it from your spaces");
+		} else if (Benchmarks.isBenchmarkRecycled(benchId))  {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the recycle bin by its owner.");
+		} else {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");	
+		}
+	}
+
+
 	
     /**
      * Gives back a String that is the contents of the first n lines of the file where n always less
@@ -187,26 +363,21 @@ public class Util {
 	File file=new File(R.STAREXEC_DATA_DIR);
 	file.mkdir();
 		
-	file=new File(R.JOB_INBOX_DIR);
+	file=new File(R.getJobInboxDir());
 	file.mkdir();
-	file=new File(R.JOB_LOG_DIR);
+	file=new File(R.getJobLogDir());
 	file.mkdir();
-	file=new File(R.JOB_OUTPUT_DIR);
+	file=new File(R.getBenchmarkPath());
 	file.mkdir();
-	
-	file=new File(R.JOBPAIR_INPUT_DIR);
+	file=new File(R.getSolverPath());
 	file.mkdir();
-	file=new File(R.BENCHMARK_PATH);
+	file=new File(R.getSolverBuildOutputDir());
 	file.mkdir();
-	file=new File(R.SOLVER_PATH);
+	file=new File(R.getProcessorDir());
 	file.mkdir();
-	file=new File(R.SOLVER_BUILD_OUTPUT_DIR);
+	file=new File(R.getJobOutputDirectory());
 	file.mkdir();
-	file=new File(R.PROCESSOR_DIR);
-	file.mkdir();
-	file=new File(R.NEW_JOB_OUTPUT_DIR);
-	file.mkdir();
-	file=new File(R.PICTURE_PATH);
+	file=new File(R.getPicturePath());
 	file.mkdir();
 		
 		
@@ -324,7 +495,7 @@ public class Util {
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
-		    if(!wrapper.isFile()) { //TODO: Check if this is a non-file or file
+		    if(!wrapper.isFile()) { 
 				// Add the field name and field value to the hashmap
 				form.put(p.getName(), IOUtils.toString(p.getInputStream()));				
 		    } else {
@@ -652,19 +823,7 @@ public class Util {
 	    log.warn(e.getMessage(), e);
 	}
     }
-    /** Deletes all the cached files that have not been accessed in the given amount of days
-     * @daysSinceLastAccess The number of days a file should have gone without being accessed to delete
-     * @author Eric Burns
-     */
-    public static void clearOldCachedFiles(int daysSinceLastAccess) {
-	log.debug("calling clearOldCachedFiles (periodic)");
-	try {
-	    Cache.deleteOldPaths(daysSinceLastAccess);
-	} catch (Exception e) {
-	    log.error("clearOldCachedFiles says "+e.getMessage(),e);
-	}
-		
-    }
+   
 	
 	
     /**
@@ -946,15 +1105,25 @@ public class Util {
 	 * @author Albert Giegerich
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
-		// Initially contains the ? necessary for the query string.
-		StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
-		
-		for (String parameter : queryParameters.keySet()) {
-			String value = queryParameters.get(parameter);
-			queryStringJoiner.add(parameter+"="+value);
+		if (queryParameters.keySet().size() == 0) {
+			return url; 
 		}
 
-		return getWebPage(url+queryStringJoiner.toString(), cookiesToSend);
+		// Initially contains the ? necessary for the query string.
+		//StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
+		StringBuilder queryStringBuilder = new StringBuilder();
+
+		
+		queryStringBuilder.append("?");
+		for (String parameter : queryParameters.keySet()) {
+			String value = queryParameters.get(parameter);
+			queryStringBuilder.append(parameter+"="+value+"&");
+			//queryStringJoiner.add(parameter+"="+value);
+		}
+		// delete the last & character
+		queryStringBuilder.deleteCharAt(queryStringBuilder.length() - 1);
+
+		return getWebPage(url+queryStringBuilder.toString(), cookiesToSend);
 	}
 
 	/**
@@ -985,11 +1154,15 @@ public class Util {
 	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send cookies.
 	 */
 	private static String buildCookieString(List<Cookie> cookies) {
-		StringJoiner cookieStringJoiner = new StringJoiner("; ");
+		//StringJoiner cookieStringJoiner = new StringJoiner("; ");
+		StringBuilder cookieStringBuilder = new StringBuilder();
 		for (Cookie cookie : cookies) {
-			cookieStringJoiner.add(cookie.getName()+"="+cookie.getValue());
+			cookieStringBuilder.append(cookie.getName()+"="+cookie.getValue() + ";");
 		}
-		return cookieStringJoiner.toString();
+		if (cookies.size() > 0) {
+			cookieStringBuilder.deleteCharAt(cookieStringBuilder.length() - 1);
+		}
+		return cookieStringBuilder.toString();
 	}
 
     /**

@@ -3,6 +3,7 @@ package org.starexec.command;
 import java.util.HashMap;
 
 import org.apache.http.Header;
+import org.starexec.util.Validator;
 /**
  * This class reads HTML strings from StarExec and parses out necessary information from them.
  * HTML parsing is really to be avoided as much as possible due to how fragile it can be.

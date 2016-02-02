@@ -92,7 +92,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 			SELECT COUNT(*) AS jobPairCount
 			FROM job_pairs
 			JOIN jobpair_stage_data ON (jobpair_stage_data.pair_id = job_pairs.id)
-			WHERE job_space_id=_jobSpaceId AND stage_number = _stageNumber
+			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND stage_number = _stageNumber
 			AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.config_name		LIKE	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.solver_name		LIKE	CONCAT('%', _query, '%')
@@ -102,7 +102,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 			SELECT COUNT(*) AS jobPairCount
 			FROM job_pairs
 			JOIN jobpair_stage_data ON (jobpair_stage_data.pair_id = job_pairs.id)
-			WHERE job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
+			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
 			AND		(bench_name 		LIKE 	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.config_name		LIKE	CONCAT('%', _query, '%')
 				OR		jobpair_stage_data.solver_name		LIKE	CONCAT('%', _query, '%')
@@ -796,65 +796,22 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 	
 	END //
 	
-	
--- Gets the wallclock timeout for the given job
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetWallclockTimeout;
-CREATE PROCEDURE GetWallclockTimeout(IN _jobId INT, IN _stage INT)
-	BEGIN
-		SELECT clockTimeout
-		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_number=_stage;
-	END //
-	
--- Gets the cpu timeout for the given job
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetCpuTimeout;
-CREATE PROCEDURE GetCpuTimeout(IN _jobId INT, IN _stage INT)
-	BEGIN
-		SELECT cpuTimeout
-		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_number=_stage;
-	END //
-
--- Gets the maximum memory for the given job
--- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetMaxMemory;
-CREATE PROCEDURE GetMaxMemory(IN _jobId INT, IN _stage INT) 
-	BEGIN
-		SELECT maximum_memory
-		FROM job_stage_params
-		WHERE job_id=_jobId AND stage_number=_stage;
-	END //
-	
 DROP PROCEDURE IF EXISTS SetJobStageParams;
 CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN _clock INT, IN _mem BIGINT, IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64))
 	BEGIN
 		INSERT INTO job_stage_params (job_id, stage_number,cpuTimeout,clockTimeout,maximum_memory, space_id, post_processor, pre_processor, bench_suffix) VALUES (_jobId, _stage,_cpu,_clock,_mem,_space,_postProc,_preProc, _suffix);
 	END //
 	
-DROP PROCEDURE IF EXISTS GetAllJobs;
-CREATE PROCEDURE GetAllJobs()
+-- Gets the ID of every job that is currently running (has incomplete pairs and
+-- is not already paused / killed)
+DROP PROCEDURE IF EXISTS GetRunningJobs;
+CREATE PROCEDURE GetRunningJobs()
 	BEGIN
-		SELECT 	id,
-				user_id,
-				name,
-				queue_id,
-				created,
-				description,
-				deleted,
-				paused,
-				killed,
-				completed,
-				primary_space,
-				seed,
-				GetJobStatus(id) 		AS status,
-				GetTotalPairs(id) 		AS totalPairs,
-				GetCompletePairs(id)	AS completePairs,
-				GetPendingPairs(id)		AS pendingPairs,
-				GetErrorPairs(id)		AS errorPairs
-				
-		FROM jobs;
+		SELECT id FROM (
+		SELECT id, GetJobStatus(id) AS status
+		FROM jobs
+		WHERE paused=false AND killed=false) AS temp
+		WHERE status="incomplete";
 	END //
 
 DROP PROCEDURE IF EXISTS SetJobName;
@@ -881,17 +838,6 @@ CREATE PROCEDURE IsSystemPaused()
 		FROM system_flags;
 	END //
 	
--- Gets all jobs for which there is no queue on which the job is currently being run
-
-DROP PROCEDURE IF EXISTS GetUnRunnableJobs;
-CREATE PROCEDURE GetUnRunnableJobs()
-	BEGIN
-		SELECT DISTINCT id,name,deleted,paused,queue_id
-		FROM jobs
-		LEFT JOIN queue_assoc ON jobs.queue_id = queue_assoc.queue_id
-		WHERE queue_id IS null OR queue_assoc.node_id IS NULL;
-	END //
-
 -- Permanently removes a job from the database
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RemoveJobFromDatabase;
@@ -914,6 +860,18 @@ CREATE PROCEDURE GetAllJobPairBenchmarkInputsByJob(IN _jobId INT)
 		SELECT jobpair_inputs.jobpair_id,jobpair_inputs.bench_id
 		FROM jobpair_inputs JOIN job_pairs ON job_pairs.id=jobpair_inputs.jobpair_id
 		WHERE job_pairs.job_id=_jobId ORDER BY input_number ASC;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetAllJobs;
+CREATE PROCEDURE GetAllJobs()
+	BEGIN
+		SELECT id, primary_space FROM jobs;
+	END //
+	
+DROP PROCEDURE IF EXISTS UpdateJobSpaceJobId;
+CREATE PROCEDURE UpdateJobSpaceJobId(IN _spaceId INT, IN _jobId INT)
+	BEGIN
+		UPDATE job_spaces SET job_id=_jobId WHERE id=_spaceId;
 	END //
 	
 DELIMITER ; -- this should always be at the end of the file

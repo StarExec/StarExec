@@ -60,7 +60,7 @@ public class UploadSolver extends HttpServlet {
     private static final String SOLVER_DESC = "desc";
     private static final String SOLVER_DESC_FILE = "d";
     private static final String SOLVER_DOWNLOADABLE = "dlable";
-    private static final String SPACE_ID = "space";
+    private static final String SPACE_ID = R.SPACE;
     private static final String UPLOAD_FILE = "f";
     private static final String SOLVER_NAME = "sn";    		
     private static final String UPLOAD_METHOD="upMethod";
@@ -228,7 +228,7 @@ public class UploadSolver extends HttpServlet {
 		
 		//Set up the unique directory to store the solver
 		//The directory is (base path)/user's ID/solver name/date/
-		File uniqueDir = new File(R.SOLVER_PATH, "" + userId);
+		File uniqueDir = new File(R.getSolverPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, newSolver.getName());
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		
@@ -423,7 +423,7 @@ public class UploadSolver extends HttpServlet {
 			}
 			
 			//ensure the space ID is valid
-			if (!Validator.isValidInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
 			
@@ -431,7 +431,7 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
 			
-			if (!Validator.isValidInteger((String)form.get(SOLVER_TYPE))) {
+			if (!Validator.isValidPosInteger((String)form.get(SOLVER_TYPE))) {
 				return new ValidatorStatusCode(false, "Executable Type needed to be sent as a valid integer");
 			}
 			ExecutableType type=ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE)));
@@ -476,7 +476,7 @@ public class UploadSolver extends HttpServlet {
 				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
 			}
 			
-			int spaceId=Integer.parseInt((String)form.get("space"));
+			int spaceId=Integer.parseInt((String)form.get(R.SPACE));
 			Permission userPermissions = SessionUtil.getPermission(request, spaceId);
 			if (userPermissions == null || !userPermissions.canAddSolver()) {
 				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");
@@ -493,7 +493,7 @@ public class UploadSolver extends HttpServlet {
 				//if the user gave a setting ID, then they need to have permission to use that profile
 				// otherwise, the community default is used
 				if (form.containsKey(SETTING_ID)) {
-					if (!Validator.isValidInteger((String)form.get(SETTING_ID))) {
+					if (!Validator.isValidPosInteger((String)form.get(SETTING_ID))) {
 						return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
 					}
 					settingsId=Integer.parseInt((String)form.get(SETTING_ID));

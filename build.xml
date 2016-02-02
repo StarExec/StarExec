@@ -37,6 +37,8 @@
     </path>
 	<path id="starcomclasspath">
 		<fileset dir="${starcomlib}" includes="**/*.jar"/>
+		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+
 	</path>
 	
 	<!-- Action for compiling the project and building the WAR file.
@@ -57,7 +59,7 @@
 	</target>
 	
 	<target name="compilestarcom" depends="cleanstarcom">
-		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java,org/starexec/constants/R.java,org/starexec/util/Validator.java,org/starexec/backend/Backend.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
 </javac>
 	</target>
 	
@@ -68,7 +70,7 @@
 		    	<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
 		        <attribute name="Rsrc-Main-Class" value="org.starexec.command.Shell"/>
 		        <attribute name="Class-Path" value="command"/>
-		        <attribute name="Rsrc-Class-Path" value="./ commons-codec-1.9.jar commons-logging-1.1.3.jar fluent-hc-4.2.5.jar httpclient-4.3.4.jar httpclient-cache-4.2.5.jar httpcore-4.3.2.jar httpmime-4.3.4.jar commons-compress-1.4.1.jar gson-2.3.jar"/>
+		        <attribute name="Rsrc-Class-Path" value="./ commons-codec-1.9.jar commons-logging-1.1.3.jar fluent-hc-4.2.5.jar httpclient-4.3.4.jar httpclient-cache-4.2.5.jar httpcore-4.3.2.jar httpmime-4.3.4.jar commons-compress-1.4.1.jar gson-2.3.jar log4j-1.2.16.jar"/>
 		    </manifest>
 		    <zipfileset src="${starcomlib}/jar-in-jar-loader.zip"/>
 		    <fileset dir="${starcom-comp}"/>
@@ -81,6 +83,9 @@
 		    <zipfileset dir="${starcomlib}" includes="httpmime-4.3.4.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
 		    <zipfileset dir="${starcomlib}" includes="gson-2.3.jar"/>
+		    <zipfileset dir="${starcomlib}" includes="log4j-1.2.16.jar"/>
+	            <zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+
 		</jar>
 	</target>
 		
@@ -249,10 +254,12 @@
 			<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 			<fileset dir="local-lib" includes="**/*.jar"/>
 		</path>
+		<delete dir="junittestoutput"/>
+		<mkdir dir="junittestoutput"/>
 		<junit printsummary="yes" haltonfailure="yes">
 			<formatter type="plain"/>
 			<classpath refid="testpath"/>
-			<batchtest>
+			<batchtest todir="junittestoutput">
 				<fileset dir="${class-dir}" includes="**/junit/**/*.class"/>
 			</batchtest>
         </junit>

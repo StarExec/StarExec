@@ -2,10 +2,8 @@ package org.starexec.backend;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -15,8 +13,8 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.starexec.command.Validator;
 import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 /**
  * This is a backend implementation that uses Sun Grid Engine
@@ -26,12 +24,8 @@ import org.starexec.util.Util;
 public class GridEngineBackend implements Backend{
     // SGE Configurations, see GridEngineBackend
     private static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
-    private static String QUEUE_DETAILS_COMMAND = "qconf -sq ";				// The SGE command to get configuration details about a queue
     private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static String NODE_DETAILS_COMMAND = "qconf -se ";				// The SGE command to get hardware details about a node	
-    private static String NODE_DETAIL_PATTERN = "[^\\s,][\\w|-]+=[^,\\s]+";  // The regular expression to parse out the key/value pairs from SGE's node detail output
-    private static String QUEUE_DETAIL_PATTERN = "[\\w|-]+\\s+[^\t\r\n,]+";  // The regular expression to parse out the key/value pairs from SGE's queue detail output
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
 
 
@@ -43,16 +37,11 @@ public class GridEngineBackend implements Backend{
     private String BACKEND_ROOT = null;
     
     // The regex patterns used to parse SGE output
- 	private static Pattern nodeKeyValPattern;
- 	private static Pattern queueKeyValPattern;
  	private static Pattern queueAssocPattern;
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded
- 		nodeKeyValPattern = Pattern.compile(NODE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
- 		queueKeyValPattern = Pattern.compile(QUEUE_DETAIL_PATTERN, Pattern.CASE_INSENSITIVE);
  		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
-
  	}
     
     /**
@@ -134,31 +123,22 @@ public class GridEngineBackend implements Backend{
      **/
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
-	JobTemplate sgeTemplate = null;
-
+    		JobTemplate sgeTemplate = null;
 		try {
-			sgeTemplate = null;		
-
 			// Set up the grid engine template
 			sgeTemplate = session.createJobTemplate();
-
 
 			// DRMAA needs to be told to expect a shell script and not a binary
 			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
 
-
 			// Tell the job where it will deal with files
 			sgeTemplate.setWorkingDirectory(workingDirectoryPath);
 
-
-
 			sgeTemplate.setOutputPath(":" + logPath);
 			
-
 			// Tell the job where the script to be executed is
 			sgeTemplate.setRemoteCommand(scriptPath);	        
 			
-
 			// Actually submit the job to the grid engine
 			String id = session.runJob(sgeTemplate);
 			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath)); 
@@ -190,9 +170,8 @@ public class GridEngineBackend implements Backend{
 }
 }
 
-    /**
-
-     * @param execId an int that identifies the pair to be killed, should match what is returned by submitScript
+    /** 
+     * Kills all running pairs
      * @return true if successful, false otherwise
      * kills a jobpair
      */
@@ -255,39 +234,6 @@ public class GridEngineBackend implements Backend{
 
     }
 
-    
-    
-    /**
-     * @param nodeName the name of a node
-     * @return A HashMap of string keys to values
-     */
-    public Map<String,String> getNodeDetails(String nodeName){
-
-    	try {
-    		// Call SGE to get details for the given node
-    		String results = Util.executeCommand(NODE_DETAILS_COMMAND + nodeName);
-
-    		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineBackend.nodeKeyValPattern.matcher(results);
-
-    		Map<String, String> detailMap = new HashMap<String,String>();
-    		// For each match...
-    		while(matcher.find()) {
-    			// Split apart the key from the value
-    			String[] keyVal = matcher.group().split("=");
-    			
-    			// Add the results to the details list
-    			detailMap.put(keyVal[0], keyVal[1]);
-    		}
-
-    		return detailMap;
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
-    	}
-    	return null;
-		
-
-    }
 
     /**
 
@@ -306,45 +252,12 @@ public class GridEngineBackend implements Backend{
 
     }
 
-    /**
-     * @param nodeName the name of a node
-     * @return an even-sized String[] representing a details map for a given queue
-     *  where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
-     */
-    public Map<String,String> getQueueDetails(String nodeName){
-    	try {
-    		// Call SGE to get details for the given node
-    		String results = Util.executeCommand(QUEUE_DETAILS_COMMAND + nodeName);
-
-    		// Parse the output from the SGE call to get the key/value pairs for the node
-    		java.util.regex.Matcher matcher = GridEngineBackend.queueKeyValPattern.matcher(results);
-
-    		Map<String, String> detailsMap = new HashMap<String, String>();
-    		// For each match...
-    		while(matcher.find()) {
-    			// Split apart the key from the value
-    			String[] keyVal = matcher.group().split("\\s+");
-    			
-    			// Add the results to the details list
-    			detailsMap.put(keyVal[0], keyVal[1]);
-    		}
-
-    		return detailsMap;
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
-    	}
-    	return null;
-		
-    }
-
      /**
 
-     * @return an array that represents queue-node assocations: [queueName1,nodeName1,queueName1,nodeName2,queueName2,nodeName3]
+     * @return a map from node name to queue name
      * the queue and node names should match the names returned when calling getWorkerNodes and getQueues.
-     * queue names are found in the even-indexed positions, node name otherwise. 
-     *  a queue at index i is associated with the node at index i + 1
      */
-    public Map<String,String> getQueueNodeAssociations(){
+    public Map<String,String> getNodeQueueAssociations(){
 	
     	try {
     		String[] envp = new String[2];
@@ -374,10 +287,8 @@ public class GridEngineBackend implements Backend{
     }
 
     /**
-
-     * @param allQueueNames the names of all queues, 
-     * @return true if sucessful, false otherwise
      * should clear any states caused by errors on both queues and nodes
+     * @return true if sucessful, false otherwise
      */
     public boolean clearNodeErrorStates(){
     	try {
@@ -436,7 +347,7 @@ public class GridEngineBackend implements Backend{
 
      *@param queueName the name of the destination queue
      *@param nodeNames the names of the nodes to be moved 
-     *@param sourceQueueNames the names of the source queues
+     *@param queueNames the names of the source queues
      *@return true if successful, false otherwise
      */
     public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames){
@@ -558,7 +469,7 @@ public class GridEngineBackend implements Backend{
 
     /**
 
-     *@param destQueueName the name of the destination queue
+     *@param queueName the name of the destination queue
      *@param nodeNames the names of the nodes to be moved 
      *@param sourceQueueNames the names of the source queues
      * moves nodes from source queues to the destination queue <queueName>

@@ -187,9 +187,9 @@ public class SpaceSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspaces(space1.getId());
-		Spaces.removeSubspaces(space2.getId());
-		Spaces.removeSubspaces(publicSpace.getId());
+		Spaces.removeSubspace(space1.getId());
+		Spaces.removeSubspace(space2.getId());
+		Spaces.removeSubspace(publicSpace.getId());
 		Users.deleteUser(owner.getId(),admin.getId());
 		Users.deleteUser(nonOwner.getId(),admin.getId());
 		Users.deleteUser(noPerms.getId(),admin.getId());

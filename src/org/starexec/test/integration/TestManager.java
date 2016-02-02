@@ -120,8 +120,7 @@ public class TestManager {
 		return TestManager.getTestSequence(sequenceName).getTestResults();
 	}
 	/**
-	 * Executes the test that has the given name. If no such test exists, 
-	 * returns false
+	 * Executes the tests that have the given name.
 	 * @param testName The name of the test that should be run
 	 * @return True if the test could be found, false otherwise
 	 */
@@ -260,31 +259,23 @@ public class TestManager {
 	 */
 	public static void emptyJobOutputDirectory() {
 		if (Util.isProduction()) {
-			return; //right now, don't run anything on production
+			return;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		log.debug("trying to empty the job output directory");
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run(){
-				File file=new File(R.JOB_OUTPUT_DIR);
-				log.debug("calling deleteQuietly");
-				FileUtils.deleteQuietly(file);
-				log.debug("finished calling deleteQuietly");
-				file.mkdir();
-				file=new File(R.NEW_JOB_OUTPUT_DIR);
-				log.debug("calling deleteQuietly on new output");
+				File file=new File(R.getJobOutputDirectory());
+				log.debug("calling deleteQuietly on job output");
 
 				FileUtils.deleteQuietly(file);
-				log.debug("finished calling deleteQuietly on new output");
+				log.debug("finished calling deleteQuietly on job output");
 
 				
 				file.mkdir();
 			}
 		});
-		
-		
-		
 	}
 	
 }

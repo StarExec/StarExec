@@ -96,7 +96,7 @@ public class Download extends HttpServlet {
 				response.addCookie(newCookie);
 			}
 			
-			if (request.getParameter(PARAM_TYPE).equals("solver")) {
+			if (request.getParameter(PARAM_TYPE).equals(R.SOLVER)) {
 				Solver s = Solvers.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName=s.getName();
 				boolean reupload = false;
@@ -106,23 +106,23 @@ public class Download extends HttpServlet {
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleSolver(s, u.getId(), response, reupload);
-			}  else if (request.getParameter(PARAM_TYPE).equals("bench")) {
+			}  else if (request.getParameter(PARAM_TYPE).equals(R.BENCHMARK)) {
 				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName=b.getName();
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleBenchmark(b, u.getId(), response);
-			} else if (request.getParameter(PARAM_TYPE).equals("jp_output")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.PAIR_OUTPUT)) {
 				int id =Integer.parseInt(request.getParameter(PARAM_ID));
 				shortName="Pair_"+id;
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handlePairOutput(id, u.getId(), response);				
-			} else if (request.getParameter(PARAM_TYPE).equals("jp_outputs")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUTS)) {
 				List<Integer> ids=Validator.convertToIntList(request.getParameter("id[]"));
 				shortName="Pair_Output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success=handlePairOutputs(ids,u.getId(),response);
-			} else if (request.getParameter(PARAM_TYPE).equals("spaceXML")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.SPACE_XML)) {
 
 				Space space = Spaces.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName=space.getName()+"_XML";
@@ -142,7 +142,7 @@ public class Download extends HttpServlet {
 				
 			success = handleSpaceXML(space, u.getId(), response, includeAttributes,updates,upid);
 
-			} else if (request.getParameter(PARAM_TYPE).equals("jobXML")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_XML)) {
 				Job job = Jobs.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 
 				shortName="Job"+ job.getId() + "_XML";
@@ -151,7 +151,7 @@ public class Download extends HttpServlet {
 				success = handleJobXML(job, u.getId(), response);
 				
 				// this next condition is for the CSV file
-			} else if (request.getParameter(PARAM_TYPE).equals("job")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB)) {
 				Integer jobId = Integer.parseInt(request.getParameter(PARAM_ID));
 				String lastSeen=request.getParameter("since");
 				String returnids=request.getParameter("returnids");
@@ -173,7 +173,7 @@ public class Download extends HttpServlet {
 				shortName="Job"+jobId+"_info";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleJob(jobId, u.getId(), response, since,ids,complete);
-			}  else if (request.getParameter(PARAM_TYPE).equals("space")) {
+			}  else if (request.getParameter(PARAM_TYPE).equals(R.SPACE)) {
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter(PARAM_ID)), u.getId());
 				// we will  look for these attributes, but if they aren't there then the default should be
 				//to get both solvers and benchmarks
@@ -196,7 +196,7 @@ public class Download extends HttpServlet {
 				success = handleSpace(space, u.getId(), response,hierarchy,includeBenchmarks,includeSolvers, useIdDirectories);
 				
 			  
-			} else if (request.getParameter(PARAM_TYPE).equals("proc")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
 				List<Processor> proc=null;
 				shortName="Processor";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
@@ -216,7 +216,7 @@ public class Download extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_NO_CONTENT,"There are no processors to download");
 					return;
 				}
-			} else if (request.getParameter(PARAM_TYPE).equals("j_outputs")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUT)) {
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
 				
 				String lastSeen=request.getParameter("since");
@@ -761,10 +761,25 @@ public class Download extends HttpServlet {
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, "loadingGraph, starlogo");
-			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, "loader");
+			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, "loadingGraph, starlogo, external");
+			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, "ajaxloader, loader");
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, "favicon");
 			putHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
+
+			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT+"css/jqueryui/images");
+			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
+			FileUtils.copyDirectoryToDirectory(serverCssJqueryUiImagesDirectory, sandboxCssJqueryUiDirectory);
+
+			File serverCssImagesDirectory = new File(R.STAREXEC_ROOT+"css/images");
+			File sandboxCssDirectory = new File(sandboxDirectory, "css/");
+			FileUtils.copyDirectoryToDirectory(serverCssImagesDirectory, sandboxCssDirectory);
+
+			File serverCssJstreeDirectory = new File(R.STAREXEC_ROOT+"css/jstree");
+			FileUtils.copyDirectoryToDirectory(serverCssJstreeDirectory, sandboxCssDirectory);
+
+			File serverImagesJstreeDirectory = new File(R.STAREXEC_ROOT+"images/jstree");
+			File sandboxImagesDirectory = new File(sandboxDirectory, "images/");
+			FileUtils.copyDirectoryToDirectory(serverImagesJstreeDirectory, sandboxImagesDirectory);
 
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
 
@@ -1004,19 +1019,17 @@ public class Download extends HttpServlet {
 				return new ValidatorStatusCode(false, "A download type was not specified");
 			}
 			String type=request.getParameter(PARAM_TYPE);
-			
-
-			// TODO change all download types in this file to system constants in R
-			if (!(type.equals("solver") ||
-					type.equals("bench") ||
-					type.equals("spaceXML") ||
-			        type.equals("jobXML") ||
-					type.equals("jp_output") ||
-					type.equals("job") ||
-					type.equals("j_outputs") ||
-					type.equals("space") ||
-					type.equals("proc") ||
-					type.equals("jp_outputs") ||
+						
+			if (!(type.equals(R.SOLVER) ||
+					type.equals(R.BENCHMARK) ||
+					type.equals(R.SPACE_XML) ||
+			        type.equals(R.JOB_XML) ||
+					type.equals(R.PAIR_OUTPUT) ||
+					type.equals(R.JOB) ||
+					type.equals(R.JOB_OUTPUT) ||
+					type.equals(R.SPACE) ||
+					type.equals(R.PROCESSOR) ||
+					type.equals(R.JOB_OUTPUTS) ||
 					type.equals(R.JOB_PAGE_DOWNLOAD_TYPE))) {
 
 				return new ValidatorStatusCode(false, "The supplied download type was not valid");
@@ -1024,32 +1037,32 @@ public class Download extends HttpServlet {
 			
 			
 			int userId=SessionUtil.getUserId(request);
-			if (!type.equals("jp_outputs")) {
-				if (!Validator.isValidInteger(request.getParameter(PARAM_ID))) {
+			if (!type.equals(R.JOB_OUTPUTS)) {
+				if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
 					new ValidatorStatusCode(false, "The given id was not a valid integer");
 				}
 				int id=Integer.parseInt(request.getParameter(PARAM_ID));
 				ValidatorStatusCode status=null;
-				if (type.equals("solver")) {
+				if (type.equals(R.SOLVER)) {
 					status=SolverSecurity.canUserDownloadSolver(id,userId);
 					if (!status.isSuccess()) {
 						return status;
 					}
-				} else if (type.equals("spaceXML") || type.equals("space") || type.equals("proc")) {
+				} else if (type.equals(R.SPACE_XML) || type.equals(R.SPACE) || type.equals(R.PROCESSOR)) {
 					if (!Permissions.canUserSeeSpace(id,userId)) {
 						return new ValidatorStatusCode(false, "You do not have permission to see this space");
 					}	
 
-				} else if (type.equals("job") || type.equals("jobXML") || type.equals("j_outputs")) {
+				} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
 					if (!Permissions.canUserSeeJob(id, userId)) {
 						return new ValidatorStatusCode(false, "You do not have permission to see this job");
 					}
-				} else if (type.equals("jp_output")) {
+				} else if (type.equals(R.PAIR_OUTPUT)) {
 					int jobId=JobPairs.getPair(id).getJobId();
 					if (!Permissions.canUserSeeJob(jobId, userId)) {
 						return new ValidatorStatusCode(false, "You do not have permission to see this job");
 					}
-				} else if (type.equals("bench")) {
+				} else if (type.equals(R.BENCHMARK)) {
 					status=BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 					if (!status.isSuccess()) {
 						return status;

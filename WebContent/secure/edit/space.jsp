@@ -86,7 +86,7 @@
 				<tbody>
 					<tr>
 						<td class="label">space name</td>			
-						<td><input id="name" type="text" name="name" value="${space.name}" length=${nameLength}></td>
+						<td><input id="name" type="text" name="name" value="${space.name}" length="${nameLength}"></td>
 					</tr>
 					<tr>
 						<td class="label">description</td>			

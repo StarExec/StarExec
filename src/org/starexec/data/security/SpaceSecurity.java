@@ -353,26 +353,7 @@ public class SpaceSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks to see whether a user can copy a given user from the given space
-	 * @param spaceId The space ID the user is being copied FROM
-	 * @param userIdDoingCopying The ID of the user making the request
-	 * @param userIdBeingCopied The ID of the user that would be copied
-	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
-	 */
-	private static ValidatorStatusCode canCopyUserFromSpace(int spaceId, int userIdDoingCopying, int userIdBeingCopied) {
-		
-		
-		ValidatorStatusCode status=canCopyPrimFromSpace(spaceId,userIdDoingCopying);
-		if (!status.isSuccess()) {
-			return status;
-		}
-		//the user being copied should actually be in the space they are supposedly being copied from
-		if (!Users.isMemberOfSpace(userIdBeingCopied, spaceId)) {
-			return new ValidatorStatusCode(false, "The user you are trying to move is not in the space you are copying from");
-		}
-		return new ValidatorStatusCode(true);
-	}
+	
 	/**
 	 * Checks to see whether a user can copy a given benchmark from the given space
 	 * @param spaceId The space ID the user is being copied FROM

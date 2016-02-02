@@ -71,7 +71,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 			END IF;
 		END IF;
 		IF (_statusCode = 2) THEN
-			UPDATE job_pairs SET queuesub_time=NOW() WHERE id=_id;
+			UPDATE job_pairs SET queuesub_time=NOW(3) WHERE id=_jobPairId;
 		END IF;
 	END //
 	
@@ -138,13 +138,13 @@ CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 		ORDER BY attr_key ASC;
 	END //
 	
--- Updates a job pair's sge id
+-- Updates a job pair's backend ID (SGE, OAR, or so on).
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS SetSGEJobId;
-CREATE PROCEDURE SetSGEJobId(IN _jobPairId INT, IN _sgeId INT)
+DROP PROCEDURE IF EXISTS SetBackendExecId;
+CREATE PROCEDURE SetBackendExecId(IN _jobPairId INT, IN _execId INT)
 	BEGIN
 		UPDATE job_pairs
-		SET sge_id=_sgeId
+		SET sge_id=_execId
 		WHERE id=_jobPairId;
 	END //
 	
@@ -265,5 +265,41 @@ CREATE PROCEDURE SetBrokenPairStatus(IN _pairId INT, IN _current_status INT, IN 
 		SET status_code = _new_status
 		WHERE id = _pairId AND status_code = _current_status;
 	END //
+
+
+-- Counts the total number of job pairs that satisfy GetNextPageOfJobPairsInJobSpaceHierarchy
+DROP PROCEDURE IF EXISTS CountJobPairsInJobSpaceHierarchyByType;
+CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _configId INT, IN _type VARCHAR(16), IN _query TEXT, IN _stageNumber INT)
+
+	BEGIN
+		SELECT COUNT(*) as count FROM job_pairs
+
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+		LEFT JOIN job_pair_completion ON job_pair_completion.pair_id=job_pairs.id
+
+		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id and job_attributes.stage_number=jobpair_stage_data.stage_number AND job_attributes.attr_key="starexec-result")
+		JOIN job_space_closure ON descendant=job_pairs.job_space_id
+		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
+		
+		WHERE ancestor=_jobSpaceId AND jobpair_stage_data.config_id=_configId AND jobpair_stage_data.stage_number = _stageNumber AND
+				((_type = "all") OR
+				(_type="resource" AND job_pairs.status_code>=14 AND job_pairs.status_code<=17) OR
+				(_type = "incomplete" AND job_pairs.status_code!=7 AND !(job_pairs.status_code>=14 AND job_pairs.status_code<=17)) OR
+				(_type="failed" AND ((job_pairs.status_code>=8 AND job_pairs.status_code<=13) OR job_pairs.status_code=18)) OR
+				(_type ="complete" AND (job_pairs.status_code=7 OR (job_pairs.status_code<=14 ANd job_pairs.status_code<=17))) OR
+				(_type= "unknown" AND job_pairs.status_code=7 AND job_attributes.attr_value="starexec-unknown") OR
+				(_type = "solved" AND job_pairs.status_code=7 AND (job_attributes.attr_value=bench_attributes.attr_value OR bench_attributes.attr_value is null)) OR
+				(_type = "wrong" AND job_pairs.status_code=7 AND (bench_attributes.attr_value is not null) and (job_attributes.attr_value!=bench_attributes.attr_value)))
+				
+				AND
+				
+				(bench_name 		LIKE 	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.config_name		LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.solver_name		LIKE	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.status_code 	LIKE 	CONCAT('%', _query, '%')
+				OR		jobpair_stage_data.wallclock				LIKE	CONCAT('%', _query, '%')
+				OR		cpu				LIKE	CONCAT('%', _query, '%')
+				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'));
+	END //	
 
 DELIMITER ; -- this should always be at the end of the file

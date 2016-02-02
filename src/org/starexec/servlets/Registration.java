@@ -30,10 +30,6 @@ public class Registration extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Registration.class);	
 	private static final LogUtil logUtil = new LogUtil(log);
 	
-	// Return codes for registration
-	private static final int SUCCESS = 0;
-	private static final int FAIL = 1;
-	private static final int MALFORMED = 2;
 	
 	// Param strings for processing
 	public static String USER_COMMUNITY = "cm";
@@ -153,7 +149,7 @@ public class Registration extends HttpServlet {
 	    		return new ValidatorStatusCode(false, "You need to supply a password");
 	    	}    	    	   
 		    
-	    	if (!Validator.isValidInteger(request.getParameter(Registration.USER_COMMUNITY))) {
+	    	if (!Validator.isValidPosInteger(request.getParameter(Registration.USER_COMMUNITY))) {
 	    		return new ValidatorStatusCode(false, "The given community id is not a valid integer");
 	    	}
 

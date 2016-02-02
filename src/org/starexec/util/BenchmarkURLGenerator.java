@@ -7,7 +7,7 @@ import org.jfree.data.xy.XYDataset;
 
 public class BenchmarkURLGenerator implements XYURLGenerator {
 
-	HashMap<String,Integer> seriesMap;
+	private HashMap<String,Integer> seriesMap;
 	public BenchmarkURLGenerator(HashMap<String,Integer> map) {
 		seriesMap=map;
 	}

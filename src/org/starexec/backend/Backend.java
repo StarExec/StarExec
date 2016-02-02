@@ -1,7 +1,6 @@
 package org.starexec.backend;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,30 +89,17 @@ public interface Backend{
      */
     public String[] getWorkerNodes();
 
-    /**
-     * @param nodeName the name of a node
-     * @return an even-sized String[] representing a details map for a given node
-     * where key is the attribute name and value is the attribute value: [key1,value1,key2,value2,key3,value3]
-     * 
-     */
-    public Map<String, String> getNodeDetails(String nodeName);
-
+    
     /**
      * @return returns a list of all active queue names
      */
     public String[] getQueues();
 
-    /**
-     * @param name the name of a node
-     * @return a map of queue detail keys to values
-     */
-    public Map<String,String> getQueueDetails(String name);
-
 
     /**
      * @return a map from node name to queue name
      */
-    public Map<String, String> getQueueNodeAssociations();
+    public Map<String, String> getNodeQueueAssociations();
 
     /**
      * @return true if sucessful, false otherwise

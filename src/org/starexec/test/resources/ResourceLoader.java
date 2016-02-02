@@ -215,7 +215,6 @@ public class ResourceLoader {
 	 * @param userId The user that will be the owner of the new profile
 	 * @return
 	 */
-	//TODO: solver, benchmark, processors?
 	public static DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
 		Random rand=new Random();
 		DefaultSettings settings=new DefaultSettings();
@@ -477,7 +476,6 @@ public class ResourceLoader {
 	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
-			String [] empty=new String[0];
 			R.BACKEND.createQueue(queueName, null,null);
 			
 			//reloads worker nodes and queues

@@ -2,7 +2,7 @@ package org.starexec.constants;
 import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
-import org.starexec.backend.*;
+import org.starexec.backend.Backend;
 
 /**
  * Class which holds static resources (R) available for use
@@ -18,15 +18,50 @@ public class R {
      * 
      * Any fields set here will be treated as defaults
      */
-
-    //TODO : Many descriptions and names in this file reference SGE even though the concepts are not SGE specific, should be changed to refer to BACKEND so that they can be more meaningful
 	
 
 	private R() throws UnsupportedOperationException{
 		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
     }
 
-    public static Backend BACKEND = new GridEngineBackend();
+    public static String getBenchmarkPath() {
+		return STAREXEC_DATA_DIR + "/Benchmarks"; 
+	}
+
+	public static String getSolverPath() {
+		return STAREXEC_DATA_DIR +"/Solvers";
+	}
+
+	public static String getJobInboxDir() {
+		return STAREXEC_DATA_DIR + "/jobin";
+	}
+	
+	public static String getJobOutputDirectory() {
+		return STAREXEC_DATA_DIR + "/joboutput";
+	}
+
+
+	public static String getProcessorDir() {
+		return STAREXEC_DATA_DIR +"/processor_scripts";
+	}
+
+	public static String getPicturePath() {
+		return STAREXEC_DATA_DIR + "/pictures";
+	}
+	
+	public static String getSolverBuildOutputDir() {
+		return getSolverPath()+"/buildoutput";
+	}
+
+	public static String getJobLogDir() {
+		return getJobOutputDirectory()+"/logs";
+	}
+
+	public static String getBatchSpaceXMLDir() {
+		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
+	}
+
+	public static Backend BACKEND = null;
 	
     //maximum length properties
     public static int SPACE_NAME_LEN=250;
@@ -76,7 +111,6 @@ public class R {
     public static String USER_NAME_PATTERN="^[A-Za-z\\-\\s']{2," +String.valueOf(USER_FIRST_LEN)+ "}$";
     public static String INSTITUTION_PATTERN="^[\\w\\-\\s']{2," +String.valueOf(INSTITUTION_LEN) +"}$";
     public static String EMAIL_PATTERN="^[\\w.%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
-    //public static String URL_PATTERN="https?://([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\.]*(\\?\\S+)?)?){1,"+ String.valueOf(URL_LEN)+"}";
     public static String URL_PATTERN="https?://.\\S+{2,"+String.valueOf(URL_LEN)+"}";
     public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]+$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
@@ -111,24 +145,13 @@ public class R {
     public static String REPORT_HOST = "starexec1.star.cs.uiowa.edu";  // where to report job status updates during jobs
 	
     // Global path information
-    public static String SOLVER_PATH = null;								// The top-level directory in which to save the solver file(s)
-    public static String SOLVER_BUILD_OUTPUT_DIR=null;                      // The top-level directory in which to save solver build script output
     public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
-    public static String BENCHMARK_PATH = null;								// The top-level directory in which to save the benchmark file(s)
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
-    public static String STAREXEC_DATA_DIR = null;   // the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
-    public static String JOBPAIR_INPUT_DIR = null;
-    public static String JOB_INBOX_DIR = null;								// Where to deposit new job scripts until SGE distributes it to a node
-    public static String JOB_OUTPUT_DIR = null;								// Where to find the saved output from jobs	
-    public static String NEW_JOB_OUTPUT_DIR= null;
-    public static String JOB_LOG_DIR = null;								// Where to deposit job logs (output from SGE scripts when job runs)
-    public static String PROCESSOR_DIR = null;								// Where to deposit new processor scripts
+    public static String STAREXEC_DATA_DIR = null;   						// the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
     public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
     public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading
     public static String SPACE_XML_SCHEMA_RELATIVE_LOC = null;						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
-    public static String PICTURE_PATH = null;								// Where the pictures are located
-    public static String BATCH_SPACE_XML_DIR = null; 						// Place to locate uploaded XML.  Not necessary to keep files, but using Download Directory caused problems
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = null;
 	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
@@ -163,10 +186,9 @@ public class R {
     public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";		// Which datetime format is used to create unique directory names
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
-    public static boolean IS_FULL_STAREXEC_INSTANCE = true;  // should we run SGE tasks (see app/Starexec.java)
+    public static boolean IS_FULL_STAREXEC_INSTANCE = true;  				// should we run job tasks (see app/Starexec.java)
     public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
-    public static int SGE_STATISTICS_PERIOD = 120;							// How often (in seconds) to collect finished job statistics from the grid engine
-    public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the grid engine
+    public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the backend
     public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
 	public static final int EMAIL_REPORTS_PERIOD = 7;						  // How often (in days) to send StarExec reports to subscribed users
 	public static final int MAX_NUMBER_OF_REPORTS_TO_SEND = 30;               // Maximum number of StarExec report emails to send every period
@@ -191,16 +213,14 @@ public class R {
 	public static String DESC_PATH = "starexec_description.txt";
 	public static String STAREXEC_UNKNOWN="starexec-unknown";               // Result that indicates a pair should not be counted as wrong
 	// Queue and node status strings
-	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for an SGE queue (indicates the queue is live)
-	public static String QUEUE_STATUS_INACTIVE = "INACTIVE";				// Inactive status for an SGE queue (indicates the queue is not currently live)
-	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for an SGE node (indicates the node is live)
-	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for an SGE node (indicates the node is not currently live)
+	
+	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for a backend queue (indicates the queue is live)
+	public static String QUEUE_STATUS_INACTIVE = "INACTIVE";				// Inactive status for a backend queue (indicates the queue is not currently live)
+	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for a backend node (indicates the node is live)
+	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for a backend node (indicates the node is not currently live)
 	
     // BACKEND configurations
-    //TODO : The name and meaning of SGE_ROOT should be changed, it should no longer be SGE specific but rather be the BACKEND_ROOT
-    public static String SGE_ROOT = null; // root directory for SGE
-    //TODO : SGE_ACCOUNTING_FILE should be changed, it should no longer be SGE specific but rather be BACKEND_ACCOUNTING_ROOT (backends should be able to provide job stats)
-    public static String SGE_ACCOUNTING_FILE = null;  						// The absolute path to the SGE accounting file that holds job statistics
+    public static String BACKEND_ROOT = null; // root directory for the backend executable
     public static int MAX_PAIR_RUNTIME = 86400;  							// The largest possible amount of time a job pair can run before being terminated (in seconds)
     public static int MAX_PAIR_CPUTIME = 86400;  							// The largest possible cpu time a job pair can run before being terminated (in seconds)
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
@@ -236,4 +256,16 @@ public class R {
     public static int PROXY_PORT = 8888;
     
     public static boolean DEBUG_MODE_ACTIVE = false;
+    
+    //names of primitive types
+	public static String SOLVER="solver";
+	public static String BENCHMARK="bench";
+	public static String SPACE_XML = "spaceXML";
+	public static String JOB_XML = "jobXML";
+	public static String PAIR_OUTPUT = "jp_output";
+	public static String JOB = "job";
+	public static String JOB_OUTPUT = "j_outputs";
+	public static String SPACE = "space";
+	public static String PROCESSOR = "proc";
+	public static String JOB_OUTPUTS = "jp_outputs";
 }	

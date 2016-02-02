@@ -77,12 +77,16 @@ public class PermissionsTests extends TestSequence {
 	}
 	
 	
-	//TODO: Make this test stronger
 	@StarexecTest
 	private void GetSpaceDefaultTest() {
+		space.getPermission().setAddSolver(true);
+		space.getPermission().setAddSpace(false);
+		Spaces.updateDetails(admin.getId(), space);
 		Permission p=Permissions.getSpaceDefault(space.getId());
 		Assert.assertNotNull(p);
 		Assert.assertFalse(p.isLeader());
+		Assert.assertTrue(p.canAddSolver());
+		Assert.assertFalse(p.canAddSpace());
 	}
 	
 	
@@ -136,7 +140,7 @@ public class PermissionsTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		
-		Spaces.removeSubspaces(space.getId());
+		Spaces.removeSubspace(space.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Solvers.deleteAndRemoveSolver(solver2.getId());
 		for (Integer i : benchmarks) {
