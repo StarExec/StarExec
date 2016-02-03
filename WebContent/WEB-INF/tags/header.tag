@@ -3,7 +3,7 @@
 
 <header id="pageHeader">
 	<a href="${starexecRoot}/secure/index.jsp"><img src="${starexecRoot}/images/starlogo.png" alt="StarExec Logo"></a>
-	<c:if test="${user.role != 'unauthorized' && user.role != 'suspended'}">
+	<c:if test="${empty user || (user.role != 'unauthorized' && user.role != 'suspended')}">
 		<nav>
 			<ul>
 				<c:if test="${user.role == 'admin' || user.role == 'developer'}">
