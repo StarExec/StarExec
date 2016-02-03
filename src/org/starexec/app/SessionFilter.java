@@ -55,7 +55,7 @@ public class SessionFilter implements Filter {
 			String userEmail = httpRequest.getUserPrincipal().getName();
 			// Check if they have the necessary user SessionUtil stored in their session
 
-			if(SessionUtil.getUser((HttpServletRequest)request) == null) {
+			if(SessionUtil.getUser(httpRequest) == null) {
 				// If not, retrieve the user's information from the database
 				User user = Users.get(userEmail);
 				
@@ -74,6 +74,12 @@ public class SessionFilter implements Filter {
 					httpResponse.sendRedirect(Util.docRoot(""));	
 					return;
 				}
+			}
+			User user = SessionUtil.getUser(httpRequest);
+			//suspended and unauthorized users cannot utilize the system: always place them back on the index page
+			//whenever they try to access anything secure.
+			if (user.getRole().equals(R.SUSPENDED_ROLE_NAME) || user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME)) {
+				httpResponse.sendRedirect(Util.docRoot(""));
 			}
 		}
 		
