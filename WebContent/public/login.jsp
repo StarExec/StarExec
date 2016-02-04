@@ -39,10 +39,6 @@
 				<td><a href="${starexecRoot}/public/registration.jsp">New user?</a></td>
 				<td></td>
 			</tr>
-			<tr> 
-				<td><a href="${starexecRoot}/secure/j_security_check?j_username=public&j_password=public">Login as guest</a></td>
-				<td></td>
-			</tr>
 		</table>
 		</fieldset>	
 		<input type="hidden" id="cookieexists" name="cookieexists" value="false">				
