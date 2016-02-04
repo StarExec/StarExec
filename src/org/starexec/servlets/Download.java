@@ -1068,8 +1068,7 @@ public class Download extends HttpServlet {
 						return status;
 					}
 				} else if (type.equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
-					int jobId=JobPairs.getPair(id).getJobId();
-					status = JobSecurity.canUserSeeJob(jobId, userId);
+					status = JobSecurity.canUserSeeJob(id, userId);
 					if (!status.isSuccess()) {
 						return status;
 					}
