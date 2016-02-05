@@ -1760,8 +1760,8 @@ public class RESTHelpers {
 		 * Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
-		List<String> entries = new ArrayList<String>();
 		for (SolverStats js : stats) {
+			List<String> entries = new ArrayList<String>();
 			StringBuilder sb = new StringBuilder();
 
 			// Create the solver link
@@ -1808,8 +1808,6 @@ public class RESTHelpers {
 					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
 			} else {
-				
-				
 				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
 				if (wallTime) {
 					entries.add(String.valueOf(js.getWallTime()));
