@@ -387,7 +387,28 @@ public class ArchiveUtil {
 		zos.closeEntry();
 	}
 	
+	/**
+	 * Adds the given file to the given output stream if and only if it was modified after some timestamp
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @param earlyDate Milliseconds since the epoch. Only get files modified after this (non-inclusive)
+	 * @param lateDate Milliseconds since the epoch. Only get files modified before this (inclusive)
+	 * @throws IOException 
+	 */
+	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate, long lateDate) throws IOException {
+		if (srcFile.lastModified() >earlyDate && srcFile.lastModified()<=lateDate) {
+			addFileToArchive(zos, srcFile, zipFileName);
+		}
+	}
 	
+	/**
+	 * Adds the given source file to the given zip output stream using the given name
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @throws IOException
+	 */
 	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		ZipEntry entry=new ZipEntry(zipFileName);
 		zos.putNextEntry(entry);
@@ -396,6 +417,36 @@ public class ArchiveUtil {
 		IOUtils.copy(input, zos);
 		zos.closeEntry();
 		input.close();
+	}
+	
+	public static long getMostRecentlyModifiedFile(File file) {
+		long max=file.lastModified();
+		if (file.isDirectory()) {
+			for (File f : file.listFiles()) {
+				max = Math.max(max, getMostRecentlyModifiedFile(file));
+			}
+		}
+		return max;
+	}
+	
+	/**
+	 * Recursively adds the given directory to the given zipoutputstream, using the given name as the prefix
+	 * for all files that get added. Only add files that were modified after the specified time.
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @param modifiedAfter
+	 * @throws IOException
+	 */
+	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName,long earlyDate, long lateDate) throws IOException {
+		File[] files=srcFile.listFiles();
+		for (int index=0;index<files.length;index++) {
+			if (files[index].isDirectory()) {
+				addDirToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate, lateDate);
+				continue;
+			}
+			addFileToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate, lateDate);
+		}
 	}
 	
 	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {

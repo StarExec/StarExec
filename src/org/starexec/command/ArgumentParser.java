@@ -84,7 +84,7 @@ class ArgumentParser {
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
 	
-	protected int getJobOutCompletion(int jobID) {
+	protected PollJobData getJobOutCompletion(int jobID) {
 		return con.getJobOutCompletion(jobID);
 		
 	}
@@ -127,6 +127,7 @@ class ArgumentParser {
 			Integer wallclock=null;
 			Integer cpu=null;
 			Double maxMemory=null;
+			Integer resultsInterval = 0;
 			if (commandParams.containsKey(C.PARAM_WALLCLOCKTIMEOUT)) {
 				wallclock=Integer.parseInt(commandParams.get(C.PARAM_WALLCLOCKTIMEOUT));
 			}
@@ -135,6 +136,9 @@ class ArgumentParser {
 			}
 			if (commandParams.containsKey(C.PARAM_MEMORY)) {
 				maxMemory=Double.parseDouble(commandParams.get(C.PARAM_MEMORY));
+			}
+			if (commandParams.containsKey(C.PARAM_RESULTS_INTERVAL)) {
+				resultsInterval = Integer.parseInt(commandParams.get(C.PARAM_RESULTS_INTERVAL));
 			}
 			Boolean useDepthFirst=true;
 			if (commandParams.containsKey(C.PARAM_TRAVERSAL)) {
@@ -171,7 +175,7 @@ class ArgumentParser {
 			return con.createJob(Integer.parseInt(commandParams.get(C.PARAM_ID)), name,
 					desc,Integer.parseInt(postProcId),Integer.parseInt(preProcId),
 					Integer.parseInt(commandParams.get(C.PARAM_QUEUEID)),wallclock,
-					cpu,useDepthFirst,maxMemory,startPaused,seed, commandParams.containsKey(C.PARAM_SUPPRESS_TIMESTAMPS));
+					cpu,useDepthFirst,maxMemory,startPaused,seed, commandParams.containsKey(C.PARAM_SUPPRESS_TIMESTAMPS), resultsInterval);
 
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
@@ -404,7 +408,7 @@ class ArgumentParser {
 	 * @author Eric Burns
 	 */
 	
-	protected int downloadArchive(String type,Integer since,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
+	protected int downloadArchive(String type,Integer since,Long lastModified,Boolean hierarchy,String procClass, HashMap<String,String> commandParams) {
 		try {
 			int valid=CommandValidator.isValidDownloadRequest(commandParams,type,since);
 			if (valid<0) {

@@ -220,13 +220,18 @@ public class Download extends HttpServlet {
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
 				
 				String lastSeen=request.getParameter("since");
+				String lastMod = request.getParameter("lastTimestamp");
 				Integer since=null;
+				Long lastModified = null;
 				if (lastSeen!=null) {
 					since=Integer.parseInt(lastSeen);
 				}
+				if (lastMod!=null) {
+					lastModified=Long.parseLong(lastMod);
+				}
 				shortName="Job"+jobId+"_output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success= handleJobOutputs(jobId, u.getId(), response,since);
+				success= handleJobOutputs(jobId, u.getId(), response,since, lastModified);
 				
 			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
@@ -422,7 +427,7 @@ public class Download extends HttpServlet {
 
 		String baseName="Job"+String.valueOf(j.getId())+"_output";
 
-		Download.addJobPairsToZipOutput(pairs,response,baseName,false);
+		Download.addJobPairsToZipOutput(pairs,response,baseName,false,null,null);
     	return true;
     }
 
@@ -643,6 +648,19 @@ public class Download extends HttpServlet {
 		return filename;
 	}
 	
+	private static long getMostRecentlyModifiedFile(List<JobPair> pairs) {
+		long max = 0;
+		for (JobPair p : pairs) {
+			File file = new File(JobPairs.getFilePath(p));
+			if (!file.exists()) {
+				continue;
+			}
+			max = Math.max(max, ArchiveUtil.getMostRecentlyModifiedFile(file));
+		}
+		return max;
+		
+	}
+	
 	/**
 	 * Puts all the given pairs into a zip archive that is streamed into the http response object. The http output stream
 	 * is closed at the end
@@ -651,9 +669,11 @@ public class Download extends HttpServlet {
 	 * @param baseName The top level name to give to the archive
 	 * @param useSpacePath If true, pair output will be in a directory including the pair space path. If false, they will simply
 	 * be in a flat list of directories with job pair IDs
+	 * @param lastModified Only retrieve files that were modified after the given date
 	 * @return
 	 */
-	private static boolean addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response,String baseName,boolean useSpacePath) {
+	private static boolean addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response,String baseName,boolean useSpacePath, 
+			Long earlyDate, Long lateDate) {
 		if (pairs.size()==0) {
 			return true; // don't try to make a zip if there are no pairs
 		}
@@ -682,11 +702,21 @@ public class Download extends HttpServlet {
 
 				if (file.exists()) {
 					if (file.isDirectory()) {
-						ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
+						if (earlyDate==null || lateDate==null ){
+							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
+
+						} else {
+							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString(), earlyDate, lateDate);
+						}
 					} else {
 						zipFileName.append(File.separator);
 						zipFileName.append(p.getBench().getName());
-						ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+						if (earlyDate==null || lateDate==null) {
+							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+
+						} else {
+							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString(), earlyDate, lateDate);
+						}
 					}
 					
 
@@ -713,7 +743,7 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since) throws Exception {    	
+	private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since, Long lastModified) throws Exception {    	
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 			log.debug("confirmed user can download job = "+jobId);
@@ -721,7 +751,10 @@ public class Download extends HttpServlet {
 
 			//if we only want the new job pairs
 			if (since!=null) {
-				
+				if (lastModified==null) {
+					log.warn("handleJobOutputs called to get new results, but lastModified is null");
+					lastModified=0l;
+				}
 				log.debug("Getting incremental job output results");
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 				List<JobPair> pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
@@ -734,6 +767,8 @@ public class Download extends HttpServlet {
 						maxCompletion=x.getCompletionId();
 					}
 				}
+				long maxTimestamp = getMostRecentlyModifiedFile(pairs);
+				response.addCookie(new Cookie("Max-Timestamp", String.valueOf(maxTimestamp)));
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairs.size())));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
@@ -741,7 +776,8 @@ public class Download extends HttpServlet {
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
 				String baseName="Job"+String.valueOf(jobId)+"_output_new";
 
-				Download.addJobPairsToZipOutput(pairs,response,baseName,true);
+				// get all files in between 
+				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified, maxTimestamp);
 			
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);

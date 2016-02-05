@@ -163,7 +163,7 @@ public class ResourceLoader {
 		String name=TestUtil.getRandomJobName();
 		
 		Queue q=Queues.getAllQ();
-		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,cpuTimeout,wallclockTimeout,memory);
+		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,cpuTimeout,wallclockTimeout,memory, false, 0);
 		
 		
 		List<Integer> configIds=new ArrayList<Integer>();
@@ -193,7 +193,7 @@ public class ResourceLoader {
 		String name=TestUtil.getRandomJobName();
 		Queue q=Queues.getAllQ();
 
-		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,10,10,Util.gigabytesToBytes(1));
+		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,10,10,Util.gigabytesToBytes(1), false, 0);
 		job.setPrimarySpace(rootSpaceId);
 		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
 		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();

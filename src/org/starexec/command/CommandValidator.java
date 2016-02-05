@@ -53,7 +53,7 @@ public class CommandValidator {
 
 	private static String[] allowedCreateSubspaceParams=new String[]{C.PARAM_ID,C.PARAM_NAME,C.PARAM_DESC,
 		C.PARAM_ENABLE_ALL_PERMISSIONS,"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
-	private static String[] allowedCreateJobParams=new String[]{C.PARAM_ID,C.PARAM_NAME,C.PARAM_DESC,C.PARAM_WALLCLOCKTIMEOUT,
+	private static String[] allowedCreateJobParams=new String[]{C.PARAM_ID,C.PARAM_NAME,C.PARAM_DESC,C.PARAM_WALLCLOCKTIMEOUT, C.PARAM_RESULTS_INTERVAL,
 		C.PARAM_CPUTIMEOUT,C.PARAM_QUEUEID,C.PARAM_PROCID, C.PARAM_TRAVERSAL, C.PARAM_MEMORY,C.PARAM_PAUSED, C.PARAM_SEED, C.PARAM_SUPPRESS_TIMESTAMPS};
 	private static String[] allowedUploadSolverParams=new String[]{C.PARAM_ID,C.PARAM_TYPE,C.PARAM_PREPROCID,C.PARAM_FILE,C.PARAM_URL,C.PARAM_NAME,C.PARAM_DESC,
 		C.PARAM_DESCRIPTION_FILE,C.PARAM_DOWNLOADABLE, C.PARAM_RUN, C.PARAM_SETTING};
@@ -497,6 +497,11 @@ public class CommandValidator {
 		if (commandParams.containsKey(C.PARAM_MEMORY)) {
 			if (!Validator.isValidPosDouble(commandParams.get(C.PARAM_MEMORY))) {
 				return Status.ERROR_INVALID_MEMORY;
+			}
+		}
+		if (commandParams.containsKey(C.PARAM_RESULTS_INTERVAL)) {
+			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_RESULTS_INTERVAL))) {
+				return Status.ERROR_INVALID_RESULTS_INTERVAL;
 			}
 		}
 		findUnnecessaryParams(allowedCreateJobParams,commandParams);

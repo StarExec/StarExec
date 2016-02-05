@@ -655,6 +655,7 @@ function createDir {
 }
 
 # takes in a stage number as an argument so we know where to put the output
+# TODO: This should also look for the new output directory
 function copyOutput {
 	log "creating storage directory on master host"
 

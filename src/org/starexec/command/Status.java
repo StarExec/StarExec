@@ -45,6 +45,7 @@ public class Status {
 	public static int ERROR_INVALID_MEMORY=-34;
 	public static int ERROR_SEED=-35;
 	public static int ERROR_JOB_INCOMPLETE=-36;
+	public static int ERROR_INVALID_RESULTS_INTERVAL=-37;
 	//error messages
 	private static HashMap<Integer,String> messages=new HashMap<Integer,String>();
 	static {
@@ -85,6 +86,7 @@ public class Status {
 		messages.put(ERROR_INVALID_MEMORY, "Memory is measured in gigabytes, and it can not be negative");
 		messages.put(ERROR_SEED, "Seed values must be integers");
 		messages.put(ERROR_JOB_INCOMPLETE, "The job is not yet complete");
+		messages.put(ERROR_INVALID_RESULTS_INTERVAL, "The interval field must be an integer >=0");
 	}
 	
 	public static String getStatusMessage(int code) {

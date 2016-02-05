@@ -458,7 +458,6 @@
 						<tr title="the random seed given to the preprocessor used by each job pair">
 							<td>random seed</td>
 							<td>${seed}</td>
-						
 						</tr>
 					</tbody>
 				</table>	

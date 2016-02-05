@@ -13,10 +13,12 @@ public class StageAttributes {
 	private int wallclockTimeout;
 	private int cpuTimeout;
 	private long maxMemory;
+	private int resultsInterval;
 	private Integer spaceId; // null if not given. Not required
 	private Processor preProcessor;
 	private Processor postProcessor;
 	private String benchSuffix=null;
+	
 	public StageAttributes() {
 		jobId=-1;
 		stageNumber=-1;
@@ -24,6 +26,7 @@ public class StageAttributes {
 		cpuTimeout=-1;
 		maxMemory=-1;
 		spaceId=null;
+		setResultsInterval(0);
 	}
 	
 	public int getJobId() {
@@ -85,5 +88,13 @@ public class StageAttributes {
 
 	public void setBenchSuffix(String benchSuffix) {
 		this.benchSuffix = benchSuffix;
+	}
+
+	public int getResultsInterval() {
+		return resultsInterval;
+	}
+
+	public void setResultsInterval(int resultsInterval) {
+		this.resultsInterval = resultsInterval;
 	}
 }

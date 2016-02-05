@@ -49,7 +49,7 @@ public class Connection {
 	private String username,password;
 	private String lastError;
 	private HashMap<Integer,Integer> job_info_indices; //these two map job ids to the max completion index
-	private HashMap<Integer,Integer> job_out_indices;
+	private HashMap<Integer,PollJobData> job_out_indices;
 	
 	
 	/**
@@ -113,7 +113,7 @@ public class Connection {
 		client=new DefaultHttpClient();
 
 		setInfoIndices(new HashMap<Integer,Integer>());
-		setOutputIndices(new HashMap<Integer,Integer>());
+		setOutputIndices(new HashMap<Integer,PollJobData>());
 		lastError="";
 	}
 
@@ -149,11 +149,11 @@ public class Connection {
 		return password;
 	}
 
-	protected void setOutputIndices(HashMap<Integer,Integer> job_out_indices) {
+	protected void setOutputIndices(HashMap<Integer,PollJobData> job_out_indices) {
 		this.job_out_indices = job_out_indices;
 	}
 
-	protected HashMap<Integer,Integer> getOutputIndices() {
+	protected HashMap<Integer,PollJobData> getOutputIndices() {
 		return job_out_indices;
 	}
 
@@ -1985,7 +1985,6 @@ public class Connection {
 			
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
-			int lastSeen=-1;
 			Boolean done=false;
 			setSessionIDIfExists(response.getAllHeaders());
 			
@@ -2009,6 +2008,8 @@ public class Connection {
 			Integer totalPairs=null;
 			Integer pairsFound=null;
 			Integer oldPairs=null;
+			int lastSeen=-1;
+			long lastModified=-1;
 			//if we're sending 'since,' it means this is a request for new job data
 			if (urlParams.containsKey(C.FORMPARAM_SINCE)) {
 				
@@ -2019,7 +2020,7 @@ public class Connection {
 				//check to see if the job is complete
 				done=totalPairs==(pairsFound+oldPairs);
 				lastSeen=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Completion"));
-				
+				lastModified = Long.parseLong(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Timestamp"));
 				//indicates there was no new information
 				if (lastSeen<=since) {
 					if (done) {
@@ -2055,7 +2056,7 @@ public class Connection {
 					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");					
 					
 				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
-					this.setJobOutCompletion(id, lastSeen);
+					this.setJobOutCompletion(id, new PollJobData(lastSeen,lastModified));
 
 					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
 
@@ -2088,8 +2089,8 @@ public class Connection {
 	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
-	protected void setJobOutCompletion(int jobID,int completion) {
-		job_out_indices.put(jobID,completion);
+	protected void setJobOutCompletion(int jobID,PollJobData data) {
+		job_out_indices.put(jobID,data);
 	}	
 	
 	/**
@@ -2146,10 +2147,11 @@ public class Connection {
 	 * If false, they will be run in a round-robin fashion.
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @param suppressTimestamps If true, timestamps will not be added to job output lines. Defaults to false.
+	 * @param resultsInterval The interval at which to get incremental results, in seconds. 0 means no incremental results
 	 * @return A status code as defined in status.java
 	 */
 	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu,
-			Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed, Boolean suppressTimestamps) {
+			Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed, Boolean suppressTimestamps, Integer resultsInterval) {
 		HttpResponse response = null;
 		try {
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
@@ -2176,6 +2178,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair("seed",seed.toString()));
+			params.add(new BasicNameValuePair("resultsInterval", resultsInterval.toString()));
 			params.add(new BasicNameValuePair(C.FORMPARAM_TRAVERSAL,traversalMethod));
 			if (maxMemory!=null) {
 				params.add(new BasicNameValuePair("maxMem",String.valueOf(maxMemory)));
@@ -2220,9 +2223,9 @@ public class Connection {
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
 	
-	protected int getJobOutCompletion(int jobID) {
+	protected PollJobData getJobOutCompletion(int jobID) {
 		if (!job_out_indices.containsKey(jobID)) {
-			job_out_indices.put(jobID, 0);
+			job_out_indices.put(jobID, new PollJobData());
 		} 
 		return job_out_indices.get(jobID);
 		

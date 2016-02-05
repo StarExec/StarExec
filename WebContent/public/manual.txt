@@ -78,6 +78,8 @@ structure. By default, all benchmarks are placed in the space being uploaded to.
 "incids" -When downloading a job CSV file, indicates that IDs for job pairs, solvers, configurations, and benchmarks
 			should be included.
 
+"interval" -Specifies the results interval parameter when creating jobs. 0 (no incremental results) is the default.
+
 "limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print.
 
 "link" -When uploading benchmarks with dependencies, indicates that the first directory in the path 
@@ -465,7 +467,7 @@ varied set of parameters.
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
 REQUIRED: "id"  "qid" 
-OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause" "seed" "suppresstime"
+OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause" "seed" "suppresstime" "interval"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r pause='
 
 --createsubspace -Creates a subspace of an existing space. "id" refers to the id of an existing space.

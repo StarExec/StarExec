@@ -293,6 +293,7 @@ CREATE TABLE job_stage_params (
 	bench_suffix VARCHAR(64), -- if we're keeping benchmarks, what suffix? If none given, we use the suffix of the input benchmark
 	post_processor INT,
 	pre_processor INT,
+	results_interval INT DEFAULT 0, -- Interval at which to copy back incremental results for pairs, in seconds. 0 means do not use incremental results
 	PRIMARY KEY (job_id,stage_number),
 	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,
@@ -400,7 +401,7 @@ CREATE TABLE job_pair_completion (
 
 -- All attributes for each job pair
 CREATE TABLE job_attributes (
-	pair_id INT NOT NULL, -- This column is not strictly necessary, but it might be useful for efficiency
+	pair_id INT NOT NULL,
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	job_id INT NOT NULL,

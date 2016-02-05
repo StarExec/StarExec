@@ -61,6 +61,7 @@ public class CreateJob extends HttpServlet {
 	private static final String pause = "pause";
 	private static final String maxMemory="maxMem";
 	private static final String randSeed="seed";
+	private static final String resultsInterval="resultsInterval";
 	
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -81,14 +82,9 @@ public class CreateJob extends HttpServlet {
 	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
 	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor, 
 	 * queue, name, description, seed
-	 * @param cpuLimit The CPU runtime limit for the job pairs
-	 * @param wallclockLimit The wallclock runtime limit for the job pairs
-	 * @param memoryLimit The memory limit, in bytes, for the job pairs
-	 * @param seed A number that will be handed to the pre processor
 	 * @param solverId The ID of the solver that will be run
 	 * @param benchId The ID of the benchmark that will be run
 	 * @param sId The ID of the space to put the job in 
-	 * @return The ID of the new job, or null if there was an error
 	 */
 	public static void buildQuickJob(Job j, int solverId, int benchId, Integer sId) {
 		//Setup the job's attributes
@@ -120,7 +116,7 @@ public class CreateJob extends HttpServlet {
 				settings.getPreProcessorId(),
 				settings.getPostProcessorId(), 
 				Queues.getTestQueue(),
-				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory());
+				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0);
 		
 		buildQuickJob(j, solverId, settings.getBenchId(), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
@@ -166,12 +162,14 @@ public class CreateJob extends HttpServlet {
 		} else {
 			memoryLimit = settings.getMaxMemory();
 		}
+		int resultsIntervalNum = 0;
+		if (Util.paramExists(resultsInterval, request)) {
+			resultsIntervalNum = Integer.parseInt(request.getParameter(resultsInterval));
+		}
 		
 		//a number that will be provided to the pre processor for every job pair in this job
 		long seed=Long.parseLong(request.getParameter(randSeed));
 
-
-		
 		//ensure that the cpu limits are greater than 0
 		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
 		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
@@ -192,7 +190,7 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
-				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp);
+				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp, resultsIntervalNum);
 		
 
 		String selection = request.getParameter(run);
@@ -386,6 +384,11 @@ public class CreateJob extends HttpServlet {
 			
 			if (!Validator.isValidLong(request.getParameter(randSeed))) {
 				return new ValidatorStatusCode(false, "The random seed needs to be a valid long integer");
+			}
+			if (Util.paramExists(resultsInterval, request)) {
+				if (!Validator.isValidPosInteger(request.getParameter(resultsInterval))) {
+					return new ValidatorStatusCode(false, "The interval for obtaining results must be greater than or equal to 0");
+				}
 			}
 			Integer preProc=null;
 			Integer postProc=null;

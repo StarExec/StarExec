@@ -72,6 +72,8 @@ $$BENCH_INPUT_ARRAY$$
 
 $$BENCH_SUFFIX_ARRAY$$
 
+$$RESULTS_INTERVAL_ARRAY$$
+
 STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
@@ -224,7 +226,7 @@ SPACE_ID=${SPACE_IDS[$STAGE_INDEX]}
 ARGUMENT_STRING=${STAGE_DEPENDENCIES[$STAGE_INDEX]}
 CURRENT_BENCH_SUFFIX=${BENCH_SUFFIXES[$STAGE_INDEX]}
 SUPPRESS_TIMESTAMP=$$SUPPRESS_TIMESTAMP_OPTION$$
-
+RESULTS_INTERVAL=${RESULTS_INTERVALS[$STAGE_INDEX]}
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 
@@ -293,6 +295,7 @@ log "space id : $SPACE_ID"
 log "bench path : $BENCH_PATH"
 log "benchmark suffix : $CURRENT_BENCH_SUFFIX"
 log "argument string : $ARGUMENT_STRING"
+log "results interval : $RESULTS_INTERVAL"
 
 if [ "$SANDBOX_FOUND" = true ] ; then
 	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  

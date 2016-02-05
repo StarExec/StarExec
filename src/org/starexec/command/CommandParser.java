@@ -746,7 +746,7 @@ class CommandParser {
 				nextName=baseFileName+"-info"+String.valueOf(infoCounter)+extension;
 				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
 				since=parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
-				status=parser.downloadArchive(R.JOB,since,null,null,commandParams);
+				status=parser.downloadArchive(R.JOB,since,null,null,null,commandParams);
 				if (status!=C.SUCCESS_NOFILE) {
 					infoCounter+=1;
 				} else {
@@ -762,8 +762,10 @@ class CommandParser {
 				}
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
 				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
-				since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
-				status=parser.downloadArchive(R.JOB_OUTPUT,since,null,null, commandParams);
+				PollJobData data = parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
+				since=data.since;
+				long lastModified = data.lastModified;
+				status=parser.downloadArchive(R.JOB_OUTPUT,since,lastModified,null,null, commandParams);
 				if (status!=C.SUCCESS_NOFILE) {
 					outputCounter+=1;
 				} else {
@@ -809,6 +811,7 @@ class CommandParser {
 			String type=null;
 			Boolean hierarchy=null;
 			Integer since=null;
+			Long lastModified=0l;
 			if (c.equals(C.COMMAND_GETJOBOUT)) {
 				type=R.JOB_OUTPUT;
 			} else if (c.equals(C.COMMAND_GETJOBINFO)) {
@@ -864,8 +867,11 @@ class CommandParser {
 				type=R.JOB_OUTPUT;
 				if (commandParams.containsKey(C.PARAM_SINCE)) {
 					since=Integer.parseInt(commandParams.get(C.PARAM_SINCE));
+					
 				} else {
-					since=parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
+					PollJobData data = parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
+					since=data.since;
+					lastModified=data.lastModified;
 				}
 				
 			}
@@ -873,7 +879,7 @@ class CommandParser {
 				return Status.ERROR_BAD_COMMAND;
 			}
 			System.out.println("Processing your download request, please wait. This will take some time for large files");
-			serverStatus=parser.downloadArchive(type,since,hierarchy,procClass,commandParams);
+			serverStatus=parser.downloadArchive(type,since,lastModified,hierarchy,procClass,commandParams);
 			if (serverStatus>=0) {
 				System.out.println("Download complete");
 			}
