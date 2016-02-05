@@ -184,6 +184,8 @@ function initSpaceExplorer() {
 			setMaxStagesDropdown(parseInt(maxStages));
 			$("#spaceName").text($('.jstree-clicked').text());
 			$("#displayJobSpaceID").text("job space id  = "+id);
+			//no solvers will be selected when a space changes, so hide this button
+			$("#compareSolvers").hide();
 			reloadTables(id);
 	}).on( "click", "a", function (event, data) { 
 		event.preventDefault();  // This just disable's links in the node title	
