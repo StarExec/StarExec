@@ -426,7 +426,7 @@ class ArgumentParser {
 					updateId=Integer.parseInt(commandParams.get(C.PARAM_PROCID));
 				}
 				//First, put in the request for the server to generate the desired archive			
-				return con.downloadArchive(id, type, since, location, commandParams.containsKey(C.PARAM_EXCLUDE_SOLVERS),
+				return con.downloadArchive(id, type, since,lastModified, location, commandParams.containsKey(C.PARAM_EXCLUDE_SOLVERS),
 						commandParams.containsKey(C.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(C.PARAM_INCLUDE_IDS),
 						hierarchy,procClass,commandParams.containsKey(C.PARAM_ONLY_COMPLETED),commandParams.containsKey(C.PARAM_GET_ATTRIBUTES),updateId);
 			}
