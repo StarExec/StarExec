@@ -83,7 +83,6 @@ public class LoadBalanceMonitor {
 			}
 			Date now = new Date();
 			Date then = inactiveDateTime;
-			inactiveDateTime = null;
 			// gets the number of hours between the two times, truncated down
 			// to the nearest hour.
 			Long hours = (now.getTime() - then.getTime())/ (1000*60*60);
@@ -106,6 +105,7 @@ public class LoadBalanceMonitor {
 		public void activate() {
 			if (!this.active()) {
 				this.load = calculateLoadDecay();
+				inactiveDateTime = null;
 			}
 		}
 	}
