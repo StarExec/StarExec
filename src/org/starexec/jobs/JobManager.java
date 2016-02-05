@@ -106,6 +106,7 @@ public abstract class JobManager {
 				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
 				    	if (m!=null) {
 				    		m.setUsers(new HashMap<Integer,Integer>());
+							m.setUserLoadDataFormattedString();
 				    	}
 				    }
 				} else {

@@ -746,7 +746,6 @@ public class RESTHelpers {
 			}
 
 			List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
-			int totalJobPairs = 0;
 
 			if (type.equals("queue")) {
 				// Retrieves the relevant Job objects to use in constructing the
@@ -755,20 +754,9 @@ public class RESTHelpers {
 				
 				
 				query.setTotalRecords(Queues.getCountOfEnqueuedPairsShallow(id));
-				/**
-				 * Used to display the 'total entries' information at the bottom of
-				 * the DataTable; also indirectly controls whether or not the
-				 * pagination buttons are toggle-able
-				 */
-				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-				// TOTAL_RECORDS
-				if (!query.hasSearchQuery()) {
-					query.setTotalRecordsAfterQuery(totalJobPairs);
-				}
-				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-				else {
-					query.setTotalRecordsAfterQuery(jobPairsToDisplay.size());
-				}
+				// there is no filter function on this table, so this is always equal to the above
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
+				
 				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
 
 			} else if (type.equals("node")) {
@@ -776,20 +764,8 @@ public class RESTHelpers {
 				// JSON to send to the client
 				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id,"node");
 				query.setTotalRecords(Queues.getCountOfRunningPairsDetailed(id));
-				/**
-				 * Used to display the 'total entries' information at the bottom of
-				 * the DataTable; also indirectly controls whether or not the
-				 * pagination buttons are toggle-able
-				 */
-				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-				// TOTAL_RECORDS
-				if (!query.hasSearchQuery()) {
-					query.setTotalRecordsAfterQuery(totalJobPairs);
-				}
-				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-				else {
-					query.setTotalRecordsAfterQuery( jobPairsToDisplay.size());
-				}
+				// there is no filter function on this table, so this is always equal to the above
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
 			}
 			return null;
