@@ -38,9 +38,9 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
-import org.starexec.util.dataStructures.TreeNode;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -53,15 +53,13 @@ import com.google.gson.Gson;
  */
 public class RESTHelpers {
 	private static final Logger log = Logger.getLogger(RESTHelpers.class);
-	private static final int PAGE_SPACE_EXPLORER = 1;
-	private static final int PAGE_USER_DETAILS = 2;
 	private static Gson gson = new Gson();
 
 	/** Job pairs and nodes aren't technically a primitive class according to how
 	 we've discussed primitives, but to save time and energy I've included
 	 them here as such*/
 	public enum Primitive {
-		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE
+		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE, QUEUE
 	}
 
 	private static final String SEARCH_QUERY = "sSearch";
@@ -75,11 +73,6 @@ public class RESTHelpers {
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
 	private static final String TOTAL_RECORDS = "iTotalRecords";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
-
-	private static final int EMPTY = 0;
-	private static final int ASC = 0;
-	private static final int DESC = 1;
-
 	/**
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
@@ -391,9 +384,8 @@ public class RESTHelpers {
 	 *         or null if parameter validation fails
 	 * @author Todd Elvers
 	 */
-	private static HashMap<String, Integer> getAttrMap(Primitive type, HttpServletRequest request) {
-		HashMap<String, Integer> attrMap = new HashMap<String, Integer>();
-
+	private static DataTablesQuery getAttrMap(Primitive type, HttpServletRequest request) {
+		DataTablesQuery query = new DataTablesQuery();
 		try {
 			// Parameters from the DataTable object
 			String iDisplayStart = (String) request.getParameter(STARTING_RECORD);
@@ -402,7 +394,8 @@ public class RESTHelpers {
 			String iSortCol = (String) request.getParameter(SORT_COLUMN); 
 			String sDir = (String) request.getParameter(SORT_DIRECTION);
 			String sSearch = (String) request.getParameter(SEARCH_QUERY);
-	       
+			
+			
 			// Validates the starting record, the number of records per page,
 			// and the sync value
 			if (Util.isNullOrEmpty(iDisplayStart)
@@ -417,230 +410,47 @@ public class RESTHelpers {
 				// Allow jobs datatable to have a sort column null, then set
 				// the column to sort by column 5, which doesn't exist on the screen but represents the creation date
 				if(type == Primitive.JOB){
-					attrMap.put(SORT_COLUMN, 5);
+					query.setSortColumn(5);
 				} else {
 					return null;
 				}
 			} else {
 				int sortColumnIndex = Integer.parseInt(iSortCol);
-				attrMap.put(SORT_COLUMN, sortColumnIndex);
-				switch (type) {
-					case JOB:
-						if (sortColumnIndex < 0 || sortColumnIndex > 5) return null;
-						break;
-					case JOB_PAIR:
-						if (sortColumnIndex < 0 || sortColumnIndex > 8) return null;
-						break;
-					case JOB_STATS:
-						if (sortColumnIndex < 0 || sortColumnIndex > 6) return null;
-						break;
-					case USER:
-						if (sortColumnIndex < 0 || sortColumnIndex > 3) return null;
-						break;
-					case SOLVER:
-						if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
-						break;
-					case BENCHMARK:
-						if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
-						break;
-					case SPACE:
-						if (sortColumnIndex < 0 || sortColumnIndex > 2) return null;
-						break;
-				}
+				query.setSortColumn(sortColumnIndex);
 			}
 			
 			//Validates that the sort direction is specified and valid
 			if (Util.isNullOrEmpty(sDir)) {
-				// Only permit the jobs table to have a null sorting direction;
-				// this allows for jobs to be sorted initially on their creation date
-				if (type == Primitive.JOB){
-					attrMap.put(SORT_DIRECTION, DESC);
-				} else {
-					return null;
-				}
+				query.setSortASC(false);
 			} else {
 				if (sDir.contains("asc") || sDir.contains("desc")) {
-					attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASC : DESC));
+					query.setSortASC(sDir.equals("asc"));
 				} else {
 					return null;
 				}
 			}
+			
 			// Depending on if the search/filter is empty or not, this will be 0 or 1
 			if (Util.isNullOrEmpty(sSearch)) {
-				attrMap.put(SEARCH_QUERY, EMPTY);
-			} else {
-				attrMap.put(SEARCH_QUERY, 1);
+				sSearch=null;
 			}
-
+			query.setSearchQuery(sSearch);
+			
 			// The request is valid if it makes it this far;
 			// Finish the validation by adding the remaining attributes to the
 			// map
-			attrMap.put(RECORDS_PER_PAGE, Integer.parseInt(iDisplayLength));
-			attrMap.put(STARTING_RECORD, Integer.parseInt(iDisplayStart));
-			attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
-			attrMap.put(TOTAL_RECORDS, EMPTY);
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, EMPTY);
-
-			return attrMap;
+			
+			query.setNumRecords(Integer.parseInt(iDisplayLength));
+			query.setStartingRecord(Integer.parseInt(iDisplayStart));
+			query.setSyncValue(Integer.parseInt(sEcho));
+			
+			return query;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 
 		return null;
 	}
-	
-	/**
-	 * Validate the parameters of a request for a DataTable page
-	 * 
-	 * @param type
-	 *            the primitive type being queried for
-	 * @param request
-	 *            the object containing the parameters to validate
-	 * @return an attribute map containing the valid parameters parsed from the
-	 *         request object,<br>
-	 *         or null if parameter validation fails
-	 * @author Todd Elvers
-	 */
-	private static HashMap<String, Integer> getAttrMapQueueReservation(
-			HttpServletRequest request) {
-		HashMap<String, Integer> attrMap = new HashMap<String, Integer>();
-
-		try {
-			// Parameters from the DataTable object
-			String iDisplayStart = (String) request.getParameter(STARTING_RECORD);
-			String iDisplayLength = (String) request.getParameter(RECORDS_PER_PAGE);
-			String sEcho = (String) request.getParameter(SYNC_VALUE);
-			String iSortCol = (String) request.getParameter(SORT_COLUMN); 
-			String sDir = (String) request.getParameter(SORT_DIRECTION);
-			String sSearch = (String) request.getParameter(SEARCH_QUERY);
-
-			// Validates the starting record, the number of records per page,
-			// and the sync value
-			if (Util.isNullOrEmpty(iDisplayStart)
-					|| Util.isNullOrEmpty(iDisplayLength)
-					|| Util.isNullOrEmpty(sEcho)
-					|| Integer.parseInt(iDisplayStart) < 0
-					|| Integer.parseInt(sEcho) < 0) {
-				return null;
-			}
-
-			if (Util.isNullOrEmpty(iSortCol)) {
-				return null;
-			} else {
-				int sortColumnIndex = Integer.parseInt(iSortCol);
-				attrMap.put(SORT_COLUMN, sortColumnIndex);
-			}
-			if (Util.isNullOrEmpty(sDir)) {
-				attrMap.put(SORT_DIRECTION, DESC);
-			} else {
-				if (sDir.contains("asc") || sDir.contains("desc")) {
-					attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASC
-							: DESC));
-				} else {
-					return null;
-				}
-			}
-			// Depending on if the search/filter is empty or not, this will be 0
-			// or 1
-			if (Util.isNullOrEmpty(sSearch)) {
-				attrMap.put(SEARCH_QUERY, EMPTY);
-			} else {
-				attrMap.put(SEARCH_QUERY, 1);
-			}
-
-			// The request is valid if it makes it this far;
-			// Finish the validation by adding the remaining attributes to the
-			// map
-			attrMap.put(RECORDS_PER_PAGE, Integer.parseInt(iDisplayLength));
-			attrMap.put(STARTING_RECORD, Integer.parseInt(iDisplayStart));
-			attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
-			attrMap.put(TOTAL_RECORDS, EMPTY);
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, EMPTY);
-
-			return attrMap;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Validate the parameters of a request for a DataTable page
-	 * 
-	 * @param type
-	 *            the primitive type being queried for
-	 * @param request
-	 *            the object containing the parameters to validate
-	 * @return an attribute map containing the valid parameters parsed from the
-	 *         request object,<br>
-	 *         or null if parameter validation fails
-	 * @author Todd Elvers
-	 */
-	private static HashMap<String, Integer> getAttrMapCluster(String type,
-			HttpServletRequest request) {
-		HashMap<String, Integer> attrMap = new HashMap<String, Integer>();
-
-		try {
-			// Parameters from the DataTable object
-			String iDisplayStart = (String) request.getParameter(STARTING_RECORD); 
-			String iDisplayLength = (String) request.getParameter(RECORDS_PER_PAGE);
-			String sEcho = (String) request.getParameter(SYNC_VALUE); 
-			String iSortCol = (String) request.getParameter(SORT_COLUMN);
-			String sDir = (String) request.getParameter(SORT_DIRECTION); 
-			String sSearch = (String) request.getParameter(SEARCH_QUERY); 
-
-			// Validates the starting record, the number of records per page,
-			// and the sync value
-			if (Util.isNullOrEmpty(iDisplayStart)
-					|| Util.isNullOrEmpty(iDisplayLength)
-					|| Util.isNullOrEmpty(sEcho)
-					|| Integer.parseInt(iDisplayStart) < 0
-					|| Integer.parseInt(sEcho) < 0) {
-				return null;
-			}
-
-			if (Util.isNullOrEmpty(iSortCol)) {
-				return null;
-			} else {
-				int sortColumnIndex = Integer.parseInt(iSortCol);
-				attrMap.put(SORT_COLUMN, sortColumnIndex);
-			}
-			if (Util.isNullOrEmpty(sDir)) {
-				attrMap.put(SORT_DIRECTION, DESC);
-			} else {
-				if (sDir.contains("asc") || sDir.contains("desc")) {
-					attrMap.put(SORT_DIRECTION, (sDir.equals("asc") ? ASC
-							: DESC));
-				} else {
-					return null;
-				}
-			}
-			// Depending on if the search/filter is empty or not, this will be 0 or 1
-			if (Util.isNullOrEmpty(sSearch)) {
-				attrMap.put(SEARCH_QUERY, EMPTY);
-			} else {
-				attrMap.put(SEARCH_QUERY, 1);
-			}
-
-			// The request is valid if it makes it this far;
-			// Finish the validation by adding the remaining attributes to the
-			// map
-			attrMap.put(RECORDS_PER_PAGE, Integer.parseInt(iDisplayLength));
-			attrMap.put(STARTING_RECORD, Integer.parseInt(iDisplayStart));
-			attrMap.put(SYNC_VALUE, Integer.parseInt(sEcho));
-			attrMap.put(TOTAL_RECORDS, EMPTY);
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, EMPTY);
-
-			return attrMap;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		}
-
-		return null;
-	}
-
-	
 	
     /**
      * Add tag for the image representing a link that will popout.
@@ -697,29 +507,7 @@ public class RESTHelpers {
 		return getNextDataTablesPageAdmin(type, request);
 	}
 
-	/**
-	 * Gets the next page of entries for a DataTable object
-	 * 
-	 * @param type
-	 *            the kind of primitives to query for
-	 * @param id
-	 *            either the id of the space to get the primitives from, or the
-	 *            id of the job to get job pairs for
-	 * @param request
-	 *            the object containing all the DataTable parameters
-	 * @return a JSON object representing the next page of primitives to return
-	 *         to the client,<br>
-	 *         or null if the parameters of the request fail validation
-	 * @author Todd Elvers
-	 */
-
-	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
-		return getNextDataTablesPage(type, id, request, PAGE_SPACE_EXPLORER,false);
-	}
-
-	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
-		return getNextDataTablesPage(type, id, request, PAGE_USER_DETAILS, recycled);
-	}
+	
 	
 	/**
 	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
@@ -732,88 +520,52 @@ public class RESTHelpers {
 	 * @return JsonObject encapsulating pairs to display in the next table page
 	 */
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(int jobSpaceId,HttpServletRequest request, boolean wallclock, boolean syncResults, int stageNumber) {
+		
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
-		int totalJobPairs = Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId,stageNumber);
+		DataTablesQuery query=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
 
-		if (totalJobPairs>R.MAXIMUM_JOB_PAIRS) {
+		if (query==null) {
+			return null;
+		}
+		query.setTotalRecords(Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId,stageNumber));
+		
+		if (query.getTotalRecords()>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them
 			JsonObject ob= new JsonObject();
 			ob.addProperty("maxpairs", true);
 			return ob;
 		}
-		HashMap<String,Integer> attrMap=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
-
-		if (null==attrMap) {
-			return null;
-		}
+		
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
-        	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
-        	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
-            	attrMap.put(SORT_DIRECTION, ASC);
-
-        	} else {
-            	attrMap.put(SORT_DIRECTION, ASC+1);
-
-        	}
+        	query.setSortColumn(Integer.parseInt(sortOverride));
+        	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
-		
-    	log.debug("the new sort column is " +attrMap.get(SORT_COLUMN));
-
         
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
-		int totalPairsAfterQuery=0;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		int[] totals = new int[2];
 
 		if (!syncResults) {
-			//long a = System.currentTimeMillis();
-			
-			
-			
-			
-			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(
-	    			attrMap.get(STARTING_RECORD),						// Record to start at  
-	    			attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    			attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    			attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    			request.getParameter(SEARCH_QUERY), 				// Search query
-	    															
-	    			jobSpaceId,
-	    			stageNumber,
-	    			wallclock
-			);
-			
+			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(query,jobSpaceId,stageNumber,wallclock);
+			if(!query.hasSearchQuery()){
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
+	    	} 
+	    	else {
+	    		query.setTotalRecordsAfterQuery(Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId, query.getSearchQuery(),stageNumber));
+	    	}
 		} else {
 			log.debug("returning synchronized results");
-			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(attrMap.get(STARTING_RECORD),
-					attrMap.get(RECORDS_PER_PAGE), 
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false,
-							attrMap.get(SORT_COLUMN),
-							request.getParameter(SEARCH_QUERY),
+			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(query,
 							jobSpaceId, 
 							wallclock,
 							stageNumber,
 							totals);
-			totalJobPairs=totals[0];
-			totalPairsAfterQuery=totals[1];
+			query.setTotalRecords(totals[0]);
+			query.setTotalRecordsAfterQuery(totals[1]);
 		}
-		
-
-		/**
-    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-    	 */
-    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		if(attrMap.get(SEARCH_QUERY) == EMPTY){
-			totalPairsAfterQuery=totalJobPairs;
-    	} 
-    	else {
-    		totalPairsAfterQuery=Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId, request.getParameter(SEARCH_QUERY),stageNumber);
-    	}
-
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobPairs,totalPairsAfterQuery,attrMap.get(SYNC_VALUE),true,wallclock,0);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0);
 	}
 	
 	
@@ -827,41 +579,24 @@ public class RESTHelpers {
 	public static JsonObject getNextDataTablesPageOfBenchmarksByUser(int userId, HttpServletRequest request) {
 		log.debug("called getNextDataTablesPageOfBenchmarksByUser");
 		try {
-			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-					Primitive.BENCHMARK, request);
-			if (null == attrMap) {
+			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.BENCHMARK, request);
+			if (query==null) {
 				return null;
 			}
 
-			List<Benchmark> BenchmarksToDisplay = new LinkedList<Benchmark>();
-
-			int totalComparisons;
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
 			int[] totals = new int[2];
-			BenchmarksToDisplay = Benchmarks.getBenchmarksForNextPageByUser(
-							attrMap.get(STARTING_RECORD), // Record to start at
-							attrMap.get(RECORDS_PER_PAGE), // Number of records to
-															// return
-							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																				// direction
-																				// (true
-																				// for
-																				// ASC)
-							attrMap.get(SORT_COLUMN), // Column sorted on
-							request.getParameter(SEARCH_QUERY), // Search query
-							userId, totals);
+			List<Benchmark> BenchmarksToDisplay = Benchmarks.getBenchmarksForNextPageByUser(query,userId, totals);
 			
-			totalComparisons = totals[0];
+			query.setTotalRecords(totals[0]);
 
 			/**
 	    	* Used to display the 'total entries' information at the bottom of the DataTable;
 	    	* also indirectly controls whether or not the pagination buttons are toggle-able
 	    	*/
-	    
-	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
-	    	
-		   return convertBenchmarksToJsonObject(BenchmarksToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+		   query.setTotalRecordsAfterQuery(totals[1]);	    	
+		   return convertBenchmarksToJsonObject(BenchmarksToDisplay,query);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -869,13 +604,8 @@ public class RESTHelpers {
 		return null;
 	}
 	
-	
-	
-	
-	
-	
 	/**
-	 * Gets the next page of solvers that the given use can see. This includes solvers the user owns,
+	 * Gets the next page of solvers that the given user can see. This includes solvers the user owns,
 	 * solvers in public spaces, and solvers in spaces the user is also in.
 	 * @param userId
 	 * @param request
@@ -884,41 +614,28 @@ public class RESTHelpers {
 	public static JsonObject getNextDataTablesPageOfSolversByUser(int userId, HttpServletRequest request) {
 		
 		try {
-			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-					Primitive.SOLVER, request);
-			if (null == attrMap) {
+			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.SOLVER, request);
+			if (query==null) {
 				return null;
 			}
 
 			List<Solver> solversToDisplay = new LinkedList<Solver>();
 
-			int totalComparisons;
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
 			int[] totals = new int[2];
-			solversToDisplay = Solvers.getSolversForNextPageByUser(
-							attrMap.get(STARTING_RECORD), // Record to start at
-							attrMap.get(RECORDS_PER_PAGE), // Number of records to
-															// return
-							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																				// direction
-																				// (true
-																				// for
-																				// ASC)
-							attrMap.get(SORT_COLUMN), // Column sorted on
-							request.getParameter(SEARCH_QUERY), // Search query
-							userId, totals);
+			solversToDisplay = Solvers.getSolversForNextPageByUser(query,userId, totals);
 			
-			totalComparisons = totals[0];
+			query.setTotalRecords(totals[0]);
 
 			/**
 	    	* Used to display the 'total entries' information at the bottom of the DataTable;
 	    	* also indirectly controls whether or not the pagination buttons are toggle-able
 	    	*/
 	    
-	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+	       query.setTotalRecordsAfterQuery(totals[1]);
 	    	
-		   return convertSolversToJsonObject(solversToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+		   return convertSolversToJsonObject(solversToDisplay,query);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -929,7 +646,6 @@ public class RESTHelpers {
 	
 	/**
 	 * Returns the next page of SolverComparison objects needed for a DataTables page in a job space
-	 * @param jobId
 	 * @param jobSpaceId
 	 * @param configId1
 	 * @param configId2
@@ -941,44 +657,30 @@ public class RESTHelpers {
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
 			int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock, int stageNumber) {
 		
-		
 		try {
-			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-					Primitive.JOB_PAIR, request);
-			if (null == attrMap) {
+			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.JOB_PAIR, request);
+			if (query==null) {
 				return null;
 			}
 
 			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
 
-			int totalComparisons;
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
 			int[] totals = new int[2];
-			solverComparisonsToDisplay = Jobs
-					.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(
-							attrMap.get(STARTING_RECORD), // Record to start at
-							attrMap.get(RECORDS_PER_PAGE), // Number of records to
-															// return
-							attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																				// direction
-																				// (true
-																				// for
-																				// ASC)
-							attrMap.get(SORT_COLUMN), // Column sorted on
-							request.getParameter(SEARCH_QUERY), // Search query
+			solverComparisonsToDisplay = Jobs.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(query,
 							jobSpaceId, configId1,configId2, totals,wallclock,stageNumber);
 			
-			totalComparisons = totals[0];
+			query.setTotalRecords(totals[0]);
 
 			/**
 	    	* Used to display the 'total entries' information at the bottom of the DataTable;
 	    	* also indirectly controls whether or not the pagination buttons are toggle-able
 	    	*/
 	    
-	       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totals[1]);
+	       query.setTotalRecordsAfterQuery(totals[1]);
 	    	
-		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,totalComparisons,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),wallclock,stageNumber);
+		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,query,wallclock,stageNumber);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -989,53 +691,34 @@ public class RESTHelpers {
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
 			int jobSpaceId, int configId, HttpServletRequest request,String type, boolean wallclock, int stageNumber) {
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-				Primitive.JOB_PAIR, request);
-		if (null == attrMap) {
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.JOB_PAIR, request);
+		if (query==null) {
 			return null;
 		}
 
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
-        	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
-        	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
-            	attrMap.put(SORT_DIRECTION, ASC);
-
-        	} else {
-            	attrMap.put(SORT_DIRECTION, ASC+1);
-
-        	}
+        	query.setSortColumn(Integer.parseInt(sortOverride));
+        	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
-        log.debug("the new sorting order is "+attrMap.get(SORT_COLUMN));
         
 		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
-		jobPairsToDisplay = Jobs
-				.getJobPairsForNextPageByConfigInJobSpaceHierarchy(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
+		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(query,
 						jobSpaceId, configId,type,wallclock,stageNumber);
 		
-		totalJobs = Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber);
+		query.setTotalRecords(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber));
 
 		/**
     	* Used to display the 'total entries' information at the bottom of the DataTable;
     	* also indirectly controls whether or not the pagination buttons are toggle-able
     	*/
     
-       attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,request.getParameter(SEARCH_QUERY),stageNumber));
+       query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),true,wallclock,stageNumber);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber);
 	}
 
 	/**
@@ -1053,13 +736,12 @@ public class RESTHelpers {
 	 *         or null if the parameters of the request fail validation
 	 * @author Wyatt Kaiser
 	 */
-
+	//TODO: Counts are wrong whenever a query is used
 	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
 		try {
 			// Parameter validation
-			HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapCluster(type,
-					request);
-			if (null == attrMap) {
+			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.NODE, request);
+			if (query==null) {
 				return null;
 			}
 
@@ -1069,23 +751,10 @@ public class RESTHelpers {
 			if (type.equals("queue")) {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
-				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
-						id, // Parent space id
-						"queue" // It is a queue, not a node
-				);
+				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id,"queue");
 				
 				
-				totalJobPairs = Queues.getCountOfEnqueuedPairsShallow(id);
+				query.setTotalRecords(Queues.getCountOfEnqueuedPairsShallow(id));
 				/**
 				 * Used to display the 'total entries' information at the bottom of
 				 * the DataTable; also indirectly controls whether or not the
@@ -1093,35 +762,20 @@ public class RESTHelpers {
 				 */
 				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 				// TOTAL_RECORDS
-				if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+				if (!query.hasSearchQuery()) {
+					query.setTotalRecordsAfterQuery(totalJobPairs);
 				}
 				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 				else {
-					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+					query.setTotalRecordsAfterQuery(jobPairsToDisplay.size());
 				}
-				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,
-						totalJobPairs, attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
-						attrMap.get(SYNC_VALUE), userId);
+				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
 
 			} else if (type.equals("node")) {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
-				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
-						id, // Parent space id
-						"node" // It is a node, not a queue
-				);
-				totalJobPairs = Queues.getCountOfRunningPairsDetailed(id);
+				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id,"node");
+				query.setTotalRecords(Queues.getCountOfRunningPairsDetailed(id));
 				/**
 				 * Used to display the 'total entries' information at the bottom of
 				 * the DataTable; also indirectly controls whether or not the
@@ -1129,16 +783,14 @@ public class RESTHelpers {
 				 */
 				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 				// TOTAL_RECORDS
-				if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobPairs);
+				if (!query.hasSearchQuery()) {
+					query.setTotalRecordsAfterQuery(totalJobPairs);
 				}
 				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 				else {
-					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobPairsToDisplay.size());
+					query.setTotalRecordsAfterQuery( jobPairsToDisplay.size());
 				}
-				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,
-						totalJobPairs, attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
-						attrMap.get(SYNC_VALUE), userId);
+				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
 			}
 			return null;
 		} catch (Exception e) {
@@ -1164,8 +816,8 @@ public class RESTHelpers {
 
 	private static JsonObject getNextDataTablesPageAdmin(Primitive type, HttpServletRequest request) {
 		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
-		if (null == attrMap) {
+		DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
+		if (query==null) {
 			return null;
 		}
 		int currentUserId = SessionUtil.getUserId(request);
@@ -1174,23 +826,10 @@ public class RESTHelpers {
 		case JOB:
 			List<Job> jobsToDisplay = new LinkedList<Job>();
 
-			int runningjobs = Jobs.getRunningJobCount();
-			int pausedjobs = Jobs.getPausedJobCount();
-			int totalJobs = runningjobs + pausedjobs;
+			query.setTotalRecords(Jobs.getRunningJobCount() + Jobs.getPausedJobCount());
 			// Retrieves the relevant Job objects to use in constructing the
 			// JSON to send to the client
-			jobsToDisplay = Jobs.getJobsForNextPageAdmin(
-					attrMap.get(STARTING_RECORD), // Record to start at
-					attrMap.get(RECORDS_PER_PAGE), // Number of records to
-													// return
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																		// direction
-																		// (true
-																		// for
-																		// ASC)
-					attrMap.get(SORT_COLUMN), // Column sorted on
-					request.getParameter(SEARCH_QUERY) // Search query
-					);
+			jobsToDisplay = Jobs.getJobsForNextPageAdmin(query);
 
 			/**
 			 * Used to display the 'total entries' information at the bottom of
@@ -1199,28 +838,21 @@ public class RESTHelpers {
 			 */
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 			// TOTAL_RECORDS
-			if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
+			if (!query.hasSearchQuery()) {
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 			}
 			// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 			else {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
+				query.setTotalRecordsAfterQuery(jobsToDisplay.size());
+
 			}
-			return convertJobsToJsonObject(jobsToDisplay, totalJobs,
-					attrMap.get(TOTAL_RECORDS_AFTER_QUERY),
-					attrMap.get(SYNC_VALUE));
+			return convertJobsToJsonObject(jobsToDisplay,query);
 		case NODE:
 			List<WorkerNode> nodesToDisplay = new LinkedList<WorkerNode>();
-			int totalNodes = Cluster.getNodeCount();
+			query.setTotalRecords(Cluster.getNodeCount());
 			// Retrieves the relevant Node objects to use in constructing the
 			// JSON to send to the client
-			nodesToDisplay = Cluster.getNodesForNextPageAdmin(
-					attrMap.get(STARTING_RECORD), // Record to start at
-					attrMap.get(RECORDS_PER_PAGE), // Number of records to return
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort direction (true for ASC)
-					attrMap.get(SORT_COLUMN), //Column sorted on
-					request.getParameter(SEARCH_QUERY) // Search query
-					);
+			nodesToDisplay = Cluster.getNodesForNextPageAdmin(query);
 						
 			/**
 			 * Used to display the 'total entries' information at the bottom of
@@ -1229,33 +861,22 @@ public class RESTHelpers {
 			 */
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 			// TOTAL_RECORDS
-			if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalNodes);
+			if (!query.isSortASC()) {
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 			}
 			// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 			else {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, nodesToDisplay.size());
+				query.setTotalRecordsAfterQuery(nodesToDisplay.size());
 			}
 
-			return convertNodesToJsonObject(nodesToDisplay, totalNodes, attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
+			return convertNodesToJsonObject(nodesToDisplay, query);
 
 		case USER:
 			List<User> usersToDisplay = new LinkedList<User>();
-			int totalUsers = Users.getCount();
+			query.setTotalRecords(Users.getCount());
 			// Retrieves the relevant User objects to use in constructing the
 			// JSON to send to the client
-			usersToDisplay = Users.getUsersForNextPageAdmin(
-					attrMap.get(STARTING_RECORD), // Record to start at
-					attrMap.get(RECORDS_PER_PAGE), // Number of records to
-													// return
-					attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																		// direction
-																		// (true
-																		// for
-																		// ASC)
-					attrMap.get(SORT_COLUMN), // Column sorted on
-					request.getParameter(SEARCH_QUERY) // Search query
-					);
+			usersToDisplay = Users.getUsersForNextPageAdmin(query);
 
 			/**
 			 * Used to display the 'total entries' information at the bottom of
@@ -1264,22 +885,22 @@ public class RESTHelpers {
 			 */
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 			// TOTAL_RECORDS
-			if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalUsers);
+			if (!query.hasSearchQuery()) {
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 			}
 			// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 			else {
-				attrMap.put(TOTAL_RECORDS_AFTER_QUERY, usersToDisplay.size());
+				query.setTotalRecordsAfterQuery(usersToDisplay.size());
 			}
 
-			return convertUsersToJsonObject(usersToDisplay, totalUsers, attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE), currentUserId);
+			return convertUsersToJsonObject(usersToDisplay, query, currentUserId);
 
 		}
 		return null;
 	}
 
 
-
+	
 	/**
 	 * Gets the next page of entries for a DataTable object
 	 * 
@@ -1290,96 +911,45 @@ public class RESTHelpers {
 	 *            id of the job to get job pairs for
 	 * @param request
 	 *            the object containing all the DataTable parameters
-	 * @param forPage
-	 *            An integer code indicating what the results are for. 1: space
-	 *            explorer 2: user details
 	 * @return a JSON object representing the next page of primitives to return
 	 *         to the client,<br>
 	 *         or null if the parameters of the request fail validation
 	 * @author Todd Elvers
 	 */
 
-	private static JsonObject getNextDataTablesPage(Primitive type, int id, HttpServletRequest request, int forPage,boolean recycled) {
+	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
 		// Parameter validation
-	    HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(type, request);
-	    if(null == attrMap){
+	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
+	    if(query==null){
 	    	return null;
 	    }
-		int currentUserId = SessionUtil.getUserId(request);
 
 		switch (type) {
 		case JOB:
 			List<Job> jobsToDisplay = new LinkedList<Job>();
 
-			int totalJobs;
 			// Retrieves the relevant Job objects to use in constructing the
 			// JSON to send to the client
-			if (forPage == PAGE_SPACE_EXPLORER) {
-				jobsToDisplay = Jobs.getJobsForNextPage(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
-						id // Parent space id
-						);
-				totalJobs = Jobs.getCountInSpace(id);
-				if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
+				jobsToDisplay = Jobs.getJobsForNextPage(query,id);
+				query.setTotalRecords(Jobs.getCountInSpace(id));
+				if (!query.hasSearchQuery()) {
+					query.setTotalRecordsAfterQuery(query.getTotalRecords());
 				} else {
-					attrMap.put(
-							TOTAL_RECORDS_AFTER_QUERY,
-							Jobs.getCountInSpace(id,
-									request.getParameter(SEARCH_QUERY)));
+					query.setTotalRecordsAfterQuery(Jobs.getCountInSpace(id,query.getSearchQuery()));
 				}
-			} else {
-				jobsToDisplay = Jobs.getJobsByUserForNextPage(
-						attrMap.get(STARTING_RECORD), // Record to start at
-						attrMap.get(RECORDS_PER_PAGE), // Number of records to
-														// return
-						attrMap.get(SORT_DIRECTION) == ASC ? true : false, // Sort
-																			// direction
-																			// (true
-																			// for
-																			// ASC)
-						attrMap.get(SORT_COLUMN), // Column sorted on
-						request.getParameter(SEARCH_QUERY), // Search query
-						id // User id
-						);
-				totalJobs = Jobs.getJobCountByUser(id);
-				if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-					attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobs);
-				} else {
-					attrMap.put(
-							TOTAL_RECORDS_AFTER_QUERY,
-							Jobs.getJobCountByUser(id,
-									request.getParameter(SEARCH_QUERY)));
-				}
-			}
+			
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, totalJobs,attrMap.get(TOTAL_RECORDS_AFTER_QUERY), attrMap.get(SYNC_VALUE));
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query);
 			return answer;
 		    	
 		case USER:
     		List<User> usersToDisplay = new LinkedList<User>();
-    		int totalUsersInSpace = Users.getCountInSpace(id);
+    		query.setTotalRecords(Users.getCountInSpace(id));
     		
     		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
-    		usersToDisplay = Users.getUsersForNextPage(
-    				attrMap.get(STARTING_RECORD),						// Record to start at  
-    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-    				request.getParameter(SEARCH_QUERY), 				// Search query
-    				id													// Parent space id 
-			);
+    		usersToDisplay = Users.getUsersForNextPage(query,id);
     		
     		
     		/**
@@ -1387,155 +957,67 @@ public class RESTHelpers {
 	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
 	    	 */
 	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-	    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalUsersInSpace);
+	    	if(!query.hasSearchQuery()){
+				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 	    	} 
 	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 	    	else {
-	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Users.getCountInSpace(id,request.getParameter(SEARCH_QUERY)));
+				query.setTotalRecordsAfterQuery(Users.getCountInSpace(id,query.getSearchQuery()));
 	    	}
 	    	
-	    	return convertUsersToJsonObject(usersToDisplay,totalUsersInSpace,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),currentUserId);
+	    	return convertUsersToJsonObject(usersToDisplay,query,SessionUtil.getUserId(request));
 	    	
 		    	
 	    case SOLVER:
     		List<Solver> solversToDisplay = new LinkedList<Solver>();
     		
-    		int totalSolvers=0;
     		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
-    		if (forPage==PAGE_SPACE_EXPLORER) {
-    			solversToDisplay = Solvers.getSolversForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id													// Parent space id 
-				);
-    			totalSolvers =  Solvers.getCountInSpace(id);
-    			if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolvers);
+    			solversToDisplay = Solvers.getSolversForNextPage(query,id);
+    			query.setTotalRecords(Solvers.getCountInSpace(id));
+    			if(!query.hasSearchQuery()){
+    				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 		    	} 
 		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Solvers.getCountInSpace(id,request.getParameter(SEARCH_QUERY)));
+    				query.setTotalRecordsAfterQuery(Solvers.getCountInSpace(id,query.getSearchQuery()));
 		    	}
-    		} else {
-    			solversToDisplay=Solvers.getSolversByUserForNextPage(		    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY), 				// Search query
-	    				id,
-	    				recycled											//whether to get recycled solvers
-	    		);
-    			if (!recycled) {
-    				totalSolvers =  Solvers.getSolverCountByUser(id);
-    			} else {
-    				totalSolvers=Solvers.getRecycledSolverCountByUser(id);
-    			}
-    			
-    			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSolvers);
-		    	} 
-		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
-		    	else {
-		    		if (!recycled) {
-		    			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Solvers.getSolverCountByUser(id,request.getParameter(SEARCH_QUERY)));
-		    		} else {
-		    			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Solvers.getRecycledSolverCountByUser(id,request.getParameter(SEARCH_QUERY)));
-		    		}
-		    		
-		    		
-		    	}
-    		}
 
-    		
-		    return convertSolversToJsonObject(solversToDisplay, totalSolvers,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+		    return convertSolversToJsonObject(solversToDisplay, query);
 	    	
 		    	
 	    case BENCHMARK:
 	    	
 	    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
-	    	int totalBenchmarks=0;
 	    	 String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 	         if (sortOverride!=null) {
-	         	attrMap.put(SORT_COLUMN, Integer.parseInt(sortOverride));
-	         	if (Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR))) {
-	             	attrMap.put(SORT_DIRECTION, ASC);
-
-	         	} else {
-	             	attrMap.put(SORT_DIRECTION, ASC+1);
-
-	         	}
+	         	query.setSortColumn(Integer.parseInt(sortOverride));
+	         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
+	         	
 	         }
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-	    	if (forPage==PAGE_SPACE_EXPLORER) {
-	    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY),			 		// Search query
-	    				id												// Parent space id 
-				);	
+	    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(query,id);	
 
-	    		totalBenchmarks = Benchmarks.getCountInSpace(id);
+	    		query.setTotalRecords(Benchmarks.getCountInSpace(id));
 	    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
+		    	if(!query.hasSearchQuery()){
+		    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
 		    	} 
 		    	else {
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getCountInSpace(id,request.getParameter(SEARCH_QUERY)));
+		    		query.setTotalRecordsAfterQuery(Benchmarks.getCountInSpace(id,query.getSearchQuery()));
+		    		
 		    	}
 
-	    	} else {
-	    		benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(
-	    				attrMap.get(STARTING_RECORD),						// Record to start at  
-	    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-	    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-	    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-	    				request.getParameter(SEARCH_QUERY),			 		// Search query
-	    				id,												// Parent space id 
-	    				recycled
-				);
-	    		if (!recycled) {
-	    			totalBenchmarks = Benchmarks.getBenchmarkCountByUser(id);
-	    		} else {
-	    			totalBenchmarks=Benchmarks.getRecycledBenchmarkCountByUser(id);
-	    		}
-	    		
-	    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-		    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalBenchmarks);
-		    	} 
-		    	else {
-		    		if (!recycled) {
-			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getBenchmarkCountByUser(id,request.getParameter(SEARCH_QUERY)));
-		    		} else {
-			    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Benchmarks.getBenchmarkCountByUser(id,request.getParameter(SEARCH_QUERY)));
-		    		}
-		    	}
-	    	}
-		    return convertBenchmarksToJsonObject(benchmarksToDisplay,totalBenchmarks,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE));
+	    	
+		    return convertBenchmarksToJsonObject(benchmarksToDisplay,query);
 	    	
 	    case SPACE:
 	    	List<Space> spacesToDisplay = new LinkedList<Space>();
 	    	
     		int userId = SessionUtil.getUserId(request);
-    		int totalSubspacesInSpace = Spaces.getCountInSpace(id, userId,false);
+    		query.setTotalRecords(Spaces.getCountInSpace(id, userId,false));
     		
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-	    	spacesToDisplay = Spaces.getSpacesForNextPage(
-    				attrMap.get(STARTING_RECORD),						// Record to start at  
-    				attrMap.get(RECORDS_PER_PAGE), 						// Number of records to return
-    				attrMap.get(SORT_DIRECTION) == ASC ? true : false,	// Sort direction (true for ASC)
-    				attrMap.get(SORT_COLUMN), 							// Column sorted on
-    				request.getParameter(SEARCH_QUERY), 				// Search query
-    				id,											// Parent space id 
-    				userId												// Id of user making request
-			);
+	    	spacesToDisplay = Spaces.getSpacesForNextPage(query,id,userId);
 	    	
 	    	
 	    	/**
@@ -1543,14 +1025,98 @@ public class RESTHelpers {
 	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
 	    	 */
 	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-	    	if(attrMap.get(SEARCH_QUERY) == EMPTY){
-	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalSubspacesInSpace);
+	    	if(!query.hasSearchQuery()){
+	    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
 	    	} 
 	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
 	    	else {
-	    		attrMap.put(TOTAL_RECORDS_AFTER_QUERY, Spaces.getCountInSpace(id, userId, request.getParameter(SEARCH_QUERY)));
+	    		query.setTotalRecordsAfterQuery(Spaces.getCountInSpace(id, userId, query.getSearchQuery()));
 	    	}
-	    	return convertSpacesToJsonObject(spacesToDisplay,totalSubspacesInSpace,attrMap.get(TOTAL_RECORDS_AFTER_QUERY),attrMap.get(SYNC_VALUE),id);
+	    	return convertSpacesToJsonObject(spacesToDisplay,query,id);
+		}
+		return null;
+	}
+
+	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
+		// Parameter validation
+	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
+	    if(query==null){
+	    	return null;
+	    }
+		switch (type) {
+		case JOB:
+			List<Job> jobsToDisplay = new LinkedList<Job>();
+
+			// Retrieves the relevant Job objects to use in constructing the
+			// JSON to send to the client
+			
+				jobsToDisplay = Jobs.getJobsByUserForNextPage(query,id);
+				query.setTotalRecords(Jobs.getJobCountByUser(id));
+				if (!query.hasSearchQuery()) {
+					query.setTotalRecordsAfterQuery(query.getTotalRecords());
+				} else {
+					query.setTotalRecordsAfterQuery(Jobs.getJobCountByUser(id,query.getSearchQuery()));
+				}
+			
+
+			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query);
+			return answer;
+		    	
+		
+	    case SOLVER:    		
+    		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
+    		List<Solver> solversToDisplay=Solvers.getSolversByUserForNextPage(query,id,recycled);
+    			if (!recycled) {
+    				query.setTotalRecords(Solvers.getSolverCountByUser(id));
+    			} else {
+    				query.setTotalRecords(Solvers.getRecycledSolverCountByUser(id));
+    			}
+    			
+    			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(!query.hasSearchQuery()){
+		    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		    	} 
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	else {
+		    		if (!recycled) {
+			    		query.setTotalRecordsAfterQuery(Solvers.getSolverCountByUser(id,query.getSearchQuery()));
+		    		} else {
+			    		query.setTotalRecordsAfterQuery(Solvers.getRecycledSolverCountByUser(id,query.getSearchQuery()));
+		    		}
+		    	}
+		    return convertSolversToJsonObject(solversToDisplay, query);
+	    	
+		    	
+	    case BENCHMARK:	    	
+	    	 String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+	         if (sortOverride!=null) {
+	         	query.setSortColumn(Integer.parseInt(sortOverride));
+	         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
+	         }
+	    	
+	    	List<Benchmark> benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(query,id,recycled);
+	    		if (!recycled) {
+	    			query.setTotalRecords(Benchmarks.getBenchmarkCountByUser(id));
+	    		} else {
+	    			query.setTotalRecords(Benchmarks.getRecycledBenchmarkCountByUser(id));
+	    		}
+	    		
+	    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		    	if(!query.hasSearchQuery()){
+		    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		    	} 
+		    	else {
+		    		if (!recycled) {
+			    		query.setTotalRecordsAfterQuery(Benchmarks.getBenchmarkCountByUser(id,query.getSearchQuery()));
+		    		} else {
+			    		query.setTotalRecordsAfterQuery(Benchmarks.getRecycledBenchmarkCountByUser(id,query.getSearchQuery()));
+		    		}
+		    	}
+	    	
+		    return convertBenchmarksToJsonObject(benchmarksToDisplay,query);
+	    	
 		}
 		return null;
 	}
@@ -1558,7 +1124,7 @@ public class RESTHelpers {
 	/**
 	 * Generate the HTML for the next DataTable page of entries
 	 */
-	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, int userId) {
+	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, DataTablesQuery query, int userId) {
 		JsonArray dataTablePageEntries = new JsonArray();
 		for(JobPair j : pairs){
 			StringBuilder sb = new StringBuilder();
@@ -1586,8 +1152,6 @@ public class RESTHelpers {
 			String hiddenUserId;
 			
 			User user=j.getOwningUser();
-			
-			
 			
 			// Create the hidden input tag containing the user id
 			if(user.getId() == userId) {
@@ -1621,22 +1185,10 @@ public class RESTHelpers {
 			String benchLink = sb.toString();
 			
 			// Create the solver link
-    		sb = new StringBuilder();
-    		sb.append("<a href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-    		sb.append(j.getPrimarySolver().getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(j.getPrimarySolver().getName());
-    		RESTHelpers.addImg(sb);
-			String solverLink = sb.toString();
+			String solverLink = getSolverLink(j.getPrimarySolver().getId(),j.getPrimarySolver().getName());
 			
 			// Create the configuration link
-    		sb = new StringBuilder();
-    		sb.append("<a  href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-    		sb.append(j.getPrimarySolver().getConfigurations().get(0).getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(j.getPrimarySolver().getConfigurations().get(0).getName());
-    		RESTHelpers.addImg(sb);
-			String configLink = sb.toString();
+			String configLink = getConfigLink(j.getPrimarySolver().getConfigurations().get(0).getId(), j.getPrimarySolver().getConfigurations().get(0).getName());
 						
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
@@ -1649,19 +1201,10 @@ public class RESTHelpers {
     		entry.add(new JsonPrimitive(j.getPath()));
     		dataTablePageEntries.add(entry);
     	}
-		
-	    	JsonObject nextPage=new JsonObject();
-	    	 // Build the actual JSON response object and populated it with the created data
-		    nextPage.addProperty(SYNC_VALUE, syncValue);
-		    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		    nextPage.add("aaData", dataTablePageEntries);
-		    
-		    // Return the next DataTable page
-	    	return nextPage;
-		}
+		return createPageDataJsonObject(query, dataTablePageEntries);
+	}
 	
-	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean useWallclock, int stageNumber) {
+	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons,DataTablesQuery query, boolean useWallclock, int stageNumber) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1714,46 +1257,47 @@ public class RESTHelpers {
     		}
     		dataTablePageEntries.add(entry);
     	}
-	    	JsonObject nextPage=new JsonObject();
-	    	 // Build the actual JSON response object and populated it with the created data
-		    nextPage.addProperty(SYNC_VALUE, syncValue);
-		    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		    nextPage.add("aaData", dataTablePageEntries);
-		    
-		    // Return the next DataTable page
-	    	return nextPage;
-		}
+		return createPageDataJsonObject(query, dataTablePageEntries);
+
+	}
 	
+	private static String getConfigLink(int configId, String configName) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<a class=\"configLink\" title=\"");
+		sb.append(configName);
+		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
+		sb.append(configId);
+		sb.append("\" target=\"_blank\" id=\"");
+		sb.append(configId);
+		sb.append("\">");
+		sb.append(configName);
+		RESTHelpers.addImg(sb);
+		return sb.toString();
+	}
 	
+	private static String getSolverLink(int solverId, String solverName) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<a title=\"");
+		sb.append(solverName);
+		sb.append("\" href=\""
+				+ Util.docRoot("secure/details/solver.jsp?id="));
+
+		sb.append(solverId);
+		sb.append("\" target=\"_blank\">");
+		sb.append(solverName);
+		RESTHelpers.addImg(sb);
+		return sb.toString();
+	}
 	
 	/**
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table
-	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
-	 * @param totalRecordsAfterQuery The total number of records in the table after a given search query was applied
-	 * (if no search query, this should be the same as totalRecords)
-	 * @param syncValue An integer value possibly given by the datatable to keep the client and server synchronized.
-	 * Given a list of job pairs, creates a JsonObject that can be used to
-	 * populate a datatable client-side
-	 * 
-	 * @param pairs
-	 *            The pairs that will be the rows of the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
+	 * @param query a DataTAbles query object
+	 * @param includeConfigAndSolver Whether to include columns for the config and solver of each pair
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, int totalRecords, int totalRecordsAfterQuery, int syncValue, boolean includeConfigAndSolver, boolean useWallclock, int stageNumber) {
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query, boolean includeConfigAndSolver, boolean useWallclock, int stageNumber) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1784,24 +1328,10 @@ public class RESTHelpers {
 
 			if (includeConfigAndSolver) {
 				// Create the solver link
-	    		sb = new StringBuilder();
-	    		sb.append("<a title=\"");
-	    		sb.append("\" href=\""+Util.docRoot("secure/details/solver.jsp?id="));
-	    		sb.append(stage.getSolver().getId());
-	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(stage.getSolver().getName());
-	    		RESTHelpers.addImg(sb);
-				solverLink = sb.toString();
+				solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName());
 				
 				// Create the configuration link
-	    		sb = new StringBuilder();
-	    		sb.append("<a title=\"");
-	    		sb.append("\" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
-	    		sb.append(stage.getSolver().getConfigurations().get(0).getId());
-	    		sb.append("\" target=\"_blank\">");
-	    		sb.append(stage.getSolver().getConfigurations().get(0).getName());
-	    		RESTHelpers.addImg(sb);
-				configLink = sb.toString();
+				configLink = getConfigLink(stage.getSolver().getConfigurations().get(0).getId(),stage.getSolver().getConfigurations().get(0).getName());
 			}
 
 
@@ -1837,42 +1367,19 @@ public class RESTHelpers {
     		entry.add(new JsonPrimitive(stage.getStarexecResult()));    		
     		dataTablePageEntries.add(entry);
     	}
-	    	JsonObject nextPage=new JsonObject();
-	    	 // Build the actual JSON response object and populated it with the created data
-		    nextPage.addProperty(SYNC_VALUE, syncValue);
-		    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		    nextPage.add("aaData", dataTablePageEntries);
-		    
-		    // Return the next DataTable page
-	    	return nextPage;
-		}
+		return createPageDataJsonObject(query, dataTablePageEntries);
+	}
 
 	/**
 	 * Given a list of jobs, creates a JsonObject that can be used to populate a
 	 * datatable client-side
 	 * 
-	 * @param jobs
-	 *            The jobs that will be the rows of the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
-	 * @param forPage
-	 *            An integer code indicating what web page this JsonObject will
-	 *            be used for
+	 * @param jobs The jobs that will be the rows of the table
+	 * @param query A DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobsToJsonObject(List<Job> jobs,
-			int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	public static JsonObject convertJobsToJsonObject(List<Job> jobs, DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1925,34 +1432,9 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entry);
 		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
-
-	/*
-	public static String getSpaceOverviewGraphPath(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds, int stageNumber) {
-		String chartPath = null;
-		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
-			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber);
-			if (chartPath.equals("big")) {
-				return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
-			}
-		} else {
-			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);
-		}
-
-		log.debug("chartPath = "+chartPath);
-		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
-	}
-	*/
 
 	/**
 
@@ -1961,17 +1443,12 @@ public class RESTHelpers {
 	 * a datatable client-side
 	 * 
 	 * @param users The users that will be the rows of the table
-	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
-	 * @param totalRecordsAfterQuery The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any integer
+	 * @param query a DataTablesQuery object
 	 * @param currentUserId the ID of the user making the request for this datatable
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertUsersToJsonObject(List<User> users, int totalRecords, int totalRecordsAfterQuery, int syncValue, int currentUserId) {
+	public static JsonObject convertUsersToJsonObject(List<User> users,DataTablesQuery query, int currentUserId) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1981,17 +1458,14 @@ public class RESTHelpers {
 			String hiddenUserId;
 
 			// Create the hidden input tag containing the user id
+			sb.append("<input type=\"hidden\" value=\"");
+			sb.append(user.getId());
 			if (user.getId() == currentUserId) {
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(user.getId());
 				sb.append("\" name=\"currentUser\" id=\"uid" + user.getId() + "\" prim=\"user\"/>");
-				hiddenUserId = sb.toString();
 			} else {
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(user.getId());
 				sb.append("\" id=\"uid" + user.getId() + "\" prim=\"user\"/>");
-				hiddenUserId = sb.toString();
 			}
+			hiddenUserId = sb.toString();
 
 			// Create the user "details" link and append the hidden input
 			// element
@@ -2061,20 +1535,7 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entry);
 		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-	    if(totalRecords < 0) {
-	    	nextPage.addProperty(TOTAL_RECORDS, 0); // accounts for when there are no users except for public user (-1 result)
-	    } else {
-	    	nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-	    }
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 	
 	
@@ -2084,18 +1545,12 @@ public class RESTHelpers {
 	 * Given a list of TestSequences, creates a JsonObject that can be used to populate
 	 * a datatable client-side
 	 * 
-	 * @param TestSequences The tests that will be the rows of the table
-	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
-	 * @param totalRecordsAfterQuery The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any integer
-	 * @param currentUserId the ID of the user making the request for this datatable
+	 * @param tests The tests that will be the rows of the table
+	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertTestSequencesToJsonObject(List<TestSequence> tests, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	public static JsonObject convertTestSequencesToJsonObject(List<TestSequence> tests, DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2119,20 +1574,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(test.getErrorTrace()));
 			dataTablePageEntries.add(entry);
 		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-	    if(totalRecords < 0) {
-	    	nextPage.addProperty(TOTAL_RECORDS, 0); // accounts for when there are no users except for public user (-1 result)
-	    } else {
-	    	nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-	    }
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 	
 	/**
@@ -2142,17 +1584,11 @@ public class RESTHelpers {
 	 * a datatable client-side
 	 * 
 	 * @param tests A HashMap of tests, where each test will be a row of a table
-	 * @param totalRecords The total number of records in the table (not the same as the size of pairs)
-	 * @param totalRecordsAfterQuery The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any integer
-	 * @param currentUserId the ID of the user making the request for this datatable
+	 * @param query A DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertTestResultsToJsonObject(List<TestResult> tests, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	public static JsonObject convertTestResultsToJsonObject(List<TestResult> tests, DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2170,45 +1606,19 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(test.getTime()));
 			dataTablePageEntries.add(entry);
 		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-	    if(totalRecords < 0) {
-	    	nextPage.addProperty(TOTAL_RECORDS, 0); // accounts for when there are no users except for public user (-1 result)
-	    } else {
-	    	nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-	    }
-	    
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
 	/**
 	 * Given a list of spaces, creates a JsonObject that can be used to populate
 	 * a datatable client-side
 	 * 
-	 * @param spaces
-	 *            The spaces that will be the rows of the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
+	 * @param spaces The spaces that will be the rows of the table
+	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertSpacesToJsonObject(List<Space> spaces,
-			int totalRecords, int totalRecordsAfterQuery, int syncValue, int id) {
+	public static JsonObject convertSpacesToJsonObject(List<Space> spaces,DataTablesQuery query, int id) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2244,41 +1654,19 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entry);
 		}
-
-    	JsonObject nextPage=new JsonObject();
-    	 // Build the actual JSON response object and populated it with the created data
-	    nextPage.addProperty(SYNC_VALUE, syncValue);
-	    log.debug("TOTAL RECORDS = " + totalRecords);
-	    nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-	    nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-	    nextPage.add("aaData", dataTablePageEntries);
-	    
-	    // Return the next DataTable page
-    	return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
 	/**
 	 * Given a list of solvers, creates a JsonObject that can be used to
 	 * populate a datatable client-side
 	 * 
-	 * @param solvers
-	 *            The solvers that will be the rows of the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
+	 * @param solvers The solvers that will be the rows of the table
+	 * @param query DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertSolversToJsonObject(List<Solver> solvers,
-			int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	public static JsonObject convertSolversToJsonObject(List<Solver> solvers,DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2295,12 +1683,7 @@ public class RESTHelpers {
 			// Create the solver "details" link and append the hidden input
 			// element
 			sb = new StringBuilder();
-			sb.append("<a href=\""
-					+ Util.docRoot("secure/details/solver.jsp?id="));
-			sb.append(solver.getId());
-			sb.append("\" target=\"_blank\">");
-			sb.append(solver.getName());
-			RESTHelpers.addImg(sb);
+			sb.append(getSolverLink(solver.getId(),solver.getName()));
 			sb.append(hiddenSolverId);
 			String solverLink = sb.toString();
 
@@ -2312,42 +1695,20 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(solver.getType().toString().toLowerCase()));
 			dataTablePageEntries.add(entry);
 		}
-
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
 	/**
 	 * Given a list of benchmarks, creates a JsonObject that can be used to
 	 * populate a datatable client-side
 	 * 
-	 * @param benchmarks
-	 *            The benchmarks that will be the rows of the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
+	 * @param benchmarks The benchmarks that will be the rows of the table
+	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertBenchmarksToJsonObject(
-			List<Benchmark> benchmarks, int totalRecords,
-			int totalRecordsAfterQuery, int syncValue) {
+			List<Benchmark> benchmarks, DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2394,193 +1755,112 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entry);
 		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
+	private static StringBuilder getPairsInSpaceLink(String type, int spaceId, int jobId, int configId, int stageNumber) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<a href=\""
+				+ Util.docRoot("secure/details/pairsInSpace.jsp?type="+type+"&sid="
+						+ spaceId + "&configid="
+						+ configId + "&id=" + jobId+"&stagenum="+stageNumber));
+		sb.append("\" target=\"_blank\" >");
+		return sb;
+	}
+	
 	/**
 	 * Given a list of SolverStats, creates a JsonObject that can be used to
 	 * populate a datatable client-side
 	 * 
-	 * @param stats
-	 *            The SolverStats that will be the rows of the table
-	 * @param totalRecords
-	 *            The total number of records in the table (not the same as the
-	 *            size of pairs)
-	 * @param totalRecordsAfterQuery
-	 *            The total number of records in the table after a given search
-	 *            query was applied (if no search query, this should be the same
-	 *            as totalRecords)
-	 * @param syncValue
-	 *            An integer value possibly given by the datatable to keep the
-	 *            client and server synchronized. If one isn't present, any
-	 *            integer
+	 * @param stats The SolverStats that will be the rows of the table
+	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
 
 	public static JsonObject convertSolverStatsToJsonObject(
-			List<SolverStats> stats, int totalRecords,
-			int totalRecordsAfterQuery, int syncValue, JobSpace space,boolean shortFormat, boolean wallTime) {
+			List<SolverStats> stats, DataTablesQuery query, JobSpace space,boolean shortFormat, boolean wallTime) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
+		List<String> entries = new ArrayList<String>();
 		for (SolverStats js : stats) {
 			StringBuilder sb = new StringBuilder();
 
 			// Create the solver link
-			sb = new StringBuilder();
-			sb.append("<a title=\"");
-			sb.append(js.getSolver().getName());
-			sb.append("\" href=\""
-					+ Util.docRoot("secure/details/solver.jsp?id="));
-
-			sb.append(js.getSolver().getId());
-			sb.append("\" target=\"_blank\">");
-			sb.append(js.getSolver().getName());
-			RESTHelpers.addImg(sb);
-			String solverLink = sb.toString();
+			entries.add(getSolverLink(js.getSolver().getId(),js.getSolver().getName()));
 			
-			// create the configuraiton link
-			sb = new StringBuilder();
-			sb.append("<a class=\"configLink\" title=\"");
-			sb.append(js.getConfiguration().getName());
-			sb.append("\" href=\""
-					+ Util.docRoot("secure/details/configuration.jsp?id="));
-			sb.append(js.getConfiguration().getId());
-			sb.append("\" target=\"_blank\" id=\"");
-			sb.append(js.getConfiguration().getId());
-			sb.append("\">");
-			sb.append(js.getConfiguration().getName());
-			RESTHelpers.addImg(sb);
-			String configLink = sb.toString();
+			// create the configuration link
+			entries.add(getConfigLink(js.getConfiguration().getId(), js.getConfiguration().getName()));
 			if (!shortFormat) {
 				
-				
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=solved&sid="
-								+ space.getId() + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
-				sb.append("\" target=\"_blank\" >");
+				sb = getPairsInSpaceLink("solved", space.getId(),space.getJobId(), js.getConfiguration().getId(),js.getStageNumber());
 				sb.append(js.getCorrectOverCompleted());
 				RESTHelpers.addImg(sb);
-				String solvedLink = sb.toString();
+				entries.add(sb.toString());
 				
 				
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=wrong&sid="
-								+ space.getId() + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
-				sb.append("\" target=\"_blank\" >");
+				sb = getPairsInSpaceLink("wrong", space.getId(),space.getJobId(), js.getConfiguration().getId(),js.getStageNumber());
 				sb.append(js.getIncorrectJobPairs());
 				RESTHelpers.addImg(sb);
-				String wrongLink = sb.toString();
+				entries.add(sb.toString());
 				
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=resource&sid="
-								+ space.getId() + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
-				sb.append("\" target=\"_blank\" >");
+				sb = getPairsInSpaceLink("resource", space.getId(),space.getJobId(), js.getConfiguration().getId(),js.getStageNumber());
 				sb.append(js.getResourceOutJobPairs());
 				RESTHelpers.addImg(sb);
-				String resourceLink = sb.toString();
+				entries.add(sb.toString());
 				
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=failed&sid="
-								+ space.getId() + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
-				sb.append("\" target=\"_blank\" >");
+				sb = getPairsInSpaceLink("failed", space.getId(),space.getJobId(), js.getConfiguration().getId(),js.getStageNumber());
 				sb.append(js.getFailedJobPairs());
 				RESTHelpers.addImg(sb);
-				String failedLink = sb.toString();
+				entries.add(sb.toString());
 				
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=unknown&sid="
-								+ space.getId() + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
-				sb.append("\" target=\"_blank\" >");
+				sb = getPairsInSpaceLink("unknown", space.getId(),space.getJobId(), js.getConfiguration().getId(),js.getStageNumber());
 				sb.append(js.getUnknown());
 				RESTHelpers.addImg(sb);
-				String unknownLink = sb.toString();
+				entries.add(sb.toString());
 				
-				sb = new StringBuilder();
-				sb.append("<a href=\""
-						+ Util.docRoot("secure/details/pairsInSpace.jsp?type=incomplete&sid="
-								+ space.getId() + "&configid="
-								+ js.getConfiguration().getId() + "&id=" + space.getJobId()+"&stagenum="+js.getStageNumber()));
-				sb.append("\" target=\"_blank\" >");
+				sb = getPairsInSpaceLink("incomplete", space.getId(),space.getJobId(), js.getConfiguration().getId(),js.getStageNumber());
 				sb.append(js.getIncompleteJobPairs());
 				RESTHelpers.addImg(sb);
-				String incompleteLink = sb.toString();
+				entries.add(sb.toString());
 				
-				// Create an object, and inject the above HTML, to represent an
-				// entry in the DataTable
-				JsonArray entry = new JsonArray();
-				entry.add(new JsonPrimitive(solverLink));
-				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive(solvedLink));
-				entry.add(new JsonPrimitive(wrongLink));
-				entry.add(new JsonPrimitive(resourceLink));
-				entry.add(new JsonPrimitive(failedLink));
-				entry.add(new JsonPrimitive(unknownLink));
-				entry.add(new JsonPrimitive(incompleteLink));
 				if (wallTime) {
-					
-					entry.add(new JsonPrimitive(Math.round(js.getWallTime()*100)/100.0));
+					entries.add(String.valueOf(Math.round(js.getWallTime()*100)/100.0));
 				} else {
-					entry.add(new JsonPrimitive(Math.round(js.getCpuTime()*100)/100.0));
+					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
-				dataTablePageEntries.add(entry);
 			} else {
 				
-				// Create an object, and inject the above HTML, to represent an
-				// entry in the DataTable
-				JsonArray entry = new JsonArray();
-				entry.add(new JsonPrimitive(solverLink));
-				entry.add(new JsonPrimitive(configLink));
-				entry.add(new JsonPrimitive((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs() ));
+				
+				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
 				if (wallTime) {
-					entry.add(new JsonPrimitive(js.getWallTime()));
+					entries.add(String.valueOf(js.getWallTime()));
 				} else {
-					entry.add(new JsonPrimitive(js.getCpuTime()));
+					entries.add(String.valueOf(js.getCpuTime()));
 				}
-				dataTablePageEntries.add(entry);
 			}
+			JsonArray entry = new JsonArray();
+			for (String s : entries) {
+				entry.add(new JsonPrimitive(s));
+			}
+			dataTablePageEntries.add(entry);
 			
 		}
-
-		JsonObject nextPage = new JsonObject();
-
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
 	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock) {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
+		
 		for (JobSpace jobSpace : jobSpaces) {
 			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber);
-			JsonObject solverStatsJson = 
-				RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,jobSpace,true,wallclock);
+			DataTablesQuery query = new DataTablesQuery();
+			query.setTotalRecords(stats.size());
+			query.setTotalRecordsAfterQuery(stats.size());
+			query.setSyncValue(1);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace,true,wallclock);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}
@@ -2692,7 +1972,7 @@ public class RESTHelpers {
 		}
 	}
 
-	public static JsonObject convertCommunityRequestsToJsonObject(List<CommunityRequest> requests, int totalRecords, int syncValue, int currentUserId) {
+	public static JsonObject convertCommunityRequestsToJsonObject(List<CommunityRequest> requests, DataTablesQuery query, int currentUserId) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2771,20 +2051,24 @@ public class RESTHelpers {
 			dataTablePageEntries.add(entry);
 
 		}
+		return createPageDataJsonObject(query, dataTablePageEntries);
+	}
+	
+	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
 		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecords);
-		nextPage.add("aaData", dataTablePageEntries);
+		nextPage.addProperty(SYNC_VALUE, query.getSyncValue());
+		nextPage.addProperty(TOTAL_RECORDS, query.getTotalRecords());
+		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, query.getTotalRecordsAfterQuery());
+		nextPage.add("aaData", entries);
 
 		// Return the next DataTable page
 		return nextPage;
 	}
 	
 	
-	private static JsonObject convertNodesToJsonObject(List<WorkerNode> nodes, int totalRecords, int totalRecordsAfterQuery, int syncValue) {
+	private static JsonObject convertNodesToJsonObject(List<WorkerNode> nodes, DataTablesQuery query) {
 		JsonArray dataTablePageEntries = new JsonArray();
 
 		for(WorkerNode n : nodes) {			
@@ -2796,135 +2080,12 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entry);
 		}
-		JsonObject nextPage = new JsonObject();
-		// Build the actual JSON response object and populated it with the
-		// created data
-		nextPage.addProperty(SYNC_VALUE, syncValue);
-		nextPage.addProperty(TOTAL_RECORDS, totalRecords);
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, totalRecordsAfterQuery);
-		nextPage.add("aaData", dataTablePageEntries);
-
-		// Return the next DataTable page
-		return nextPage;
+		return createPageDataJsonObject(query,dataTablePageEntries);
 	}
 
-	private static void logSpaceTree(TreeNode<Space> tree) {
-		logSpaceTreeHelper(tree, "");
-	}
-
-	private static void logSpaceTreeHelper(TreeNode<Space> tree, String indent) {
-		StringBuilder childrenMessage = new StringBuilder();
-		childrenMessage.append(tree.getData().getName() + ": ");
-		for (TreeNode<Space> child : tree) {
-			childrenMessage.append(child.getData().getName() + " ");
-		}
-
-		log.debug(indent + "Descendants of space " + childrenMessage.toString()); 
-
-		for (TreeNode<Space> child : tree) {
-			logSpaceTreeHelper(child, indent+"    ");
-		}
-	}
-
-
-
-
-	/**
-	 * Get the result table for all the jobs in a space.
-	 * 
-	 * @param spaceId
-	 *            The id of the space for which the result table is generated
-	 * @param request
-	 *            The http request
-	 * @return JsonObject containing the result of the query
-	 * @throws Exception
-	 * @author Ruoyu Zhang
-	 */
-	public static JsonObject getResultTable(int spaceId,
-			HttpServletRequest request) throws Exception {
-		// Parameter validation
-
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMap(
-				Primitive.JOB, request);
-		if (null == attrMap) {
-			return null;
-		}
-
-		JsonObject nextPage = new JsonObject(); // JSON object representing next
-												// page for client's DataTable
-												// object
-		JsonArray dataTablePageEntries = null; // JSON array containing the
-												// DataTable primitive entries
-
-		List<Job> jobsToDisplay = new LinkedList<Job>();
-		int totalJobsInSpace = Jobs.getCountInSpace(spaceId);
-
-		// Retrieves the relevant Job objects to use in constructing the JSON to
-		// send to the client
-		jobsToDisplay = Jobs.getJobsForNextPage(0, 20, true, 1, "", spaceId);
-
-		/**
-		 * Used to display the 'total entries' information at the bottom of the
-		 * DataTable; also indirectly controls whether or not the pagination
-		 * buttons are toggle-able
-		 */
-		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalJobsInSpace);
-		}
-		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-		else {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, jobsToDisplay.size());
-		}
-		attrMap.put(TOTAL_RECORDS, totalJobsInSpace);
-
-		/**
-		 * Generate the HTML for the next DataTable page of entries
-		 */
-
-		dataTablePageEntries = new JsonArray();
-		for (Job job : jobsToDisplay) {
-			StringBuilder sb = new StringBuilder();
-			String hiddenJobId;
-
-			// Create the hidden input tag containing the job id
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(job.getId());
-			sb.append("\" prim=\"job\"/>");
-			hiddenJobId = sb.toString();
-
-			// Create the job "details" link and append the hidden input element
-			sb = new StringBuilder();
-			sb.append("<a href=\"" + Util.docRoot("secure/details/job.jsp?id="));
-			sb.append(job.getId());
-			sb.append("\" target=\"_blank\">");
-			sb.append(job.getName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenJobId);
-			String jobLink = sb.toString();
-
-			Integer score = job.getLiteJobPairStats().get("totalPairs");
-
-			// Create an object, and inject the above HTML, to represent an
-			// entry in the DataTable
-			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(jobLink));
-			entry.add(new JsonPrimitive(score));
-			entry.add(new JsonPrimitive(score));
-
-			dataTablePageEntries.add(entry);
-		}
-
-		nextPage.addProperty(SYNC_VALUE, attrMap.get(SYNC_VALUE));
-		nextPage.addProperty(TOTAL_RECORDS, attrMap.get(TOTAL_RECORDS));
-		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY,
-				attrMap.get(TOTAL_RECORDS_AFTER_QUERY));
-		nextPage.add("aaData", dataTablePageEntries);
-		return nextPage;
-	}
 	/**
 	 * Gets all pending community requests for a given community.
-	 * @param request The http request.
+	 * @param httpRequest The http request.
 	 * @param communityId The community to get pending requests for.
 	 * @return the new json object or null on error.
 	 * @author Albert Giegerich
@@ -2932,27 +2093,23 @@ public class RESTHelpers {
 	public static JsonObject getNextDataTablesPageForPendingCommunityRequestsForCommunity(HttpServletRequest httpRequest, int communityId) {
 
 		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(httpRequest);
-		if (attrMap == null) {
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.SPACE,httpRequest);
+		if (query==null) {
 			return null;
 		}
 
-		int totalRequests = 0; 
 		List<CommunityRequest> requests = null;
 		try {
-			requests = Requests.getPendingCommunityRequestsForCommunity(
-						attrMap.get(STARTING_RECORD),
-						attrMap.get(RECORDS_PER_PAGE),
-						communityId
-						);
-			totalRequests = Requests.getCommunityRequestCountForCommunity(communityId);
+			requests = Requests.getPendingCommunityRequestsForCommunity(query,communityId);
+			query.setTotalRecords(Requests.getCommunityRequestCountForCommunity(communityId));
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
 		} catch (StarExecDatabaseException e) {
 			log.error("Could not successfully get community requests for community with id="+communityId, e);
 			return null;
 		}
 
 
-		return setupAttrMapAndConvertRequestsToJson(requests, totalRequests, attrMap, httpRequest);
+		return setupAttrMapAndConvertRequestsToJson(requests, query, httpRequest);
 	}
 
 	/**
@@ -2962,25 +2119,22 @@ public class RESTHelpers {
 	 */
 	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest httpRequest) {
 		// Parameter Validation
-		HashMap<String, Integer> attrMap = RESTHelpers.getAttrMapQueueReservation(httpRequest);
-		if (attrMap == null) {
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.SPACE,httpRequest);
+		if (query==null) {
 			return null;
 		}
 
-		int totalRequests = 0; 
 		List<CommunityRequest> requests = null;
 		try {
-			requests = Requests.getPendingCommunityRequests(
-					attrMap.get(STARTING_RECORD),
-					attrMap.get(RECORDS_PER_PAGE)
-					);
-			totalRequests = Requests.getCommunityRequestCount();
+			requests = Requests.getPendingCommunityRequests(query);
+			query.setTotalRecords(Requests.getCommunityRequestCount());
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
 		} catch (StarExecDatabaseException e) {
 			log.error("Could not successfully get community requests for all communities.", e);
 			return null;
 		}
 
-		return setupAttrMapAndConvertRequestsToJson(requests, totalRequests, attrMap, httpRequest);
+		return setupAttrMapAndConvertRequestsToJson(requests, query, httpRequest);
 	}
 
 	/**
@@ -2991,22 +2145,21 @@ public class RESTHelpers {
 	 * @param communityId The community to get pending requests for. Ignored if getAllCommunityRequests is false.
 	 * @author Unknown, Albert Giegerich
 	 */
-	private static JsonObject setupAttrMapAndConvertRequestsToJson(List<CommunityRequest> requests, 
-			int totalRequests, HashMap<String, Integer> attrMap, HttpServletRequest httpRequest) {
+	private static JsonObject setupAttrMapAndConvertRequestsToJson(List<CommunityRequest> requests,DataTablesQuery query, HttpServletRequest httpRequest) {
 		/**
 		 * Used to display the 'total entries' information at the bottom of the
 		 * DataTable; also indirectly controls whether or not the pagination
 		 * buttons are toggle-able
 		 */
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
-		if (attrMap.get(SEARCH_QUERY) == EMPTY) {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, totalRequests);
+		if (!query.hasSearchQuery()) {
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
 		}
 		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 		else {
-			attrMap.put(TOTAL_RECORDS_AFTER_QUERY, requests.size());
+			query.setTotalRecordsAfterQuery(requests.size());
 		}
 		int currentUserId = SessionUtil.getUserId(httpRequest);
-		return convertCommunityRequestsToJsonObject(requests, totalRequests, attrMap.get(SYNC_VALUE), currentUserId);
+		return convertCommunityRequestsToJsonObject(requests, query, currentUserId);
 	}
 }

@@ -377,7 +377,6 @@ CREATE PROCEDURE GetAllJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM job_pairs 
-						/*JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id*/
 						JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 						JOIN	configurations	AS	config	ON	jobpair_stage_data.config_id = config.id 
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id

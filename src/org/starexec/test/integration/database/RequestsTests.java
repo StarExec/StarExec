@@ -10,6 +10,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.DataTablesQuery;
 
 public class RequestsTests extends TestSequence {
 
@@ -46,13 +47,16 @@ public class RequestsTests extends TestSequence {
 		int comm2RequestsSizeBefore = 0;
 		int commRequestsSizeAfter = 0;
 		int comm2RequestsSizeAfter = 0;
+		DataTablesQuery query = new DataTablesQuery();
+		query.setStartingRecord(0);
+		query.setNumRecords(10);
 		try {
-			commRequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm.getId()).size();
-			comm2RequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm2.getId()).size();
+			commRequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
+			comm2RequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 			User tempUser=ResourceLoader.loadUserIntoDatabase();
 			CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
-			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm.getId()).size();
-			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(0, 10, comm2.getId()).size();
+			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
+			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 
 			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
 		} catch (StarExecDatabaseException e) {

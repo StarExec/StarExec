@@ -34,6 +34,7 @@ import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.DependValidator;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -1602,28 +1603,24 @@ public class Benchmarks {
 	}
 	/**
 	 * Get next page of the benchmarks belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the query start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
+	 * @param query a DataTablesQuery object
 	 * @param userId Id of the user we are looking for
 	 * @param recycled Whether to get recycled or non-recycled benchmarks
 	 * @return a list of benchmarks belong to the user
 	 * @author Wyatt Kaiser
 	 */
-	public static List<Benchmark> getBenchmarksByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
+	public static List<Benchmark> getBenchmarksByUserForNextPage(DataTablesQuery query, int userId, boolean recycled) {
 		Connection con = null;			
 		NamedParameterStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_BY_USER_QUERY, startingRecord, recordsPerPage, getBenchmarkOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_BY_USER_QUERY, getBenchmarkOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
 			procedure.setInt("userId", userId);
-			procedure.setString("query", searchQuery);
+			procedure.setString("query", query.getSearchQuery());
 			procedure.setBoolean("recycled", recycled); 
 			
 			results = procedure.executeQuery();
@@ -1676,27 +1673,23 @@ public class Benchmarks {
 	
 	/**
 	 * Retrieves benchmarks for the next page of a table on the space explorer
-	 * @param startingRecord The index of the first benchmark to retrieve
-	 * @param recordsPerPage The maximum number of benchmarks to retrieve
-	 * @param isSortedASC True or false to sort ascending or descending
-	 * @param indexOfColumnSortedBy The index of the datatable column to sort on
-	 * @param searchQuery A query for filtering the benchmarks
+	 * @param query A DataTablesQuery object
 	 * @param spaceId The ID of the space the benchmarks to retrieve are in
 	 * @return A list of benchmarks on success or null on failure
 	 */
-	public static List<Benchmark> getBenchmarksForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
+	public static List<Benchmark> getBenchmarksForNextPage(DataTablesQuery query, int spaceId) {
 		Connection con = null;			
 		NamedParameterStatement procedure=null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
 			
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getBenchmarkOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_BENCHMARKS_IN_SPACE_QUERY, getBenchmarkOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 
 			procedure.setInt("spaceId", spaceId);
-			procedure.setString("query", searchQuery);
+			procedure.setString("query", query.getSearchQuery());
 
 			results = procedure.executeQuery();
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
@@ -2788,26 +2781,21 @@ public class Benchmarks {
 	/**
 	 * Returns the Benchmarks needed to populate a DataTables page for a given user. Benchmarks include all
 	 * Benchmarks the user can see
-	 * @param startingRecord Index of Benchmark to start at
-	 * @param recordsPerPage Number of Benchmarks to return. May return fewer if recordsPerPage is greater than the total number of Benchmarks
-	 * @param isSortedASC True if sorted ascending, false otherwise
-	 * @param indexOfColumnSortedBy  The column index of the datatable column to sort on
-	 * @param searchQuery Query to filter Benchmarks by. Filter examines name and description
+	 * @param query DataTablesQuery object containing paramters for this search
 	 * @param userId ID of user to get Benchmarks for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
 	 * and the total number of elements after filtering as the second element
 	 * @return The list of benchmarks to display in the table
 	 */
-	public static List<Benchmark> getBenchmarksForNextPageByUser(int startingRecord, int recordsPerPage, boolean isSortedASC, 
-			int indexOfColumnSortedBy, String searchQuery, int userId,int[] totals) {
+	public static List<Benchmark> getBenchmarksForNextPageByUser(DataTablesQuery query, int userId,int[] totals) {
 		List<Benchmark> benchmarks=Benchmarks.getByUser(userId);
 		
 		totals[0]=benchmarks.size();
-		benchmarks=Benchmarks.filterBenchmarks(benchmarks, searchQuery);
+		benchmarks=Benchmarks.filterBenchmarks(benchmarks, query.getSearchQuery());
 
 		totals[1]=benchmarks.size();
-		BenchmarkComparator compare=new BenchmarkComparator(indexOfColumnSortedBy,isSortedASC);
-		return Util.handlePagination(benchmarks, compare, startingRecord, recordsPerPage);
+		BenchmarkComparator compare=new BenchmarkComparator(query.getSortColumn(),query.isSortASC());
+		return Util.handlePagination(benchmarks, compare, query.getStartingRecord(), query.getNumRecords());
 
 	}
 }

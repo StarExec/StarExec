@@ -92,27 +92,3 @@ function initDataTables(){
 	// Setup the DataTable objects
 	initCommunityRequestsTable('#commRequests', true);	
 }
-
-
-/*
-function fnPaginationHandler(sSource, aoData, fnCallback){
-	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + "community/pending/requests",
-			aoData,
-			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage);
-				if (s) {
-
-					// Update the number displayed in this DataTable's fieldset
-					$('#communityExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-				}
-
-			},  
-			"json"
-	)
-}
-*/

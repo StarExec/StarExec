@@ -20,6 +20,7 @@ import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -480,24 +481,20 @@ public class Queues {
 	
 	/**
 	 * Gets all the necessary job pairs for populating a datatables page on the cluster status page
-	 * @param startingRecord The first desired records
-	 * @param recordsPerPage The number of records to return
-	 * @param isSortedASC Whether the records should be sorted ASC (true) or DESC (false)
-	 * @param indexOfColumnSortedBy The index of the client side datatables column to sort on
-	 * @param searchQuery The search query to filter the results by
+	 * @param query A DataTablesQuery object
 	 * @param id The ID of the queue or node
 	 * @param type The type of the table on the cluster status page (either queue or node)
 	 * @return A list of JobPairs running on the node
 	 */
 	
-	public static List<JobPair> getJobPairsForNextClusterPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int id, String type) {
+	public static List<JobPair> getJobPairsForNextClusterPage(DataTablesQuery query, int id, String type) {
 		PaginationQueryBuilder builder = null;
 
 		if (type == "queue") {
-			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_ENQUEUED_QUERY, startingRecord, recordsPerPage, getPairOrderColumnForClusterPage(indexOfColumnSortedBy), isSortedASC);
+			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_ENQUEUED_QUERY,getPairOrderColumnForClusterPage(query.getSortColumn()), query);
 		} else if (type == "node") {
 			
-			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_RUNNING_QUERY, startingRecord, recordsPerPage, getPairOrderColumnForClusterPage(indexOfColumnSortedBy), isSortedASC);
+			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_RUNNING_QUERY,getPairOrderColumnForClusterPage(query.getSortColumn()), query);
 
 		} else {
 			return null;
