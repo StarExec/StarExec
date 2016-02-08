@@ -748,6 +748,8 @@ public class Download extends HttpServlet {
 				
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
+				// pairsFound is defined as the number of pairs that completed since "since"
+				// it does NOT include running pairs
 				int pairsFound = 0;
 				for (JobPair x : pairs) {
 					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
@@ -757,11 +759,7 @@ public class Download extends HttpServlet {
 					if (x.getStatus().getCode().finishedRunning()) {
 						pairsFound++;
 					}
-				}
-				// pairsFound is defined as the number of pairs that completed since "since"
-				// it does NOT include running pairs
-				
-				
+				}	
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairsFound)));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));

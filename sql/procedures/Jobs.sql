@@ -704,7 +704,7 @@ CREATE PROCEDURE SetNewColumns()
 DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfoByJob;
 CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID INT)
 	BEGIN
-		SELECT path,solver_name,config_name,bench_name, complete.completion_id, id, primary_jobpair_data FROM job_pairs
+		SELECT path,solver_name,config_name,bench_name,job_pairs.status_code,complete.completion_id, id, primary_jobpair_data FROM job_pairs
 			LEFT JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 		WHERE job_pairs.job_id=_jobID AND (complete.completion_id>_completionId OR job_pairs.status_code=4) 

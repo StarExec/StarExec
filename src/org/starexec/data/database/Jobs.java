@@ -2584,6 +2584,7 @@ public class Jobs {
 				pair.getBench().setName(results.getString("bench_name"));
 				pair.setCompletionId(results.getInt("completion_id"));
 				pair.addStage(stage);
+				pair.getStatus().setCode(results.getInt("job_pairs.status_code"));
 
 				pairs.add(pair);
 			}
