@@ -422,7 +422,7 @@ function copyOutputIncrementally {
 	do
 		sleep $PERIOD
 		copyOutputNoStats $3
-		$TIMEOUT=$(($TIMEOUT-$PERIOD))
+		TIMEOUT=$(($TIMEOUT-$PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
 }
@@ -674,7 +674,6 @@ function createDir {
 # copys output without doing post-processing or updating the database stats
 # $1 The current stage number
 function copyOutputNoStats {
-	log "creating storage directory on master host"
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
@@ -691,7 +690,6 @@ function copyOutputNoStats {
 	
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	
-	log "the output path is $PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
 }
