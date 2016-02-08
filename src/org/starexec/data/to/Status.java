@@ -74,6 +74,9 @@ public class Status {
 		public boolean complete() {
 		    return val==7 || (val>=14 &&val<=17);
 		}
+		public boolean finishedRunning() {
+			return val>=7;
+		}
 		static public StatusCode toStatusCode(int code) {
 		    switch (code) {
 			    case 1:

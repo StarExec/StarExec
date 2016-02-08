@@ -26,6 +26,7 @@ import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
 
 import com.google.gson.JsonArray;
@@ -1945,6 +1946,7 @@ public class Connection {
 			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy,
 			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId) {
 		HttpResponse response=null;
+		
 		try {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 			urlParams.put(C.FORMPARAM_TYPE, type);
@@ -2012,9 +2014,10 @@ public class Connection {
 			Integer pairsFound=null;
 			Integer oldPairs=null;
 			int lastSeen=-1;
-			long lastModified=-1;
 			//if we're sending 'since,' it means this is a request for new job data
-			if (urlParams.containsKey(C.FORMPARAM_SINCE)) {
+			boolean isNewJobRequest=urlParams.containsKey(C.FORMPARAM_SINCE);
+			boolean isNewOutputRequest = isNewJobRequest && urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
+			if (isNewJobRequest) {
 				
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
@@ -2023,15 +2026,15 @@ public class Connection {
 				//check to see if the job is complete
 				done=totalPairs==(pairsFound+oldPairs);
 				lastSeen=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Completion"));
-				lastModified = Long.parseLong(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Timestamp"));
 				//indicates there was no new information
 				if (lastSeen<=since) {
 					if (done) {
 						return C.SUCCESS_JOBDONE;
 					}
-					
-					//don't save empty files
-					return C.SUCCESS_NOFILE;
+					if (!isNewOutputRequest) {
+						return C.SUCCESS_NOFILE;
+						//TODO: What to do in this situation?
+					}
 				}
 			}
 			
@@ -2046,8 +2049,12 @@ public class Connection {
 			
 			if (!CommandValidator.isValidZip(out)) {
 				out.delete();
+				if (isNewOutputRequest) {
+					return C.SUCCESS_NOFILE;
+				}
 				return Status.ERROR_INTERNAL; //we got back an invalid archive for some reason
 			}
+			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
 			
 			
 			//only after we've successfully saved the file should we update the maximum completion index,
@@ -2056,20 +2063,18 @@ public class Connection {
 				
 				if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB)) {
 					this.setJobInfoCompletion(id, lastSeen);
-					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");					
-					
 				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen,lastModified));
-
-					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
-
 				}
+				System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+
 			}
 			if (done) {
 				return C.SUCCESS_JOBDONE;
 			}
 			return 0;
 		} catch (Exception e) {
+
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_INTERNAL;
 		} finally {

@@ -648,19 +648,6 @@ public class Download extends HttpServlet {
 		return filename;
 	}
 	
-	private static long getMostRecentlyModifiedFile(List<JobPair> pairs) {
-		long max = 0;
-		for (JobPair p : pairs) {
-			File file = new File(JobPairs.getFilePath(p));
-			if (!file.exists()) {
-				continue;
-			}
-			max = Math.max(max, ArchiveUtil.getMostRecentlyModifiedFile(file));
-		}
-		return max;
-		
-	}
-	
 	/**
 	 * Puts all the given pairs into a zip archive that is streamed into the http response object. The http output stream
 	 * is closed at the end
@@ -761,16 +748,22 @@ public class Download extends HttpServlet {
 				
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
+				int pairsFound = 0;
 				for (JobPair x : pairs) {
 					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
 						maxCompletion=x.getCompletionId();
 					}
+					if (x.getStatus().getCode().finishedRunning()) {
+						pairsFound++;
+					}
 				}
-				//long maxTimestamp = getMostRecentlyModifiedFile(pairs);
-				//response.addCookie(new Cookie("Max-Timestamp", String.valueOf(maxTimestamp)));
+				// pairsFound is defined as the number of pairs that completed since "since"
+				// it does NOT include running pairs
+				
+				
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
-				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairs.size())));
+				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairsFound)));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);

@@ -424,13 +424,23 @@ public class ArchiveUtil {
 		input.close();
 	}
 	
-	public static long getMostRecentlyModifiedFile(File file) {
-		long max=file.lastModified();
-		if (file.isDirectory()) {
-			for (File f : file.listFiles()) {
-				max = Math.max(max, getMostRecentlyModifiedFile(file));
+	/**
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException 
+	 */
+	public static long getMostRecentlyModifiedFileInZip(File file) throws IOException {
+		long max = 0;
+		ZipFile temp=new ZipFile(file);
+		Enumeration<ZipArchiveEntry> x=temp.getEntries();
+		while (x.hasMoreElements()) {
+			ZipArchiveEntry e = x.nextElement();
+			if (!e.isDirectory()) {
+				max = Math.max(max, e.getLastModifiedTime().toMillis());
 			}
 		}
+		temp.close();
 		return max;
 	}
 	
