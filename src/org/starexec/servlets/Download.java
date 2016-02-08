@@ -427,7 +427,7 @@ public class Download extends HttpServlet {
 
 		String baseName="Job"+String.valueOf(j.getId())+"_output";
 
-		Download.addJobPairsToZipOutput(pairs,response,baseName,false,null,null);
+		Download.addJobPairsToZipOutput(pairs,response,baseName,false,null);
     	return true;
     }
 
@@ -673,7 +673,7 @@ public class Download extends HttpServlet {
 	 * @return
 	 */
 	private static boolean addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response,String baseName,boolean useSpacePath, 
-			Long earlyDate, Long lateDate) {
+			Long earlyDate) {
 		if (pairs.size()==0) {
 			return true; // don't try to make a zip if there are no pairs
 		}
@@ -702,20 +702,20 @@ public class Download extends HttpServlet {
 
 				if (file.exists()) {
 					if (file.isDirectory()) {
-						if (earlyDate==null || lateDate==null ){
+						if (earlyDate==null){
 							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
 
 						} else {
-							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString(), earlyDate, lateDate);
+							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString(), earlyDate);
 						}
 					} else {
 						zipFileName.append(File.separator);
 						zipFileName.append(p.getBench().getName());
-						if (earlyDate==null || lateDate==null) {
+						if (earlyDate==null) {
 							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
 
 						} else {
-							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString(), earlyDate, lateDate);
+							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString(), earlyDate);
 						}
 					}
 					
@@ -767,8 +767,8 @@ public class Download extends HttpServlet {
 						maxCompletion=x.getCompletionId();
 					}
 				}
-				long maxTimestamp = getMostRecentlyModifiedFile(pairs);
-				response.addCookie(new Cookie("Max-Timestamp", String.valueOf(maxTimestamp)));
+				//long maxTimestamp = getMostRecentlyModifiedFile(pairs);
+				//response.addCookie(new Cookie("Max-Timestamp", String.valueOf(maxTimestamp)));
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairs.size())));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
@@ -777,7 +777,7 @@ public class Download extends HttpServlet {
 				String baseName="Job"+String.valueOf(jobId)+"_output_new";
 
 				// get all files in between 
-				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified, maxTimestamp);
+				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified);
 			
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);

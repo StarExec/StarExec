@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -393,13 +395,16 @@ public class ArchiveUtil {
 	 * @param srcFile
 	 * @param zipFileName
 	 * @param earlyDate Milliseconds since the epoch. Only get files modified after this (non-inclusive)
-	 * @param lateDate Milliseconds since the epoch. Only get files modified before this (inclusive)
 	 * @throws IOException 
 	 */
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate, long lateDate) throws IOException {
-		if (srcFile.lastModified() >earlyDate && srcFile.lastModified()<=lateDate) {
+	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
+		if (srcFile.lastModified() >earlyDate) {
 			addFileToArchive(zos, srcFile, zipFileName);
 		}
+	}
+	
+	private static byte[] longToBytes(long l) {
+		return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(l).array();
 	}
 	
 	/**
@@ -413,7 +418,7 @@ public class ArchiveUtil {
 		ZipEntry entry=new ZipEntry(zipFileName);
 		zos.putNextEntry(entry);
 		FileInputStream input=new FileInputStream(srcFile);
-		
+		entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
 		IOUtils.copy(input, zos);
 		zos.closeEntry();
 		input.close();
@@ -438,14 +443,14 @@ public class ArchiveUtil {
 	 * @param modifiedAfter
 	 * @throws IOException
 	 */
-	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName,long earlyDate, long lateDate) throws IOException {
+	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName,long earlyDate) throws IOException {
 		File[] files=srcFile.listFiles();
 		for (int index=0;index<files.length;index++) {
 			if (files[index].isDirectory()) {
-				addDirToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate, lateDate);
+				addDirToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate);
 				continue;
 			}
-			addFileToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate, lateDate);
+			addFileToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate);
 		}
 	}
 	
