@@ -236,6 +236,7 @@ SOLVER_CACHED=0
 
 # The path to the config run script on the execution host
 LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+createDir "$OUT_DIR/output_files"
 
 
 checkCache
@@ -243,7 +244,6 @@ copyDependencies
 verifyWorkspace
 sandboxWorkspace
 
-mkdir "$OUT_DIR/output_files"
 
 CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[$STAGE_INDEX]}
 
