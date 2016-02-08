@@ -106,6 +106,7 @@ public abstract class JobManager {
 				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
 				    	if (m!=null) {
 				    		m.setUsers(new HashMap<Integer,Integer>());
+							m.setUserLoadDataFormattedString();
 				    	}
 				    }
 				} else {
@@ -381,6 +382,7 @@ public abstract class JobManager {
 		List<String> benchInputPaths=new ArrayList<String>();
 		List<String> argStrings=new ArrayList<String>();
 		List<String> benchSuffixes=new ArrayList<String>();
+		List<Integer> resultsIntervals = new ArrayList<Integer>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -402,7 +404,7 @@ public abstract class JobManager {
 			solverTimestamps.add(stage.getSolver().getMostRecentUpdate());
 			solverPaths.add(stage.getSolver().getPath());
 			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
-			
+			resultsIntervals.add(attrs.getResultsInterval());
 			if (attrs.getSpaceId()==null) {
 				spaceIds.add(null);
 			} else {
@@ -477,6 +479,7 @@ public abstract class JobManager {
 		replacements.put("$$BENCH_INPUT_ARRAY$$",toBashArray("BENCH_INPUT_PATHS",benchInputPaths,true));
 		replacements.put("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		replacements.put("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
+		replacements.put("$$RESULTS_INTERVAL_ARRAY$$", numsToBashArray("RESULTS_INTERVALS", resultsIntervals));
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
@@ -647,12 +650,6 @@ public abstract class JobManager {
 		return arrayString;
 	}
 
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit) {
-		return setupJob(userId, name, description, preProcessorId, postProcessorId, queueId, randomSeed, cpuLimit, wallclockLimit, memLimit, false);
-	}
-
-
 	/**
 	 * Sets up the basic information for a job, including the user who created it,
 	 * its name and description, the pre- and post-processors, and the queue.
@@ -669,7 +666,7 @@ public abstract class JobManager {
 	 * @return the new job object with the specified properties
 	 */
 	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp) {
+			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -692,6 +689,7 @@ public abstract class JobManager {
 		attrs.setMaxMemory(memLimit);
 		attrs.setStageNumber(1);
 		attrs.setSpaceId(null);
+		attrs.setResultsInterval(resultsInterval);
 		if(preProcessorId > 0) {
 			attrs.setPreProcessor(Processors.get(preProcessorId));
 		} else {

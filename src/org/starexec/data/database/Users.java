@@ -20,6 +20,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Hash;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -674,26 +675,22 @@ public class Users {
 	 * Gets the minimal number of Users necessary in order to service the client's
 	 * request for the next page of Users in their DataTables object
 	 * 
-	 * @param startingRecord the record to start getting the next page of Users from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param query a DataTablesQuery object
 	 * @param spaceId the id of the space to get the Users from
 	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	public static List<User> getUsersForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId) {
+	public static List<User> getUsersForNextPage(DataTablesQuery query, int spaceId) {
 		Connection con = null;			
 		NamedParameterStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getUserOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_IN_SPACE_QUERY, getUserOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con,builder.getSQL());
 			procedure.setInt("spaceId", spaceId);
-			procedure.setString("query", searchQuery);
+			procedure.setString("query", query.getSearchQuery());
 			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			
@@ -726,17 +723,13 @@ public class Users {
 	
 	/**Gets the minimal number of Users necessary in order to service the client's 
 	 * request for the next page of Users in their DataTables object
-	 * 
-	 * @param startingRecord the record to start getting the next page of Users from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)	 
-	 * 
+	 * @param query A DataTablesQuery object
 	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
 	 * @author Wyatt Kaiser
 	 **/
-	public static List<User> getUsersForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery) {
+	
+	//TODO: This pagination function is not formed correctly
+	public static List<User> getUsersForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -744,11 +737,11 @@ public class Users {
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setString(5, searchQuery);
+			procedure.setInt(1, query.getStartingRecord());
+			procedure.setInt(2,	query.getNumRecords());
+			procedure.setInt(3, query.getSortColumn());
+			procedure.setBoolean(4, query.isSortASC());
+			procedure.setString(5, query.getSearchQuery());
 			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			

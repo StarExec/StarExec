@@ -390,7 +390,15 @@ public class JobUtil {
 			if (DOMHelper.hasElement(jobAttributes, "preproc-id")) {
 				preProcId=Integer.parseInt(DOMHelper.getElementByName(jobAttributes, "preproc-id").getAttribute("value"));
 				stageOneAttributes.setPreProcessor(Processors.get(preProcId));
-			}			
+			}	
+			
+			if (DOMHelper.hasElement(jobAttributes, "results-interval")) {
+				int resultsInterval=Integer.parseInt(DOMHelper.getElementByName(jobAttributes, "results-interval").getAttribute("value"));
+
+				stageOneAttributes.setResultsInterval(resultsInterval);
+			} else {
+				stageOneAttributes.setResultsInterval(0);
+			}
 			
 			//validate memory limits
 			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, null, null);
@@ -465,6 +473,13 @@ public class JobUtil {
 				
 				}
 				
+				if (DOMHelper.hasElement(stageAttributes, "results-interval")) {
+					int resultsInterval=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "results-interval").getAttribute("value"));
+					attrs.setResultsInterval(resultsInterval);
+				} else {
+					attrs.setResultsInterval(0);
+				}
+				
 				//validate this new set of parameters
 				ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
 				if (!stageStatus.isSuccess()) {
@@ -479,7 +494,7 @@ public class JobUtil {
 						errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
 						return -1;
 					}
-				} 
+				}
 							
 				attrs.setWallclockTimeout(stageWallclock);
 				attrs.setCpuTimeout(stageCpu);

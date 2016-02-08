@@ -12,6 +12,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.util.DataTablesQuery;
 
 
 /**
@@ -189,15 +190,11 @@ public class Cluster {
 	
 	/**
 	 * Gets the next page of nodes for the admin to view
-	 * @param startingRecord The index of the record to start at.
-	 * @param recordsPerPage The number of nodes to return.
-	 * @param isSortedASC Whether to sort ASC or DESC
-	 * @param indexOfColumnSortedBy The index of the column to sort on.
-	 * @param SearchQuery A string query to filter results on
+	 * @param query a DataTablesQuery object
 	 * @return The list of nodes to display, or null on error
 	 */
-	
-	public static List<WorkerNode> getNodesForNextPageAdmin(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String SearchQuery) {
+	//TODO: This pagination function is not formed correctly
+	public static List<WorkerNode> getNodesForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -205,11 +202,11 @@ public class Cluster {
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL GetNextPageOfNodesAdmin(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
-			procedure.setInt(3, indexOfColumnSortedBy);
-			procedure.setBoolean(4, isSortedASC);
-			procedure.setString(5, SearchQuery);
+			procedure.setInt(1, query.getStartingRecord());
+			procedure.setInt(2, query.getNumRecords());
+			procedure.setInt(3, query.getSortColumn());
+			procedure.setBoolean(4, query.isSortASC());
+			procedure.setString(5, query.getSearchQuery());
 			results = procedure.executeQuery();
 			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
 			

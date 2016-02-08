@@ -68,3 +68,5 @@ ant -buildfile build.xml -q
 echo "Starexec compilation and configuration SUCCESSFUL in $STAR_DEPLOY"
 
 echo "This does not include SQL updates or deployment to tomcat."
+
+

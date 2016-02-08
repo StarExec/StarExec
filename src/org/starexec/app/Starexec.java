@@ -275,20 +275,6 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 		
-		//TODO: Delete once the backfill is complete
-		final Runnable backfillJobIdColumn = new RobustRunnable("backfillJobIdColumn") {
-			@Override
-			protected void dorun() {
-				try {
-					log.info("running backfill of job_id in job_spaces table");
-					Jobs.setJobIdForAllJobSpaces();				
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-				}
-			}
-		};
-		
-		
 		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
@@ -309,9 +295,6 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
 		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
-		    
-		    //TODO: This is a one-time task: it can be removed after a deploy to Starexec
-		    taskScheduler.schedule(backfillJobIdColumn, 0, TimeUnit.SECONDS);
 		}
 		try {
 			PaginationQueries.loadPaginationQueries();

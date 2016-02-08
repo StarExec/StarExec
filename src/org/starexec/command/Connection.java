@@ -26,6 +26,7 @@ import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
 
 import com.google.gson.JsonArray;
@@ -49,7 +50,7 @@ public class Connection {
 	private String username,password;
 	private String lastError;
 	private HashMap<Integer,Integer> job_info_indices; //these two map job ids to the max completion index
-	private HashMap<Integer,Integer> job_out_indices;
+	private HashMap<Integer,PollJobData> job_out_indices;
 	
 	
 	/**
@@ -113,7 +114,7 @@ public class Connection {
 		client=new DefaultHttpClient();
 
 		setInfoIndices(new HashMap<Integer,Integer>());
-		setOutputIndices(new HashMap<Integer,Integer>());
+		setOutputIndices(new HashMap<Integer,PollJobData>());
 		lastError="";
 	}
 
@@ -149,11 +150,11 @@ public class Connection {
 		return password;
 	}
 
-	protected void setOutputIndices(HashMap<Integer,Integer> job_out_indices) {
+	protected void setOutputIndices(HashMap<Integer,PollJobData> job_out_indices) {
 		this.job_out_indices = job_out_indices;
 	}
 
-	protected HashMap<Integer,Integer> getOutputIndices() {
+	protected HashMap<Integer,PollJobData> getOutputIndices() {
 		return job_out_indices;
 	}
 
@@ -1735,7 +1736,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSolver(Integer solverId, String filePath) {
-		return downloadArchive(solverId, R.SOLVER,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(solverId, R.SOLVER,null,null,filePath,false,false,false,false,null,false,false,null);
 	}
 	/**
 	 * Downloads job pair output for one pair from StarExec in the form of a zip file
@@ -1744,7 +1745,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobPair(Integer pairId, String filePath) {
-		return downloadArchive(pairId,R.PAIR_OUTPUT,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(pairId,R.PAIR_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null);
 	}
 	
 	/**
@@ -1821,7 +1822,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobOutput(Integer jobId, String filePath) {
-		return downloadArchive(jobId,R.JOB_OUTPUT,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(jobId,R.JOB_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null);
 	}
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file
@@ -1832,7 +1833,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) {
-		return downloadArchive(jobId,R.JOB,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null);
+		return downloadArchive(jobId,R.JOB,null,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null);
 	}
 	/**
 	 * Downloads a space XML file from StarExec in the form of a zip file
@@ -1843,7 +1844,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSpaceXML(Integer spaceId, String filePath,boolean getAttributes, Integer updateId) {
-		return downloadArchive(spaceId, R.SPACE_XML,null,filePath,false,false,false,false,null,false,getAttributes,updateId);
+		return downloadArchive(spaceId, R.SPACE_XML,null,null,filePath,false,false,false,false,null,false,getAttributes,updateId);
 	}
 	/**
 	 * Downloads the data contained in a single space 
@@ -1854,7 +1855,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) {
-		return downloadArchive(spaceId, R.SPACE,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null);
+		return downloadArchive(spaceId, R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null);
 	}
 	/**
 	 * Downloads the data contained in a space hierarchy rooted at the given space 
@@ -1865,7 +1866,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSpaceHierarchy(Integer spaceId, String filePath,boolean excludeSolvers,boolean excludeBenchmarks) {
-		return downloadArchive(spaceId,R.SPACE,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null);
+		return downloadArchive(spaceId,R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null);
 	}
 	/**
 	 * Downloads a pre processor from StarExec in the form of a zip file
@@ -1874,7 +1875,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadPreProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,filePath,false,false,false,false,"pre",false,false,null);
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"pre",false,false,null);
 	}
 	/**
 	 * Downloads a benchmark processor from StarExec in the form of a zip file
@@ -1883,7 +1884,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadBenchProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null);
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null);
 	}
 	/**
 	 * Downloads a post processor from StarExec in the form of a zip file
@@ -1892,7 +1893,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadPostProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,filePath,false,false,false,false,"post",false,false,null);
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"post",false,false,null);
 	}
 	/**
 	 * Downloads a benchmark from StarExec in the form of a zip file
@@ -1901,7 +1902,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadBenchmark(Integer benchId,String filePath) {
-		return downloadArchive(benchId,R.BENCHMARK,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(benchId,R.BENCHMARK,null,null,filePath,false,false,false,false,null,false,false,null);
 	}
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file. Only job pairs
@@ -1913,7 +1914,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) {
-		return downloadArchive(jobId,R.JOB,since,filePath,false,false,includeIds,false,null,false,false,null);
+		return downloadArchive(jobId,R.JOB,since,null,filePath,false,false,includeIds,false,null,false,false,null);
 	}
 	/**
 	 * Downloads output from a job from StarExec in the form of a zip file. Only job pairs
@@ -1923,8 +1924,8 @@ public class Connection {
  	 * @param since A completion ID, indicating that only pairs with completion IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadNewJobOutput(Integer jobId, String filePath, int since) {
-		return downloadArchive(jobId,R.JOB_OUTPUT,since,filePath,false,false,false,false,null,false,false,null);
+	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) {
+		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null);
 	}
 	
 	/**
@@ -1941,10 +1942,11 @@ public class Connection {
 	 * @param procClass If downloading a processor, what type of processor it is (R.BENCHMARK,"post",or "pre")
 	 * @return
 	 */
-	protected int downloadArchive(Integer id, String type, Integer since, String filePath,
+	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, String filePath,
 			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy,
 			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId) {
 		HttpResponse response=null;
+		
 		try {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
 			urlParams.put(C.FORMPARAM_TYPE, type);
@@ -1954,6 +1956,9 @@ public class Connection {
 			}
 			if (since!=null) {
 				urlParams.put(C.FORMPARAM_SINCE,since.toString());
+			}
+			if (lastTimestamp!=null) {
+				urlParams.put("lastTimestamp",lastTimestamp.toString());
 			}
 			if (procClass!=null) {
 				urlParams.put("procClass", procClass);
@@ -1985,7 +1990,6 @@ public class Connection {
 			
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
-			int lastSeen=-1;
 			Boolean done=false;
 			setSessionIDIfExists(response.getAllHeaders());
 			
@@ -2009,8 +2013,11 @@ public class Connection {
 			Integer totalPairs=null;
 			Integer pairsFound=null;
 			Integer oldPairs=null;
+			int lastSeen=-1;
 			//if we're sending 'since,' it means this is a request for new job data
-			if (urlParams.containsKey(C.FORMPARAM_SINCE)) {
+			boolean isNewJobRequest=urlParams.containsKey(C.FORMPARAM_SINCE);
+			boolean isNewOutputRequest = isNewJobRequest && urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
+			if (isNewJobRequest) {
 				
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
@@ -2019,15 +2026,15 @@ public class Connection {
 				//check to see if the job is complete
 				done=totalPairs==(pairsFound+oldPairs);
 				lastSeen=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Max-Completion"));
-				
 				//indicates there was no new information
 				if (lastSeen<=since) {
 					if (done) {
 						return C.SUCCESS_JOBDONE;
 					}
-					
-					//don't save empty files
-					return C.SUCCESS_NOFILE;
+					if (!isNewOutputRequest) {
+						return C.SUCCESS_NOFILE;
+						//TODO: What to do in this situation?
+					}
 				}
 			}
 			
@@ -2042,8 +2049,12 @@ public class Connection {
 			
 			if (!CommandValidator.isValidZip(out)) {
 				out.delete();
+				if (isNewOutputRequest) {
+					return C.SUCCESS_NOFILE;
+				}
 				return Status.ERROR_INTERNAL; //we got back an invalid archive for some reason
 			}
+			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
 			
 			
 			//only after we've successfully saved the file should we update the maximum completion index,
@@ -2052,20 +2063,18 @@ public class Connection {
 				
 				if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB)) {
 					this.setJobInfoCompletion(id, lastSeen);
-					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");					
-					
 				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
-					this.setJobOutCompletion(id, lastSeen);
-
-					System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
-
+					this.setJobOutCompletion(id, new PollJobData(lastSeen,lastModified));
 				}
+				System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+
 			}
 			if (done) {
 				return C.SUCCESS_JOBDONE;
 			}
 			return 0;
 		} catch (Exception e) {
+
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_INTERNAL;
 		} finally {
@@ -2088,8 +2097,8 @@ public class Connection {
 	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
-	protected void setJobOutCompletion(int jobID,int completion) {
-		job_out_indices.put(jobID,completion);
+	protected void setJobOutCompletion(int jobID,PollJobData data) {
+		job_out_indices.put(jobID,data);
 	}	
 	
 	/**
@@ -2146,10 +2155,11 @@ public class Connection {
 	 * If false, they will be run in a round-robin fashion.
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes, that can be used by any one job pair.
 	 * @param suppressTimestamps If true, timestamps will not be added to job output lines. Defaults to false.
+	 * @param resultsInterval The interval at which to get incremental results, in seconds. 0 means no incremental results
 	 * @return A status code as defined in status.java
 	 */
 	public int createJob(Integer spaceId, String name,String desc, Integer postProcId,Integer preProcId,Integer queueId, Integer wallclock, Integer cpu,
-			Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed, Boolean suppressTimestamps) {
+			Boolean useDepthFirst, Double maxMemory, boolean startPaused,Long seed, Boolean suppressTimestamps, Integer resultsInterval) {
 		HttpResponse response = null;
 		try {
 			List<NameValuePair> params=new ArrayList<NameValuePair>();
@@ -2176,6 +2186,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("postProcess",postProcId.toString()));
 			params.add(new BasicNameValuePair("preProcess",preProcId.toString()));
 			params.add(new BasicNameValuePair("seed",seed.toString()));
+			params.add(new BasicNameValuePair("resultsInterval", resultsInterval.toString()));
 			params.add(new BasicNameValuePair(C.FORMPARAM_TRAVERSAL,traversalMethod));
 			if (maxMemory!=null) {
 				params.add(new BasicNameValuePair("maxMem",String.valueOf(maxMemory)));
@@ -2220,9 +2231,9 @@ public class Connection {
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
 	
-	protected int getJobOutCompletion(int jobID) {
+	protected PollJobData getJobOutCompletion(int jobID) {
 		if (!job_out_indices.containsKey(jobID)) {
-			job_out_indices.put(jobID, 0);
+			job_out_indices.put(jobID, new PollJobData());
 		} 
 		return job_out_indices.get(jobID);
 		

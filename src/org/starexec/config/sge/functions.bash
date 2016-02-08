@@ -410,6 +410,23 @@ function killDeadlockedJobPair {
 	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
 }
 
+# Calls copyOutput at an increment specified. Should be killed
+# when the incremental copy is no longer needed.
+# $1 Increment, in seconds, at which to copy back output
+# $2 Maximum amount of time to run, in seconds. Should be the timeout for the pair
+# $3 Current stage number
+function copyOutputIncrementally {
+	PERIOD=$1
+	TIMEOUT=$2
+	while [ $TIMEOUT -gt 0 ]
+	do
+		sleep $PERIOD
+		copyOutputNoStats $3
+		TIMEOUT=$(($TIMEOUT-$PERIOD))
+	done
+	log "done copying incremental output: the pair's timeout has been reached"
+}
+
 #takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
@@ -654,9 +671,9 @@ function createDir {
 	return $?
 }
 
-# takes in a stage number as an argument so we know where to put the output
-function copyOutput {
-	log "creating storage directory on master host"
+# copys output without doing post-processing or updating the database stats
+# $1 The current stage number
+function copyOutputNoStats {
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
@@ -673,9 +690,15 @@ function copyOutput {
 	
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	
-	log "the output path is $PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
+}
+
+# takes in a stage number as an argument so we know where to put the output
+# TODO: This should also look for the new output directory
+# $1 The current stage number
+function copyOutput {
+	copyOutputNoStats $1
 	
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE

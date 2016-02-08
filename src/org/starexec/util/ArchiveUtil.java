@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -387,15 +389,79 @@ public class ArchiveUtil {
 		zos.closeEntry();
 	}
 	
+	/**
+	 * Adds the given file to the given output stream if and only if it was modified after some timestamp
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @param earlyDate Milliseconds since the epoch. Only get files modified after this (non-inclusive)
+	 * @throws IOException 
+	 */
+	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
+		if (srcFile.lastModified() >earlyDate) {
+			addFileToArchive(zos, srcFile, zipFileName);
+		}
+	}
 	
+	private static byte[] longToBytes(long l) {
+		return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(l).array();
+	}
+	
+	/**
+	 * Adds the given source file to the given zip output stream using the given name
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @throws IOException
+	 */
 	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		ZipEntry entry=new ZipEntry(zipFileName);
 		zos.putNextEntry(entry);
 		FileInputStream input=new FileInputStream(srcFile);
-		
+		entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
 		IOUtils.copy(input, zos);
 		zos.closeEntry();
 		input.close();
+	}
+	
+	/**
+	 * 
+	 * @param file
+	 * @return
+	 * @throws IOException 
+	 */
+	public static long getMostRecentlyModifiedFileInZip(File file) throws IOException {
+		long max = 0;
+		ZipFile temp=new ZipFile(file);
+		Enumeration<ZipArchiveEntry> x=temp.getEntries();
+		while (x.hasMoreElements()) {
+			ZipArchiveEntry e = x.nextElement();
+			if (!e.isDirectory()) {
+				max = Math.max(max, e.getLastModifiedTime().toMillis());
+			}
+		}
+		temp.close();
+		return max;
+	}
+	
+	/**
+	 * Recursively adds the given directory to the given zipoutputstream, using the given name as the prefix
+	 * for all files that get added. Only add files that were modified after the specified time.
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @param modifiedAfter
+	 * @throws IOException
+	 */
+	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName,long earlyDate) throws IOException {
+		File[] files=srcFile.listFiles();
+		for (int index=0;index<files.length;index++) {
+			if (files[index].isDirectory()) {
+				addDirToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate);
+				continue;
+			}
+			addFileToArchive(zos,files[index],zipFileName+File.separator+files[index].getName(), earlyDate);
+		}
 	}
 	
 	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {

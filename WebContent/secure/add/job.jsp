@@ -161,8 +161,8 @@
 						<td>
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
-					</tr>							
-					<tr class="noHover" title="">
+					</tr>					
+					<tr class="noHover" title="whether to include timestamps in the stdout for the pairs in this job">
 						<td>
 							<p>Suppress Timestamps</p>
 						</td>
@@ -171,10 +171,17 @@
 							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
 						</td>
 					</tr>
+					<tr class="noHover" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish.">
+						<td>
+							<p>Results Interval</p>
+						</td>
+						<td>
+							<input type="text" name="resultsInterval" id="resultsInterval" value="0">
+						</td>
+					</tr>
 				</tbody>					
 			</table>
 		</fieldset>
-		<%-- <fieldset id="fieldStep2"> --%>
 		<fieldset id="fieldSolverMethod">
 			<legend>solver selection method</legend>
 			<table id="tblSpaceSelection" class="contentTbl">
@@ -196,7 +203,6 @@
 				</tbody>
 			</table>
 		</fieldset>
-		<%--<fieldset id="fieldStep22"> --%>
 				<fieldset id="fieldBenchMethod">
 			<legend>benchmark selection method</legend>
 			<table id="tblBenchMethodSelection" class="contentTbl">

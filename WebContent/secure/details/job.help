@@ -38,3 +38,11 @@ if you are not sure why your job failed. Select the job log list to view
 the pair's log.
 </p>
 
+<h2>Downloading job pages</h2>
+<p>You can download an entire job details page for use offline.
+To do so go to the job details page (see "Job details" above) and
+in the actions list click "download job page". After the download is
+completed unzip the archive and navigate to the new directory that was
+created. Open the job.html file with your favorite web browser.
+</p>
+

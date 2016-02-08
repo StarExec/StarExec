@@ -3,8 +3,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
-		User user = SessionUtil.getUser(request);
-		int userId = user.getId();
+		int userId = SessionUtil.getUserId(request);
 		
 		String type = request.getParameter("type").toString();
 		String Id =  request.getParameter("Id").toString();

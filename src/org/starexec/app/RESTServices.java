@@ -71,6 +71,7 @@ import org.starexec.test.integration.TestManager;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.LoggingManager;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
@@ -753,7 +754,7 @@ public class RESTServices {
 		JsonObject nextDataTablesPage = null;
 		
 		log.debug("getting a datatable of all the benchmarks that this user can see");
-		// Query for the next page of job pairs and return them to the user
+		//Query for the next page of job pairs and return them to the user
 		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfBenchmarksByUser(userId, request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -997,7 +998,7 @@ public class RESTServices {
 		
 		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(space,stageNumber);
 
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, stats.size(), stats.size(),1,space,shortFormat,wallclock);
+		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, new DataTablesQuery(stats.size(), stats.size(),1),space,shortFormat,wallclock);
 
 		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 		
@@ -1228,7 +1229,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		List<Benchmark> benches = Benchmarks.getBySpace(spaceId);
-		nextDataTablesPage= RESTHelpers.convertBenchmarksToJsonObject(benches, benches.size(), benches.size(), -1);
+		nextDataTablesPage= RESTHelpers.convertBenchmarksToJsonObject(benches, new DataTablesQuery(benches.size(), benches.size(), -1));
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -1273,10 +1274,7 @@ public class RESTServices {
 		} else if(primType.startsWith("b")){
 			
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
-		} else if(primType.startsWith("r")){
-			nextDataTablesPage = RESTHelpers.getResultTable(spaceId, request);
 		}
-		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 	
@@ -3640,7 +3638,7 @@ public class RESTServices {
 		}
 		// Query for the next page of job pairs and return them to the user
 		List<TestSequence> tests=TestManager.getAllTestSequences();
-		JsonObject nextDataTablesPage=RESTHelpers.convertTestSequencesToJsonObject(tests, tests.size(), tests.size(), -1);
+		JsonObject nextDataTablesPage=RESTHelpers.convertTestSequencesToJsonObject(tests, new DataTablesQuery(tests.size(), tests.size(), -1));
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3665,7 +3663,8 @@ public class RESTServices {
 		
 		// Query for the next page of job pairs and return them to the user
 		List<TestResult> tests=TestManager.getAllTestResults(name);
-		JsonObject nextDataTablesPage=RESTHelpers.convertTestResultsToJsonObject(tests, tests.size(), tests.size(), -1);
+		
+		JsonObject nextDataTablesPage=RESTHelpers.convertTestResultsToJsonObject(tests, new DataTablesQuery(tests.size(), tests.size(), -1));
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}

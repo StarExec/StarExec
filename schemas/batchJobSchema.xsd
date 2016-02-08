@@ -74,7 +74,7 @@
     	<element name="mem-limit" type="tns:doubleInfo" minOccurs="0" maxOccurs="1"></element>
 		<element name="space-id" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
 		<element name="bench-suffix" type="tns:nameInfo" minOccurs="0" maxOccurs="1"></element>
-		
+		<element name="results-interval" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		
@@ -96,11 +96,11 @@
     	<!-- Note: Timeouts are in seconds -->
     	<element name="cpu-timeout" type="tns:intInfo"></element>
     	<element name="wallclock-timeout" type="tns:intInfo"></element>
-    	
     	<!-- Note: This is in Gigabytes -->
     	<element name="mem-limit" type="tns:doubleInfo"></element>
     	
     	<!-- These are used only if there is no StageAttributes tag with stage-num = 1 -->
+    	<element name="results-interval" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
       </all>

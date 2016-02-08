@@ -169,7 +169,7 @@ public class Permissions {
 			if (j==null) {
 				return false;
 			}
-			if (Jobs.isPublic(jobId) || Users.isAdmin(userId) ){
+			if (Jobs.isPublic(jobId) || Users.hasAdminReadPrivileges(userId) ){
 				return true;
 			}
 			
@@ -339,7 +339,7 @@ public class Permissions {
 	 * @author Benton McCune
 	 */
 	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
@@ -347,7 +347,7 @@ public class Permissions {
 	}
 	
 	public static boolean canUserSeeSpaceXMLStatus(int statusId, int userId) {		
-		if (Users.isAdmin(userId)) {
+		if (Users.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		SpaceXMLUploadStatus status=Uploads.getSpaceXMLStatus(statusId);

@@ -293,7 +293,7 @@ function fnBenchmarkPaginationHandler(sSource,aoData,fnCallback) {
 }
 
 
-
+// used by /users/benchmarks/pagination and /users/solvers/pagination
 function fnPaginationHandler(sSource, aoData, fnCallback,prim){
 	// Request the next page of primitives from the server via AJAX
 	$.post(  

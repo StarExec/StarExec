@@ -24,6 +24,7 @@ import org.starexec.constants.R;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.dataStructures.TreeNode;
@@ -1307,29 +1308,25 @@ public class Spaces {
 	 * Gets the minimal number of Spaces necessary in order to service the client's
 	 * request for the next page of Spaces in their DataTables object
 	 * 
-	 * @param startingRecord the record to start getting the next page of Spaces from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
+	 * @param query A DataTablesQuery object
 	 * @param spaceId the id of the space to get the Spaces from
 	 * @param userId the id of the user making the request; used to filter out Spaces user isn't a member of 
 	 * @return a list of 10, 25, 50, or 100 Spaces containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
-	public static List<Space> getSpacesForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy,  String searchQuery, int spaceId, int userId) {
+	public static List<Space> getSpacesForNextPage(DataTablesQuery query,int spaceId, int userId) {
 		Connection con = null;			
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SUBSPACES_IN_SPACE_QUERY, startingRecord, recordsPerPage, getSpaceOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SUBSPACES_IN_SPACE_QUERY, getSpaceOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 			;
 			procedure.setInt("spaceId", spaceId);
 			procedure.setInt("userId", userId);
-			procedure.setString("query", searchQuery);			
+			procedure.setString("query", query.getSearchQuery());			
 			 results = procedure.executeQuery();
 			List<Space> spaces = new LinkedList<Space>();
 			

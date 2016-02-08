@@ -26,6 +26,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
+import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
@@ -1374,17 +1375,17 @@ public class Solvers {
 	 * @return a list of Solvers belong to the user
 	 * @author Wyatt Kaiser + Eric Burns
 	 */
-	public static List<Solver> getSolversByUserForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int userId, boolean recycled) {
+	public static List<Solver> getSolversByUserForNextPage(DataTablesQuery query, int userId, boolean recycled) {
 		Connection con = null;			
 		ResultSet results=null;
 		NamedParameterStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SOLVERS_BY_USER_QUERY, startingRecord, recordsPerPage, getSolverOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SOLVERS_BY_USER_QUERY, getSolverOrderColumn(query.getSortColumn()), query);
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
 			procedure.setInt("userId", userId);
-			procedure.setString("query", searchQuery);
+			procedure.setString("query", query.getSearchQuery());
 			procedure.setBoolean("recycled", recycled);
 				
 			 results = procedure.executeQuery();
@@ -1433,26 +1434,22 @@ public class Solvers {
 	
 	/**
 	 * Returns the solvers needed to populate the DataTables page of solvers on the space explorer
-	 * @param startingRecord The index of the first solver to get
-	 * @param recordsPerPage the number of solvers to get
-	 * @param isSortedASC Whether to sort ascending or descending
-	 * @param indexOfColumnSortedBy The index of the datatables column to sort on
-	 * @param searchQuery The query to filter solvers by
+	 * @param query A DataTablesQuery object
 	 * @param spaceId The ID of the space to get solvers for
 	 * @return A list of solvers, or null on error
 	 */
-	public static List<Solver> getSolversForNextPage(int startingRecord, int recordsPerPage, boolean isSortedASC, int indexOfColumnSortedBy, String searchQuery, int spaceId) {
+	public static List<Solver> getSolversForNextPage(DataTablesQuery query, int spaceId) {
 		Connection con = null;			
 		ResultSet results=null;
 		NamedParameterStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SOLVERS_IN_SPACE_QUERY, startingRecord, recordsPerPage, getSolverOrderColumn(indexOfColumnSortedBy), isSortedASC);
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SOLVERS_IN_SPACE_QUERY, getSolverOrderColumn(query.getSortColumn()), query);
 			
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
 			procedure.setInt("spaceId", spaceId);
-			procedure.setString("query", searchQuery);
+			procedure.setString("query", query.getSearchQuery());
 				
 			 results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
@@ -2189,27 +2186,22 @@ public class Solvers {
 	/**
 	 * Returns the Solvers needed to populate a DataTables page for a given user. Solvers include all
 	 * solvers the user can see
-	 * @param startingRecord Index of solver to start at
-	 * @param recordsPerPage Number of solvers to return. May return fewer if recordsPerPage is greater than the total number of solvers
-	 * @param isSortedASC True if sorted ascending, false otherwise
-	 * @param indexOfColumnSortedBy 
-	 * @param searchQuery Query to filter solvers by. Filter examines name and description
+	 * @query DataTablesQuery object containing data for this search
 	 * @param userId ID of user to get solvers for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
 	 * and the total number of elements after filtering as the second element
 	 * @return
 	 */
-	public static List<Solver> getSolversForNextPageByUser(int startingRecord, int recordsPerPage, boolean isSortedASC, 
-			int indexOfColumnSortedBy, String searchQuery, int userId,int[] totals) {
+	public static List<Solver> getSolversForNextPageByUser(DataTablesQuery query, int userId,int[] totals) {
 		List<Solver> solvers=Solvers.getByUser(userId);
 		
 		
 		totals[0]=solvers.size();
-		solvers=Solvers.filterSolvers(solvers, searchQuery);
+		solvers=Solvers.filterSolvers(solvers, query.getSearchQuery());
 
 		totals[1]=solvers.size();
-		SolverComparator compare=new SolverComparator(indexOfColumnSortedBy,isSortedASC);
-		return Util.handlePagination(solvers, compare, startingRecord, recordsPerPage);
+		SolverComparator compare=new SolverComparator(query.getSortColumn(),query.isSortASC());
+		return Util.handlePagination(solvers, compare, query.getStartingRecord(), query.getNumRecords());
 
 	}
 

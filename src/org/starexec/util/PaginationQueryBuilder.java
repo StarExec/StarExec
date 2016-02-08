@@ -15,33 +15,23 @@ public class PaginationQueryBuilder {
 
 	
 	private String getOrderDirectionString() {
-		if (isASC()) {
+		if (query.isSortASC()) {
 			return "ASC";
 		}
 		return "DESC";
 	}
-	
-	private long startingRecord = 0;
-	private long numRecords = 0;
-	private String orderColumn = null;
-	private boolean isASC = false;
-	
+	DataTablesQuery query = null;
+	String orderColumn;
 	/**
 	 * This is the SQL query without any order by statement or limit statement, and also without a 
 	 * closing semicolon
 	 */
 	private String baseSQL = null;
 	
-	public PaginationQueryBuilder(String sql) {
+	public PaginationQueryBuilder(String sql, String orderColumn, DataTablesQuery query) {
 		baseSQL = sql;
-	}
-	
-	public PaginationQueryBuilder(String sql, long startingRecord, long numRecords, String orderColumn, boolean asc) {
-		baseSQL = sql;
-		this.startingRecord=startingRecord;
-		this.numRecords=numRecords;
+		this.query=query;
 		this.orderColumn=orderColumn;
-		this.isASC=asc;
 	}
 	
 	public String getSQL() { 
@@ -55,45 +45,10 @@ public class PaginationQueryBuilder {
 		sb.append(getOrderDirectionString());
 		sb.append("\n");
 		sb.append("LIMIT ");
-		sb.append(startingRecord);
+		sb.append(query.getStartingRecord());
 		sb.append(", ");
-		sb.append(numRecords);
+		sb.append(query.getNumRecords());
 		sb.append(";");
 		return sb.toString();
 	}
-	
-	
-
-	public long getStartingRecord() {
-		return startingRecord;
-	}
-
-	public void setStartingRecord(long startingRecord) {
-		this.startingRecord = startingRecord;
-	}
-
-	public String getOrderColumn() {
-		return orderColumn;
-	}
-
-	public void setOrderColumn(String orderColumn) {
-		this.orderColumn = orderColumn;
-	}
-
-	public long getNumRecords() {
-		return numRecords;
-	}
-
-	public void setNumRecords(long numRecords) {
-		this.numRecords = numRecords;
-	}
-
-	public boolean isASC() {
-		return isASC;
-	}
-
-	public void setASC(boolean isASC) {
-		this.isASC = isASC;
-	}
-	
 }

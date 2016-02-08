@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.util.DataTablesQuery;
 
 /**
  * Handles all database interaction for the various requests throughout the system. This includes
@@ -333,14 +334,12 @@ public class Requests {
 
 	/**
 	 * Gets all pending requests to join a given community. 
-	 * @param startingRecord The 0-indexed record to start on.
-	 * @param recordsPerPage The number of requests to return.
+	 * @param query a DataTablesQuery object
 	 * @param communityId the community to get requests for.
 	 * @return A list of requests to display, or null on error.
 	 * @author Albert Giegerich
 	 */
-	public static List<CommunityRequest> getPendingCommunityRequestsForCommunity(
-			int startingRecord, int recordsPerPage, int communityId) throws StarExecDatabaseException 
+	public static List<CommunityRequest> getPendingCommunityRequestsForCommunity(DataTablesQuery query, int communityId) throws StarExecDatabaseException 
 	{
 		Connection con = null;			
 		CallableStatement procedure= null;
@@ -350,8 +349,8 @@ public class Requests {
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequestsForCommunity(?, ?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(1, query.getStartingRecord());
+			procedure.setInt(2,	query.getNumRecords());
 			procedure.setInt(3, communityId);
 			results = procedure.executeQuery();
 			return processGetCommunityRequestResults(results);
@@ -367,11 +366,10 @@ public class Requests {
 
 	/**
 	 * Gets all pending request to join communities
-	 * @param startingRecord The 0-indexed record to start on.
-	 * @param recordsPerPage The number of requests to return.
+	 * @param query a DataTablesQuery query
 	 * @return A list of requests to display, or null on error.
 	 */
-	public static List<CommunityRequest> getPendingCommunityRequests(int startingRecord, int recordsPerPage) throws StarExecDatabaseException {
+	public static List<CommunityRequest> getPendingCommunityRequests(DataTablesQuery query) throws StarExecDatabaseException {
 		Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
@@ -380,8 +378,8 @@ public class Requests {
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetNextPageOfPendingCommunityRequests(?, ?)}");
-			procedure.setInt(1, startingRecord);
-			procedure.setInt(2,	recordsPerPage);
+			procedure.setInt(1, query.getStartingRecord());
+			procedure.setInt(2,	query.getNumRecords());
 			results = procedure.executeQuery();
 			return processGetCommunityRequestResults(results);
 		} catch (Exception e){			

@@ -6,8 +6,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 
@@ -20,22 +22,21 @@ public class SessionUtil {
 	private static final Logger log = Logger.getLogger(SessionUtil.class);
 	public static final String USER = "user";	// The string we store the user's User object under
 	public static final String PERMISSION_CACHE = "perm";	// The string we store the user's permission cache object under
-	
+	private static User publicUser = null;
 	/**
 	 * @param request The request to retrieve the user object from
 	 * @return The user object representing the currently logged in user
 	 */
 	public static User getUser(HttpServletRequest request) {
-		return (User)request.getSession().getAttribute(SessionUtil.USER);
+		Object user = request.getSession().getAttribute(SessionUtil.USER);
+		if (user==null) {
+			if (publicUser==null) {
+				publicUser = Users.get(R.PUBLIC_USER_ID);
+			}
+			return publicUser;
+		}
+		return (User)user;
 	}
-	
-	/**
-	 * @param session The session to retrieve the user object from
-	 * @return The user object representing the currently logged in user
-	 */
-	public static User getUser(HttpSession session) {
-		return (User)session.getAttribute(SessionUtil.USER);
-	}	
 	
 	/**
 	 * @param request The request to get the user's id from
@@ -49,7 +50,10 @@ public class SessionUtil {
 	 * @param session The session to get the user's id from
 	 * @return The current user's id
 	 */
-	public static int getUserId(HttpSession session) {
+	private static int getUserId(HttpSession session) {
+		if (session.getAttribute(SessionUtil.USER)==null) {
+			return R.PUBLIC_USER_ID;
+		}
 		 return ((User)session.getAttribute(SessionUtil.USER)).getId();
 	}
 	
@@ -67,6 +71,9 @@ public class SessionUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public static HashMap<Integer, Permission> getPermissionCache(HttpSession session) {
+		if (session.getAttribute(SessionUtil.PERMISSION_CACHE)==null) {
+			return new HashMap<Integer,Permission>();
+		}
 		return (HashMap<Integer, Permission>)session.getAttribute(SessionUtil.PERMISSION_CACHE);
 	}
 	
@@ -85,7 +92,7 @@ public class SessionUtil {
 	 * @param spaceId The space to get the current user's permissions for
 	 * @return The permission associated with the given space
 	 */
-	public static Permission getPermission(HttpSession session, int spaceId) {
+	private static Permission getPermission(HttpSession session, int spaceId) {
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
 		
 
@@ -127,7 +134,7 @@ public class SessionUtil {
 	 * @param session The session where the cache is located
 	 * @param spaceId The id of the space to cache the permission for
 	 */
-	public static void cachePermission(HttpSession session, int spaceId) {
+	private static void cachePermission(HttpSession session, int spaceId) {
 		// Make sure we cache the permission for this space for the user
 		HashMap<Integer, Permission> cache = SessionUtil.getPermissionCache(session);
 		if(!cache.containsKey(spaceId)) {
