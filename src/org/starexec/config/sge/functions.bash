@@ -673,24 +673,27 @@ function createDir {
 
 # copys output without doing post-processing or updating the database stats
 # $1 The current stage number
+# TODO: Investigate using rsync to make copying more efficient here
 function copyOutputNoStats {
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
-	
+	OUTPUT_SUFFIX="_output"
 	if [ $NUM_STAGES -eq 1 ] 
 	then
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
-		
+		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID$OUTPUT_SUFFIX"
 	else
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1.txt"
+		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1$OUTPUT_SUFFIX"
 		
-	
 	fi
 	
+	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	cp -r "$OUT_DIR/output_files" "$PAIR_OTHER_OUTPUT_PATH"
+	#TODO: Make other output files available to later stages as well
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	
-	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
 }
 
