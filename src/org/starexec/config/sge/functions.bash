@@ -689,7 +689,7 @@ function copyOutputNoStats {
 	fi
 	
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
-	rsync --prune-empty-dirs -r "$OUT_DIR/output_files" "$PAIR_OTHER_OUTPUT_PATH"
+	rsync --prune-empty-dirs -r "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
 	#TODO: Make other output files available to later stages as well
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	

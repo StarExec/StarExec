@@ -224,7 +224,7 @@ public class JobPairs {
      * @return All console output from a job pair run for the given pair
      */
     public static String getStdOut(int pairId,int stageNumber,int limit) {		
-    	String stdoutPath= JobPairs.getFilePath(pairId,stageNumber);
+    	String stdoutPath= JobPairs.getStdout(pairId,stageNumber);
     	
     	return Util.readFileLimited(new File(stdoutPath), limit);
     }
@@ -710,8 +710,57 @@ public class JobPairs {
 	 * @author Eric Burns
 	 */
 	
-	public static String getFilePath(int pairId) {
-		return getFilePath(getFilePathInfo(pairId));
+	public static String getStdout(int pairId) {
+		return getPairStdout(getFilePathInfo(pairId));
+	}
+	
+	/**
+	 * Returns a list of files representing paths to both a pair's
+	 * standard output and additional output directories. If the given
+	 * file is a directory, it is returned alone. Otherwise, it is interpreted
+	 * as the single stdout file and the additional directory is returned as well
+	 * if it exists.
+	 * @param pairId
+	 * @param stdout
+	 * @return
+	 */
+	private static List<File> getOutputPathsFromStdout(int pairId, File stdout) {
+		List<File> files = new ArrayList<File>();
+		files.add(stdout);
+		// if we need the other directory
+		if (!stdout.isDirectory()) {
+			File otherOutput = new File(stdout.getParentFile(), pairId+"_output");
+			if (otherOutput.exists()) {
+				files.add(otherOutput);
+			}
+		}
+		return files;
+	}
+	
+	/**
+	 * Returns a list of files representing paths to both a pair's
+	 * standard output and additional output directories. If these two
+	 * things are contained in a single top level directory, as they are
+	 * when joblines are used, only that directory is returned. No extra
+	 * output dir is returned if extra outputs are not used.
+	 * @param pairId The pair to get output for
+	 * @return Paths to all output for this job.
+	 * has no output yet
+	 */
+	public static List<File> getOutputPaths(int pairId) {
+		File stdout = new File(getStdout(pairId));
+		return getOutputPathsFromStdout(pairId, stdout);
+	}
+	/**
+	 * Same as getOutputPaths(pairId), except the given pair is expected
+	 * to have all relevant fields populated and will not need
+	 * to be retrieved from the database
+	 * @param pair
+	 * @return
+	 */
+	public static List<File> getOutputPaths(JobPair pair) {
+		File stdout = new File(getPairStdout(pair));
+		return getOutputPathsFromStdout(pair.getId(), stdout);
 	}
 	
 	/**
@@ -721,7 +770,7 @@ public class JobPairs {
 	 * @return The absolute file path to the output for the given stage of the given pair
 	 */
 	
-	public static String getFilePath(int pairId, int stageNumber) {
+	public static String getStdout(int pairId, int stageNumber) {
 		return getFilePath(getFilePathInfo(pairId),stageNumber);
 	}
 	
@@ -805,7 +854,7 @@ public class JobPairs {
 	 * @return The absolute file path to the output file for the given stage of the given pair
 	 */
 	public static String getFilePath(JobPair pair, int stageNumber) {
-		String path=getFilePath(pair); //this is the path to the top level directory of the pair
+		String path=getPairStdout(pair); //this is the path to the top level directory of the pair
 		
 		File f=new File(path);
 		if (f.isDirectory()) {
@@ -830,7 +879,7 @@ public class JobPairs {
 	 */
 	
 	//Note that this function tries several things due to supporting several layers of backwards compatibility
-	public static String getFilePath(JobPair pair) {
+	public static String getPairStdout(JobPair pair) {
 		try {
 			File file=new File(Jobs.getDirectory(pair.getJobId()));
 			String[] pathSpaces=pair.getPath().split("/");

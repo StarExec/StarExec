@@ -434,7 +434,7 @@ public abstract class JobManager {
 				}
 			}
 		}
-		File outputFile=new File(JobPairs.getFilePath(pair));
+		File outputFile=new File(JobPairs.getPairStdout(pair));
 		
 		//if there is exactly 1 stage, we use the old output format
 		if (stageNumbers.size()==1) {

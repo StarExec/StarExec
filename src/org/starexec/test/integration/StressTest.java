@@ -34,7 +34,7 @@ public class StressTest {
 	
 	private static void writeFakeJobPairOutput(JobPair pair) {
 		try {
-			File f=new File(JobPairs.getFilePath(pair));
+			File f=new File(JobPairs.getPairStdout(pair));
 			f.getParentFile().mkdirs();
 			String randomOutput=TestUtil.getRandomAlphaString(1000);
 			FileUtils.writeStringToFile(f, randomOutput);
