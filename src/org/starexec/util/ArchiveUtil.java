@@ -450,7 +450,7 @@ public class ArchiveUtil {
 	 * @param zos
 	 * @param srcFile
 	 * @param zipFileName
-	 * @param modifiedAfter
+	 * @param earlyDate
 	 * @throws IOException
 	 */
 	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName,long earlyDate) throws IOException {

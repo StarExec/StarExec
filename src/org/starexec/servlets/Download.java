@@ -684,34 +684,35 @@ public class Download extends HttpServlet {
 				}
 				List<File> files = JobPairs.getOutputPaths(p);
 				for (File file : files) {
+					StringBuilder singleFileName = new StringBuilder(zipFileName);
 					if (file.exists()) {
 						if (file.isDirectory()) {
 							//means this is adjacent to a stdout file
 							if (files.size()>1) {
-								zipFileName.append(File.separator);
-								zipFileName.append("additional_output");
+								singleFileName.append(File.separator);
+								singleFileName.append("additional_output");
 							}
 							if (earlyDate==null){
-								ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
+								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
 
 							} else {
-								ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString(), earlyDate);
+								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), earlyDate);
 							}
 						} else {
-							zipFileName.append(File.separator);
-							zipFileName.append(p.getBench().getName());
+							singleFileName.append(File.separator);
+							singleFileName.append(p.getBench().getName());
 							if (earlyDate==null) {
-								ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
+								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
 
 							} else {
-								ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString(), earlyDate);
+								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString(), earlyDate);
 							}
 						}
 						
 
 					} else {
 						//if we can't find output for the pair, just put an empty file there
-						ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
+						ArchiveUtil.addStringToArchive(stream, " ", singleFileName.toString());
 					}
 				}
 				
