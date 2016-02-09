@@ -2584,6 +2584,7 @@ public class Jobs {
 				pair.getBench().setName(results.getString("bench_name"));
 				pair.setCompletionId(results.getInt("completion_id"));
 				pair.addStage(stage);
+				pair.getStatus().setCode(results.getInt("job_pairs.status_code"));
 
 				pairs.add(pair);
 			}
@@ -3089,6 +3090,7 @@ public class Jobs {
 	    results = procedure.executeQuery();
 	    //we map ID's to  primitives so we don't need to query the database repeatedly for them
 	    HashMap<Integer,JobPair> pairs= new HashMap<Integer,JobPair>();
+	    HashMap<Integer, String> solverIdsToTimestamps = new HashMap<Integer, String>();
 	    while(results.next()){
 				
 			try {
@@ -3132,8 +3134,13 @@ public class Jobs {
 
 			    if (configId!=null) {
 				    Solver s = Solvers.resultToSolver(results, "solvers");
-
 					stage.setSolver(s /* could be null, if Solver s above was null */);
+					if (s!=null) {
+						if (!solverIdsToTimestamps.containsKey(s.getId())) {
+							solverIdsToTimestamps.put(s.getId(), Solvers.getMostRecentTimestamp(con,s.getId()));
+						}
+						s.setMostRecentUpdate(solverIdsToTimestamps.get(s.getId()));
+					}
 			    }			    
 			} 
 			catch (Exception e) {

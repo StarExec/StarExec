@@ -236,6 +236,7 @@ SOLVER_CACHED=0
 
 # The path to the config run script on the execution host
 LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+createDir "$OUT_DIR/output_files"
 
 
 checkCache
@@ -282,7 +283,7 @@ log "global cpu timeout : $STAREXEC_CPU_LIMIT"
 log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
 log "extra time for job pair after wallclock timeout : $JOB_PAIR_EXTRA_TIME"
 log "stage cpu timeout : ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}"
-log "stage wallclock timeout : ${STAGE_WALLCLOCK_TIMEOUTS[$STAGE_INDEX]}"
+log "stage wallclock timeout : ${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}"
 log "mem limit : $CURRENT_STAGE_MEMORY"
 log "solver id : $SOLVER_ID"
 log "solver name : $SOLVER_NAME"
@@ -311,24 +312,24 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
 		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER &
+		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
-	COPY_OUTPUT_INCREMENTALL_PID=$!
 	cd /export/starexec/$SANDBOX_PARAM/solver/bin
 	pwd
 
 	# run runsolver
 	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
-	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
+	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $ARGUMENT_STRING
 
 
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
 		kill $COPY_OUTPUT_INCREMENTALLY_PID
-		kill $KILL_DEADLOCKED_JOB_PAIR_PID
 	fi
 
 	# If runsolver finishes then stop the killDeadlockedJobPair function.
 	log "Runsolver finished. Killing the defensive killall function."
+	kill $KILL_DEADLOCKED_JOB_PAIR_PID
 	KILL_EXIT_STATUS=$?
 	JOB_PAIR_DEADLOCKED=false
 	if [ $KILL_EXIT_STATUS = 1 ]; then

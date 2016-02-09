@@ -145,6 +145,9 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertEquals(newName,newBench.getName());
 		Assert.assertEquals(newDesc,newBench.getDescription());
 		Assert.assertNotEquals(b.isDownloadable(),newBench.isDownloadable());
+		b.setName(newName);
+		b.setDescription(newDesc);
+		b.setDownloadable(!b.isDownloadable());
 		
 	}
 	

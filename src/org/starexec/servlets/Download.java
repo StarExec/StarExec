@@ -442,11 +442,8 @@ public class Download extends HttpServlet {
 	 */
 	
 	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response) throws Exception {    	
-			String outputPath = JobPairs.getFilePath(pairId);  
-			
-			ArchiveUtil.createAndOutputZip(new File(outputPath),response.getOutputStream(),"",false);
+			ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
 			return true;
-
 	}
 
 	/**
@@ -685,32 +682,40 @@ public class Download extends HttpServlet {
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
 				}
-				File file=new File(JobPairs.getFilePath(p));
+				List<File> files = JobPairs.getOutputPaths(p);
+				for (File file : files) {
+					StringBuilder singleFileName = new StringBuilder(zipFileName);
+					if (file.exists()) {
+						if (file.isDirectory()) {
+							//means this is adjacent to a stdout file
+							if (files.size()>1) {
+								singleFileName.append(File.separator);
+								singleFileName.append("additional_output");
+							}
+							if (earlyDate==null){
+								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
 
-				if (file.exists()) {
-					if (file.isDirectory()) {
-						if (earlyDate==null){
-							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
-
+							} else {
+								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), earlyDate);
+							}
 						} else {
-							ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString(), earlyDate);
+							singleFileName.append(File.separator);
+							singleFileName.append(p.getBench().getName());
+							if (earlyDate==null) {
+								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
+
+							} else {
+								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString(), earlyDate);
+							}
 						}
+						
+
 					} else {
-						zipFileName.append(File.separator);
-						zipFileName.append(p.getBench().getName());
-						if (earlyDate==null) {
-							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString());
-
-						} else {
-							ArchiveUtil.addFileToArchive(stream, file, zipFileName.toString(), earlyDate);
-						}
+						//if we can't find output for the pair, just put an empty file there
+						ArchiveUtil.addStringToArchive(stream, " ", singleFileName.toString());
 					}
-					
-
-				} else {
-					//if we can't find output for the pair, just put an empty file there
-					ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
 				}
+				
 			}
 			stream.close();
 			return true;
@@ -748,6 +753,8 @@ public class Download extends HttpServlet {
 				
 				log.debug("Found "+ pairs.size()  + " new pairs");
 				int maxCompletion=since;
+				// pairsFound is defined as the number of pairs that completed since "since"
+				// it does NOT include running pairs
 				int pairsFound = 0;
 				for (JobPair x : pairs) {
 					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
@@ -757,11 +764,7 @@ public class Download extends HttpServlet {
 					if (x.getStatus().getCode().finishedRunning()) {
 						pairsFound++;
 					}
-				}
-				// pairsFound is defined as the number of pairs that completed since "since"
-				// it does NOT include running pairs
-				
-				
+				}	
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairsFound)));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));

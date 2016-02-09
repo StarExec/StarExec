@@ -68,6 +68,7 @@ public class CreateJob extends HttpServlet {
 	private static final String benchName = "benchName";
 
 
+	private static final int MINIMUM_RESULTS_INTERVAL = 10;
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -388,6 +389,10 @@ public class CreateJob extends HttpServlet {
 			if (Util.paramExists(resultsInterval, request)) {
 				if (!Validator.isValidPosInteger(request.getParameter(resultsInterval))) {
 					return new ValidatorStatusCode(false, "The interval for obtaining results must be greater than or equal to 0");
+				}
+				int i = Integer.parseInt(request.getParameter(resultsInterval));
+				if (i!=0 && i < MINIMUM_RESULTS_INTERVAL) {
+					return new ValidatorStatusCode(false, "The interval for obtaining results must be at least "+MINIMUM_RESULTS_INTERVAL+" seconds");
 				}
 			}
 			Integer preProc=null;

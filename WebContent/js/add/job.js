@@ -81,6 +81,12 @@ function attachFormValidation(){
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
+	$.validator.addMethod(
+		"interval",
+		function(value, element, str) {
+			return value==0 || value>=10;
+		}
+	);
 	
 	
 	
@@ -114,6 +120,10 @@ function attachFormValidation(){
 			},
 			queue: {
 				required: true
+			},
+			resultsInterval: {
+				required: true,
+				interval: "10 min"
 			}
 		},
 		messages: {
@@ -144,6 +154,10 @@ function attachFormValidation(){
 			},
 			queue: {
 				required: "error - no worker queues"
+			},
+			resultsInterval: {
+				required: "enter a results interval",
+				interval: "must be at least 10 seconds"
 			}
 		}
 	});

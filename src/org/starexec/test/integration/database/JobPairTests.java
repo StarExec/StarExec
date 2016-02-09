@@ -75,19 +75,19 @@ public class JobPairTests extends TestSequence {
 	
 	@StarexecTest
 	private void getJobPairLogByIdTest() {
-		String path=JobPairs.getFilePath(job.getJobPairs().get(0).getId());
+		String path=JobPairs.getStdout(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(path);
 	}
 	
 	@StarexecTest
 	private void getJobPairPathTest() {
-		String path=JobPairs.getFilePath(job.getJobPairs().get(0));
+		String path=JobPairs.getPairStdout(job.getJobPairs().get(0));
 		Assert.assertNotNull(path);
 	}
 	
 	@StarexecTest
 	private void getJobPairPathByIdTest() {
-		String path=JobPairs.getFilePath(job.getJobPairs().get(0).getId());
+		String path=JobPairs.getStdout(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(path);
 	}
 	
