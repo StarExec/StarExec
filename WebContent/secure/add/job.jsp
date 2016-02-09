@@ -171,7 +171,7 @@
 							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish.">
+					<tr class="noHover" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
 						<td>
 							<p>Results Interval</p>
 						</td>
@@ -277,16 +277,6 @@
 					</tr>
 				</thead>	
 				<tbody>
-				<!-- <c:forEach var="b" items="${benchs}">
-					<tr id="bench_${b.id}">
-						<td>
-							<input type="hidden" name="bench" value="${b.id}"/>
-							<star:benchmark value='${b}'/></td>
-						<td>
-							<p>${b.type.name}</p>							
-						</td>																		
-					</tr>
-				</c:forEach>-->
 				</tbody>					
 			</table>	
 			<div class="selectWrap">
