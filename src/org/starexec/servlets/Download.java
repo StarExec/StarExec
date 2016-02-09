@@ -686,6 +686,11 @@ public class Download extends HttpServlet {
 				for (File file : files) {
 					if (file.exists()) {
 						if (file.isDirectory()) {
+							//means this is adjacent to a stdout file
+							if (files.size()>1) {
+								zipFileName.append(File.separator);
+								zipFileName.append("additional_output");
+							}
 							if (earlyDate==null){
 								ArchiveUtil.addDirToArchive(stream, file, zipFileName.toString());
 
