@@ -194,7 +194,6 @@ public abstract class JobManager {
 			for (Job job : joblist) {
 				// jobTemplate is a version of mainTemplate customized for this job
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
-				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
