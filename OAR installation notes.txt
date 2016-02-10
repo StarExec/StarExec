@@ -31,8 +31,6 @@ Every node should have 2 slots.
 
 UPDATE resources SET slots=2;
 
-TODO:
-
 4) Disable OAR admission rules. Basically, OAR does a bunch of validation and
 and chooses a bunch of defaults that we do not need for our purposes. Again
 in the OAR database, we can just execute

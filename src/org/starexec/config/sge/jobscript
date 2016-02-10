@@ -47,6 +47,12 @@ export SCRIPT_PATH='$$SCRIPT_PATH$$'
 export PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$'
 export DB_NAME='$$DB_NAME$$'
 
+# SGE uses the environment variable JOB_ID, but OAR uses OAR_JOB_ID.
+# this checks for the existence of the OAR version
+if [ -z $OAR_JOB_ID ]
+then
+	export JOB_ID=$OAR_JOB_ID
+fi
 
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
@@ -126,8 +132,8 @@ echo "STAREXEC Job Log"
 echo "(C) `date +%Y` The University of Iowa"
 echo "====================================="
 echo "date: `date`"
-echo "user: #$USER_ID"
-echo "sge job: #$JOB_ID"
+echo "user: $USER_ID"
+echo "sge job: $JOB_ID"
 echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
 echo ""
