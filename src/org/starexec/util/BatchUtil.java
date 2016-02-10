@@ -16,15 +16,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -35,6 +30,7 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.database.Processors;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Benchmark;
@@ -45,7 +41,6 @@ import org.starexec.data.to.User;
 import org.starexec.util.DOMHelper;
 import org.starexec.util.Util;
 import org.starexec.servlets.BenchmarkUploader;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -78,28 +73,12 @@ public class BatchUtil {
     public File generateXMLfile(Space space, int userId, boolean includeAttributes, boolean updates, int upid) throws Exception{
 	//TODO : attributes are being sorted alphabetically, want to preserve order of insertion instead
 		log.debug("Generating XML for Space = " +space.getId());			
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		
-		doc = docBuilder.newDocument();
+
+		doc = XMLUtil.generateNewDocument();
 		Element rootSpace = generateSpacesXML(space, userId, includeAttributes,updates,upid);
 		doc.appendChild(rootSpace);
 		
-		// write the content into xml file
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer = transformerFactory.newTransformer();
-		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		DOMSource source = new DOMSource(doc);
-		
-		//we can't let the top level have spaces in the name
-		File file = new File(R.STAREXEC_ROOT, (space.getName().replaceAll("\\s+", "")) +".xml");
-		log.debug(file.getAbsolutePath());
-		StreamResult result = new StreamResult(file);
-		transformer.transform(source, result);
-		
-		//validateAgainstSchema(file);
-		return file;
+		return XMLUtil.writeDocumentToFile(space.getName() +".xml", doc);
 	}
 	
     /**
@@ -141,51 +120,29 @@ public class BatchUtil {
 		
 		Element spaceElement = doc.createElement("Space");
 		Element attrsElement = doc.createElement("SpaceAttributes");
-	
-		Attr id = doc.createAttribute("id");
-		id.setValue(Integer.toString(space.getId()));
-		spaceElement.setAttributeNode(id);
-		
-		Attr name = doc.createAttribute("name");
-		name.setValue(space.getName());
-		spaceElement.setAttributeNode(name);
+
+		spaceElement.setAttribute("id", Integer.toString(space.getId()));
+		spaceElement.setAttribute("name", space.getName());
 		
 		Element descriptionElement = doc.createElement("description");
-
-		Attr description = doc.createAttribute("value");
-		description.setValue(space.getDescription());
-		descriptionElement.setAttributeNode(description);
-
+		descriptionElement.setAttribute("value", space.getDescription());
 		attrsElement.appendChild(descriptionElement);
-
-		Element stickyLeadersElement = doc.createElement("sticky-leaders");
 		
 		// Sticky leaders attribute : sticky-leaders
-		Attr stickyLeaders = doc.createAttribute("value");
-		stickyLeaders.setValue(Boolean.toString(space.isStickyLeaders()));
-		stickyLeadersElement.setAttributeNode(stickyLeaders);
-
+		Element stickyLeadersElement = doc.createElement("sticky-leaders");
+		stickyLeadersElement.setAttribute("value", Boolean.toString(space.isStickyLeaders()));
 		attrsElement.appendChild(stickyLeadersElement);
 		
 
-		Element inheritUsersElement = doc.createElement("inherit-users");
 
 		// TODO: Find out if the users from the parent space are inherited (inherit-users)
-		Attr inheritUsers = doc.createAttribute("value");
-		Boolean iu = false;
-		// Cheap implementation, just assume false
-		inheritUsers.setValue(iu.toString());
-		inheritUsersElement.setAttributeNode(inheritUsers);
-
+		Element inheritUsersElement = doc.createElement("inherit-users");
+		inheritUsersElement.setAttribute("value", "false");
 		attrsElement.appendChild(inheritUsersElement);
 
-		Element lockedElement = doc.createElement("locked");
-		
 		// Locked attribute
-		Attr locked = doc.createAttribute("value");
-		locked.setValue(Boolean.toString(space.isLocked()));
-		lockedElement.setAttributeNode(locked);
-		
+		Element lockedElement = doc.createElement("locked");
+		lockedElement.setAttribute("value", Boolean.toString(space.isLocked()));
 		attrsElement.appendChild(lockedElement);
 		
 		Permission perm = space.getPermission();
@@ -194,104 +151,64 @@ public class BatchUtil {
 		if (!perm.canAddBenchmark()) {
 
 		    Element addBenchPermElement = doc.createElement("add-benchmark-perm");
-
-		    Attr addBenchPerm = doc.createAttribute("value");
-		    addBenchPerm.setValue("false");
-		    addBenchPermElement.setAttributeNode(addBenchPerm);
-
+		    addBenchPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(addBenchPermElement);
 		}
 		
 		if (!perm.canAddJob()) {
 
 		    Element addJobPermElement = doc.createElement("add-job-perm");
-
-		    Attr addJobPerm = doc.createAttribute("value");
-		    addJobPerm.setValue("false");
-		    addJobPermElement.setAttributeNode(addJobPerm);
-
+		    addJobPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(addJobPermElement);
 		}
 		
 		if (!perm.canAddSolver()){
 
 		    Element addSolverPermElement = doc.createElement("add-solver-perm");
-
-		    Attr addSolverPerm = doc.createAttribute("value");
-		    addSolverPerm.setValue("false");
-		    addSolverPermElement.setAttributeNode(addSolverPerm);
-
+		    addSolverPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(addSolverPermElement);
 		}
 		
 		if (!perm.canAddSpace()){
 		    Element addSpacePermElement = doc.createElement("add-space-perm");
-
-		    Attr addSpacePerm = doc.createAttribute("value");
-		    addSpacePerm.setValue("false");
-		    addSpacePermElement.setAttributeNode(addSpacePerm);
-
+		    addSpacePermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(addSpacePermElement);
 		}
 		
 		if (!perm.canAddUser()){
 		    Element addUserPermElement = doc.createElement("add-user-perm");
-
-		    Attr addUserPerm = doc.createAttribute("value");
-		    addUserPerm.setValue("false");
-		    addUserPermElement.setAttributeNode(addUserPerm);
-
+		    addUserPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(addUserPermElement);
 		}
 		
 		if (!perm.canRemoveBench()) {
 		    Element remBenchPermElement = doc.createElement("rem-benchmark-perm");
-
-		    Attr remBenchmarkPerm = doc.createAttribute("value");
-		    remBenchmarkPerm.setValue("false");
-		    remBenchPermElement.setAttributeNode(remBenchmarkPerm);
-
+		    remBenchPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(remBenchPermElement);
 		}
 		
 		if (!perm.canRemoveJob()) {
 		    Element remJobPermElement = doc.createElement("rem-job-perm");
-
-		    Attr remJobPerm = doc.createAttribute("value");
-		    remJobPerm.setValue("false");
-		    remJobPermElement.setAttributeNode(remJobPerm);
-
+		    remJobPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(remJobPermElement);
 		}
 		
 		if (!perm.canRemoveSolver()) {
 		    Element remSolverPermElement = doc.createElement("rem-solver-perm");
-
-		    Attr remSolverPerm = doc.createAttribute("value");
-		    remSolverPerm.setValue("false");
-		    remSolverPermElement.setAttributeNode(remSolverPerm);
-
+		    remSolverPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(remSolverPermElement);
 		}
 		
 		if (!perm.canRemoveSpace()) {
 
 		    Element remSpacePermElement = doc.createElement("rem-space-perm");
-
-		    Attr remSpacePerm = doc.createAttribute("value");
-		    remSpacePerm.setValue("false");
-		    remSpacePermElement.setAttributeNode(remSpacePerm);
-
+		    remSpacePermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(remSpacePermElement);
 		}
 		
 		if (!perm.canRemoveUser()) {
 		    Element remUserPermElement = doc.createElement("rem-user-perm");
-
-		    Attr remUserPerm = doc.createAttribute("value");
-		    remUserPerm.setValue("false");
-		    remUserPermElement.setAttributeNode(remUserPerm);
-
+		    remUserPermElement.setAttribute("value", "false");
 		    attrsElement.appendChild(remUserPermElement);
 		}
 		
@@ -303,12 +220,10 @@ public class BatchUtil {
 			{
 			   
 			    Element updateElement = doc.createElement("Update");
-			    //Element textElement = doc.createElement("Text");
 			    updateElement.setAttribute("name", benchmark.getName());
 			    updateElement.setAttribute("id", Integer.toString(benchmark.getId()));
 			    updateElement.setAttribute("pid", Integer.toString(upid));
 			    updateElement.setAttribute("bid", Integer.toString(benchmark.getType().getId()));
-			    //updateElement.appendChild(textElement);
 			    spaceElement.appendChild(updateElement);
 			}
 		    else
@@ -319,7 +234,7 @@ public class BatchUtil {
 		
 			if (includeAttributes) {
 			    String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(benchmark.getUploadDate());
-                            benchElement.setAttribute("uploadTime", timeStamp);
+                benchElement.setAttribute("uploadTime", timeStamp);
 			    Properties attrs = Benchmarks.getAttributes(benchmark.getId());
 			    if (attrs != null) {
 				Enumeration<Object> keys = attrs.keys();
@@ -359,34 +274,10 @@ public class BatchUtil {
 	 *  @throws IOException   
 	 */	
 	private Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
-		factory.setNamespaceAware(true);
-
-		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-
-		try {
-			String schemaLoc = R.STAREXEC_ROOT + R.SPACE_XML_SCHEMA_RELATIVE_LOC;
-			log.debug("THIS IS THE SCHEMA LOCATION "+schemaLoc);
-			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
-			Schema schema = factory.getSchema();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-//			builder.setErrorHandler(new SAXErrorHandler());
-			Document document = builder.parse(file);
-			Validator validator = schema.newValidator();
-			DOMSource source = new DOMSource(document);
-            validator.validate(source);
-            log.debug("Space XML File has been validated against the schema.");
-            return true;
-        } catch (SAXException ex) {
-            log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-            //log.warn("The file located at [" + file.getParentFile().getAbsolutePath() + "] has been removed since an error occured while parsing.");
-            //FileUtils.deleteDirectory(file.getParentFile());
-            errorMessage = "File is not valid because: \"" + ex.getMessage() + "\"";
-            this.spaceCreationSuccess = false;
-            return false;
-        }
-		
+		ValidatorStatusCode code= XMLUtil.validateAgainstSchema(file, R.STAREXEC_ROOT + R.SPACE_XML_SCHEMA_RELATIVE_LOC);
+		this.spaceCreationSuccess=code.isSuccess();
+		errorMessage=code.getMessage();
+		return code.isSuccess();
 	}
 	
 	/**
@@ -867,14 +758,13 @@ public class BatchUtil {
 			Uploads.incrementXMLCompletedSolvers(statusId, solvers.size());
 		}
 		
-		//TODO: Handle the upload status page for XML uploads
 		if (!updates.isEmpty())
 		{
 		    //Add the updates to the database and system.
 		    updateIds = addUpdates(updates, statusId);
 			Uploads.incrementXMLCompletedUpdates(statusId, updates.size());
 			log.debug("updateIds: " + updateIds);
-		    //assocaite new updates with the space given.
+		    //associate new updates with the space given.
 		    Benchmarks.associate(updateIds, spaceId);
 		}
 		return spaceId;
