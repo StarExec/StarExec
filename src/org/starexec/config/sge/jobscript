@@ -49,7 +49,7 @@ export DB_NAME='$$DB_NAME$$'
 
 # SGE uses the environment variable JOB_ID, but OAR uses OAR_JOB_ID.
 # this checks for the existence of the OAR version
-if [ -z $OAR_JOB_ID ]
+if [[ $OAR_JOB_ID =~ ^[0-9]+$ ]]
 then
 	export JOB_ID=$OAR_JOB_ID
 fi
