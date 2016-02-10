@@ -95,7 +95,7 @@ public class Statistics {
 	 * @return A hashmap that contains the statistic's name to value mapping 
 	 * (this method includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
-	public static HashMap<String, String> getJobPairOverview(int jobId) throws Exception {
+	public static HashMap<String, String> getJobPairOverview(int jobId) {
 		Connection con = null;
 		
 		try {
@@ -198,13 +198,13 @@ public class Statistics {
        
     }
 
-	/**
-	 * Creates test chart
-	 * @return A list of strings of size 2, where the first string is the path to the new graph
-	 * and the second string is an HTML image map. Returns null on failure.
-	 * @author Julio Cervantes
-	 */
-	
+    /**
+     * Creates graphs for analyzing community statistics on Starexec
+     * @param communities The communities to get data for
+     * @param communityInfo A mapping from communities IDs to stats for those communities
+     * @return A JsonObject mapping from 'infoTypes' like users, solvers, and so on to filepaths
+     * to the graphs for those types
+     */
     public static JsonObject makeCommunityGraphs(List<Space> communities, HashMap<Integer,HashMap<String,Long>> communityInfo) {
 		try {
 				
@@ -270,6 +270,7 @@ public class Statistics {
 	 * @param edgeLengthInPixels Side length of the graph, which is square
 	 * @param axisColor The color to make the axis titles and labels
 	 * @param jobSpaceId The ID  of the space containing all the jobs
+	 * @param stageNumber The stage to analyze for all the pairs in this graph.
 	 * @return A list of strings of size 2, where the first string is the path to the new graph
 	 * and the second string is an HTML image map. Returns null on failure.
 	 * @author Eric Burns
@@ -441,11 +442,11 @@ public class Statistics {
 	/**
 	 * Draws a graph comparing solvers operating in a single job in a single space, saves
 	 * the chart as a png file, and returns a string containing the absolute filepath of the chart
-	 * @param jobId The job id of the job to do the comparison for
-	 * @param spaceId The space that should contain all of the job pairs to compare
+	 * @param jobSpaceId The space that should contain all of the job pairs to compare
 	 * @param logX Whether to use a log scale on the X axis
 	 * @param logY Whether to use a log scale on the Y axis
 	 * @param configIds The IDs of the configurations that should be included in this graph
+	 * @param stageNumber the stage to analyze for all job pairs in the graph
 	 * @return A String filepath to the newly created graph, or null if there was an error. Returns the string
 	 * "big" if there are too many job pairs to display
 	 * @author Eric Burns
@@ -477,13 +478,13 @@ public class Statistics {
 	}
 	
 	/**
-	 * Draws a graph comparing solvers operating on the given set of pairs
-	 * @param jobId The job id of the job to do the comparison for
-	 * @param spaceId The space that should contain all of the job pairs to compare
-	 * @return A String filepath to the newly created graph, or null if there was an error.
-	 * @author Eric Burns
+	 * Creates a graph for plotting the peformance of solvers against a set of job pairs
+	 * @param pairs The pairs to plot results of
+	 * @param logX Whether to use a log scale for the X axis
+	 * @param logY Whether to use a log scale for the Y axis
+	 * @param stageNumber The stage number of analyze for al lthe job pairs
+	 * @return The absolute filepath to the chart that was created
 	 */
-	
 	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY, int stageNumber) {
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());

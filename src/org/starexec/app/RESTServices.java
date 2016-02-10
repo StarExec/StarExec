@@ -1015,7 +1015,7 @@ public class RESTServices {
 	public String getNodeJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("node", id, userId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageCluster("node", id, userId, request);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -1030,7 +1030,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		try {
-		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
+		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageCluster("queue", id, userId, request);
 		}
 		catch(Exception e) {
 		    log.error(e);
@@ -1059,13 +1059,13 @@ public class RESTServices {
 		}
 		
 		if (primType.startsWith("u")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.USER, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.USER, request);
 		}
 		if (primType.startsWith("j")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.JOB, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.JOB, request);
 		}
 		if (primType.startsWith("n")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.NODE, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.NODE, request);
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	

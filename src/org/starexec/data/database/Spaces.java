@@ -207,6 +207,7 @@ public class Spaces {
 	/**
 	 * Creates a new job space with the given name
 	 * @param name The name to be given to the job space
+	 * @param jobId The ID of the job that owns this job space
 	 * @return The ID of the newly created job space, or -1 on failure
 	 * @author Eric Burns
 	 */

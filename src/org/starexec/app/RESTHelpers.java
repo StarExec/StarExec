@@ -70,7 +70,13 @@ public class RESTHelpers {
 	private static final String SORT_COLUMN_OVERRIDE_DIR = "sort_dir";
 
 	private static final String STARTING_RECORD = "iDisplayStart";
+	
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
+	/**
+	 * Used to display the 'total entries' information at the bottom of
+	 * the DataTable; also indirectly controls whether or not the
+	 * pagination buttons are toggle-able
+	 */
 	private static final String TOTAL_RECORDS = "iTotalRecords";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
 	/**
@@ -82,21 +88,11 @@ public class RESTHelpers {
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
-	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList,
-			int userID) {
+	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList,int userID) {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 		for (Space space : spaceList) {
-			JSTreeItem t;
-
-			if (Spaces.getCountInSpace(space.getId(), userID, true) > 0) {
-				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						R.SPACE);
-			} else {
-				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						R.SPACE);
-			}
-
-			list.add(t);
+			String isOpen = Spaces.getCountInSpace(space.getId(), userID, true) > 0 ? "closed" : "leaf";
+			list.add(new JSTreeItem(space.getName(), space.getId(), isOpen,R.SPACE));
 		}
 
 		return list;
@@ -114,20 +110,8 @@ public class RESTHelpers {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 
 		for (JobSpace space : jobSpaceList) {
-			JSTreeItem t;
-
-			if (Spaces.getCountInJobSpace(space.getId()) > 0) {
-				log.debug("the max stages for this job space is "+space.getMaxStages());
-				t = new JSTreeItem(space.getName(), space.getId(), "closed",
-						R.SPACE,space.getMaxStages());
-				
-			} else {
-				log.debug("the max stages for this job space is "+space.getMaxStages());
-				t = new JSTreeItem(space.getName(), space.getId(), "leaf",
-						R.SPACE,space.getMaxStages());
-			}
-			
-			list.add(t);
+			String isOpen = Spaces.getCountInJobSpace(space.getId()) > 0 ? "closed" : "leaf";			
+			list.add(new JSTreeItem(space.getName(), space.getId(), isOpen,R.SPACE,space.getMaxStages()));
 		}
 
 		return list;
@@ -138,8 +122,7 @@ public class RESTHelpers {
 	 * JSTreeItems suitable for being displayed on the client side with the
 	 * jsTree plugin.
 	 * 
-	 * @param nodes
-	 *            The list of worker nodes to convert
+	 * @param nodes The list of worker nodes to convert
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
@@ -170,24 +153,14 @@ public class RESTHelpers {
 	 */
 	protected static List<JSTreeItem> toQueueList(List<Queue> queues) {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
-		JSTreeItem t;
 		for (Queue q : queues) {
 			//status might be null, so we don't want a null pointer in that case
 			String status=q.getStatus();
 			if (status==null) {
 				status="";
 			}
-			if (Queues.getNodes(q.getId()).size() > 0) {
-				t = new JSTreeItem(q.getName(), q.getId(), "closed", 
-						status.equals("ACTIVE") ? "active_queue"
-						: "inactive_queue");
-			} else {
-				t = new JSTreeItem(q.getName(), q.getId(), "leaf",
-						status.equals("ACTIVE") ? "active_queue"
-						: "inactive_queue");
-			}
-
-			list.add(t);
+			String isOpen = Queues.getNodes(q.getId()).size() > 0 ? "closed" : "leaf";
+			list.add(new JSTreeItem(q.getName(), q.getId(), isOpen,status.equals("ACTIVE") ? "active_queue" : "inactive_queue"));
 		}
 
 		return list;
@@ -460,7 +433,7 @@ public class RESTHelpers {
      * @author Aaron Stump 
      */
     public static void addImg(StringBuilder sb) {
-	sb.append("<img class=\"extLink\" src=\""+Util.docRoot("images/external.png\"/></a>"));
+    	sb.append("<img class=\"extLink\" src=\""+Util.docRoot("images/external.png\"/></a>"));
     }
 
 	/**
@@ -486,29 +459,6 @@ public class RESTHelpers {
 		sb.append("</p>");
 		return sb.toString();
 	}
-	
-	/**
-	 * 
-	 * @param type
-	 *            either queue or node
-	 * @param id
-	 *            the id of the queue/node
-	 * @param userId
-	 *            the id of the user that is accessing the page
-	 * 
-	 * @return the next page of job_pairs for the cluster status page
-	 * @author Wyatt Kaiser
-	 */
-	protected static JsonObject getNextDataTablesPageForClusterExplorer(String type, int id, int userId, HttpServletRequest request) {
-		return getNextDataTablesPageCluster(type, id, userId, request);
-	}
-
-	protected static JsonObject getNextDataTablesPageForAdminExplorer(Primitive type, HttpServletRequest request) {
-		return getNextDataTablesPageAdmin(type, request);
-	}
-
-	
-	
 	/**
 	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
 	 * 
@@ -591,10 +541,6 @@ public class RESTHelpers {
 			
 			query.setTotalRecords(totals[0]);
 
-			/**
-	    	* Used to display the 'total entries' information at the bottom of the DataTable;
-	    	* also indirectly controls whether or not the pagination buttons are toggle-able
-	    	*/
 		   query.setTotalRecordsAfterQuery(totals[1]);	    	
 		   return convertBenchmarksToJsonObject(BenchmarksToDisplay,query);
 		} catch (Exception e) {
@@ -628,11 +574,6 @@ public class RESTHelpers {
 			
 			query.setTotalRecords(totals[0]);
 
-			/**
-	    	* Used to display the 'total entries' information at the bottom of the DataTable;
-	    	* also indirectly controls whether or not the pagination buttons are toggle-able
-	    	*/
-	    
 	       query.setTotalRecordsAfterQuery(totals[1]);
 	    	
 		   return convertSolversToJsonObject(solversToDisplay,query);
@@ -673,14 +614,9 @@ public class RESTHelpers {
 			
 			query.setTotalRecords(totals[0]);
 
-			/**
-	    	* Used to display the 'total entries' information at the bottom of the DataTable;
-	    	* also indirectly controls whether or not the pagination buttons are toggle-able
-	    	*/
-	    
-	       query.setTotalRecordsAfterQuery(totals[1]);
+			query.setTotalRecordsAfterQuery(totals[1]);
 	    	
-		   return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,query,wallclock,stageNumber);
+			return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,query,wallclock,stageNumber);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -703,7 +639,6 @@ public class RESTHelpers {
         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
         
-		int totalJobs;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(query,
@@ -711,14 +646,9 @@ public class RESTHelpers {
 		
 		query.setTotalRecords(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber));
 
-		/**
-    	* Used to display the 'total entries' information at the bottom of the DataTable;
-    	* also indirectly controls whether or not the pagination buttons are toggle-able
-    	*/
-    
-       query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
+        query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
     	
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber);
+	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber);
 	}
 
 	/**
@@ -737,7 +667,7 @@ public class RESTHelpers {
 	 * @author Wyatt Kaiser
 	 */
 	//TODO: Counts are wrong whenever a query is used
-	private static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
+	protected static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
 		try {
 			// Parameter validation
 			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.NODE, request);
@@ -790,7 +720,7 @@ public class RESTHelpers {
 	 * @author Wyatt Kaiser
 	 */
 
-	private static JsonObject getNextDataTablesPageAdmin(Primitive type, HttpServletRequest request) {
+	protected static JsonObject getNextDataTablesPageAdmin(Primitive type, HttpServletRequest request) {
 		// Parameter Validation
 		DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
 		if (query==null) {
@@ -807,11 +737,6 @@ public class RESTHelpers {
 			// JSON to send to the client
 			jobsToDisplay = Jobs.getJobsForNextPageAdmin(query);
 
-			/**
-			 * Used to display the 'total entries' information at the bottom of
-			 * the DataTable; also indirectly controls whether or not the
-			 * pagination buttons are toggle-able
-			 */
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 			// TOTAL_RECORDS
 			if (!query.hasSearchQuery()) {
@@ -829,12 +754,7 @@ public class RESTHelpers {
 			// Retrieves the relevant Node objects to use in constructing the
 			// JSON to send to the client
 			nodesToDisplay = Cluster.getNodesForNextPageAdmin(query);
-						
-			/**
-			 * Used to display the 'total entries' information at the bottom of
-			 * the DataTable; also indirectly controls whether or not the
-			 * pagination buttons are toggle-able
-			 */
+			
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 			// TOTAL_RECORDS
 			if (!query.isSortASC()) {
@@ -854,11 +774,6 @@ public class RESTHelpers {
 			// JSON to send to the client
 			usersToDisplay = Users.getUsersForNextPageAdmin(query);
 
-			/**
-			 * Used to display the 'total entries' information at the bottom of
-			 * the DataTable; also indirectly controls whether or not the
-			 * pagination buttons are toggle-able
-			 */
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 			// TOTAL_RECORDS
 			if (!query.hasSearchQuery()) {
@@ -927,11 +842,6 @@ public class RESTHelpers {
     		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
     		usersToDisplay = Users.getUsersForNextPage(query,id);
     		
-    		
-    		/**
-	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-	    	 */
 	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 	    	if(!query.hasSearchQuery()){
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -995,11 +905,6 @@ public class RESTHelpers {
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 	    	spacesToDisplay = Spaces.getSpacesForNextPage(query,id,userId);
 	    	
-	    	
-	    	/**
-	    	 * Used to display the 'total entries' information at the bottom of the DataTable;
-	    	 * also indirectly controls whether or not the pagination buttons are toggle-able
-	    	 */
 	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 	    	if(!query.hasSearchQuery()){
 	    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -1123,32 +1028,9 @@ public class RESTHelpers {
     		sb.append(hiddenJobPairId);
 			String jobLink = sb.toString();
 			
-			//Create the User Link
-    		sb = new StringBuilder();
-			String hiddenUserId;
-			
 			User user=j.getOwningUser();
-			
-			// Create the hidden input tag containing the user id
-			if(user.getId() == userId) {
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(user.getId());
-				sb.append("\" name=\"currentUser\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
-				hiddenUserId = sb.toString();
-			} else {
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(user.getId());
-				sb.append("\" id=\"uid"+user.getId()+"\" prim=\"user\"/>");
-				hiddenUserId = sb.toString();
-			}
-    		sb = new StringBuilder();
-    		sb.append("<a href=\""+Util.docRoot("secure/details/user.jsp?id="));
-    		sb.append(user.getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(user.getFullName());
-    		RESTHelpers.addImg(sb);
-    		sb.append(hiddenUserId);
-			String userLink = sb.toString();
+
+			String userLink = getUserLink(user.getId(),user.getFullName(),userId);
 			
     		// Create the benchmark link
     		sb = new StringBuilder();
@@ -1262,6 +1144,32 @@ public class RESTHelpers {
 		sb.append("\" target=\"_blank\">");
 		sb.append(solverName);
 		RESTHelpers.addImg(sb);
+		return sb.toString();
+	}
+	
+	private static String getUserLink(int userId,String name, int callerId) {
+		StringBuilder sb = new StringBuilder();
+		String hiddenUserId;
+
+		// Create the hidden input tag containing the user id
+		sb.append("<input type=\"hidden\" value=\"");
+		sb.append(userId);
+		if (userId == callerId) {
+			sb.append("\" name=\"currentUser\" id=\"uid" + userId + "\" prim=\"user\"/>");
+		} else {
+			sb.append("\" id=\"uid" + userId + "\" prim=\"user\"/>");
+		}
+		hiddenUserId = sb.toString();
+
+		// Create the user "details" link and append the hidden input
+		// element
+		sb = new StringBuilder();
+		sb.append("<a href=\"" + Util.docRoot("secure/details/user.jsp?id="));
+		sb.append(userId);
+		sb.append("\" target=\"_blank\">");
+		sb.append(name);
+		RESTHelpers.addImg(sb);
+		sb.append(hiddenUserId);
 		return sb.toString();
 	}
 	
@@ -1430,31 +1338,9 @@ public class RESTHelpers {
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (User user : users) {
+			String userLink = getUserLink(user.getId(),user.getFullName(),currentUserId);
+
 			StringBuilder sb = new StringBuilder();
-			String hiddenUserId;
-
-			// Create the hidden input tag containing the user id
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(user.getId());
-			if (user.getId() == currentUserId) {
-				sb.append("\" name=\"currentUser\" id=\"uid" + user.getId() + "\" prim=\"user\"/>");
-			} else {
-				sb.append("\" id=\"uid" + user.getId() + "\" prim=\"user\"/>");
-			}
-			hiddenUserId = sb.toString();
-
-			// Create the user "details" link and append the hidden input
-			// element
-			sb = new StringBuilder();
-			sb.append("<a href=\"" + Util.docRoot("secure/details/user.jsp?id="));
-			sb.append(user.getId());
-			sb.append("\" target=\"_blank\">");
-			sb.append(user.getFullName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenUserId);
-			String userLink = sb.toString();
-
-			sb = new StringBuilder();
 			sb.append("<a href=\"mailto:");
 			sb.append(user.getEmail());
 			sb.append("\">");
@@ -1952,39 +1838,13 @@ public class RESTHelpers {
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (CommunityRequest req : requests) {
-			
-			String hiddenUserId;
-			StringBuilder sb = new StringBuilder();
-
 			User user = Users.get(req.getUserId());
-			// Create the hidden input tag containing the user id
-			if (user.getId() == currentUserId) {
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(user.getId());
-				sb.append("\" name=\"currentUser\" id=\"uid" + user.getId()
-						+ "\" prim=\"user\"/>");
-				hiddenUserId = sb.toString();
-			} else {
-				sb.append("<input type=\"hidden\" value=\"");
-				sb.append(user.getId());
-				sb.append("\" id=\"uid" + user.getId()
-						+ "\" prim=\"user\"/>");
-				hiddenUserId = sb.toString();
-			}
-			// Create the user "details" link and append the hidden input
-			// element
-			sb = new StringBuilder();
-			sb.append("<a href=\""
-					+ Util.docRoot("secure/details/user.jsp?id="));
-			sb.append(user.getId());
-			sb.append("\" target=\"_blank\">");
-			sb.append(user.getFullName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenUserId);
-			String userLink = sb.toString();
+
+			
+			String userLink = getUserLink(user.getId(),user.getFullName(),currentUserId);
 			
 			//Community/space
-			sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 			Space space = Spaces.get(req.getCommunityId());
 			sb = new StringBuilder();
 			sb.append("<input type=\"hidden\" value=\"");
@@ -2120,11 +1980,6 @@ public class RESTHelpers {
 	 * @author Unknown, Albert Giegerich
 	 */
 	private static JsonObject setupAttrMapAndConvertRequestsToJson(List<CommunityRequest> requests,DataTablesQuery query, HttpServletRequest httpRequest) {
-		/**
-		 * Used to display the 'total entries' information at the bottom of the
-		 * DataTable; also indirectly controls whether or not the pagination
-		 * buttons are toggle-able
-		 */
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		if (!query.hasSearchQuery()) {
 			query.setTotalRecordsAfterQuery(query.getTotalRecords());
