@@ -918,7 +918,7 @@ public class RESTHelpers {
 		return null;
 	}
 
-	protected static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
+	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
 		// Parameter validation
 	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
 	    if(query==null){

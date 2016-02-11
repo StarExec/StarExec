@@ -194,6 +194,75 @@ public class RESTHelpersTests extends TestSequence {
 		validateJsonObjectCounts(o, 2,1,1);
 	}
 	
+	@StarexecTest
+	private void getNextPageOfUserJobsTest() {
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, community.getId(), getMockRequest(testUser.getId()), false);
+		validateJsonObjectCounts(o, 2,2,2);
+
+	}
+	@StarexecTest
+	private void getNextPageOfUserJobsSingleRecordTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setNumRecords(1);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, community.getId(), getMockRequest(q, testUser.getId()), false);
+		validateJsonObjectCounts(o, 2,2,1);
+
+	}
+	@StarexecTest
+	private void getNextPageOfUserJobsQueryTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setSearchQuery(j1.getName());
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, community.getId(), getMockRequest(q, testUser.getId()), false);
+		validateJsonObjectCounts(o, 2,1,1);
+	}
+	
+	
+	@StarexecTest
+	private void getNextPageOfUserSolversTest() {
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, community.getId(), getMockRequest(testUser.getId()), false);
+		validateJsonObjectCounts(o, 2,2,2);
+
+	}
+	@StarexecTest
+	private void getNextPageOfUserSolversSingleRecordTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setNumRecords(1);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, community.getId(), getMockRequest(q, testUser.getId()), false);
+		validateJsonObjectCounts(o, 2,2,1);
+
+	}
+	@StarexecTest
+	private void getNextPageOfUserSolversQueryTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setSearchQuery(s1.getName());
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, community.getId(), getMockRequest(q, testUser.getId()), false);
+		validateJsonObjectCounts(o, 2,1,1);
+	}
+	
+	
+	@StarexecTest
+	private void getNextPageOfUserBenchmarksTest() {
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, community.getId(), getMockRequest(testUser.getId()), false);
+		validateJsonObjectCounts(o, benchmarkIds.size(),benchmarkIds.size(),benchmarkIds.size());
+
+	}
+	@StarexecTest
+	private void getNextPageOfUserBenchmarksSingleRecordTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setNumRecords(1);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, community.getId(), getMockRequest(q, testUser.getId()), false);
+		validateJsonObjectCounts(o, benchmarkIds.size(),benchmarkIds.size(),1);
+
+	}
+	@StarexecTest
+	private void getNextPageOfUserBenchmarksQueryTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setSearchQuery(Benchmarks.get(benchmarkIds.get(0)).getName());
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, community.getId(), getMockRequest(q, testUser.getId()), false);
+		validateJsonObjectCounts(o, benchmarkIds.size(),1,1);
+	}
+	
+	
 	@Override
 	protected String getTestName() {
 		return "RestHelpersTests";
