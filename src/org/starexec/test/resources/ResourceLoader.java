@@ -129,6 +129,12 @@ public class ResourceLoader {
 		
 	}
 	
+	public static Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
+		List<Integer> solvers=new ArrayList<Integer>();
+		solvers.add(solverId);
+		return loadJobIntoDatabase(spaceId,userId, -1,-1, solvers,benchmarkIds,10,10,1);
+	}
+	
 	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
 		List<Integer> solvers=new ArrayList<Integer>();
@@ -293,12 +299,21 @@ public class ResourceLoader {
 	}
 	
 	/**
+	 * Loads benchmarks.zip into the database
+	 * @param parentSpaceId
+	 * @param userId
+	 * @return A list of benchmark Ids for the newly created benchmarks
+	 */
+	public static List<Integer> loadBenchmarksIntoDatabase(int parentSpaceId, int userId) {
+		return loadBenchmarksIntoDatabase("benchmarks.zip", parentSpaceId, userId);
+	}
+	/**
 	 * Loads an archive of benchmarks into the database
 	 * @param archiveName The name of the archive containing the benchmarks in the Resource directory
 	 * @param parentSpaceId The ID of the space to place the benchmarks in. Benchmarks will
 	 * not be made into a hierarchy-- they will all be placed into the given space
 	 * @param userId The ID of the owner of the benchmarks
-	 * @return
+	 * @return A list of benchmark Ids for the newly created benchmarks
 	 */
 	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
@@ -419,7 +434,11 @@ public class ResourceLoader {
 	 * @return The user, with their ID and all parameters set, or null on error
 	 */
 	public static User loadUserIntoDatabase() {
-		return loadUserIntoDatabase("test","user",TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa","test");
+		return loadUserIntoDatabase(TestUtil.getRandomPassword());
+	}
+	
+	public static User loadUserIntoDatabase(String password) {
+		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa","test");
 	}
 	
 	public static CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
@@ -436,9 +455,7 @@ public class ResourceLoader {
 		return req;
 	}
 	
-	public static User loadUserIntoDatabase(String password) {
-		return loadUserIntoDatabase("test","user",password,password,"The University of Iowa","test");
-	}
+
 	/**
 	 * Creates a user with the given attributes and adds them to the database
 	 * @param fname The first name for the user

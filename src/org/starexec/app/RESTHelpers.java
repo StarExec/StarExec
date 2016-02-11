@@ -808,7 +808,7 @@ public class RESTHelpers {
 	 * @author Todd Elvers
 	 */
 
-	protected static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
 		// Parameter validation
 	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
 	    if(query==null){
