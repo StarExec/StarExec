@@ -39,6 +39,7 @@ public class RESTHelpersTests extends TestSequence {
 	Solver s1 = null;
 	Solver s2 = null;
 	Job j1 = null;
+	JobSpace j1PrimarySpace = null;
 	Job j2 = null;
 	List<Integer> benchmarkIds = null;
 	private static HttpSession getMockSessionWithUser(int userId) {
@@ -196,7 +197,7 @@ public class RESTHelpersTests extends TestSequence {
 	
 	@StarexecTest
 	private void getNextPageOfUserJobsTest() {
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, community.getId(), getMockRequest(testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, testUser.getId(), getMockRequest(testUser.getId()), false);
 		validateJsonObjectCounts(o, 2,2,2);
 
 	}
@@ -204,7 +205,7 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfUserJobsSingleRecordTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setNumRecords(1);
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, community.getId(), getMockRequest(q, testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, testUser.getId(), getMockRequest(q, testUser.getId()), false);
 		validateJsonObjectCounts(o, 2,2,1);
 
 	}
@@ -212,14 +213,14 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfUserJobsQueryTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setSearchQuery(j1.getName());
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, community.getId(), getMockRequest(q, testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, testUser.getId(), getMockRequest(q, testUser.getId()), false);
 		validateJsonObjectCounts(o, 2,1,1);
 	}
 	
 	
 	@StarexecTest
 	private void getNextPageOfUserSolversTest() {
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, community.getId(), getMockRequest(testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, testUser.getId(), getMockRequest(testUser.getId()), false);
 		validateJsonObjectCounts(o, 2,2,2);
 
 	}
@@ -227,7 +228,7 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfUserSolversSingleRecordTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setNumRecords(1);
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, community.getId(), getMockRequest(q, testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, testUser.getId(), getMockRequest(q, testUser.getId()), false);
 		validateJsonObjectCounts(o, 2,2,1);
 
 	}
@@ -235,14 +236,14 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfUserSolversQueryTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setSearchQuery(s1.getName());
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, community.getId(), getMockRequest(q, testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, testUser.getId(), getMockRequest(q, testUser.getId()), false);
 		validateJsonObjectCounts(o, 2,1,1);
 	}
 	
 	
 	@StarexecTest
 	private void getNextPageOfUserBenchmarksTest() {
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, community.getId(), getMockRequest(testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, testUser.getId(), getMockRequest(testUser.getId()), false);
 		validateJsonObjectCounts(o, benchmarkIds.size(),benchmarkIds.size(),benchmarkIds.size());
 
 	}
@@ -250,7 +251,7 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfUserBenchmarksSingleRecordTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setNumRecords(1);
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, community.getId(), getMockRequest(q, testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, testUser.getId(), getMockRequest(q, testUser.getId()), false);
 		validateJsonObjectCounts(o, benchmarkIds.size(),benchmarkIds.size(),1);
 
 	}
@@ -258,8 +259,30 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfUserBenchmarksQueryTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setSearchQuery(Benchmarks.get(benchmarkIds.get(0)).getName());
-		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, community.getId(), getMockRequest(q, testUser.getId()), false);
+		JsonObject o = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, testUser.getId(), getMockRequest(q, testUser.getId()), false);
 		validateJsonObjectCounts(o, benchmarkIds.size(),1,1);
+	}
+	
+	@StarexecTest
+	private void getNextPageOfJobPairsInJobSpaceTest() {
+		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0);
+		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), j1.getJobPairs().size());
+	}
+	
+	@StarexecTest
+	private void getNextPageOfJobPairsInJobSpaceSingleRecordTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setNumRecords(1);
+		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0);
+		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), 1);
+	}
+	
+	@StarexecTest
+	private void getNextPageOfJobPairsInJobSpaceQueryTest() {
+		DataTablesQuery q = getTestDataTablesQuery();
+		q.setSearchQuery(j1.getJobPairs().get(0).getBench().getName());
+		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0);
+		validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
 	}
 	
 	
@@ -282,6 +305,7 @@ public class RESTHelpersTests extends TestSequence {
 		s2 = ResourceLoader.loadSolverIntoDatabase(community.getId(), testUser.getId());
 		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(community.getId(), testUser.getId());
 		j1 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
+		j1PrimarySpace = Spaces.getJobSpace(j1.getPrimarySpace());
 		j2 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
 
 	}

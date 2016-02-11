@@ -666,7 +666,6 @@ public class RESTHelpers {
 	 *         or null if the parameters of the request fail validation
 	 * @author Wyatt Kaiser
 	 */
-	//TODO: Counts are wrong whenever a query is used
 	protected static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
 		try {
 			// Parameter validation
