@@ -195,10 +195,10 @@ function isPairRunning {
 	fi
 	output=`cat "$LOCK_DIR/$1"`
 	log "$output"
-	currentOutput=`ps -p $1 -o pid,stime,cmd`
-	log "current output as of isPairRunning is $currentOutput"
+	currentOutput=`ps -p $1 -o pid,stime,cmd | awk 'NR>1'`
+	log "$currentOutput"
 	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
-	if [[ "$output" -eq "$currentOutput" ]]
+	if [[ $currentOutput == *$output* ]]
 	then
 		log "process is still running, so the sandbox is still in use"
 		return 0
@@ -213,7 +213,7 @@ function makeLockFile {
 	log "able to get sandbox $1!"
 	# make a file that is named with the current PID so we know which pair should be running here
 	touch "$LOCK_DIR/$$"
-	processString=`ps -p $$ -o pid,stime,cmd`
+	processString=`ps -p $$ -o pid,stime,cmd | awk 'NR>1'`
 	log "Found data for this process $processString"
 	echo $processString > "$LOCK_DIR/$$"
 	log "putting this job into sandbox $1 $$"
@@ -242,7 +242,7 @@ function trySandbox {
 			makeLockFile $1
 			return 0
 		fi
-		#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
+		#if we couldnt get the sandbox directory, there are 2 possibilites. Either it is occupied,
 		#or a previous job did not clean up the lock correctly. To check, we see if the pair given
 		#in the directory is still running
 			
@@ -689,7 +689,7 @@ function copyOutputNoStats {
 	
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
 	
-	rsync -r -u "$OUT_DIR"/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
+	rsync -r -u $OUT_DIR"/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
 # takes in a stage number as an argument so we know where to put the output
