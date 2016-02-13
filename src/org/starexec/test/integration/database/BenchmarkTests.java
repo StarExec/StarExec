@@ -17,6 +17,10 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+/**
+ * Tests for org.starexec.data.database.Benchmarks.java
+ * @author Eric
+ */
 public class BenchmarkTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(BenchmarkTests.class);	
 	private User user=null;

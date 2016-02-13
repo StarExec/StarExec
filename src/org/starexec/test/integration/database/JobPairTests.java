@@ -31,7 +31,10 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
-
+/**
+ * Tests for org.starexec.data.database.JobPairs.java
+ * @author Eric
+ */
 public class JobPairTests extends TestSequence {
 
 	

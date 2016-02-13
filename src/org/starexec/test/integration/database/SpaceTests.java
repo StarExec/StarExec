@@ -28,6 +28,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.dataStructures.TreeNode;
 
+/**
+ * Tests for org.starexec.data.database.Spaces.java
+ * @author Eric
+ */
 public class SpaceTests extends TestSequence {
 	
 	Space community=null;

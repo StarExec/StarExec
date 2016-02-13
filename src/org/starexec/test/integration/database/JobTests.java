@@ -26,8 +26,10 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
-
-//TODO: Test counting functions
+/**
+ * Tests for org.starexec.data.database.Jobs.java
+ * @author Eric
+ */
 public class JobTests extends TestSequence {
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job

@@ -14,8 +14,10 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
-/*
- * todo getfailedbenches, addfailedbench
+
+/**
+ * Tests for org.starexec.data.database.Uploads.java
+ * @author Eric
  */
 public class UploadTests extends TestSequence {
 	private User u=null;

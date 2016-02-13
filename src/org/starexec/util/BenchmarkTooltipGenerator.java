@@ -5,12 +5,21 @@ import java.util.HashMap;
 import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.data.xy.XYDataset;
 
+/**
+ * Class used when generating a solver comparison graph for Statistics.java
+ * Creates tooltips so that benchmark names are displayed when hovering over
+ * data points in the grpah
+ * @author Eric
+ *
+ */
 public class BenchmarkTooltipGenerator implements XYToolTipGenerator {
 	
 	private HashMap<String,String> names;
 	
+	/**
+	 * @param data A mapping from series:item in the graph to a benchmark name.
+	 */
 	public BenchmarkTooltipGenerator(HashMap<String,String> data) {
-		super();
 		names=data;
 	}
 	

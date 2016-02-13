@@ -11,6 +11,10 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+/**
+ * Tests for org.starexec.data.database.Settings.java
+ * @author Eric
+ */
 public class DefaultSettingsTests extends TestSequence {
 	DefaultSettings settings=null;
 	DefaultSettings settings2=null;

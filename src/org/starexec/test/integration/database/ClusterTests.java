@@ -11,6 +11,11 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 
+/**
+ * Tests for org.starexec.data.database.Cluster.java
+ * @author Eric
+ *
+ */
 public class ClusterTests extends TestSequence {
 	Queue allQueue=null;
 	WorkerNode n=null;

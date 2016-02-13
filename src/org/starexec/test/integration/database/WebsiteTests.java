@@ -17,7 +17,10 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
-
+/**
+ * Tests for org.starexec.data.database.Websites.java
+ * @author Eric
+ */
 public class WebsiteTests extends TestSequence {
 	private Solver solver=null;
 	private User user=null;

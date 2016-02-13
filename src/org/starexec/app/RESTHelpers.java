@@ -655,18 +655,15 @@ public class RESTHelpers {
 	 * Gets the next page of job_pair entries for a DataTable object on cluster
 	 * Status page
 	 * 
-	 * @param type
-	 *            either queue or node
-	 * @param id
-	 *            the id of the queue/node to get job pairs for
-	 * @param request
-	 *            the object containing all the DataTable parameters
+	 * @param type either queue or node
+	 * @param id the id of the queue/node to get job pairs for
+	 * @param request the object containing all the DataTable parameters
 	 * @return a JSON object representing the next page of primitives to return
 	 *         to the client,<br>
 	 *         or null if the parameters of the request fail validation
 	 * @author Wyatt Kaiser
 	 */
-	protected static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
+	public static JsonObject getNextDataTablesPageCluster(String type, int id, int userId, HttpServletRequest request) {
 		try {
 			// Parameter validation
 			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.NODE, request);
