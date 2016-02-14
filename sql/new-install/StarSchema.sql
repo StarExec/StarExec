@@ -157,7 +157,8 @@ CREATE TABLE solvers (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
-	executable_type INT DEFAULT 1, 
+	executable_type INT DEFAULT 1,
+	built INT DEFAULT 1,
 	PRIMARY KEY (id),	
 	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 

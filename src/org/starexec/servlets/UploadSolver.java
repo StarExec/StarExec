@@ -287,30 +287,7 @@ public class UploadSolver extends HttpServlet {
 			return returnArray;
 		}
 		if (containsBuildScript(sandboxDir)) {
-			log.debug("the uploaded solver did contain a build script");
-			if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
-				FileUtils.deleteDirectory(sandboxDir);
-				FileUtils.deleteDirectory(uniqueDir);
-				returnArray[0]=-5;                   //fail due to invalid permissions
-				return returnArray;
-			}
-			
-			//give sandbox full permissions over the solver directory
-			Util.sandboxChmodDirectory(sandboxDir);
-			
-			
-		
-
-			//run the build script as sandbox
-			String[] command=new String[4];
-			command[0]="sudo";
-			command[1]="-u";
-			command[2]="sandbox";
-			command[3]="./"+R.SOLVER_BUILD_SCRIPT;
-				
-			buildstr=Util.executeCommand(command, null,sandboxDir);
-			build=true;
-			log.debug("got back the output "+buildstr);
+			newSolver.setBuilt(0);
 		}
 		
 		Util.sandboxChmodDirectory(sandboxDir);
@@ -377,7 +354,7 @@ public class UploadSolver extends HttpServlet {
 		int solver_Success = Solvers.add(newSolver, spaceId);
 		
 		//if we were successful and this solver had a build script, save the build output to show the uploader
-		if (solver_Success>0 && build) {
+/*		if (solver_Success>0 && build) {
 			File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
 			log.debug("output file = "+buildOutputFile.getAbsolutePath());
 			buildOutputFile.getParentFile().mkdirs();
@@ -387,7 +364,7 @@ public class UploadSolver extends HttpServlet {
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
 			}
-		}
+		} */
 
 		// if the solver was uploaded successfully log the upload in the weekly report table
 		if (solver_Success>0) {

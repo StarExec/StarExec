@@ -32,6 +32,9 @@
 			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
 			
+			String buildStatus = (s.built()) == 1 ? "built" : "not built";
+				
+			request.setAttribute("built", buildStatus);	
 
 			request.setAttribute("hasAdminReadPrivileges",Users.hasAdminReadPrivileges(userId));
 			boolean downloadable=SolverSecurity.canUserDownloadSolver(solverId,userId).isSuccess();
@@ -103,6 +106,10 @@
 						<tr>
 							<td>disk size</td>
 							<td>${diskSize}</td>
+						</tr>
+						<tr>
+							<td>build status</td>
+							<td>${built}</td>
 						</tr>
 					</tbody>				
 				</table>

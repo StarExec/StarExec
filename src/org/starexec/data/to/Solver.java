@@ -65,6 +65,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	private boolean recycled;
 	private boolean deleted;
 	private ExecutableType type;
+	private int built;
 	public Solver() {
 		this.configurations = new LinkedList<Configuration>();
 	}
@@ -194,6 +195,22 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	public long getDiskSize(){
 		return diskSize;
 	}
+
+	
+	/**
+	 * @return true if this solver is built.
+	 */
+	public int built() {
+		return built;
+	}
+	
+	/**
+	 * @param built sets the whether this solver has been built or not
+	 */
+	public void setBuilt(int built) {
+		this.built = built;
+	}
+
 
 	public void setMostRecentUpdate(String mostRecentUpdate) {
 		this.mostRecentUpdateString = mostRecentUpdate;

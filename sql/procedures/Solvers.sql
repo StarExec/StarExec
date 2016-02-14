@@ -8,10 +8,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolver;
-CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT)
+CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT, IN _built INT)
 	BEGIN
-		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type)
-		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type);
+		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type, built)
+		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type, _built);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //

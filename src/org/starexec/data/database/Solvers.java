@@ -54,7 +54,7 @@ public class Solvers {
 			con = Common.getConnection();
 			long diskUsage=FileUtils.sizeOf(new File(s.getPath()));
 			// Add the solver
-			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?,?)}");
+			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, s.getUserId());
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
@@ -63,6 +63,7 @@ public class Solvers {
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			procedure.setLong(7, diskUsage);
 			procedure.setInt(8,s.getType().getVal());
+			procedure.setInt(9, s.built());
 			
 			procedure.executeUpdate();
 			
@@ -1783,7 +1784,8 @@ public class Solvers {
 		s.setDownloadable(results.getBoolean(prefix+"downloadable"));
 		s.setDiskSize(results.getLong(prefix+"disk_size"));
 		s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
-
+		s.setBuilt(results.getInt(prefix+"built"));
+		
 		return s;
 	}
 	
