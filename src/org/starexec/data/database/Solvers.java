@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -982,6 +983,25 @@ public class Solvers {
 		return filteredSolvers;
 	}
 	
+	/**
+	 * Gets a map from configuration id's to their anonymized names for use in the anonymous page feature.
+	 * @param solverId The solver id to get the configuration map for
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, String> getConfigToAnonymizedNameMap( int solverId ) {
+		List<Configuration> configs = getConfigsForSolver( solverId );
+		Collections.sort( configs, (c1, c2) -> c1.getId() - c2.getId() );
+
+		Map<Integer, String> configIdToNameMap  = new HashMap<>();
+		int numberToAppend = 1;
+		for (Configuration config : configs) {
+			if (!configIdToNameMap.containsKey( config.getId() )) {
+				configIdToNameMap.put( config.getId(), "Config"+numberToAppend );
+				numberToAppend +=1 ;
+			}
+		}
+		return configIdToNameMap;
+	}
 	
 	/**
 	 * Gets all configurations for the given solver

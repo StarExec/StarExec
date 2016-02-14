@@ -508,6 +508,7 @@ CREATE TABLE anonymous_links (
 	primitive_id INT NOT NULL,
 	primitive_type VARCHAR(36),
 	hide_primitive_name BOOLEAN,
+	date_created DATE,
 
 	PRIMARY KEY (unique_id),
 	UNIQUE KEY (primitive_id, primitive_type, hide_primitive_name)

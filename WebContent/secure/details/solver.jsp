@@ -5,78 +5,39 @@
 <%		
 
 	try {
-		int userId = SessionUtil.getUserId(request);
-		int solverId = Integer.parseInt(request.getParameter("id"));
+		String uniqueId = request.getParameter("anonId");
+		boolean isAnonymousPage = uniqueId != null;
 
-		Solver s = null;
-		if(Permissions.canUserSeeSolver(solverId, userId)) {
-			s = Solvers.get(solverId);
-		}
-		
-		if(s != null) {
-			request.setAttribute("usr", Users.get(s.getUserId()));
-			request.setAttribute("solver", s);
-			List<Website> sites=Websites.getAll(solverId,WebsiteType.SOLVER);
-			//we need two versions of every website URL-- one for insertion into an attribute and
-			//one for insertion into the HTML body. This data structure represents every site with 3 strings
-			//first the name, then the attribute URL, then the body URL
-			List<String[]> formattedSites=new ArrayList<String[]>();
-			for (Website site : sites) {
-				String[] formattedSite=new String[3];
-				formattedSite[0]=GeneralSecurity.getHTMLSafeString(site.getName());
-				formattedSite[1]=GeneralSecurity.getHTMLAttributeSafeString(site.getUrl());
-				formattedSite[2]=GeneralSecurity.getHTMLSafeString(site.getUrl());
-				formattedSites.add(formattedSite);
-			}
-			request.setAttribute("sites", formattedSites);
-			request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
-			request.setAttribute("configs", Solvers.getConfigsForSolver(s.getId()));
-			
-			String buildStatus = (s.built()) == 1 ? "built" : "not built";
-				
-			request.setAttribute("built", buildStatus);	
-
-			request.setAttribute("hasAdminReadPrivileges",Users.hasAdminReadPrivileges(userId));
-			boolean downloadable=SolverSecurity.canUserDownloadSolver(solverId,userId).isSuccess();
-			
-		
-			request.setAttribute("downloadable",downloadable);
+		if ( isAnonymousPage ) {
+			JspHelpers.handleAnonymousSolverPage( uniqueId, request, response );
 		} else {
-			if (Solvers.isSolverDeleted(solverId)) {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been deleted. You likely want to remove it from your spaces.");
-			}
-			else if (Solvers.isSolverRecycled(solverId))  {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been moved to the recycle bin by its owner.");
-			}
-			else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
-			}
-			
+			JspHelpers.handleNonAnonymousSolverPage( request, response );
 		}
+
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given solver id was in an invalid format");
 	} catch (Exception e) {
-		
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
 
-<star:template title="${solver.name}" js="common/delaySpinner, details/shared, details/solver, lib/jquery.dataTables.min" css="common/delaySpinner, common/table, details/shared">				
+<star:template title="${solverPageTitle}" js="common/delaySpinner, details/shared, details/solver, lib/jquery.dataTables.min" css="common/delaySpinner, common/table, details/shared">				
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
-	<span style="display:none;" id="solverId" value="${solver.id}"> </span>
-		<fieldset>
+	<span style="display:none;" id="isAnonymousPage" value="${ isAnonymousPage }"></span>
+	<c:if test="${ !isAnonymousPage }">
+		<span style="display:none;" id="solverId" value="${solver.id}"> </span>
+	</c:if>
+	<fieldset>
 		<legend>details</legend>
 		<table id="infoTable">
 			<tr>
 			<td id="picSection">
 				<img id="showPicture" src="${starexecRoot}/secure/get/pictures?Id=${solver.id}&type=sthn" enlarge="${starexecRoot}/secure/get/pictures?Id=${solver.id}&type=sorg"><br>
-					<c:choose>
-					<c:when test="${usr.id == user.id}">
-						<a id="uploadPicture" href="${starexecRoot}/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
-					</c:when>
-					</c:choose>
+				<c:if test="${ !isAnonymousPage && usr.id == user.id }">
+					<a id="uploadPicture" href="${starexecRoot}/secure/add/picture.jsp?type=solver&Id=${solver.id}">change</a>
+				</c:if>
 			</td>
 			<td id="solverDetail" class="detail">
 				<table id="solverInfo" class="shaded">
@@ -87,18 +48,22 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td>name</td>			
-							<td>${solver.name}</td>
-						</tr>
+						<c:if test="${ !hideSolverName }">
+							<tr>
+								<td>name</td>			
+								<td>${solver.name}</td>
+							</tr>
+						</c:if>
 						<tr>
 							<td>description</td>			
 							<td>${solver.description}</td>
 						</tr>
-						<tr>
-							<td>owner</td>			
-							<td><star:user value="${usr}" /></td>
-						</tr>							
+						<c:if test="${ !isAnonymousPage }">
+							<tr>
+								<td>owner</td>			
+								<td><star:user value="${usr}" /></td>
+							</tr>							
+						</c:if>
 						<tr>
 							<td>uploaded</td>			
 							<td><fmt:formatDate pattern="MMM dd yyyy" value="${solver.uploadDate}" /></td>
@@ -127,16 +92,35 @@
 				</tr>
 			</thead>
 			<tbody>
-					<c:forEach var="c" items="${configs}">
-					<tr>
-						<td id="configItem">
-							<a href="${starexecRoot}/secure/details/configuration.jsp?id=${c.id}">${c.name}<img class="extLink" src="${starexecRoot}/images/external.png"/></a>
-						</td>
-						<td>
-							${c.description}
-						</td>
-					</tr>
-					</c:forEach>		
+				<c:choose>
+					<c:when test="${ isAnonymousPage && hideSolverName }">
+						<c:forEach var="c" items="${configs}" varStatus="indexContainer">
+							<tr>
+								<td id="configItem">
+									Configuration${ indexContainer.index + 1 }	
+								</td>
+								<td>
+									${c.description}
+								</td>
+							</tr>
+						</c:forEach>		
+					</c:when>
+					<c:otherwise>
+						<c:forEach var="c" items="${configs}">
+							<tr>
+								<td id="configItem">
+									<a href="${starexecRoot}/secure/details/configuration.jsp?id=${c.id}">
+										${c.name}
+										<img class="extLink" src="${starexecRoot}/images/external.png"/>
+									</a>
+								</td>
+								<td>
+									${c.description}
+								</td>
+							</tr>
+						</c:forEach>		
+					</c:otherwise>
+				</c:choose>
 			</tbody>						
 		</table>						
 	</fieldset>
@@ -174,19 +158,29 @@
 	<div id="dialog-confirm-copy" title="confirm copy">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
+	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link">
+		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
+	</div>
+	<div id="dialog-show-anonymous-link" title="anonymous link">
+		<p>
+			<span class="ui-icon ui-icon-info"></span>
+			<span id="dialog-show-anonymous-link-txt"></span>
+		</p>
+	</div>
 	
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	<fieldset id="actions">
 		<legend>actions</legend>
-		<c:if test="${downloadable || hasAdminReadPrivileges}">			
-			<button type="button" id="downLink3">download</button>
+		<c:if test="${!isAnonymousPage}">
+			<a id="anonymousLink">get anonymous link</a>
+			<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
+				<a href="${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
+				<a href="${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
+				<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" class="popoutLink">see build info</a>
+			</c:if>
 		</c:if>
-		<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
-			
-			<a href="${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
-			<a href="${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
-			<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" class="popoutLink">see build info</a>
-			
+		<c:if test="${isAnonymousPage || downloadable || hasAdminReadPrivileges}">			
+			<button type="button" id="downLink3">download</button>
 		</c:if>
 
 	</fieldset>

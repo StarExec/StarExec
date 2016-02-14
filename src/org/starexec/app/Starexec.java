@@ -142,6 +142,7 @@ public class Starexec implements ServletContextListener {
 
 			}
 		};	
+
 		
 		
 		// Create a task that submits jobs that have pending/rejected job pairs
@@ -228,6 +229,16 @@ public class Starexec implements ServletContextListener {
 				}
 			}
 		};
+
+		/*
+		final Runnable deleteOldAnonymousLinks = new RobustRunnable("deleteOldAnonymousLinks") {
+			@Override
+			protected void dorun() {
+				log.info( "deleteOldAnonymousLinks (periodic)" );
+				AnonymousLinks.deleteOldLinks();
+			}
+		};
+		*/
 
 		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
 			@Override

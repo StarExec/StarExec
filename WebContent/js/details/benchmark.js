@@ -2,7 +2,6 @@ var bid;
 
 $(document).ready(function(){
 	bid = getParameterByName('id');	
-	$('#anonymousLink').hide();
 	$('#dialog-anonymous-link').hide();
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
@@ -26,7 +25,14 @@ function registerDownloadLinkButtonEventHandler() {
 	$('#downLink').click(function() {
 		createDialog("Processing your download request, please wait. This will take some time for large benchmarks.");
 		var token=Math.floor(Math.random()*100000000);
-		$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
+		log("isAnonymousPage: " + $('#isAnonymousPage').attr('value') );
+		if ( $('#isAnonymousPage').attr('value') === 'true' ) {
+			var anonId = getParameterByName('anonId');
+			log( 'anonId: ' + anonId );
+			$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&anonId=" + anonId );
+		} else {
+			$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
+		}
 		destroyOnReturn(token);
 	});
 }
@@ -62,7 +68,7 @@ function makeAnonymousLinkPost( hidePrimitiveName ) {
 		function( returnCode ) {
 			log( 'Anonymous Link Return Code: ' + returnCode );
 			if ( returnCode.success ) {
-				$('#dialog-show-anonymous-link').text( 'anonymous link for this benchmark:\n' + returnCode.message );
+				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
 				$('#dialog-show-anonymous-link').dialog({
 					width: 750,
 					height: 200,

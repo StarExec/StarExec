@@ -8,6 +8,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.Hash;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -15,6 +16,7 @@ import org.starexec.util.Validator;
 public class GeneralSecurity {
 
 	private static final Logger log = Logger.getLogger(GeneralSecurity.class);			
+	private static final LogUtil logUtil = new LogUtil( log );
 
 	/**
 	 * Checks to see if the given user has permission to restart Starexec
@@ -169,14 +171,24 @@ public class GeneralSecurity {
 	 * @author Albert Giegerich
 	 */
 	public static ValidatorStatusCode canUserGetAnonymousLinkForPrimitive( int userId, String primitiveType, int primitiveId ) {
+		final String methodName = "canUserGetAnonymousLinkForPrimitive";
+		logUtil.entry( methodName );
 		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
 		if ( Users.isAdmin( userId )) {
 			return new ValidatorStatusCode( true );
 		} else if ( primitiveType.equals( R.BENCHMARK )) {
-			log.debug( "Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
+			logUtil.debug( methodName, 
+					"Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
 			return BenchmarkSecurity.canUserGetAnonymousLink( primitiveId, userId );
+		} else if ( primitiveType.equals( R.SOLVER )) {
+			logUtil.debug( methodName, 
+					"Found that primitive was of type " + R.SOLVER + " while checking if an anonymous link could be generated for it." );
+			return SolverSecurity.canUserGetAnonymousLink( primitiveId, userId );
+		} else if ( primitiveType.equals( R.JOB )) {
+			logUtil.debug( methodName, 
+					"Found that primitive was of type " + R.JOB + " while checking if an anonymous link could be generated for it." );
+			return JobSecurity.canUserGetAnonymousLink( primitiveId, userId );
 		} else {
-			// TODO Add branches for all primitive types.
 			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this primitive." );
 		}
 	}

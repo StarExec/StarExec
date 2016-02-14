@@ -24,6 +24,10 @@ fieldset {
 }
 
 
+#dialog-show-anonymous-link a {
+	color: #0000EE;
+	text-decoration: underline;
+}
 
 
 .popoutLink {

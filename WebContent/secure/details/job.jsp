@@ -4,112 +4,7 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		int userId = SessionUtil.getUserId(request);
-		int jobId = Integer.parseInt(request.getParameter("id"));
-
-
-		Job j=null;
-		if(Permissions.canUserSeeJob(jobId,userId)) {
-			List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
-			j=Jobs.get(jobId);
-			
-			boolean queueExists = true;
-			boolean queueIsEmpty = false;
-
-			if (j.getQueue() == null) {
-				queueExists = false;
-			} else {
-				Queue q = j.getQueue();
-				List<WorkerNode> nodes = Cluster.getNodesForQueue(q.getId());
-				if (nodes.size() == 0) {
-					queueIsEmpty = true;
-				}
-
-			}
-			
-			
-			int jobSpaceId=j.getPrimarySpace();
-			//this means it's an old job and we should run the backwards-compatibility routine
-			//to get everything set up first
-			if (jobSpaceId==0) {
-				jobSpaceId=Jobs.setupJobSpaces(jobId);
-			}
-			
-			if (jobSpaceId>0) {
-				j=Jobs.get(jobId);
-				JobStatus status=Jobs.getJobStatusCode(jobId);
-				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
-				boolean isAdminPaused = Jobs.isSystemPaused();
-				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
-				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
-				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
-				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
-				int wallclock=j.getWallclockTimeout();
-				int cpu=j.getCpuTimeout();
-				long memory=j.getMaxMemory();
-				JobSpace jobSpace=Spaces.getJobSpace(jobSpaceId);
-
-				User u=Users.get(j.getUserId());
-
-				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId);
-				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
-				jobSpaces.add(jobSpace);
-				request.setAttribute("jobSpaces", jobSpaces);
-				Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
-				request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
-				Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
-					RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
-				request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
-				Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
-						RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
-				request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
-
-				Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
-				request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
-				Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
-						Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
-
-				request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
-				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
-				request.setAttribute("isAdmin",Users.isAdmin(userId));
-				request.setAttribute("usr",u);
-				request.setAttribute("job", j);
-				request.setAttribute("jobspace",jobSpace);
-				request.setAttribute("isPaused", isPaused);
-				request.setAttribute("isAdminPaused", isAdminPaused);
-				request.setAttribute("isKilled", isKilled);
-				request.setAttribute("isRunning", isRunning);
-				request.setAttribute("isComplete", isComplete);
-				request.setAttribute("queueIsEmpty", queueIsEmpty);
-				request.setAttribute("isProcessing", isProcessing);
-				request.setAttribute("postProcs", ListOfPostProcessors);
-				Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
-				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
-				request.setAttribute("firstPostProc",stage1PostProc);
-				request.setAttribute("firstPreProc",stage1PreProc);
-				request.setAttribute("queues", Queues.getQueuesForUser(userId));
-				request.setAttribute("queueExists", queueExists);
-				request.setAttribute("userId",userId);
-				request.setAttribute("cpu",cpu);
-				request.setAttribute("wallclock",wallclock);
-				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
-				request.setAttribute("seed",j.getSeed());
-				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
-
-				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, 1);
-				request.setAttribute("solverTableStats", solverTableStats);
-			} else {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
-			}
-			
-			
-		} else {
-			if (Jobs.isJobDeleted(jobId)) {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
-			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
-			}
-		}
+		JspHelpers.handleJobPage( request, response );
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
 	} catch (Exception e) {
@@ -117,8 +12,12 @@
 	}
 %>
 
-<star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">			
-	<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
+<star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">		
+	<c:if test="${!isAnonymousPage}">
+		<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
+	</c:if>
+	<span style="display:none" id="isAnonymousPage" value="${ isAnonymousPage }"></span>
+	<span style="display:none" id="anonymizeNames" value="${ anonymizeNames }"></span>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
 	<span style="display:none" id="starexecUrl" value="${starexecUrl}"></span>
@@ -143,9 +42,13 @@
 	</div>
 	<div id="detailPanel" class="jobDetails">
 			<h3 id="spaceName">${jobspace.name}</h3>
-			<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
+			<c:if test="${!isAnonymousPage}">
+				<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
+			</c:if>
 			
-			<button id="matrixViewButton" type="button">Matrix View</button>
+			<c:if test="${!isAnonymousPage}">
+				<button id="matrixViewButton" type="button">matrix view</button>
+			</c:if>
 				
 			
 			<fieldset id="statsErrorField">
@@ -156,7 +59,9 @@
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
 				<fieldset id="panelActions" class="tableActions">
-						<button id="popoutPanels">Popout</button>
+						<c:if test="${!isAnonymousPage}">
+							<button id="popoutPanels">Popout</button>
+						</c:if>
 						<button id="collapsePanels">Collapse All</button>
 						<button id="openPanels">Open All</button>
 						<button class="changeTime">Use CPU Time</button>
@@ -181,7 +86,9 @@
 							<option value="${i}">${i}</option>
 						</c:forEach>	
 					</select> 
-					<button id="compareSolvers">compare selected solvers</button>
+					<c:if test="${ !isAnonymousPage }">
+						<button id="compareSolvers">compare selected solvers</button>
+					</c:if>
 				</fieldset>
 				<c:choose>	
 					<c:when test="${isLocalJobPage}">
@@ -353,205 +260,212 @@
 					</c:otherwise>
 				</c:choose>
 			</fieldset>
-			<fieldset id="detailField">
-				<legend>job overview</legend>
-				<table id="detailTbl" class="shaded">
-					<thead>
-						<tr>
-							<th>property</th>
-							<th>value</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr title="the job's name">
-							<td id="jobNameTitle">name (click to edit)</td>
-							<td id="jobName">
-								<span id="jobNameText">${job.name}</span>
-								<span id="editJobNameWrapper">
-									<input id="editJobName" type="text" value="${job.name}"></input>
-									<button id="editJobNameButton">change</button>
-								</span>
-							</td>
-						</tr>
-						<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
-							<td>status</td>		
-							<c:if test="${isPaused}">
-								<td>paused</td>
-							</c:if>
-							<c:if test="${isAdminPaused}">
-								<td>Paused(admin)</td>
-							</c:if>
-							<c:if test="${isKilled}">
-								<td>killed</td>
-							</c:if>
-							<c:if test="${not isPaused && not isKilled && not isAdminPaused}">	
-								<td>${isComplete ? 'complete' : 'incomplete'}</td>
-							</c:if>
-		
-						</tr>
-						<tr title="the job creator's description for this job">
-							<td id="jobDescriptionTitle">description (click to edit)</td>			
-							<td>
-								<span id="jobDescriptionText">${job.description}</span>
-								<span id="editJobDescriptionWrapper">
-									<textarea id="editJobDescription" value="${job.description}"></textarea>
-									<button id="editJobDescriptionButton">change</button>
-								</span>
-							</td>
-						</tr>
-						<tr title="the user who submitted this job">
-							<td>owner</td>			
-							<td><star:user value="${usr}" /></td>
-						</tr>							
-						<tr title="the date/time the job was created on StarExec">
-							<td>created</td>			
-							<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
-						</tr>			
-						<tr title="the date/time the job was completed">
-							<td>completed</td>			
-							<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.completeTime}" /></td>
-						</tr>			
-						<tr title="the preprocessor that was used to process benchmarks for this job">
-							<td>preprocessor</td>
-							<c:if test="${not empty firstPreProc}">			
-							<td title="${firstPreProc.description}">${firstPreProc.name}</td>
-							</c:if>
-							<c:if test="${empty firstPreProc}">			
-							<td>none</td>
-							</c:if>
-						</tr>
-						<tr title="the postprocessor that was used to process output for this job">
-							<td>postprocessor</td>
-							<c:if test="${not empty firstPostProc}">			
-							<td title="${firstPostProc.description}">${firstPostProc.name}</td>
-							</c:if>
-							<c:if test="${empty firstPostProc}">			
-							<td>none</td>
-							</c:if>
-						</tr>
-						<tr title="the execution queue this job was submitted to">
-							<td>queue</td>	
-							<c:if test="${not empty job.queue}">
-								<td>
-									<a href="${starexecRoot}/secure/explore/cluster.jsp">
-										${job.queue.name} 
-										<%-- <img class="extLink" src="${starexecRoot}/images/external.png"/> --%>
-									</a>
+			<c:if test="${ !isAnonymousPage }">
+				<fieldset id="detailField">
+					<legend>job overview</legend>
+					<table id="detailTbl" class="shaded">
+						<thead>
+							<tr>
+								<th>property</th>
+								<th>value</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr title="the job's name">
+								<td id="jobNameTitle">name (click to edit)</td>
+								<td id="jobName">
+									<span id="jobNameText">${job.name}</span>
+									<span id="editJobNameWrapper">
+										<input id="editJobName" type="text" value="${job.name}"></input>
+										<button id="editJobNameButton">change</button>
+									</span>
 								</td>
-							</c:if>
-							<c:if test="${empty job.queue}">
-							<td>unknown</td>
-							</c:if>						
-						</tr>
-						<tr title="the wallclock timeout each pair in the job was subjected to">
-							<td>wallclock timeout</td>
-							<td>${wallclock}</td>
-						</tr>		
-						<tr title="the cpu timeout each pair in the job was subjected to">
-							<td>cpu timeout</td>
-							<td>${cpu}</td>
-						</tr>		
-						<tr title="the maximum memory each pair in the job was allowed to use, in gigabytes">
-							<td>max memory</td>
-							<td>${maxMemory}</td>
-						</tr>
-						<tr title="the random seed given to the preprocessor used by each job pair">
-							<td>random seed</td>
-							<td>${seed}</td>
-						</tr>
-					</tbody>
-				</table>	
-			</fieldset>
+							</tr>
+							<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
+								<td>status</td>		
+								<c:if test="${isPaused}">
+									<td>paused</td>
+								</c:if>
+								<c:if test="${isAdminPaused}">
+									<td>Paused(admin)</td>
+								</c:if>
+								<c:if test="${isKilled}">
+									<td>killed</td>
+								</c:if>
+								<c:if test="${not isPaused && not isKilled && not isAdminPaused}">	
+									<td>${isComplete ? 'complete' : 'incomplete'}</td>
+								</c:if>
 			
-			
-			<fieldset id="actionField">
-				<legend>actions</legend>
-				<ul id="actionList">
-					<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
-					<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
-					<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
-					<li><button id="downloadJobPageButton" type="button">download job page</button></li>
-					<c:if test="${isAdmin}">
-						<li><button type="button" id="clearCache">clear cache</button></li>
-						<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
-					</c:if>
-					
-					<c:if test="${job.userId == userId or isAdmin}"> 
-						<li><button type="button" id="deleteJob">delete job</button></li>
-						<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
-							<c:if test="${isRunning}">
-								<li><button type="button" id="pauseJob">pause job</button></li>
+							</tr>
+							<tr title="the job creator's description for this job">
+								<td id="jobDescriptionTitle">description (click to edit)</td>			
+								<td>
+									<span id="jobDescriptionText">${job.description}</span>
+									<span id="editJobDescriptionWrapper">
+										<textarea id="editJobDescription" value="${job.description}"></textarea>
+										<button id="editJobDescriptionButton">change</button>
+									</span>
+								</td>
+							</tr>
+							<tr title="the user who submitted this job">
+								<td>owner</td>			
+								<td><star:user value="${usr}" /></td>
+							</tr>							
+							<tr title="the date/time the job was created on StarExec">
+								<td>created</td>			
+								<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
+							</tr>			
+							<tr title="the date/time the job was completed">
+								<td>completed</td>			
+								<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.completeTime}" /></td>
+							</tr>			
+							<tr title="the preprocessor that was used to process benchmarks for this job">
+								<td>preprocessor</td>
+								<c:if test="${not empty firstPreProc}">			
+								<td title="${firstPreProc.description}">${firstPreProc.name}</td>
+								</c:if>
+								<c:if test="${empty firstPreProc}">			
+								<td>none</td>
+								</c:if>
+							</tr>
+							<tr title="the postprocessor that was used to process output for this job">
+								<td>postprocessor</td>
+								<c:if test="${not empty firstPostProc}">			
+								<td title="${firstPostProc.description}">${firstPostProc.name}</td>
+								</c:if>
+								<c:if test="${empty firstPostProc}">			
+								<td>none</td>
+								</c:if>
+							</tr>
+							<tr title="the execution queue this job was submitted to">
+								<td>queue</td>	
+								<c:if test="${not empty job.queue}">
+									<td>
+										<a href="${starexecRoot}/secure/explore/cluster.jsp">
+											${job.queue.name} 
+											<%-- <img class="extLink" src="${starexecRoot}/images/external.png"/> --%>
+										</a>
+									</td>
+								</c:if>
+								<c:if test="${empty job.queue}">
+								<td>unknown</td>
+								</c:if>						
+							</tr>
+							<tr title="the wallclock timeout each pair in the job was subjected to">
+								<td>wallclock timeout</td>
+								<td>${wallclock}</td>
+							</tr>		
+							<tr title="the cpu timeout each pair in the job was subjected to">
+								<td>cpu timeout</td>
+								<td>${cpu}</td>
+							</tr>		
+							<tr title="the maximum memory each pair in the job was allowed to use, in gigabytes">
+								<td>max memory</td>
+								<td>${maxMemory}</td>
+							</tr>
+							<tr title="the random seed given to the preprocessor used by each job pair">
+								<td>random seed</td>
+								<td>${seed}</td>
+							</tr>
+						</tbody>
+					</table>	
+				</fieldset>
+				<fieldset id="actionField">
+					<legend>actions</legend>
+					<ul id="actionList">
+						<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
+						<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
+						<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
+						<li><button id="downloadJobPageButton" type="button">download job page</button></li>
+						<li><a id="anonymousLink">get anonymous link</a></li>
+						<c:if test="${isAdmin}">
+							<li><button type="button" id="clearCache">clear cache</button></li>
+							<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
+						</c:if>
+						
+						<c:if test="${job.userId == userId or isAdmin}"> 
+							<li><button type="button" id="deleteJob">delete job</button></li>
+							<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+								<c:if test="${isRunning}">
+									<li><button type="button" id="pauseJob">pause job</button></li>
+								</c:if>
+							
+							
+								<c:if test="${isComplete}">
+									<li><button type="button" id="postProcess">run new postprocessor</button></li>
+								</c:if>
+							
+							<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
+								<li><button type="button" id="resumeJob">resume job</button></li>
 							</c:if>
-						
-						
-							<c:if test="${isComplete}">
-								<li><button type="button" id="postProcess">run new postprocessor</button></li>
+							<c:if test="${isPaused or isAdminPaused}">
+								<li><button type="button" id="changeQueue">Change Queue</button></li>	
 							</c:if>
+						</c:if>
+					</ul>
+					<div id="dialog-confirm-delete" title="confirm delete">
+						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+					</div>	
+					<div id="dialog-confirm-pause" title="confirm pause">
+						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
+					</div>	
+					<div id="dialog-confirm-resume" title="confirm resume">
+						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-resume-txt"></span></p>
+					</div>	
+					<div id="dialog-return-ids" title="return ids">
+						<p><span id="dialog-return-ids-txt"></span></p>
+						<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
+						<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
+					</div>
+					<div id="dialog-solverComparison" title="solver comparison chart">
+						<img src="" id="solverComparison800" usemap="#solverComparisonMap800"/>
+						<map id="solverComparisonMap800"></map>
+					</div>
+					<div id="dialog-warning" title="warning">
+						<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+					</div>		
+					<div id="dialog-postProcess" title="run new postprocessor">
+						<p><span id="dialog-postProcess-txt"></span></p><br/>
 						
-						<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
-							<li><button type="button" id="resumeJob">resume job</button></li>
-						</c:if>
-						<c:if test="${isPaused or isAdminPaused}">
-							<li><button type="button" id="changeQueue">Change Queue</button></li>	
-						</c:if>
-						</c:if>
-					
-									
-					
-				</ul>
-				<div id="dialog-confirm-delete" title="confirm delete">
-					<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
-				</div>	
-				<div id="dialog-confirm-pause" title="confirm pause">
-					<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
-				</div>	
-				<div id="dialog-confirm-resume" title="confirm resume">
-					<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-resume-txt"></span></p>
-				</div>	
-				<div id="dialog-return-ids" title="return ids">
-					<p><span id="dialog-return-ids-txt"></span></p>
-					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
-					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
-				</div>
-				<div id="dialog-solverComparison" title="solver comparison chart">
-					<img src="" id="solverComparison800" usemap="#solverComparisonMap800"/>
-					<map id="solverComparisonMap800"></map>
-				</div>
-				<div id="dialog-warning" title="warning">
-					<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
-				</div>		
-				<div id="dialog-postProcess" title="run new postprocessor">
-					<p><span id="dialog-postProcess-txt"></span></p><br/>
-					
-					<p>
-					<label for="postProcessorSelection">Post Processor</label>
-					<select id="postProcessorSelection">
-						<c:forEach var="proc" items="${postProcs}">
-							<option value="${proc.id}">${proc.name} (${proc.id})</option>
-						</c:forEach>
-					</select></p>
-					<p>
-						<label class="noPrimaryStage stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
-						<select id="postProcessorStageSelector" class="stageSelector">
-							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
-								<option value="${i}">${i}</option>
+						<p>
+						<label for="postProcessorSelection">Post Processor</label>
+						<select id="postProcessorSelection">
+							<c:forEach var="proc" items="${postProcs}">
+								<option value="${proc.id}">${proc.name} (${proc.id})</option>
 							</c:forEach>
-						</select> 
-					</p>
-				</div>
-				<div id="dialog-changeQueue" title="change queue">
-					<p><span id="dialog-changeQueue-txt"></span></p><br/>
-					
-					<p><select id="changeQueueSelection">
-						<c:forEach var="q" items="${queues}">
-							<option value="${q.id}">${q.name} (${q.id})</option>
-						</c:forEach>
-					</select></p>
-					
-				</div>
-				<div id="dialog-spaceOverview" title="space overview chart">
-					<img src="" id="bigSpaceOverview"/>
-				</div>
-			</fieldset>		
+						</select></p>
+						<p>
+							<label class="noPrimaryStage stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
+							<select id="postProcessorStageSelector" class="stageSelector">
+								<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+									<option value="${i}">${i}</option>
+								</c:forEach>
+							</select> 
+						</p>
+					</div>
+					<div id="dialog-changeQueue" title="change queue">
+						<p><span id="dialog-changeQueue-txt"></span></p><br/>
+						
+						<p><select id="changeQueueSelection">
+							<c:forEach var="q" items="${queues}">
+								<option value="${q.id}">${q.name} (${q.id})</option>
+							</c:forEach>
+						</select></p>
+						
+					</div>
+					<div id="dialog-spaceOverview" title="space overview chart">
+						<img src="" id="bigSpaceOverview"/>
+					</div>
+					<div id="dialog-show-anonymous-link" title="anonymous link">
+						<p>
+							<span class="ui-icon ui-icon-info"></span>
+							<span id="dialog-show-anonymous-link-txt"></span>
+						</p>
+					</div>
+					<div id="dialog-confirm-anonymous-link" title="confirm anonymous link">
+						<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
+					</div>
+				</fieldset>		
+			</c:if>
 		</div>
 </star:template>

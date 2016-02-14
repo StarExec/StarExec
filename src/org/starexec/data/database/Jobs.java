@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -17,6 +19,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
@@ -24,11 +28,13 @@ import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
+import org.starexec.data.to.Nameable;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
@@ -578,6 +584,125 @@ public class Jobs {
 		success=Jobs.removeJobFromDatabase(jobId);
 		
 		return success;
+	}
+
+	/**
+	 * Gets a mapping of bencmarh ID's to unique anonymized names.
+	 * @param jobId The id of the job to get a mapping for.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, String> getAnonymizedBenchmarkNames( final int jobId ) {
+		final String methodName = "getAnonymizedBenchmarkNames";
+		logUtil.entry( methodName );
+		Job job = getWithSimplePairs( jobId );
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		// Sort the pairs by bench id
+		Collections.sort( jobPairs, (pair1, pair2) -> pair1.getBench().getId() - pair2.getBench().getId() );
+
+		Map<Integer, String> benchmarkIdToAnonymizedName = new HashMap<>();
+		int numberToAppend = 1;
+		for ( JobPair pair : jobPairs ) {
+			int benchId =  pair.getBench().getId();
+			if ( !benchmarkIdToAnonymizedName.containsKey( benchId )) {
+				benchmarkIdToAnonymizedName.put( benchId, "Benchmark" + numberToAppend ); 
+				numberToAppend += 1;
+			}
+		}
+		return benchmarkIdToAnonymizedName;
+	}
+
+	/**
+	 * Gets a mapping of job space ID's to unique anonymized names.
+	 * @param jobId The id of the job to get a mapping for.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, String> getAnonymizedJobSpaceNames( final int jobId ) {
+		Job job = get( jobId );
+
+		log.debug("SPAGETT: " + job.getPrimarySpace() );
+		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob( job.getPrimarySpace(), true );
+		jobSpaces.add( Spaces.getJobSpace( job.getPrimarySpace() ));
+		Collections.sort( jobSpaces, (space1, space2) -> space1.getId() - space2.getId() );
+		log.debug("SPAGETT2: " + jobSpaces.size() );
+
+		Map<Integer, String> jobSpaceIdToAnonymizedName = new HashMap<>();
+		int numberToAppend = 1;
+		for ( JobSpace space : jobSpaces ) {
+			int spaceId =  space.getId();
+			if ( !jobSpaceIdToAnonymizedName.containsKey( spaceId )) {
+				jobSpaceIdToAnonymizedName.put( spaceId, "Space" + numberToAppend ); 
+				numberToAppend += 1;
+			}
+		}
+		return jobSpaceIdToAnonymizedName;
+	}
+
+	/**
+	 * Gets a mapping of solver ID's to unique anonymized names.
+	 * @param jobId The id of the job to get a mapping for.
+	 * @param stageNumber Stage number to filter job pairs by.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, String> getAnonymizedSolverNames( final int jobId, final int stageNumber ) {
+		Job job = getWithSimplePairs( jobId );
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		Comparator<JobPair> sortJobPairBySolverId =	(firstPair, secondPair) -> {
+			int firstSolverId = firstPair.getStageFromNumber( stageNumber ).getSolver().getId();
+			int secondSolverId = secondPair.getStageFromNumber( stageNumber ).getSolver().getId();
+			return firstSolverId - secondSolverId;
+		};	
+
+		// Filter out any pairs that don't have the specified stage
+		List<JobPair> jobPairsFilteredByStage = jobPairs.stream()
+				.filter( pair -> pair.hasStage( stageNumber ))
+				.sorted( sortJobPairBySolverId )
+				.collect( Collectors.toList() );
+
+		// Sort the pairs by solver id
+		//
+		//Collections.sort( jobPairsFilteredByStage,  );
+
+		Map<Integer, String> solverIdToAnonymizedName = new HashMap<>();
+		int numberToAppend = 1;
+		for ( JobPair pair : jobPairsFilteredByStage ) {
+			int solverId =  pair.getStageFromNumber( stageNumber ).getSolver().getId();
+			if ( !solverIdToAnonymizedName.containsKey( solverId )) {
+				solverIdToAnonymizedName.put( solverId, "Solver" + numberToAppend ); 
+				numberToAppend += 1;
+			}
+		}
+		return solverIdToAnonymizedName;
+
+	}
+
+	/**
+	 *
+	 * @author Albert Giegerich
+	 */
+	private static <T extends Identifiable & Nameable> Map<Integer, String> getAnonymizedPrimitiveNames(
+			int jobId,
+			Function<JobPair, T> jobPairToPrimitive, 
+			String primitiveName ) {
+
+		Job job = get( jobId );
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		List<T> primitives = jobPairs.stream()
+				// Map the job pairs to primitives using the provided function.
+				.map( jobPair -> jobPairToPrimitive.apply(jobPair) )
+				// sort the primitives by id
+				.sorted( (primitive1, primitive2) -> primitive1.getId() - primitive2.getId() )	
+				.collect( Collectors.toList() );
+		
+		int numberToAppend = 1;
+		Map<Integer, String> anonymizedPrimitiveNames = new HashMap<Integer, String>();
+		for ( T primitive : primitives ) {
+			anonymizedPrimitiveNames.put( primitive.getId(), primitiveName + numberToAppend );
+			numberToAppend += 1;
+		}
+		return anonymizedPrimitiveNames;
 	}
 
 	/**

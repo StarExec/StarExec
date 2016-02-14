@@ -11,9 +11,9 @@
 		request.setAttribute( "isAnonymousPage", isAnonymousPage );
 		
 		if ( isAnonymousPage ) {
-			Util.handleAnonymousBenchPage( uniqueId, request, response );
+			JspHelpers.handleAnonymousBenchPage( uniqueId, request, response );
 		} else {
-			Util.handleNonAnonymousBenchPage( request, response );
+			JspHelpers.handleNonAnonymousBenchPage( request, response );
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");		
@@ -23,6 +23,7 @@
 %>
 
 <star:template title="${benchPageTitle}" js="common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table">				
+	<span style="display:none;" id="isAnonymousPage" value="${isAnonymousPage}"></span>
 	<c:if test="${!isAnonymousPage}">
 		<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	</c:if>

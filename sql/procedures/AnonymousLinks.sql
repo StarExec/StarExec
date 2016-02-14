@@ -4,8 +4,8 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 DROP PROCEDURE IF EXISTS AddAnonymousLink;
 CREATE PROCEDURE AddAnonymousLink( IN _uniqueId VARCHAR(36), IN _primitiveType VARCHAR(36), IN _primitiveId INT, IN _hidePrimitiveName BOOLEAN )
 	BEGIN	
-		INSERT INTO anonymous_links ( unique_id, primitive_type, primitive_id, hide_primitive_name ) 
-			VALUES ( _uniqueId, _primitiveType, _primitiveId, _hidePrimitiveName );
+		INSERT INTO anonymous_links ( unique_id, primitive_type, primitive_id, hide_primitive_name, date_created ) 
+			VALUES ( _uniqueId, _primitiveType, _primitiveId, _hidePrimitiveName, CURDATE() );
 	END //	
 
 DROP PROCEDURE IF EXISTS GetAnonymousLink;
@@ -16,9 +16,9 @@ CREATE PROCEDURE GetAnonymousLink( IN _primitiveType VARCHAR(36), IN _primitiveI
 	END //
 
 DROP PROCEDURE IF EXISTS GetIdOfPrimitiveAssociatedWithLink;
-CREATE PROCEDURE GetIdOfPrimitiveAssociatedWithLink( IN _uniqueId VARCHAR(36) )	
+CREATE PROCEDURE GetIdOfPrimitiveAssociatedWithLink( IN _uniqueId VARCHAR(36), IN _primitiveType VARCHAR(36) )	
 	BEGIN
-		SELECT primitive_id FROM anonymous_links WHERE _uniqueId = unique_id;
+		SELECT primitive_id FROM anonymous_links WHERE unique_id = _uniqueId AND primitive_type = _primitiveType;
 	END // 
 
 DROP PROCEDURE IF EXISTS IsPrimitiveNameHidden;

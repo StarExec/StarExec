@@ -9,9 +9,6 @@ var syncResults=false;
 var DETAILS_JOB = {}; 
 
 $(document).ready(function(){
-	log("DETAILS_JOB.starexecUrl: " + DETAILS_JOB.starexecUrl);
-	log("isLocalJobPage: " + isLocalJobPage);
-	log("starexecRoot: " + starexecRoot);
 	initializeGlobalPageVariables();
 	//sets up buttons and so on
 	initUI();
@@ -36,34 +33,53 @@ $(document).ready(function(){
 // Initializes the fields of the global DETAILS_JOB object.
 function initializeGlobalPageVariables() {
 	'use strict';
-	jobId=$("#jobId").attr("value");
-	DETAILS_JOB.starexecUrl = $("#starexecUrl").attr("value");
+
+	// Set these first since get functions may depend no them
+	DETAILS_JOB.isAnonymousPage = $('#isAnonymousPage').attr('value') === 'true';
+	jobId=$('#jobId').attr('value');
+	DETAILS_JOB.starexecUrl = $('#starexecUrl').attr('value');
+	DETAILS_JOB.rootJobSpaceId = $('#spaceId').attr('value');
+	DETAILS_JOB.anonymizeNames = $('#anonymizeNames').attr('value') === 'true';
+	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
+
 	DETAILS_JOB.solverTableInitializer = getSolverTableInitializer();
 	DETAILS_JOB.pairTableInitializer = getPairTableInitializer();
 	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();
-	DETAILS_JOB.rootJobSpaceId = $("#spaceId").attr("value");
-	log(DETAILS_JOB.spaceExplorerJsonData);
+
+	log("starexecUrl: " + DETAILS_JOB.starexecUrl);
+	log("isLocalJobPage: " + isLocalJobPage);
+	log("starexecRoot: " + starexecRoot);
+	log( 'isAnonymousPage: ' + DETAILS_JOB.isAnonymousPage );
+	log( 'anonymizeNames: ' + DETAILS_JOB.anonymizeNames );
 }
 
 function getPanelTableInitializer(jobId, spaceId) {
-	"use strict";
+	'use strict';
 	var panelTableInitializer = null;
+
+	var paginationUrl = '';
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		paginationUrl = starexecRoot+'services/jobs/solvers/anonymousLink/pagination/'+spaceId+'/'+DETAILS_JOB.anonymousLinkUuid+'/'+
+				DETAILS_JOB.anonymizeNames+'/true/';
+	} else {
+		paginationUrl = starexecRoot+'services/jobs/solvers/pagination/'+spaceId+'/true/';
+	}
 
 	if (isLocalJobPage && useWallclock) {
 		// get the JSON directly from the page if this is a local page.
-		panelTableInitializer = $.parseJSON($("#jobSpaceWallclockTimeSolverStats"+spaceId).attr("value"));
+		panelTableInitializer = $.parseJSON($('#jobSpaceWallclockTimeSolverStats'+spaceId).attr('value'));
 	} else if (isLocalJobPage && !useWallclock) {
 		// get the JSON directly from the page if this is a local page.
-		panelTableInitializer = $.parseJSON($("#jobSpaceCpuTimeSolverStats"+spaceId).attr("value"));
+		panelTableInitializer = $.parseJSON($('#jobSpaceCpuTimeSolverStats'+spaceId).attr('value'));
 	} else {
 		// otherwise get it from the server
 		panelTableInitializer = {
-			"sDom"			: 'rt<"clear">',
-			"iDisplayStart"	: 0,
-			"iDisplayLength": 1000, // make sure we show every entry
-			"sAjaxSource"	: starexecRoot+"services/jobs/solvers/pagination/"+spaceId+"/true/",
-			"sServerMethod" : "POST",
-			"fnServerData"  : fnShortStatsPaginationHandler
+			'sDom'			: 'rt<"clear">',
+			'iDisplayStart'	: 0,
+			'iDisplayLength': 1000, // make sure we show every entry
+			'sAjaxSource'	: paginationUrl,
+			'sServerMethod' : 'POST',
+			'fnServerData'  : fnShortStatsPaginationHandler
 		};
 	}
 
@@ -86,9 +102,15 @@ function getSpaceExplorerJsonData() {
 			return {};
 		}
 	} else {
+		var url = '';
+		if ( DETAILS_JOB.isAnonymousPage ) {
+			url = starexecRoot+"services/space/anonymousLink/" +DETAILS_JOB.anonymousLinkUuid+ "/jobspaces/true/"+DETAILS_JOB.anonymizeNames;
+		} else {
+			url = starexecRoot+"services/space/" +jobId+ "/jobspaces/true";
+		}
 		spaceExplorerJsonData = {
 			"ajax" : { 
-				"url" : starexecRoot+"services/space/" +jobId+ "/jobspaces/true",	// Where we will be getting json data from 
+				"url" : url, // Where we will be getting json data from 
 				"data" : function (n) {
 					return {
 						id : (n.attr ? n.attr("id") : 0)
@@ -252,10 +274,10 @@ function updateGraphs() {
 		$("#spaceOverviewSelections").empty();
 		$(rows).each(function() {
 			//alert(this.html());
-			solverName=$(this).find("a:first").attr("title");
-			configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
-			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
+			var solverName=$(this).find("a:first").attr("title");
+			var configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
+			var configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
+			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
 			$("#spaceOverviewSelections").append(htmlString);
 			$("#solverChoice1").append(htmlString);
 			$("#solverChoice2").append(htmlString);
@@ -312,6 +334,7 @@ function initUI(){
 		setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
 		setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper', 
 				'description');
+		registerAnonymousLinkButtonEventHandler();
 	} else {
 		makeJobNameUneditable();
 		makeJobDescriptionUneditable();
@@ -321,6 +344,7 @@ function initUI(){
 		$('#actionField').hide();
 		$('#matrixViewButton').hide();
 		$('#downloadJobPageButton').hide();
+		$('#anonymousLink').hide();
 	}
 
 	//for aesthetics, make the heights of the two option fields identical
@@ -443,6 +467,7 @@ function initUI(){
 	$("#downloadJobPageButton").click(function() {
 		createDownloadRequest("#downloadJobPageButton", "job_page");
 	});
+
 	
 	$("#syncResults").button({
 		icons: {
@@ -810,9 +835,18 @@ function updateSpaceOverviewGraph() {
 	if ($("#logScale").prop("checked")) {
 		logY=true;
 	}
+
+	var postUrl = null;
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = starexecRoot+'services/jobs/anonymousLink/'+ DETAILS_JOB.anonymousLinkUuid +'/' + curSpaceId + 
+				'/graphs/spaceOverview/'+getSelectedStage();
+	} else {
+		postUrl = starexecRoot+'services/jobs/' + curSpaceId+'/graphs/spaceOverview/'+getSelectedStage();
+	}
+	log('updateSpaceOverviewGraph postUrl: ' + postUrl);
 	
 	$.post(
-			starexecRoot+"services/jobs/" + curSpaceId+"/graphs/spaceOverview/"+getSelectedStage(),
+			postUrl,
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -846,9 +880,17 @@ function updateSpaceOverviewGraph() {
 function updateSolverComparison(size, color) {
 	var config1=$("#solverChoice1 option:selected").attr("value");
 	var config2=$("#solverChoice2 option:selected").attr("value");
+
+	var postUrl = '';
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = starexecRoot+"services/jobs/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid+"/"+curSpaceId+"/graphs/solverComparison/"+config1+
+			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
+	} else {
+		postUrl = starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
+	}
 	
 	$.post(
-			starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage(),
+			postUrl,
 			{},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -954,16 +996,21 @@ function getPanelTable(space) {
 }
 
 function initializePanels() {
-	sentSpaceId=curSpaceId;
+	'use strict';
+	DETAILS_JOB.sentSpaceId=curSpaceId;
 	if (isLocalJobPage) {
-		var panelJson = $.parseJSON($("#subspacePanelJson"+sentSpaceId).attr("value"));
+		var panelJson = $.parseJSON($("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).attr("value"));
 		handleSpacesData(panelJson);
+	} else if ( DETAILS_JOB.isAnonymousPage ) {
+		//TODO SPAGETT
+		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.anonymizeNames+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	} else {
-		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+sentSpaceId, handleSpacesData);
+		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	}
 }
 
 function handleSpacesData(spaces) {
+	log( "SPACES JSON: " + spaces );
 	panelArray=new Array();
 	var open=true;
 	if (spaces.length==0) {
@@ -982,7 +1029,7 @@ function handleSpacesData(spaces) {
 		child=getPanelTable(space);
 		//if the user has changed spaces since this request was sent, we don't want to continue
 		//generating panels for the old space.
-		if (sentSpaceId!=curSpaceId) {
+		if (DETAILS_JOB.sentSpaceId!=curSpaceId) {
 			return;
 		}
 		$("#panelActions").after(child); //put the table after the panelActions fieldset
@@ -1078,10 +1125,12 @@ function initDataTables(){
 	});
 	
 	//Set up row click to send to pair details page
-	$("#pairTbl tbody").on("click", "tr",  function(){
-		var pairId = $(this).find('input').val();
-		window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
-	});
+	if ( !DETAILS_JOB.isAnonymousPage ) {
+		$("#pairTbl tbody").on("click", "tr",  function(){
+			var pairId = $(this).find('input').val();
+			window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
+		});
+	}
 	
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
@@ -1147,7 +1196,7 @@ function getSolverTableInitializer() {
 		"pagingType"    : "full_numbers"
     };
 
-	if (!isLocalJobPage) {
+	if ( !isLocalJobPage ) {
         solverTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
         solverTableInitializer.sServerMethod = "POST";
         solverTableInitializer.fnServerData = fnStatsPaginationHandler;
@@ -1180,8 +1229,17 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 	var outSpaceId=curSpaceId;
+
+	var postUrl = '';
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = sSource +"solvers/anonymousLink/pagination/"+outSpaceId+ "/" + getParameterByName("anonId") + 
+				"/" + DETAILS_JOB.anonymizeNames+"/false/"+useWallclock+"/" + getSelectedStage();
+	} else {
+		postUrl = sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
+	}
+
 	$.post(  
-			sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage(),
+			postUrl,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
@@ -1211,23 +1269,33 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 //  @param fnCallback the function that actually maps the returned page to the DataTable object
 //
 function fnPaginationHandler(sSource, aoData, fnCallback) {
+	'use strict';
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
 	var outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
-		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
-		aoData.push( { "name": "sort_dir", "value":isASC() } );
+		aoData.push( { 'name': 'sort_by', 'value':getSelectedSort() } );
+		aoData.push( { 'name': 'sort_dir', 'value':isASC() } );
 	}
+
+	var postUrl = null;
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + outSpaceId +
+				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + 'true';
+	} else {
+		postUrl = sSource + 'pairs/pagination/'+outSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
+	}
+
 	$.post(  
-			sSource + "pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),
+			postUrl,
 			aoData,
 			function(nextDataTablePage){
 				//do nothing if this is no longer the current request
 				if (outSpaceId!=curSpaceId) {
 					return;
 				}
-				s=parseReturnCode(nextDataTablePage);
+				var s=parseReturnCode(nextDataTablePage);
 				if (s) {
 					
 					pairTable.fnProcessingIndicator(false);
@@ -1246,7 +1314,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						$("#errorField").show();
 					}
 				}
-					
 			},  
 			"json"
 	).error(function(){
@@ -1261,4 +1328,49 @@ function popup(url) {
 		// Browser allowed opening of popup.
 		win.focus();
 	}
+}
+
+function registerAnonymousLinkButtonEventHandler() {
+	'use strict';
+	$('#anonymousLink').unbind('click');
+	$('#anonymousLink').click( function() {
+		$('#dialog-confirm-anonymous-link').text(
+				"Do you want the job, benchmark, solver, and configuration names to be hidden on the linked page?" );
+		$('#dialog-confirm-anonymous-link').dialog({
+			modal: true,
+			width: 600,
+			height: 200,
+			buttons: {
+				'yes': function() { 
+					$(this).dialog('close');
+					makeAnonymousLinkPost( true );
+				},
+				'no': function() {
+					$(this).dialog('close');
+					makeAnonymousLinkPost( false );
+				}
+			}
+		});	
+	});
+}
+function makeAnonymousLinkPost( hidePrimitiveName ) {
+	'use strict';
+	$.post(
+		starexecRoot + 'services/anonymousLink/job/' + jobId + '/' + hidePrimitiveName,
+		'',
+		function( returnCode ) {
+			log( 'Anonymous Link Return Code: ' + returnCode );
+			if ( returnCode.success ) {
+				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
+
+				$('#dialog-show-anonymous-link').dialog({
+					width: 750,
+					height: 200,
+				});	
+			} else {
+				parseReturnCode( returnCode );
+			}
+		},
+		'json'
+	);
 }

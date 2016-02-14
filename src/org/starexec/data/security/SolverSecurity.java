@@ -71,7 +71,6 @@ public class SolverSecurity {
 	 * @param userId
 	 * @return
 	 */
-	
 	public static ValidatorStatusCode canUserAddConfiguration(int solverId, int userId) {
 		Solver s=Solvers.get(solverId);
 		if (s==null) {
@@ -81,6 +80,20 @@ public class SolverSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to add a configuration to this solver");
 		}
 		return new ValidatorStatusCode(true);
+	}
+
+	/**
+	 * Checks if a user can get an anonymou link for a solver.
+	 * @param solverId The id of the solver that we're getting a link for
+	 * @param userId The id of the user trying to get the anonymous link.
+	 * @author Albert Giegeich
+	 */
+	public static ValidatorStatusCode canUserGetAnonymousLink( int solverId, int userId ) {
+		if ( userOwnsSolverOrIsAdmin( Solvers.get( solverId ), userId )) {
+			return new ValidatorStatusCode( true );
+		} else {
+			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this solver." );
+		}
 	}
 	
 	/**

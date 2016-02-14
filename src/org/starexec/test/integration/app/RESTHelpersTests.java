@@ -265,7 +265,8 @@ public class RESTHelpersTests extends TestSequence {
 	
 	@StarexecTest
 	private void getNextPageOfJobPairsInJobSpaceTest() {
-		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0);
+		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
+				j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0, false);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), j1.getJobPairs().size());
 	}
 	
@@ -273,7 +274,8 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfJobPairsInJobSpaceSingleRecordTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setNumRecords(1);
-		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0);
+		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
+				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, false);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), 1);
 	}
 	
@@ -281,7 +283,8 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageOfJobPairsInJobSpaceQueryTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setSearchQuery(j1.getJobPairs().get(0).getBench().getName());
-		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0);
+		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
+				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, false);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
 	}
 	
