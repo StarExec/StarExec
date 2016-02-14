@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
@@ -559,7 +560,7 @@ public class RESTHelpers {
 			return gson.toJson( RESTServices.ERROR_DATABASE );
 		}
 	   	if ( anonymizeSolvers ) {
-			anonymizeSolverStats( solverStats, jobSpace.getJobId(), stageNumber );
+			AnonymousLinks.anonymizeSolverStats( solverStats, jobSpace.getJobId(), stageNumber );
 		}
 
 
@@ -575,22 +576,6 @@ public class RESTHelpers {
 		return gson.toJson( nextDataTablesPage );
 	}
 
-	// Changes all the solver names to generic ones.
-	private static void anonymizeSolverStats( List<SolverStats> allSolverStats, int jobId, int stageNumber ) {
-		Map<Integer, String> idToAnonymizedSolverName = Jobs.getAnonymizedSolverNames( jobId, stageNumber );
-		for ( SolverStats stats : allSolverStats ) {
-			Solver solver = stats.getSolver();
-			if (solver.getConfigurations() == null || solver.getConfigurations().size() == 0 ) {
-				log.debug("ERROR SPAGETT ERROR");
-			}
-			Configuration config = stats.getConfiguration();
-			Map<Integer, String> configIdToName = Solvers.getConfigToAnonymizedNameMap( solver.getId() );
-			config.setName( configIdToName.get( config.getId() ));
-
-			solver.setName( idToAnonymizedSolverName.get( solver.getId() ));
-		}
-
-	}
 	
 	/**
 	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
@@ -662,46 +647,12 @@ public class RESTHelpers {
 
 		if ( anonymizeNames ) {
 			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-			anonymizePrimitiveNames( jobPairsToDisplay, jobId, stageNumber );
+			AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber );
 		}
 
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, anonymizeNames);
 	}
 
-	/**
-	 *
-	 * Anonymizes the names of primitives in a list of job pairs.
-	 * @param jobPairs the job pairs to anonymize.
-	 * @return the anonymized job pairs.
-	 * @author Albert Giegerich
-	 */
-	private static void anonymizePrimitiveNames( final List<JobPair> jobPairs, int jobId, int stageNumber ) {
-		final String methodName = "anonymizePrimitiveNames";
-		logUtil.entry( methodName );
-		// There are no primitives to anonymize
-		if ( jobPairs.size() == 0 ) {
-			return;
-		}
-
-		// Get a mapping of benchmark/solver ids to their anonymized names.
-		Map<Integer, String> anonymizedBenchmarkNames = Jobs.getAnonymizedBenchmarkNames( jobId );
-		Map<Integer, String> anonymizedSolverNames = Jobs.getAnonymizedSolverNames( jobId, stageNumber );
-		for ( JobPair pair : jobPairs ) {
-			// Set each benchmark's name to an anonymized one.
-			Benchmark pairBench = pair.getBench();
-			pairBench.setName( anonymizedBenchmarkNames.get( pairBench.getId() ));
-
-			// Set each solver's name to an anonymized one.
-			Solver pairSolver = pair.getStageFromNumber( stageNumber ).getSolver();
-			pairSolver.setName( anonymizedSolverNames.get( pairSolver.getId() ));
-
-			Map<Integer, String> configToNameMap = Solvers.getConfigToAnonymizedNameMap( pairSolver.getId() );
-			Configuration pairConfig = pair.getStageFromNumber( stageNumber ).getConfiguration();
-			pairConfig.setName( configToNameMap.get( pairConfig.getId() ));
-			
-		}
-
-	}
 	
 	/**
 	 * Gets the next page of Benchmarks that the given use can see. This includes Benchmarks the user owns,
@@ -2108,7 +2059,7 @@ public class RESTHelpers {
 		final String methodName = "anonymizeJobSpaceNames";
 		logUtil.entry( methodName );
 
-		Map<Integer, String> jobSpaceNames = Jobs.getAnonymizedJobSpaceNames( jobId );
+		Map<Integer, String> jobSpaceNames = AnonymousLinks.getAnonymizedJobSpaceNames( jobId );
 		for ( JobSpace space : jobSpaces ) {
 			space.setName( jobSpaceNames.get( space.getId() ));
 		}
