@@ -275,6 +275,15 @@ public class Solvers {
 		return false;
 	}
 	
+	/**
+	 * Associates a set of solvers with a given space or space hierarchy
+	 * @param solverIds
+	 * @param rootSpaceId
+	 * @param linkInSubspaces Whether to link solvers recursively or not
+	 * @param userId ID of user making the request
+	 * @param includeRoot If linking recursivley, whether to include the space given by rootSpaceId
+	 * @return True on success and false otherwise
+	 */
 	public static boolean associate(List<Integer> solverIds, int rootSpaceId, boolean linkInSubspaces, int userId, boolean includeRoot) {
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (linkInSubspaces) {
@@ -472,9 +481,9 @@ public class Solvers {
 	/**
 	 * Deletes a solver and permanently removes it from the database. This is NOT
 	 * the normal procedure for deleting a solver. It is used for testing. Calling "delete"
-	 * is typically what is desired
+	 * is typically what is desired.
 	 * @param id
-	 * @return
+	 * @return True on success and false otherwise.
 	 */
 	
 	public static boolean deleteAndRemoveSolver(int id) {
@@ -671,12 +680,20 @@ public class Solvers {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param solverId
+	 * @return The solver specified by the given ID. Null if the solver could not be found or has
+	 * been deleted
+	 */
 	public static Solver get(int solverId) {
 		return get(solverId,false);
 	}
 	
 	/**
 	 * @param solverId The id of the solver to retrieve
+	 * @param includeDeleted True to include solvers with a true 'deleted' flag in the DB
+	 * and false to exclude those solvers
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
@@ -827,7 +844,7 @@ public class Solvers {
 	 * Solvers a user can see include solvers they own, solvers in public spaces,
 	 * and solvers in spaces the user is also in
 	 * @param userId
-	 * @return
+	 * @return The list of solvers
 	 */
 	public static List<Solver> getByUser(int userId) {
 		try {
@@ -961,6 +978,8 @@ public class Solvers {
 	 * Gets a list of all the unique solvers in the space hierarchy rooted
 	 * at the given space.
 	 * @param spaceId The root space of the hierarchy in question
+	 * @param userId The ID of the user making the request. Used to filter which spaces
+	 * the caller can see
 	 * @return A list of all the solvers associated with any space in the current hierarchy.
 	 * Duplicates are filtered out by solver id
 	 * @author Eric Burns
@@ -984,11 +1003,11 @@ public class Solvers {
 	}
 	
 	/**
-	 * Gets a map from configuration id's to their anonymized names for use in the anonymous page feature.
 	 * @param solverId The solver id to get the configuration map for
 	 * @author Albert Giegerich
+	 * @return A map from configuration id's to their anonymized names for use in the anonymous page feature.
 	 */
-	public static Map<Integer, String> getConfigToAnonymizedNameMap( int solverId ) {
+	public static Map<Integer, String> getConfigToAnonymizedNameMap(int solverId) {
 		List<Configuration> configs = getConfigsForSolver( solverId );
 		Collections.sort( configs, (c1, c2) -> c1.getId() - c2.getId() );
 
@@ -1041,6 +1060,11 @@ public class Solvers {
 		return null;		
 	}
 	
+	/**
+	 * 
+	 * @param solverId
+	 * @return True if the gien solver was uploaded by the test user and false otherwise
+	 */
 	public static boolean isTestSolver(int solverId) {
 		return Users.isTestUser(Solvers.get(solverId).getUserId());
 	}
@@ -1195,6 +1219,11 @@ public class Solvers {
 		return defaultConfigList;
 	}
 	
+	/**
+	 * 
+	 * @param solverId
+	 * @return The given solver, even if it has been deleted. Null if the solver could not be found
+	 */
 	public static Solver getIncludeDeleted(int solverId) {
 		return get(solverId,true);
 	}
@@ -1239,9 +1268,11 @@ public class Solvers {
 		}
 		return null;
 	}
-	
-	
-	
+	/**
+	 * 
+	 * @param userId
+	 * @return The number of recycled solvers owned by the given user
+	 */
 	public static int getRecycledSolverCountByUser(int userId) {
 		return getRecycledSolverCountByUser(userId,"");
 	}
@@ -1306,6 +1337,7 @@ public class Solvers {
 	
 	/**
 	 * @param configId The id of the configuration to retrieve the owning solver for
+	 * @param includeDeleted Whether to include delted solvers (deleted flag is true)
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
@@ -1357,6 +1389,8 @@ public class Solvers {
 	/**
 	 * Get the total count of the solvers belong to a specific user
 	 * @param userId Id of the user we are looking for
+	 * @param query The search query that solvers must match to be returned. Considers solver name
+	 * and description
 	 * @return The count of the solvers
 	 * @author Wyatt Kaiser
 	 */
@@ -1387,12 +1421,9 @@ public class Solvers {
 
 	/**
 	 * Get next page of the solvers belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the query start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
+	 * @param query A DataTablesQuery object containing the parameters for the search
 	 * @param userId Id of the user we are looking for
+	 * @param recycled Whether to include recycled solvers
 	 * @return a list of Solvers belong to the user
 	 * @author Wyatt Kaiser + Eric Burns
 	 */
@@ -1409,7 +1440,7 @@ public class Solvers {
 			procedure.setString("query", query.getSearchQuery());
 			procedure.setBoolean("recycled", recycled);
 				
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			// Only get the necessary information to display this solver
@@ -1530,9 +1561,8 @@ public class Solvers {
 	/**
 	 * This takes in a list of configuration ids and matches them up with the solvers they go with,
 	 * returning one solver object for each configuration.
-	 * @param solverIds A list of solvers to retrieve
 	 * @param configIds A list of configurations, where each one is retrieved along with the solvers in the given order.
-	 * @return A list of solvers, where each one has one configuration as specified in the configIds list
+	 * @return A list of solvers, where each one ownsconfiguration as specified in the configIds list
 	 * @author Tyler Jensen & Skylar Stark
 	 */
 	public static List<Solver> getWithConfig(List<Integer> configIds) {
@@ -1559,7 +1589,7 @@ public class Solvers {
 	/**
 	 * A solver is public if it is in any public space or if it is the default solver for a community
 	 * @param solverId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean isPublic(int solverId) {
 		Connection con = null;
@@ -1720,7 +1750,7 @@ public class Solvers {
 	 * that the user owns
 	 * @param solvers
 	 * @param userId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean recycleSolversOwnedByUser(Collection<Solver> solvers, int userId) {
 		boolean success=true;
@@ -1869,6 +1899,7 @@ public class Solvers {
 	/**
 	 * Sets the "recycled" flag in the database to the given value. 
 	 * @param id the id of the solver to recycled or restored
+	 * @param state The value to assign to the recycled field
 	 * @return True if the operation was a success, false otherwise
 	 * @author Eric Burns
 	 */
@@ -2071,6 +2102,7 @@ public class Solvers {
 	 * Gets the timestamp of the configuration associated with this solver
 	 * that was added or updated the most recently
 	 * @param solverId The ID of the solver in question
+	 * @param con An open connection to make the call on
 	 * @return The timestamp as a string, or null on failure
 	 * @author Eric Burns
 	 */
@@ -2103,6 +2135,12 @@ public class Solvers {
 		return null;
 	}
 	
+	/**
+	 * Returns the path on disk to where a new solver should be stored
+	 * @param userId
+	 * @param solverName
+	 * @return The absolute path as a string
+	 */
 	public static String getDefaultSolverPath(int userId,String solverName) {
 		File uniqueDir = new File(R.getSolverPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, solverName);
@@ -2128,7 +2166,8 @@ public class Solvers {
 	/**
 	 * Gets the ID of every orphaned solver the given user owns
 	 * @param userId 
-	 * @return
+	 * @return A list of IDs of solvers that are not in any spaces and are owned
+	 * by the given user
 	 */
 	public static List<Integer> getOrphanedSolvers(int userId) {
 		Connection con=null;
@@ -2157,7 +2196,7 @@ public class Solvers {
 	/**
 	 * Recycles all of the solvers a user has that are not in any spaces
 	 * @param userId The ID of the user who will have their solvers recycled
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean recycleOrphanedSolvers(int userId) {
 		List<Integer> ids  = getOrphanedSolvers(userId);
@@ -2208,11 +2247,12 @@ public class Solvers {
 	/**
 	 * Returns the Solvers needed to populate a DataTables page for a given user. Solvers include all
 	 * solvers the user can see
-	 * @query DataTablesQuery object containing data for this search
+	 * @param query DataTablesQuery object containing data for this search
+	 * 
 	 * @param userId ID of user to get solvers for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
 	 * and the total number of elements after filtering as the second element
-	 * @return
+	 * @return Solvers to display on the next page, in order
 	 */
 	public static List<Solver> getSolversForNextPageByUser(DataTablesQuery query, int userId,int[] totals) {
 		List<Solver> solvers=Solvers.getByUser(userId);
