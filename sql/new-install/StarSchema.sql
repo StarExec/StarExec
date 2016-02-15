@@ -506,12 +506,12 @@ CREATE TABLE community_requests (
 CREATE TABLE anonymous_links (
 	unique_id VARCHAR(36) NOT NULL,
 	primitive_id INT NOT NULL,
-	primitive_type VARCHAR(36),
-	hide_primitive_name BOOLEAN,
-	date_created DATE,
+	primitive_type ENUM('solver', 'job', 'bench') NOT NULL,
+	primitives_to_anonymize ENUM('all', 'allButBench', 'none') NOT NULL,
+	date_created DATE NOT NULL,
 
 	PRIMARY KEY (unique_id),
-	UNIQUE KEY (primitive_id, primitive_type, hide_primitive_name)
+	UNIQUE KEY (primitive_id, primitive_type, primitives_to_anonymize)
 );
 
 CREATE TABLE change_email_requests (

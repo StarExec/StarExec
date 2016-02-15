@@ -454,7 +454,8 @@ public class RESTHelpers {
 	 * @param wallclock Whether to use wallclock (true) or CPU time (false)
 	 * @param syncResults 
 	 * @param stageNumber The pipeline stage number to filter jobs by.
-	 * @param anonymizeNames Whether or not to anonymize the names of the primitives in the job pairs
+	 * @param anonymizeNames Whether or not to anonymize the names of the primitives in the job pairs (excluding benchmarks)
+	 * @param anonymizeBenchmarks Wheter or not to anonymize the names of benchmarks in the job pairs.
 	 * @param request The HttpRequest asking to get the JSON object
 	 * @return a JSON object for the job pairs in a job space.
 	 * @author Albert Giegerich and Todd Elvers
@@ -465,14 +466,16 @@ public class RESTHelpers {
 			boolean syncResults,
 			int stageNumber,
 			boolean anonymizeNames,
+			boolean anonymizeBenchmarks,
 			HttpServletRequest request) {
 
 		final String methodName = "getJobPairsPaginatedJson";
 
 		logUtil.entry(methodName);
 		// Query for the next page of job pairs and return them to the user
-		JsonObject nextDataTablesPage = 
-			RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,syncResults,stageNumber, anonymizeNames);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,
+					syncResults,stageNumber, anonymizeNames, anonymizeBenchmarks);
+
 		if (nextDataTablesPage==null) {
 			logUtil.debug( methodName, "There was a database error while trying to get paginated job pairs for table." );
 			return gson.toJson(RESTServices.ERROR_DATABASE);
@@ -482,14 +485,13 @@ public class RESTHelpers {
 		}
 
 		String nextDataTablesPageJson = gson.toJson(nextDataTablesPage);
-		logUtil.debug( methodName, nextDataTablesPageJson );
 		return nextDataTablesPageJson; 
 	}
 	
 	/**
 	 * Gets the space overview graph for a given jobspace.
 	 */
-	protected static String getSpaceOverviewGraphJson( int stageNumber, int jobSpaceId, HttpServletRequest request ) {
+	protected static String getSpaceOverviewGraphJson( int stageNumber, int jobSpaceId, HttpServletRequest request, boolean anonymizeNames ) {
 		//TODO: Remove usage of 'big' attribute
 		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean logX=false;
@@ -506,7 +508,7 @@ public class RESTHelpers {
 		}
 		String chartPath = null;
 		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
-			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber);
+			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber, anonymizeNames);
 			if (chartPath.equals("big")) {
 				return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 			}
@@ -565,7 +567,8 @@ public class RESTHelpers {
 	 * @param wallclock True to use wallclock time, false to use CPU time
 	 * @param syncResults If true, excludes job pairs for which the benchmark has not been worked on by every solver in the space
 	 * @param stageNumber If greater than or equal to 0, gets the primary stage
-	 * @param anonymizeNames Whether to anonymize primitive names in the job pairs.
+	 * @param anonymizeNames Whether to anonymize primitive names in the job pairs. (excluding benchmarks)
+	 * @param anonymizeBenchmarks whether to anonymize benchmark names in job pairs.
 	 * @return JsonObject encapsulating pairs to display in the next table page
 	 */
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(
@@ -574,7 +577,8 @@ public class RESTHelpers {
 			boolean wallclock, 
 			boolean syncResults, 
 			int stageNumber,
-			boolean anonymizeNames) {
+			boolean anonymizeNames,
+			boolean anonymizeBenchmarks) {
 
 		final String methodName = "getNextDataTablesPageOfPairsInJobSpace";
 		logUtil.entry( methodName );
@@ -627,10 +631,10 @@ public class RESTHelpers {
 
 		if ( anonymizeNames ) {
 			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-			AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber );
+			AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber, anonymizeBenchmarks );
 		}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, anonymizeNames);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, anonymizeNames, anonymizeBenchmarks);
 	}
 
 	
@@ -763,7 +767,7 @@ public class RESTHelpers {
 
         query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
     	
-	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, false);
+	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, false, false);
 	}
 
 	/**
@@ -1247,27 +1251,30 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
-	private static StringBuilder getBenchLinkPrefix(Benchmark bench, boolean anonymizeNames) {
+	private static StringBuilder getBenchLinkPrefix(Benchmark bench, boolean anonymizeBenchmarks) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<a title=\"");
+		sb.append("<a");
 		// Set the tooltip to be the benchmark's description
-		sb.append(bench.getDescription());
-		if (!anonymizeNames) {
-			sb.append("\" href=\""
+		if ( !anonymizeBenchmarks ) {
+			sb.append(" title=\"");
+			sb.append(bench.getDescription());
+			sb.append("\" ");
+			sb.append("href=\""
 					+ Util.docRoot("secure/details/benchmark.jsp?id="));
 			sb.append(bench.getId());
-			sb.append("\" target=\"_blank\">");
+			sb.append("\" target=\"_blank\"");
 		}
+		sb.append(">");
 		
 		sb.append(bench.getName());
-		if (!anonymizeNames) {
+		if (!anonymizeBenchmarks) {
 			RESTHelpers.addImg(sb);
 		}
 		return sb;
 	}
 	
-	private static String getBenchLinkWithHiddenPairId(Benchmark bench, int pairId, boolean anonymizeNames) {
-		StringBuilder sb = getBenchLinkPrefix(bench, anonymizeNames);
+	private static String getBenchLinkWithHiddenPairId(Benchmark bench, int pairId, boolean anonymizeBenchmarks) {
+		StringBuilder sb = getBenchLinkPrefix(bench, anonymizeBenchmarks);
 		sb.append(getHiddenJobPairLink(pairId));
 		return sb.toString();
 	}
@@ -1363,7 +1370,9 @@ public class RESTHelpers {
 			boolean includeConfigAndSolver, 
 			boolean useWallclock, 
 			int stageNumber,
-			boolean anonymizeNames ) {
+			boolean anonymizeNames,
+		    boolean anonymizeBenchmarks	) {
+
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1373,8 +1382,7 @@ public class RESTHelpers {
 		for(JobPair jp : pairs){
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 
-			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), anonymizeNames);
-
+			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), anonymizeBenchmarks);
 
 			if (includeConfigAndSolver) {
 				// Create the solver link
@@ -1960,7 +1968,9 @@ public class RESTHelpers {
 			int config2, 
 			int edgeLengthInPixels, 
 			String axisColor,
-			int stageNumber ) {
+			int stageNumber,
+		   	boolean anonymizeNames,
+		    boolean anonymizeBenchmarks	) {
 
 		List<String> chartPath = null;
 		
@@ -1973,7 +1983,7 @@ public class RESTHelpers {
 					
 		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber);
+		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber, anonymizeNames, anonymizeBenchmarks);
 		if (chartPath==null) {
 			return gson.toJson(RESTServices.ERROR_DATABASE);
 		}

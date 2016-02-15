@@ -49,36 +49,13 @@ function registerAnonymousLinkButtonEventHandler() {
 			buttons: {
 				'yes': function() { 
 					$(this).dialog('close');
-					makeAnonymousLinkPost( true );
+					makeAnonymousLinkPost('bench', $('#benchId').attr('value'), 'all');
 				},
 				'no': function() {
 					$(this).dialog('close');
-					makeAnonymousLinkPost( false );
+					makeAnonymousLinkPost('bench', $('#benchId').attr('value'), 'none');
 				}
 			}
 		});	
 	});
 }
-
-function makeAnonymousLinkPost( hidePrimitiveName ) {
-	'use strict';
-	$.post(
-		starexecRoot + 'services/anonymousLink/bench/' + $('#benchId').attr('value') + '/' + hidePrimitiveName,
-		'',
-		function( returnCode ) {
-			log( 'Anonymous Link Return Code: ' + returnCode );
-			if ( returnCode.success ) {
-				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
-				$('#dialog-show-anonymous-link').dialog({
-					width: 750,
-					height: 200,
-				});	
-			} else {
-				parseReturnCode( returnCode );
-			}
-		},
-		'json'
-	);
-}
-
-

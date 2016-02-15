@@ -839,7 +839,7 @@ function updateSpaceOverviewGraph() {
 	var postUrl = null;
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = starexecRoot+'services/jobs/anonymousLink/'+ DETAILS_JOB.anonymousLinkUuid +'/' + curSpaceId + 
-				'/graphs/spaceOverview/'+getSelectedStage();
+				'/graphs/spaceOverview/'+getSelectedStage()+'/'+DETAILS_JOB.anonymizeNames;
 	} else {
 		postUrl = starexecRoot+'services/jobs/' + curSpaceId+'/graphs/spaceOverview/'+getSelectedStage();
 	}
@@ -884,7 +884,7 @@ function updateSolverComparison(size, color) {
 	var postUrl = '';
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = starexecRoot+"services/jobs/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid+"/"+curSpaceId+"/graphs/solverComparison/"+config1+
-			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
+			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage()+"/"+DETAILS_JOB.anonymizeNames;
 	} else {
 		postUrl = starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
 	}
@@ -1282,7 +1282,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var postUrl = null;
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + outSpaceId +
-				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + 'true';
+				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + DETAILS_JOB.anonymizeNames;
 	} else {
 		postUrl = sSource + 'pairs/pagination/'+outSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
 	}
@@ -1341,36 +1341,19 @@ function registerAnonymousLinkButtonEventHandler() {
 			width: 600,
 			height: 200,
 			buttons: {
-				'yes': function() { 
+				'everything': function() { 
 					$(this).dialog('close');
-					makeAnonymousLinkPost( true );
+					makeAnonymousLinkPost('job', jobId, 'all');
 				},
-				'no': function() {
+				'everything except benchmarks': function() {
 					$(this).dialog('close');
-					makeAnonymousLinkPost( false );
+					makeAnonymousLinkPost( 'job', jobId, 'allButBench');
+				},
+				'nothing': function() {
+					$(this).dialog('close');
+					makeAnonymousLinkPost('job', jobId, 'none');
 				}
 			}
 		});	
 	});
-}
-function makeAnonymousLinkPost( hidePrimitiveName ) {
-	'use strict';
-	$.post(
-		starexecRoot + 'services/anonymousLink/job/' + jobId + '/' + hidePrimitiveName,
-		'',
-		function( returnCode ) {
-			log( 'Anonymous Link Return Code: ' + returnCode );
-			if ( returnCode.success ) {
-				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
-
-				$('#dialog-show-anonymous-link').dialog({
-					width: 750,
-					height: 200,
-				});	
-			} else {
-				parseReturnCode( returnCode );
-			}
-		},
-		'json'
-	);
 }

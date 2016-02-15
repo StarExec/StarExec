@@ -151,17 +151,18 @@ function registerAnonymousLinkButtonEventHandler() {
 			buttons: {
 				'yes': function() { 
 					$(this).dialog('close');
-					makeAnonymousLinkPost( true );
+					makeAnonymousLinkPost( 'solver', $('#solverId').attr('value'), 'all');
 				},
 				'no': function() {
 					$(this).dialog('close');
-					makeAnonymousLinkPost( false );
+					makeAnonymousLinkPost( 'solver', $('#solverId').attr('value'), 'none');
 				}
 			}
 		});	
 	});
 }
 
+/*
 function makeAnonymousLinkPost( hidePrimitiveName ) {
 	'use strict';
 	$.post(
@@ -182,5 +183,6 @@ function makeAnonymousLinkPost( hidePrimitiveName ) {
 		'json'
 	);
 }
+*/
 
 

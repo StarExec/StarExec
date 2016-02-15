@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -276,7 +277,7 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static List<String> makeSolverComparisonChart(int configId1, int configId2, int jobSpaceId, int edgeLengthInPixels, Color axisColor, int stageNumber) {
+	public static List<String> makeSolverComparisonChart(int configId1, int configId2, int jobSpaceId, int edgeLengthInPixels, Color axisColor, int stageNumber, boolean anonymizeNames, boolean anonymizeBenchmarks) {
 		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
 		logUtil.entry(methodName);
 
@@ -293,7 +294,8 @@ public class Statistics {
 				answer.add("big");
 				return answer;
 			}
-			return makeSolverComparisonChart(pairs1,pairs2, edgeLengthInPixels, axisColor,stageNumber);
+			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels, 
+					axisColor, stageNumber, anonymizeNames, anonymizeBenchmarks);
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}
@@ -316,8 +318,8 @@ public class Statistics {
 	 */
 	
 	@SuppressWarnings("deprecation")
-	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, 
-			int edgeLengthInPixels, Color axisColor, int stageNumber) {
+	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, int jobSpaceId,
+			int edgeLengthInPixels, Color axisColor, int stageNumber, boolean anonymizeNames, boolean anonymizeBenchmarks) {
 		try {
 			
 			//there are no points if either list of pairs is empty
@@ -334,8 +336,17 @@ public class Statistics {
 			
 			log.debug("making solver comparison chart");
 			
-			String xAxisName=stage1.getSolver().getName()+"/"+stage1.getConfiguration().getName()+" time(s)";
-			String yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
+			String xAxisName = null;
+			String yAxisName = null;
+			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
+			if ( anonymizeNames ) {
+				Map<Integer, String> solverIdToAnonymizedName = AnonymousLinks.getAnonymizedSolverNames(jobId, stageNumber);
+				xAxisName = solverIdToAnonymizedName.get( stage1.getSolver().getId() );
+				yAxisName = solverIdToAnonymizedName.get( stage2.getSolver().getId() );
+			} else {
+				xAxisName=stage1.getSolver().getName()+"/"+stage1.getConfiguration().getName()+" time(s)";
+				yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
+			}
 			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
@@ -346,6 +357,7 @@ public class Statistics {
 			//for now, we are not including error pairs in this chart
 			int debugItem=0;
 			int debugSeries=0;
+			Map<Integer, String> benchmarkIdToAnonymizedName = AnonymousLinks.getAnonymizedBenchmarkNames( jobId );
 			for (JobPair jp : pairs1) {
 				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
 					JobPair jp2=pairs2Map.get(jp.getBench().getId());
@@ -360,7 +372,11 @@ public class Statistics {
 						
 						//put the name in names so we can create a tooltip of the name
 						//when hovering over the point in the image map
-						names.put(key, jp.getBench().getName());
+						if (anonymizeBenchmarks) {
+							names.put(key, benchmarkIdToAnonymizedName.get( jp.getBench().getId() ));
+						} else {
+							names.put(key, jp.getBench().getName());
+						}
 						item+=1;
 							
 						stage1=jp.getStageFromNumber(stageNumber);
@@ -393,8 +409,9 @@ public class Statistics {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
-	        
-	        renderer.setURLGenerator(customURLGenerator);
+			if ( !anonymizeBenchmarks ) {
+				renderer.setURLGenerator(customURLGenerator);
+			}
 	        
 	        XYToolTipGenerator tooltips=new BenchmarkTooltipGenerator(names);
 	        renderer.setToolTipGenerator(tooltips);
@@ -425,7 +442,12 @@ public class Statistics {
 			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
 			String map;
 			
-			map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
+			// Don't include the links to the benchmark pages if we're sending this to an anonymous page.
+			if ( anonymizeNames ) {
+				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info);
+			} else {
+				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
+			}
 			
 			
 			log.debug("solver comparison chart created succesfully, returning filepath ");
@@ -452,7 +474,14 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSpaceOverviewChart(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds, int stageNumber) {
+	public static String makeSpaceOverviewChart(
+			int jobSpaceId, 
+			boolean logX, 
+			boolean logY, 
+			List<Integer> configIds, 
+			int stageNumber, 
+			boolean anonymizeNames) {
+
 		try {
 			if (configIds.size()==0) {
 				return null;
@@ -467,6 +496,10 @@ public class Statistics {
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 					return "big";
 				}
+			}
+
+			if ( anonymizeNames ) {
+				AnonymousLinks.anonymizeJobPairs( pairs, Spaces.getJobSpace(jobSpaceId).getJobId(), stageNumber, false);
 			}
 			
 			return makeSpaceOverviewChart(pairs, logX,logY,stageNumber);
