@@ -187,8 +187,7 @@ public class RESTHelpers {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 
 		for (Space space : communities) {
-			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(),
-					"leaf", R.SPACE);
+			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(), "leaf", R.SPACE);
 			list.add(t);
 		}
 
@@ -209,17 +208,11 @@ public class RESTHelpers {
 		private String state;
 
 		public JSTreeItem(String name, int id, String state, String type) {
-			this.data = name;
-			this.attr = new JSTreeAttribute(id, type);
-			this.state = state;
-			this.children = new LinkedList<JSTreeItem>();
+			this(name,id,state,type,0,null);
 		}
 		
 		public JSTreeItem(String name, int id, String state, String type, int maxStages) {
-			this.data = name;
-			this.attr = new JSTreeAttribute(id, type,maxStages);
-			this.state = state;
-			this.children = new LinkedList<JSTreeItem>();
+			this(name,id,state,type,maxStages,null);
 		}
 
 		public JSTreeItem(String name, int id, String state, String type, int maxStages, String cLass) {
@@ -240,7 +233,7 @@ public class RESTHelpers {
 
 	/**
 	 * An attribute of a jsTree node which holds the node's id so that it can be
-	 * passed aint to other ajax methods.
+	 * passed to other ajax methods.
 	 * 
 	 * @author Tyler Jensen
 	 */
@@ -254,8 +247,7 @@ public class RESTHelpers {
 		// called cLass to bypass Java's class keyword. gson will lowercase the L
 		private String cLass;
 
-		
-		private void init(int id, String type,int maxStages, String cLass) {
+		public JSTreeAttribute(int id, String type,int maxStages, String cLass) {
 			this.id = id;
 			this.rel = type;
 			this.maxStages=maxStages;
@@ -264,18 +256,6 @@ public class RESTHelpers {
 				this.global = Queues.isQueueGlobal(id);
 			}
 			this.defaultQueueId = Cluster.getDefaultQueueId();
-		}
-		
-		public JSTreeAttribute(int id, String type) {
-			init(id,type,0, null);
-		}
-		
-		public JSTreeAttribute(int id, String type,int maxStages) {
-			init(id,type,maxStages, null);
-		}
-
-		public JSTreeAttribute(int id, String type,int maxStages, String cLass) {
-			init(id,type,maxStages, cLass);
 		}
 	}
 
@@ -1139,39 +1119,23 @@ public class RESTHelpers {
 	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, DataTablesQuery query, int userId) {
 		JsonArray dataTablePageEntries = new JsonArray();
 		for(JobPair j : pairs){
-			StringBuilder sb = new StringBuilder();
-			String hiddenJobPairId;
-			
-			// Create the hidden input tag containing the jobpair id
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(j.getId());
-			sb.append("\" name=\"pid\"/>");
-			hiddenJobPairId = sb.toString();
 			
 			// Create the job link
 			//Job job = Jobs.get(j.getJobId());
-    		sb = new StringBuilder();
+    		StringBuilder sb = new StringBuilder();
     		sb.append("<a href=\""+Util.docRoot("secure/details/job.jsp?id="));
     		sb.append(j.getJobId());
     		sb.append("\" target=\"_blank\">");
     		sb.append(j.getOwningJob().getName());
     		RESTHelpers.addImg(sb);
-    		sb.append(hiddenJobPairId);
+    		sb.append(getHiddenJobPairLink(j.getId()));
 			String jobLink = sb.toString();
 			
 			User user=j.getOwningUser();
 
 			String userLink = getUserLink(user.getId(),user.getFullName(),userId);
 			
-    		// Create the benchmark link
-    		sb = new StringBuilder();
-    		sb.append("<a href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-    		sb.append(j.getBench().getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(j.getBench().getName());
-    		RESTHelpers.addImg(sb);
-    		sb.append(hiddenJobPairId);
-			String benchLink = sb.toString();
+			String benchLink = getBenchLinkWithHiddenPairId(j.getBench(),j.getId(), false);
 			
 			// Create the solver link
 			String solverLink = getSolverLink(j.getPrimarySolver().getId(),j.getPrimarySolver().getName(), false);
@@ -1203,14 +1167,7 @@ public class RESTHelpers {
     		
     		
     		// Create the benchmark link and append the hidden input element
-    		StringBuilder sb = new StringBuilder();
-    		sb.append("<a title=\"");
-    		sb.append("\" href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-    		sb.append(c.getBenchmark().getId());
-    		sb.append("\" target=\"_blank\">");
-    		sb.append(c.getBenchmark().getName());
-    		RESTHelpers.addImg(sb);
-			String benchLink = sb.toString();
+			String benchLink = getBenchLink(c.getBenchmark());
 
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
@@ -1268,6 +1225,77 @@ public class RESTHelpers {
 		if ( !anonymizeNames ) {
 			RESTHelpers.addImg(sb);
 		}
+		return sb.toString();
+	}
+	
+	private static String getHiddenJobPairLink(int pairId) {
+		// Create the hidden input tag containing the jobpair id
+		StringBuilder sb=new StringBuilder();
+		sb.append("<input type=\"hidden\" value=\"");
+		sb.append(pairId);
+		sb.append("\" name=\"pid\"/>");
+		return sb.toString();		    		
+	}
+	
+	private static String getHiddenBenchLink(Benchmark bench) {
+		StringBuilder sb = new StringBuilder();
+		
+		// Create the hidden input tag containing the benchmark id
+		sb.append("<input name=\"bench\" type=\"hidden\" value=\"");
+		sb.append(bench.getId());
+		sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"  deleted=\""+bench.isDeleted()+"\" recycled=\""+bench.isRecycled()+"\"/>");
+		return sb.toString();
+	}
+	
+	private static StringBuilder getBenchLinkPrefix(Benchmark bench, boolean anonymizeNames) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<a title=\"");
+		// Set the tooltip to be the benchmark's description
+		sb.append(bench.getDescription());
+		if (!anonymizeNames) {
+			sb.append("\" href=\""
+					+ Util.docRoot("secure/details/benchmark.jsp?id="));
+			sb.append(bench.getId());
+			sb.append("\" target=\"_blank\">");
+		}
+		
+		sb.append(bench.getName());
+		if (!anonymizeNames) {
+			RESTHelpers.addImg(sb);
+		}
+		return sb;
+	}
+	
+	private static String getBenchLinkWithHiddenPairId(Benchmark bench, int pairId, boolean anonymizeNames) {
+		StringBuilder sb = getBenchLinkPrefix(bench, anonymizeNames);
+		sb.append(getHiddenJobPairLink(pairId));
+		return sb.toString();
+	}
+	
+	private static String getBenchLink(Benchmark bench) {
+		StringBuilder sb = getBenchLinkPrefix(bench, false);
+		sb.append(getHiddenBenchLink(bench));
+		return sb.toString();
+	}
+	
+	private static String getSpaceLink(Space space) {
+		StringBuilder sb = new StringBuilder();
+		sb = new StringBuilder();
+		sb.append("<input type=\"hidden\" value=\"");
+		sb.append(space.getId());
+		sb.append("\" prim=\"space\" />");
+		String hiddenSpaceId = sb.toString();
+		// Create the space "details" link and append the hidden input
+		// element
+		sb = new StringBuilder();
+		sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
+		sb.append(space.getParentSpace());
+		sb.append(",");
+		sb.append(space.getId());
+		sb.append(")\">");
+		sb.append(space.getName());
+		RESTHelpers.addImg(sb);
+		sb.append(hiddenSpaceId);
 		return sb.toString();
 	}
 	
@@ -1344,30 +1372,9 @@ public class RESTHelpers {
 		String configLink=null;
 		for(JobPair jp : pairs){
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
-    		StringBuilder sb = new StringBuilder();
-			String hiddenJobPairId;
 
-			// Create the hidden input tag containing the jobpair id
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(jp.getId());
-			sb.append("\" name=\"pid\"/>");
-			hiddenJobPairId = sb.toString();
-    		
-    		// Create the benchmark link and append the hidden input element
-    		sb = new StringBuilder();
-    		sb.append("<a title=\"\" ");
-			if ( !anonymizeNames ) {
-				sb.append("href=\""+Util.docRoot("secure/details/benchmark.jsp?id="));
-				sb.append(jp.getBench().getId());
-				sb.append("\" target=\"_blank\"");
-			}
-			sb.append(">");
-    		sb.append(jp.getBench().getName());
-			if ( !anonymizeNames ){
-				RESTHelpers.addImg(sb);
-			}
-    		sb.append(hiddenJobPairId);
-			String benchLink = sb.toString();
+			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), anonymizeNames);
+
 
 			if (includeConfigAndSolver) {
 				// Create the solver link
@@ -1378,7 +1385,7 @@ public class RESTHelpers {
 
 
 			// Create the status field
-    		sb = new StringBuilder();
+    		StringBuilder sb = new StringBuilder();
     		sb.append("<a title=\"");
     		sb.append(stage.getStatus().getDescription());
     		sb.append("\">");
@@ -1644,27 +1651,7 @@ public class RESTHelpers {
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Space space : spaces) {
-			StringBuilder sb = new StringBuilder();
-			String hiddenSpaceId;
-
-			// Create the hidden input tag containing the space id
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(space.getId());
-			sb.append("\" prim=\"space\" />");
-			hiddenSpaceId = sb.toString();
-
-			// Create the space "details" link and append the hidden input
-			// element
-			sb = new StringBuilder();
-			sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
-			sb.append(id);
-			sb.append(",");
-			sb.append(space.getId());
-			sb.append(")\">");
-			sb.append(space.getName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenSpaceId);
-			String spaceLink = sb.toString();
+			String spaceLink = getSpaceLink(space);
 
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
@@ -1734,31 +1721,9 @@ public class RESTHelpers {
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Benchmark bench : benchmarks) {
-			
-			StringBuilder sb = new StringBuilder();
-			
-			// Create the hidden input tag containing the benchmark id
-			sb.append("<input name=\"bench\" type=\"hidden\" value=\"");
-			sb.append(bench.getId());
-			sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"  deleted=\""+bench.isDeleted()+"\" recycled=\""+bench.isRecycled()+"\"/>");
-			String hiddenBenchId = sb.toString();
-
-			// Create the benchmark "details" link and append the hidden input
-			// element
-			sb = new StringBuilder();
-			sb.append("<a title=\"");
-			// Set the tooltip to be the benchmark's description
-			sb.append(bench.getDescription());
-			sb.append("\" href=\""
-					+ Util.docRoot("secure/details/benchmark.jsp?id="));
-			sb.append(bench.getId());
-			sb.append("\" target=\"_blank\">");
-			sb.append(bench.getName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenBenchId);
-			String benchLink = sb.toString();
+			String benchLink = getBenchLink(bench);
 			// Create the benchmark type tag
-			sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 			sb.append("<span title=\"");
 			// Set the tooltip to be the benchmark type's description
 			sb.append(bench.getType().getDescription());
@@ -2072,32 +2037,12 @@ public class RESTHelpers {
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (CommunityRequest req : requests) {
 			User user = Users.get(req.getUserId());
-
-			
 			String userLink = getUserLink(user.getId(),user.getFullName(),currentUserId);
 			
 			//Community/space
-			StringBuilder sb = new StringBuilder();
-			Space space = Spaces.get(req.getCommunityId());
-			sb = new StringBuilder();
-			sb.append("<input type=\"hidden\" value=\"");
-			sb.append(space.getId());
-			sb.append("\" prim=\"space\" />");
-			String hiddenSpaceId = sb.toString();
-			// Create the space "details" link and append the hidden input
-			// element
-			sb = new StringBuilder();
-			sb.append("<a class=\"spaceLink\" onclick=\"openSpace(");
-			sb.append(space.getParentSpace());
-			sb.append(",");
-			sb.append(space.getId());
-			sb.append(")\">");
-			sb.append(space.getName());
-			RESTHelpers.addImg(sb);
-			sb.append(hiddenSpaceId);
-			String spaceLink = sb.toString();
+			String spaceLink = getSpaceLink(Spaces.get(req.getCommunityId()));
 
-			sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 			sb.append("<input class=\"acceptRequestButton\" type=\"button\" data-code=\""+req.getCode()+"\" value=\"Approve\" />");
 			String approveButton = sb.toString();
 

@@ -20,15 +20,12 @@ import javax.xml.validation.Validator;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
  * Contains functionality shared between JobUtil, BatchUtil, and JobToXMLer
  * @author Eric
- *
  */
 public class XMLUtil {
 	private static Logger log = Logger.getLogger(XMLUtil.class);

@@ -552,7 +552,7 @@ public class Statistics {
 			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
-			output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename+"600");
+			output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename+"800");
 			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
 
 			log.debug("Chart created succesfully, returning filepath " );

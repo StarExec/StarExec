@@ -860,7 +860,7 @@ function updateSpaceOverviewGraph() {
 					//also, equality checking doesn't work on arrays, but less than and greater than do
 					if (!(currentConfigs>configs) && !(currentConfigs<configs)) {
 						$("#spaceOverview").attr("src",returnCode);
-						$("#bigSpaceOverview").attr("src",returnCode+"600");
+						$("#bigSpaceOverview").attr("src",returnCode+"800");
 					}
 				} else {
 					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");

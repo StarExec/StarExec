@@ -1,9 +1,11 @@
 package org.starexec.test.integration.app;
 
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
+import org.starexec.util.Util;
 import org.testng.Assert;
 
 import com.google.gson.JsonObject;
@@ -11,10 +13,16 @@ import com.google.gson.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.junit.runner.RunWith;
+import org.mockito.BDDMockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.app.RESTHelpers;
 import org.starexec.app.RESTHelpers.Primitive;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -23,6 +31,8 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({Queues.class})
 public class RESTHelpersTests extends TestSequence {
 	private static String TOTAL_RECORDS = "iTotalRecords";
 	private static String DATA = "aaData";
@@ -42,6 +52,7 @@ public class RESTHelpersTests extends TestSequence {
 	JobSpace j1PrimarySpace = null;
 	Job j2 = null;
 	List<Integer> benchmarkIds = null;
+	Queue q = null;
 	private static HttpSession getMockSessionWithUser(int userId) {
 		HttpSession session = mock(HttpSession.class);
 		User u = new User();
@@ -288,6 +299,20 @@ public class RESTHelpersTests extends TestSequence {
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
 	}
 	
+	@StarexecTest
+	private void getNextPageClusterQueueTest() {
+		PowerMockito.mockStatic(Queues.class);
+		List<JobPair> pairs = TestUtil.getFakeJobPairs();
+        BDDMockito.given(Queues.getJobPairsForNextClusterPage(BDDMockito.any(DataTablesQuery.class), q.getId(), "queue")).willReturn(pairs);
+        BDDMockito.given(Queues.getJobPairsForNextClusterPage(BDDMockito.any(DataTablesQuery.class), q.getId(), "queue")).willReturn(pairs);
+        BDDMockito.given(Queues.getCountOfEnqueuedPairsShallow(q.getId())).willReturn(pairs.size());
+        JsonObject o = RESTHelpers.getNextDataTablesPageCluster("queue", q.getId(),testUser.getId(), getMockRequest(testUser.getId()));
+        validateJsonObjectCounts(o, pairs.size(),pairs.size(),pairs.size());
+        PowerMockito.doCallRealMethod().when(Queues.class);
+		Queues.getJobPairsForNextClusterPage(BDDMockito.any(DataTablesQuery.class), q.getId(), "queue");
+		Queues.getCountOfEnqueuedPairsShallow(q.getId());
+	}
+	
 	
 	@Override
 	protected String getTestName() {
@@ -310,7 +335,7 @@ public class RESTHelpersTests extends TestSequence {
 		j1 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
 		j1PrimarySpace = Spaces.getJobSpace(j1.getPrimarySpace());
 		j2 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
-
+		q=Queues.getAllQ();
 	}
 
 	@Override
