@@ -248,6 +248,14 @@ SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 # and onwards
 OTHER_INPUT_PATH=""
 
+# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
+# so, we start with an empty directory here
+if [ $NUM_STAGES -gt 1 ] 
+then
+	mkdir "$OUT_DIR"/empty_output_dir
+	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
+fi
+
 #whether the solver was found in the cache
 SOLVER_CACHED=0
 
