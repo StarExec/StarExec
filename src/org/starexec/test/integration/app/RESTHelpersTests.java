@@ -303,9 +303,10 @@ public class RESTHelpersTests extends TestSequence {
 	private void getNextPageClusterQueueTest() {
 		PowerMockito.mockStatic(Queues.class);
 		List<JobPair> pairs = TestUtil.getFakeJobPairs();
-        BDDMockito.given(Queues.getJobPairsForNextClusterPage(BDDMockito.any(DataTablesQuery.class), q.getId(), "queue")).willReturn(pairs);
-        BDDMockito.given(Queues.getJobPairsForNextClusterPage(BDDMockito.any(DataTablesQuery.class), q.getId(), "queue")).willReturn(pairs);
-        BDDMockito.given(Queues.getCountOfEnqueuedPairsShallow(q.getId())).willReturn(pairs.size());
+		
+        BDDMockito.when(Queues.getJobPairsForNextClusterPage(BDDMockito.any(), q.getId(), "queue")).thenReturn(pairs);
+        BDDMockito.when(Queues.getJobPairsForNextClusterPage(BDDMockito.any(), q.getId(), "queue")).thenReturn(pairs);
+        BDDMockito.when(Queues.getCountOfEnqueuedPairsShallow(q.getId())).thenReturn(pairs.size());
         JsonObject o = RESTHelpers.getNextDataTablesPageCluster("queue", q.getId(),testUser.getId(), getMockRequest(testUser.getId()));
         validateJsonObjectCounts(o, pairs.size(),pairs.size(),pairs.size());
         PowerMockito.doCallRealMethod().when(Queues.class);
