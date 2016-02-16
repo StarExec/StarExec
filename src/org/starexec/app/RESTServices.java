@@ -33,6 +33,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
@@ -149,18 +150,16 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@GET
-	@Path("/space/anonymousLink/{anonymousLinkUuid}/jobspaces/{spaceTree}/{anonymizeNames}")
+	@Path("/space/anonymousLink/{anonymousLinkUuid}/jobspaces/{spaceTree}/{primitivesToAnonymizeName}")
 	@Produces("application/json")	
 	public String getJobSpaces(
 			@QueryParam("id") int parentId,
 			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
 			@PathParam("spaceTree") boolean makeSpaceTree, 
-			@PathParam("anonymizeNames") boolean anonymizeNames,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@Context HttpServletRequest request) {					
 		final String methodName = "getJobSpaces";
 		try {
-			// TODO get rid of assignment
-			//anonymizeNames = false;
 			logUtil.entry( methodName );
 			Optional<Integer> potentialJobId = Optional.empty();
 			try {
@@ -171,7 +170,8 @@ public class RESTServices {
 			}
 			 
 			if ( potentialJobId.isPresent() ) {
-				return RESTHelpers.getJobSpacesJson(parentId, potentialJobId.get(), makeSpaceTree, anonymizeNames);
+				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+				return RESTHelpers.getJobSpacesJson(parentId, potentialJobId.get(), makeSpaceTree, primitivesToAnonymize);
 			} else {
 				ValidatorStatusCode status = new ValidatorStatusCode( false, "Job does not exist." );
 				return gson.toJson( status );
@@ -822,7 +822,7 @@ public class RESTServices {
 	
 	
 	@POST
-	@Path("/jobs/pairs/pagination/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}/{anonymizeNames}")
+	@Path("/jobs/pairs/pagination/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}/{primitivesToAnonymizeName}")
 	@Produces("application/json")	
 	public String getJobPairsPaginatedWithAnonymousLink(
 			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
@@ -830,7 +830,7 @@ public class RESTServices {
 			@PathParam("wallclock") boolean wallclock, 
 			@PathParam("jobSpaceId") int jobSpaceId, 
 			@PathParam("syncResults") boolean syncResults, 
-			@PathParam("anonymizeNames") boolean anonymizeNames,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@Context HttpServletRequest request) {			
 
 		final String methodName = "getJobPairsPaginatedWithAnonymousLink";
@@ -846,21 +846,10 @@ public class RESTServices {
 				return gson.toJson( status );
 			}
 
-			Optional<Boolean> potentialAnonymizeBenchmarks = AnonymousLinks.isBenchmarkNameHidden( anonymousLinkUuid );
-			if ( potentialAnonymizeBenchmarks.isPresent() ) {
 
-				boolean anonymizeBenchmarks = potentialAnonymizeBenchmarks.get(); 
-
-
-				return RESTHelpers.getJobPairsPaginatedJson( jobSpaceId, wallclock, syncResults, 
-						stageNumber, anonymizeNames, anonymizeBenchmarks, request );
-			} else {
-				logUtil.error( methodName, "AnonymousLinks.isBenchmarkHidden returned an empty Optional." );
-				return gson.toJson( ERROR_DATABASE ); 
-			}
-		} catch (SQLException e) {
-			logUtil.error( methodName, "AnonymousLinks.isBenchmarkHidden threw an exception: " + Util.getStackTrace( e ));
-			return gson.toJson( ERROR_DATABASE ); 
+			PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+			return RESTHelpers.getJobPairsPaginatedJson( jobSpaceId, wallclock, syncResults, 
+					stageNumber, primitivesToAnonymize, request );
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
 			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
@@ -890,7 +879,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		return RESTHelpers.getJobPairsPaginatedJson( jobSpaceId, wallclock, syncResults, stageNumber, false, false, request );
+		return RESTHelpers.getJobPairsPaginatedJson( jobSpaceId, wallclock, syncResults, stageNumber, PrimitivesToAnonymize.NONE, request );
 	}
 	
 	/**
@@ -902,13 +891,13 @@ public class RESTServices {
 	 * @author Albert Giegerich
 	 */
 	@POST
-	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/graphs/spaceOverview/{stageNum}/{anonymizeNames}")
+	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/graphs/spaceOverview/{stageNum}/{primitivesToAnonymizeName}")
 	@Produces("application/json")
 	public String getSpaceOverviewGraph(
 			@PathParam("stageNum") int stageNumber, 
 			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
 			@PathParam("jobSpaceId") int jobSpaceId, 
-			@PathParam("anonymizeNames") boolean anonymizeNames,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@Context HttpServletRequest request) {			
 
 		final String methodName = "getSpaceOverviewGraph";
@@ -921,7 +910,8 @@ public class RESTServices {
 			return gson.toJson( status );
 		}
 		
-		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, anonymizeNames );
+		PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, primitivesToAnonymize );
 	}
 	
 	/**
@@ -943,7 +933,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 
-		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, false );
+		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, PrimitivesToAnonymize.NONE );
 	}
 
 
@@ -1023,7 +1013,7 @@ public class RESTServices {
 	 * @author Albert Giegerich
 	 */
 	@POST
-	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{edgeLengthInPixels}/{axisColor}/{stageNum}/{anonymizeNames}")
+	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{edgeLengthInPixels}/{axisColor}/{stageNum}/{primitivesToAnonymizeName}")
 	@Produces("application/json")	
 	public String getAnonymousSolverComparisonGraph(
 			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
@@ -1033,7 +1023,7 @@ public class RESTServices {
 			@PathParam("config2") int config2, 
 			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,
 			@PathParam("axisColor") String axisColor, 
-			@PathParam("anonymizeNames") boolean anonymizeNames,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@Context HttpServletRequest request) {		
 
 		final String methodName = "getAnonymousSolverComparisonGraph";
@@ -1056,19 +1046,10 @@ public class RESTServices {
 				return gson.toJson( status );
 			} 
 
-			Optional<Boolean> potentialAnonymizeBenchmarks = AnonymousLinks.isBenchmarkNameHidden( anonymousLinkUuid );
 
-			if ( potentialAnonymizeBenchmarks.isPresent() ) {
-				boolean anonymizeBenchmarks = potentialAnonymizeBenchmarks.get();
-				return RESTHelpers.getSolverComparisonGraphJson(
-						jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, anonymizeNames, anonymizeBenchmarks );
-			} else {
-				logUtil.error( methodName, "AnonymousLinks.isBenchmarkHidden returned an empty optional when it shouldn't have." );
-				return gson.toJson( ERROR_DATABASE );
-			}
-		} catch (SQLException e) { 
-			logUtil.error( methodName, "AnonymousLinks.isBenchmarkHidden threw an exception: " + Util.getStackTrace( e ));
-			return gson.toJson( ERROR_DATABASE );
+			PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+			return RESTHelpers.getSolverComparisonGraphJson(
+					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, primitivesToAnonymize );
 		} catch (RuntimeException e) {
 			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace( e ));
 			return gson.toJson( ERROR_INTERNAL_SERVER );
@@ -1108,18 +1089,19 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		} else {
-			return RESTHelpers.getSolverComparisonGraphJson( jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, false, false );
+			return RESTHelpers.getSolverComparisonGraphJson( 
+					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, PrimitivesToAnonymize.NONE );
 		}
 	}
 
 	@POST
-	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{anonymizeSolvers}/{shortFormat}/{wallclock}/{stageNum}/")
+	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{primitivesToAnonymizeName}/{shortFormat}/{wallclock}/{stageNum}/")
 	@Produces("application/json")
 	public String getAnonymousJobStatsPaginated( 
 			@PathParam("stageNum") int stageNumber, 
 			@PathParam("jobSpaceId") int jobSpaceId,
 			@PathParam("anonymousJobLink") String anonymousJobLink, 
-			@PathParam("anonymizeSolvers") Boolean anonymizeSolvers,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@PathParam("shortFormat") boolean shortFormat, 
 			@PathParam("wallclock") boolean wallclock, 
 			@Context HttpServletRequest request ) {
@@ -1132,7 +1114,8 @@ public class RESTServices {
 			if ( !status.isSuccess() ) {
 				return gson.toJson( status );
 			} else {
-				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, anonymizeSolvers, shortFormat, wallclock );
+				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock );
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
@@ -1157,7 +1140,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		} else {
-			return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, space, false, shortFormat, wallclock );
+			return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, space, PrimitivesToAnonymize.NONE, shortFormat, wallclock );
 		}
 	}
 
@@ -1237,19 +1220,19 @@ public class RESTServices {
 	 * @author Albert Giegerich
 	 */
 	@POST
-	@Path( "/anonymousLink/{primitiveType}/{primitiveId}/{primitivesToAnonymize}" )
+	@Path( "/anonymousLink/{primitiveType}/{primitiveId}/{primitivesToAnonymizeName}" )
 	@Produces( "application/json" )
 	public String getAnonymousLinkForPrimitive( 
 			@PathParam("primitiveType") String primitiveType,
 			@PathParam("primitiveId") int primitiveId, 
-			@PathParam("primitivesToAnonymize") String primitivesToAnonymize,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@Context HttpServletRequest request ) {
 
 		final String methodName = "getAnonymousLinkForPrimitive";
 		try {
 			logUtil.entry( methodName );
 			logUtil.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
-					", primitivesToAnonymize = " + primitivesToAnonymize );
+					", primitivesToAnonymizeName = " + primitivesToAnonymizeName );
 
 			int userId = SessionUtil.getUserId(request);
 			ValidatorStatusCode status = GeneralSecurity.canUserGetAnonymousLinkForPrimitive( userId, primitiveType, primitiveId );
@@ -1262,6 +1245,7 @@ public class RESTServices {
 				Gson tempGson = new GsonBuilder().disableHtmlEscaping().create();
 
 
+				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 				// Return a link associated with the primitive.
 				String anonymousLinkForPrimitive = createAnonymousLinkForPrimitive( primitiveType, primitiveId, primitivesToAnonymize );
 				return tempGson.toJson( new ValidatorStatusCode( true, anonymousLinkForPrimitive ));
@@ -1285,7 +1269,7 @@ public class RESTServices {
 	private String createAnonymousLinkForPrimitive( 
 			final String primitiveType, 
 			final int primitiveId, 
-			final String primitivesToAnonymize ) throws SQLException {
+			final PrimitivesToAnonymize primitivesToAnonymize ) throws SQLException {
 
 		String primitiveUrlName = getPrimitiveUrlName( primitiveType );
 

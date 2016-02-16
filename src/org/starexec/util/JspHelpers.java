@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
@@ -71,15 +72,15 @@ public class JspHelpers {
 
 		Integer jobId = null;
 		Integer userId = null;
-		Boolean anonymizeNames = false;
+		PrimitivesToAnonymize primitivesToAnonymize = PrimitivesToAnonymize.NONE;
 
 		// Set the user id and the job id.
 		if ( isAnonymousPage ) {
 			Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( jobUuid );
-			Optional<Boolean> potentialAnonymizeNames = AnonymousLinks.isJobNameHidden( jobUuid );
-			if ( potentialJobId.isPresent() && potentialAnonymizeNames.isPresent() ) {
+			Optional<PrimitivesToAnonymize> potentialPrimitivesToAnonymize = AnonymousLinks.getPrimitivesToAnonymizeForJob( jobUuid );
+			if ( potentialJobId.isPresent() && potentialPrimitivesToAnonymize.isPresent() ) {
 				jobId = potentialJobId.get();
-				anonymizeNames = potentialAnonymizeNames.get();
+				primitivesToAnonymize = potentialPrimitivesToAnonymize.get();
 				Job tempJob = Jobs.get( jobId );
 				// Give the anonymous user the ability to view the job as if they were the owning user.
 				// This won't affect the user id in the session and therefore won't cause any security issues.
@@ -155,7 +156,9 @@ public class JspHelpers {
 				Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
 						Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
 
-				request.setAttribute( "anonymizeNames", anonymizeNames );
+				String primitivesToAnonymizeName = AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize );
+				request.setAttribute( "primitivesToAnonymize", primitivesToAnonymizeName );
+
 				request.setAttribute( "isAnonymousPage", isAnonymousPage );
 				request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
@@ -203,7 +206,6 @@ public class JspHelpers {
 	/**
 	 * 
 	 * @author Albert Giegerich
-	 */
 	public static void handleAnonymousJobPage( final String uniqueId,  HttpServletRequest request, HttpServletResponse response )
    			throws IOException, SQLException {
 
@@ -212,7 +214,7 @@ public class JspHelpers {
 
 		try {
 			Optional<Integer> jobId = AnonymousLinks.getIdOfJobAssociatedWithLink( uniqueId );	
-			Optional<Boolean> hideJobName = AnonymousLinks.isJobNameHidden( uniqueId );
+			Optional<PrimitivesToAnonymize> hideJobName = AnonymousLinks.isJobNameHidden( uniqueId );
 
 			if ( jobId.isPresent() && hideJobName.isPresent() ) {
 				Job job = Jobs.get( jobId.get() );
@@ -232,6 +234,7 @@ public class JspHelpers {
 			throw e;
 		}
 	}
+	*/
 
 	/**
 	 *
@@ -384,15 +387,15 @@ public class JspHelpers {
 		logUtil.entry( methodName );
 		try {
 			Optional<Integer> solverId = AnonymousLinks.getIdOfSolverAssociatedWithLink( uniqueId );	
-			Optional<Boolean> hideSolver = AnonymousLinks.isSolverNameHidden( uniqueId );
+			Optional<PrimitivesToAnonymize> primitivesToAnonymize = AnonymousLinks.getPrimitivesToAnonymizeForSolver( uniqueId );
 
-			if ( hideSolver.isPresent() && solverId.isPresent() ) {
+			if ( primitivesToAnonymize.isPresent() && solverId.isPresent() ) {
 				Solver solver = Solvers.get( solverId.get() );
 				if ( solver == null ) {
 					handleNullSolver( solverId.get(), response );
 					return;
 				}
-				setSolverPageRequestAttributes( true, hideSolver.get(), solver, request, response ); 
+				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request, response ); 
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");	
 				return;
@@ -508,10 +511,11 @@ public class JspHelpers {
 	public static void handleAnonymousBenchPage( String uniqueId, HttpServletRequest request, HttpServletResponse response ) 
 			throws IOException, SQLException {
 		Optional<Integer> benchmarkId = AnonymousLinks.getIdOfBenchmarkAssociatedWithLink( uniqueId );	
-		Optional<Boolean> hideBenchmark = AnonymousLinks.isBenchmarkNameHidden( uniqueId );
+		Optional<PrimitivesToAnonymize> primitivesToAnonymize = AnonymousLinks.getPrimitivesToAnonymizeForBenchmark( uniqueId );
 
-		if ( benchmarkId.isPresent() && hideBenchmark.isPresent() ) {
-			setBenchmarkPageRequestAttributes( true, hideBenchmark.get(), benchmarkId.get(), request, response );
+		if ( benchmarkId.isPresent() && primitivesToAnonymize.isPresent() ) {
+			boolean hideBenchmark = AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize.get() );
+			setBenchmarkPageRequestAttributes( true, hideBenchmark, benchmarkId.get(), request, response );
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");	
 		}

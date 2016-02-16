@@ -20,6 +20,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.app.RESTHelpers;
 import org.starexec.app.RESTHelpers.Primitive;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
@@ -275,7 +276,7 @@ public class RESTHelpersTests extends TestSequence {
 	@StarexecTest
 	private void getNextPageOfJobPairsInJobSpaceTest() {
 		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
-				j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0, false, false);
+				j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0, PrimitivesToAnonymize.NONE);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), j1.getJobPairs().size());
 	}
 	
@@ -284,7 +285,7 @@ public class RESTHelpersTests extends TestSequence {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setNumRecords(1);
 		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
-				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, false, false);
+				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, PrimitivesToAnonymize.NONE);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), 1);
 	}
 	
@@ -293,7 +294,7 @@ public class RESTHelpersTests extends TestSequence {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setSearchQuery(j1.getJobPairs().get(0).getBench().getName());
 		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
-				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, false, false);
+				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, PrimitivesToAnonymize.NONE);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
 	}
 	

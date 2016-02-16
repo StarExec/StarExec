@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Jobs;
@@ -454,8 +455,7 @@ public class RESTHelpers {
 	 * @param wallclock Whether to use wallclock (true) or CPU time (false)
 	 * @param syncResults 
 	 * @param stageNumber The pipeline stage number to filter jobs by.
-	 * @param anonymizeNames Whether or not to anonymize the names of the primitives in the job pairs (excluding benchmarks)
-	 * @param anonymizeBenchmarks Wheter or not to anonymize the names of benchmarks in the job pairs.
+	 * @param primitivesToAnonymize A PrimitivesToAnonymize enum describing which primitives to anonymize
 	 * @param request The HttpRequest asking to get the JSON object
 	 * @return a JSON object for the job pairs in a job space.
 	 * @author Albert Giegerich and Todd Elvers
@@ -465,8 +465,7 @@ public class RESTHelpers {
 			boolean wallclock,
 			boolean syncResults,
 			int stageNumber,
-			boolean anonymizeNames,
-			boolean anonymizeBenchmarks,
+			PrimitivesToAnonymize primitivesToAnonymize,
 			HttpServletRequest request) {
 
 		final String methodName = "getJobPairsPaginatedJson";
@@ -474,7 +473,7 @@ public class RESTHelpers {
 		logUtil.entry(methodName);
 		// Query for the next page of job pairs and return them to the user
 		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,
-					syncResults,stageNumber, anonymizeNames, anonymizeBenchmarks);
+					syncResults,stageNumber, primitivesToAnonymize);
 
 		if (nextDataTablesPage==null) {
 			logUtil.debug( methodName, "There was a database error while trying to get paginated job pairs for table." );
@@ -490,8 +489,16 @@ public class RESTHelpers {
 	
 	/**
 	 * Gets the space overview graph for a given jobspace.
+	 * @param stageNumber which stage to filter solvers by.
+	 * @param jobSpaceId the jobSpace to get the graph for.
+	 * @param request the HTTP request that is requesting the graph.
+	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing which primitives to anonymize for the graph.
 	 */
-	protected static String getSpaceOverviewGraphJson( int stageNumber, int jobSpaceId, HttpServletRequest request, boolean anonymizeNames ) {
+	protected static String getSpaceOverviewGraphJson( 
+			int stageNumber, 
+			int jobSpaceId, 
+			HttpServletRequest request, 
+			PrimitivesToAnonymize primitivesToAnonymize ) {
 		//TODO: Remove usage of 'big' attribute
 		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean logX=false;
@@ -508,7 +515,7 @@ public class RESTHelpers {
 		}
 		String chartPath = null;
 		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
-			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber, anonymizeNames);
+			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber, primitivesToAnonymize);
 			if (chartPath.equals("big")) {
 				return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 			}
@@ -524,7 +531,7 @@ public class RESTHelpers {
 	 * Gets the next data table page of job solver stats.
 	 * @param stageNumber The stagenumber associated with the solver stats we want.
 	 * @param jobSpace The jobspace associated with the solver stats we want.
-	 * @param anonymizeSolvers Whether to make all solver/config names generic
+	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing which primitives should be given anonymous names.
 	 * @param shortFormat Whether to use the abbreviated short format.
 	 * @param wallclock Whether times should be in wallclock time or cpu time.
 	 * @author Albert Giegerich
@@ -532,7 +539,7 @@ public class RESTHelpers {
 	protected static String getNextDataTablePageForJobStats(
 			int stageNumber,
 			JobSpace jobSpace, 
-			boolean anonymizeSolvers,
+			PrimitivesToAnonymize primitivesToAnonymize,
 			boolean shortFormat,
 			boolean wallclock ) {
 
@@ -541,7 +548,7 @@ public class RESTHelpers {
 		if ( solverStats == null ) {
 			return gson.toJson( RESTServices.ERROR_DATABASE );
 		}
-	   	if ( anonymizeSolvers ) {
+	   	if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
 			AnonymousLinks.anonymizeSolverStats( solverStats, jobSpace.getJobId(), stageNumber );
 		}
 
@@ -552,7 +559,7 @@ public class RESTHelpers {
 				jobSpace,
 				shortFormat,
 				wallclock,
-				anonymizeSolvers
+				primitivesToAnonymize
 		);
 
 		return gson.toJson( nextDataTablesPage );
@@ -567,8 +574,7 @@ public class RESTHelpers {
 	 * @param wallclock True to use wallclock time, false to use CPU time
 	 * @param syncResults If true, excludes job pairs for which the benchmark has not been worked on by every solver in the space
 	 * @param stageNumber If greater than or equal to 0, gets the primary stage
-	 * @param anonymizeNames Whether to anonymize primitive names in the job pairs. (excluding benchmarks)
-	 * @param anonymizeBenchmarks whether to anonymize benchmark names in job pairs.
+	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing how the job paris should be anonymized.
 	 * @return JsonObject encapsulating pairs to display in the next table page
 	 */
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(
@@ -577,8 +583,7 @@ public class RESTHelpers {
 			boolean wallclock, 
 			boolean syncResults, 
 			int stageNumber,
-			boolean anonymizeNames,
-			boolean anonymizeBenchmarks) {
+			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		final String methodName = "getNextDataTablesPageOfPairsInJobSpace";
 		logUtil.entry( methodName );
@@ -629,12 +634,10 @@ public class RESTHelpers {
 			query.setTotalRecordsAfterQuery(totals[1]);
 		}
 
-		if ( anonymizeNames ) {
-			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-			AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber, anonymizeBenchmarks );
-		}
+		int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
+		AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber, primitivesToAnonymize );
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, anonymizeNames, anonymizeBenchmarks);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
 	}
 
 	
@@ -767,7 +770,7 @@ public class RESTHelpers {
 
         query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
     	
-	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, false, false);
+	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, PrimitivesToAnonymize.NONE);
 	}
 
 	/**
@@ -1139,14 +1142,16 @@ public class RESTHelpers {
 
 			String userLink = getUserLink(user.getId(),user.getFullName(),userId);
 			
-			String benchLink = getBenchLinkWithHiddenPairId(j.getBench(),j.getId(), false);
+			String benchLink = getBenchLinkWithHiddenPairId(j.getBench(),j.getId(), PrimitivesToAnonymize.NONE);
 			
 			// Create the solver link
-			String solverLink = getSolverLink(j.getPrimarySolver().getId(),j.getPrimarySolver().getName(), false);
+			String solverLink = getSolverLink(j.getPrimarySolver().getId(),j.getPrimarySolver().getName(), PrimitivesToAnonymize.NONE);
 			
 			// Create the configuration link
 			String configLink = getConfigLink(
-					j.getPrimarySolver().getConfigurations().get(0).getId(), j.getPrimarySolver().getConfigurations().get(0).getName(), false);
+					j.getPrimarySolver().getConfigurations().get(0).getId(), 
+					j.getPrimarySolver().getConfigurations().get(0).getName(), 
+					PrimitivesToAnonymize.NONE);
 						
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
@@ -1212,12 +1217,12 @@ public class RESTHelpers {
 
 	}
 
-	private static String getConfigLink(int configId, String configName, boolean anonymizeNames) {
+	private static String getConfigLink(int configId, String configName, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a class=\"configLink\" title=\"");
 		sb.append(configName + "\"");
 		// Add the link to the solver if we don't need to be an anoymous config.
-		if ( !anonymizeNames ) {
+		if ( !AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ))  {
 			sb.append(" href=\""+Util.docRoot("secure/details/configuration.jsp?id="));
 			sb.append(configId + "\" target=\"_blank\"");
 		}
@@ -1226,7 +1231,7 @@ public class RESTHelpers {
 		sb.append("\">");
 		sb.append(configName);
 		// Add link image to the solver if we don't need to be an anoymous config.
-		if ( !anonymizeNames ) {
+		if ( !AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
 			RESTHelpers.addImg(sb);
 		}
 		return sb.toString();
@@ -1251,11 +1256,11 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
-	private static StringBuilder getBenchLinkPrefix(Benchmark bench, boolean anonymizeBenchmarks) {
+	private static StringBuilder getBenchLinkPrefix(Benchmark bench, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a");
 		// Set the tooltip to be the benchmark's description
-		if ( !anonymizeBenchmarks ) {
+		if ( !AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 			sb.append(" title=\"");
 			sb.append(bench.getDescription());
 			sb.append("\" ");
@@ -1267,20 +1272,20 @@ public class RESTHelpers {
 		sb.append(">");
 		
 		sb.append(bench.getName());
-		if (!anonymizeBenchmarks) {
+		if ( !AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 			RESTHelpers.addImg(sb);
 		}
 		return sb;
 	}
 	
-	private static String getBenchLinkWithHiddenPairId(Benchmark bench, int pairId, boolean anonymizeBenchmarks) {
-		StringBuilder sb = getBenchLinkPrefix(bench, anonymizeBenchmarks);
+	private static String getBenchLinkWithHiddenPairId(Benchmark bench, int pairId, PrimitivesToAnonymize primitivesToAnonymize) {
+		StringBuilder sb = getBenchLinkPrefix(bench, primitivesToAnonymize);
 		sb.append(getHiddenJobPairLink(pairId));
 		return sb.toString();
 	}
 	
 	private static String getBenchLink(Benchmark bench) {
-		StringBuilder sb = getBenchLinkPrefix(bench, false);
+		StringBuilder sb = getBenchLinkPrefix(bench, PrimitivesToAnonymize.NONE);
 		sb.append(getHiddenBenchLink(bench));
 		return sb.toString();
 	}
@@ -1306,13 +1311,13 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 	
-	private static String getSolverLink(int solverId, String solverName, boolean anonymizeNames) {
+	private static String getSolverLink(int solverId, String solverName, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a title=\"");
 		sb.append(solverName);
 		sb.append("\" ");
 
-		if ( !anonymizeNames ) {
+		if ( !AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
 			sb.append("href=\""
 					+ Util.docRoot("secure/details/solver.jsp?id="));
 			sb.append(solverId);
@@ -1322,7 +1327,7 @@ public class RESTHelpers {
 
 		sb.append(solverName);
 
-		if ( anonymizeNames ) {
+		if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
 			sb.append("</a>");
 		} else {
 			RESTHelpers.addImg(sb);
@@ -1370,8 +1375,7 @@ public class RESTHelpers {
 			boolean includeConfigAndSolver, 
 			boolean useWallclock, 
 			int stageNumber,
-			boolean anonymizeNames,
-		    boolean anonymizeBenchmarks	) {
+		    PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		/**
 		 * Generate the HTML for the next DataTable page of entries
@@ -1382,13 +1386,16 @@ public class RESTHelpers {
 		for(JobPair jp : pairs){
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 
-			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), anonymizeBenchmarks);
+			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), primitivesToAnonymize);
 
 			if (includeConfigAndSolver) {
 				// Create the solver link
-				solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName(), anonymizeNames);
+				solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName(), primitivesToAnonymize);
 				// Create the configuration link
-				configLink = getConfigLink(stage.getSolver().getConfigurations().get(0).getId(),stage.getSolver().getConfigurations().get(0).getName(), anonymizeNames);
+				configLink = getConfigLink(
+						stage.getSolver().getConfigurations().get(0).getId(),
+						stage.getSolver().getConfigurations().get(0).getName(), 
+						primitivesToAnonymize);
 			}
 
 
@@ -1698,7 +1705,7 @@ public class RESTHelpers {
 			// Create the solver "details" link and append the hidden input
 			// element
 			sb = new StringBuilder();
-			sb.append(getSolverLink(solver.getId(),solver.getName(), false));
+			sb.append(getSolverLink(solver.getId(),solver.getName(), PrimitivesToAnonymize.NONE));
 			sb.append(hiddenSolverId);
 			String solverLink = sb.toString();
 
@@ -1767,12 +1774,18 @@ public class RESTHelpers {
 	 * 
 	 * @param stats The SolverStats that will be the rows of the table
 	 * @param query a DataTablesQuery object
+	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
 
 	public static JsonObject convertSolverStatsToJsonObject(
-			List<SolverStats> stats, DataTablesQuery query, JobSpace space,boolean shortFormat, boolean wallTime, boolean anonymizeNames) {
+			List<SolverStats> stats, 
+			DataTablesQuery query, 
+			JobSpace space,
+			boolean shortFormat,
+			boolean wallTime,
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1783,10 +1796,10 @@ public class RESTHelpers {
 
 			//TODO
 			// Create the solver link
-			entries.add( getSolverLink( js.getSolver().getId(), js.getSolver().getName(), anonymizeNames ));
+			entries.add( getSolverLink( js.getSolver().getId(), js.getSolver().getName(), primitivesToAnonymize ));
 			
 			// create the configuration link
-			entries.add( getConfigLink(js.getConfiguration().getId(), js.getConfiguration().getName(), anonymizeNames) );
+			entries.add( getConfigLink(js.getConfiguration().getId(), js.getConfiguration().getName(), primitivesToAnonymize) );
 
 			if (!shortFormat) {
 				
@@ -1796,22 +1809,22 @@ public class RESTHelpers {
 				int stageNumber = js.getStageNumber();
 				
 				entries.add( getPairsInSpaceHtml(
-							"solver", spaceId, jobId, configId, stageNumber, js.getCorrectOverCompleted(), anonymizeNames ));
+							"solver", spaceId, jobId, configId, stageNumber, js.getCorrectOverCompleted(), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
-							"wrong", spaceId, jobId, configId, stageNumber, Integer.toString(js.getIncorrectJobPairs()), anonymizeNames ));
+							"wrong", spaceId, jobId, configId, stageNumber, Integer.toString(js.getIncorrectJobPairs()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
-							"resource", spaceId, jobId, configId, stageNumber, Integer.toString(js.getResourceOutJobPairs()), anonymizeNames ));
+							"resource", spaceId, jobId, configId, stageNumber, Integer.toString(js.getResourceOutJobPairs()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
-							"failed", spaceId, jobId, configId, stageNumber, Integer.toString(js.getFailedJobPairs()), anonymizeNames ));
+							"failed", spaceId, jobId, configId, stageNumber, Integer.toString(js.getFailedJobPairs()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml(
-							"unknown", spaceId, jobId, configId, stageNumber, Integer.toString(js.getUnknown()), anonymizeNames ));
+							"unknown", spaceId, jobId, configId, stageNumber, Integer.toString(js.getUnknown()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml(
-							"incomplete", spaceId, jobId, configId, stageNumber, Integer.toString(js.getIncompleteJobPairs()), anonymizeNames ));
+							"incomplete", spaceId, jobId, configId, stageNumber, Integer.toString(js.getIncompleteJobPairs()), primitivesToAnonymize ));
 				
 				if (wallTime) {
 					entries.add(String.valueOf(Math.round(js.getWallTime()*100)/100.0));
@@ -1843,17 +1856,17 @@ public class RESTHelpers {
 			int configId, 
 			int stageNumber, 
 			String linkText, 
-			boolean anonymizeNames) {
+			PrimitivesToAnonymize primitivesToAnonymize) {
 
 		StringBuilder sb = new StringBuilder();
 
-		if ( !anonymizeNames ) {
+		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
 			sb = getPairsInSpaceLink( type, spaceId, jobId, configId, stageNumber );
 		}
 
 		sb.append( linkText );
 
-		if ( !anonymizeNames ) {
+		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
 			RESTHelpers.addImg(sb);
 		}
 
@@ -1869,7 +1882,7 @@ public class RESTHelpers {
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
 			query.setSyncValue(1);
-			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace,true,wallclock, false);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace,true,wallclock, PrimitivesToAnonymize.NONE);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}
@@ -1969,8 +1982,7 @@ public class RESTHelpers {
 			int edgeLengthInPixels, 
 			String axisColor,
 			int stageNumber,
-		   	boolean anonymizeNames,
-		    boolean anonymizeBenchmarks	) {
+		   	PrimitivesToAnonymize primitivesToAnonymize	) {
 
 		List<String> chartPath = null;
 		
@@ -1983,7 +1995,7 @@ public class RESTHelpers {
 					
 		}
 		
-		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber, anonymizeNames, anonymizeBenchmarks);
+		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber, primitivesToAnonymize);
 		if (chartPath==null) {
 			return gson.toJson(RESTServices.ERROR_DATABASE);
 		}
@@ -1999,10 +2011,10 @@ public class RESTHelpers {
 
 	
 	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree ) {	
-		return getJobSpacesJson( parentId, jobId, makeSpaceTree, false );
+		return getJobSpacesJson( parentId, jobId, makeSpaceTree, PrimitivesToAnonymize.NONE );
 	}
 
-	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree, boolean anonymizeNames ) {	
+	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree, PrimitivesToAnonymize primitivesToAnonymize ) {	
 		List<JobSpace> subspaces=new ArrayList<JobSpace>();
 		log.debug("got a request for parent space = "+parentId);
 		if (parentId>0) {
@@ -2014,7 +2026,7 @@ public class RESTHelpers {
 			subspaces.add(s);
 		}
 
-		if ( anonymizeNames ) {
+		if ( AnonymousLinks.areJobsAnonymized( primitivesToAnonymize )) {
 			anonymizeJobSpaceNames( subspaces, jobId );
 		}
 		

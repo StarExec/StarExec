@@ -24,9 +24,9 @@ CREATE PROCEDURE GetIdOfPrimitiveAssociatedWithLink( IN _uniqueId VARCHAR(36), I
 	END // 
 
 DROP PROCEDURE IF EXISTS GetPrimitivesToAnonymize;
-CREATE PROCEDURE GetPrimitivesToAnonymize( IN _uniqueId VARCHAR(36) )
+CREATE PROCEDURE GetPrimitivesToAnonymize( IN _uniqueId VARCHAR(36), IN _primitiveType ENUM('solver', 'bench', 'job'))
 	BEGIN
-		SELECT primitives_to_anonymize FROM anonymous_links WHERE _uniqueId = unique_id;
+		SELECT primitives_to_anonymize FROM anonymous_links WHERE _uniqueId = unique_id AND primitive_type = _primitiveType;
 	END //
 
 DELIMITER ;

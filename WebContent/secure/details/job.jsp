@@ -17,7 +17,7 @@
 		<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 	</c:if>
 	<span style="display:none" id="isAnonymousPage" value="${ isAnonymousPage }"></span>
-	<span style="display:none" id="anonymizeNames" value="${ anonymizeNames }"></span>
+	<span style="display:none" id="primitivesToAnonymize" value="${ primitivesToAnonymize }"></span>
 	<span style="display:none" id="jobId" value="${job.id}" > </span>
 	<span style="display:none" id="spaceId" value="${jobspace.id}"></span>
 	<span style="display:none" id="starexecUrl" value="${starexecUrl}"></span>

@@ -39,7 +39,7 @@ function initializeGlobalPageVariables() {
 	jobId=$('#jobId').attr('value');
 	DETAILS_JOB.starexecUrl = $('#starexecUrl').attr('value');
 	DETAILS_JOB.rootJobSpaceId = $('#spaceId').attr('value');
-	DETAILS_JOB.anonymizeNames = $('#anonymizeNames').attr('value') === 'true';
+	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize').attr('value');
 	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
 
 	DETAILS_JOB.solverTableInitializer = getSolverTableInitializer();
@@ -50,7 +50,7 @@ function initializeGlobalPageVariables() {
 	log("isLocalJobPage: " + isLocalJobPage);
 	log("starexecRoot: " + starexecRoot);
 	log( 'isAnonymousPage: ' + DETAILS_JOB.isAnonymousPage );
-	log( 'anonymizeNames: ' + DETAILS_JOB.anonymizeNames );
+	log( 'primitivesToAnonymize: ' + DETAILS_JOB.primitivesToAnonymize );
 }
 
 function getPanelTableInitializer(jobId, spaceId) {
@@ -60,7 +60,7 @@ function getPanelTableInitializer(jobId, spaceId) {
 	var paginationUrl = '';
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		paginationUrl = starexecRoot+'services/jobs/solvers/anonymousLink/pagination/'+spaceId+'/'+DETAILS_JOB.anonymousLinkUuid+'/'+
-				DETAILS_JOB.anonymizeNames+'/true/';
+				DETAILS_JOB.primitivesToAnonymize+'/true/';
 	} else {
 		paginationUrl = starexecRoot+'services/jobs/solvers/pagination/'+spaceId+'/true/';
 	}
@@ -104,7 +104,7 @@ function getSpaceExplorerJsonData() {
 	} else {
 		var url = '';
 		if ( DETAILS_JOB.isAnonymousPage ) {
-			url = starexecRoot+"services/space/anonymousLink/" +DETAILS_JOB.anonymousLinkUuid+ "/jobspaces/true/"+DETAILS_JOB.anonymizeNames;
+			url = starexecRoot+"services/space/anonymousLink/" +DETAILS_JOB.anonymousLinkUuid+ "/jobspaces/true/"+DETAILS_JOB.primitivesToAnonymize;
 		} else {
 			url = starexecRoot+"services/space/" +jobId+ "/jobspaces/true";
 		}
@@ -839,7 +839,7 @@ function updateSpaceOverviewGraph() {
 	var postUrl = null;
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = starexecRoot+'services/jobs/anonymousLink/'+ DETAILS_JOB.anonymousLinkUuid +'/' + curSpaceId + 
-				'/graphs/spaceOverview/'+getSelectedStage()+'/'+DETAILS_JOB.anonymizeNames;
+				'/graphs/spaceOverview/'+getSelectedStage()+'/'+DETAILS_JOB.primitivesToAnonymize;
 	} else {
 		postUrl = starexecRoot+'services/jobs/' + curSpaceId+'/graphs/spaceOverview/'+getSelectedStage();
 	}
@@ -884,7 +884,7 @@ function updateSolverComparison(size, color) {
 	var postUrl = '';
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = starexecRoot+"services/jobs/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid+"/"+curSpaceId+"/graphs/solverComparison/"+config1+
-			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage()+"/"+DETAILS_JOB.anonymizeNames;
+			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage()+"/"+DETAILS_JOB.primitivesToAnonymize;
 	} else {
 		postUrl = starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
 	}
@@ -1003,7 +1003,7 @@ function initializePanels() {
 		handleSpacesData(panelJson);
 	} else if ( DETAILS_JOB.isAnonymousPage ) {
 		//TODO SPAGETT
-		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.anonymizeNames+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
+		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.primitivesToAnonymize+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	} else {
 		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	}
@@ -1233,7 +1233,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	var postUrl = '';
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = sSource +"solvers/anonymousLink/pagination/"+outSpaceId+ "/" + getParameterByName("anonId") + 
-				"/" + DETAILS_JOB.anonymizeNames+"/false/"+useWallclock+"/" + getSelectedStage();
+				"/" + DETAILS_JOB.primitivesToAnonymize+"/false/"+useWallclock+"/" + getSelectedStage();
 	} else {
 		postUrl = sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
 	}
@@ -1282,7 +1282,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var postUrl = null;
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + outSpaceId +
-				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + DETAILS_JOB.anonymizeNames;
+				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + DETAILS_JOB.primitivesToAnonymize;
 	} else {
 		postUrl = sSource + 'pairs/pagination/'+outSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
 	}

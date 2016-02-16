@@ -44,21 +44,42 @@ public class AnonymousLinks {
 		ALL, ALL_BUT_BENCH, NONE
 	}
 
+	public static boolean areBenchmarksAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
+		return isEverythingAnonymized( primitivesToAnonymize );
+	}
+
+	public static boolean areSolversAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
+		return isEverythingAnonymized(primitivesToAnonymize) || primitivesToAnonymize == PrimitivesToAnonymize.ALL_BUT_BENCH;
+	}
+
+	public static boolean areJobsAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
+		return isEverythingAnonymized( primitivesToAnonymize ) || primitivesToAnonymize == PrimitivesToAnonymize.ALL_BUT_BENCH;
+	}
+
+	public static boolean isEverythingAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
+		return primitivesToAnonymize == PrimitivesToAnonymize.ALL;
+	}
+
+	public static boolean isNothingAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
+		return primitivesToAnonymize == PrimitivesToAnonymize.NONE;
+	}
+
 	/**
 	 * Converts from a PrimitivesToAnonymize enum name to a PrimitiveToAnonymize enum.
 	 * @param enumName the string representation of the PrimitivesToAnonymize enum.
 	 * @return the PrimitivesToAnonymize enum represented by the input string.
 	 * @author Albert Giegerich
-	public PrimitivesToAnonymize getPrimitivesToAnonymize( String enumName ) {
+	 */
+	public static PrimitivesToAnonymize createPrimitivesToAnonymize(String enumName ) {
 		PrimitivesToAnonymize primitivesToAnonymize = null;
 		switch (enumName) {
-			case R.ANONYMIZE_ALL_ENUM_NAME: 
+			case R.ANONYMIZE_ALL: 
 				primitivesToAnonymize = PrimitivesToAnonymize.ALL;
 				break;
-			case R.ANONYMIZE_ALL_BUT_BENCH_ENUM_NAME:
+			case R.ANONYMIZE_ALL_BUT_BENCH:
 				primitivesToAnonymize = PrimitivesToAnonymize.ALL_BUT_BENCH;
 				break;
-			case R.ANONYMIZE_NONE_ENUM_NAME:
+			case R.ANONYMIZE_NONE:
 				primitivesToAnonymize = PrimitivesToAnonymize.NONE;
 				break;
 			default:
@@ -66,33 +87,30 @@ public class AnonymousLinks {
 		}
 		return primitivesToAnonymize;
 	}
-	*/
 
 	/**
-	 * Cnverts from a PrimitivesToAnonymize enum to the string represenation of that enum.
+	 * Converts from a PrimitivesToAnonymize enum to the string represenation of that enum.
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum.
 	 * @return the String representation of the input enum.
 	 * @author Albert Giegerich
-	public String getPrimitivesToAnonymizeName( PrimitivesToAnonymize primitivesToAnonymize ) {
+	 */
+	public static String getPrimitivesToAnonymizeName( PrimitivesToAnonymize primitivesToAnonymize ) {
 		String enumName = null;
 		switch ( primitivesToAnonymize ) {
 			case ALL:
-				enumName = R.ANONYMIZE_ALL_ENUM_NAME;
+				enumName = R.ANONYMIZE_ALL;
 				break;
 			case ALL_BUT_BENCH:
-				enumName = R.ANONYMIZE_ALL_BUT_BENCH_ENUM_NAME;
+				enumName = R.ANONYMIZE_ALL_BUT_BENCH;
 				break;
 			case NONE:
-				enumName= R.ANONYMIZE_NONE_ENUM_NAME;
+				enumName= R.ANONYMIZE_NONE;
 				break;
 			default:
 				throw new IllegalArgumentException( "A case has not been implemented for the input PrimitivesToAnonymize." );
 		}
 		return enumName;
 	}
-	*/
-
-
 
 	/**
 	 * Adds a new anonymous link entry to the database.
@@ -105,7 +123,7 @@ public class AnonymousLinks {
 	public static String addAnonymousLink(
 			final String primitiveType,
 			final int primitiveId,
-			final String primitivesToAnonymize ) throws SQLException {
+			final PrimitivesToAnonymize primitivesToAnonymize ) throws SQLException {
 
 		final String methodName = "addAnonymousLink";
 		logUtil.entry(methodName);
@@ -128,7 +146,7 @@ public class AnonymousLinks {
 			procedure.setString( 1, universallyUniqueId );
 			procedure.setString( 2, primitiveType );
 			procedure.setInt( 3, primitiveId );
-			procedure.setString( 4, primitivesToAnonymize );
+			procedure.setString( 4, getPrimitivesToAnonymizeName( primitivesToAnonymize ));
 
 			// Do update and commit the changes.
 			procedure.executeUpdate();
@@ -152,7 +170,6 @@ public class AnonymousLinks {
 	 * @param universallyUniqueId The uuid associated with the primitive
 	 * @return An optional containing the result if the link exists otherwise an empty optional.
 	 * @author Albert Giegerich
-	 */
 	public static Optional<Boolean> isJobNameHidden( final String universallyUniqueId ) throws SQLException {
 		return isPrimitiveNameHidden( universallyUniqueId, R.JOB );
 	}
@@ -162,7 +179,6 @@ public class AnonymousLinks {
 	 * @param universallyUniqueId The uuid associated with the primitive
 	 * @return An optional containing the result if the link exists otherwise an empty optional.
 	 * @author Albert Giegerich
-	 */
 	public static Optional<Boolean> isBenchmarkNameHidden( final String universallyUniqueId ) throws SQLException {
 		return isPrimitiveNameHidden( universallyUniqueId, R.BENCHMARK );
 	}
@@ -172,7 +188,6 @@ public class AnonymousLinks {
 	 * @param universallyUniqueId The uuid associated with the primitive
 	 * @return An optional containing the result if the link exists otherwise an empty optional.
 	 * @author Albert Giegerich
-	 */
 	public static Optional<Boolean> isSolverNameHidden( final String universallyUniqueId ) throws SQLException {
 		return isPrimitiveNameHidden( universallyUniqueId, R.SOLVER );
 	}
@@ -181,7 +196,6 @@ public class AnonymousLinks {
 	 * Checks whether the primitive name for a link should be hidden.
 	 * @param universallyUniqueId The uuid associated with the primitive
 	 * @author Albert Giegerich
-	 */
 	private static Optional<Boolean> isPrimitiveNameHidden( final String universallyUniqueId, final String primitiveType ) throws SQLException {
 		final String methodName = "isPrimitiveNameHidden";
 		logUtil.entry( methodName );
@@ -234,6 +248,7 @@ public class AnonymousLinks {
 			Common.safeClose( results );
 		}
 	}
+	*/
 
 
 	/**
@@ -247,7 +262,7 @@ public class AnonymousLinks {
 	public static Optional<String> getAnonymousLinkCode(
 			final String primitiveType,
 			final int primitiveId,
-			final String primitivesToAnonymize ) throws SQLException {
+			final PrimitivesToAnonymize primitivesToAnonymize ) throws SQLException {
 
 		final String methodName = "getAnonymousLinkCode";
 		logUtil.entry(methodName);
@@ -265,7 +280,7 @@ public class AnonymousLinks {
 			procedure = con.prepareCall( "{CALL " + procedureName + "(?, ?, ?)}" );
 			procedure.setString( 1, primitiveType );
 			procedure.setInt( 2, primitiveId );
-			procedure.setString( 3, primitivesToAnonymize );
+			procedure.setString( 3, getPrimitivesToAnonymizeName( primitivesToAnonymize ) );
 
 			results = procedure.executeQuery();
 			Common.endTransaction(con);
@@ -370,17 +385,66 @@ public class AnonymousLinks {
 		}
 	}
 
+	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForSolver( String linkUuid ) throws SQLException {
+		return getPrimitivesToAnonymize( linkUuid, R.SOLVER );
+	}
+	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForJob( String linkUuid ) throws SQLException {
+		return getPrimitivesToAnonymize( linkUuid, R.JOB );
+	}
+	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForBenchmark( String linkUuid ) throws SQLException {
+		return getPrimitivesToAnonymize( linkUuid, R.BENCHMARK );
+	}
+
+	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymize( String linkUuid, String primitiveType ) throws SQLException {
+		final String methodName = "getPrimitivesToAnonymize";
+		logUtil.entry( methodName );
+
+		// UUIDs have a max size of 36.
+		if ( linkUuid.length() > MAX_UUID_LENGTH ) {
+			return Optional.empty();
+		}
+
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		final String procedureName = "GetPrimitivesToAnonymize";
+
+		try {
+			con = Common.getConnection();
+
+			// Setup the GetAnonymousLink procedure.
+			procedure = con.prepareCall( "{CALL " + procedureName + "(?, ?)}" );
+			procedure.setString( 1, linkUuid );
+			procedure.setString( 2, primitiveType );
+
+			results = procedure.executeQuery();
+			// If the code is in the database return it otherwise return an empty Optional.
+			if ( results.next() ) {
+				return Optional.of( createPrimitivesToAnonymize( results.getString( "primitives_to_anonymize" )));
+			} else {
+				return Optional.empty();
+			}
+		} catch (SQLException e) {
+			logUtil.error( methodName, e.toString() );
+			throw e;
+		} finally {
+			Common.safeClose( con );
+			Common.safeClose( procedure );
+			Common.safeClose( results );
+		}
+	}
+
 	/**
 	 *
 	 * Anonymizes the names of primitives in a list of job pairs.
 	 * @param jobPairs the job pairs to anonymize.
 	 * @param jobId the job id associated with the job pairs.
 	 * @param stageNumber stage to filter solvers by.
-	 * @param anonymizeBenchmarks whether or not to anonymize benchmark names.
+	 * @param primitivesToAnonymize an enum dictating what should be anonymized.
 	 * @return the anonymized job pairs.
 	 * @author Albert Giegerich
 	 */
-	public static void anonymizeJobPairs( final List<JobPair> jobPairs, int jobId, int stageNumber, boolean anonymizeBenchmarks ) {
+	public static void anonymizeJobPairs( final List<JobPair> jobPairs, int jobId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
 		final String methodName = "anonymizePrimitiveNames";
 		logUtil.entry( methodName );
 		// There are no primitives to anonymize
@@ -388,11 +452,16 @@ public class AnonymousLinks {
 			return;
 		}
 
+		// We don't want to anonymize anything.
+		if ( isNothingAnonymized( primitivesToAnonymize )) {
+			return;
+		}
+
 		// Get a mapping of benchmark/solver ids to their anonymized names.
 		Map<Integer, String> anonymizedBenchmarkNames = getAnonymizedBenchmarkNames( jobId );
 		Map<Integer, String> anonymizedSolverNames = getAnonymizedSolverNames( jobId, stageNumber );
 		for ( JobPair pair : jobPairs ) {
-			if (anonymizeBenchmarks) {
+			if ( areBenchmarksAnonymized( primitivesToAnonymize )) {
 				// Set each benchmark's name to an anonymized one.
 				Benchmark pairBench = pair.getBench();
 				pairBench.setName( anonymizedBenchmarkNames.get( pairBench.getId() ));

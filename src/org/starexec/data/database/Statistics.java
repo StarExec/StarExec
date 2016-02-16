@@ -39,6 +39,7 @@ import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -277,7 +278,14 @@ public class Statistics {
 	 * @author Eric Burns
 	 */
 	
-	public static List<String> makeSolverComparisonChart(int configId1, int configId2, int jobSpaceId, int edgeLengthInPixels, Color axisColor, int stageNumber, boolean anonymizeNames, boolean anonymizeBenchmarks) {
+	public static List<String> makeSolverComparisonChart(
+			int configId1, 
+			int configId2, 
+			int jobSpaceId, 
+			int edgeLengthInPixels, 
+			Color axisColor, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
 		logUtil.entry(methodName);
 
@@ -295,7 +303,7 @@ public class Statistics {
 				return answer;
 			}
 			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels, 
-					axisColor, stageNumber, anonymizeNames, anonymizeBenchmarks);
+					axisColor, stageNumber, primitivesToAnonymize );
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}
@@ -319,7 +327,7 @@ public class Statistics {
 	
 	@SuppressWarnings("deprecation")
 	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, int jobSpaceId,
-			int edgeLengthInPixels, Color axisColor, int stageNumber, boolean anonymizeNames, boolean anonymizeBenchmarks) {
+			int edgeLengthInPixels, Color axisColor, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
 			
 			//there are no points if either list of pairs is empty
@@ -339,7 +347,9 @@ public class Statistics {
 			String xAxisName = null;
 			String yAxisName = null;
 			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-			if ( anonymizeNames ) {
+
+			if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
+				// Use anonymous solver names for the axis titles.
 				Map<Integer, String> solverIdToAnonymizedName = AnonymousLinks.getAnonymizedSolverNames(jobId, stageNumber);
 				xAxisName = solverIdToAnonymizedName.get( stage1.getSolver().getId() );
 				yAxisName = solverIdToAnonymizedName.get( stage2.getSolver().getId() );
@@ -372,7 +382,7 @@ public class Statistics {
 						
 						//put the name in names so we can create a tooltip of the name
 						//when hovering over the point in the image map
-						if (anonymizeBenchmarks) {
+						if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 							names.put(key, benchmarkIdToAnonymizedName.get( jp.getBench().getId() ));
 						} else {
 							names.put(key, jp.getBench().getName());
@@ -409,7 +419,7 @@ public class Statistics {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
-			if ( !anonymizeBenchmarks ) {
+			if ( !AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 				renderer.setURLGenerator(customURLGenerator);
 			}
 	        
@@ -443,7 +453,7 @@ public class Statistics {
 			String map;
 			
 			// Don't include the links to the benchmark pages if we're sending this to an anonymous page.
-			if ( anonymizeNames ) {
+			if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info);
 			} else {
 				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
@@ -480,7 +490,7 @@ public class Statistics {
 			boolean logY, 
 			List<Integer> configIds, 
 			int stageNumber, 
-			boolean anonymizeNames) {
+			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		try {
 			if (configIds.size()==0) {
@@ -498,9 +508,7 @@ public class Statistics {
 				}
 			}
 
-			if ( anonymizeNames ) {
-				AnonymousLinks.anonymizeJobPairs( pairs, Spaces.getJobSpace(jobSpaceId).getJobId(), stageNumber, false);
-			}
+			AnonymousLinks.anonymizeJobPairs( pairs, Spaces.getJobSpace(jobSpaceId).getJobId(), stageNumber, primitivesToAnonymize );
 			
 			return makeSpaceOverviewChart(pairs, logX,logY,stageNumber);
 		} catch (Exception e) {
