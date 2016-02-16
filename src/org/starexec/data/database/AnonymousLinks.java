@@ -44,22 +44,42 @@ public class AnonymousLinks {
 		ALL, ALL_BUT_BENCH, NONE
 	}
 
+	/**
+	 * Utility method that determines if benchmarks are anonymized in a PrimitivesToAnonmize enum.
+	 * @author Albert Giegerich
+	 */
 	public static boolean areBenchmarksAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
 		return isEverythingAnonymized( primitivesToAnonymize );
 	}
 
+	/**
+	 * Utility method that determines if solves are anonymized in a PrimitivesToAnonmize enum.
+	 * @author Albert Giegerich
+	 */
 	public static boolean areSolversAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
 		return isEverythingAnonymized(primitivesToAnonymize) || primitivesToAnonymize == PrimitivesToAnonymize.ALL_BUT_BENCH;
 	}
 
+	/**
+	 * Utility method that determines if jobs are anonymized in a PrimitivesToAnonmize enum.
+	 * @author Albert Giegerich
+	 */
 	public static boolean areJobsAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
 		return isEverythingAnonymized( primitivesToAnonymize ) || primitivesToAnonymize == PrimitivesToAnonymize.ALL_BUT_BENCH;
 	}
 
+	/**
+	 * Utility method that determines if all primitives are anonymized in a PrimitivesToAnonmize enum.
+	 * @author Albert Giegerich
+	 */
 	public static boolean isEverythingAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
 		return primitivesToAnonymize == PrimitivesToAnonymize.ALL;
 	}
 
+	/**
+	 * Utility method that determines if no primitives are anonymized in a PrimitivesToAnonmize enum.
+	 * @author Albert Giegerich
+	 */
 	public static boolean isNothingAnonymized( PrimitivesToAnonymize primitivesToAnonymize ) {
 		return primitivesToAnonymize == PrimitivesToAnonymize.NONE;
 	}
@@ -70,7 +90,7 @@ public class AnonymousLinks {
 	 * @return the PrimitivesToAnonymize enum represented by the input string.
 	 * @author Albert Giegerich
 	 */
-	public static PrimitivesToAnonymize createPrimitivesToAnonymize(String enumName ) {
+	public static PrimitivesToAnonymize createPrimitivesToAnonymize( String enumName ) {
 		PrimitivesToAnonymize primitivesToAnonymize = null;
 		switch (enumName) {
 			case R.ANONYMIZE_ALL: 
@@ -114,10 +134,10 @@ public class AnonymousLinks {
 
 	/**
 	 * Adds a new anonymous link entry to the database.
-	 * @param universallyUniqueId A string that will uniquely identify the benchmark.
 	 * @param primitiveId The id of the primitive for which a public anonymous link will be generated.
 	 * @param primitiveType The type of primitive (benchmark, solver, etc.) that a link will be generated for.
-	 * @param hidePrimitiveName Whether or not the primitive's name should be hidden on the link page.
+	 * @param primitivesToAnonymize the enum representing which primitives should be anonymized for this anonymous page.
+	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */
 	public static String addAnonymousLink(
@@ -166,97 +186,12 @@ public class AnonymousLinks {
 	}
 
 	/**
-	 * Checks whether the job name for a link should be hidden.
-	 * @param universallyUniqueId The uuid associated with the primitive
-	 * @return An optional containing the result if the link exists otherwise an empty optional.
-	 * @author Albert Giegerich
-	public static Optional<Boolean> isJobNameHidden( final String universallyUniqueId ) throws SQLException {
-		return isPrimitiveNameHidden( universallyUniqueId, R.JOB );
-	}
-
-	/**
-	 * Checks whether the benchmark name for a link should be hidden.
-	 * @param universallyUniqueId The uuid associated with the primitive
-	 * @return An optional containing the result if the link exists otherwise an empty optional.
-	 * @author Albert Giegerich
-	public static Optional<Boolean> isBenchmarkNameHidden( final String universallyUniqueId ) throws SQLException {
-		return isPrimitiveNameHidden( universallyUniqueId, R.BENCHMARK );
-	}
-
-	/**
-	 * Checks whether the solver name for a link should be hidden.
-	 * @param universallyUniqueId The uuid associated with the primitive
-	 * @return An optional containing the result if the link exists otherwise an empty optional.
-	 * @author Albert Giegerich
-	public static Optional<Boolean> isSolverNameHidden( final String universallyUniqueId ) throws SQLException {
-		return isPrimitiveNameHidden( universallyUniqueId, R.SOLVER );
-	}
-
-	/**
-	 * Checks whether the primitive name for a link should be hidden.
-	 * @param universallyUniqueId The uuid associated with the primitive
-	 * @author Albert Giegerich
-	private static Optional<Boolean> isPrimitiveNameHidden( final String universallyUniqueId, final String primitiveType ) throws SQLException {
-		final String methodName = "isPrimitiveNameHidden";
-		logUtil.entry( methodName );
-
-		// UUIDs have a max size of 36.
-		if ( universallyUniqueId.length() > MAX_UUID_LENGTH ) {
-			return Optional.empty();
-		}
-
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		final String sqlProcedureName = "GetPrimitivesToAnonymize";
-
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction( con );
-
-			// Setup the SQL procedure.
-			procedure = con.prepareCall( "{CALL " + sqlProcedureName + "(?)}" );
-			procedure.setString( 1, universallyUniqueId );
-
-			results = procedure.executeQuery();
-			Common.endTransaction(con);
-			// If the code is in the database return it otherwise return an empty Optional.
-			if ( results.next() ) {
-				String primitivesToAnonymize = results.getString("primitives_to_anonymize");
-				if ( primitivesToAnonymize.equals( R.ANONYMIZE_ALL )) {
-					return Optional.of( true );
-				} else if ( primitivesToAnonymize.equals( R.ANONYMIZE_ALL_BUT_BENCH ) && primitiveType != R.BENCHMARK ) {
-					return Optional.of( true );
-				} else if ( primitivesToAnonymize.equals( R.ANONYMIZE_ALL_BUT_BENCH ) && primitiveType == R.BENCHMARK ) {
-					return Optional.of( false );
-				} else if ( primitivesToAnonymize.equals( R.ANONYMIZE_NONE )) {
-					return Optional.of ( false );
-				} else {
-					throw new SQLException( "primitives_to_anonymize column did not have a valid result." );
-				}
-			} else {
-				return Optional.empty();
-			}
-		} catch ( SQLException e ) {
-			logUtil.error( methodName, "SQLException thrown while retrieving link associated with UUID=" + universallyUniqueId );
-			logUtil.error( methodName, Util.getStackTrace( e ));
-			Common.doRollback( con );
-			throw e;
-		} finally {
-			Common.safeClose( con );
-			Common.safeClose( procedure );
-			Common.safeClose( results );
-		}
-	}
-	*/
-
-
-	/**
 	 * Get the unique code that links to a given primitive from the database.
 	 * @param primitiveType The type of primitive for which a code will be retrieved (solver, bench, etc.)
 	 * @param primitiveId The id of the primitive for which a code will be retrieved.
-	 * @param hidePrimitiveName Whether or not the link code anonymizes the primitive name.
-	 * @return An Optional containing the code if present in the database otherwise an empty Optional.
+	 * @param primitivesToAnonymize an enum that determines which primitives wil be anonymized on the anonymous page. 
+	 * @return an Optional containing the code if present in the database otherwise an empty Optional.
+	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */
 	public static Optional<String> getAnonymousLinkCode(
@@ -303,9 +238,9 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets the id of the job associated with a given UUID
-	 * @param universallyUniqueId The UUID associated with the job whose id will be retrieved.
-	 * @param jobType The type of job whose id will be retrieved.
-	 * @return The id of the job associated with the given UUID
+	 * @param universallyUniqueId the UUID associated with the job whose id will be retrieved.
+	 * @return the id of the job associated with the given UUID
+	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */
 	public static Optional<Integer> getIdOfJobAssociatedWithLink( final String universallyUniqueId ) throws SQLException {
@@ -315,8 +250,8 @@ public class AnonymousLinks {
 	/**
 	 * Gets the id of the benchmark associated with a given UUID
 	 * @param universallyUniqueId The UUID associated with the benchmark whose id will be retrieved.
-	 * @param benchmarkType The type of benchmark whose id will be retrieved.
 	 * @return The id of the benchmark associated with the given UUID
+	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */
 	public static Optional<Integer> getIdOfBenchmarkAssociatedWithLink( final String universallyUniqueId ) throws SQLException {
@@ -325,8 +260,9 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets the id of the solver associated with a given UUID
-	 * @param universallyUniqueId The UUID associated with the solver whose id will be retrieved.
-	 * @return The id of the solver associated with the given UUID
+	 * @param universallyUniqueId the UUID associated with the solver whose id will be retrieved.
+	 * @return the id of the solver associated with the given UUID
+	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */
 	public static Optional<Integer> getIdOfSolverAssociatedWithLink( final String universallyUniqueId ) throws SQLException {
@@ -336,14 +272,16 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets the id of the primitive associated with a given UUID
-	 * @param universallyUniqueId The UUID associated with the primitive whose id will be retrieved.
-	 * @param primitiveType The type of primitive whose id will be retrieved.
-	 * @return The id of the primitive associated with the given UUID
+	 * @param universallyUniqueId the UUID associated with the primitive whose id will be retrieved.
+	 * @param primitiveType the type of primitive whose id will be retrieved.
+	 * @return the id of the primitive associated with the given UUID
+	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */
 	private static Optional<Integer> getIdOfPrimitiveAssociatedWithLink(
 			final String universallyUniqueId, 
 			final String primitiveType ) throws SQLException {
+
 		final String methodName = "getIdOfPrimitiveAssociatedWithCode";
 		logUtil.entry( methodName );
 
@@ -385,17 +323,39 @@ public class AnonymousLinks {
 		}
 	}
 
+	/**
+	 * Gets which primitives to anonymize for an anonymous solver page.
+	 * @param linkUuid the anonymous link unique identifier.
+	 * @return an Optional containing an enum specifying which primitives to anonymize if the anonymous page exists otherwise an empty Optional.
+	 * @throws SQLException if the database fails.
+	 * @author Albert Giegerich
+	 */
 	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForSolver( String linkUuid ) throws SQLException {
 		return getPrimitivesToAnonymize( linkUuid, R.SOLVER );
 	}
+	/**
+	 * Gets which primitives to anonymize for an anonymous job page.
+	 * @param linkUuid the anonymous link unique identifier.
+	 * @return an Optional containing an enum specifying which primitives to anonymize if the anonymous page exists otherwise an empty Optional.
+	 * @throws SQLException if the database fails.
+	 * @author Albert Giegerich
+	 */
 	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForJob( String linkUuid ) throws SQLException {
 		return getPrimitivesToAnonymize( linkUuid, R.JOB );
 	}
+
+	/**
+	 * Gets which primitives to anonymize for an anonymous benchmark page.
+	 * @param linkUuid the anonymous link unique identifier.
+	 * @return an Optional containing an enum specifying which primitives to anonymize if the anonymous page exists otherwise an empty Optional.
+	 * @throws SQLException if the database fails.
+	 * @author Albert Giegerich
+	 */
 	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForBenchmark( String linkUuid ) throws SQLException {
 		return getPrimitivesToAnonymize( linkUuid, R.BENCHMARK );
 	}
 
-	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymize( String linkUuid, String primitiveType ) throws SQLException {
+	private static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymize( String linkUuid, String primitiveType ) throws SQLException {
 		final String methodName = "getPrimitivesToAnonymize";
 		logUtil.entry( methodName );
 
@@ -479,7 +439,9 @@ public class AnonymousLinks {
 
 	/**
 	 * Anonymizes the names of solver stats deterministically based on the job and stage number.
-	 * @param allSolver
+	 * @param allSolverStats the solver stats to anonymize.
+	 * @param jobId the id of the job which the solver stats are related to.
+	 * @param stageNumber the stage to filter the solvers by.
 	 * @author Albert Giegerich
 	 */
 	public static void anonymizeSolverStats( List<SolverStats> allSolverStats, int jobId, int stageNumber ) {
@@ -531,7 +493,7 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets a mapping of bencmark ID's to unique anonymized names in a deterministic manner depending on the job id.
-	 * @param jobId The id of the job to get a mapping for.
+	 * @param jobId the id of the job to get a mapping for.
 	 * @return a mapping from benchmark ID's to an anonymous name for the benchmark.
 	 * @author Albert Giegerich
 	 */
@@ -558,7 +520,7 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets a mapping of job space ID's to unique anonymized names.
-	 * @param jobId The id of the job to get a mapping for.
+	 * @param jobId the id of the job to get a mapping for.
 	 * @author Albert Giegerich
 	 */
 	public static Map<Integer, String> getAnonymizedJobSpaceNames( final int jobId ) {
