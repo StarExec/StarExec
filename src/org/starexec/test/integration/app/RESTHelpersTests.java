@@ -31,8 +31,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Queues.class})
 public class RESTHelpersTests extends TestSequence {
 	private static String TOTAL_RECORDS = "iTotalRecords";
 	private static String DATA = "aaData";
@@ -297,21 +295,6 @@ public class RESTHelpersTests extends TestSequence {
 		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
 				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, false, false);
 		validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
-	}
-	
-	@StarexecTest
-	private void getNextPageClusterQueueTest() {
-		PowerMockito.mockStatic(Queues.class);
-		List<JobPair> pairs = TestUtil.getFakeJobPairs();
-		
-        BDDMockito.when(Queues.getJobPairsForNextClusterPage(BDDMockito.any(), q.getId(), "queue")).thenReturn(pairs);
-        BDDMockito.when(Queues.getJobPairsForNextClusterPage(BDDMockito.any(), q.getId(), "queue")).thenReturn(pairs);
-        BDDMockito.when(Queues.getCountOfEnqueuedPairsShallow(q.getId())).thenReturn(pairs.size());
-        JsonObject o = RESTHelpers.getNextDataTablesPageCluster("queue", q.getId(),testUser.getId(), getMockRequest(testUser.getId()));
-        validateJsonObjectCounts(o, pairs.size(),pairs.size(),pairs.size());
-        PowerMockito.doCallRealMethod().when(Queues.class);
-		Queues.getJobPairsForNextClusterPage(BDDMockito.any(DataTablesQuery.class), q.getId(), "queue");
-		Queues.getCountOfEnqueuedPairsShallow(q.getId());
 	}
 	
 	
