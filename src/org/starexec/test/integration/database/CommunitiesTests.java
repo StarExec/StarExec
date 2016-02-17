@@ -5,9 +5,11 @@ import java.util.List;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
@@ -35,7 +37,8 @@ public class CommunitiesTests extends TestSequence {
 	Solver solver2 = null;
 	Solver solver3 = null;
 	List<Integer> benchmarkIds = null;
-	
+	Job job1 = null;
+	Job job2 = null;
 	@StarexecTest
 	private void communityMapUsersTest() {
 		Communities.updateCommunityMap();
@@ -58,8 +61,82 @@ public class CommunitiesTests extends TestSequence {
 		}
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("benchmarks"), new Long(benchmarkIds.size()));
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("disk_usage"), disk);
-
-
+	}
+	
+	@StarexecTest
+	private void communityMapJobsTest() {
+		Communities.updateCommunityMap();
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("jobs"), new Long(2));
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("job_pairs"), new Long(job1.getJobPairs().size() + job2.getJobPairs().size()));
+	}
+	
+	@StarexecTest
+	private void getDetailsTest() {
+		Space s = Communities.getDetails(community.getId());
+		Assert.assertEquals(s.getId(), community.getId());
+		Assert.assertEquals(s.getName(), community.getName());
+		Assert.assertEquals(s.getDescription(), community.getDescription());
+		Assert.assertEquals(s.isLocked(), community.isLocked());
+		Assert.assertEquals(s.getCreated(), community.getCreated());
+	}
+	
+	@StarexecTest
+	private void isCommunityTest() {
+		Assert.assertTrue(Communities.isCommunity(community.getId()));
+		Assert.assertFalse(Communities.isCommunity(subspace1.getId()));
+		Assert.assertFalse(Communities.isCommunity(-1));
+	}
+	
+	@StarexecTest
+	private void getDetailsNonCommunityTest() {
+		Assert.assertNull(Communities.getDetails(subspace1.getId()));
+	}
+	
+	@StarexecTest
+	private void inListOfCommunities() throws Exception {
+		List<Space> comms=Communities.getAll();
+		for (Space s : comms) {
+			if (s.getName().equals(community.getName())) {
+				return;
+			}
+		}
+		
+		Assert.fail("community was not found in the list of communities");
+	}
+	
+	@StarexecTest
+	private void getAllCommunitiesUserIsInTest() {
+		List<Space> comms=Communities.getAllCommunitiesUserIsIn(user2.getId());
+		for (Space s : comms) {
+			if (s.getName().equals(community.getName())) {
+				return;
+			}
+		}
+		
+		Assert.fail("community was not found in the list of communities");
+	}
+	
+	@StarexecTest
+	private void commAssocExpiredNullTest() {
+		Long temp = R.COMM_ASSOC_LAST_UPDATE;
+		R.COMM_ASSOC_LAST_UPDATE = null;
+		Assert.assertTrue(Communities.commAssocExpired());
+		R.COMM_ASSOC_LAST_UPDATE=temp;
+	}
+	@StarexecTest
+	private void commAssocExpiredTest() {
+		Long temp = R.COMM_ASSOC_LAST_UPDATE;
+		R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis() + R.COMM_ASSOC_UPDATE_PERIOD + 100;
+		Assert.assertTrue(Communities.commAssocExpired());
+		R.COMM_ASSOC_LAST_UPDATE=temp;
+	}
+	
+	@StarexecTest
+	private void commAssocNotExpiredTest() {
+		Long temp = R.COMM_ASSOC_LAST_UPDATE;
+		R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
+		Assert.assertFalse(Communities.commAssocExpired());
+		R.COMM_ASSOC_LAST_UPDATE=temp;
 	}
 	
 	@Override
@@ -83,10 +160,15 @@ public class CommunitiesTests extends TestSequence {
 		solver3 = ResourceLoader.loadSolverIntoDatabase(subspace3.getId(), user2.getId());
 		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(community.getId(), testUser.getId());
 		benchmarkIds.addAll(ResourceLoader.loadBenchmarksIntoDatabase(subspace3.getId(), user1.getId()));
+		job1 = ResourceLoader.loadJobIntoDatabase(subspace2.getId(), user2.getId(), solver1.getId(), benchmarkIds);
+		job2 = ResourceLoader.loadJobIntoDatabase(subspace3.getId(), user1.getId(), solver2.getId(), benchmarkIds);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
+		Jobs.deleteAndRemove(job1.getId());
+		Jobs.deleteAndRemove(job2.getId());
+
 		for (Integer i :benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
