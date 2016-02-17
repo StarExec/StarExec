@@ -29,4 +29,10 @@ CREATE PROCEDURE GetPrimitivesToAnonymize( IN _uniqueId VARCHAR(36), IN _primiti
 		SELECT primitives_to_anonymize FROM anonymous_links WHERE _uniqueId = unique_id AND primitive_type = _primitiveType;
 	END //
 
+DROP PROCEDURE IF EXISTS DeleteOldLinks;
+CREATE PROCEDURE DeleteOldLinks( IN _ageThresholdInDays INT )
+	BEGIN
+		DELETE FROM anonymous_links WHERE DATEDIFF( CURDATE(), date_created ) > _ageThresholdInDays; 
+	END //
+
 DELIMITER ;

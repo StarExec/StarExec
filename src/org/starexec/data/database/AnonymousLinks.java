@@ -3,6 +3,7 @@ package org.starexec.data.database;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -154,13 +155,12 @@ public class AnonymousLinks {
 
 		Connection con = null;
 		CallableStatement procedure = null;
-		final String procedureName = "AddAnonymousLink";
 
 		try {
 			// Setup the AddAnonymousLink procedure.
 			con = Common.getConnection();
 			Common.beginTransaction(con);
-			procedure = con.prepareCall("{CALL " + procedureName + "(?, ?, ?, ?)}");
+			procedure = con.prepareCall("{CALL AddAnonymousLink(?, ?, ?, ?)}");
 
 			// Set the parameters
 			procedure.setString( 1, universallyUniqueId );
@@ -205,14 +205,13 @@ public class AnonymousLinks {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results=null;
-		final String procedureName = "GetAnonymousLink";
 
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction( con );
 
 			// Setup the GetAnonymousLink procedure.
-			procedure = con.prepareCall( "{CALL " + procedureName + "(?, ?, ?)}" );
+			procedure = con.prepareCall( "{CALL GetAnonymousLink(?, ?, ?)}" );
 			procedure.setString( 1, primitiveType );
 			procedure.setInt( 2, primitiveId );
 			procedure.setString( 3, getPrimitivesToAnonymizeName( primitivesToAnonymize ) );
@@ -293,14 +292,13 @@ public class AnonymousLinks {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		final String procedureName = "GetIdOfPrimitiveAssociatedWithLink";
 
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction( con );
 
 			// Setup the GetAnonymousLink procedure.
-			procedure = con.prepareCall( "{CALL " + procedureName + "(?, ?)}" );
+			procedure = con.prepareCall( "{CALL GetIdOfPrimitiveAssociatedWithLink(?, ?)}" );
 			procedure.setString( 1, universallyUniqueId );
 			procedure.setString( 2, primitiveType );
 
@@ -367,13 +365,12 @@ public class AnonymousLinks {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		final String procedureName = "GetPrimitivesToAnonymize";
 
 		try {
 			con = Common.getConnection();
 
-			// Setup the GetAnonymousLink procedure.
-			procedure = con.prepareCall( "{CALL " + procedureName + "(?, ?)}" );
+			// Setup the GetPrimitivesToAnonymize procedure.
+			procedure = con.prepareCall( "{CALL GetPrimitivesToAnonymize(?, ?)}" );
 			procedure.setString( 1, linkUuid );
 			procedure.setString( 2, primitiveType );
 
@@ -391,6 +388,35 @@ public class AnonymousLinks {
 			Common.safeClose( con );
 			Common.safeClose( procedure );
 			Common.safeClose( results );
+		}
+	}
+
+	/**
+	 * Deletes all old links in the database.
+	 * @author Albert Giegerich
+	 */
+	public static void deleteOldLinks() throws SQLException {
+		final String methodName = "deleteOldLinks";
+		Connection con = null;
+		CallableStatement procedure = null;
+
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction( con );
+			
+			procedure = con.prepareCall( "{CALL DeleteOldLinks(?)}" );
+			procedure.setInt( 1, R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS );
+
+			procedure.executeUpdate();
+
+			Common.endTransaction(con);
+		} catch (SQLException e) {
+			logUtil.error( methodName, Util.getStackTrace( e ));
+			Common.doRollback( con );
+			throw e;
+		} finally {
+			Common.safeClose( con );
+			Common.safeClose( procedure );
 		}
 	}
 

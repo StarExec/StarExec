@@ -272,4 +272,7 @@ public class R {
 	public static final String ANONYMIZE_ALL = "all";
 	public static final String ANONYMIZE_ALL_BUT_BENCH = "allButBench"; 
 	public static final String ANONYMIZE_NONE = "none";
+
+	// 2 years
+	public static final int MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS = 730;
 }	

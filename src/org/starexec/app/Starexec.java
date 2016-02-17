@@ -12,13 +12,16 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import java.sql.SQLException;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.backend.*;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.database.Cluster;
+import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Logins;
@@ -230,15 +233,17 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 
-		/*
-		final Runnable deleteOldAnonymousLinks = new RobustRunnable("deleteOldAnonymousLinks") {
+		final Runnable deleteOldAnonymousLinksTask = new RobustRunnable("deleteOldAnonymousLinksTask") {
 			@Override
 			protected void dorun() {
-				log.info( "deleteOldAnonymousLinks (periodic)" );
-				AnonymousLinks.deleteOldLinks();
+				log.info( "deleteOldAnonymousLinksTask (periodic)" );
+				try {
+					AnonymousLinks.deleteOldLinks();
+				} catch (SQLException e) {
+					log.error( "Failed to delete old anonymous links." + Util.getStackTrace( e ));
+				}
 			}
 		};
-		*/
 
 		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
 			@Override
@@ -302,6 +307,8 @@ public class Starexec implements ServletContextListener {
 
 		    // checks every day if reports need to be sent 
 		    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
+
+		    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
 
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
 		    
