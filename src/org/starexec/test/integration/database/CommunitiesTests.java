@@ -5,13 +5,16 @@ import java.util.List;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -48,19 +51,28 @@ public class CommunitiesTests extends TestSequence {
 	private void communityMapSolversTest() {
 		Communities.updateCommunityMap();
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("solvers"), new Long(3));
-		Long disk = solver1.getDiskSize() + solver2.getDiskSize() + solver3.getDiskSize();
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("disk_usage"), disk);
 	}
 	
 	@StarexecTest
 	private void communityMapBenchmarksTest() {
 		Communities.updateCommunityMap();
+		
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("benchmarks"), new Long(benchmarkIds.size()));
+	}
+	
+	@StarexecTest
+	private void communityMapDiskUsageTest() {
+		Communities.updateCommunityMap();
+
 		Long disk = 0l;
 		for (Integer i : benchmarkIds) {
 			disk+= Benchmarks.get(i).getDiskSize();
 		}
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("benchmarks"), new Long(benchmarkIds.size()));
+		disk+=solver1.getDiskSize();
+		disk+=solver2.getDiskSize();
+		disk+=solver3.getDiskSize();
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("disk_usage"), disk);
+
 	}
 	
 	@StarexecTest
@@ -77,7 +89,6 @@ public class CommunitiesTests extends TestSequence {
 		Assert.assertEquals(s.getName(), community.getName());
 		Assert.assertEquals(s.getDescription(), community.getDescription());
 		Assert.assertEquals(s.isLocked(), community.isLocked());
-		Assert.assertEquals(s.getCreated(), community.getCreated());
 	}
 	
 	@StarexecTest
@@ -126,7 +137,7 @@ public class CommunitiesTests extends TestSequence {
 	@StarexecTest
 	private void commAssocExpiredTest() {
 		Long temp = R.COMM_ASSOC_LAST_UPDATE;
-		R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis() + R.COMM_ASSOC_UPDATE_PERIOD + 100;
+		R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis() - R.COMM_ASSOC_UPDATE_PERIOD - 10000;
 		Assert.assertTrue(Communities.commAssocExpired());
 		R.COMM_ASSOC_LAST_UPDATE=temp;
 	}
@@ -166,6 +177,12 @@ public class CommunitiesTests extends TestSequence {
 		benchmarkIds.addAll(ResourceLoader.loadBenchmarksIntoDatabase(subspace3.getId(), user1.getId()));
 		job1 = ResourceLoader.loadJobIntoDatabase(subspace2.getId(), user2.getId(), solver1.getId(), benchmarkIds);
 		job2 = ResourceLoader.loadJobIntoDatabase(subspace3.getId(), user1.getId(), solver2.getId(), benchmarkIds);
+		for (JobPair p : job1.getJobPairs()) {
+			JobPairs.UpdateStatus(p.getId(), StatusCode.STATUS_COMPLETE.getVal());
+		}
+		for (JobPair p : job2.getJobPairs()) {
+			JobPairs.UpdateStatus(p.getId(), StatusCode.STATUS_COMPLETE.getVal());
+		}
 	}
 
 	@Override
