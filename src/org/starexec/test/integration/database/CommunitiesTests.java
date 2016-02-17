@@ -148,6 +148,10 @@ public class CommunitiesTests extends TestSequence {
 	protected void setup() throws Exception {
 		admin = Users.getAdmins().get(0);
 		testUser = ResourceLoader.loadUserIntoDatabase();
+		user1 = ResourceLoader.loadUserIntoDatabase();
+		user2 = ResourceLoader.loadUserIntoDatabase();
+		user3 = ResourceLoader.loadUserIntoDatabase();
+
 		community = ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), 1);
 		subspace1 = ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
 		subspace2 = ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
