@@ -715,6 +715,12 @@ CREATE TABLE report_data (
 	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
 );
 
+-- Creates a view of the closure table that includes only communities as ancestors
+CREATE VIEW community_assoc AS 
+SELECT ancestor AS comm_id, descendant AS space_id FROM closure 
+JOIN set_assoc ON set_assoc.child_id=closure.ancestor 
+WHERE set_assoc.space_id=1;
+
 ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;

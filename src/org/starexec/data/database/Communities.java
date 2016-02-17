@@ -74,7 +74,9 @@ public class Communities {
 		return communitiesUserIsIn;
 	}
 
-	
+	/**
+	 * @return Whether the current time is more than R.COMM_ASSOC_UPDATE_PERIOD after R.COMM_ASSOC_LAST_UPDATE
+	 */
     public static boolean commAssocExpired(){
 		long timeNow = System.currentTimeMillis();
 	
@@ -97,43 +99,6 @@ public class Communities {
 
     }
 
-    public static void dropCommunityAssoc(){
-	    Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-		    con = Common.getConnection();
-			
-		    procedure = con.prepareCall("{CALL DropCommunityAssoc()}");
-
-		    procedure.executeQuery();
-
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-    }
-    public static void updateCommunityAssoc(){
-
-	    Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-			log.info("updated comm_assoc");
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL UpdateCommunityAssoc()}");
-
-			procedure.executeUpdate();
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-
-    }
-
     /**
      *Helper function for updateCommunityMapIf
      * @return A HashMap mapping keys for primitives to 0
@@ -150,9 +115,10 @@ public class Communities {
 		stats.put("disk_usage",0l);
 	
 		return stats;
-
     }
-    //TODO: Can probably get rid of updateCommunityAssoc() and dropCommunityAssoc() by just using a view
+    /**
+     * Updates R.COMM_INFO_MAP with new data, and sets R.COMM_ASSOC_LAST_UPDATE to the current time
+     */
     public static void updateCommunityMap() {
     	Connection con = null;			
 		CallableStatement procedure= null;
@@ -166,8 +132,6 @@ public class Communities {
 				for(Space c : communities){
 				    commInfo.put(c.getId(),initializeCommInfo());
 				}
-
-		        updateCommunityAssoc();
 
 				Integer commId;
 				Long infoCount, infoExtra;
@@ -259,9 +223,7 @@ public class Communities {
 				    log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
 				    
 				}
-				
-				dropCommunityAssoc();
-	
+					
 				R.COMM_INFO_MAP = commInfo;
 				R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
 		} catch (Exception e){			

@@ -53,30 +53,6 @@ CREATE PROCEDURE LeaveHierarchy(IN _userId INT, IN _spaceId INT)
 		WHERE closure.ancestor=_spaceId AND user_id=_userId;
 	END //
 
-DROP PROCEDURE IF EXISTS DropCommunityAssoc;
-CREATE PROCEDURE DropCommunityAssoc()
-       BEGIN
-		DROP TABLE community_assoc;
-		
-       END //
-
-DROP PROCEDURE IF EXISTS UpdateCommunityAssoc;
-CREATE PROCEDURE UpdateCommunityAssoc()
-	BEGIN
-		CREATE TABLE community_assoc(
-		       comm_id INT NOT NULL,
-		       space_id INT NOT NULL
-		       );
-		
-
-		INSERT INTO community_assoc (comm_id,space_id)
-		SELECT ancestor, descendant
-		FROM closure
-		JOIN set_assoc
-		ON closure.ancestor=set_assoc.child_id
-		WHERE space_id=1;
-	END //
-
 DROP PROCEDURE IF EXISTS GetCommunityStatsUsers;
 CREATE PROCEDURE GetCommunityStatsUsers()
 	BEGIN
