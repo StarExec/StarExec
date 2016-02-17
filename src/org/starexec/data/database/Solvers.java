@@ -54,6 +54,7 @@ public class Solvers {
 		try {
 			con = Common.getConnection();
 			long diskUsage=FileUtils.sizeOf(new File(s.getPath()));
+			s.setDiskSize(diskUsage);
 			// Add the solver
 			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, s.getUserId());

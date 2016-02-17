@@ -74,7 +74,7 @@ public class Communities {
 		return communitiesUserIsIn;
 	}
 
-
+	
     public static boolean commAssocExpired(){
 		long timeNow = System.currentTimeMillis();
 	
@@ -118,26 +118,17 @@ public class Communities {
 
 	    Connection con = null;			
 		CallableStatement procedure= null;
-		ResultSet results=null;
 		try {
-		    
 			log.info("updated comm_assoc");
 			con = Common.getConnection();
 			
 			procedure = con.prepareCall("{CALL UpdateCommunityAssoc()}");
 
-			results = procedure.executeQuery();
-			while(results.next()){
-			    //TODO: What goes in this block?
-			}
-		    
-		    
-			
+			procedure.executeUpdate();
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
 
@@ -151,27 +142,22 @@ public class Communities {
     public static HashMap<String,Long> initializeCommInfo(){
 		HashMap<String,Long> stats = new HashMap<String, Long>();
 	
-		stats.put("users",new Long(0));
-		stats.put("jobs",new Long(0));
-		stats.put("benchmarks",new Long(0));
-		stats.put("solvers",new Long(0));
-		stats.put("job_pairs", new Long(0));
-		stats.put("disk_usage",new Long(0));
+		stats.put("users",0l);
+		stats.put("jobs",0l);
+		stats.put("benchmarks",0l);
+		stats.put("solvers",0l);
+		stats.put("job_pairs", 0l);
+		stats.put("disk_usage",0l);
 	
 		return stats;
 
     }
-
-    /**
-     * retrieves information for community stats page if current information has expired
-     * @author Julio Cervantes
-     **/
-    public synchronized static void updateCommunityMapIf(){
-	    Connection con = null;			
+    //TODO: Can probably get rid of updateCommunityAssoc() and dropCommunityAssoc() by just using a view
+    public static void updateCommunityMap() {
+    	Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-		    if(commAssocExpired()){
 				List<Space> communities = Communities.getAll();
 		    
 	
@@ -273,15 +259,11 @@ public class Communities {
 				    log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
 				    
 				}
-	
-				
-	
 				
 				dropCommunityAssoc();
 	
 				R.COMM_INFO_MAP = commInfo;
 				R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
-			 }
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
@@ -289,6 +271,16 @@ public class Communities {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
+    }
+
+    /**
+     * retrieves information for community stats page if current information has expired
+     * @author Julio Cervantes
+     **/
+    public synchronized static void updateCommunityMapIf(){
+    	if(commAssocExpired()){
+    		updateCommunityMap();
+		}		    
     }
 	
 	/**
