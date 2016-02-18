@@ -278,6 +278,7 @@ CREATE TABLE jobs (
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
+	buildJob BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL

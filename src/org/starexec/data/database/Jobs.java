@@ -419,7 +419,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -435,6 +435,7 @@ public class Jobs {
 			procedure.setBoolean(10, job.timestampIsSuppressed());
 			procedure.setBoolean(11, job.isUsingDependencies());
 			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
+			procedure.setBoolean(13, job.isBuildJob());
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
