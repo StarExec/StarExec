@@ -40,6 +40,7 @@ public class TestManager {
 	 * list of all tests. This is called once on Starexec startup.
 	 */
 	public static void initializeTests() {
+		tests.add(new AnonymousLinkTests());
 		tests.add(new SolverTests());
 		tests.add(new SpaceTests());
 		tests.add(new StarexecCommandTests());

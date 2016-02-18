@@ -393,9 +393,10 @@ public class AnonymousLinks {
 
 	/**
 	 * Deletes all old links in the database.
+	 * @param ageThresholdInDays the minimum age a link must be to be deleted.
 	 * @author Albert Giegerich
 	 */
-	public static void deleteOldLinks() throws SQLException {
+	public static void deleteOldLinks( int ageThresholdInDays ) throws SQLException {
 		final String methodName = "deleteOldLinks";
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -405,7 +406,7 @@ public class AnonymousLinks {
 			Common.beginTransaction( con );
 			
 			procedure = con.prepareCall( "{CALL DeleteOldLinks(?)}" );
-			procedure.setInt( 1, R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS );
+			procedure.setInt( 1, ageThresholdInDays );
 
 			procedure.executeUpdate();
 
@@ -416,6 +417,67 @@ public class AnonymousLinks {
 			throw e;
 		} finally {
 			Common.safeClose( con );
+			Common.safeClose( procedure );
+		}
+	}
+
+	/**
+	 * Deletes all anonymous link that corresponds to the given UUIDs
+	 * @param uuids the identifiers for the anonymous links.
+	 * @author Albert Giegerich
+	 */
+	public static void delete( List<String> uuids ) throws SQLException {
+		final String methodName = "delete(List<String>)";
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction( con );
+			for ( String uuid : uuids ) {
+				delete( uuid, con );
+			}
+			Common.endTransaction( con );
+		} catch (SQLException e) {
+			logUtil.error( methodName, Util.getStackTrace( e ));
+			Common.doRollback( con );
+			throw e;
+		} finally {
+			Common.safeClose( con );
+		}
+	}
+
+	/**
+	 * Deletes an anonymous link that corresponds to a given UUID
+	 * @param uuid the identifier for the anonymous link.
+	 * @author Albert Giegerich
+	 */
+	public static void delete( String uuid ) throws SQLException {
+		final String methodName = "delete(String)";
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction( con );
+			delete( uuid, con );
+			Common.endTransaction(con);
+		} catch (SQLException e) {
+			logUtil.error( methodName, Util.getStackTrace( e ));
+			Common.doRollback( con );
+		} finally {
+			Common.safeClose( con );
+		}
+	}
+
+	private static void delete( String uuid, Connection con ) throws SQLException {
+		final String methodName = "delete(String, Connection)";
+
+		CallableStatement procedure = null;
+
+		try {
+			procedure = con.prepareCall( "{CALL DeleteAnonymousLink(?)}" );
+			procedure.setString( 1, uuid );
+			procedure.executeUpdate();
+		} catch (SQLException e) {
+			throw e;
+		} finally {
 			Common.safeClose( procedure );
 		}
 	}
@@ -567,4 +629,5 @@ public class AnonymousLinks {
 		}
 		return jobSpaceIdToAnonymizedName;
 	}
+
 }

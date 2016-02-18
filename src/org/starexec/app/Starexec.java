@@ -238,7 +238,7 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 				log.info( "deleteOldAnonymousLinksTask (periodic)" );
 				try {
-					AnonymousLinks.deleteOldLinks();
+					AnonymousLinks.deleteOldLinks(R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS);
 				} catch (SQLException e) {
 					log.error( "Failed to delete old anonymous links." + Util.getStackTrace( e ));
 				}

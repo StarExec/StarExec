@@ -35,4 +35,10 @@ CREATE PROCEDURE DeleteOldLinks( IN _ageThresholdInDays INT )
 		DELETE FROM anonymous_links WHERE DATEDIFF( CURDATE(), date_created ) > _ageThresholdInDays; 
 	END //
 
+DROP PROCEDURE IF EXISTS DeleteAnonymousLink;
+CREATE PROCEDURE DeleteAnonymousLink( IN _uniqueId VARCHAR(36) )
+	BEGIN
+		DELETE FROM anonymous_links WHERE unique_id = _uniqueId;
+	END //
+
 DELIMITER ;
