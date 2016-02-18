@@ -331,6 +331,7 @@ public class AnonymousLinks {
 	public static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymizeForSolver( String linkUuid ) throws SQLException {
 		return getPrimitivesToAnonymize( linkUuid, R.SOLVER );
 	}
+
 	/**
 	 * Gets which primitives to anonymize for an anonymous job page.
 	 * @param linkUuid the anonymous link unique identifier.
