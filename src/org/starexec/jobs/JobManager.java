@@ -313,7 +313,7 @@ public abstract class JobManager {
 							}
 
 							// do this first, before we submit to grid engine, to avoid race conditions
-							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
 
@@ -321,12 +321,12 @@ public abstract class JobManager {
 							if(!R.BACKEND.isError(execId)){
 							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
-							    JobPairs.setPairStatus(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
+							    JobPairs.setStatusForPairAndStages(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
 							}
 							queueSize++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
-							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
+							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}
 				} // end iterating once through the schedule

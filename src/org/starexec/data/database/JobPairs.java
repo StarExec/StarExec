@@ -1217,6 +1217,25 @@ public class JobPairs {
 	}
 	
 	/**
+	 * Assigns a given status code to a job pair and all of its stages
+	 * @param pairId
+	 * @param statusCode
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setStatusForPairAndStages(int pairId, int statusCode) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return setPairStatus(pairId, statusCode, con) && setAllPairStageStatus(pairId, statusCode, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
+	/**
 	 * Sets the status code of every stage for the given pair to the given code
 	 * @param pairId
 	 * @param statusCode
