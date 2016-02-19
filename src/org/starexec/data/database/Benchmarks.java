@@ -2083,24 +2083,21 @@ public class Benchmarks {
 		return false;
 	}
 	
-	//returns data structure with two maps
 	/**
 	 * Validates the dependencies for a list of benchmarks (usually all benches of a single space)
 	 * @param benchmarks The list of benchmarks that might have dependencies
-	 * @param con database connection
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param userId the user's Id
 	 * @return the data structure that has information about depedencies
-	 * @author Benton McCune
+	 * @author Eric Burns
 	 */
 	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
 		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<String, BenchmarkDependency>();
 		Benchmark benchmark = new Benchmark();
 		for (int i = 0; i< benchmarks.size(); i++){
 			benchmark = benchmarks.get(i);
-			if (validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies))
-			{
+			if (!validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies)) {
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
 				return false;
 			}
@@ -2152,12 +2149,10 @@ public class Benchmarks {
 				}
 				bench.addDependency(foundDependencies.get(includePath));
 			}	
-
 		}
 		catch (Exception e){			
 			log.error("validate dependency failed on bench " +bench.getName() + ": " + e.getMessage(), e);
 			return false;
-
 		}
 		
 		return true;

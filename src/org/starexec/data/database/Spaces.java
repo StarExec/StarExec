@@ -2500,7 +2500,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			return ids;
 		}
 		catch (Exception e){			
-			log.error("traverseWithDeps says " + e.getMessage(), e);		
+			log.error("traverse says " + e.getMessage(), e);		
 		}
 		return null;
 	}
