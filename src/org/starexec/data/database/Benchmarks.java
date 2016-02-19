@@ -397,6 +397,7 @@ public class Benchmarks {
 
 				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
 				if (!success) {
+					Uploads.setBenchmarkErrorMessage(statusId, "Benchmark dependencies failed to validate: please check your processor output");
 					return null;
 				}
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);

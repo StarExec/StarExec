@@ -22,7 +22,7 @@ public class BenchmarkDependency extends Identifiable{
 		primaryBench=b;
 		Benchmark secondary = new Benchmark();
 		secondary.setId(secondaryId);
-		secondaryBench.setId(secondaryId);
+		secondaryBench=secondary;
 	}
 	
 	/**
