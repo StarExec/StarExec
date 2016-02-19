@@ -1,10 +1,6 @@
 package org.starexec.data.database;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.CallableStatement;
@@ -31,11 +27,9 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.compare.BenchmarkComparator;
-import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DataTablesQuery;
-import org.starexec.util.DependValidator;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Timer;
@@ -49,54 +43,7 @@ public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
 	
 
-	/**
-	 * Adds a single benchmark to the database under the given spaceId
-	 * @param benchmark The benchmark to add to the database
-	 * @param spaceId The id of the space the benchmark will belong to
-	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
-	 * @return The new benchmark ID on success, -1 otherwise
-	 * @author Tyler Jensen
-	 * @throws Exception Any database error that gets thrown
-	 */
-    public static int add(Benchmark benchmark, Integer spaceId, Integer statusId) throws Exception{
-    if (Benchmarks.isBenchValid(benchmark.getAttributes())){
-	    Connection con = null;		
-			
-
-	    try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
 	
-			// Add benchmark to database
-			int benchId = Benchmarks.add(con, benchmark, statusId);
-	
-			if(benchId>=0){
-				if (spaceId!=null) {
-					Benchmarks.associate(benchId, spaceId,con);
-				}
-			    Common.endTransaction(con);
-			    log.debug("bench successfully added");
-						
-			    return benchId;
-			} else {
-			    //will throw exception in calling method
-			    Common.doRollback(con);
-			    return -1;
-			}
-	    } catch (Exception e){
-			Common.doRollback(con);
-			log.error(e.getMessage(), e);	
-			throw e;
-
-	    } finally {
-	    	Common.safeClose(con);
-	    }
-	} else {
-	    log.debug("Add called on invalid benchmark, no additions will be made to the database");
-		Uploads.setXMLErrorMessage(statusId, "Benchmark validation failed for benchmark " + benchmark.getName() + ".");
-	}
-	return -1;
-    }
     
 	/**
 	 * Deletes a benchmark and permanently removes it from the database. This is NOT
@@ -179,126 +126,6 @@ public class Benchmarks {
 		return true;
     }	
 
-
-	/**
-	 * Internal method which adds a single benchmark to the database
-	 * @param con The connection the operation will take place on
-	 * @param benchmark The benchmark to add to the database
-	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action.
-	 * @return The new benchmark ID on success, -1 otherwise
-	 * @author Tyler Jensen
-	 * @throws Exception 
-	 */
-    protected static int add(Connection con, Benchmark benchmark, Integer statusId) throws Exception {
-		
-		CallableStatement procedure=null;
-		try{
-	
-			Properties attrs = benchmark.getAttributes();
-			// Setup normal information for the benchmark
-			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?)}");
-			procedure.setString(1, benchmark.getName());		
-			procedure.setString(2, benchmark.getPath());
-			procedure.setBoolean(3, benchmark.isDownloadable());
-			procedure.setInt(4, benchmark.getUserId());			
-			//an ID of 0 or less is invalid, and can come from copying
-			procedure.setInt(5, (Benchmarks.isBenchValid(attrs) && benchmark.getType().getId()>0) ? benchmark.getType().getId() : R.NO_TYPE_PROC_ID);
-			procedure.setLong(6, FileUtils.sizeOf(new File(benchmark.getPath())));		
-			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
-
-			// Execute procedure and get back the benchmark's id
-			procedure.executeUpdate();		
-
-			benchmark.setId(procedure.getInt(7));
-			log.debug("new bench id is " + benchmark.getId());
-			// If the benchmark is valid according to its processor...
-			
-			if (!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId)) {
-			    return -1;
-			}
-
-			log.info("(within internal add method) Added Benchmark " + benchmark.getName());	
-			return benchmark.getId();
-		}
-		catch (Exception e){			
-			log.error("add says " + e.getMessage(), e);
-			
-			return -1;
-		} finally {
-			
-			Common.safeClose(procedure);
-		}
-	}
-
-	/**
-	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
-	 * The benchmark types are also processed based on the type of the first benchmark only.  This method assumes
-	 * we are not introducing benchmark dependencies.
-	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to. If null, they will not be added to any space.
-	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
-
-	 * @author Tyler Jensen
-	 * @throws StarExecDatabaseException If any exceptions occur during execution, they will be logged and this
-	 * will be thrown
-	 * @return A list of IDs of the new benchmarks if true, and null otherwise.
-
-	 */
-	public static List<Integer> add(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws StarExecDatabaseException {
-		final String method = "add";
-		log.trace("Entering method "+method);
-		log.info("add - adding list of benchmarks to space " + spaceId);
-		Connection con = null;			
-		if (benchmarks.size()>0)
-		{
-			try {			
-				con = Common.getConnection();
-
-				Common.beginTransaction(con);
-
-				log.info(benchmarks.size() + " benchmarks being added to space " + spaceId);
-				// Get the processor of the first benchmark (they should all have the same processor)
-				log.trace(method+" - benchmarks="+benchmarks);
-				log.trace(method+" - benchmarks.get(0)="+benchmarks.get(0));
-				log.trace(method+" - benchmarks.get(0).getType()="+benchmarks.get(0).getType());
-				log.trace(method+" - benchmarks.get(0).getType().getId()="+benchmarks.get(0).getType().getId());
-				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
-				log.trace(method+" - TEST");
-				log.trace(method+" - p="+p);
-				log.trace(method+" - p.getId()="+p.getId());
-				log.trace("add - found the following processor ID for the new benchmark " +p.getId());
-				Common.endTransaction(con);
-				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
-				//We do not actually do any processing if it is the no-type, as it is not necessary 
-				// The no-type always validates everything
-				if (p.getId()!=Processors.getNoTypeProcessor().getId()) {
-					Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
-				} else {
-					for (Benchmark b : benchmarks) {
-						Properties prop = new Properties();
-						prop.put("starexec-valid", "true");
-						b.setAttributes(prop);
-					}
-				}
-
-				// Next add them to the database (must happen AFTER they are processed);
-				return Benchmarks.addNoCon(benchmarks, spaceId, statusId);
-
-			} catch (Exception e){			
-				log.error(e.getMessage(), e);
-				Common.doRollback(con);
-				throw new StarExecDatabaseException(e.getMessage());
-			} finally {
-				Common.safeClose(con);
-			}
-		}
-		else
-		{
-			log.info("No benchmarks to add here for space " + spaceId);
-			return new ArrayList<Integer>();
-		}
-	}
-
 	/**
 	 * Adds a new attribute to a benchmark
 	 * @param con The connection to make the insertion on
@@ -325,7 +152,7 @@ public class Benchmarks {
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Adds the benchmark dependency to starexec db
 	 * @param primaryBenchId  the bench that is dependent on another bench
@@ -335,15 +162,9 @@ public class Benchmarks {
 	 * @author Benton McCune
 	 * @return
 	 */
-	private static Boolean addBenchDependency(int primaryBenchId, Integer secondaryBenchId,
-			String includePath) {
-
-		Connection con = null;
+	private static Boolean addBenchDependency(int primaryBenchId, Integer secondaryBenchId, String includePath, Connection con) {
 		CallableStatement procedure=null;
 		try {	
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-
 			log.debug("Adding dependency");
 			log.debug("primaryBenchId = " + primaryBenchId);
 			log.debug("secondaryBenchId = " + secondaryBenchId);
@@ -356,37 +177,70 @@ public class Benchmarks {
 
 			// Execute procedure and get back the benchmark's id
 			procedure.executeUpdate();		
-			Common.endTransaction(con);
 			return true;
 		}catch (Exception e){			
 			log.error(e.getMessage(), e);
-			Common.doRollback(con);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 		return false;
-
-	}	
+	}
 
 	/**
-	 *   Add a benchmark with dependencies.  The dependencies are already validated.
+	 * Adds the benchmark dependency to starexec db
+	 * @param primaryBenchId  the bench that is dependent on another bench
+	 * @param secondaryBenchId  e.g. the axiom
+	 * @param includePath  the path that will be used locally at execution time
+	 * @author Benton McCune
+	 * @return
+	 */
+	private static Boolean addBenchDependency(int primaryBenchId, Integer secondaryBenchId, String includePath) {
+		Connection con = null;
+		try {	
+			con = Common.getConnection();
+			return addBenchDependency(primaryBenchId, secondaryBenchId, includePath, con);
+		}catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+
+	}
+	
+	/**
+	 *  Add a benchmark.
+	 * @param bench the benchmark to be added
+	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
+	 * @return benchmark returns the benchmark added (not typically needed)
+	 * @author Benton McCune
+	 */
+	public static Benchmark add(Benchmark bench, Integer statusId) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return add(bench,statusId, con);
+		} catch (Exception e) {
+			log.debug(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+
+	/**
+	 *  Add a benchmark.
 	 * 
 	 * @param benchmark  the benchmark to be added
-	 * @param dataStruct  the datastructure that holds the validated dependency information
-	 * @param benchIndex  the location of this benchmarks dependency info in the datastruct
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return benchmark returns the benchmark added (not typically needed)
 	 * @throws Exception
 	 * @author Benton McCune
 	 */
-    protected static Benchmark addBenchWDepend(Benchmark benchmark, DependValidator dataStruct, Integer benchIndex, 
-					       int statusId) throws Exception {				
-		Connection con = null;
+    protected static Benchmark add(Benchmark benchmark, Integer statusId, Connection con) throws Exception {				
 		CallableStatement procedure=null;
 
 		try{
-			con = Common.getConnection();
 			Common.beginTransaction(con);
 
 			Properties attrs = benchmark.getAttributes();
@@ -406,16 +260,15 @@ public class Benchmarks {
 
 			// If the benchmark is valid according to its processor...
 
-			if(!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId))
+			if(!addAttributeSetToDbIfValid(con,attrs,benchmark,statusId)) {
 			    return null;
+			}
 
 			//do previously validated dependencies here
-			Common.endTransaction(con);// benchmarks should be in db now
-			ArrayList<Integer> axiomIdList = dataStruct.getAxiomMap().get(benchIndex);
-			ArrayList<String> pathList = dataStruct.getPathMap().get(benchIndex);			
-			Benchmarks.introduceDependencies(benchmark.getId(), axiomIdList, pathList);
-
-			log.info("(within internal add method) Added Benchmark " + benchmark.getName());
+			for (BenchmarkDependency d : benchmark.getDependencies()) {
+				Benchmarks.addBenchDependency(benchmark.getId(), d.getSecondaryBench().getId(), d.getDependencyPath(), con);
+			}
+			Common.endTransaction(con);// benchmarks should be in db now	
 			return benchmark;
 		}
 		catch (Exception e){			
@@ -423,11 +276,52 @@ public class Benchmarks {
 			Common.doRollback(con);
 			return null;
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}	
-
+    
+    /**
+	 * Adds a single benchmark to the database under the given spaceId
+	 * @param benchmark The benchmark to add to the database
+	 * @param spaceId The id of the space the benchmark will belong to
+	 * @param statusId the id for the upload page for adding this benchmark, if there is an upload page for this action. Otherwise, null
+	 * @return The new benchmark ID on success, -1 otherwise
+	 * @author Tyler Jensen
+	 * @throws Exception Any database error that gets thrown
+	 */
+    public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) throws Exception{
+	    if (Benchmarks.isBenchValid(benchmark.getAttributes())){
+		    Connection con = null;		
+		    try {
+				con = Common.getConnection();
+		
+				// Add benchmark to database
+				int benchId = Benchmarks.add(benchmark, statusId, con).getId();
+		
+				if(benchId>=0){
+					if (spaceId!=null) {
+						Benchmarks.associate(benchId, spaceId,con);
+					}
+				    log.debug("bench successfully added");
+							
+				    return benchId;
+				} else {
+				    //will throw exception in calling method
+				    return -1;
+				}
+		    } catch (Exception e){
+				log.error(e.getMessage(), e);	
+				throw e;
+		    } finally {
+		    	Common.safeClose(con);
+		    }
+		} else {
+		    log.debug("Add called on invalid benchmark, no additions will be made to the database");
+			Uploads.setBenchmarkErrorMessage(statusId, "Benchmark validation failed for benchmark " + benchmark.getName() + ".");
+		}
+			return -1;
+    }
+    
 	/**
 	 * Adds a list of benchmarks to the database and associates them with the given space ID
 	 * @param benchmarks
@@ -436,13 +330,13 @@ public class Benchmarks {
 	 * @return
 	 * @throws Exception
 	 */
-	protected static List<Integer> addNoCon(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws Exception {		
+	protected static List<Integer> addAndAssociate(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws Exception {		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		int incrementCounter=0;
 		Timer timer=new Timer();
 		for(Benchmark b : benchmarks) {
-		    int id=Benchmarks.add(b, spaceId,statusId);
+		    int id=Benchmarks.addAndAssociate(b, spaceId,statusId);
 			if(id<0) {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setBenchmarkErrorMessage(statusId, message);
@@ -458,142 +352,67 @@ public class Benchmarks {
 					incrementCounter=0;
 					timer.reset();
 				}
-				
 			}
 		}	
-		if (incrementCounter>0) {
-			Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
-		}
+		Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
+		
 		log.info(String.format("[%d] new benchmarks added to space [%d]", benchmarks.size(), spaceId));
 		return benchmarkIds;
 	}
 
-	protected static List<Benchmark> addReturnList(List<Benchmark> benchmarks, DependValidator dataStruct, 
-						       Integer statusId) throws Exception {		
-		log.info("in addReturnList method - adding " + benchmarks.size()  + " benchmarks to database ");
-
-		Benchmark b = new Benchmark();
-		int incrementCounter=0;
-		Timer timer=new Timer();
-		for(int i = 0; i < benchmarks.size(); i++) {
-			b = benchmarks.get(i);
-			b = Benchmarks.addBenchWDepend(b, dataStruct, i, statusId);
-			if(b == null) {
-				throw new Exception("Failed to add benchmark to database");
-			}
-			incrementCounter++;
-			if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-				Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
-				incrementCounter=0;
-				timer.reset();
-			}
-		}
-		if (incrementCounter>0) {
-			Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
-		}
-		log.info(String.format("[%d] new benchmarks added to database", benchmarks.size()));
-		return benchmarks;	
-	}
-
 	/**
-	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
+	 * Runs the given benchmark processor on the list of benchmarks before 
+	 * adding them to the database and associates them with the given spaceId.
 	 * The benchmark types are also processed based on the type of the first benchmark only.
 	 * This method will also introduced dependencies if the benchmark processor produces the right attributes.
 	 * @param benchmarks The list of benchmarks to add
 	 * @param spaceId The space the benchmarks will belong to
-	 * @param con database connection
 	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
 	 * @param statusId statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Connection con, Integer depRootSpaceId, 
-						Boolean linked, Integer userId, Integer statusId) {
+	public static List<Integer> processAndAdd(List<Benchmark> benchmarks, int spaceId,Integer depRootSpaceId, 
+						Boolean linked, Integer statusId) {
 		if (benchmarks.size()>0){
 			try {			
 				
 				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
-				Processor p = Processors.get(con, benchmarks.get(0).getType().getId());
+				Processor p = Processors.get(benchmarks.get(0).getType().getId());
 				
 
 				log.info("About to attach attributes to " + benchmarks.size());
-				// Process the benchmark for attributes (this must happen BEFORE they are added to the database)
-				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
-
-				//Datastructure to make sure dependencies are all valid before benchmarks are uploaded.
-				DependValidator dataStruct = new DependValidator();
-				HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
-				HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<Integer, ArrayList<Integer>>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
-				dataStruct.setAxiomMap(axiomMap);				
-				dataStruct.setPathMap(pathMap);
-				dataStruct = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, userId);
-				dataStruct.getAxiomMap().size();
-				log.info("Size of Axiom Map = " +dataStruct.getAxiomMap().size() + ", Path Map = " + dataStruct.getPathMap().size());
-				log.info("Dependencies Validated.  About to add (with dependencies)" + benchmarks.size() + " benchmarks to space " + spaceId);
-				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
-				List<Benchmark> benches=Benchmarks.addReturnList(benchmarks, dataStruct, statusId);
-				List<Integer> ids=new ArrayList<Integer>();
-				for (Benchmark b : benches) {
-					
-					ids.add(b.getId());
+				
+				if (p.getId()!=Processors.getNoTypeProcessor().getId()) {
+					Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
+				} else {
+					for (Benchmark b : benchmarks) {
+						Properties prop = new Properties();
+						prop.put("starexec-valid", "true");
+						b.setAttributes(prop);
+					}
 				}
-				Benchmarks.associate(ids, spaceId); //add the benchmarks to the space
+
+				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
+				if (!success) {
+					return null;
+				}
+				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
+				List<Integer> ids = Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
 				return ids;
 			} catch (Exception e){			
 				
 				
 			} 
 		}
-		else
-		{
+		else {
 			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
 			return new ArrayList<Integer>();
 		}
 		return null;
 	}
-	/**
-	 * Adds the list of benchmarks to the database and associates them with the given spaceId.
-	 * The benchmark types are also processed based on the type of the first benchmark only.
-	 * This method will also introduced dependencies if the benchmark processor produces the right attributes.
-	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to
-	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
-	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
-	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
-	 * @return A list of the IDs of the new benchmarks on success, and null otherwise
-	 * @author Benton McCune
-	 */
-	public static List<Integer> addWithDeps(List<Benchmark> benchmarks, int spaceId, Integer depRootSpaceId, Boolean linked, 
-						Integer userId, Integer statusId) {
-		Connection con = null;			
-		log.info("Going to add " + benchmarks.size() + "benchmarks (with dependencies) to space " + spaceId);
-		try {			
-			con = Common.getConnection();
-
-			Common.beginTransaction(con);
-
-			List<Integer> values = addWithDeps(benchmarks, spaceId, con, depRootSpaceId, linked, userId, statusId);
-			if (values==null) {
-				con.rollback();
-			} else {
-				Common.endTransaction(con);
-			}
-			
-
-			return values;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return null;
-	}	
 
 	/**
 	 * Associates a single benchmark with a single space.
@@ -935,7 +754,7 @@ public class Benchmarks {
 			newBenchmark.setPath(uniqueDir.getAbsolutePath()+File.separator+benchmarkFile.getName());
 
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
-			int benchId= Benchmarks.add(newBenchmark, spaceId, null);
+			int benchId= Benchmarks.addAndAssociate(newBenchmark, spaceId, (Integer)null);
 			if (benchId<0) {
 				log.error("Benchmark being copied could not be successfully added to the database");
 				return benchId;
@@ -1001,47 +820,18 @@ public class Benchmarks {
 		log.debug(String.format("Deletion of benchmark [id=%d] failed.", id));
 		return false;
 	}
-	/**
-	 * Recursively walks through the given directory and subdirectory to find all benchmark files within them
-	 * @param directory The directory to extract benchmark files from
-	 * @param typeId The bench type id to set for all the found benchmarks
-	 * @param userId The user id of the owner of all the benchmarks found
-	 * @param downloadable Whether or now to mark any found benchmarks as downloadable
-	 * @return A flat list of benchmarks containing all the benchmarks found under the given directory and it's subdirectories and so on
-	 */
-	public static List<Benchmark> extractBenchmarks(File directory, int typeId, int userId, boolean downloadable) {
-		// Initialize the list we will return at the end...
-		List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-
-		// For each file in the directory
-		for(File f : directory.listFiles()) {
-			if(f.isDirectory()) {
-				// If it's a directory, recursively extract all benchmarks from it and add them to our list
-				benchmarks.addAll(Benchmarks.extractBenchmarks(f, typeId, userId, downloadable));
-			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
-
-				//make sure the name is valid
-				if (Validator.isValidBenchName(f.getName())) {
-					Processor t = new Processor();
-					t.setId(typeId);
-
-					Benchmark b = new Benchmark();
-					b.setPath(f.getAbsolutePath());
-					b.setName(f.getName());
-					b.setType(t);
-					b.setUserId(userId);
-					b.setDownloadable(downloadable);
-					benchmarks.add(b);
-				} else {
-					return null;
-				}
-			}
-		}
-
-		return benchmarks;
+	
+	private static Benchmark constructBenchmark(File f, int typeId, boolean downloadable, int userId) {
+		Benchmark b = new Benchmark();
+		Processor t = new Processor();
+		t.setId(typeId);
+		b.setPath(f.getAbsolutePath());
+		b.setName(f.getName());
+		b.setType(t);
+		b.setUserId(userId);
+		b.setDownloadable(downloadable);
+		return b;
 	}
-	
-	
 
 	/**
 	 * Creates a space named after the directory and finds any benchmarks within the directory.
@@ -1060,42 +850,24 @@ public class Benchmarks {
 	 * @throws Exception Any exception with the description file, with an error message contained
 	 */
 	@SuppressWarnings("deprecation")
-	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, int statusId) throws Exception {
+	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId) throws Exception {
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);
-		String strUnzipped = "";
+		String spaceDescription = "";
 
 		// Search for description file within the directory...
-		for (File f : directory.listFiles()) {
-			if(f.getName().equals(R.BENCHMARK_DESC_PATH)){
-				strUnzipped = "";
-				try {
-					FileInputStream fis = new FileInputStream(f.getAbsolutePath());
-					BufferedInputStream bis = new BufferedInputStream(fis);
-					DataInputStream dis = new DataInputStream(bis);
-					String text;
-					//dis.available() returns 0 if the file does not have more lines
-					while (dis.available() != 0) {
-						text= dis.readLine().toString();
-						strUnzipped = strUnzipped + text;
-					}
-					fis.close();
-					bis.close();
-					dis.close();
-				} catch (FileNotFoundException e) {
-					log.error("extractSpacesAndBenchmarks says "+e.getMessage(),e);
-				} catch (IOException e) {
-					log.error("extractSpacesAndBenchmarks says "+e.getMessage(),e);
-				}
-			}
+		File descriptionFile = new File(directory, R.BENCHMARK_DESC_PATH);
+		if(descriptionFile.exists()){
+			spaceDescription = FileUtils.readFileToString(descriptionFile);	
 		}
-		space.setDescription(strUnzipped);
+		
+		space.setDescription(spaceDescription);
 		int benchCounter=0;
 		int spaceCounter=0;
-		Timer timer=new Timer();
+		Timer spaceTimer=new Timer();
 		Timer benchTimer=new Timer();
 		for(File f : directory.listFiles()) {
 			// If it's a sub-directory			
@@ -1104,32 +876,21 @@ public class Benchmarks {
 				space.getSubspaces().add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, 
 						userId, downloadable, perm, statusId));
 				spaceCounter++;
-				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+				if (spaceTimer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 					Uploads.incrementTotalSpaces(statusId,spaceCounter);//for upload status page
 					spaceCounter=0;
-					timer.reset();
+					spaceTimer.reset();
 				}
 			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
 
 				if (Validator.isValidBenchName(f.getName())) {
-					Processor t = new Processor();
-					t.setId(typeId);
-
-					Benchmark b = new Benchmark();
-					b.setPath(f.getAbsolutePath());
-					b.setName(f.getName());
-					b.setType(t);
-					b.setUserId(userId);
-					b.setDownloadable(downloadable);
+					space.addBenchmark(constructBenchmark(f, typeId, downloadable, userId));
 					benchCounter++;
 					if (benchTimer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 						Uploads.incrementTotalBenchmarks(statusId,benchCounter);//for upload status page
 						benchCounter=0;
 						benchTimer.reset();
 					}
-					
-
-					space.addBenchmark(b);
 				} else {
 				    String msg = "\""+f.getName() + "\" is not accepted as a legal benchmark name.";
 				    Uploads.setBenchmarkErrorMessage(statusId, msg);
@@ -1138,12 +899,9 @@ public class Benchmarks {
 
 			}
 		}
-		if (benchCounter>0) {
-			Uploads.incrementTotalBenchmarks(statusId,benchCounter);//for upload status page
-		}
-		if (spaceCounter>0) {
-			Uploads.incrementTotalSpaces(statusId,spaceCounter);//for upload status page
-		}
+		Uploads.incrementTotalBenchmarks(statusId,benchCounter);//for upload status page
+		Uploads.incrementTotalSpaces(statusId,spaceCounter);//for upload status page
+		
 		return space;
 	}
 
@@ -1958,24 +1716,6 @@ public class Benchmarks {
 		return null;
 	}
 
-
-	/**
-	 * introduces the dependencies for a single benchmark
-	 * @param benchId  id of the benchmark
-	 * @param axiomIdList   list of benchmark ids for dependent benchmarks
-	 * @param pathList   list of paths for dependent benchmarks (indices correspond to those in axiomIDList
-	 * @author Benton McCune
-	 */
-	private static void introduceDependencies(Integer benchId,
-			ArrayList<Integer> axiomIdList, ArrayList<String> pathList) {	
-		for (int i = 0; i < axiomIdList.size(); i++){
-			log.info("(Primary Bench, Secondary Bench, Path) = (" + benchId + "," + axiomIdList.get(i) + "," + pathList.get(i)+ ")");
-			Benchmarks.addBenchDependency(benchId, axiomIdList.get(i), pathList.get(i));
-		}
-
-	}
-	
-
 	/**
 	 * Returns whether a benchmark with the given ID is present in the database with the 
 	 * "deleted" column set to true
@@ -2354,98 +2094,73 @@ public class Benchmarks {
 	 * @return the data structure that has information about depedencies
 	 * @author Benton McCune
 	 */
-	private static DependValidator validateDependencies(
-			List<Benchmark> benchmarks, Integer spaceId, Boolean linked, Integer userId) {
-
-		HashMap<String, Integer> foundDependencies = new HashMap<String,Integer>();//keys are include paths, values are the benchmarks ids of secondary benchmarks
-
-		DependValidator dataStruct = new DependValidator();
-		HashMap<Integer, ArrayList<String>> pathMap = new HashMap<Integer, ArrayList<String>>();//Map from primary bench Id  to the array list of dependency paths 
-		HashMap<Integer, ArrayList<Integer>> axiomMap = new HashMap<Integer, ArrayList<Integer>>();//Map from primary bench Id to the array list of dependent axiom id.  same order as other arraylist
-		dataStruct.setAxiomMap(axiomMap);
-		dataStruct.setPathMap(pathMap);
-		dataStruct.setFoundDependencies(foundDependencies);
+	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
+		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<String, BenchmarkDependency>();
 		Benchmark benchmark = new Benchmark();
 		for (int i = 0; i< benchmarks.size(); i++){
 			benchmark = benchmarks.get(i);
-			DependValidator benchDepLists = new DependValidator();
-			benchDepLists = validateIndBenchDependencies(benchmark, spaceId, linked, userId, foundDependencies);
-			if (benchDepLists == null)
+			if (validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies))
 			{
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
-				return null;
+				return false;
 			}
-			pathMap.put(i, benchDepLists.getPaths());//doesn't have Ids yet! - need to use index
-			axiomMap.put(i, benchDepLists.getAxiomIds());
-			foundDependencies = benchDepLists.getFoundDependencies();// get update 
 		}
-		return dataStruct;
+		return true;
+		
 	}
 	
 	/**
-	 * Validates the dependencies for a benchmark
+	 * Validates the dependencies for a benchmark. Adds the dependencies to the benchmark as well
 	 * @param bench The benchmark that might have dependencies
-	 * @param con database connection
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param userId the user's Id
-	 * @param foundDependencies Dependencies for the benchmark that have already been found
-	 * @return the data structure that has information about depedencies
+	 * @return True if the dependencies are valid and false otherwise
 	 * @author Benton McCune
-
 	 */
-	private static DependValidator validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked, Integer userId, HashMap<String, Integer> foundDependencies){
+	private static boolean validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked,HashMap<String, BenchmarkDependency> foundDependencies){
 
 		Properties atts = bench.getAttributes();
 
-		DependValidator benchDepLists = new DependValidator();
-		ArrayList<Integer> axiomIdList = new ArrayList<Integer>();
-		ArrayList<String> pathList = new ArrayList<String>();
-
-		Integer numberDependencies = 0;
-		String includePath = "";		
+		String includePath = "";
 		try {
-			numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
+			Integer numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
 			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
 				includePath = atts.getProperty("starexec-dependency-"+i, "");//TODO: test when given bad atts
 				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
-				Integer depBenchId = -1;				
 				if (includePath.length()>0){
 					//checkMap first
-					if (foundDependencies.get(includePath)!= null){
-						depBenchId = foundDependencies.get(includePath);
-						log.info("Already found this one before, its id is " + depBenchId);
+					if (foundDependencies.get(includePath)!= null){						
+						log.info("Already found this one before, its id is " + foundDependencies.get(includePath).getSecondaryBench().getId());
 					}
 					else{
 						log.info("This include path (" + includePath +") is new so we must search the database.");
-						depBenchId = Benchmarks.findDependentBench(spaceId,includePath, linked, userId);
-						foundDependencies.put(includePath, depBenchId);
-						log.info("Dependent Bench = " + depBenchId);
+						int depBenchId = Benchmarks.findDependentBench(spaceId,includePath, linked, bench.getUserId());
+						if (depBenchId>0) {
+							// these are new benchmarks, so the primary benchmark has no ID yet. This is fine:
+							// the DB code for entering benchmarks will utilize the correct ID
+							foundDependencies.put(includePath, new BenchmarkDependency(0, depBenchId,includePath));
+							log.info("Dependent Bench = " + depBenchId);
+						}
 					}
-					pathList.add(includePath);
-					axiomIdList.add(depBenchId);
 				}
 
-				if (depBenchId==-1)
-				{
+				if (foundDependencies.containsKey(includePath)) {
 					log.warn("Dependent Bench not found for " + bench.getName() +  ". Rolling back since dependencies not validated.");
-					return null;
+					return false;
 				}
+				bench.addDependency(foundDependencies.get(includePath));
 			}	
 
 		}
 		catch (Exception e){			
 			log.error("validate dependency failed on bench " +bench.getName() + ": " + e.getMessage(), e);
-			return null;
+			return false;
 
-		} finally {
-
-		}	
-		benchDepLists.setAxiomIds(axiomIdList);
-		benchDepLists.setPaths(pathList);
-		benchDepLists.setFoundDependencies(foundDependencies);
-		return benchDepLists;
+		}
+		
+		return true;
 	}
 	/**
 	 * Gets rid of all the attributes a benchmark currently has in the database

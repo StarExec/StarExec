@@ -73,8 +73,7 @@ CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
-		AND bench.name = _name		
-		ORDER BY bench.name;
+		AND bench.name = _name;
 	END //	
 	
 -- Retrieves all benchmark dependencies for a given primary benchmark id

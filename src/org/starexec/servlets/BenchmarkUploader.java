@@ -148,11 +148,10 @@ public class BenchmarkUploader extends HttpServlet {
 			log.debug("trying to add benchmark with text = "+benchText+" and name = "+name);
 			File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
 			FileUtils.writeStringToFile(new File(uniqueDir,name), benchText);
-			List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-			log.debug("found this many benchmarks to add from text "+bench.size());
+			Benchmark bench=Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, null, null).getBenchmarksRecursively().get(0);
 			//add the benchmark to the database, but don't put it in any spaces
-			
-			return Benchmarks.add(bench, null, null).get(0);
+			bench = Benchmarks.add(bench, null);
+			return bench.getId();
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -170,35 +169,30 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param downloadable Whether the benchmark should be set as being "downloadable"
 	 * @return The ID of the newly created benchmark
 	 */
-    public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId,
-					    boolean downloadable, Integer statusId)
-        {
-			try {
-				File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
-				FileUtils.copyFileToDirectory(benchFile, uniqueDir);
-
-				String[] filesInUniqueDir = uniqueDir.list();
-				log.debug("Files in uniqueDir: ");
-				for (String s : filesInUniqueDir) {
-					log.debug("    " + s);
-				}
-				
-				List<Benchmark> bench=Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
-				log.debug("found this many benchmarks to add from text "+bench.size());
-				//add the benchmark to the database, but don't put it in any spaces
-					
-				List<Integer> benchIds = Benchmarks.add(bench, null, statusId);
-
-				if (benchIds != null) {
-					return benchIds.get(0);
-				} else {
-					return -1;
-				}
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
+    public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId, boolean downloadable, Integer statusId) {
+		try {
+			File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
+			FileUtils.copyFileToDirectory(benchFile, uniqueDir);
+			String[] filesInUniqueDir = uniqueDir.list();
+			log.debug("Files in uniqueDir: ");
+			for (String s : filesInUniqueDir) {
+				log.debug("    " + s);
 			}
-			return null;
-        }
+				
+			Benchmark bench=Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, null, statusId).getBenchmarksRecursively().get(0);
+			//add the benchmark to the database, but don't put it in any spaces
+			bench = Benchmarks.add(bench, statusId);
+
+			if (bench != null) {
+				return bench.getId();
+			} else {
+				return -1;
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		return null;
+       }
 	
 	/**
 	 * Adds a set of benchmarks to the database by extracting the given archive and finding the
@@ -215,10 +209,11 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param linked 
 	 * @param depRootSpaceId The root space for dependencies for these benchmarks
 	 * @return A list of IDs of the newly created benchmarks
+	 * @throws Exception 
 	 */
 	public static List<Integer> addBenchmarksFromArchive(File archiveFile, int userId, int spaceId, int typeId,
 			boolean downloadable, Permission perm, String uploadMethod, int statusId,
-			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws StarExecException {
+			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws Exception {
 		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		// Create a unique path the zip file will be extracted to
@@ -261,6 +256,17 @@ public class BenchmarkUploader extends HttpServlet {
 		log.debug("depRootSpaceIds = " + depRootSpaceId);
 
 		log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
+		Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
+		
+		if (result == null) {
+			String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
+			Uploads.setBenchmarkErrorMessage(statusId, message);
+			log.error(message + " - status id = " + statusId);
+			return null;
+		}
+		//update Status
+		Uploads.processingBegun(statusId);
+		
 		if(uploadMethod.equals("convert")) {
 			log.debug("convert");
 
@@ -271,49 +277,13 @@ public class BenchmarkUploader extends HttpServlet {
 				return null;
 			}
 			
+			benchmarkIds.addAll(Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId));
 			
-			
-			Space result = null;
-
-			try {
-				result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
-			} catch (Exception e) {
-				throw new StarExecException(e.getMessage(), e);
-			}
-			if (result == null) {
-				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
-				Uploads.setBenchmarkErrorMessage(statusId, message);
-				log.error(message + " - status id = " + statusId);
-				return null;
-			}
-			// Method below requires the parent space, so fake it by setting the ID of the unique dir to the parent space ID
-			result.setId(spaceId);
-			//update Status
-			Uploads.processingBegun(statusId);
-			if (!hasDependencies){
-				log.info("Now have the space java object.  Calling add with benchmarks and no dependencies for user " 
-						+ userId + " to process and add to db.");
-
-				try {
-					benchmarkIds.addAll(Spaces.addWithBenchmarks(result, userId, statusId));
-				} catch (Exception e) {
-					throw new StarExecException(e.getMessage(), e);
-				}
-			}
-			else
-			{				
-				benchmarkIds.addAll(Spaces.addWithBenchmarksAndDeps(result, userId, depRootSpaceId, linked, statusId));
-			}
 		} else if(uploadMethod.equals("dump")) {
-			List<Benchmark> results = Benchmarks.extractBenchmarks(uniqueDir, typeId, userId, downloadable);
+			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 			
-			Uploads.processingBegun(statusId);
-			if (!hasDependencies){	
-				benchmarkIds.addAll(Benchmarks.add(results, spaceId, statusId));
-			}
-			else{
-				benchmarkIds.addAll(Benchmarks.addWithDeps(results, spaceId, depRootSpaceId, linked, userId, statusId));
-			}
+			benchmarkIds.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId));
+			
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);	
 		return benchmarkIds;

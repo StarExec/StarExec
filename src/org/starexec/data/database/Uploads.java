@@ -482,7 +482,7 @@ public class Uploads {
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementCompletedBenchmarks(Integer statusId,int incrementCount){
-		if (statusId==null) {
+		if (statusId==null || statusId<=0) {
 			return false;
 		}
 		Connection con = null;			
@@ -647,6 +647,9 @@ public class Uploads {
 		if (statusId==null) {
 			return false;
 		}
+		if (incrementCounter==0) {
+			return true;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -675,6 +678,9 @@ public class Uploads {
 	public static Boolean incrementTotalSpaces(Integer statusId, int incrementCounter){
 		if (statusId==null) {
 			return false;
+		}
+		if (incrementCounter==0) {
+			return true;
 		}
 		Connection con = null;			
 		CallableStatement procedure = null;

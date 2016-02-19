@@ -1,6 +1,7 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,6 +138,17 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 	 */
 	public List<Benchmark> getBenchmarks() {
 		return this.benchmarks;
+	}
+	/**
+	 * @return all benchmarks in this space and all subspaces recursively
+	 */
+	public List<Benchmark> getBenchmarksRecursively() {
+		List<Benchmark> benchs = new ArrayList<Benchmark>();
+		benchs.addAll(this.benchmarks);
+		for (Space s : this.getSubspaces()) {
+			benchs.addAll(s.getBenchmarksRecursively());
+		}
+		return benchs;
 	}
 
 	/**
