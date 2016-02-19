@@ -369,7 +369,6 @@ public class BenchmarkUploader extends HttpServlet {
 					}
 				} catch (Exception e){
 					log.error("Error in upload benchmark.", e);
-					Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
 				}
 				finally{
 					Uploads.benchmarkEverythingComplete(statusId);
