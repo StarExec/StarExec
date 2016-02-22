@@ -342,8 +342,8 @@ function onSpaceDrop(event, ui) {
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
-			width: 500,
-			height: 200,
+			width: 600,
+			height: 400,
 			
 			//depending on what the user 
 			buttons: solverCopyDialogButtons
@@ -388,6 +388,8 @@ function onSpaceDrop(event, ui) {
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
+			height: 200,
+			width: 500,
 			buttons: {
 				'yes': function() {
 					log('user confirmed copy action');
@@ -456,8 +458,8 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	// Display the confirmation dialog
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
-		width: 380,
-		height: 165,
+		width: 500,
+		height: 200,
 		buttons: spaceCopyDialogButtons
 	});
 }
@@ -490,8 +492,8 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 	}
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
-		width: 380,
-		height: 165,
+		width: 500,
+		height: 200,
 		buttons: userCopyDialogButtons
 	});		
 }
