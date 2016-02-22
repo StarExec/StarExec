@@ -2,11 +2,9 @@ var bid;
 
 $(document).ready(function(){
 	bid = getParameterByName('id');	
-	$('#dialog-anonymous-link').hide();
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
 	$('#fieldDepends').expandable(true);
-	$( "#dialog-warning").hide();
 	
 	$('#fieldContents').expandable(true);
 	$('#actions').expandable(true);

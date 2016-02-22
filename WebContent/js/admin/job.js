@@ -10,8 +10,6 @@ $(document).ready(function(){
 });
 
 function initButton() {
-	$('#dialog-confirm-pause').hide();
-
 	$("#pauseAll").button({
 		icons: {
 			primary: "ui-icon-pause"

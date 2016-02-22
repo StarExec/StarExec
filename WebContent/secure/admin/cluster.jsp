@@ -46,7 +46,7 @@
 		</fieldset>	
 
 	</div>	
-	<div id="dialog-confirm-remove" title="confirm removal">
+	<div id="dialog-confirm-remove" title="confirm removal" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-remove-txt"></span></p>
 	</div>
 </star:template>

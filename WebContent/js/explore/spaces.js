@@ -68,28 +68,12 @@ function isFieldsetOpen(fieldset){
 }
 
 /**
- * Hides all jquery ui dialogs for page startup
- */
-function initDialogs() {	
-	$("#dialog-confirm-copy" ).hide();
-	$("#dialog-confirm-delete" ).hide();
-	$("#dialog-download-space").hide();
-	$("#dialog-warning").hide();
-    $("#dialog-spacexml").hide();
-    $("#dialog-spaceUpdateXml").hide();
-	log('all confirmation dialogs hidden');
-}
-
-/**
  * Sets up the 'space details' that consumes the right-hand side of the page
  */
 function initSpaceDetails(){
 
 	// builds the DataTable objects and enables multi-select on them
 	initDataTables();
-
-	// Set up jQuery UI dialog boxes
-	initDialogs();
 
 	// Set up jQuery button UI
 	initButtonUI();

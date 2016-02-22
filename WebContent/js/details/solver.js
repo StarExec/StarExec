@@ -38,9 +38,6 @@ function initUI(){
 		icons: {
 			secondary: "ui-icon-newwin"
     }});
-	
-	$( "#dialog-confirm-delete" ).hide();
-	$( "#dialog-warning").hide();
 	// Setup button icons
 	
 	$('#uploadConfig, #uploadConfigMargin').button({

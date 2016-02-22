@@ -30,7 +30,7 @@
 				<li><a href="${starexecRoot}/secure/admin/logging.jsp"><button type="button" id="manageLogging">manage logging</button></a></li>
 				<li><button type="button" id="clearLoadData">clear load balance data</button></li>
 			</ul>
-			<div id="dialog-confirm-restart" title="confirm restart">
+			<div id="dialog-confirm-restart" title="confirm restart" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>
 			</div>	
 		</fieldset>

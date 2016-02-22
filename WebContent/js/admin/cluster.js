@@ -73,9 +73,7 @@ $(document).ready(function(){
 });
 
 function initUI(id){
-	
-	$('#dialog-confirm-remove').hide();
-	
+		
 	$("#newQueue").button({
 		icons: {
 			primary: "ui-icon-plusthick"

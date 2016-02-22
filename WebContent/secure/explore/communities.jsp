@@ -100,10 +100,10 @@
 		</fieldset>				
 	</div>	
 	
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-confirm-leave" title="leave community">
+	<div id="dialog-confirm-leave" title="leave community" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-leave-txt"></span></p>
 	</div>
 	<c:if test="${not empty param.result and param.result == 'alreadyMember'}">			

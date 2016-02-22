@@ -13,8 +13,6 @@ function setDebugText() {
 }
 
 function initUI(){
-	$('#dialog-confirm-restart').hide();
-
 	$("#restartStarExec").button({
 		icons: {
 			primary: "ui-icon-power"

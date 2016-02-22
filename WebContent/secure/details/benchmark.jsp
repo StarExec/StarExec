@@ -163,7 +163,7 @@
 		</c:if>
 		
 	</fieldset>
-	<div id="dialog-warning" title="warning">
+	<div id="dialog-warning" title="warning" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 	</div>		
 	<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">

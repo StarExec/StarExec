@@ -403,28 +403,28 @@
 							</c:if>
 						</c:if>
 					</ul>
-					<div id="dialog-confirm-delete" title="confirm delete">
+					<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 					</div>	
-					<div id="dialog-confirm-pause" title="confirm pause">
+					<div id="dialog-confirm-pause" title="confirm pause" class="hiddenDialog">
 						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
 					</div>	
-					<div id="dialog-confirm-resume" title="confirm resume">
+					<div id="dialog-confirm-resume" title="confirm resume" class="hiddenDialog">
 						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-resume-txt"></span></p>
 					</div>	
-					<div id="dialog-return-ids" title="return ids">
+					<div id="dialog-return-ids" title="return ids" class="hiddenDialog">
 						<p><span id="dialog-return-ids-txt"></span></p>
 						<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
 						<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
 					</div>
-					<div id="dialog-solverComparison" title="solver comparison chart">
+					<div id="dialog-solverComparison" title="solver comparison chart" class="hiddenDialog">
 						<img src="" id="solverComparison800" usemap="#solverComparisonMap800"/>
 						<map id="solverComparisonMap800"></map>
 					</div>
-					<div id="dialog-warning" title="warning">
+					<div id="dialog-warning" title="warning" class="hiddenDialog">
 						<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 					</div>		
-					<div id="dialog-postProcess" title="run new postprocessor">
+					<div id="dialog-postProcess" title="run new postprocessor" class="hiddenDialog">
 						<p><span id="dialog-postProcess-txt"></span></p><br/>
 						
 						<p>
@@ -443,7 +443,7 @@
 							</select> 
 						</p>
 					</div>
-					<div id="dialog-changeQueue" title="change queue">
+					<div id="dialog-changeQueue" title="change queue" class="hiddenDialog">
 						<p><span id="dialog-changeQueue-txt"></span></p><br/>
 						
 						<p><select id="changeQueueSelection">
@@ -453,7 +453,7 @@
 						</select></p>
 						
 					</div>
-					<div id="dialog-spaceOverview" title="space overview chart">
+					<div id="dialog-spaceOverview" title="space overview chart" class="hiddenDialog">
 						<img src="" id="bigSpaceOverview"/>
 					</div>
 					<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">

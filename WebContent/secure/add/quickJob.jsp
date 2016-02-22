@@ -231,7 +231,7 @@
 			</div>	
 		</fieldset>		
 	</form>		
-	<div id="dialog-createSettingsProfile" title="create settings profile">
+	<div id="dialog-createSettingsProfile" title="create settings profile" class="hiddenDialog">
 		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
 		<p><label>name: </label><input id="settingName" type="text"/></p>			
 	</div>

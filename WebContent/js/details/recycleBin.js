@@ -2,8 +2,6 @@ var solverTable;
 var benchTable;
 $(document).ready(function(){
 	$("fieldset").expandable(false);
-	$("#dialog-confirm-delete").hide();
-	$("#dialog-confirm-restore").hide();
 	$('#clearSolvers').button({
 		icons: {
 			secondary: "ui-icon-trash"

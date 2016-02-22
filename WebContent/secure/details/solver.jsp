@@ -149,13 +149,13 @@
 	
 
 
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>	
-	<div id="dialog-warning" title="warning">
+	<div id="dialog-warning" title="warning" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 	</div>		
-	<div id="dialog-confirm-copy" title="confirm copy">
+	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">

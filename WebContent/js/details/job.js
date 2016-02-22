@@ -317,15 +317,6 @@ function makeJobDescriptionUneditable() {
 //  Initializes the user-interface
 // 
 function initUI(){
-	$('#dialog-confirm-delete').hide();
-	$('#dialog-confirm-pause').hide();
-	$('#dialog-confirm-resume').hide();
-	$( "#dialog-warning").hide();
-	$("#dialog-return-ids").hide();
-	$("#dialog-solverComparison").hide();
-	$("#dialog-spaceOverview").hide();
-	$("#dialog-postProcess").hide();
-	$("#dialog-changeQueue").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
 	$(".cpuTime").hide();

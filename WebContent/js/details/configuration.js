@@ -22,9 +22,6 @@ function initButtons(){
 		}
 	});
 	
-	// Hide JQuery UI confirm/delete dialog
-	$( "#dialog-confirm-delete" ).hide();
-	
 	// Handles the deletion of this configuration file
 	$("#deleteConfig").click(function(){
 		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this configuration?');

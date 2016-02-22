@@ -49,10 +49,10 @@
 			<button type="button" id="restoreBenchmarks">restore all benchmarks</button>
 			<button type="button" id="restoreSolvers">restore all solvers</button>
 		</fieldset>
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-confirm-restore" title="confirm restore">
+	<div id="dialog-confirm-restore" title="confirm restore" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restore-txt"></span></p>
 	</div>
 </star:template>

@@ -50,7 +50,7 @@
 				</c:if>
 			</ul>
 	</fieldset>	
-	<div id="dialog-confirm-pause" title="confirm pause">
+	<div id="dialog-confirm-pause" title="confirm pause" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
 	</div>
 </star:template>

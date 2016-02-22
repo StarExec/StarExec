@@ -162,13 +162,13 @@
 
 	</div>	
 	
-	<div id="dialog-confirm-copy" title="confirm copy">
+	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-spacexml" title="xml properties">
+	<div id="dialog-spacexml" title="xml properties" class="hiddenDialog">
 	  <p><span id="dialog-spacexml-attributes-txt"></span></p>
 	  <input type="radio" value="true" name="att" />Yes
 	  <input type="radio" value="false" name="att" checked />No
@@ -178,11 +178,11 @@
 	  with updates (advanced)</a></span></p>
 	  </div>
 	</div>
-	<div id="dialog-spaceUpdateXml" title="Updates">
+	<div id="dialog-spaceUpdateXml" title="Updates" class="hiddenDialog">
 	  <p><span id="dialog-spacexml-updates-txt"></span></p>
 	  <div><input  type="text" id="updateID" /></div>
 	</div>
-	<div id="dialog-download-space" title="download space">
+	<div id="dialog-download-space" title="download space" class="hiddenDialog">
 		<div id="downloadHierarchyOptionContainer">
 			<p><span class="ui-icon ui-icon-alert"></span>do you want to download the single space or the hierarchy?</p><br>
 			<input type="radio" name="downloadHierarchyOption" id="downloadSingleSpace" checked="checked"/>space<br>
@@ -198,7 +198,7 @@
 		<input type="radio" name="idDirectoriesOption" id="yesIdDirectories"/> yes<br>
 		<input type="radio" name="idDirectoriesOption" id="noIdDirectories" checked="checked"/> no<br>
 	</div>
-	<div id="dialog-warning" title="warning">
+	<div id="dialog-warning" title="warning" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 	</div>		
 	
