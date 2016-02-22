@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
+import org.starexec.constants.Web;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
@@ -67,6 +68,8 @@ public class JspHelpers {
 	}
 
 	public static void handleJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
+		String localJobPageParameter = request.getParameter(Web.LOCAL_JOB_PAGE_PARAMETER);
+		boolean isLocalJobPage = (localJobPageParameter != null) && localJobPageParameter.equals("true");
 		String jobUuid = request.getParameter( "anonId" );
 		boolean isAnonymousPage = ( jobUuid != null );
 
@@ -142,25 +145,29 @@ public class JspHelpers {
 				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
 				jobSpaces.add(jobSpace);
 				request.setAttribute("jobSpaces", jobSpaces);
-				Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
-				request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
-				Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
-					RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
-				request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
-				Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
-						RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
-				request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
+				
+				if (isLocalJobPage) {
+					Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
+					request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
+					
+					Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
+							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
+					request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
+					
+					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
+							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
+					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
+					Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
+					request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
+					Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
+							Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
+					request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 
-				Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
-				request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
-				Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
-						Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
-
+				}
+				
 				String primitivesToAnonymizeName = AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize );
 				request.setAttribute( "primitivesToAnonymize", primitivesToAnonymizeName );
-
 				request.setAttribute( "isAnonymousPage", isAnonymousPage );
-				request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
@@ -202,39 +209,6 @@ public class JspHelpers {
 			}
 		}
 	}
-
-	/**
-	 * 
-	 * @author Albert Giegerich
-	public static void handleAnonymousJobPage( final String uniqueId,  HttpServletRequest request, HttpServletResponse response )
-   			throws IOException, SQLException {
-
-		final String methodName = "handleAnonymousJobPage";
-		logUtil.entry( methodName );
-
-		try {
-			Optional<Integer> jobId = AnonymousLinks.getIdOfJobAssociatedWithLink( uniqueId );	
-			Optional<PrimitivesToAnonymize> hideJobName = AnonymousLinks.isJobNameHidden( uniqueId );
-
-			if ( jobId.isPresent() && hideJobName.isPresent() ) {
-				Job job = Jobs.get( jobId.get() );
-				if ( job == null ) {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Job is restricted or does not exist.");
-				} else {
-					setJobPageRequestAttributes( true, hideJobName.get(), jobId.get() , Optional.empty(), request, response );
-				}
-			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job is restricted or does not exist.");
-			}
-		} catch ( IOException e ) {
-			logUtil.error( methodName, "IOException caught while handling anonymous job page: " + e.getMessage() );
-			throw e;
-		} catch ( SQLException e ) {
-			logUtil.error( methodName, "SQLException caught while handling anonymous job page: " + e.getMessage() );
-			throw e;
-		}
-	}
-	*/
 
 	/**
 	 *
