@@ -166,13 +166,13 @@
 	<div id="dialog-warning" title="warning">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
 	</div>		
-	<div id="dialog-show-anonymous-link" title="anonymous link">
+	<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">
 		<p>
 			<span class="ui-icon ui-icon-info"></span>
 			<span id="dialog-show-anonymous-link-txt"></span>
 		</p>
 	</div>
-	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link">
+	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
 	</div>
 </star:template>

@@ -82,6 +82,8 @@ $(document).ready(function(){
 	if (!isLocalJobPage) {
 		checkForHelpFile();
 	}
+	
+	$(".hiddenDialog").hide();
 });
 
 function checkForHelpFile() {
