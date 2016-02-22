@@ -157,6 +157,10 @@ CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 		FROM job_stats
 			JOIN configurations AS config ON config.id=job_stats.config_id
 			JOIN solvers AS solver ON solver.id=config.solver_id
+			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names
+				ON solver.id=anonymous_solver_names.primitive_id AND anonymous_solver_names.primitive_type="solver"
+			LEFT JOIN anonyomus_primitive_names AS anonymous_config_names
+				ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
 		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber;
 	END //
 -- Clears the entire cache of job stats
@@ -317,7 +321,8 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
-		SELECT status_code,
+		SELECT 
+		status_code,
 		job_pairs.id,
 		job_pairs.bench_id, 
 		job_pairs.bench_name, 

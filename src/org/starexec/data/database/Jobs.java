@@ -2472,7 +2472,7 @@ public class Jobs {
 	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(
 			int jobSpaceId, 
 			int stageNumber, 
-			PrimitivesToAnonymize primitiveToAnonymize) {
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		log.debug("calling GetJobStatsInJobSpace with jobspace = "+jobSpaceId + " and stage = "+stageNumber);
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -2497,9 +2497,14 @@ public class Jobs {
 				s.setResourceOutJobPairs(results.getInt("resource_out"));
 				s.setStageNumber(results.getInt("stage_number"));
 				Solver solver=new Solver();
-				solver.setName(results.getString("solver.name"));
 				Configuration c = new Configuration();
-				c.setName(results.getString("config.name"));
+				if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+					solver.setName( results.getString("anonymous_solver_names.anonymous_name") );
+					c.setName( results.getString("anonymous_config_names.anonymous_name") );
+				} else {
+					solver.setName(results.getString("solver.name"));
+					c.setName(results.getString("config.name"));
+				}
 				solver.setId(results.getInt("solver.id"));
 				c.setId(results.getInt("config.id"));
 				solver.addConfiguration(c);
@@ -4230,7 +4235,11 @@ public class Jobs {
 							
 							Solver solve=new Solver();
 							solve.setId(id);
-							solve.setName(results.getString("jobpair_stage_data.solver_name"));
+							if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+								solve.setName( results.getString("anon_solver_name") );
+							} else {
+								solve.setName(results.getString("jobpair_stage_data.solver_name"));
+							}
 							solvers.put(id,solve);
 						}
 						stage.setSolver(solvers.get(id));
