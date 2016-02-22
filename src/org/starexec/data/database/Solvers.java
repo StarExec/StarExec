@@ -1338,7 +1338,7 @@ public class Solvers {
 	
 	/**
 	 * @param configId The id of the configuration to retrieve the owning solver for
-	 * @param includeDeleted Whether to include delted solvers (deleted flag is true)
+	 * @param includeDeleted Whether to include deleted solvers (deleted flag is true)
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
