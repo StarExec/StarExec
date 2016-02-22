@@ -15,12 +15,6 @@ $(document).ready(function(){
     });
 });
 
-//	solverId = getParameterByName('id');
-
-
-
-
-
 function initUI(){
 	$('#downLink3').button({
 		icons: {
@@ -40,7 +34,10 @@ function initUI(){
         "bSort": true        
     });
 
-	
+	$('#downBuildInfo').button({
+		icons: {
+			secondary: "ui-icon-newwin"
+    }});
 	
 	$( "#dialog-confirm-delete" ).hide();
 	$( "#dialog-warning").hide();
@@ -96,7 +93,6 @@ function attachButtonActions() {
 					} else {
 						window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solver&id="+$("#solverId").attr("value");
 					}
-					//$('#downLink3').attr('href', starexecRoot+"secure/download?token=" + token + "&type=solver&id=" + $("#solverId").attr("value"));
 					destroyOnReturn(token);
 				},
 				'Re-upload': function() {

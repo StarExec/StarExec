@@ -176,11 +176,11 @@
 			<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
 				<a href="${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 				<a href="${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
-				<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" class="popoutLink">see build info</a>
+				<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" id="downBuildInfo">see build info</a>
 			</c:if>
 		</c:if>
 		<c:if test="${isAnonymousPage || downloadable || hasAdminReadPrivileges}">			
-			<button type="button" id="downLink3">download</button>
+			<a type="button" id="downLink3">download</a>
 		</c:if>
 
 	</fieldset>
