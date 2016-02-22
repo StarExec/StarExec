@@ -196,8 +196,7 @@ public class StressTest {
 		associateUsers(spaces,users,minUsersPerSpace,maxUsersPerSpace);
 		addSolvers(spaces,users,minSolversPerSpace,maxSolversPerSpace,SOLVER_NAME);
 		addBenchmarks(spaces,users,minBenchmarksPerSpace,maxBenchmarksPerSpace,BENCHMARK_NAME);
-		String name=null;
-		name="aaaaJobSpace";
+		String name="JobSpace";
 		Space jobParentSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 		for (int x=0;x<jobCount;x++) {
 			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), jobParentSpace.getId());
