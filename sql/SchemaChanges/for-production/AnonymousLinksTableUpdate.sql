@@ -1,6 +1,6 @@
 USE starexec;
 
-DROP TABLE anonymous_links;
+TRUNCATE TABLE anonymous_links;
 
 CREATE TABLE anonymous_links (
 	unique_id VARCHAR(36) NOT NULL,

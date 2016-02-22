@@ -1003,25 +1003,6 @@ public class Solvers {
 		return filteredSolvers;
 	}
 	
-	/**
-	 * @param solverId The solver id to get the configuration map for
-	 * @author Albert Giegerich
-	 * @return A map from configuration id's to their anonymized names for use in the anonymous page feature.
-	 */
-	public static Map<Integer, String> getConfigToAnonymizedNameMap(int solverId) {
-		List<Configuration> configs = getConfigsForSolver( solverId );
-		Collections.sort( configs, (c1, c2) -> c1.getId() - c2.getId() );
-
-		Map<Integer, String> configIdToNameMap  = new HashMap<>();
-		int numberToAppend = 1;
-		for (Configuration config : configs) {
-			if (!configIdToNameMap.containsKey( config.getId() )) {
-				configIdToNameMap.put( config.getId(), "Config"+numberToAppend );
-				numberToAppend +=1 ;
-			}
-		}
-		return configIdToNameMap;
-	}
 	
 	/**
 	 * Gets all configurations for the given solver

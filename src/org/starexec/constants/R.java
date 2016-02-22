@@ -260,6 +260,7 @@ public class R {
     //names of primitive types
 	public static String SOLVER="solver";
 	public static String BENCHMARK="bench";
+	public static String CONFIGURATION="config";
 	public static String SPACE_XML = "spaceXML";
 	public static String JOB_XML = "jobXML";
 	public static String PAIR_OUTPUT = "jp_output";

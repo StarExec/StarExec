@@ -515,6 +515,16 @@ CREATE TABLE anonymous_links (
 	UNIQUE KEY (primitive_id, primitive_type, primitives_to_anonymize)
 );
 
+CREATE TABLE anonymous_primitive_names (
+	anonymous_name VARCHAR(36) NOT NULL,
+	primitive_id INT NOT NULL,
+	primitive_type ENUM('solver', 'job', 'bench', 'config') NOT NULL,
+	job_id INT NOT NULL,
+
+	PRIMARY KEY (primitive_id, primitive_type),
+	CONSTRAINT anonymous_names_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+);
+
 CREATE TABLE change_email_requests (
 	user_id INT NOT NULL,
 	new_email VARCHAR(64) NOT NULL,

@@ -541,16 +541,18 @@ public class RESTHelpers {
 			JobSpace jobSpace, 
 			PrimitivesToAnonymize primitivesToAnonymize,
 			boolean shortFormat,
-			boolean wallclock ) {
+			boolean wallclock) {
 
-		List<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber );
+		List<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber, primitivesToAnonymize );
 
 		if ( solverStats == null ) {
 			return gson.toJson( RESTServices.ERROR_DATABASE );
 		}
+		/* TODO
 	   	if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
 			AnonymousLinks.anonymizeSolverStats( solverStats, jobSpace.getJobId(), stageNumber );
 		}
+		*/
 
 
 		JsonObject nextDataTablesPage = RESTHelpers.convertSolverStatsToJsonObject(
@@ -616,7 +618,7 @@ public class RESTHelpers {
 		int[] totals = new int[2];
 
 		if (!syncResults) {
-			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(query,jobSpaceId,stageNumber,wallclock);
+			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(query,jobSpaceId,stageNumber,wallclock, primitivesToAnonymize);
 			if(!query.hasSearchQuery()){
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 	    	} 
@@ -635,7 +637,8 @@ public class RESTHelpers {
 		}
 
 		int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-		AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber, primitivesToAnonymize );
+		// TODO 
+		//AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber, primitivesToAnonymize );
 
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
 	}
@@ -1877,7 +1880,7 @@ public class RESTHelpers {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
 		
 		for (JobSpace jobSpace : jobSpaces) {
-			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber);
+			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());

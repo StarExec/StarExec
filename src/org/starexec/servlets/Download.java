@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
 import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
@@ -500,10 +501,10 @@ public class Download extends HttpServlet {
 			Job job=Jobs.get(jobId);
 			HashMap<Integer,HashMap<Integer, Properties>> props= null;
 			if (since==null) {
-				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace()));
+				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(), PrimitivesToAnonymize.NONE));
 				props=Jobs.getJobAttributes(jobId);
 			} else {
-				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(),since));
+				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(),since,PrimitivesToAnonymize.NONE));
 				props= Jobs.getNewJobAttributes(jobId, since);
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 

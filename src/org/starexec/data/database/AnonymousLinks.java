@@ -7,6 +7,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverStats;
+import org.starexec.data.to.pipelines.JoblineStage;
 
 import org.starexec.util.Util;
 
@@ -483,6 +485,126 @@ public class AnonymousLinks {
 		}
 	}
 
+	public static boolean hasJobBeenAnonymized( final int jobId ) throws SQLException {
+		final String methodName= "hasJobBeenAnonymized";
+		logUtil.entry(methodName);
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAnonymousNamesForJob(?)}");
+
+			// Set the parameters
+			procedure.setInt( 1, jobId );
+
+			// Do update and commit the changes.
+			results = procedure.executeQuery();
+			// return true/false depending on if there are any results.
+			return results.next();
+		} catch( SQLException e ) {
+			logUtil.error( methodName, Util.getStackTrace(e));
+			throw e;
+		} finally {
+			Common.safeClose( con );
+			Common.safeClose( procedure );
+			Common.safeClose( results );
+		}
+	}
+
+	/**
+	 * Adds all primitives in a job to the anonymous names table for use in the anonymous job page.
+	 * @param jobId the id of the job from which to get primitives.
+	 * @throws SQLException if the database fails.
+	 * @author Albert Giegerich
+	 */
+	public static void addAnonymousNamesForJob( final int jobId ) throws SQLException {
+		final String methodName = "addAnonymousNamesForJob";
+		logUtil.entry( methodName );
+
+		Job job = Jobs.getWithSimplePairs( jobId );
+
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		List<Benchmark> benchmarks = new ArrayList<>();
+		List<Solver> solvers = new ArrayList<>();
+		for ( JobPair pair : jobPairs ) {
+			benchmarks.add( pair.getBench() );
+			for ( JoblineStage stage : pair.getStages() ) {
+				solvers.add( stage.getSolver() );
+			}
+		}
+
+		Connection con = null;
+		try {
+
+			// Generate a map of anonymized solver names and add them to the database.
+			Map<Integer, String> anonymizedSolverNames = getAnonymizedSolverNames( solvers );
+
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+
+			for ( Integer solverId : anonymizedSolverNames.keySet() ) {
+
+				// For each solver, add all the anonymous config names.
+				Map<Integer, String> anonymizedConfigNames = getAnonymizedConfigNames( solverId );
+				for ( Integer configId : anonymizedConfigNames.keySet() ) {
+					String anonymousConfigName = anonymizedConfigNames.get( configId );
+					addAnonymousPrimitiveName( anonymousConfigName, configId, R.CONFIGURATION, jobId, con );
+				}
+
+				String anonymousSolverName = anonymizedSolverNames.get( solverId );
+				addAnonymousPrimitiveName( anonymousSolverName, solverId, R.SOLVER, jobId, con );
+			}
+
+			// Generate a map of anonymized benchmark names and add them to the database.
+			Map<Integer, String> anonymizedBenchmarkNames = getAnonymizedBenchmarkNames( benchmarks );
+			for ( Integer benchmarkId : anonymizedBenchmarkNames.keySet() ) {
+				String anonymousBenchmarkName = anonymizedBenchmarkNames.get( benchmarkId );
+				addAnonymousPrimitiveName( anonymousBenchmarkName, benchmarkId, R.BENCHMARK, jobId, con );
+			}
+
+			Common.endTransaction( con );
+		} catch (SQLException e) {
+			logUtil.error( methodName, Util.getStackTrace( e ) );
+			throw e;
+		} finally {
+			Common.doRollback( con );
+			Common.safeClose( con );
+		}
+	}
+
+
+	private static void addAnonymousPrimitiveName( 
+			final String anonymousName, 
+			final int primitiveId, 
+			final String primitiveType, 
+			final int jobId,
+			final Connection con ) throws SQLException {
+
+		final String methodName = "addAnonymousPrimitiveName";
+		logUtil.entry( methodName );
+
+		CallableStatement procedure = null;
+
+		try {
+			procedure = con.prepareCall( "{CALL AddAnonymousPrimitiveName(?, ?, ?, ?)}" );
+			procedure.setString( 1, anonymousName );
+			procedure.setInt( 2, primitiveId );
+			procedure.setString( 3, primitiveType );
+			procedure.setInt( 4, jobId );
+
+			procedure.executeUpdate();
+
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, Util.getStackTrace( e ) );
+			throw e;
+		} finally {
+			Common.safeClose( procedure );
+		}	
+	}
+
+
 	/**
 	 *
 	 * Anonymizes the names of primitives in a list of job pairs.
@@ -492,7 +614,6 @@ public class AnonymousLinks {
 	 * @param primitivesToAnonymize an enum dictating what should be anonymized.
 	 * @return the anonymized job pairs.
 	 * @author Albert Giegerich
-	 */
 	public static void anonymizeJobPairs( final List<JobPair> jobPairs, int jobId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
 		final String methodName = "anonymizePrimitiveNames";
 		logUtil.entry( methodName );
@@ -525,6 +646,7 @@ public class AnonymousLinks {
 			pairConfig.setName( configToNameMap.get( pairConfig.getId() ));
 		}
 	}
+	*/
 
 	/**
 	 * Anonymizes the names of solver stats deterministically based on the job and stage number.
@@ -532,7 +654,6 @@ public class AnonymousLinks {
 	 * @param jobId the id of the job which the solver stats are related to.
 	 * @param stageNumber the stage to filter the solvers by.
 	 * @author Albert Giegerich
-	 */
 	public static void anonymizeSolverStats( List<SolverStats> allSolverStats, int jobId, int stageNumber ) {
 		Map<Integer, String> idToAnonymizedSolverName = getAnonymizedSolverNames( jobId, stageNumber );
 		for ( SolverStats stats : allSolverStats ) {
@@ -544,61 +665,61 @@ public class AnonymousLinks {
 			solver.setName( idToAnonymizedSolverName.get( solver.getId() ));
 		}
 	}
+	*/
+
+	/**
+	 * @param solverId The solver id to get the configuration map for
+	 * @author Albert Giegerich
+	 * @return A map from configuration id's to their anonymized names for use in the anonymous page feature.
+	 */
+	private static Map<Integer, String> getAnonymizedConfigNames(int solverId) {
+		List<Configuration> configs = Solvers.getConfigsForSolver( solverId );
+
+		Map<Integer, String> configIdToNameMap  = new HashMap<>();
+		int numberToAppend = 1;
+		for (Configuration config : configs) {
+			if (!configIdToNameMap.containsKey( config.getId() )) {
+				configIdToNameMap.put( config.getId(), "Config"+numberToAppend );
+				numberToAppend +=1 ;
+			}
+		}
+		return configIdToNameMap;
+	}
 
 	/**
 	 * Gets a mapping of solver ID's to unique anonymized names.
 	 * @param jobId The id of the job to get a mapping for.
-	 * @param stageNumber Stage number to filter job pairs by.
 	 * @author Albert Giegerich
-	 */
-	public static Map<Integer, String> getAnonymizedSolverNames( final int jobId, final int stageNumber ) {
-		Job job = Jobs.getWithSimplePairs( jobId );
-		List<JobPair> jobPairs = job.getJobPairs();
-
-		Comparator<JobPair> sortJobPairBySolverId =	(firstPair, secondPair) -> {
-			int firstSolverId = firstPair.getStageFromNumber( stageNumber ).getSolver().getId();
-			int secondSolverId = secondPair.getStageFromNumber( stageNumber ).getSolver().getId();
-			return firstSolverId - secondSolverId;
-		};	
-
-		// Filter out any pairs that don't have the specified stage
-		List<JobPair> jobPairsFilteredByStage = jobPairs.stream()
-				.filter( pair -> pair.hasStage( stageNumber ))
-				.sorted( sortJobPairBySolverId )
-				.collect( Collectors.toList() );
-
+	*/
+	private static Map<Integer, String> getAnonymizedSolverNames( final List<Solver> solvers ) {
+		// Build a mapping of solvers to anonymized names.
 		Map<Integer, String> solverIdToAnonymizedName = new HashMap<>();
 		int numberToAppend = 1;
-		for ( JobPair pair : jobPairsFilteredByStage ) {
-			int solverId =  pair.getStageFromNumber( stageNumber ).getSolver().getId();
+		for ( Solver solver : solvers ) {
+			int solverId =  solver.getId();
 			if ( !solverIdToAnonymizedName.containsKey( solverId )) {
 				solverIdToAnonymizedName.put( solverId, "Solver" + numberToAppend ); 
 				numberToAppend += 1;
 			}
 		}
 		return solverIdToAnonymizedName;
-
 	}
 
+
 	/**
-	 * Gets a mapping of bencmark ID's to unique anonymized names in a deterministic manner depending on the job id.
-	 * @param jobId the id of the job to get a mapping for.
+	 * Gets a mapping of bencmark ID's to unique anonymized names.
+	 * @param benchmarks a list of benchmarks to get anonymized names for.
 	 * @return a mapping from benchmark ID's to an anonymous name for the benchmark.
 	 * @author Albert Giegerich
 	 */
-	public static Map<Integer, String> getAnonymizedBenchmarkNames( final int jobId ) {
+	private static Map<Integer, String> getAnonymizedBenchmarkNames( final List<Benchmark> benchmarks ) {
 		final String methodName = "getAnonymizedBenchmarkNames";
 		logUtil.entry( methodName );
-		Job job = Jobs.getWithSimplePairs( jobId );
-		List<JobPair> jobPairs = job.getJobPairs();
-
-		// Sort the pairs by bench id
-		Collections.sort( jobPairs, (pair1, pair2) -> pair1.getBench().getId() - pair2.getBench().getId() );
 
 		Map<Integer, String> benchmarkIdToAnonymizedName = new HashMap<>();
 		int numberToAppend = 1;
-		for ( JobPair pair : jobPairs ) {
-			int benchId =  pair.getBench().getId();
+		for ( Benchmark bench : benchmarks ) {
+			int benchId =  bench.getId();
 			if ( !benchmarkIdToAnonymizedName.containsKey( benchId )) {
 				benchmarkIdToAnonymizedName.put( benchId, "Benchmark" + numberToAppend ); 
 				numberToAppend += 1;

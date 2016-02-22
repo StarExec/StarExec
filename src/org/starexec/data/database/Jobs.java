@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Identifiable;
@@ -886,8 +887,8 @@ public class Jobs {
 	 * @param jobSpaceId The ID of the job space we are getting stats for
 	 */
 
-	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber) {
-		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(space.getId(),stageNumber);
+	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
+		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(space.getId(),stageNumber, primitivesToAnonymize);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
@@ -899,7 +900,7 @@ public class Jobs {
 
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(space.getId());
+		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(space.getId(), primitivesToAnonymize);
 		
 		
 		//compiles pairs into solver stats
@@ -951,7 +952,7 @@ public class Jobs {
 		jobSpaces.add(Spaces.getJobSpace(primaryJobSpaceId));
 		for (JobSpace jobspace : jobSpaces) {
 			int jobspaceId = jobspace.getId();
-			List<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber);
+			List<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber, PrimitivesToAnonymize.NONE);
 			jobSpaceIdToSolverStatsMap.put(jobspaceId, stats);
 		}
 		return jobSpaceIdToSolverStatsMap;
@@ -1526,7 +1527,7 @@ public class Jobs {
 	 */
 	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(DataTablesQuery query,
 			int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock, int stageNumber) {
-		List<JobPair> pairs=Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);
+		List<JobPair> pairs=Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, PrimitivesToAnonymize.NONE);
 		List<JobPair> pairs1=new ArrayList<JobPair>();
 		List<JobPair> pairs2=new ArrayList<JobPair>();
 		for (JobPair jp : pairs) {
@@ -1777,7 +1778,12 @@ public class Jobs {
 	 * @author Todd Elvers
 	 */
 	
-	public static List<JobPair> getJobPairsForNextPageInJobSpace(DataTablesQuery query, int jobSpaceId, int stageNumber,boolean wallclock) {
+	public static List<JobPair> getJobPairsForNextPageInJobSpace(
+			DataTablesQuery query, 
+			int jobSpaceId, 
+			int stageNumber, 
+			boolean wallclock, 
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		Connection con = null;	
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
@@ -1794,7 +1800,7 @@ public class Jobs {
 			procedure.setInt("stageNumber",stageNumber);
 			procedure.setInt("jobSpaceId",jobSpaceId);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
+			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false, primitivesToAnonymize);
 			
 			return jobPairs;
 		} catch (Exception e){			
@@ -1852,9 +1858,14 @@ public class Jobs {
 	 * @param pairs The pairs that have stages contained in the given result set
 	 * @param results The ResultSet containing stages
 	 * @param getExpectedResult True to include the expected result column and false otherwise
+	 * @param primitivesToAnonymize an enum describing which (if any) primitive names should be anonymized.
 	 * @return True if the pairs had their stages populated correctly and false otherwise
 	 */
-	public static boolean populateJobPairStages(List<JobPair> pairs, ResultSet results, boolean getExpectedResult) {
+	public static boolean populateJobPairStages(
+			List<JobPair> pairs, 
+			ResultSet results, 
+			boolean getExpectedResult,
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		
 		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
 		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
@@ -1893,7 +1904,11 @@ public class Jobs {
 						
 						solve=new Solver();
 						solve.setId(id);
-						solve.setName(results.getString("jobpair_stage_data.solver_name"));
+						if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+							solve.setName(results.getString("anon_solver_name"));
+						} else {
+							solve.setName(results.getString("jobpair_stage_data.solver_name"));
+						}
 						solvers.put(id,solve);
 					}
 					stage.setSolver(solvers.get(id));
@@ -1905,7 +1920,11 @@ public class Jobs {
 					if (!configs.containsKey(id)) {
 						config=new Configuration();
 						config.setId(id);
-						config.setName(results.getString("jobpair_stage_data.config_name"));
+						if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+							config.setName(results.getString("anon_config_name"));
+						} else {
+							config.setName(results.getString("jobpair_stage_data.config_name"));
+						}
 						configs.put(id, config);
 					}
 					stage.getSolver().addConfiguration(configs.get(id));
@@ -1965,7 +1984,7 @@ public class Jobs {
 			procedure.setInt(2,stageNumber);
 			results = procedure.executeQuery();
 			log.debug("executing query 1 took "+(System.currentTimeMillis()-a));
-			List<JobPair> pairs=processStatResults(results,true);
+			List<JobPair> pairs=processStatResults(results,true, PrimitivesToAnonymize.NONE);
 			log.debug("processing query 1 took "+(System.currentTimeMillis()-a));
 
 		
@@ -1992,8 +2011,8 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId) {
-		return getJobPairsInJobSpaceHierarchy(jobSpaceId,null);
+	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId, PrimitivesToAnonymize primitivesToAnonymize) {
+		return getJobPairsInJobSpaceHierarchy(jobSpaceId,null, primitivesToAnonymize);
 	}
 	
 	
@@ -2007,7 +2026,7 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId, Integer since) {
+	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId, Integer since, PrimitivesToAnonymize primitivesToAnonymize) {
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -2026,7 +2045,7 @@ public class Jobs {
 			}
 			results = procedure.executeQuery();
 			
-			List<JobPair> pairs=processStatResults(results,false);
+			List<JobPair> pairs=processStatResults(results,false, primitivesToAnonymize);
 			
 			
 			
@@ -2040,7 +2059,7 @@ public class Jobs {
 				procedure.setInt(2,since);
 			}
 			results=procedure.executeQuery();
-			if (populateJobPairStages(pairs,results,true)) {
+			if (populateJobPairStages(pairs,results,true, primitivesToAnonymize)) {
 				return pairs;
 			} 
 		} catch (Exception e) {
@@ -2063,7 +2082,12 @@ public class Jobs {
 	 * @return The list of job pairs or null on failure
 	 */
 	
-	private static List<JobPair> getJobPairsForDataTable(int jobId,ResultSet results, boolean includeExpected, boolean includeCompletion) {
+	private static List<JobPair> getJobPairsForDataTable(
+			int jobId, 
+			ResultSet results, 
+			boolean includeExpected, 
+			boolean includeCompletion, 
+			PrimitivesToAnonymize primitivesToAnonymize ) {
 		List<JobPair> pairs = new ArrayList<JobPair>();
 		try{
 			while (results.next()) {
@@ -2077,12 +2101,25 @@ public class Jobs {
 				jp.addStage(stage);
 				Benchmark bench = jp.getBench();
 				bench.setId(results.getInt("bench_id"));
-				bench.setName(results.getString("bench_name"));
-				
+
+				if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize ) ) {
+					bench.setName(results.getString("anon_bench_name"));
+				} else {
+					bench.setName(results.getString("bench_name"));
+				}
+
 				jp.getPrimarySolver().setId(results.getInt("jobpair_stage_data.solver_id"));
-				jp.getPrimarySolver().setName(results.getString("jobpair_stage_data.solver_name"));
 				jp.getPrimaryConfiguration().setId(results.getInt("jobpair_stage_data.config_id"));
-				jp.getPrimaryConfiguration().setName(results.getString("jobpair_stage_data.config_name"));
+
+				if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+					jp.getPrimarySolver().setName(results.getString("anon_solver_name"));
+					jp.getPrimaryConfiguration().setName(results.getString("anon_config_name"));
+				} else {
+					jp.getPrimarySolver().setName(results.getString("jobpair_stage_data.solver_name"));
+					jp.getPrimaryConfiguration().setName(results.getString("jobpair_stage_data.config_name"));
+				}
+
+				
 				jp.getPrimarySolver().addConfiguration(jp.getPrimaryConfiguration());
 				
 				Status status = stage.getStatus();
@@ -2161,7 +2198,7 @@ public class Jobs {
 			procedure.setInt("configId",configId);
 			procedure.setString("pairType",type);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false);
+			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false, PrimitivesToAnonymize.NONE);
 
 			return jobPairs;
 		} catch (Exception e){			
@@ -2181,6 +2218,7 @@ public class Jobs {
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The ID of the job_space in question
 	 * @param configId The ID of the configuration in question
+	 * @param primitivesToAnonymize enum designating which (if any) primitive names should be anonymized.
 	 * @return A List of JobPair objects
 	 * @author Eric Burns
 	 * @param stageNumber The number of the stage that we are concerned with. If <=0, the primary stage is obtained
@@ -2188,9 +2226,13 @@ public class Jobs {
 	
 	//TODO: Rewrite so this takes in two config IDs instead of one: we are using two database calls where only one
 	// is needed
-	public static List<JobPair> getJobPairsForSolverComparisonGraph(int jobSpaceId, int configId, int stageNumber) {
+	public static List<JobPair> getJobPairsForSolverComparisonGraph(
+			int jobSpaceId, 
+			int configId, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {			
-			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId);
+			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, primitivesToAnonymize);
 			List<JobPair> filteredPairs=new ArrayList<JobPair>();
 			
 			for (JobPair jp : pairs) {
@@ -2427,7 +2469,10 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(int jobSpaceId, int stageNumber) {
+	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchy(
+			int jobSpaceId, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitiveToAnonymize) {
 		log.debug("calling GetJobStatsInJobSpace with jobspace = "+jobSpaceId + " and stage = "+stageNumber);
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -2453,9 +2498,9 @@ public class Jobs {
 				s.setStageNumber(results.getInt("stage_number"));
 				Solver solver=new Solver();
 				solver.setName(results.getString("solver.name"));
-				solver.setId(results.getInt("solver.id"));
-				Configuration c=new Configuration();
+				Configuration c = new Configuration();
 				c.setName(results.getString("config.name"));
+				solver.setId(results.getInt("solver.id"));
 				c.setId(results.getInt("config.id"));
 				solver.addConfiguration(c);
 				s.setSolver(solver);
@@ -4124,7 +4169,10 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	
-	private static List<JobPair> processStatResults(ResultSet results, boolean includeSingleStage) throws Exception {
+	private static List<JobPair> processStatResults(
+			ResultSet results, 
+			boolean includeSingleStage, 
+			PrimitivesToAnonymize primitivesToAnonymize) throws Exception {
 		
 		try {
 			List<JobPair> returnList = new ArrayList<JobPair>();
@@ -4150,7 +4198,11 @@ public class Jobs {
 				jp.setPath(results.getString("job_pairs.path"));
 				bench=new Benchmark();
 				bench.setId(results.getInt("bench_id"));
-				bench.setName(results.getString("bench_name"));
+				if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize ) ) {
+					bench.setName( results.getString("anon_bench_name") );
+				} else {
+					bench.setName(results.getString("bench_name"));
+				}
 				jp.setBench(bench);
 
 				jp.setCompletionId(results.getInt("completion_id"));

@@ -1050,7 +1050,7 @@ public class RESTServices {
 			PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 			return RESTHelpers.getSolverComparisonGraphJson(
 					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, primitivesToAnonymize );
-		} catch (RuntimeException e) {
+		} catch ( RuntimeException e ) {
 			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace( e ));
 			return gson.toJson( ERROR_INTERNAL_SERVER );
 		} 
@@ -1285,6 +1285,10 @@ public class RESTServices {
 
 		// Generate a unique id to be part of the link URL and store it in the database.
 		final String uniqueId = AnonymousLinks.addAnonymousLink( primitiveType, primitiveId, primitivesToAnonymize );
+		if ( primitiveType.equals( R.JOB ) && !AnonymousLinks.hasJobBeenAnonymized( primitiveId ) ) {
+			// If the primitive is a job add anonymous primitive names to the DB for all the primitives in the job.
+			AnonymousLinks.addAnonymousNamesForJob( primitiveId );	
+		}
 
 		// Return the URL with the UUID as a parameter.
 		return urlPrefix + uniqueId; 

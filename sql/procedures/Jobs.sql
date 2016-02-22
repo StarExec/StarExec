@@ -318,12 +318,19 @@ DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT status_code,
-		job_pairs.id,job_pairs.bench_id, job_pairs.bench_name, job_pairs.path,
-		completion_id,primary_jobpair_data
-		FROM job_pairs 		
-		JOIN job_space_closure ON descendant=job_space_id
-		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
-		WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_since);
+		job_pairs.id,
+		job_pairs.bench_id, 
+		job_pairs.bench_name, 
+		anonymous_primitive_names.anonymous_name AS anon_bench_name,
+		job_pairs.path,
+		completion_id,
+		primary_jobpair_data 
+			FROM job_pairs 		
+			LEFT JOIN anonymous_primitive_names ON 
+				anonymous_primitive_names.primitive_id=job_pairs.bench_id AND anonymous_primitive_names.primitive_type="bench"
+			JOIN job_space_closure ON descendant=job_space_id
+			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
+			WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_since);
 	END //
 
 -- Gets all the stages of job pairs in a particular job space
@@ -346,19 +353,34 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
-		SELECT job_pairs.id AS pair_id,jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
-		jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
-		jobpair_stage_data.wallclock AS wallclock,job_pairs.id, jobpair_stage_data.stage_number, jobpair_stage_data.max_vmem,
+		SELECT 
+		job_pairs.id AS pair_id,
+		jobpair_stage_data.solver_id,
+		jobpair_stage_data.solver_name, 
+		jobpair_stage_data.status_code,
+		jobpair_stage_data.config_id,
+		jobpair_stage_data.config_name,
+		jobpair_stage_data.cpu,
+		jobpair_stage_data.stage_id,
+		jobpair_stage_data.wallclock AS wallclock,
+		job_pairs.id, jobpair_stage_data.stage_number, 
+		jobpair_stage_data.max_vmem,
 		bench_attributes.attr_value AS expected,
-		job_attributes.attr_value AS result
-		FROM job_pairs 		
-		JOIN job_space_closure ON descendant=job_space_id
-		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
-		LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
+		job_attributes.attr_value AS result,
+		anonymous_solver_names.anonymous_name AS anon_solver_name,
+		anonymous_config_names.anonymous_name AS anon_config_name
+			FROM job_pairs 		
+			JOIN job_space_closure ON descendant=job_space_id
+			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
+			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names ON 
+				anonymous_solver_names.primitive_id=jobpair_stage_data.solver_id AND anonymous_solver_names.primitive_type="solver"
+			LEFT JOIN anonymous_primitive_names AS anonymous_config_names ON
+				anonymous_config_names.primitive_id=jobpair_stage_data.config_id AND anonymous_config_names.primitive_type="config"
+			LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
+			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 
-		LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
-		WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_since);
+			LEFT JOIN bench_attributes ON (job_pairs.bench_id=bench_attributes.bench_id AND bench_attributes.attr_key = "starexec-expected-result")
+			WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_since);
 	END //
 
 	

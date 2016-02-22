@@ -1,6 +1,17 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
- 
+
+DROP PROCEDURE IF EXISTS AddAnonymousPrimitiveName;
+CREATE PROCEDURE AddAnonymousPrimitiveName( 
+		IN _anonymousName VARCHAR(36), 
+		IN _primitiveId INT, 
+		IN _primitiveType ENUM('solver', 'bench', 'job', 'config'),
+		IN _jobId INT )
+	BEGIN
+		INSERT INTO anonymous_primitive_names ( anonymous_name, primitive_id, primitive_type, job_id )
+			VALUES ( _anonymousName, _primitiveId, _primitiveType, _jobId );
+	END //
+
 DROP PROCEDURE IF EXISTS AddAnonymousLink;
 CREATE PROCEDURE AddAnonymousLink(IN _uniqueId VARCHAR(36), IN _primitiveType ENUM('solver', 'bench', 'job'), IN _primitiveId INT, 
 		IN _primitivesToAnonymize ENUM('all', 'allButBench', 'none'))
@@ -8,6 +19,12 @@ CREATE PROCEDURE AddAnonymousLink(IN _uniqueId VARCHAR(36), IN _primitiveType EN
 		INSERT INTO anonymous_links ( unique_id, primitive_type, primitive_id, primitives_to_anonymize, date_created ) 
 			VALUES ( _uniqueId, _primitiveType, _primitiveId, _primitivesToAnonymize, CURDATE() );
 	END //	
+
+DROP PROCEDURE IF EXISTS GetAnonymousNamesForJob;
+CREATE PROCEDURE GetAnonymousNamesForJob( IN _jobId INT )
+	BEGIN
+		SELECT * FROM anonymous_primitive_names WHERE job_id=_jobId;
+	END // 
 
 DROP PROCEDURE IF EXISTS GetAnonymousLink;
 CREATE PROCEDURE GetAnonymousLink( IN _primitiveType ENUM('solver', 'bench', 'job'), IN _primitiveId INT, 
