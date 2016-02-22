@@ -35,9 +35,10 @@ public class StressTest {
 	private static void writeFakeJobPairOutput(JobPair pair) {
 		try {
 			File f=new File(JobPairs.getPairStdout(pair));
-			f.getParentFile().mkdirs();
+			f=f.getParentFile();
+			f.mkdirs();
 			String randomOutput=TestUtil.getRandomAlphaString(1000);
-			FileUtils.writeStringToFile(f, randomOutput);
+			FileUtils.writeStringToFile(new File(f,pair.getId()+".txt"), randomOutput);
 			
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -62,7 +63,7 @@ public class StressTest {
 		
 		for (JobPair pair : job.getJobPairs()) {
 			writeFakeJobPairOutput(pair);
-			JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
+			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
 		Jobs.resume(job.getId());
 		

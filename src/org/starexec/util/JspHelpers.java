@@ -146,6 +146,7 @@ public class JspHelpers {
 				jobSpaces.add(jobSpace);
 				request.setAttribute("jobSpaces", jobSpaces);
 				
+				//TODO: This code isn't going to work for pipelines. It just always does stage 1.
 				if (isLocalJobPage) {
 					Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
 					request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
