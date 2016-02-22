@@ -392,7 +392,10 @@ public class Jobs {
 			JobPairs.addJobPairs(con, job.getId(),job.getJobPairs());
 
 			Common.endTransaction(con);
-			
+			//Create the output directory for the job up front. This ensures that if a user
+			//tries to download output before any exists, they will get a correctly formatted
+			//zip containing an empty directory.
+			new File(Jobs.getDirectory(job.getId())).mkdirs();
 			log.debug("job added successfully");
 			Jobs.resume(job.getId(), con); // now that the job has been added, we can resume
 			return true;
