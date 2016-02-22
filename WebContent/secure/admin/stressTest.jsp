@@ -25,51 +25,51 @@
 				<tbody>
 					<tr>
 						<td title="the number of spaces that will be created by the test">space count</td>
-						<td><input value="0" id="spaceCount" name="spaceCount" type="text"/></td>
+						<td><input value="1" id="spaceCount" name="spaceCount" type="text"/></td>
 					</tr>
 					<tr>
 						<td title="the number of users that will be created by the test">user count</td>
-						<td><input value="0" id="userCount" name="userCount" type="text"/></td>
+						<td><input value="1" id="userCount" name="userCount" type="text"/></td>
 					</tr>
 					
 					
 					<tr>
 						<td title="the minimum number of users that will be placed in each space. Users are taken from the pool of users
 						created for the test.">min users per space</td>
-						<td><input value="0" id="minUsersPer" name="minUsersPer" type="text"/></td>
+						<td><input value="1" id="minUsersPer" name="minUsersPer" type="text"/></td>
 					</tr>
 					<tr>
 						<td title="the maximum number of users that will be placed in each space. Users are taken from the pool of users
 						created for the test">max users per space</td>
-						<td><input value="0" id="maxUsersPer" name="maxUsersPer" type="text"/></td>
+						<td><input value="1" id="maxUsersPer" name="maxUsersPer" type="text"/></td>
 					</tr>
 					
 					<tr>
 						<td title="the minimum number of solvers that will be placed in each space. All solvers will be unique (no solver linked to multiple spaces)">min solvers per space</td>
-						<td><input value="0" id="minSolversPer" name="minSolversPer" type="text"/></td>
+						<td><input value="1" id="minSolversPer" name="minSolversPer" type="text"/></td>
 					</tr>
 					<tr>
 						<td title="the maximum number of solvers that will be placed in each space. All solvers will be unique (no solver linked to multiple spaces)">max solvers per space</td>
-						<td><input value="0" id="maxSolversPer" name="maxSolversPer" type="text"/></td>
+						<td><input value="1" id="maxSolversPer" name="maxSolversPer" type="text"/></td>
 					</tr>
 					
 					<tr>
 						<td title="the minimum number of benchmarks that will be placed in each space (in thousands). All benchmarks will be unique (no benchmark linked to multiple spaces)">min benchmarks per space</td>
-						<td><input value="0" id="minBenchmarksPer" name="minBenchmarksPer" type="text"/></td>
+						<td><input value="1" id="minBenchmarksPer" name="minBenchmarksPer" type="text"/></td>
 					</tr>
 					<tr>
 						<td title="the maximum number of benchmarks that will be placed in each space (in thousands). All benchmarks will be unique (no benchmark linked to multiple spaces)">max benchmarks per space</td>
-						<td><input value="0" id="maxBenchmarksPer" name="maxBenchmarksPer" type="text"/></td>
+						<td><input value="1" id="maxBenchmarksPer" name="maxBenchmarksPer" type="text"/></td>
 					</tr>
 					
 					<tr>
 						<td title="the number of jobs that will be created by the test">job count</td>
-						<td><input value="0" id="jobCount" name="jobCount" type="text"/></td>
+						<td><input value="1" id="jobCount" name="jobCount" type="text"/></td>
 					</tr>
 					
 					<tr>
 						<td title="The number of spaces per job. Each space will have the same number of solvers/ benchmarks as any other space">spaces per job</td>
-						<td><input value="0" id="spacesPerJob" name="spacesPerJob" type="text"/></td>
+						<td><input value="1" id="spacesPerJob" name="spacesPerJob" type="text"/></td>
 					</tr>
 				</tbody>
 			</table>	

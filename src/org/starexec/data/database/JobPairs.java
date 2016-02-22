@@ -182,6 +182,7 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 			
 			for (JobPair pair : pairs) {
+				pair.setJobId(jobId);
 				procedure.setInt(1, jobId);
 				procedure.setInt(2, pair.getBench().getId());
 				procedure.setInt(3, StatusCode.STATUS_PENDING_SUBMIT.getVal());
