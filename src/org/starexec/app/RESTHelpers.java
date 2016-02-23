@@ -548,11 +548,6 @@ public class RESTHelpers {
 		if ( solverStats == null ) {
 			return gson.toJson( RESTServices.ERROR_DATABASE );
 		}
-		/* TODO
-	   	if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
-			AnonymousLinks.anonymizeSolverStats( solverStats, jobSpace.getJobId(), stageNumber );
-		}
-		*/
 
 
 		JsonObject nextDataTablesPage = RESTHelpers.convertSolverStatsToJsonObject(
@@ -637,8 +632,6 @@ public class RESTHelpers {
 		}
 
 		int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-		// TODO 
-		//AnonymousLinks.anonymizeJobPairs( jobPairsToDisplay, jobId, stageNumber, primitivesToAnonymize );
 
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
 	}
@@ -1797,7 +1790,6 @@ public class RESTHelpers {
 			List<String> entries = new ArrayList<String>();
 			StringBuilder sb = new StringBuilder();
 
-			//TODO
 			// Create the solver link
 			entries.add( getSolverLink( js.getSolver().getId(), js.getSolver().getName(), primitivesToAnonymize ));
 			
