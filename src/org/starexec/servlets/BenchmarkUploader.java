@@ -165,7 +165,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @param downloadable Whether the benchmark should be set as being "downloadable"
 	 * @return The ID of the newly created benchmark
 	 */
-    public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId, boolean downloadable, Integer statusId) {
+    public static Integer addBenchmarkFromFile(File benchFile, int userId, int typeId, boolean downloadable) {
 		try {
 			File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
 			FileUtils.copyFileToDirectory(benchFile, uniqueDir);
@@ -175,20 +175,14 @@ public class BenchmarkUploader extends HttpServlet {
 				log.debug("    " + s);
 			}
 				
-			Benchmark bench=Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, null, statusId).getBenchmarksRecursively().get(0);
+			List<Benchmark> bench=Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, null, null).getBenchmarksRecursively();
 			//add the benchmark to the database, but don't put it in any spaces
-			bench = Benchmarks.add(bench, statusId);
-
-			if (bench != null) {
-				return bench.getId();
-			} else {
-				return -1;
-			}
+			return Benchmarks.processAndAdd(bench, null, 1, false, null).get(0);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
 		return null;
-       }
+    }
 	
 	/**
 	 * Adds a set of benchmarks to the database by extracting the given archive and finding the

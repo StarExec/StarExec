@@ -752,11 +752,10 @@ public class BatchUtil {
 			Solvers.associate(solvers, spaceId);
 			Uploads.incrementXMLCompletedSolvers(statusId, solvers.size());
 		}
-		
-		if (!updates.isEmpty())
-		{
+		//TODO: Set error message for failed updates here?
+		if (!updates.isEmpty()) {
 		    //Add the updates to the database and system.
-		    updateIds = addUpdates(updates, statusId);
+		    updateIds = addUpdates(updates);
 			Uploads.incrementXMLCompletedUpdates(statusId, updates.size());
 			log.debug("updateIds: " + updateIds);
 		    //associate new updates with the space given.
@@ -770,57 +769,46 @@ public class BatchUtil {
 	 * Verifies that a user can look at all of the benchmarks.
 	 * @author Ryan McCleeary
 	 * @param updates takes a list of updates to be associated with a space.
-	 * @param spaceID the space the updates are to be associated with.
 	 * @return List of new benchmark ID's corresponding to the updates.
 	 * 
 	 */
-    private List<Integer> addUpdates(List<Update> updates, Integer statusId)
+    private List<Integer> addUpdates(List<Update> updates)
 	{
 		//For each update.
 		List<Integer> updateIds = new ArrayList<Integer>();
-		for(Update update : updates)
-		{
+		for(Update update : updates) {
 			log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
 			//Get the information out of the update.
-			Benchmark b = Benchmarks.get(update.id);
-			Processor up = Processors.get(update.pid);
-			Processor bp = Processors.get(update.bid);
+			
 			//Get the files.
-			File bf = new File(b.getPath());
-			File upf = new File(up.getFilePath());
-			File ubp = new File(bp.getFilePath());
 			List<File> files = new ArrayList<File>();
 			log.debug("Update name = " + update.name);
 			log.debug("Update name = empty " + (update.name == ""));
 			String name = "";
+			Benchmark b = Benchmarks.get(update.id);
+			
 			if(update.name.equals("")) {
 				name = b.getName();
 			} else {
 				name = update.name;
 			}
 			log.debug("name = " + name);
-			files.add(bf);
-			files.add(upf);
-			files.add(ubp);
+			Processor up = Processors.get(update.pid);
+			Processor bp = Processors.get(update.bid);
+			files.add(new File(b.getPath()));
+			files.add(new File(up.getFilePath()));
+			files.add(new File(bp.getFilePath()));
 			File sb = null;
 			File newSb = null;
-			try
-			{
+			try {
 				//Place files into sandbox.
 				sb = Util.copyFilesToNewSandbox(files);
 				//Create text file.
 				File text = new File(sb, "text.txt");
 			   
-				if(!text.exists()){
-					text.createNewFile();
-				}
-				//Write text to a file.
-				String textPath = text.getAbsolutePath();
-				FileWriter w = new FileWriter(text);
-				log.debug("Got here writing text to text.txt" + update.text);
-				w.write(update.text);
-				w.flush();
-				w.close();
+				text.createNewFile();
+				
+				FileUtils.writeStringToFile(text, update.text);
 				
 				String benchPath=new File(sb,new File(b.getPath()).getName()).getAbsolutePath();
 				File processFile = new File(sb, new File(up.getFilePath()).getName());
@@ -830,14 +818,13 @@ public class BatchUtil {
 				//Run proc command on text file and on benchmark given.
 				 
 				procCmd[0] = "./"+R.PROCESSOR_RUN_SCRIPT; 
-				procCmd[1] = textPath;
+				procCmd[1] = text.getAbsolutePath();
 				procCmd[2] = benchPath;
 				
 				String message = null;
 				message = Util.executeSandboxCommand(procCmd, null, processFile);
 				
-				if(message != null)
-				{
+				if(message != null) {
 					errorMessage = message;
 					log.warn("User script generated following message " + message);
 				}
@@ -878,7 +865,7 @@ public class BatchUtil {
 				log.debug("addUpdates - Benchmark processor ID of original benchmark: " + b.getType().getId());
 				log.debug("addUpdates - Benchmark processor ID of updated benchmark: " + benchmarkProcessorId);
 				int newBenchID = BenchmarkUploader.addBenchmarkFromFile(renamedFile, b.getUserId(), benchmarkProcessorId,
-										   b.isDownloadable(), statusId);
+										   b.isDownloadable());
 				
 
 				
