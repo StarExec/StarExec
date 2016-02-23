@@ -6,6 +6,6 @@ CREATE TABLE anonymous_primitive_names (
 	primitive_type ENUM('solver', 'job', 'bench', 'config') NOT NULL,
 	job_id INT NOT NULL,
 
-	PRIMARY KEY (primitive_id, primitive_type),
+	PRIMARY KEY (primitive_id, primitive_type, job_id),
 	CONSTRAINT anonymous_names_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
