@@ -2027,10 +2027,13 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId, Integer since, PrimitivesToAnonymize primitivesToAnonymize) {
+		final String methodName = "getJobPairsInJobSpaceHierarchy";
+		logUtil.entry( methodName );
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		log.debug("called with jobSpaceId = "+ jobSpaceId);
+		logUtil.debug(methodName, "primitivesToAnonymize equals " + AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ));
 		try {
 			Spaces.updateJobSpaceClosureTable(jobSpaceId);
 

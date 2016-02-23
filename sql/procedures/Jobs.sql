@@ -159,7 +159,7 @@ CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 			JOIN solvers AS solver ON solver.id=config.solver_id
 			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names
 				ON solver.id=anonymous_solver_names.primitive_id AND anonymous_solver_names.primitive_type="solver"
-			LEFT JOIN anonyomus_primitive_names AS anonymous_config_names
+			LEFT JOIN anonymous_primitive_names AS anonymous_config_names
 				ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
 		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber;
 	END //

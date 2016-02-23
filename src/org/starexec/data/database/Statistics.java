@@ -502,12 +502,12 @@ public class Statistics {
 				return null;
 			}
 			
-			List<JobPair> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(0), stageNumber,PrimitivesToAnonymize.NONE);
+			List<JobPair> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(0), stageNumber, primitivesToAnonymize);
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 				return "big";
 			}
 			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll(Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, PrimitivesToAnonymize.NONE));
+				pairs.addAll(Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, primitivesToAnonymize));
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 					return "big";
 				}
