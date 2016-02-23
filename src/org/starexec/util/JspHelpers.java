@@ -194,9 +194,6 @@ public class JspHelpers {
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
 				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
-
-				List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, 1, PrimitivesToAnonymize.NONE);
-				request.setAttribute("solverTableStats", solverTableStats);
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 			}
@@ -343,9 +340,6 @@ public class JspHelpers {
 			request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 			request.setAttribute("seed",j.getSeed());
 			request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
-
-			List<SolverStats> solverTableStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, 1, PrimitivesToAnonymize.NONE);
-			request.setAttribute("solverTableStats", solverTableStats);
 		} else {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 		}
