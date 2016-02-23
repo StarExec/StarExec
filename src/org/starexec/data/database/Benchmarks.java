@@ -272,7 +272,7 @@ public class Benchmarks {
 			return benchmark;
 		}
 		catch (Exception e){			
-			log.error("addBenchWDepend says " + e.getMessage(), e);
+			log.error("addBench says " + e.getMessage(), e);
 			Common.doRollback(con);
 			return null;
 		} finally {
@@ -366,14 +366,14 @@ public class Benchmarks {
 	 * The benchmark types are also processed based on the type of the first benchmark only.
 	 * This method will also introduced dependencies if the benchmark processor produces the right attributes.
 	 * @param benchmarks The list of benchmarks to add
-	 * @param spaceId The space the benchmarks will belong to
+	 * @param spaceId The space the benchmarks will belong to. If null, it is not added to a space
 	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param statusId statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> processAndAdd(List<Benchmark> benchmarks, int spaceId,Integer depRootSpaceId, 
+	public static List<Integer> processAndAdd(List<Benchmark> benchmarks, Integer spaceId,Integer depRootSpaceId, 
 						Boolean linked, Integer statusId) {
 		if (benchmarks.size()>0){
 			try {			

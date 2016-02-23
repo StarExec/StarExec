@@ -148,10 +148,9 @@ public class BenchmarkUploader extends HttpServlet {
 			log.debug("trying to add benchmark with text = "+benchText+" and name = "+name);
 			File uniqueDir=getDirectoryForBenchmarkUpload(userId,null);
 			FileUtils.writeStringToFile(new File(uniqueDir,name), benchText);
-			Benchmark bench=Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, null, null).getBenchmarksRecursively().get(0);
+			List<Benchmark> bench=Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, null, null).getBenchmarksRecursively();
 			//add the benchmark to the database, but don't put it in any spaces
-			bench = Benchmarks.add(bench, null);
-			return bench.getId();
+			return Benchmarks.processAndAdd(bench, null, 1, false, null).get(0);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
