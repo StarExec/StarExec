@@ -1,17 +1,22 @@
 package org.starexec.test.integration.database;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -195,6 +200,14 @@ public class BenchmarkTests extends TestSequence {
 		}
 		
 		
+	}
+	
+	@StarexecTest
+	private void addBenchmarkFromTextTest() throws IOException {
+		Integer id = BenchmarkUploader.addBenchmarkFromText("new benchmark", "test bench", user.getId(), Processors.getNoTypeProcessor().getId(), false);
+		Benchmark b = Benchmarks.get(id);
+		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
+		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
 	}
 	
 	@Override

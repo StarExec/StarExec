@@ -155,10 +155,7 @@ public class BenchmarkUploader extends HttpServlet {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
-			
-		
-		
-		
+
 		return null;
 	}
     	/**
