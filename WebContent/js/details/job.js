@@ -7,6 +7,7 @@ var panelArray=null;
 var useWallclock=true;
 var syncResults=false;
 var DETAILS_JOB = {}; 
+var openAjaxRequests = [];
 
 $(document).ready(function(){
 	initializeGlobalPageVariables();
@@ -138,7 +139,6 @@ function refreshPanels(){
 }
 
 function refreshStats(id){
-	//summaryTable.fnProcessingIndicator(true);
 	summaryTable.api().ajax.reload(function() {
 		updateGraphs();
 	},true);
@@ -214,6 +214,13 @@ function initSpaceExplorer() {
 	});
 	log("Initialized exploreList tree.");
 
+}
+
+function killAjaxRequests() {
+	for (var i = 0; i < openAjaxRequests.length; i++) {
+		openAjaxRequests[i].abort();
+	}
+	openAjaxRequests = []
 }
 
 function clearPanels() {
@@ -836,7 +843,7 @@ function updateSpaceOverviewGraph() {
 	}
 	log('updateSpaceOverviewGraph postUrl: ' + postUrl);
 	
-	$.post(
+	var xhr = $.post(
 			postUrl,
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
@@ -865,6 +872,7 @@ function updateSpaceOverviewGraph() {
 			},
 			"text"
 	);
+	openAjaxRequests.push(xhr);
 }
 
 //size is in pixels and color is a string
@@ -880,7 +888,7 @@ function updateSolverComparison(size, color) {
 		postUrl = starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
 	}
 	
-	$.post(
+	var xhr = $.post(
 			postUrl,
 			{},
 			function(returnCode) {
@@ -906,6 +914,7 @@ function updateSolverComparison(size, color) {
 			},
 			"text"
 	);
+	openAjaxRequests.push(xhr);
 }
 
 function setupJobNameAndDescriptionEditing(textSelector, inputSelector, buttonSelector, wrapperSelector, nameOrDescription) {
@@ -1228,12 +1237,13 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	} else {
 		postUrl = sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
 	}
-
-	$.post(  
+	alert($.active);
+	var xhr = $.post(  
 			postUrl,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
+				//TODO: May not need this logic anymore if we are killing ajax requests
 				if (outSpaceId!=curSpaceId) {
 					return;
 				}
@@ -1250,6 +1260,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	).error(function(){
 		showMessage('error',"Internal error populating data table",5000);
 	});
+	openAjaxRequests.push(xhr);
 }
 
 //

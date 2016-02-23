@@ -1128,11 +1128,13 @@ public class RESTServices {
 	 * Returns the next page of stats for the given job and job space
 	 * @param jobID the id of the job to get the next page of solver stats for
 	 * @author Eric Burns
+	 * @throws InterruptedException 
 	 */
 	@POST
 	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) throws InterruptedException {
+		Thread.sleep(1000);
 		int userId=SessionUtil.getUserId(request);
 		JobSpace space = Spaces.getJobSpace(jobSpaceId);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(space.getJobId(), userId);
