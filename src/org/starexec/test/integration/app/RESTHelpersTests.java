@@ -1,5 +1,8 @@
 package org.starexec.test.integration.app;
 
+import java.util.EnumSet;
+import java.util.List;
+
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -30,12 +33,12 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.*;
 import static org.mockito.Mockito.*;
 
-import java.util.List;
 
 public class RESTHelpersTests extends TestSequence {
 	private static String TOTAL_RECORDS = "iTotalRecords";
 	private static String DATA = "aaData";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
+	private static final EnumSet<PrimitivesToAnonymize> allPrimitivesToAnonymize = EnumSet.allOf( PrimitivesToAnonymize.class );
 	// owner of the test data for these tests
 	User testUser = null;
 	User extraUser = null;
@@ -275,27 +278,33 @@ public class RESTHelpersTests extends TestSequence {
 	
 	@StarexecTest
 	private void getNextPageOfJobPairsInJobSpaceTest() {
-		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
-				j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0, PrimitivesToAnonymize.NONE);
-		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), j1.getJobPairs().size());
+		for (PrimitivesToAnonymize primitivesToAnonymize : allPrimitivesToAnonymize ) {
+			JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
+					j1PrimarySpace.getId(), getMockRequest(testUser.getId()), false, false, 0, primitivesToAnonymize);
+			validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), j1.getJobPairs().size());
+		}
 	}
 	
 	@StarexecTest
 	private void getNextPageOfJobPairsInJobSpaceSingleRecordTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setNumRecords(1);
-		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
-				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, PrimitivesToAnonymize.NONE);
-		validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), 1);
+		for (PrimitivesToAnonymize primitivesToAnonymize : allPrimitivesToAnonymize ) {
+			JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
+					j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, primitivesToAnonymize);
+			validateJsonObjectCounts(o, j1.getJobPairs().size(), j1.getJobPairs().size(), 1);
+		}
 	}
 	
 	@StarexecTest
 	private void getNextPageOfJobPairsInJobSpaceQueryTest() {
 		DataTablesQuery q = getTestDataTablesQuery();
 		q.setSearchQuery(j1.getJobPairs().get(0).getBench().getName());
-		JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
-				j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, PrimitivesToAnonymize.NONE);
-		validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
+		for ( PrimitivesToAnonymize primitivesToAnonymize : allPrimitivesToAnonymize ) {
+			JsonObject o = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(
+					j1PrimarySpace.getId(), getMockRequest(q, testUser.getId()), false, false, 0, primitivesToAnonymize);
+			validateJsonObjectCounts(o, j1.getJobPairs().size(), 1, 1);
+		}
 	}
 	
 	
