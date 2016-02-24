@@ -551,7 +551,7 @@ public class Statistics {
 				}
 			}
 
-
+			log.debug("making space overview template");
 			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview Plot", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
@@ -577,7 +577,7 @@ public class Statistics {
 			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
 			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
 			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
-			if (pairs.size()>10000)  {
+			if (pairs.size()>100)  {
 				SamplingXYLineRenderer renderer=new SamplingXYLineRenderer();
 				plot.setRenderer(renderer);
 			} else {
@@ -588,11 +588,8 @@ public class Statistics {
 			}
 				
 			String filename=UUID.randomUUID().toString()+".png";
-			
-
-
-			
 			File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
+			log.debug("saving smaller space overview chart");
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
 
 			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
@@ -600,6 +597,7 @@ public class Statistics {
 			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
 			output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename+"800");
+			log.debug("saving larger space overview chart");
 			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
 
 			log.debug("Chart created succesfully, returning filepath " );
