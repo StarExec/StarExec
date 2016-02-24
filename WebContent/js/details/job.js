@@ -7,6 +7,10 @@ var panelArray=null;
 var useWallclock=true;
 var syncResults=false;
 var DETAILS_JOB = {}; 
+
+// contains requests that have been sent to the server to update pairs, stats, or graphs that 
+// have not yet returned. If the user clicks on a new job space, these requests will all
+// be aborted, as they will no longer be useful.
 var openAjaxRequests = [];
 
 $(document).ready(function(){
@@ -1229,24 +1233,19 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
-	var outSpaceId=curSpaceId;
 
 	var postUrl = '';
 	if ( DETAILS_JOB.isAnonymousPage ) {
-		postUrl = sSource +"solvers/anonymousLink/pagination/"+outSpaceId+ "/" + getParameterByName("anonId") + 
+		postUrl = sSource +"solvers/anonymousLink/pagination/"+curSpaceId+ "/" + getParameterByName("anonId") + 
 				"/" + DETAILS_JOB.primitivesToAnonymize+"/false/"+useWallclock+"/" + getSelectedStage();
 	} else {
-		postUrl = sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
+		postUrl = sSource +"solvers/pagination/"+curSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
 	}
 	var xhr = $.post(  
 			postUrl,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
-				//TODO: May not need this logic anymore if we are killing ajax requests
-				if (outSpaceId!=curSpaceId) {
-					return;
-				}
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
 					$("#solverSummaryField").show();
@@ -1275,7 +1274,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
-	var outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
 		aoData.push( { 'name': 'sort_by', 'value':getSelectedSort() } );
 		aoData.push( { 'name': 'sort_dir', 'value':isASC() } );
@@ -1283,20 +1281,16 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	var postUrl = null;
 	if ( DETAILS_JOB.isAnonymousPage ) {
-		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + outSpaceId +
+		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + curSpaceId +
 				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + DETAILS_JOB.primitivesToAnonymize;
 	} else {
-		postUrl = sSource + 'pairs/pagination/'+outSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
+		postUrl = sSource + 'pairs/pagination/'+curSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
 	}
 
-	$.post(  
+	var xhr = $.post(  
 			postUrl,
 			aoData,
 			function(nextDataTablePage){
-				//do nothing if this is no longer the current request
-				if (outSpaceId!=curSpaceId) {
-					return;
-				}
 				var s=parseReturnCode(nextDataTablePage);
 				if (s) {
 					
@@ -1321,6 +1315,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	).fail(function(code, textStatus){
 		handleAjaxError(textStatus);
 	});
+	openAjaxRequests.push(xhr);
 }
 
 function popup(url) {
