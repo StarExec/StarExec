@@ -62,7 +62,11 @@ import com.mysql.jdbc.ResultSetMetaData;
 public class Statistics {
 	private static final Logger log = Logger.getLogger(Statistics.class);
 	private static final LogUtil logUtil = new LogUtil(log);
-	
+	/**
+	 * This string is returned in place of a file path whenever there
+	 * are too many pairs to render a graph.
+	 */
+	public static final String OVERSIZED_GRAPH_ERROR = "big";
 	
 	/**
 	 * @param con The connection to make the query on
@@ -293,13 +297,13 @@ public class Statistics {
 			List<JobPair> pairs1=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configId1,stageNumber, primitivesToAnonymize);
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
-				answer.add("big");
+				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
 			}
 			List<JobPair> pairs2=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId,configId2,stageNumber,primitivesToAnonymize);
 			if ((pairs2.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
-				answer.add("big");
+				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
 			}
 			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels, 
@@ -485,7 +489,7 @@ public class Statistics {
 	 * @param configIds The IDs of the configurations that should be included in this graph
 	 * @param stageNumber the stage to analyze for all job pairs in the graph
 	 * @return A String filepath to the newly created graph, or null if there was an error. Returns the string
-	 * "big" if there are too many job pairs to display
+	 * Statistics.OVERSIZED_GRAPH_ERROR if there are too many job pairs to display
 	 * @author Eric Burns
 	 */
 	
@@ -504,12 +508,12 @@ public class Statistics {
 			
 			List<JobPair> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(0), stageNumber, primitivesToAnonymize);
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
-				return "big";
+				return OVERSIZED_GRAPH_ERROR;
 			}
 			for (int x=1;x<configIds.size();x++) {
 				pairs.addAll(Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, primitivesToAnonymize));
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
-					return "big";
+					return OVERSIZED_GRAPH_ERROR;
 				}
 			}
 

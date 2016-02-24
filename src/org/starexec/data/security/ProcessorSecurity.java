@@ -24,7 +24,7 @@ public class ProcessorSecurity {
 		Processor p=Processors.get(procId);
 		Permission perm= Permissions.get(userId,p.getCommunityId());
 		if (perm==null || !perm.isLeader()) {
-			return new ValidatorStatusCode(false, "You do not have permission edit the selected processor");
+			return new ValidatorStatusCode(false, "You do not have permission modify the selected processor");
 		}		
 		
 		return new ValidatorStatusCode(true);

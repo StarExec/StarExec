@@ -693,7 +693,6 @@ function copyOutputNoStats {
 }
 
 # takes in a stage number as an argument so we know where to put the output
-# TODO: This should also look for the new output directory
 # $1 The current stage number
 function copyOutput {
 	copyOutputNoStats $1

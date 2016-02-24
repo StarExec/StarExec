@@ -498,7 +498,6 @@ public class RESTHelpers {
 			int jobSpaceId, 
 			HttpServletRequest request, 
 			PrimitivesToAnonymize primitivesToAnonymize ) {
-		//TODO: Remove usage of 'big' attribute
 		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean logX=false;
 		boolean logY=false;
@@ -515,7 +514,7 @@ public class RESTHelpers {
 		String chartPath = null;
 		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
 			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber, primitivesToAnonymize);
-			if (chartPath.equals("big")) {
+			if (chartPath.equals(Statistics.OVERSIZED_GRAPH_ERROR)) {
 				return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 			}
 		} else {
@@ -1993,7 +1992,7 @@ public class RESTHelpers {
 		if (chartPath==null) {
 			return gson.toJson(RESTServices.ERROR_DATABASE);
 		}
-		if (chartPath.get(0).equals("big")) {
+		if (chartPath.get(0).equals(Statistics.OVERSIZED_GRAPH_ERROR)) {
 			return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 		}
 		JsonObject json=new JsonObject();
