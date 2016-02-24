@@ -1134,7 +1134,6 @@ public class RESTServices {
 	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
 	@Produces("application/json")
 	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) throws InterruptedException {
-		Thread.sleep(1000);
 		int userId=SessionUtil.getUserId(request);
 		JobSpace space = Spaces.getJobSpace(jobSpaceId);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(space.getJobId(), userId);

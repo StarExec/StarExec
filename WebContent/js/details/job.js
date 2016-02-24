@@ -1220,8 +1220,8 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 				
 			},  
 			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+	).fail(function(code,textStatus){
+		handleAjaxError(textStatus);
 	});
 }
 
@@ -1238,7 +1238,6 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	} else {
 		postUrl = sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
 	}
-	alert($.active);
 	var xhr = $.post(  
 			postUrl,
 			aoData,
@@ -1258,8 +1257,8 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 
 			},  
 			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+	).fail(function(code,textStatus){
+		handleAjaxError(textStatus);
 	});
 	openAjaxRequests.push(xhr);
 }
@@ -1319,8 +1318,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				}
 			},  
 			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+	).fail(function(code, textStatus){
+		handleAjaxError(textStatus);
 	});
 }
 

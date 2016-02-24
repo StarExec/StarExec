@@ -309,5 +309,10 @@ function parseReturnCode(code,printMessage) {
 
 function setJqueryButtonText(buttonSelector,txt) {
 	$(buttonSelector+" .ui-button-text").html(txt);
+}
 
+function handleAjaxError(textStatus) {
+	if (textStatus!="abort") {
+		showMessage('error',"Internal error populating data table",5000);
+	}
 }
