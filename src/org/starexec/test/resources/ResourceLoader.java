@@ -91,6 +91,11 @@ public class ResourceLoader {
 		return file;
 	}
 	
+	public static Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {
+		return loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, communityId);
+
+	}
+	
 	/**
 	 * Loads a processor into the database
 	 * @param fileName The name of the file in the resource directory

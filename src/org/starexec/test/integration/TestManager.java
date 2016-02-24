@@ -72,6 +72,7 @@ public class TestManager {
 		tests.add(new TreeNodeTests());
 		tests.add(new RESTHelpersTests());
 		tests.add(new CommunitiesTests());
+		tests.add(new ProcessorSecurityTests());
 		//tests.add(new LoginTests());
 		//tests.add(new UploadSolverTests());
 		//tests.add(new UploadBenchmarksTests());

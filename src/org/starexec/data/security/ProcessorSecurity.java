@@ -12,55 +12,38 @@ import org.starexec.util.Validator;
 
 public class ProcessorSecurity {
 	
-	
 	/** 
-	 * Checks to see whether the given user is allowed to delete the given processor
-	 * @param procId The ID of the processor being checked
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserDeleteProcessor(int procId, int userId) {
-		Processor p = Processors.get(procId);
-		
-		// Permissions check; ensures user is the leader of the community that owns the processor
-		Permission perm = Permissions.get(userId, p.getCommunityId());	
-		if(perm == null || !perm.isLeader()) {
-			return new ValidatorStatusCode(false, "You do not have permission delete the selected processor");
-		}
-		return new ValidatorStatusCode(true);
-		
-	}
-	/** 
-	 * Checks to see whether the given user is allowed to delete all of the given processors
-	 * @param procId The IDs of the processors being checked
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 * If the user lacks the necessary permissions for even one solver, a status code will be returned
-	 */
-	public static ValidatorStatusCode canUserDeleteProcessors(List<Integer> procIds, int userId) {
-		for (Integer id : procIds) {
-			ValidatorStatusCode status=canUserDeleteProcessor(id,userId);
-			if (!status.isSuccess()) {
-				return status;
-			}
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/** 
-	 * Checks to see whether the given user is allowed to edit the given processor
+	 * Checks to see whether the given user is the owner of a processor, meaning they
+	 * can edit / delete it
 	 * @param procId The ID of the processor being checked
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	
-	public static ValidatorStatusCode canUserEditProcessor(int procId, int userId) {
+	public static ValidatorStatusCode doesUserOwnProcessor(int procId, int userId) {
 		Processor p=Processors.get(procId);
 		Permission perm= Permissions.get(userId,p.getCommunityId());
 		if (perm==null || !perm.isLeader()) {
 			return new ValidatorStatusCode(false, "You do not have permission edit the selected processor");
 		}		
 		
+		return new ValidatorStatusCode(true);
+	}
+	
+	/** 
+	 * Checks to see whether the given user is allowed to delete all of the given processors
+	 * @param procIds The IDs of the processors being checked
+	 * @param userId The ID of the user making the request
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
+	 * If the user lacks the necessary permissions for even one solver, a status code will be returned
+	 */
+	public static ValidatorStatusCode doesUserOwnProcessors(List<Integer> procIds, int userId) {
+		for (Integer id : procIds) {
+			ValidatorStatusCode status=doesUserOwnProcessor(id,userId);
+			if (!status.isSuccess()) {
+				return status;
+			}
+		}
 		return new ValidatorStatusCode(true);
 	}
 	
@@ -100,20 +83,5 @@ public class ProcessorSecurity {
 		
 		return new ValidatorStatusCode(true);
 		
-	}
-	
-	/**
-	 * Checks to see whether the user is allowed to download the Json object representing the solver
-	 * @param procId
-	 * @param userId
-	 * @return
-	 */
-	public static ValidatorStatusCode canGetJsonProcessor(int procId, int userId) {
-		
-		ValidatorStatusCode status=canUserSeeProcessor(procId,userId);
-		if (!status.isSuccess()) {
-			return status;
-		}
-		return new ValidatorStatusCode(true);
 	}
 }

@@ -2047,7 +2047,7 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 		}
-		ValidatorStatusCode status=ProcessorSecurity.canUserDeleteProcessors(selectedProcessors, userId);
+		ValidatorStatusCode status=ProcessorSecurity.doesUserOwnProcessors(selectedProcessors, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -4494,7 +4494,7 @@ public class RESTServices {
  		
  			return gson.toJson(Solvers.getConfiguration(id));
  		} else if (type.equals("processor")) {
- 			ValidatorStatusCode status=ProcessorSecurity.canGetJsonProcessor(id, userId);
+ 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
