@@ -196,7 +196,6 @@ CREATE TABLE queues (
 
 -- All the SGE worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
--- TODO: Do we actually want any node data except these three columns?
 CREATE TABLE nodes (
 	id INT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(128) NOT NULL,
@@ -330,7 +329,7 @@ CREATE TABLE job_pairs (
 	KEY(sge_id),
 	KEY (job_space_id, bench_name),
 	KEY (node_id, status_code),
-	KEY (status_code), -- TODO: Do we actually want this change?
+	KEY (status_code),
 	-- Name is what exists on Starexec: easier to use the name here than rename there.
 	KEY job_id_2 (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
@@ -391,8 +390,7 @@ CREATE TABLE jobpair_inputs (
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
--- TODO: Consider eliminating this table, as we store end_time in the job_pairs table. Need to be careful porting 
--- over old pairs.
+-- We cannot use job_pairs.end_time to simulate this table, as it is possible to have job pairs finish at the same time
 CREATE TABLE job_pair_completion (
 	pair_id INT NOT NULL,
 	completion_id INT NOT NULL AUTO_INCREMENT,
