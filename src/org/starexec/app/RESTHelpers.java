@@ -2,7 +2,6 @@ package org.starexec.app;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedList;

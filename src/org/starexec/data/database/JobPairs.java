@@ -757,7 +757,7 @@ public class JobPairs {
 	 * to have all relevant fields populated and will not need
 	 * to be retrieved from the database
 	 * @param pair
-	 * @return
+	 * @return See getOutputPaths(pairId)
 	 */
 	public static List<File> getOutputPaths(JobPair pair) {
 		File stdout = new File(getPairStdout(pair));

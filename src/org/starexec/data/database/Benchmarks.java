@@ -850,7 +850,6 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 * @throws Exception Any exception with the description file, with an error message contained
 	 */
-	@SuppressWarnings("deprecation")
 	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId) throws Exception {
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);

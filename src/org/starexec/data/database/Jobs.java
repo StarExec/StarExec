@@ -8,8 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -19,8 +17,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
@@ -29,13 +25,11 @@ import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Nameable;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.SolverStats;
@@ -234,6 +228,7 @@ public class Jobs {
 	 * Creates all the job spaces needed for a set of pairs. All pairs must have their paths set and
 	 * they must all be rooted at the same space. Upon return, each pair will have its job space id set
 	 * to the correct job space
+	 * @param jobId ID of the job that owns the given pairs
 	 * @param pairs The list of pairs to make paths for
 	 * @param con The open connection to make calls on
 	 * @return The ID of the root job space for this list of pairs, or null on error.
@@ -597,6 +592,7 @@ public class Jobs {
 	 * Deletes each job in a list of jobs.
 	 * @param jobsToDelete List of jobs to delete.
 	 * @author Albert Giegerich
+	 * @return true on success and false on error
 	 */
 	public static boolean deleteEach(List<Job> jobsToDelete) {
 		Connection con = null; 
@@ -814,9 +810,9 @@ public class Jobs {
 	}
 
 	/**
-	 * Get a job that has job pairs with the simple information included.
 	 * @param jobId The id of the job to be gotten
 	 * @author Albert Giegerich
+	 * @return a job that has job pairs with the simple information included.
 	 */
 	public static Job getWithSimplePairs(int jobId) {
 		return get(jobId, false, true);
@@ -879,12 +875,11 @@ public class Jobs {
 	
 	/**
 	 * Gets all the SolverStats objects for a given job in the given space hierarchy
-	 * @param jobId the job in question
-	 * @param jobSpaceId The ID of the root space in question
+	 * @param space The JobSpace root  in question
 	 * @param stageNumber The ID of the stage to get data for
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
 	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
 	 * @author Eric Burns
-	 * @param jobSpaceId The ID of the job space we are getting stats for
 	 */
 
 	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
@@ -924,6 +919,12 @@ public class Jobs {
 		return finalStats;
 	}
 
+	/**
+	 * 
+	 * @param job The job to make the mapping for
+	 * @param stageNumber Stage number to get mapping for
+	 * @return
+	 */
 	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(Job job, int stageNumber) {
 		Map<Integer, List<SolverStats>> outputMap = buildJobSpaceIdToSolverStatsMap(job, stageNumber);
 		for (Integer jobspaceId : outputMap.keySet()) {
@@ -938,11 +939,10 @@ public class Jobs {
 
 	/**
 	 * Builds a mapping of job space ID's to the stats for the solvers in that job space.
-	 * @param jobId The id of the job that the jobspaces are in.
-	 * @param jobspaces the jobspaces to get solver stats for.
-	 * @param jobSpaceIdToPairMap a mapping of jobspace ids to the job pairs in that jobspace. Can be gotten with buildJobSpaceIdToJobPairMapForJob.
-	 * @see org.starexec.data.database.JobPairs#buildJobSpaceIdToJobPairMapForJob
+	 * @param job job that owns the job spaces to work on
 	 * @param stageNumber The stage to filter solver stats by
+	 * @see org.starexec.data.database.JobPairs#buildJobSpaceIdToJobPairMapForJob
+	 * @return a mapping of job space ID's to the stats for the solvers in that job space
 	 * @author Albert Giegerich
 	 */
 	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMap(Job job, int stageNumber ) {
@@ -1418,12 +1418,11 @@ public class Jobs {
 	 * Returns the number of job pairs that exist for a given job in a given space that
 	 * have the given stage
 	 * 
-	 * @param jobId the id of the job to get the number of job pairs for
 	 * @param jobSpaceId The ID of the job space containing the paris to count
-	 * @param Whether to count all job pairs in the hierarchy rooted at the job space with the given id
+	 * @param stageNumber The stage number. If <=0, means the primary stage
+
 	 * @return the number of job pairs for the given job or -1 on failure
 	 * @author Eric Burns
-	 * @param stageNumber The stage number. If <=0, means the primary stage
 	 */
 	public static int getJobPairCountInJobSpaceByStage(int jobSpaceId, int stageNumber) {
 		Connection con = null;
@@ -1456,7 +1455,6 @@ public class Jobs {
 	/**
 	 * Returns the number of job pairs that exist for a given job in a given space
 	 * 
-	 * @param jobId the id of the job to get the number of job pairs for
 	 * @param jobSpaceId The ID of the job space containing the paris to count
 	 * @param query The query to match the job pairs against
 	 * @param stageNumber The stage number to consider
@@ -1628,10 +1626,9 @@ public class Jobs {
 	/**
 	 * Retrieves the job pairs necessary to fill the next page of a javascript datatable object, where
 	 * all the job pairs are in the given space and were operated on by the configuration with the given config ID in the given stage
+	 * @param query DataTablesQuery instance
 	 * @param jobSpaceId The job space that contains the job pairs
 	 * @param configId The ID of the configuration responsible for the job pairs
-	 * @param totals A size 2 int array that, upon return, will contain in the first slot the total number
-	 * of pairs and in the second slot the total number of pairs after filtering
 	 * @param type The type of the pairs, as defined by the columns of the solver stats table
 	 * @param wallclock True to use wallclock time and false to use CPU time
 	 * @param stageNumber The stage number to get data for
@@ -1754,6 +1751,7 @@ public class Jobs {
 	 * @param jobSpaceId The ID of the job space containing the pairs in question
 	 * @param stageNumber The stage number to get data for
 	 * @param wallclock True to use wallclock time and false to use CPU time
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
 	 * @author Todd Elvers
 	 */
 	
@@ -1985,8 +1983,8 @@ public class Jobs {
 	/**
 	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
 	 * to display in a SolverStats table. All job pair stages are obtained
-	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
@@ -1998,10 +1996,11 @@ public class Jobs {
 	/**
 	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary
 	 * to display in a SolverStats table. All job pair stages are obtained. 
-	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
 	 * @param since If null, all pairs in the hierarchy are returned. Otherwise, only pairs that have a completion
 	 * ID greater than since are returned
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
@@ -2197,7 +2196,6 @@ public class Jobs {
 
 	/**
 	 * Gets job pair information necessary for populating client side graphs
-	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The ID of the job_space in question
 	 * @param configId The ID of the configuration in question
 	 * @param primitivesToAnonymize enum designating which (if any) primitive names should be anonymized.
@@ -2447,6 +2445,8 @@ public class Jobs {
 	 * an empty list if the stats have not already been cached.
 	 * @param jobSpaceId The ID of the root job space for the stats
 	 * @param stageNumber The number of the stage to get data for
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+
 	 * @return A list of the relevant SolverStats objects in this space
 	 * @author Eric Burns
 	 */
@@ -2504,7 +2504,11 @@ public class Jobs {
 		}
 		return null;
 	}
-
+	/**
+	 * 
+	 * @param jobId ID of job to return
+	 * @return A job populated with all details and pairs
+	 */
 	public static Job getJobForMatrix(int jobId) {
 		return getDetailed(jobId, 0, false);
 	}
@@ -2784,7 +2788,6 @@ public class Jobs {
 	 * (Worker node, status, benchmark and solver WILL be populated) Only the primary
 	 * stage is populated
 	 * @param jobId The id of the job to get pairs for
-	 * @param since The completion ID to get all the pairs after. If null, gets all pairs
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Eric Burns
 	 */
@@ -3801,7 +3804,6 @@ public class Jobs {
 	/**
 	 * Pauses a job, and also sets the paused property to true in the database. 
 	 * @param jobId The ID of the job to pause
-	 * @param con An open database connection
 	 * @return True on success, false otherwise
 	 * @author Wyatt Kaiser
 	 */
@@ -3874,8 +3876,6 @@ public class Jobs {
 
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
-	 * @param jobs The jobs to pause
-	 * @param con An open database connection
 	 * @return True on success, false otherwise
 	 * @author Wyatt Kaiser
 	 */
@@ -3949,7 +3949,12 @@ public class Jobs {
 		}
 		return false;
 	}
-
+	/**
+	 * Update the name of a job
+	 * @param jobId The ID of the job to update
+	 * @param newName The name to assign
+	 * @throws StarExecDatabaseException
+	 */
 	public static void setJobName(int jobId, String newName) throws StarExecDatabaseException {
 		final String method = "setJobName";
 		logUtil.entry(method);
@@ -3970,7 +3975,12 @@ public class Jobs {
 			logUtil.exit(method);
 		}
 	}
-
+	/**
+	 * Update the description of a job
+	 * @param jobId The ID of the job to edit
+	 * @param newDescription The description to assign
+	 * @throws StarExecDatabaseException
+	 */
 	public static void setJobDescription(int jobId, String newDescription) throws StarExecDatabaseException {
 		final String method = "setJobDescription";
 		logUtil.entry(method);
@@ -4267,7 +4277,6 @@ public class Jobs {
 	/**
 	 * Resumes a paused job, and also sets the paused property to false in the database. 
 	 * @param jobId The ID of the job to resume
-	 * @param con An open database connection
 	 * @return True on success, false otherwise
 	 * @author Wyatt Kaiser
 	 */
@@ -4381,7 +4390,6 @@ public class Jobs {
 	/**
 	 * If the job is not yet complete, does nothing, as we don't want to store stats for incomplete jobs.
 	 * @param jobId The ID of the job we are storing stats for
-	 * @param jobSpaceId The ID of the job space that the stats are rooted at
 	 * @param stats The stats, which should have been compiled already
 	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
@@ -4830,6 +4838,7 @@ public class Jobs {
 	 * and sets them to status code 9. This basically takes pairs that
 	 * have somehow gotten stuck in a bad state and applies an error
 	 * status to them.
+	 * @param backend The Backend instance being used to run pairs on the system
 	 * @throws IOException 
 	 */
 	public static void setBrokenPairsToErrorStatus(Backend backend) throws IOException {

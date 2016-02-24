@@ -30,13 +30,11 @@ public class Mail {
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
 	public static final String CHANGE_EMAIL_CODE = "changeEmail";
 	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
-	public static final String ADMIN_RESPONSE = "admin";
 	
 	/**
 	 * Sends an e-mail from the configured SMTP server
 	 * @param message The body of the message
 	 * @param subject The subject of the message
-	 * @param from Who the message is from (null to send from default account)
 	 * @param to The list of e-mail addresses to send the message to
 	 */
 	public static void mail(String message, String subject, String[] to) {
@@ -111,7 +109,6 @@ public class Mail {
 	 * activate their account
 	 * 
 	 * @param user the user to send the email to
-	 * @param request the servlet containing the incoming POST
 	 * @param code the activation code to send
 	 * @throws IOException if verification_email cannot be found
 	 * @author Todd Elvers

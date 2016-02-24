@@ -22,8 +22,8 @@ public class Common {
 	private static final Logger log = Logger.getLogger(Common.class);
 	private static DataSource dataPool = null;		
 	
-	protected static Integer connectionsOpened = 0;
-	protected static Integer connectionsClosed = 0;
+	private static Integer connectionsOpened = 0;
+	private static Integer connectionsClosed = 0;
 	
 	
 	/**
