@@ -42,7 +42,7 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
-
+import org.starexec.data.database.Queues;
 
 /**
  * Handles all SGE interactions for job submission and maintenance
@@ -812,7 +812,54 @@ public abstract class JobManager {
 		}
 		return pairs;
 	}
-	
+    /**
+     * This method creates and adds the build job that compiles the solver on the woker nodes
+     * @author Andrew Lubinus
+     * @param solverId the id of the unbuilt solver
+     * @param spaceId the space where the solver is, at this point also the space where the job is added
+     * @return int jobId of the job that has been added, or -1 if failed to add job.
+     */
+
+	public static int addBuildJob(Integer solverId, Integer spaceId) {
+		Solver s = Solvers.get(solverId);
+		log.info("Adding build job for solver " + s.getName() + " in space: " + spaceId);
+        Queue q = Queues.getAllQ();
+		Job j = JobManager.setupJob(
+			s.getUserId(),
+			s.getName() + " Build",
+			s.getName() + " Build Job",
+			-1,
+			-1,
+			R.DEFAULT_QUEUE_ID, //This is the same queue referenced by variable q
+			0,
+			q.getCpuTimeout(),
+			q.getWallTimeout(),
+			100000000, //This number gets reset to max memory for the node in the jobscript.
+			false,
+			0);
+		j.setBuildJob(true);
+		String spaceName = "job space";
+		String sm=Spaces.getName(spaceId);
+		if (sm!=null) {
+			spaceName = sm;
+		}
+		JobPair pair = new JobPair();
+		JoblineStage stage = new JoblineStage();
+		stage.setStageNumber(1);
+		pair.setPrimaryStageNumber(1);
+		stage.setNoOp(false);
+		stage.setSolver(s);
+		pair.addStage(stage);
+		pair.setSpace(Spaces.get(spaceId));
+		pair.setPath(spaceName);
+		j.addJobPair(pair);
+		boolean submitSuccess = Jobs.add(j, spaceId);
+		if (submitSuccess) {
+			return j.getId();
+		}
+		return -1; //error
+	}
+
 	/**
 	 * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
 	 * and create job pairs from the result. Will then return those job pairs

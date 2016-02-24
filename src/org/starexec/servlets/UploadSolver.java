@@ -39,7 +39,7 @@ import org.starexec.util.PartWrapper;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-
+import org.starexec.jobs.JobManager;
 /**
  * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
  * .tar, or .tar.gz format, and configurations can be included in a top level
@@ -102,7 +102,17 @@ public class UploadSolver extends HttpServlet {
 				//second element is a status code related to whether configurations existed.
 				int return_value = result[0];
 				int configs = result[1];
-			
+				int buildJob = result[2];
+				
+				if(return_value>=0 && buildJob>=0) {
+					int job_return = JobManager.addBuildJob(return_value, spaceId);
+					if (job_return >= 0) {
+						log.info("Job created successfully. JobId: " + job_return);
+					}
+					else {
+						log.debug("Error in job creation for buildJob for solver: " + return_value);
+					}
+				}	
 				// Redirect based on success/failure
 				if(return_value>=0) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
@@ -173,8 +183,6 @@ public class UploadSolver extends HttpServlet {
     	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
     }
     
-    
-    
 	/**
 	 * This method is responsible for uploading a solver to
 	 * the appropriate location and updating the database to reflect
@@ -188,9 +196,10 @@ public class UploadSolver extends HttpServlet {
 
 		boolean build=false;
 		String buildstr=null;
-		int[] returnArray = new int[2];
+		int[] returnArray = new int[3];
 		returnArray[0] = 0;
 		returnArray[1] = 0;
+		returnArray[2] = 0;
 		
 		File sandboxDir=Util.getRandomSandboxDirectory();
 		Util.logSandboxContents();
@@ -288,6 +297,7 @@ public class UploadSolver extends HttpServlet {
 		}
 		if (containsBuildScript(sandboxDir)) {
 			newSolver.setBuilt(0);
+			returnArray[2] = 1;
 		}
 		
 		Util.sandboxChmodDirectory(sandboxDir);

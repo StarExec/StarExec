@@ -438,12 +438,12 @@ public class Jobs {
 			procedure.setLong(9, job.getMaxMemory());
 			procedure.setBoolean(10, job.timestampIsSuppressed());
 			procedure.setBoolean(11, job.isUsingDependencies());
-			procedure.registerOutParameter(12, java.sql.Types.INTEGER);	
-			procedure.setBoolean(13, job.isBuildJob());
+			procedure.setBoolean(12, job.isBuildJob());
+			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(12));
+			job.setId(procedure.getInt(13));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
