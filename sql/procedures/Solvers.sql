@@ -150,17 +150,6 @@ CREATE PROCEDURE GetSolverByIdIncludeDeleted(IN _id INT)
 		WHERE id = _id;
 	END //
 	
-	
--- Returns the number of solvers in a given space
--- Author: Todd Elvers	
-DROP PROCEDURE IF EXISTS GetSolverCountInSpace;
-CREATE PROCEDURE GetSolverCountInSpace(IN _spaceId INT)
-	BEGIN
-		SELECT COUNT(*) AS solverCount
-		FROM solver_assoc
-		WHERE _spaceId=space_id;
-	END //
-	
 -- Returns the number of solvers in a given space that match a given query
 -- Author: Eric Burns	
 DROP PROCEDURE IF EXISTS GetSolverCountInSpaceWithQuery;

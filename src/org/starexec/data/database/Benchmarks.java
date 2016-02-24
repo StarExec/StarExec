@@ -1556,28 +1556,7 @@ public class Benchmarks {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
-		log.debug("calling getCountInSpace for benchmarks");
-		Connection con = null;
-		CallableStatement procedure=null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetBenchmarkCountInSpace(?)}");
-			procedure.setInt(1, spaceId);
-			results = procedure.executeQuery();
-
-			if (results.next()) {
-				return results.getInt("benchCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return 0;
+		return getCountInSpace(spaceId, "");
 	}
 
 	/**

@@ -1051,28 +1051,7 @@ public class Jobs {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetJobCountBySpace(?)}");
-			procedure.setInt(1, spaceId);
-			 results = procedure.executeQuery();
-			int jobCount = 0;
-			if (results.next()) {
-				jobCount = results.getInt("jobCount");
-			}
-			return jobCount;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return 0;
+		return getCountInSpace(spaceId, "");
 	}
 	/**
 	 * Gets the number of Jobs in a given space that match a given query

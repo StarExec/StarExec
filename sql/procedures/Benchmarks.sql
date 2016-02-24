@@ -141,15 +141,6 @@ CREATE PROCEDURE GetXMLUploadStatusById(IN _id INT)
 		FROM space_xml_uploads 
 		WHERE id = _id;
 	END //	
--- Returns the number of benchmarks in a given space
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpace;
-CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
-	BEGIN
-		SELECT 	COUNT(*) AS benchCount
-		FROM 	bench_assoc
-		WHERE 	_spaceId=space_id;
-	END //
 
 -- Returns the number of benchmarks in a given space that match a given query
 -- Author: Eric Burns

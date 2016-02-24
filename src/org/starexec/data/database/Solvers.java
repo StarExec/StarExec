@@ -1117,27 +1117,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
-		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSolverCountInSpace(?)}");
-			procedure.setInt(1, spaceId);
-			 results = procedure.executeQuery();
-
-			if (results.next()) {
-				return results.getInt("solverCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return 0;
+		return getCountInSpace(spaceId, "");
 	}
 	
 	/**
