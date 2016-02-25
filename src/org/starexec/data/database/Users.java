@@ -423,27 +423,7 @@ public class Users {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserCountInSpace(?)}");
-			procedure.setInt(1, spaceId);
-			 results = procedure.executeQuery();
-
-			if (results.next()) {
-				return results.getInt("userCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-
-		return 0;
+		return getCountInSpace(spaceId, "");
 	}
 	
 	/**
