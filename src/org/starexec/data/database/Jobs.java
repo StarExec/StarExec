@@ -80,7 +80,7 @@ public class Jobs {
 	 * @param parent
 	 * @return
 	 */
-	private static Space getNewSpaceForJobCreation(String name,Space parent) {
+	private static Space getNewSpaceForJobCreation(String name,Space parent, int parentId) {
 		Space s=new Space();
 		s.setDescription("");
 		s.setName(name);
@@ -88,6 +88,7 @@ public class Jobs {
 		s.setPermission(parent.getPermission());
 		s.setLocked(parent.isLocked());
 		s.setPublic(parent.isPublic());
+		s.setParentSpace(parentId);
 		return s;
 	}
 	
@@ -209,7 +210,7 @@ public class Jobs {
 								} else {									
 									parentId=parent.getId();
 								}
-								int newId=Spaces.add(con,getNewSpaceForJobCreation(name,parent), parentId, userId);
+								int newId=Spaces.add(con,getNewSpaceForJobCreation(name,parent, parentId), userId);
 								if (newId==-1) {
 									throw new Exception("error adding new space-- creating spaces for job failed");
 								}
@@ -1630,13 +1631,11 @@ public class Jobs {
 	 * @param jobSpaceId The job space that contains the job pairs
 	 * @param configId The ID of the configuration responsible for the job pairs
 	 * @param type The type of the pairs, as defined by the columns of the solver stats table
-	 * @param wallclock True to use wallclock time and false to use CPU time
 	 * @param stageNumber The stage number to get data for
 	 * @return A list of job pairs for the given job necessary to fill  the next page of a datatable object 
 	 * @author Eric Burns
 	 */
-	//TODO: This function is not working correctly somehow: it is just ignoring the wallclock boolean
-	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(DataTablesQuery query,int jobSpaceId, int configId, String type, boolean wallclock, int stageNumber) {
+	public static List<JobPair> getJobPairsForNextPageByConfigInJobSpaceHierarchy(DataTablesQuery query,int jobSpaceId, int configId, String type, int stageNumber) {
 		
 		return Jobs.getJobPairsForTableInJobSpaceHierarchy(jobSpaceId, query, configId, stageNumber, type);		
 	}

@@ -273,7 +273,8 @@ public class Verify extends HttpServlet {
 		s.setPermission(new Permission(true));
 		
 		// Return true if the subspace is successfully created, false otherwise
-    	return Spaces.add(s, parentSpaceId, user.getId()) > 0;
+		s.setParentSpace(parentSpaceId);
+    	return Spaces.add(s, user.getId()) > 0;
     }
  
 }

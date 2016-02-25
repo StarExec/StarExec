@@ -43,13 +43,11 @@ public class Spaces {
 	 * an atomic unit.
 	 * @param con The connection to perform the operation on
 	 * @param s The space to add (should have default permissions set)
-	 * @param parentId The parent space s is being added to
 	 * @param userId The user who is adding the space
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	//TODO: Refactor to get rid of parentId
-	protected static int add(Connection con, Space s, int parentId, int userId)  {			
+	protected static int add(Connection con, Space s, int userId)  {			
 		
 		CallableStatement procAddSpace = null;
 		CallableStatement procSubspace = null;
@@ -64,7 +62,7 @@ public class Spaces {
 			procAddSpace.setString(2, s.getDescription());
 			procAddSpace.setBoolean(3, s.isLocked());
 			procAddSpace.setInt(4, defaultPermId);
-			procAddSpace.setInt(5, parentId);
+			procAddSpace.setInt(5, s.getParentSpace());
 			procAddSpace.setBoolean(6, s.isStickyLeaders());
 			procAddSpace.registerOutParameter(7, java.sql.Types.INTEGER);	
 			procAddSpace.executeUpdate();
@@ -73,7 +71,7 @@ public class Spaces {
 			log.debug("Calling AssociateSpace");
 			// Add the new space as a child space of the parent space
 			procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
-			procSubspace.setInt(1, parentId);
+			procSubspace.setInt(1, s.getParentSpace());
 			procSubspace.setInt(2, newSpaceId);
 			procSubspace.executeUpdate();		
 			
@@ -89,7 +87,7 @@ public class Spaces {
 			// Set maximal permissions for the user who added the space	
 			Permissions.set(userId, newSpaceId, perm, con);
 
-			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
+			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, s.getParentSpace()));
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("Spaces.add says "+e.getMessage(),e);
@@ -134,21 +132,19 @@ public class Spaces {
 	 * default permission record for the space, and adds a new association
 	 * to the space with the given user with full leadership permissions
 	 * @param s The space to add (should have default permissions set)
-	 * @param parentId The parent space s is being added to
 	 * @param userId The user who is adding the space
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	public static int add(Space s, int parentId, int userId) {
+	public static int add(Space s, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);	
-			
 			// Add space is a multi-step process, so we need to use a transaction
-			int newSpaceId = Spaces.add(con, s, parentId, userId);
+			int newSpaceId = Spaces.add(con, s, userId);
 
 			Common.endTransaction(con);			
 			return newSpaceId;
@@ -435,7 +431,8 @@ public class Spaces {
 			// For each subspace...
 			for(Space sub : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
-				Spaces.traverse(sub, parent.getId(), userId, depRootSpaceId, linked, statusId);
+				sub.setParentSpace(parent.getId());
+				Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId);
 			}
 			
 			// Add any new benchmarks in the space to the database
@@ -860,7 +857,8 @@ public class Spaces {
 
 		// Set the default permission on the space
 		tempSpace.setPermission(sourceSpace.getPermission());
-		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
+		tempSpace.setParentSpace(desId);
+		int newSpaceId = Spaces.add(tempSpace, usrId);
 
 		if (newSpaceId <= 0) {
 			throw new StarExecException( "Copying space with name '"+sourceSpace.getName()+"' to space with id '"+
@@ -2483,16 +2481,17 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Benton McCune
 	 */
-	protected static List<Integer> traverse(Space space, int parentId, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
+	protected static List<Integer> traverse(Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
 		ArrayList<Integer> ids=new ArrayList<Integer>();
 		try{
-			// Add the new space to the database and get it's ID		
-			int spaceId = Spaces.add(space, parentId, userId);
+			// Add the new space to the database and get it's ID	
+			int spaceId = Spaces.add(space, userId);
 			
 			log.info("traversing (with deps) space " + space.getName() );
 			for(Space sub : space.getSubspaces()) {
+				sub.setParentSpace(spaceId);
 				// Recursively go through and add all of it's subspaces with itself as the parent
-				ids.addAll(Spaces.traverse(sub, spaceId, userId, depRootSpaceId, linked, statusId));
+				ids.addAll(Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId));
 			}			
 			// Finally, add the benchmarks in the space to the database
 			ids.addAll(Benchmarks.processAndAdd(space.getBenchmarks(), spaceId, depRootSpaceId, linked, statusId));

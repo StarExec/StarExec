@@ -388,7 +388,8 @@ public class ResourceLoader {
 		Space space=new Space();
 		space.setName(name);
 		space.setDescription("test desc");
-		int id=Spaces.add(space, parentSpaceId, userId);
+		space.setParentSpace(parentSpaceId);
+		int id=Spaces.add(space, userId);
 		if (id>0) {
 			space.setId(id);
 			return space;

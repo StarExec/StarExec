@@ -193,7 +193,7 @@ public class Cluster {
 	 * @param query a DataTablesQuery object
 	 * @return The list of nodes to display, or null on error
 	 */
-	//TODO: This pagination function is not formed correctly
+	//TODO: This pagination function is not formed correctly. We should just do client-side pagination for nodes.
 	public static List<WorkerNode> getNodesForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
 		CallableStatement procedure= null;

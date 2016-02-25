@@ -711,8 +711,8 @@ public class BatchUtil {
 		}
 		
 
-
-		Integer spaceId = Spaces.add(space, parentId, userId);
+		space.setParentSpace(parentId);
+		Integer spaceId = Spaces.add(space, userId);
 
 		if (spaceAttributes != null) {
 			// Check for inherit users attribute. If it is true, make the users the same as the parent

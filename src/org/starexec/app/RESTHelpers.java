@@ -758,7 +758,7 @@ public class RESTHelpers {
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(query,
-						jobSpaceId, configId,type,wallclock,stageNumber);
+						jobSpaceId, configId,type,stageNumber);
 		
 		query.setTotalRecords(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber));
 
