@@ -271,20 +271,6 @@ public class JobTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void recompileJobSpacesTest() {
-		job.getJobPairs().get(0).setPath("Test");
-		job.getJobPairs().get(1).setPath("Test/Space");
-		for (int i=2;i<job.getJobPairs().size();i++) {
-			job.getJobPairs().get(i).setPath("Test/Space");
-		}
-		Assert.assertTrue(Jobs.recompileJobSpaces(job.getId()));
-		Assert.assertEquals("Test", Spaces.getJobSpace(job.getJobPairs().get(0).getJobSpaceId()).getName());
-		for (int i=1;i<job.getJobPairs().size();i++) {
-			Assert.assertEquals("Space", Spaces.getJobSpace(job.getJobPairs().get(0).getJobSpaceId()).getName());
-		}
-	}
-	
-	@StarexecTest
 	private void cleanOrphanedDeletedJobTest() {
 		Job tempJob = ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 		List<Integer> job = new ArrayList<Integer>();
@@ -304,8 +290,8 @@ public class JobTests extends TestSequence {
 			maxCompletionId = Math.max(maxCompletionId, completionId);
 			minCompletionId = Math.min(minCompletionId, completionId);
 		}
-		Assert.assertEquals(job.getJobPairs().size()-1, Jobs.countOlderPairs(job.getId(), maxCompletionId));
-		Assert.assertEquals(0, Jobs.countOlderPairs(job.getId(), minCompletionId));
+		Assert.assertEquals(job.getJobPairs().size(), Jobs.countOlderPairs(job.getId(), maxCompletionId));
+		Assert.assertEquals(1, Jobs.countOlderPairs(job.getId(), minCompletionId));
 
 	}
 	

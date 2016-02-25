@@ -443,7 +443,7 @@ public class Jobs {
 	}
 	
 	/**
-	 * Counts the number of pairs that occurred before the given completion ID
+	 * Counts the number of pairs that occurred before the given completion ID (inclusive)
 	 * @param jobId The ID of the job to count pairs for
 	 * @param since The completion ID to use as the cutoff
 	 * @return The integer number of pairs, or -1 on error
