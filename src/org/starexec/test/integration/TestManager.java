@@ -73,6 +73,7 @@ public class TestManager {
 		tests.add(new RESTHelpersTests());
 		tests.add(new CommunitiesTests());
 		tests.add(new ProcessorSecurityTests());
+		tests.add(new StatisticsTests());
 		//tests.add(new LoginTests());
 		//tests.add(new UploadSolverTests());
 		//tests.add(new UploadBenchmarksTests());
