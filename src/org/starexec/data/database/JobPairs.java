@@ -66,11 +66,7 @@ public class JobPairs {
 			}
 			if (batchCounter>0) {
 				procedure.executeBatch();
-			}
-			
-
-			//procedure.executeUpdate();
-			
+			}			
 
 			return true;
 		} catch (Exception e) {
@@ -153,7 +149,6 @@ public class JobPairs {
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
-					//procedure.executeUpdate();
 				}
 				
 			}
@@ -408,7 +403,6 @@ public class JobPairs {
 	 */
 	public static boolean addJobPairAttributes(int pairId,int stageId, Properties attributes) {
 		Connection con = null;
-
 		try {
 			con = Common.getConnection();
 			return addJobPairAttributes(pairId,stageId,attributes,con);

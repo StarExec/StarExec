@@ -32,19 +32,6 @@ public class StressTest {
 	
 	private static Random rand=new Random();
 	
-	private static void writeFakeJobPairOutput(JobPair pair) {
-		try {
-			File f=new File(JobPairs.getPairStdout(pair));
-			f=f.getParentFile();
-			f.mkdirs();
-			String randomOutput=TestUtil.getRandomAlphaString(1000);
-			FileUtils.writeStringToFile(new File(f,pair.getId()+".txt"), randomOutput);
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-	}
-	
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName,
 			int minSolversPerSpace, int maxSolversPerSpace, int minBenchmarksPerSpace, int maxBenchmarksPerSpace) {
 		
@@ -62,7 +49,7 @@ public class StressTest {
 		Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
 		
 		for (JobPair pair : job.getJobPairs()) {
-			writeFakeJobPairOutput(pair);
+			ResourceLoader.writeFakeJobPairOutput(pair);
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
 		Jobs.resume(job.getId());

@@ -17,6 +17,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Pipelines;
 import org.starexec.data.database.Processors;
@@ -38,6 +39,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
 import org.starexec.servlets.BenchmarkUploader;
@@ -149,10 +151,11 @@ public class ResourceLoader {
 	
 	
 	/**
-	 * This will load a job with the given solvers and benchmarks into the database, after which it should
-	 * be picked up by the periodic task and started running. It is somewhat primitive right now-- for every solver
+	 * This will load a job with the given solvers and benchmarks into the database.
+	 * It is somewhat primitive right now-- for every solver
 	 * a single configuration will be picked randomly to be added to the job, and the job will be added to a random
-	 * queue that the given user owns
+	 * queue that the given user owns. The job pairs will all be set to status 'complete' and given some fake output,
+	 * so the job will be complete immediately upon return.
 	 * @param spaceId The ID of the space to put the job in
 	 * @param userId The ID of the user who will own the job
 	 * @param preProcessorId The ID of the preprocessor to use for this job
@@ -187,6 +190,10 @@ public class ResourceLoader {
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
 		
 		Jobs.add(job, spaceId);
+		for (JobPair p : job.getJobPairs()) {
+			JobPairs.setStatusForPairAndStages(p.getId(), StatusCode.STATUS_COMPLETE.getVal());
+			ResourceLoader.writeFakeJobPairOutput(p);
+		}
 		return job;
 	}
 	/**
@@ -559,6 +566,24 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static WebDriver getWebDriver(String email, String password) {
-		   return getWebDriver(email,password,false);
+	   return getWebDriver(email,password,false);
+	}
+	
+	/**
+	 * Writes 1000 characters of output to the location this pairs output should be placed
+	 * @param pair
+	 */
+	public static void writeFakeJobPairOutput(JobPair pair) {
+		try {
+			File f=new File(JobPairs.getPairStdout(pair));
+			f=f.getParentFile();
+			f.mkdirs();
+			String randomOutput=TestUtil.getRandomAlphaString(1000);
+			FileUtils.writeStringToFile(new File(f,pair.getId()+".txt"), randomOutput);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 		}
+	}
+	
 }

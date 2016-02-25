@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.mockito.Mockito;
@@ -52,7 +53,7 @@ public class JobPairTests extends TestSequence {
 	
 	private User user2=null;
 	private Job job2=null;
-	
+	private Random rand = new Random();
 	
 	@Override
 	protected String getTestName() {
@@ -68,6 +69,16 @@ public class JobPairTests extends TestSequence {
 		Assert.assertTrue(JobPairs.addJobPairAttributes(jp.getId(),jp.getPrimaryStage().getStageNumber(), p));
 		Properties test=JobPairs.getAttributes(jp.getId()).get(jp.getPrimaryStage().getStageNumber());
 		Assert.assertTrue(test.contains(prop));		
+	}
+	
+	@StarexecTest
+	private void updateBackendIdTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		int backendId = rand.nextInt();
+		Assert.assertTrue(JobPairs.updateBackendExecId(jp.getId(), backendId));
+		Assert.assertEquals(backendId, JobPairs.getPair(jp.getId()).getBackendExecId());
+		jp.setBackendExecId(backendId);
+		
 	}
 	
 	@StarexecTest
