@@ -775,21 +775,6 @@ public class Benchmarks {
 			return -1;
 		}
 	}
-
-	/**
-	 * Deletes each benchmark in a list of benchmarks
-	 * @param benchmarksToDelete The list of benchmarks to delete. Each must have an ID set.
-	 * @author Albert Giegerich
-	 */
-	public static void deleteEach(List<Benchmark> benchmarksToDelete) {
-		for (Benchmark benchmark : benchmarksToDelete) {
-			boolean success = delete(benchmark.getId());
-			if (!success) {
-				log.error("Benchmark with id="+benchmark.getId()+" was not deleted successfully.");		
-			}
-		}
-	}
-
 	/**
 	 * Deletes a benchmark from the database (cascading deletes handle all dependencies)
 	 * @param id the id of the benchmark to delete

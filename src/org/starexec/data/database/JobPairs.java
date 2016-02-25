@@ -985,7 +985,7 @@ public class JobPairs {
 			// first, we get the top level info from the job_pairs table
 			if(results.next()){
 				jp = JobPairs.resultToPair(results);
-				
+				jp.setCompletionId(results.getInt("completion_id"));
 				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),true));
 				
@@ -1479,27 +1479,7 @@ public class JobPairs {
 		}	
 		return false;
 	}
-	
-	/**
-	 * Given a list of JobPair objects that have their jobSpaceIds set, updates the database
-	 * to reflect these new job space ids
-	 * @param jobPairs The pairs to update
-	 * @return True on success and false otherwise
-	 * @author Eric Burns
-	 */
-	
-	public static boolean updateJobSpaces(List<JobPair> jobPairs) {
-		Connection con = null;
-		try {
-			con = Common.getConnection();
-			return updateJobSpaces(jobPairs,con);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}		
-		return false;
-	}
+
 	
 
     /**

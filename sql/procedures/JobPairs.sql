@@ -123,6 +123,7 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 		SELECT *
 		FROM job_pairs 
 		LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+		LEFT JOIN job_pair_completion ON job_pairs.id = job_pair_completion.pair_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		WHERE job_pairs.id=_Id AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //

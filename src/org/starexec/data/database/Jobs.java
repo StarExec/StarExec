@@ -92,91 +92,6 @@ public class Jobs {
 		return s;
 	}
 	
-	
-	/**
-	 * This function makes older jobs, which have path info but no job space information
-	 * @param jobId The jobId to create the job space info for
-	 * @return The ID of the primary job  space of the job
-	 * @author Eric Burns
-	 */
-	
-	public static int setupJobSpaces(int jobId) {
-		
-		try {
-			log.debug("Setting up job space hierarchy for old job id = "+jobId);
-			List<JobPair> p=Jobs.getPairsPrimaryStageDetailed(jobId);
-			Integer primarySpaceId=null;
-			HashMap<String,Integer> namesToIds=new HashMap<String,Integer>();
-			
-			//this hashmap maps every job space ID to the maximal number of stages
-			// of any pair that is in the hierarchy rooted at the job space
-			HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
-			for (JobPair jp : p) {
-				String pathString=jp.getPath();
-				if (pathString==null) {
-					pathString="job space";
-				}
-				
-				//every entry in a path is a single job space
-				String[] path=pathString.split(R.JOB_PAIR_PATH_DELIMITER);
-				String key="";
-				for (int index=0;index<path.length; index++) {
-					
-					String spaceName=path[index];
-					key=key+R.JOB_PAIR_PATH_DELIMITER+spaceName;
-					if (namesToIds.containsKey(key)) {
-						int id=namesToIds.get(key);
-						if (index==(path.length-1)) { // if this is the last space in the path
-							jp.setJobSpaceId(namesToIds.get(key));
-						}
-						
-						idsToMaxStages.put(id, Math.max(idsToMaxStages.get(id), jp.getStages().size()));
-						continue; //means we've already added this space
-					}
-					
-					int newJobSpaceId=Spaces.addJobSpace(spaceName, jobId);
-					if (index==0) {
-						primarySpaceId=newJobSpaceId;
-					}
-					//otherwise, there was an error getting the new job space
-					if (newJobSpaceId>0) {
-						idsToMaxStages.put(newJobSpaceId, jp.getStages().size());
-						namesToIds.put(key, newJobSpaceId);
-						if (index==(path.length-1)) {
-							jp.setJobSpaceId(newJobSpaceId);
-						}
-						String parentKey=key.substring(0,key.lastIndexOf(R.JOB_PAIR_PATH_DELIMITER));
-						if (namesToIds.containsKey(parentKey)) {
-							Spaces.associateJobSpaces(namesToIds.get(parentKey), namesToIds.get(key));
-						}
-					}
-				}
-			}
-			for (Integer id : idsToMaxStages.keySet()) {
-				Spaces.setJobSpaceMaxStages(id, idsToMaxStages.get(id));
-			}
-			//there seem to be some jobs with no pairs somehow, so this just prevents
-			//a red error screen when viewing them
-			if (p.size()==0) {
-				primarySpaceId=Spaces.addJobSpace("job space", jobId);
-				Spaces.updateJobSpaceClosureTable(primarySpaceId);
-			}
-			
-			for (int id : namesToIds.values()) {
-				Spaces.updateJobSpaceClosureTable(id);
-			}
-			log.debug("setupjobpairs-- done looking at pairs, updating the database");
-			JobPairs.updateJobSpaces(p);
-			updatePrimarySpace(jobId,primarySpaceId);
-			log.debug("returning new job space id = "+primarySpaceId);
-			return primarySpaceId;
-		} catch (Exception e) {
-			log.error("setupJobSpaces says "+e.getMessage(),e);
-		}
-		
-		return -1;
-	}
-	
 	/**
 	 * Given a set job job pairs, creates a set of spaces that mirrors the job space hierarchy
 	 * @param pairs The pairs to use
@@ -446,14 +361,9 @@ public class Jobs {
  			Common.safeClose(procedure);
  		}
 	}
-	
-
-	
-
-
 
 	/**
-	 * Adds an association between all the given job ids and the given space
+	 * Adds an association between the given job id and the given space
 	 * @param con The connection to make the association on
 	 * @param jobId the id of the job we are associating to the space
 	 * @param spaceId the ID of the space we are making the association to
@@ -586,66 +496,6 @@ public class Jobs {
 		
 		return success;
 	}
-
-
-
-	/**
-	 * Deletes each job in a list of jobs.
-	 * @param jobsToDelete List of jobs to delete.
-	 * @author Albert Giegerich
-	 * @return true on success and false on error
-	 */
-	public static boolean deleteEach(List<Job> jobsToDelete) {
-		Connection con = null; 
-		boolean allJobsDeleted = true;
-		try {
-			con=Common.getConnection();
-			for (Job job : jobsToDelete) {
-				// Delete the job.
-				boolean success = delete(job.getId(), con);
-				// If any deletion fails allJobsDeleted will be permanently set to false.
-				allJobsDeleted = (allJobsDeleted ? success : false);
-				if (!success) {
-					log.error("Job with id="+job.getId()+" was not deleted successfully.");
-				}
-			}
-		} catch (Exception e) {
-			log.error("Encountered an error while attempting to delete a list of jobs. "+e.getMessage());
-			allJobsDeleted = false;
-		} finally {
-			Common.safeClose(con);
-		}
-		return allJobsDeleted;
-	}
-
-	/**
-	 * Deletes all jobs owned by a user.
-	 * @param userId Id of user whose jobs are to be deleted.
-	 * @throws StarExecDatabaseException if error occurs while interacting with database.
-	 * @author Albert Giegerich
-	public static void deleteUsersJobs(int userId) throws StarExecDatabaseException {
-		// Kill any jobs still running before deletion.
-		killUsersJobs(userId);
-		Connection con = null;
-		CallableStatement procedure=null;
-		List<Job> userJobs = Jobs.getByUserId(userId);
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("CALL DeleteUsersJobs(?)");
-			procedure.setInt(1, userId);
-			procedure.executeUpdate();
-
-			// Delete the user's job directories.
-			deleteJobDirectories(userJobs);
-		} catch (Exception e) {
-			throw new StarExecDatabaseException("Error while trying to delete jobs owned by user.", e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	*/
-
 	
 	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
@@ -4487,31 +4337,7 @@ public class Jobs {
 		return false;
 		
 	}
-	
-	/**
-	 * Updates the primary space of a job. This should only be necessary when changing the primary space
-	 * of an older job from nothing to its new job space
-	 * @param jobId The ID of the job in question
-	 * @param jobSpaceId The new job space ID
-	 * @return true on success, false otherwise
-	 * @author Eric Burns
-	 */
-	
-	private static boolean updatePrimarySpace(int jobId, int jobSpaceId) {
-		Connection con=null;
-		try {
-			con=Common.getConnection();
-			return updatePrimarySpace(jobId, jobSpaceId, con);
-			
-		} catch (Exception e) {
-			log.error("Update Primary Space says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(con);
-		}
-		return false;
-	}
-	
-	
+
 	/**
 	 * Removes job stats for every job_space belonging to this job
 	 * @param jobId The ID of the job to remove the stats of

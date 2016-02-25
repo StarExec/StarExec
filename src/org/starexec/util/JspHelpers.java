@@ -119,11 +119,6 @@ public class JspHelpers {
 			
 			
 			int jobSpaceId=j.getPrimarySpace();
-			//this means it's an old job and we should run the backwards-compatibility routine
-			//to get everything set up first
-			if (jobSpaceId==0) {
-				jobSpaceId=Jobs.setupJobSpaces(jobId);
-			}
 			
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
@@ -272,11 +267,6 @@ public class JspHelpers {
 		}
 		
 		int jobSpaceId=j.getPrimarySpace();
-		//this means it's an old job and we should run the backwards-compatibility routine
-		//to get everything set up first
-		if (jobSpaceId==0) {
-			jobSpaceId=Jobs.setupJobSpaces(jobId);
-		}
 		
 		if (jobSpaceId>0) {
 			j=Jobs.get(jobId);
