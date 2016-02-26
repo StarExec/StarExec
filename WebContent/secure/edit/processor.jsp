@@ -21,7 +21,7 @@ try {
 		//We couldn't find the default post processor ID, which is not a big deal
 	}
 	boolean validUser=false;
-	if (ProcessorSecurity.canUserEditProcessor(procId,userId).isSuccess()) {
+	if (ProcessorSecurity.doesUserOwnProcessor(procId,userId).isSuccess()) {
 		validUser=true;
 	}
 	

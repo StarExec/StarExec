@@ -19,6 +19,7 @@ public class StatisticsTests extends TestSequence {
 	private void makeSpaceOverviewTest() {
 		String filepath = Statistics.makeSpaceOverviewChart(spaceOverviewPairs, false, false, 1);
 		File f = new File(new File(R.STAREXEC_ROOT).getParent(), filepath);
+		System.out.println(f.getAbsolutePath());
 		Assert.assertTrue(f.exists());
 	}
 	

@@ -422,7 +422,7 @@ public class Statistics {
 			//to 110% of the maximum value
 			double maxX=dataset.getDomainUpperBound(false)*1.1;
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
-			Range range=new Range(0,Math.max(maxX, maxY));
+			Range range=new Range(0,Math.max(0.1, Math.max(maxX, maxY)));
 			
 			
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
@@ -573,7 +573,7 @@ public class Statistics {
 				
 			} else {
 				plot.getRangeAxis().setAutoRange(false);
-				plot.getRangeAxis().setRange(new Range(0,dataset.getRangeUpperBound(false)*1.1));
+				plot.getRangeAxis().setRange(new Range(0,Math.max(0.1, dataset.getRangeUpperBound(false)*1.1)));
 			}
 			
 			plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
