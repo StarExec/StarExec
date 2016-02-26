@@ -350,10 +350,10 @@ public class Statistics {
 			
 			String xAxisName = null;
 			String yAxisName = null;
-			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
 
 			/* TODO
 			if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
+				int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
 				// Use anonymous solver names for the axis titles.
 				Map<Integer, String> solverIdToAnonymizedName = AnonymousLinks.getAnonymizedSolverNames(jobId, stageNumber);
 				xAxisName = solverIdToAnonymizedName.get( stage1.getSolver().getId() );
