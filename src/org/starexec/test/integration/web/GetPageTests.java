@@ -31,7 +31,8 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
-
+//TODO: details/ JobMatrixView, solverComparison, solverconfigs, uploadStatus, xmluploadstatus
+// edit/ processBench + everything after processor needs to be looked at.
 public class GetPageTests extends TestSequence {
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
@@ -60,6 +61,11 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void getCommunityExplorerTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/communities.jsp"));
+	}
+	
+	@StarexecTest
+	private void getEditCommunityTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/edit/community.jsp?cid="+testCommunity.getId()));
 	}
 	
 	@StarexecTest
@@ -229,13 +235,6 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void getAdminCacheTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/admin/cache.jsp"));
-		Assert.assertFalse(con.canGetPage("secure/admin/cache.jsp"));
-
-	}
-	
-	@StarexecTest
 	private void getAdminClusterTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/cluster.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/cluster.jsp"));
@@ -271,16 +270,9 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void getAdminNodesTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/admin/nodes.jsp"));
-		Assert.assertFalse(con.canGetPage("secure/admin/nodes.jsp"));
-
-	}
-	
-	@StarexecTest
-	private void getAdminAddQueueTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/admin/addQueue.jsp"));
-		Assert.assertFalse(con.canGetPage("secure/admin/addQueue.jsp"));
+	private void getAdminQueueTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/queue.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/queue.jsp"));
 
 	}
 	
@@ -291,11 +283,6 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void getAdminQueueTest() {
-		
-	}
-	
-	@StarexecTest
 	private void getAdminStarexecTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/starexec.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/starexec.jsp"));
@@ -303,19 +290,29 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void getAdminTestingTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/admin/test.jsp"));
-		Assert.assertFalse(con.canGetPage("secure/admin/test.jsp"));
-
+	private void getAdminStressTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/stressTest.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/stressTest.jsp"));
 	}
 	
-	
+	@StarexecTest
+	private void getAdminTestingTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/testing.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/testing.jsp"));
+
+	}
 	
 	@StarexecTest
 	private void getAdminUserTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/user.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/admin/user.jsp"));
 
+	}
+	
+	//TODO: Get rid of the type argument for the edit processor page.
+	@StarexecTest
+	private void editProcessorTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/edit/processor.jsp?id="+proc.getId()));
 	}
 	
 	@StarexecTest
@@ -331,6 +328,8 @@ public class GetPageTests extends TestSequence {
 		testCommunity=Communities.getTestCommunity();
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		con.login();
+		adminCon.login();
 		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		newCommunity = ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);

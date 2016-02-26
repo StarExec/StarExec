@@ -9,7 +9,6 @@ try {
 	request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
 	int procId = Integer.parseInt((String)request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
-	request.setAttribute("procType", request.getParameter("type"));
 	Processor proc=Processors.get(procId);
 
 	

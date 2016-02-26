@@ -38,7 +38,7 @@ try {
 			<tbody>
 				<c:forEach var="proc" items="${procs}">
 					<tr>
-						<td><input name="pid" type="hidden" value="${proc.id}"/><a href="${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
+						<td><input name="pid" type="hidden" value="${proc.id}"/><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 					</tr>
 				</c:forEach>
