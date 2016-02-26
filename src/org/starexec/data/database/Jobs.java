@@ -1862,16 +1862,18 @@ public class Jobs {
 		log.debug("called with jobSpaceId = "+ jobSpaceId);
 		logUtil.debug(methodName, "primitivesToAnonymize equals " + AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ));
 		try {
+			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
 			Spaces.updateJobSpaceClosureTable(jobSpaceId);
 
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsInJobSpaceHierarchy(?,?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsInJobSpaceHierarchy(?,?,?)}");
 			
 			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2, jobId);
 			if (since==null) {
-				procedure.setNull(2, java.sql.Types.INTEGER);
+				procedure.setNull(3, java.sql.Types.INTEGER);
 			} else  {
-				procedure.setInt(2,since);
+				procedure.setInt(3,since);
 			}
 			results = procedure.executeQuery();
 			
@@ -1881,12 +1883,13 @@ public class Jobs {
 			
 			Common.safeClose(procedure);
 			Common.safeClose(results);
-			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpaceHierarchy(?,?)}");
+			procedure=con.prepareCall("{CALL GetJobPairStagesInJobSpaceHierarchy(?,?,?)}");
 			procedure.setInt(1,jobSpaceId);
+			procedure.setInt(2,jobId);
 			if (since==null) {
-				procedure.setNull(2, java.sql.Types.INTEGER);
+				procedure.setNull(3, java.sql.Types.INTEGER);
 			} else  {
-				procedure.setInt(2,since);
+				procedure.setInt(3,since);
 			}
 			results=procedure.executeQuery();
 			if (populateJobPairStages(pairs,results,true, primitivesToAnonymize)) {
@@ -2305,15 +2308,17 @@ public class Jobs {
 			int stageNumber, 
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		log.debug("calling GetJobStatsInJobSpace with jobspace = "+jobSpaceId + " and stage = "+stageNumber);
+		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?,?)}");
+			procedure=con.prepareCall("{CALL GetJobStatsInJobSpace(?,?,?)}");
 			procedure.setInt(1,jobSpaceId);
-			procedure.setInt(2,stageNumber);
+			procedure.setInt(2, jobId);
+			procedure.setInt(3,stageNumber);
 			results=procedure.executeQuery();
 			List<SolverStats> stats=new ArrayList<SolverStats>();
 			while (results.next()) {

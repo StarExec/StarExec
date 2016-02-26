@@ -506,21 +506,23 @@ public class Statistics {
 				return null;
 			}
 			
-			List<JobPair> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(0), stageNumber, primitivesToAnonymize);
+			List<JobPair> pairs = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds.get(0), stageNumber, primitivesToAnonymize );
+			log.debug( "Number of pairs for primitivesToAnonymize="+AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ) +": "
+						+pairs.size());
+
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 				return OVERSIZED_GRAPH_ERROR;
 			}
 			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll(Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, primitivesToAnonymize));
+				pairs.addAll( Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, primitivesToAnonymize) );
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 					return OVERSIZED_GRAPH_ERROR;
 				}
 			}
 
-			// TODO
-			// AnonymousLinks.anonymizeJobPairs( pairs, Spaces.getJobSpace(jobSpaceId).getJobId(), stageNumber, primitivesToAnonymize );
-			
-			return makeSpaceOverviewChart(pairs, logX,logY,stageNumber);
+			log.debug( "Number of pairs after add all for primitivesToAnonymize="+
+					AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ) +": "+pairs.size());
+			return makeSpaceOverviewChart( pairs, logX,logY,stageNumber, primitivesToAnonymize );
 		} catch (Exception e) {
 			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
 		}
@@ -534,9 +536,15 @@ public class Statistics {
 	 * @param logX Whether to use a log scale for the X axis
 	 * @param logY Whether to use a log scale for the Y axis
 	 * @param stageNumber The stage number of analyze for al lthe job pairs
+	 * @param primitivesToAnonymize an enum describing which (if any) primitives to anonymize.
 	 * @return The absolute filepath to the chart that was created
 	 */
-	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY, int stageNumber) {
+	public static String makeSpaceOverviewChart(
+			List<JobPair> pairs, 
+			boolean logX, 
+			boolean logY, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs,stageNumber);
@@ -544,7 +552,13 @@ public class Statistics {
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(Solver s : data.keySet()) {
 				for (Configuration c : data.get(s).keySet()) {
-					d=new XYSeries(s.getName()+"(" +s.getId()+ ") config = "+c.getName());
+					String label = null;
+					if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+						label = s.getName()+" config = "+c.getName();
+					} else {
+						label = s.getName()+"(" +s.getId()+ ") config = "+c.getName();
+					}
+					d=new XYSeries(label);
 					int counter=1;
 					for (Double time : data.get(s).get(c)) {
 						d.add(counter,time);

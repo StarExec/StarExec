@@ -39,7 +39,7 @@ public class StatisticsTests extends TestSequence {
 	
 	@StarexecTest
 	private void makeSpaceOverviewTest() {
-		String filepath = Statistics.makeSpaceOverviewChart(spaceOverviewPairs, false, false, 1);
+		String filepath = Statistics.makeSpaceOverviewChart(spaceOverviewPairs, false, false, 1, PrimitivesToAnonymize.NONE);
 		File f = new File(new File(R.STAREXEC_ROOT).getParent(), filepath);
 		Assert.assertTrue(f.exists());
 	}
