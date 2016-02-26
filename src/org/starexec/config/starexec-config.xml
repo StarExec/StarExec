@@ -32,8 +32,6 @@
             <!-- SGE Configuration -->
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
-			<property key="MAX_PAIR_RUNTIME" value="86400" />
-			<property key="MAX_PAIR_CPUTIME" value="86400" />
 			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
 
 		</class>
