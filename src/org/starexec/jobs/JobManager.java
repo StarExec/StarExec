@@ -301,7 +301,7 @@ public abstract class JobManager {
 
 						try {
 							// Write the script that will run this individual pair				
-							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
+							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
 
 							String logPath=JobPairs.getLogFilePath(pair);
 							File file=new File(logPath);
@@ -362,7 +362,7 @@ public abstract class JobManager {
 	 * @param pair The job pair to tailor the script for
 	 * @return The absolute path to the newly written script
 	 */
-	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
+	private static String writeJobScript(String template, Job job, JobPair pair, Queue queue) throws Exception {
 		String jobScript = template;		
 		
 		// all of these arrays are for containing individual attributes ordered by state number for all the stages in the pair.
@@ -456,8 +456,8 @@ public abstract class JobManager {
 		replacements.put("$$SPACE_PATH$$", pair.getPath());
 		replacements.put("$$PRIMARY_PREPROCESSOR_PATH$$", primaryPreprocessorPath);
 		replacements.put("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
-		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, R.MAX_PAIR_RUNTIME, job.getWallclockTimeout()));
-		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));
+		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, queue.getWallTimeout(), job.getWallclockTimeout()));
+		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
 		
 		

@@ -172,8 +172,8 @@ public class CreateJob extends HttpServlet {
 		long seed=Long.parseLong(request.getParameter(randSeed));
 
 		//ensure that the cpu limits are greater than 0
-		cpuLimit = (cpuLimit <= 0) ? R.MAX_PAIR_CPUTIME : cpuLimit;
-		runLimit = (runLimit <= 0) ? R.MAX_PAIR_RUNTIME : runLimit;
+		cpuLimit = (cpuLimit <= 0) ? R.DEFAULT_MAX_TIMEOUT : cpuLimit;
+		runLimit = (runLimit <= 0) ? R.DEFAULT_MAX_TIMEOUT : runLimit;
 		
 		//memory is in units of bytes
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
