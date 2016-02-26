@@ -27,6 +27,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
+import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
@@ -54,7 +55,7 @@ public class JobPairTests extends TestSequence {
 	private User user2=null;
 	private Job job2=null;
 	private Random rand = new Random();
-	
+		
 	@Override
 	protected String getTestName() {
 		return "JobPairTests";
@@ -137,6 +138,29 @@ public class JobPairTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getStdOutTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		String output = JobPairs.getStdOut(jp.getId(), 1, 1000);
+		Assert.assertNotNull(output);
+	}
+	@StarexecTest
+	private void getStdOutNoStagesTest() {
+		JobPair jp = job.getJobPairs().get(0);
+
+		String output = JobPairs.getStdout(jp.getId());
+		Assert.assertNotNull(output);
+	}
+	
+	@StarexecTest
+	private void getPairsToBeProcessedTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal());
+		Assert.assertTrue(JobPairs.getAllPairsForProcessing().contains(jp.getId()));
+		
+		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
 	private void setBrokenPairsToErrorStatusNoChange() throws IOException {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		HashSet<Integer> set = new HashSet<Integer>();
@@ -148,6 +172,83 @@ public class JobPairTests extends TestSequence {
 		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.STATUS_ENQUEUED);
 	}
 
+	@StarexecTest
+	private void isPairCorrectIncompleteTest() {
+		JoblineStage stage = new JoblineStage();
+		stage.getStatus().setCode(StatusCode.STATUS_PENDING_SUBMIT.getVal());
+		Assert.assertEquals(-1, JobPairs.isPairCorrect(stage));
+	}
+	
+	@StarexecTest
+	private void isPairCorrectCompleteTest() {
+		JoblineStage stage = new JoblineStage();
+		Properties attrs = new Properties();
+		attrs.setProperty(R.EXPECTED_RESULT, "result");
+		attrs.setProperty(R.STAREXEC_RESULT, "result");
+		stage.setAttributes(attrs);
+		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
+		Assert.assertEquals(0, JobPairs.isPairCorrect(stage));
+	}
+	
+	@StarexecTest
+	private void isPairCorrectWrongTest() {
+		JoblineStage stage = new JoblineStage();
+		Properties attrs = new Properties();
+		attrs.setProperty(R.EXPECTED_RESULT, "result");
+		attrs.setProperty(R.STAREXEC_RESULT, "wrong");
+		stage.setAttributes(attrs);
+		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
+		Assert.assertEquals(1, JobPairs.isPairCorrect(stage));
+	}
+	
+	@StarexecTest
+	private void isPairCorrectUnknownTest() {
+		JoblineStage stage = new JoblineStage();
+		Properties attrs = new Properties();
+		attrs.setProperty(R.EXPECTED_RESULT, "result");
+		attrs.setProperty(R.STAREXEC_RESULT,R.STAREXEC_UNKNOWN);
+		stage.setAttributes(attrs);
+		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
+		Assert.assertEquals(2, JobPairs.isPairCorrect(stage));
+	}
+	
+	@StarexecTest
+	private void isPairCorrectNoExpectedTest() {
+		JoblineStage stage = new JoblineStage();
+		Properties attrs = new Properties();
+		attrs.setProperty(R.STAREXEC_RESULT,"result");
+		stage.setAttributes(attrs);
+		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
+		Assert.assertEquals(2, JobPairs.isPairCorrect(stage));
+	}
+	
+	@StarexecTest
+	private void setPairStageStatusTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		JoblineStage stage = jp.getStages().get(0);
+		Assert.assertTrue(JobPairs.setPairStatus(jp.getId(), stage.getStageNumber(), StatusCode.STATUS_UNKNOWN.getVal()));
+		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(), JobPairs.getPairDetailed(jp.getId()).getStages().get(0).getStatus().getCode().getVal());
+		JobPairs.setPairStatus(jp.getId(), stage.getStageNumber(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void setAllPairStageStatusTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		Assert.assertTrue(JobPairs.setAllPairStageStatus(jp.getId(), StatusCode.STATUS_UNKNOWN.getVal()));
+		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(), JobPairs.getPairDetailed(jp.getId()).getStages().get(0).getStatus().getCode().getVal());
+		JobPairs.setAllPairStageStatus(jp.getId(),StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void setStatusForPairAndStagesTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		Assert.assertTrue(JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_KILLED.getVal()));
+		JobPair updatedPair = JobPairs.getPairDetailed(jp.getId());
+		Assert.assertEquals(StatusCode.STATUS_KILLED.getVal(), updatedPair.getStages().get(0).getStatus().getCode().getVal());
+		Assert.assertEquals(StatusCode.STATUS_KILLED.getVal(), updatedPair.getStatus().getCode().getVal());
+		JobPairs.setStatusForPairAndStages(jp.getId(),StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
 	@Override
 	protected void setup() throws Exception {
 		user=ResourceLoader.loadUserIntoDatabase();
@@ -163,7 +264,7 @@ public class JobPairTests extends TestSequence {
 		solverIds.add(solver.getId());
 		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
-		Assert.assertNotNull(Jobs.get(job.getId()));		
+		Assert.assertNotNull(Jobs.get(job.getId()));				
 	}
 
 	@Override

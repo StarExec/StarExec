@@ -336,10 +336,6 @@ public class JobPairs {
 		return null;
 	}
 	
-	
-	
-	
-	
 	/**
 	 * Adds a new attribute to a job pair
 	 * @param con The connection to make the update on
@@ -579,9 +575,6 @@ public class JobPairs {
 		
 		return filteredPairs;
 	}
-	
-	
-	
 	
 	/**
 	 * Retrieves all attributes (key/value) of the given job pair. Returns a mapping
