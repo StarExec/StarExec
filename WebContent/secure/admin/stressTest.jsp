@@ -1,16 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.*, org.starexec.constants.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%	
-	try {		
-		int userId = SessionUtil.getUserId(request);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN,"You must have admin privileges to view this page.");
-		}	
-	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());		
-	}
-%>
 <star:template title="create a stress test" css="admin/stressTest" js="lib/jquery.validate.min, admin/stressTest">
 	<form method="POST" action="${starexecRoot}/secure/add/stressTest" id="createStressTestForm">
 		<fieldset>

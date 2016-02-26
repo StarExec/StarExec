@@ -2,19 +2,6 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<%		
-	try {
-		int userId = SessionUtil.getUserId(request);
-		User user = Users.get(userId);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		}		
-		
-	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-	}
-%>
-
 <star:template title="run diagnostic tests" js="admin/testing, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, admin/testing">	
 		<fieldset id="fieldTable">
 			<legend>Existing Tests</legend>

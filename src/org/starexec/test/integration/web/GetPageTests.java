@@ -35,7 +35,8 @@ import org.starexec.util.Util;
 public class GetPageTests extends TestSequence {
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
-	private Space space1=null; //will contain both solvers and benchmarks
+	private Space space1=null; //will contain both solvers and benchmarks and is owned by user
+	Space newCommunity = null; //community populated only by the admin
 	private Job job=null;
 	File solverFile=null;
 	File downloadDir=null;
@@ -50,6 +51,7 @@ public class GetPageTests extends TestSequence {
 	User admin=null;
 	Space testCommunity=null;	
 	Queue q=null;
+	
 	@StarexecTest
 	private void getSpaceExplorerTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/spaces.jsp"));
@@ -63,6 +65,16 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void getClusterTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/cluster.jsp"));
+	}
+	
+	@StarexecTest
+	private void getStatisticsTest() {
+		Assert.assertTrue(con.canGetPage("secure/explore/statistics.jsp"));
+	}
+	
+	@StarexecTest
+	private void getReportsTest() {
+		Assert.assertTrue(con.canGetPage("secure/explore/reports.jsp"));
 	}
 	
 	@StarexecTest
@@ -88,6 +100,17 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void getBatchSpaceAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/batchSpace.jsp?sid="+space1.getId()));
+	}
+	
+	@StarexecTest
+	private void addSpaceTest() {
+		Assert.assertTrue(con.canGetPage("secure/add/space.jsp?sid="+space1.getId()));
+	}
+	
+	@StarexecTest
+	private void addToCommunityTest() {
+		Assert.assertTrue(con.canGetPage("secure/add/to_community.jsp?cid="+newCommunity.getId()));
+
 	}
 	
 	@StarexecTest
@@ -193,6 +216,12 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getAdminAddUserTest() {
+		Assert.assertTrue(adminCon.canGetPage("secure/admin/addUser.jsp"));
+		Assert.assertFalse(con.canGetPage("secure/admin/addUser.jsp"));
+	}
+	
+	@StarexecTest
 	private void getAdminAssocCommunityTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
 		Assert.assertFalse(con.canGetPage("secure/admin/assocCommunity.jsp?id="+q.getId()));
@@ -259,7 +288,11 @@ public class GetPageTests extends TestSequence {
 	private void getAdminPermissionsTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
 		Assert.assertFalse(con.canGetPage("secure/admin/permissions.jsp?id="+user.getId()));
-
+	}
+	
+	@StarexecTest
+	private void getAdminQueueTest() {
+		
 	}
 	
 	@StarexecTest
@@ -287,6 +320,7 @@ public class GetPageTests extends TestSequence {
 	
 	@StarexecTest
 	private void failBadURLTest(){
+		Assert.assertFalse(adminCon.canGetPage("secure/details/fakewebpage.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/details/fakewebpage.jsp"));
 	}
 	
@@ -295,43 +329,29 @@ public class GetPageTests extends TestSequence {
 		user=Users.getTestUser();
 		admin=Users.getAdmins().get(0);
 		testCommunity=Communities.getTestCommunity();
-		
-		//this prevents the apache http libraries from logging things. Their logs are very prolific
-		//and drown out ours
-		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
-
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
-
-		int stat = con.login();
-		Assert.assertEquals(0,stat);
-		
 		//space1 will contain solvers and benchmarks
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
-		Assert.assertNotNull(space1);
+		newCommunity = ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
 		
 		q=Queues.getAll().get(0);
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
 		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
 		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
-		Assert.assertNotNull(solver);
 
 		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
 		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
-		Assert.assertNotNull(benchmarkIds);
-
-		
 	}
 	
-	
-
 	@Override
 	protected void teardown() throws Exception {
 		Spaces.removeSubspace(space1.getId());
+		Spaces.removeSubspace(newCommunity.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Processors.delete(proc.getId());
 		for (Integer i : benchmarkIds) {
@@ -341,8 +361,6 @@ public class GetPageTests extends TestSequence {
 		Jobs.deleteAndRemove(job.getId());
 		Settings.deleteProfile(settings.getId());
 	}
-	
-
 
 	@Override
 	protected String getTestName() {

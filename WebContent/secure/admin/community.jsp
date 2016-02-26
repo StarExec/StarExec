@@ -5,17 +5,6 @@
 
 
 <%		
-	try {
-		int userId = SessionUtil.getUserId(request);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} 	
-	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
-	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-	}
-
 	// These will be used by the JavaScript.
 	request.setAttribute("leaderResponseParameterName", Mail.LEADER_RESPONSE);
 	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);

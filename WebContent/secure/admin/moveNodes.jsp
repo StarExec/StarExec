@@ -4,18 +4,14 @@
 <%
 
 try {
-	int userId = SessionUtil.getUserId(request);
-	if (Users.hasAdminReadPrivileges(userId)) {
-		int id = Integer.parseInt(request.getParameter("id"));	
-		Queue q = Queues.get(id);
-		
-		List<WorkerNode> nodes = Cluster.getNonAttachedNodes(id);
-		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-		request.setAttribute("queueName", q.getName());
-		request.setAttribute("nodes", nodes);
-	} else {
-		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
-	}
+	int id = Integer.parseInt(request.getParameter("id"));	
+	Queue q = Queues.get(id);
+	
+	List<WorkerNode> nodes = Cluster.getNonAttachedNodes(id);
+	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+	request.setAttribute("queueName", q.getName());
+	request.setAttribute("nodes", nodes);
+	
 	
 			
 } catch (NumberFormatException nfe) {

@@ -5,15 +5,12 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	if (Users.hasAdminReadPrivileges(userId)) {
-		List<Space> spaces = Spaces.GetAllSpaces();
-		List<WorkerNode> nodes = Cluster.getAllNodes();
-		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-		request.setAttribute("nodes", nodes);
-		request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
-	} else {
-		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
-	}
+	List<Space> spaces = Spaces.GetAllSpaces();
+	List<WorkerNode> nodes = Cluster.getAllNodes();
+	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+	request.setAttribute("nodes", nodes);
+	request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
+	
 	
 			
 } catch (NumberFormatException nfe) {

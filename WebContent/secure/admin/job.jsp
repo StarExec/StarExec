@@ -6,16 +6,7 @@
 
 <%		
 	try {
-		int userId = SessionUtil.getUserId(request);
-		User user = Users.get(userId);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} else {
-			request.setAttribute("isSystemPaused", Jobs.isSystemPaused());
-		}		
-		
-	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
+		request.setAttribute("isSystemPaused", Jobs.isSystemPaused());	
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}

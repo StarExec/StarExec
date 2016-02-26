@@ -6,11 +6,7 @@
 
 <%		
 	try {
-		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		}
+		
 		request.setAttribute("debugModeActive", R.DEBUG_MODE_ACTIVE);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
