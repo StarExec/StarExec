@@ -13,14 +13,11 @@ $(document).ready(function() {
 	$("body").append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\""+starexecRoot+"images/ajaxloader.gif\"/>");
 });
 
-// whenever we navigate away from the page, destroy the dialog. This ensures that it is not
-// present when the page returns.
-$(window).on('beforeunload', function() {
-    destroyDialog();
-}); 
+$(window).unload(function() {
+	destroyDialog();
+});
 
 //Creates a new delay dialog. If one already exists, does nothing.
-
 function createDialog(message) {
 	//indicate that we're in the middle of creating the delay
 	creatingDelaySpinner=true;
