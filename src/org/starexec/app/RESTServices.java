@@ -1286,7 +1286,9 @@ public class RESTServices {
 
 		// Generate a unique id to be part of the link URL and store it in the database.
 		final String uniqueId = AnonymousLinks.addAnonymousLink( primitiveType, primitiveId, primitivesToAnonymize );
-		if ( primitiveType.equals( R.JOB ) && !AnonymousLinks.hasJobBeenAnonymized( primitiveId ) ) {
+		if ( primitiveType.equals( R.JOB ) && !AnonymousLinks.isNothingAnonymized( primitivesToAnonymize ) 
+			 && !AnonymousLinks.hasJobBeenAnonymized( primitiveId ) ) {
+
 			// If the primitive is a job add anonymous primitive names to the DB for all the primitives in the job.
 			AnonymousLinks.addAnonymousNamesForJob( primitiveId );	
 		}
