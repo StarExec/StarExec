@@ -55,11 +55,20 @@ function PopUp(uri) {
 
 function makeAnonymousLinkPost( primitiveType, primitiveId, primitivesToAnonymize ) {
 	'use strict';
+	var isAnonymizedJobPage = (primitiveType === "job") && (primitivesToAnonymize === "allButBench" || primitivesToAnonymize === "all");
+
+	log("Should create spinner: " + isAnonymizedJobPage );
+	if ( isAnonymizedJobPage ) {
+		createDialog("Generating anonymized job page. Please wait. (May take a minute or two for large jobs.)");
+	}
 	$.post(
 		starexecRoot + 'services/anonymousLink/'+primitiveType+'/'+primitiveId + '/' + primitivesToAnonymize,
 		'',
 		function( returnCode ) {
 			log( 'Anonymous Link Return Code: ' + returnCode );
+			if ( isAnonymizedJobPage ) {
+				destroyDialog();
+			}
 			if ( returnCode.success ) {
 				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
 
