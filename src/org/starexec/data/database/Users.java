@@ -24,6 +24,7 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Hash;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 /**
@@ -31,6 +32,7 @@ import org.starexec.util.Util;
  */
 public class Users {
 	private static final Logger log = Logger.getLogger(Users.class);
+	private static final LogUtil logUtil = new LogUtil( log );
 		
 	/**
 	 * Associates a user with a space (i.e. adds the user to the space)
@@ -1140,10 +1142,13 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersJobDirectories(int userId) {
+		final String method = "deleteUsersJobDirectories";
+		logUtil.entry(method);
 		List<Job> jobs = Jobs.getByUserId(userId);
 		for (Job job : jobs) {
-			int jobId = job.getId();
-			Util.safeDeleteDirectory(Jobs.getDirectory(jobId));
+			final String jobDirectory = Jobs.getDirectory( job.getId() );
+			logUtil.debug( method, "User is being deleted, deleting job directory with path: " + jobDirectory );
+			Util.safeDeleteDirectory( jobDirectory );
 		}
 	}
 
