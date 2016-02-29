@@ -28,6 +28,7 @@ import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
@@ -155,8 +156,12 @@ public class JobPairTests extends TestSequence {
 	private void getPairsToBeProcessedTest() {
 		JobPair jp = job.getJobPairs().get(0);
 		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal());
-		Assert.assertTrue(JobPairs.getAllPairsForProcessing().contains(jp.getId()));
-		
+		List<PairStageProcessorTriple> pairs = JobPairs.getAllPairsForProcessing();
+		boolean found = false;
+		for (PairStageProcessorTriple triple : pairs) {
+			found = found || triple.getPairId()==jp.getId();
+		}		
+		Assert.assertTrue(found);
 		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
 	}
 	
