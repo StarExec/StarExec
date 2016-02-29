@@ -1512,11 +1512,11 @@ public class JobPairs {
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return true;
 	}
 	
 	/**
