@@ -44,12 +44,12 @@
 			<h3 id="spaceName">${jobspace.name}</h3>
 			<c:if test="${!isAnonymousPage}">
 				<p id="displayJobSpaceID" class="accent" title="The job space is a snapshot of the space hierarchy used to create the job. It exists independently of the actual space hierarchy.">job space id  = ${job.primarySpace}</p>
-			</c:if>
-			
-			<c:if test="${!isAnonymousPage}">
 				<button id="matrixViewButton" type="button">matrix view</button>
 			</c:if>
-				
+			<c:if test="${isAnonymousPage}">
+				<button id="solverNameKeyButton" type="button">solver name key</button>
+			</c:if>
+			
 			
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>

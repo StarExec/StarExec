@@ -461,6 +461,12 @@ function initUI(){
 		}
 	});
 
+	$("#solverNameKeyButton").button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	});
+
 	$("#downloadJobPageButton").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -485,6 +491,11 @@ function initUI(){
 		} else {
 			popup(url);
 		}
+	});
+
+	$("#solverNameKeyButton").click(function() {
+		var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?id='+jobId;
+		popup(url);
 	});
 
 
