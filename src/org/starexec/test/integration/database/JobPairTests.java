@@ -155,14 +155,14 @@ public class JobPairTests extends TestSequence {
 	@StarexecTest
 	private void getPairsToBeProcessedTest() {
 		JobPair jp = job.getJobPairs().get(0);
-		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PROCESSING.getVal());
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PROCESSING.getVal());
 		List<PairStageProcessorTriple> pairs = JobPairs.getAllPairsForProcessing();
 		boolean found = false;
 		for (PairStageProcessorTriple triple : pairs) {
 			found = found || triple.getPairId()==jp.getId();
 		}		
 		Assert.assertTrue(found);
-		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
 	}
 	
 	@StarexecTest
