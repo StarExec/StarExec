@@ -2434,9 +2434,11 @@ public class Benchmarks {
 		if (searchQuery==null || searchQuery=="") {
 			return benchmarks;
 		}
+
 		searchQuery=searchQuery.toLowerCase();
 		List<Benchmark> filteredBenchmarks=new ArrayList<Benchmark>();
-		for (Benchmark b : filteredBenchmarks) {
+		for (Benchmark b : benchmarks) {
+			log.debug("benchmark name "+b.getName());
 			try {
 				if (b.getName().toLowerCase().contains(searchQuery) || b.getDescription().toLowerCase().contains(searchQuery)) {
 					filteredBenchmarks.add(b);
@@ -2445,7 +2447,6 @@ public class Benchmarks {
 				log.warn("filtering benchmarks had an exception for Benchmark id= " +b.getId());
 			}	
 		}
-		
 		return filteredBenchmarks;
 	}
 

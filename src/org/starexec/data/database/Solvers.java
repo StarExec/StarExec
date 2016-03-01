@@ -2180,7 +2180,7 @@ public class Solvers {
 		}
 		searchQuery=searchQuery.toLowerCase();
 		List<Solver> filteredSolvers=new ArrayList<Solver>();
-		for (Solver s : filteredSolvers) {
+		for (Solver s : solvers) {
 			try {
 				if (s.getName().toLowerCase().contains(searchQuery) || s.getDescription().toLowerCase().contains(searchQuery)) {
 					filteredSolvers.add(s);
