@@ -32,18 +32,6 @@ public class StressTest {
 	
 	private static Random rand=new Random();
 	
-	private static void writeFakeJobPairOutput(JobPair pair) {
-		try {
-			File f=new File(JobPairs.getPairStdout(pair));
-			f.getParentFile().mkdirs();
-			String randomOutput=TestUtil.getRandomAlphaString(1000);
-			FileUtils.writeStringToFile(f, randomOutput);
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-	}
-	
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName,
 			int minSolversPerSpace, int maxSolversPerSpace, int minBenchmarksPerSpace, int maxBenchmarksPerSpace) {
 		
@@ -61,8 +49,8 @@ public class StressTest {
 		Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
 		
 		for (JobPair pair : job.getJobPairs()) {
-			writeFakeJobPairOutput(pair);
-			JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
+			ResourceLoader.writeFakeJobPairOutput(pair);
+			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
 		Jobs.resume(job.getId());
 		
@@ -196,8 +184,7 @@ public class StressTest {
 		associateUsers(spaces,users,minUsersPerSpace,maxUsersPerSpace);
 		addSolvers(spaces,users,minSolversPerSpace,maxSolversPerSpace,SOLVER_NAME);
 		addBenchmarks(spaces,users,minBenchmarksPerSpace,maxBenchmarksPerSpace,BENCHMARK_NAME);
-		String name=null;
-		name="aaaaJobSpace";
+		String name="JobSpace";
 		Space jobParentSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 		for (int x=0;x<jobCount;x++) {
 			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), jobParentSpace.getId());

@@ -4,18 +4,14 @@
 <%
 
 try {
-	int userId = SessionUtil.getUserId(request);
-	if (Users.isAdmin(userId)) {
-		int id = Integer.parseInt(request.getParameter("id"));	
-		Queue q = Queues.get(id);
-			
-		List<Space> communities = Spaces.getNonAttachedCommunities(id);
-		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-		request.setAttribute("queueName", q.getName());
-		request.setAttribute("communities", communities);
-	} else {
-		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
-	}			
+	int id = Integer.parseInt(request.getParameter("id"));	
+	Queue q = Queues.get(id);
+		
+	List<Space> communities = Spaces.getNonAttachedCommunities(id);
+	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+	request.setAttribute("queueName", q.getName());
+	request.setAttribute("communities", communities);
+				
 } catch (NumberFormatException nfe) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 } catch (Exception e) {

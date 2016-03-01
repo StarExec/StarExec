@@ -1,22 +1,32 @@
 package org.starexec.test.integration.database;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
 
+/**
+ * Tests for org.starexec.data.database.Benchmarks.java
+ * @author Eric
+ */
 public class BenchmarkTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(BenchmarkTests.class);	
 	private User user=null;
@@ -191,6 +201,30 @@ public class BenchmarkTests extends TestSequence {
 		}
 		
 		
+	}
+	
+	@StarexecTest
+	private void addBenchmarkFromTextTest() throws Exception {
+		User newUser = ResourceLoader.loadUserIntoDatabase();
+		Integer id = BenchmarkUploader.addBenchmarkFromText("new benchmark", "test bench", newUser.getId(), Processors.getNoTypeProcessor().getId(), false);
+		Benchmark b = Benchmarks.get(id);
+		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
+		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
+		Users.deleteUser(newUser.getId(), admin.getId());
+	}
+	
+	@StarexecTest
+	private void addBenchmarkFromFileTest() throws Exception {
+		User newUser = ResourceLoader.loadUserIntoDatabase();
+
+		File f = Util.getSandboxDirectory();
+		File benchFile = new File(f, "benchmark.txt");
+		FileUtils.writeStringToFile(benchFile, "new benchmark");
+		int benchId = BenchmarkUploader.addBenchmarkFromFile(benchFile, newUser.getId(), Processors.getNoTypeProcessor().getId(), false);
+		Benchmark b = Benchmarks.get(benchId);
+		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
+		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(benchId));
+		Users.deleteUser(newUser.getId(), admin.getId());
 	}
 	
 	@Override

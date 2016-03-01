@@ -202,7 +202,7 @@
 
 				</tr>
 			</table>
-			<div id="dialog-confirm-update" title="confirm update">
+			<div id="dialog-confirm-update" title="confirm update" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
 		</fieldset>
@@ -241,7 +241,7 @@
 
 	</div>	
 	
-	<div id="dialog-confirm-change" title="confirm change">
+	<div id="dialog-confirm-change" title="confirm change" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
 	</div>
 	

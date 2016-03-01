@@ -13,6 +13,10 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+/**
+ * Tests for org.starexec.data.database.Processors.java
+ * @author Eric
+ */
 public class ProcessorTests extends TestSequence {
 	private Processor postProc;
 	private Space community;

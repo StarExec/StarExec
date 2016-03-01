@@ -12,6 +12,10 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+/**
+ * Tests for org.starexec.data.database.Queues.java
+ * @author Eric
+ */
 public class QueueTests extends TestSequence {
 	Queue allQueue=null;
 	

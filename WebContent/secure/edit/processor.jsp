@@ -9,7 +9,6 @@ try {
 	request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
 	int procId = Integer.parseInt((String)request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
-	request.setAttribute("procType", request.getParameter("type"));
 	Processor proc=Processors.get(procId);
 
 	
@@ -21,7 +20,7 @@ try {
 		//We couldn't find the default post processor ID, which is not a big deal
 	}
 	boolean validUser=false;
-	if (ProcessorSecurity.canUserEditProcessor(procId,userId).isSuccess()) {
+	if (ProcessorSecurity.doesUserOwnProcessor(procId,userId).isSuccess()) {
 		validUser=true;
 	}
 	

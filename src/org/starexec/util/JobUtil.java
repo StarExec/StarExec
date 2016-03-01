@@ -11,12 +11,6 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -741,30 +735,10 @@ public class JobUtil {
 	 * @author Tim Smith
 	 */
 	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
-		factory.setNamespaceAware(true);
-
-		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-
-		try {
-			String schemaLoc = Util.url("public/batchJobSchema.xsd");
-			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
-			Schema schema = factory.getSchema();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document document = builder.parse(file);
-			Validator validator = schema.newValidator();
-			DOMSource source = new DOMSource(document);
-            validator.validate(source);
-            log.debug("Job XML File has been validated against the schema.");
-            return true;
-        } catch (SAXException ex) {
-            log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-            errorMessage = "File is not valid because: \"" + ex.getMessage() + "\"";
-            this.jobCreationSuccess = false;
-            return false;
-        }
-		
+		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, Util.url("public/batchJobSchema.xsd"));
+		errorMessage=code.getMessage();
+		this.jobCreationSuccess=code.isSuccess();
+		return code.isSuccess();	
 	}
 
 	public String getErrorMessage() {

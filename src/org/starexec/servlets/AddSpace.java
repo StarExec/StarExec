@@ -106,8 +106,8 @@ public class AddSpace extends HttpServlet {
 		s.setPermission(p);
 		
 		
-		
-		int newSpaceId = Spaces.add(s, spaceId, userId);
+		s.setParentSpace(spaceId);
+		int newSpaceId = Spaces.add(s, userId);
 		
 		//Inherit Users
 		boolean inheritUsers = Boolean.parseBoolean((String)request.getParameter(users));

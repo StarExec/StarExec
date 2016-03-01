@@ -7,13 +7,7 @@
 <%		
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));
-		int userId = SessionUtil.getUserId(request);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} else {
-			request.setAttribute("userId", id);
-		}		
-				
+		request.setAttribute("userId", id);				
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 	} catch (Exception e) {
@@ -61,7 +55,7 @@
 				</tr>				
 			</table>
 			<button type="button" id="editPermissions">Update</button>	
-			<div id="dialog-confirm-update" title="confirm update">
+			<div id="dialog-confirm-update" title="confirm update" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
 				

@@ -73,8 +73,7 @@ CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
-		AND bench.name = _name		
-		ORDER BY bench.name;
+		AND bench.name = _name;
 	END //	
 	
 -- Retrieves all benchmark dependencies for a given primary benchmark id
@@ -142,15 +141,6 @@ CREATE PROCEDURE GetXMLUploadStatusById(IN _id INT)
 		FROM space_xml_uploads 
 		WHERE id = _id;
 	END //	
--- Returns the number of benchmarks in a given space
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpace;
-CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
-	BEGIN
-		SELECT 	COUNT(*) AS benchCount
-		FROM 	bench_assoc
-		WHERE 	_spaceId=space_id;
-	END //
 
 -- Returns the number of benchmarks in a given space that match a given query
 -- Author: Eric Burns

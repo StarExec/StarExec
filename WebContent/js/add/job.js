@@ -474,11 +474,6 @@ function nextState() {
 		if (benchMethodVal == 1){
 			progress = 4;
 		}	
-		/*//if choosing bench from hierarchy
-		else if (benchMethodVal == 2){
-			progress = 5;
-		}
-		*/
 	}
 	updateProgress();
 }

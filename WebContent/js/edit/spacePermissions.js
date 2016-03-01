@@ -47,7 +47,6 @@ $(document).ready(function(){
 
 	//logger.disableLogger();
 	console.log("spacePermissions log start");
-	$("#dialog-confirm-change").hide();
 
 	currentUserId=parseInt($("#userId").attr("value"));
 	curIsAdmin = isAdmin();
@@ -778,8 +777,6 @@ function changePermissions(hier,changingLeadership){
  * @author Julio Cervantes
  */
 function setUpButtons() {
-    $('#dialog-confirm-update').hide();
-
     $("#savePermChanges").unbind("click");
     $("#savePermChanges").click(function(){
 	    $("#dialog-confirm-update-txt").text("do you want the changes to be hierarchical?");

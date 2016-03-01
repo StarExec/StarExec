@@ -36,14 +36,13 @@ DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
 		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
-		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies
+		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies, jobs.buildJob
 		FROM jobs WHERE queue_id = _queueId 
 		AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
 	END //
 		
 -- Retrieves the number of enqueued job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
--- TODO: This might be slow. Think about a possible index on queueId?
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
 CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	BEGIN

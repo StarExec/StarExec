@@ -35,8 +35,12 @@ public class TestManager {
 	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method
 	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
-	//all test sequences need to be initialized here
+	/**
+	 * all test sequences need to be initialized here. Simply add new TestSequences to the 
+	 * list of all tests. This is called once on Starexec startup.
+	 */
 	public static void initializeTests() {
+		tests.add(new AnonymousLinkTests());
 		tests.add(new SolverTests());
 		tests.add(new SpaceTests());
 		tests.add(new StarexecCommandTests());
@@ -67,15 +71,28 @@ public class TestManager {
 		tests.add(new PipelineTests());
 		tests.add(new TreeNodeTests());
 		tests.add(new RESTHelpersTests());
+		tests.add(new CommunitiesTests());
+		tests.add(new ProcessorSecurityTests());
+		tests.add(new StatisticsTests());
+		tests.add(new UploadSecurityTests());
 		//tests.add(new LoginTests());
 		//tests.add(new UploadSolverTests());
 		//tests.add(new UploadBenchmarksTests());
 		//tests.add(new SpaceExplorerTests());
 	}
-	
+	/**
+	 * 
+	 * @return Whether any tests are currently running. Only one sequence can run at once.
+	 */
 	public static boolean areTestsRunning() {
 		return isRunning.get();
 	}
+	
+	/**
+	 * 
+	 * @return Whether a stress test is currently running, meaning whether things
+	 * are still being added to the database.
+	 */
 	
 	public static boolean isStressTestRunning() {
 		return isRunningStress.get();
@@ -114,16 +131,22 @@ public class TestManager {
 		});	
 		return true;
 	}
-	
+	/**
+	 * @return all TestSequences registered during initializeTests
+	 */
 	public static List<TestSequence> getAllTestSequences() {
 		return tests;
 	}
+	/**
+	 * @param sequenceName
+	 * @return results for all tests in the sequence with the given name
+	 */
 	public static List<TestResult> getAllTestResults(String sequenceName) {
 		return TestManager.getTestSequence(sequenceName).getTestResults();
 	}
 	/**
 	 * Executes the tests that have the given name.
-	 * @param testName The name of the test that should be run
+	 * @param testNames The names of the test sequences that should be run
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTests(String[] testNames) {
@@ -169,7 +192,7 @@ public class TestManager {
 	 * @param minBenchmarksPerSpace
 	 * @param maxBenchmarksPerSpace
 	 * @param spacesPerJobCount
-	 * @return
+	 * @return True if the test was started and false if it was not
 	 */
 	public static boolean executeStressTest(final int userCount,final int spaceCount,final int jobCount, final int minUsersPerSpace, final int maxUsersPerSpace, final int minSolversPerSpace, 
 			final int maxSolversPerSpace,final int minBenchmarksPerSpace,final int maxBenchmarksPerSpace,final int spacesPerJobCount) {
@@ -204,8 +227,7 @@ public class TestManager {
 	}
 	
 	/**
-	 * Returns the names of all TestSequences known to the manager
-	 * @return
+	 * @return the names of all TestSequences known to the manager
 	 */
 	public static List<String> getTestNames() {
 		List<String> names=new ArrayList<String>();
@@ -216,9 +238,8 @@ public class TestManager {
 	}
 	
 	/**
-	 * Gets the status of a TestSequence given its name
 	 * @param testName The name of the TestSequence of interest
-	 * @return
+	 * @return the status of a TestSequence given its name
 	 */
 	public static TestStatus getTestStatus(String testName) {
 		TestSequence t = getTestSequence(testName);
@@ -229,9 +250,8 @@ public class TestManager {
 	}
 	
 	/**
-	 * Gets back the message contained by a given TestSequence
 	 * @param testName
-	 * @return
+	 * @return the message contained by a given TestSequence
 	 */
 	public static String getTestMessage(String testName) {
 		TestSequence t = getTestSequence(testName);

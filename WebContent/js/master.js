@@ -1,4 +1,4 @@
-var debugMode = false; //console.log statements are turned off by default
+var debugMode = true; //console.log statements are turned off by default
 
 /**
  * Contains javascript relevant to all pages within starexec 
@@ -82,6 +82,8 @@ $(document).ready(function(){
 	if (!isLocalJobPage) {
 		checkForHelpFile();
 	}
+	
+	$(".hiddenDialog").hide();
 });
 
 function checkForHelpFile() {
@@ -307,5 +309,10 @@ function parseReturnCode(code,printMessage) {
 
 function setJqueryButtonText(buttonSelector,txt) {
 	$(buttonSelector+" .ui-button-text").html(txt);
+}
 
+function handleAjaxError(textStatus) {
+	if (textStatus!="abort") {
+		showMessage('error',"Internal error populating data table",5000);
+	}
 }

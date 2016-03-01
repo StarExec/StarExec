@@ -1,5 +1,10 @@
 package org.starexec.util;
-//TODO: Comment
+/**
+ * This class encapuslates the fields set by a JS DataTables object to the server
+ * to request a new page
+ * @author Eric
+ *
+ */
 public class DataTablesQuery {
 
 	private String searchQuery =null;
@@ -10,7 +15,7 @@ public class DataTablesQuery {
 	private int totalRecords;
 	private int totalRecordsAfterQuery;
 	private int syncValue;
-	
+
 	public DataTablesQuery() {
 		
 	}

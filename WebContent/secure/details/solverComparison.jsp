@@ -23,7 +23,9 @@
 			request.setAttribute("configId2",configId2);
 
 			Solver solver =Solvers.getSolverByConfig(configId,true);
+			request.setAttribute("config1",solver.getConfigurations().get(0));
 			Solver solver2 =Solvers.getSolverByConfig(configId2,true);
+			request.setAttribute("config2",solver2.getConfigurations().get(0));
 
 			request.setAttribute("solver",solver);
 			request.setAttribute("solver2",solver2);
@@ -44,7 +46,7 @@
 	}
 %>
 
-<star:template title="Comparison of ${solver.name} and ${solver2.name} in ${space.name} hierarchy" js="lib/jquery.dataTables.min, util/jobDetailsUtilityFunctions, details/shared, details/solverComparison, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Comparison of ${solver.name} (${config1.name}) and ${solver2.name} (${config2.name}) in ${space.name} hierarchy" js="lib/jquery.dataTables.min, util/jobDetailsUtilityFunctions, details/shared, details/solverComparison, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
 	<span style="display:none" id="configId1" value="${configId}" > </span>

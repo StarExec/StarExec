@@ -157,7 +157,8 @@ CREATE TABLE solvers (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
-	executable_type INT DEFAULT 1, 
+	executable_type INT DEFAULT 1,
+	build_status INT DEFAULT 1,
 	PRIMARY KEY (id),	
 	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
@@ -195,7 +196,6 @@ CREATE TABLE queues (
 
 -- All the SGE worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
--- TODO: Do we actually want any node data except these three columns?
 CREATE TABLE nodes (
 	id INT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(128) NOT NULL,
@@ -277,6 +277,7 @@ CREATE TABLE jobs (
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
+	buildJob BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
@@ -328,7 +329,7 @@ CREATE TABLE job_pairs (
 	KEY(sge_id),
 	KEY (job_space_id, bench_name),
 	KEY (node_id, status_code),
-	KEY (status_code), -- TODO: Do we actually want this change?
+	KEY (status_code),
 	-- Name is what exists on Starexec: easier to use the name here than rename there.
 	KEY job_id_2 (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
@@ -389,8 +390,7 @@ CREATE TABLE jobpair_inputs (
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
--- TODO: Consider eliminating this table, as we store end_time in the job_pairs table. Need to be careful porting 
--- over old pairs.
+-- We cannot use job_pairs.end_time to simulate this table, as it is possible to have job pairs finish at the same time
 CREATE TABLE job_pair_completion (
 	pair_id INT NOT NULL,
 	completion_id INT NOT NULL AUTO_INCREMENT,
@@ -505,11 +505,22 @@ CREATE TABLE community_requests (
 CREATE TABLE anonymous_links (
 	unique_id VARCHAR(36) NOT NULL,
 	primitive_id INT NOT NULL,
-	primitive_type VARCHAR(36),
-	hide_primitive_name BOOLEAN,
+	primitive_type ENUM('solver', 'job', 'bench') NOT NULL,
+	primitives_to_anonymize ENUM('all', 'allButBench', 'none') NOT NULL,
+	date_created DATE NOT NULL,
 
 	PRIMARY KEY (unique_id),
-	UNIQUE KEY (primitive_id, primitive_type, hide_primitive_name)
+	UNIQUE KEY (primitive_id, primitive_type, primitives_to_anonymize)
+);
+
+CREATE TABLE anonymous_primitive_names (
+	anonymous_name VARCHAR(36) NOT NULL,
+	primitive_id INT NOT NULL,
+	primitive_type ENUM('solver', 'job', 'bench', 'config') NOT NULL,
+	job_id INT NOT NULL,
+
+	PRIMARY KEY (primitive_id, primitive_type, job_id),
+	CONSTRAINT anonymous_names_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 CREATE TABLE change_email_requests (
@@ -712,6 +723,12 @@ CREATE TABLE report_data (
 	PRIMARY KEY(id),
 	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
 );
+
+-- Creates a view of the closure table that includes only communities as ancestors
+CREATE VIEW community_assoc AS 
+SELECT ancestor AS comm_id, descendant AS space_id FROM closure 
+JOIN set_assoc ON set_assoc.child_id=closure.ancestor 
+WHERE set_assoc.space_id=1;
 
 ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
 

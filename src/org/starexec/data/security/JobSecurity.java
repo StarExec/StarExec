@@ -1,8 +1,13 @@
 package org.starexec.data.security;
 
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
+import org.apache.log4j.Logger;
+
+import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -21,7 +26,13 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 
+
+import org.starexec.util.LogUtil;
+
 public class JobSecurity {
+
+	private static final Logger log = Logger.getLogger(JobSecurity.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 	
 	
 	public static ValidatorStatusCode canUserRecompileJob(int jobId, int userId) {
@@ -65,6 +76,28 @@ public class JobSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks if a job is associated with a given anonymous link uuid.
+	 * @param anonymousLinkUuid A uuid that needs to be checked if it is connected to the given job.
+	 * @param jobId The id of the job to check
+	 * @return true ValidatorStatusCode if successful otherwise a false ValidatorStatusCode 
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJob( String anonymousLinkUuid, int jobId ) {
+		final String methodName = "isAnonymousLinkAssociatedWithJob"; 
+		logUtil.entry( methodName );
+		try {
+			Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( anonymousLinkUuid );
+			if ( !potentialJobId.isPresent() || potentialJobId.get() != jobId ) {
+				return new ValidatorStatusCode( false, "Job does not exist." );
+			} else {
+				return new ValidatorStatusCode( true );
+			}
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, "Caught an SQLException while trying to access anonymous links table data." );
+			return new ValidatorStatusCode( false, "Database error.");
+		}
+	}
 	
 	/**
 	 * Checks whether a given string is a valid type for the pairsInSpace page
@@ -179,6 +212,21 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to pause this job");
 		}
 		return new ValidatorStatusCode(true);
+	}
+
+	/**
+	 *
+	 * @param jobId The id of the job to get an anonymous link for.
+	 * @param userId The id of the user trying to get the anonymous link.
+	 * @return A successful ValidatorStatusCode if the user can get an anonymous link for this job. An unsuccesful one otherwise.
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserGetAnonymousLink( int jobId, int userId ) {
+		if ( userOwnsJobOrIsAdmin( jobId, userId )) {
+			return new ValidatorStatusCode( true );
+		} else {
+			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this job." );
+		}
 	}
 	
 	/**

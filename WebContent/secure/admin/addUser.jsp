@@ -2,8 +2,6 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-
-	//String password = UUID.randomUUID().toString();
 	String password = "Password0410!!";
 
 	request.setAttribute("coms", Communities.getAll());

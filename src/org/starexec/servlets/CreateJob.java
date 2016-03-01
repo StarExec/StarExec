@@ -137,7 +137,7 @@ public class CreateJob extends HttpServlet {
 		ValidatorStatusCode status=isValid(request);
 		if(!status.isSuccess()) {
 			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			log.debug("received and invalid job creation request");
+			log.debug("received an invalid job creation request");
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			return;
@@ -179,8 +179,11 @@ public class CreateJob extends HttpServlet {
 		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 		
 		int userId = SessionUtil.getUserId(request);
-
-		boolean suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
+		
+		boolean suppressTimestamp=false;
+		if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
+			suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
+		}
 		log.debug("("+method+")"+" User chose "+(suppressTimestamp?"":"not ")+"to suppress timestamps.");
 
 		//Setup the job's attributes

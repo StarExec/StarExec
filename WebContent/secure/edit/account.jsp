@@ -352,10 +352,10 @@
 		</fieldset>
 	</c:if>
 	
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-createSettingsProfile" title="create settings profile">
+	<div id="dialog-createSettingsProfile" title="create settings profile" class="hiddenDialog">
 		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
 		<p><label>name: </label><input id="settingName" type="text"/></p>			
 	</div>

@@ -218,9 +218,7 @@ function initUI() {
 	
 	//there must be some bench processor selected, so make sure we are using one
 	$("#benchProcess").find("option").first().attr("selected","selected");
-	
-	$("#dialog-createSettingsProfile").hide();
-	
+		
 	$('#btnBack').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"

@@ -18,12 +18,14 @@ fieldset {
 	font-family: monospace;
 }
 
-#downLink3 {
-	float: right;
-	margin-right: 185px;
+#dialog-show-anonymous-link a {
+	color: #0000EE;
+	text-decoration: underline;
 }
 
-
+#anonymousLink {
+	display: none;
+}
 
 
 .popoutLink {
@@ -34,11 +36,6 @@ fieldset {
 .caption {
 	font-size: 12px;
 	margin-top: 10px;
-}
-
-#uploadConfig {
-	float: right;
-	margin-right: 10px;
 }
 
 #uploadConfigMargin {
@@ -131,7 +128,7 @@ fieldset {
 #actions a {
 	margin-left: 8px;
 	margin-right: 8px;
-	
+	margin-bottom: 10px;
 }
 
 #options ul{

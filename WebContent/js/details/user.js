@@ -15,7 +15,6 @@ $(document).ready(function(){
 
 	$("#detailPanel").css("width","100%");
 
-	$(".dialog").hide(); // hide all dialogs
 	$("fieldset:not(:first)").expandable(true);
 	
 	$('.popoutLink').button({

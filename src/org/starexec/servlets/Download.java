@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
@@ -24,6 +25,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
+import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
@@ -45,6 +48,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
+import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -57,6 +61,7 @@ import org.starexec.util.JobToXMLer;
 @SuppressWarnings("serial")
 public class Download extends HttpServlet {
 	private static final Logger log = Logger.getLogger(Download.class);	 
+	private static final LogUtil logUtil = new LogUtil( log );
 	private static final String JS_FILE_TYPE = "js";
 	private static final String CSS_FILE_TYPE = "css";
 	private static final String PNG_FILE_TYPE = "png";
@@ -71,9 +76,13 @@ public class Download extends HttpServlet {
 	
 	private static String PARAM_TYPE = "type";
 	private static String PARAM_ID = "id";
+	private static String PARAM_ANON_ID = "anonId";
 	private static String PARAM_REUPLOAD = "reupload";
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		final String methodName = "doGet";
+		logUtil.entry( methodName );
+
 		User u = SessionUtil.getUser(request);
 		boolean success;
 		String shortName=null;
@@ -97,7 +106,19 @@ public class Download extends HttpServlet {
 			}
 			
 			if (request.getParameter(PARAM_TYPE).equals(R.SOLVER)) {
-				Solver s = Solvers.get(Integer.parseInt(request.getParameter(PARAM_ID)));
+				Solver s = null;
+				String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
+				if ( universallyUniqueId == null ) {
+					s = Solvers.get(Integer.parseInt(request.getParameter(PARAM_ID)));
+				} else {
+					Optional<Integer> solverId =  AnonymousLinks.getIdOfSolverAssociatedWithLink( universallyUniqueId );
+					if ( solverId.isPresent() ) {
+						s = Solvers.get( solverId.get() );
+					} else {
+						response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver not found.");
+						return;
+					}
+				}
 				shortName=s.getName();
 				boolean reupload = false;
 				if (Util.paramExists(PARAM_REUPLOAD, request)) {
@@ -107,7 +128,24 @@ public class Download extends HttpServlet {
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleSolver(s, u.getId(), response, reupload);
 			}  else if (request.getParameter(PARAM_TYPE).equals(R.BENCHMARK)) {
-				Benchmark b = Benchmarks.get(Integer.parseInt(request.getParameter(PARAM_ID)));
+				Benchmark b = null;
+				String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
+				if ( universallyUniqueId == null ) {
+					int benchId = Integer.parseInt(request.getParameter(PARAM_ID));
+					logUtil.debug( methodName, "Getting benchmark with id: " + benchId );
+					b = Benchmarks.get( benchId );
+				} else {
+					logUtil.debug( methodName, "Getting benchmark from anonymous link UUID: " + universallyUniqueId );
+					Optional<Integer> benchId =  AnonymousLinks.getIdOfBenchmarkAssociatedWithLink( universallyUniqueId );
+					if ( benchId.isPresent() ) {
+						b = Benchmarks.get( benchId.get() );
+					} else {
+						response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark not found.");
+						return;
+					}
+				}
+				
+
 				shortName=b.getName();
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
@@ -463,10 +501,10 @@ public class Download extends HttpServlet {
 			Job job=Jobs.get(jobId);
 			HashMap<Integer,HashMap<Integer, Properties>> props= null;
 			if (since==null) {
-				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace()));
+				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(), PrimitivesToAnonymize.NONE));
 				props=Jobs.getJobAttributes(jobId);
 			} else {
-				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(),since));
+				job.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(job.getPrimarySpace(),since,PrimitivesToAnonymize.NONE));
 				props= Jobs.getNewJobAttributes(jobId, since);
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 
@@ -1068,42 +1106,13 @@ public class Download extends HttpServlet {
 			}
 			
 			
-			int userId=SessionUtil.getUserId(request);
 			if (!type.equals(R.JOB_OUTPUTS)) {
-				if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
-					new ValidatorStatusCode(false, "The given id was not a valid integer");
-				}
-				int id=Integer.parseInt(request.getParameter(PARAM_ID));
-				ValidatorStatusCode status=null;
-				if (type.equals(R.SOLVER)) {
-					status=SolverSecurity.canUserDownloadSolver(id,userId);
-					if (!status.isSuccess()) {
-						return status;
-					}
-				} else if (type.equals(R.SPACE_XML) || type.equals(R.SPACE) || type.equals(R.PROCESSOR)) {
-					if (!Permissions.canUserSeeSpace(id,userId)) {
-						return new ValidatorStatusCode(false, "You do not have permission to see this space");
-					}	
-
-				} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
-					if (!Permissions.canUserSeeJob(id, userId)) {
-						return new ValidatorStatusCode(false, "You do not have permission to see this job");
-					}
-				} else if (type.equals(R.PAIR_OUTPUT)) {
-					int jobId=JobPairs.getPair(id).getJobId();
-					if (!Permissions.canUserSeeJob(jobId, userId)) {
-						return new ValidatorStatusCode(false, "You do not have permission to see this job");
-					}
-				} else if (type.equals(R.BENCHMARK)) {
-					status=BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
-					if (!status.isSuccess()) {
-						return status;
-					}
-				} else if (type.equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
-					status = JobSecurity.canUserSeeJob(id, userId);
-					if (!status.isSuccess()) {
-						return status;
-					}
+				String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
+				if ( universallyUniqueId == null ) {
+					int userId=SessionUtil.getUserId(request);
+					return validateForUser( userId, type, request );
+				} else {
+					return validateForAnonymousLink( universallyUniqueId, type, request );
 				}
 			} else {
 				//expecting a comma-separated list
@@ -1114,11 +1123,54 @@ public class Download extends HttpServlet {
 				}
 				
 			}
-			
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		return new ValidatorStatusCode(false, "Internal error processing download request");
+	}
+
+	private static ValidatorStatusCode validateForAnonymousLink( String universallyUniqueId, String type, HttpServletRequest request ) {
+		return new ValidatorStatusCode(true);
+	}
+
+	private static ValidatorStatusCode validateForUser( int userId, String type, HttpServletRequest request ) {
+		if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
+			new ValidatorStatusCode(false, "The given id was not a valid integer");
+		}
+
+		int id=Integer.parseInt(request.getParameter(PARAM_ID));
+		ValidatorStatusCode status=null;
+		if (type.equals(R.SOLVER)) {
+			status=SolverSecurity.canUserDownloadSolver(id,userId);
+			if (!status.isSuccess()) {
+				return status;
+			}
+		} else if (type.equals(R.SPACE_XML) || type.equals(R.SPACE) || type.equals(R.PROCESSOR)) {
+			if (!Permissions.canUserSeeSpace(id,userId)) {
+				return new ValidatorStatusCode(false, "You do not have permission to see this space");
+			}	
+
+		} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
+			if (!Permissions.canUserSeeJob(id, userId)) {
+				return new ValidatorStatusCode(false, "You do not have permission to see this job");
+			}
+		} else if (type.equals(R.PAIR_OUTPUT)) {
+			int jobId=JobPairs.getPair(id).getJobId();
+			if ( !Permissions.canUserSeeJob( jobId, userId )) {
+				return new ValidatorStatusCode( false, "You do not have permission to see this job" );
+			}
+		} else if (type.equals(R.BENCHMARK)) {
+			status=BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
+			if (!status.isSuccess()) {
+				return status;
+			}
+		} else if (type.equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+			status = JobSecurity.canUserSeeJob( id, userId );
+			if ( !status.isSuccess() ) {
+				return status;
+			}
+		}
+		return new ValidatorStatusCode(true);
 	}
 }

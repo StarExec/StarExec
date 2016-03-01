@@ -31,6 +31,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.util.ArchiveUtil;
@@ -39,7 +40,7 @@ import org.starexec.util.PartWrapper;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-
+import org.starexec.jobs.JobManager;
 /**
  * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
  * .tar, or .tar.gz format, and configurations can be included in a top level
@@ -98,11 +99,22 @@ public class UploadSolver extends HttpServlet {
 				
 				// Parse the request as a solver
 				int[] result = handleSolver(userId, form);	
-				//should be 2 element array where the first element is the new solver ID and the
+				//should be 3 element array where the first element is the new solver ID and the
 				//second element is a status code related to whether configurations existed.
+                //the third element indicates whether this solver needs to be built on StarExec
 				int return_value = result[0];
 				int configs = result[1];
-			
+				int buildJob = result[2];
+				
+				if(return_value>=0 && buildJob>0) {
+					int job_return = JobManager.addBuildJob(return_value, spaceId);
+					if (job_return >= 0) {
+						log.info("Job created successfully. JobId: " + job_return);
+					}
+					else {
+						log.debug("Error in job creation for buildJob for solver: " + return_value);
+					}
+				}	
 				// Redirect based on success/failure
 				if(return_value>=0) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
@@ -173,8 +185,6 @@ public class UploadSolver extends HttpServlet {
     	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
     }
     
-    
-    
 	/**
 	 * This method is responsible for uploading a solver to
 	 * the appropriate location and updating the database to reflect
@@ -188,9 +198,10 @@ public class UploadSolver extends HttpServlet {
 
 		boolean build=false;
 		String buildstr=null;
-		int[] returnArray = new int[2];
+		int[] returnArray = new int[3];
 		returnArray[0] = 0;
 		returnArray[1] = 0;
+		returnArray[2] = 0; //0 if prebuilt, 1 if contains buildscript
 		
 		File sandboxDir=Util.getRandomSandboxDirectory();
 		Util.logSandboxContents();
@@ -286,33 +297,48 @@ public class UploadSolver extends HttpServlet {
 			returnArray[0]=-6;
 			return returnArray;
 		}
+        //Checks to see if a build script exists and needs to be built.
 		if (containsBuildScript(sandboxDir)) {
-			log.debug("the uploaded solver did contain a build script");
-			if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
-				FileUtils.deleteDirectory(sandboxDir);
-				FileUtils.deleteDirectory(uniqueDir);
-				returnArray[0]=-5;                   //fail due to invalid permissions
-				return returnArray;
-			}
+            SolverBuildStatus status = new SolverBuildStatus();
+            status.setCode(2);
+			newSolver.setBuildStatus(status);
 			
-			//give sandbox full permissions over the solver directory
-			Util.sandboxChmodDirectory(sandboxDir);
-			
-			
-		
+            //the old build code I'm workign on replacing:
+            
+            log.debug("the uploaded solver did contain a build script");
+            if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
+                    FileUtils.deleteDirectory(sandboxDir);
+                    FileUtils.deleteDirectory(uniqueDir);
+                    returnArray[0]=-5;                   //fail due to invalid permissions
+                    return returnArray;
+            }
 
-			//run the build script as sandbox
-			String[] command=new String[4];
-			command[0]="sudo";
-			command[1]="-u";
-			command[2]="sandbox";
-			command[3]="./"+R.SOLVER_BUILD_SCRIPT;
-				
-			buildstr=Util.executeCommand(command, null,sandboxDir);
-			build=true;
-			log.debug("got back the output "+buildstr);
+            //give sandbox full permissions over the solver directory
+            Util.sandboxChmodDirectory(sandboxDir);
+
+            //run the build script as sandbox
+            String[] command=new String[4];
+            command[0]="sudo";
+            command[1]="-u";
+            command[2]="sandbox";
+            command[3]="./"+R.SOLVER_BUILD_SCRIPT;
+            buildstr=Util.executeCommand(command, null,sandboxDir);
+            build=true;
+            log.debug("got back the output "+buildstr); 
+
+            /* This is code for my build feature that's not quite ready, -Andrew:
+            returnArray[2] = 1; //Set build flag
+            uniqueDir = new File(newSolver.getPath(), "starexec_src");
+            newSolver.setPath(uniqueDir.getAbsolutePath());
+            uniqueDir.mkdirs();
+            */
 		}
-		
+		else {
+                SolverBuildStatus status = new SolverBuildStatus();
+                status.setCode(1);
+                newSolver.setBuildStatus(status);
+        }
+
 		Util.sandboxChmodDirectory(sandboxDir);
 
 		for (File f : sandboxDir.listFiles()) {
@@ -377,7 +403,7 @@ public class UploadSolver extends HttpServlet {
 		int solver_Success = Solvers.add(newSolver, spaceId);
 		
 		//if we were successful and this solver had a build script, save the build output to show the uploader
-		if (solver_Success>0 && build) {
+/*		if (solver_Success>0 && build) {
 			File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
 			log.debug("output file = "+buildOutputFile.getAbsolutePath());
 			buildOutputFile.getParentFile().mkdirs();
@@ -387,7 +413,7 @@ public class UploadSolver extends HttpServlet {
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
 			}
-		}
+		} */
 
 		// if the solver was uploaded successfully log the upload in the weekly report table
 		if (solver_Success>0) {

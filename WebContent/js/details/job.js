@@ -8,10 +8,12 @@ var useWallclock=true;
 var syncResults=false;
 var DETAILS_JOB = {}; 
 
+// contains requests that have been sent to the server to update pairs, stats, or graphs that 
+// have not yet returned. If the user clicks on a new job space, these requests will all
+// be aborted, as they will no longer be useful.
+var openAjaxRequests = [];
+
 $(document).ready(function(){
-	log("DETAILS_JOB.starexecUrl: " + DETAILS_JOB.starexecUrl);
-	log("isLocalJobPage: " + isLocalJobPage);
-	log("starexecRoot: " + starexecRoot);
 	initializeGlobalPageVariables();
 	//sets up buttons and so on
 	initUI();
@@ -36,34 +38,53 @@ $(document).ready(function(){
 // Initializes the fields of the global DETAILS_JOB object.
 function initializeGlobalPageVariables() {
 	'use strict';
-	jobId=$("#jobId").attr("value");
-	DETAILS_JOB.starexecUrl = $("#starexecUrl").attr("value");
+
+	// Set these first since get functions may depend no them
+	DETAILS_JOB.isAnonymousPage = $('#isAnonymousPage').attr('value') === 'true';
+	jobId=$('#jobId').attr('value');
+	DETAILS_JOB.starexecUrl = $('#starexecUrl').attr('value');
+	DETAILS_JOB.rootJobSpaceId = $('#spaceId').attr('value');
+	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize').attr('value');
+	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
+
 	DETAILS_JOB.solverTableInitializer = getSolverTableInitializer();
 	DETAILS_JOB.pairTableInitializer = getPairTableInitializer();
 	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();
-	DETAILS_JOB.rootJobSpaceId = $("#spaceId").attr("value");
-	log(DETAILS_JOB.spaceExplorerJsonData);
+
+	log("starexecUrl: " + DETAILS_JOB.starexecUrl);
+	log("isLocalJobPage: " + isLocalJobPage);
+	log("starexecRoot: " + starexecRoot);
+	log( 'isAnonymousPage: ' + DETAILS_JOB.isAnonymousPage );
+	log( 'primitivesToAnonymize: ' + DETAILS_JOB.primitivesToAnonymize );
 }
 
 function getPanelTableInitializer(jobId, spaceId) {
-	"use strict";
+	'use strict';
 	var panelTableInitializer = null;
+
+	var paginationUrl = '';
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		paginationUrl = starexecRoot+'services/jobs/solvers/anonymousLink/pagination/'+spaceId+'/'+DETAILS_JOB.anonymousLinkUuid+'/'+
+				DETAILS_JOB.primitivesToAnonymize+'/true/';
+	} else {
+		paginationUrl = starexecRoot+'services/jobs/solvers/pagination/'+spaceId+'/true/';
+	}
 
 	if (isLocalJobPage && useWallclock) {
 		// get the JSON directly from the page if this is a local page.
-		panelTableInitializer = $.parseJSON($("#jobSpaceWallclockTimeSolverStats"+spaceId).attr("value"));
+		panelTableInitializer = $.parseJSON($('#jobSpaceWallclockTimeSolverStats'+spaceId).attr('value'));
 	} else if (isLocalJobPage && !useWallclock) {
 		// get the JSON directly from the page if this is a local page.
-		panelTableInitializer = $.parseJSON($("#jobSpaceCpuTimeSolverStats"+spaceId).attr("value"));
+		panelTableInitializer = $.parseJSON($('#jobSpaceCpuTimeSolverStats'+spaceId).attr('value'));
 	} else {
 		// otherwise get it from the server
 		panelTableInitializer = {
-			"sDom"			: 'rt<"clear">',
-			"iDisplayStart"	: 0,
-			"iDisplayLength": 1000, // make sure we show every entry
-			"sAjaxSource"	: starexecRoot+"services/jobs/solvers/pagination/"+spaceId+"/true/",
-			"sServerMethod" : "POST",
-			"fnServerData"  : fnShortStatsPaginationHandler
+			'sDom'			: 'rt<"clear">',
+			'iDisplayStart'	: 0,
+			'iDisplayLength': 1000, // make sure we show every entry
+			'sAjaxSource'	: paginationUrl,
+			'sServerMethod' : 'POST',
+			'fnServerData'  : fnShortStatsPaginationHandler
 		};
 	}
 
@@ -86,9 +107,15 @@ function getSpaceExplorerJsonData() {
 			return {};
 		}
 	} else {
+		var url = '';
+		if ( DETAILS_JOB.isAnonymousPage ) {
+			url = starexecRoot+"services/space/anonymousLink/" +DETAILS_JOB.anonymousLinkUuid+ "/jobspaces/true/"+DETAILS_JOB.primitivesToAnonymize;
+		} else {
+			url = starexecRoot+"services/space/" +jobId+ "/jobspaces/true";
+		}
 		spaceExplorerJsonData = {
 			"ajax" : { 
-				"url" : starexecRoot+"services/space/" +jobId+ "/jobspaces/true",	// Where we will be getting json data from 
+				"url" : url, // Where we will be getting json data from 
 				"data" : function (n) {
 					return {
 						id : (n.attr ? n.attr("id") : 0)
@@ -116,7 +143,6 @@ function refreshPanels(){
 }
 
 function refreshStats(id){
-	//summaryTable.fnProcessingIndicator(true);
 	summaryTable.api().ajax.reload(function() {
 		updateGraphs();
 	},true);
@@ -177,6 +203,7 @@ function initSpaceExplorer() {
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
+			killAjaxRequests();
 			// When a node is clicked, get its ID and display the info in the details pane
 			id = data.rslt.obj.attr("id");
 			name = data.rslt.obj.attr("name");
@@ -192,6 +219,13 @@ function initSpaceExplorer() {
 	});
 	log("Initialized exploreList tree.");
 
+}
+
+function killAjaxRequests() {
+	for (var i = 0; i < openAjaxRequests.length; i++) {
+		openAjaxRequests[i].abort();
+	}
+	openAjaxRequests = []
 }
 
 function clearPanels() {
@@ -252,10 +286,10 @@ function updateGraphs() {
 		$("#spaceOverviewSelections").empty();
 		$(rows).each(function() {
 			//alert(this.html());
-			solverName=$(this).find("a:first").attr("title");
-			configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
-			configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
+			var solverName=$(this).find("a:first").attr("title");
+			var configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
+			var configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
+			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
 			$("#spaceOverviewSelections").append(htmlString);
 			$("#solverChoice1").append(htmlString);
 			$("#solverChoice2").append(htmlString);
@@ -295,15 +329,6 @@ function makeJobDescriptionUneditable() {
 //  Initializes the user-interface
 // 
 function initUI(){
-	$('#dialog-confirm-delete').hide();
-	$('#dialog-confirm-pause').hide();
-	$('#dialog-confirm-resume').hide();
-	$( "#dialog-warning").hide();
-	$("#dialog-return-ids").hide();
-	$("#dialog-solverComparison").hide();
-	$("#dialog-spaceOverview").hide();
-	$("#dialog-postProcess").hide();
-	$("#dialog-changeQueue").hide();
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
 	$(".cpuTime").hide();
@@ -312,6 +337,7 @@ function initUI(){
 		setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
 		setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper', 
 				'description');
+		registerAnonymousLinkButtonEventHandler();
 	} else {
 		makeJobNameUneditable();
 		makeJobDescriptionUneditable();
@@ -321,6 +347,7 @@ function initUI(){
 		$('#actionField').hide();
 		$('#matrixViewButton').hide();
 		$('#downloadJobPageButton').hide();
+		$('#anonymousLink').hide();
 	}
 
 	//for aesthetics, make the heights of the two option fields identical
@@ -434,6 +461,12 @@ function initUI(){
 		}
 	});
 
+	$("#solverNameKeyButton").button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	});
+
 	$("#downloadJobPageButton").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-s"
@@ -443,6 +476,7 @@ function initUI(){
 	$("#downloadJobPageButton").click(function() {
 		createDownloadRequest("#downloadJobPageButton", "job_page");
 	});
+
 	
 	$("#syncResults").button({
 		icons: {
@@ -457,6 +491,11 @@ function initUI(){
 		} else {
 			popup(url);
 		}
+	});
+
+	$("#solverNameKeyButton").click(function() {
+		var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?id='+jobId;
+		popup(url);
 	});
 
 
@@ -810,9 +849,18 @@ function updateSpaceOverviewGraph() {
 	if ($("#logScale").prop("checked")) {
 		logY=true;
 	}
+
+	var postUrl = null;
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = starexecRoot+'services/jobs/anonymousLink/'+ DETAILS_JOB.anonymousLinkUuid +'/' + curSpaceId + 
+				'/graphs/spaceOverview/'+getSelectedStage()+'/'+DETAILS_JOB.primitivesToAnonymize;
+	} else {
+		postUrl = starexecRoot+'services/jobs/' + curSpaceId+'/graphs/spaceOverview/'+getSelectedStage();
+	}
+	log('updateSpaceOverviewGraph postUrl: ' + postUrl);
 	
-	$.post(
-			starexecRoot+"services/jobs/" + curSpaceId+"/graphs/spaceOverview/"+getSelectedStage(),
+	var xhr = $.post(
+			postUrl,
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -826,7 +874,7 @@ function updateSpaceOverviewGraph() {
 					//also, equality checking doesn't work on arrays, but less than and greater than do
 					if (!(currentConfigs>configs) && !(currentConfigs<configs)) {
 						$("#spaceOverview").attr("src",returnCode);
-						$("#bigSpaceOverview").attr("src",returnCode+"600");
+						$("#bigSpaceOverview").attr("src",returnCode+"800");
 					}
 				} else {
 					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
@@ -840,15 +888,24 @@ function updateSpaceOverviewGraph() {
 			},
 			"text"
 	);
+	openAjaxRequests.push(xhr);
 }
 
 //size is in pixels and color is a string
 function updateSolverComparison(size, color) {
 	var config1=$("#solverChoice1 option:selected").attr("value");
 	var config2=$("#solverChoice2 option:selected").attr("value");
+
+	var postUrl = '';
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = starexecRoot+"services/jobs/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid+"/"+curSpaceId+"/graphs/solverComparison/"+config1+
+			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage()+"/"+DETAILS_JOB.primitivesToAnonymize;
+	} else {
+		postUrl = starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
+	}
 	
-	$.post(
-			starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage(),
+	var xhr = $.post(
+			postUrl,
 			{},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -873,6 +930,7 @@ function updateSolverComparison(size, color) {
 			},
 			"text"
 	);
+	openAjaxRequests.push(xhr);
 }
 
 function setupJobNameAndDescriptionEditing(textSelector, inputSelector, buttonSelector, wrapperSelector, nameOrDescription) {
@@ -954,16 +1012,21 @@ function getPanelTable(space) {
 }
 
 function initializePanels() {
-	sentSpaceId=curSpaceId;
+	'use strict';
+	DETAILS_JOB.sentSpaceId=curSpaceId;
 	if (isLocalJobPage) {
-		var panelJson = $.parseJSON($("#subspacePanelJson"+sentSpaceId).attr("value"));
+		var panelJson = $.parseJSON($("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).attr("value"));
 		handleSpacesData(panelJson);
+	} else if ( DETAILS_JOB.isAnonymousPage ) {
+		//TODO SPAGETT
+		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.primitivesToAnonymize+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	} else {
-		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+sentSpaceId, handleSpacesData);
+		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	}
 }
 
 function handleSpacesData(spaces) {
+	log( "SPACES JSON: " + spaces );
 	panelArray=new Array();
 	var open=true;
 	if (spaces.length==0) {
@@ -982,7 +1045,7 @@ function handleSpacesData(spaces) {
 		child=getPanelTable(space);
 		//if the user has changed spaces since this request was sent, we don't want to continue
 		//generating panels for the old space.
-		if (sentSpaceId!=curSpaceId) {
+		if (DETAILS_JOB.sentSpaceId!=curSpaceId) {
 			return;
 		}
 		$("#panelActions").after(child); //put the table after the panelActions fieldset
@@ -1078,10 +1141,12 @@ function initDataTables(){
 	});
 	
 	//Set up row click to send to pair details page
-	$("#pairTbl tbody").on("click", "tr",  function(){
-		var pairId = $(this).find('input').val();
-		window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
-	});
+	if ( !DETAILS_JOB.isAnonymousPage ) {
+		$("#pairTbl tbody").on("click", "tr",  function(){
+			var pairId = $(this).find('input').val();
+			window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
+		});
+	}
 	
 	// Change the filter so that it only queries the server when the user stops typing
 	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
@@ -1147,7 +1212,7 @@ function getSolverTableInitializer() {
 		"pagingType"    : "full_numbers"
     };
 
-	if (!isLocalJobPage) {
+	if ( !isLocalJobPage ) {
         solverTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
         solverTableInitializer.sServerMethod = "POST";
         solverTableInitializer.fnServerData = fnStatsPaginationHandler;
@@ -1170,8 +1235,8 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 				
 			},  
 			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+	).fail(function(code,textStatus){
+		handleAjaxError(textStatus);
 	});
 }
 
@@ -1179,15 +1244,19 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
-	var outSpaceId=curSpaceId;
-	$.post(  
-			sSource +"solvers/pagination/"+outSpaceId+"/false/"+useWallclock+"/"+getSelectedStage(),
+
+	var postUrl = '';
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = sSource +"solvers/anonymousLink/pagination/"+curSpaceId+ "/" + getParameterByName("anonId") + 
+				"/" + DETAILS_JOB.primitivesToAnonymize+"/false/"+useWallclock+"/" + getSelectedStage();
+	} else {
+		postUrl = sSource +"solvers/pagination/"+curSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
+	}
+	var xhr = $.post(  
+			postUrl,
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
-				if (outSpaceId!=curSpaceId) {
-					return;
-				}
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
 					$("#solverSummaryField").show();
@@ -1198,9 +1267,10 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 
 			},  
 			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+	).fail(function(code,textStatus){
+		handleAjaxError(textStatus);
 	});
+	openAjaxRequests.push(xhr);
 }
 
 //
@@ -1211,23 +1281,28 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 //  @param fnCallback the function that actually maps the returned page to the DataTable object
 //
 function fnPaginationHandler(sSource, aoData, fnCallback) {
+	'use strict';
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
-	var outSpaceId=curSpaceId;
 	if (sortOverride!=null) {
-		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
-		aoData.push( { "name": "sort_dir", "value":isASC() } );
+		aoData.push( { 'name': 'sort_by', 'value':getSelectedSort() } );
+		aoData.push( { 'name': 'sort_dir', 'value':isASC() } );
 	}
-	$.post(  
-			sSource + "pairs/pagination/"+outSpaceId+"/"+useWallclock+"/"+syncResults+"/"+getSelectedStage(),
+
+	var postUrl = null;
+	if ( DETAILS_JOB.isAnonymousPage ) {
+		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + curSpaceId +
+				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + DETAILS_JOB.primitivesToAnonymize;
+	} else {
+		postUrl = sSource + 'pairs/pagination/'+curSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
+	}
+
+	var xhr = $.post(  
+			postUrl,
 			aoData,
 			function(nextDataTablePage){
-				//do nothing if this is no longer the current request
-				if (outSpaceId!=curSpaceId) {
-					return;
-				}
-				s=parseReturnCode(nextDataTablePage);
+				var s=parseReturnCode(nextDataTablePage);
 				if (s) {
 					
 					pairTable.fnProcessingIndicator(false);
@@ -1246,12 +1321,12 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						$("#errorField").show();
 					}
 				}
-					
 			},  
 			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating data table",5000);
+	).fail(function(code, textStatus){
+		handleAjaxError(textStatus);
 	});
+	openAjaxRequests.push(xhr);
 }
 
 function popup(url) {
@@ -1261,4 +1336,32 @@ function popup(url) {
 		// Browser allowed opening of popup.
 		win.focus();
 	}
+}
+
+function registerAnonymousLinkButtonEventHandler() {
+	'use strict';
+	$('#anonymousLink').unbind('click');
+	$('#anonymousLink').click( function() {
+		$('#dialog-confirm-anonymous-link').text(
+				"Do you want the job, benchmark, solver, and configuration names to be hidden on the linked page?" );
+		$('#dialog-confirm-anonymous-link').dialog({
+			modal: true,
+			width: 600,
+			height: 200,
+			buttons: {
+				'everything': function() { 
+					$(this).dialog('close');
+					makeAnonymousLinkPost('job', jobId, 'all');
+				},
+				'everything except benchmarks': function() {
+					$(this).dialog('close');
+					makeAnonymousLinkPost( 'job', jobId, 'allButBench');
+				},
+				'nothing': function() {
+					$(this).dialog('close');
+					makeAnonymousLinkPost('job', jobId, 'none');
+				}
+			}
+		});	
+	});
 }

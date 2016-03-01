@@ -12,6 +12,19 @@ public class BenchmarkDependency extends Identifiable{
 	@Expose private Benchmark secondaryBench; //e.g. an axiom that the primary benchmark references
 	@Expose private String dependencyPath ="";//the path to the file that we want in the execution host
 	
+	public BenchmarkDependency() {
+		
+	}
+	public BenchmarkDependency(int primaryId, int secondaryId, String dependencyPath) {
+		this.dependencyPath=dependencyPath;
+		Benchmark b = new Benchmark();
+		b.setId(primaryId);
+		primaryBench=b;
+		Benchmark secondary = new Benchmark();
+		secondary.setId(secondaryId);
+		secondaryBench=secondary;
+	}
+	
 	/**
 	 * @return the primaryBench
 	 */

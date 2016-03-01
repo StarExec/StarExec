@@ -12,6 +12,7 @@ public final class Web {
 		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
 	}
 
+	public static final String ANONYMOUS_LINK_PARAMETER = "anonId";
 	
 	public static final String APPROVE_COMMUNITY_REQUEST = "approve";
 	public static final String DECLINE_COMMUNITY_REQUEST = "decline";

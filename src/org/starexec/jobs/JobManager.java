@@ -42,7 +42,7 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
-
+import org.starexec.data.database.Queues;
 
 /**
  * Handles all SGE interactions for job submission and maintenance
@@ -194,7 +194,6 @@ public abstract class JobManager {
 			for (Job job : joblist) {
 				// jobTemplate is a version of mainTemplate customized for this job
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
-				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
@@ -314,7 +313,7 @@ public abstract class JobManager {
 							}
 
 							// do this first, before we submit to grid engine, to avoid race conditions
-							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
 							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
 
@@ -322,12 +321,12 @@ public abstract class JobManager {
 							if(!R.BACKEND.isError(execId)){
 							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
-							    JobPairs.setPairStatus(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
+							    JobPairs.setStatusForPairAndStages(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
 							}
 							queueSize++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
-							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
+							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}
 				} // end iterating once through the schedule
@@ -460,8 +459,15 @@ public abstract class JobManager {
 		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, queue.getWallTimeout(), job.getWallclockTimeout()));
 		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
-		
-		
+
+        log.debug("Checking if job is build job: " + job.isBuildJob() + " Job id: " + job.getId());
+
+        if(job.isBuildJob()) {
+                replacements.put("$$BUILD_JOB$$", "true");
+        }
+        else {
+                replacements.put("$$BUILD_JOB$$", "false");
+        }
 		
 		// all arrays from above. Note that we are base64 encoding some for safety
 		replacements.put("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
@@ -813,7 +819,62 @@ public abstract class JobManager {
 		}
 		return pairs;
 	}
-	
+    /**
+     * This method creates and adds the build job that compiles the solver on the woker nodes
+     * @author Andrew Lubinus
+     * @param solverId the id of the unbuilt solver
+     * @param spaceId the space where the solver is, at this point also the space where the job is added
+     * @return int jobId of the job that has been added, or -1 if failed to add job.
+     */
+
+	public static int addBuildJob(Integer solverId, Integer spaceId) {
+		Solver s = Solvers.get(solverId);
+		log.info("Adding build job for solver " + s.getName() + " in space: " + spaceId);
+        Queue q = Queues.getAllQ();
+		Job j = JobManager.setupJob(
+			s.getUserId(),
+			s.getName() + " Build",
+			s.getName() + " Build Job",
+			-1,
+			-1,
+			R.DEFAULT_QUEUE_ID, //This is the same queue referenced by variable q
+			0,
+			q.getCpuTimeout(),
+			q.getWallTimeout(),
+			100000000, //This number gets reset to max memory for the node in the jobscript.
+			false,
+			0);
+		j.setBuildJob(true);
+		String spaceName = "job space";
+		String sm=Spaces.getName(spaceId);
+		if (sm!=null) {
+			spaceName = sm;
+		}
+        Configuration c = new Configuration();
+        c.setId(1);
+        c.setName("build");
+        c.setSolverId(solverId);
+        c.setDescription("Build Configuration for solver: " + solverId);
+        int cId = Solvers.addConfiguration(s,c);
+		JobPair pair = new JobPair();
+		JoblineStage stage = new JoblineStage();
+		stage.setStageNumber(1);
+		pair.setPrimaryStageNumber(1);
+		stage.setNoOp(false);
+		stage.setSolver(s);
+        stage.setConfiguration(c);
+		pair.addStage(stage);
+        pair.setBench(Benchmarks.get(15)); //This hard coded value should be changed before feature is used.
+		pair.setSpace(Spaces.get(spaceId));
+		pair.setPath(spaceName);
+		j.addJobPair(pair);
+		boolean submitSuccess = Jobs.add(j, spaceId);
+		if (submitSuccess) {
+			return j.getId();
+		}
+		return -1; //error
+	}
+
 	/**
 	 * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
 	 * and create job pairs from the result. Will then return those job pairs

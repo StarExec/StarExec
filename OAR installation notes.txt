@@ -1,18 +1,12 @@
 These are one-time steps we would need to take to get OAR up and running on
 Starexec.
 
-1) Create the queue and slots columns for resources. OAR does have a notion of associating
+1) Create the queue column for resources. OAR does have a notion of associating
 resources (nodes) with queues by default, but it does support custom attributes.
 This basically adds a column for 'queue' to the resources table, helping us
 enforce our 1-1 relationship between nodes and queues.
 
 oarproperty -a queue -c
-
-Also, we need to add some measurement of the resources available on each node.
-Since we always simply run 2 pairs per node, and SGE already uses a notion of
-slots, it is easy to just add a slots property that will always be a constant 2.
-
-oarproperty -a slots
 
 2) Create all.q, along with any other queues that are expected at the time
 we're migrating to OAR. OAR may come with a few default queues of its own: these
@@ -23,15 +17,28 @@ It is probably easiest to do this directly in the OAR database.
 delete from queues; -- delete all existing OAR queues
 
 -- insert a new queue. Repeat for any other necessary queues.
-insert into queues values ('all.q', 1,'oar_sched_gnatt_with_timesharing', 'Active');
+insert into queues values ('all.q', 1,'oar_sched_gantt_with_timesharing', 'Active');
 
 3) Add resources
 
-Every node should have 2 slots.
+Compute nodes need to be installed as described in the OAR documentation.
+After nodes have been installed, they need to be inserted into the database
+correctly. In OAR, each individual node may actually be inserted into the
+resources table more than once: it should be there one time for every unique
+resource the node provides. In our simple case, we want each node to be listed
+twice, which allows us to use dual sandboxing.
 
-UPDATE resources SET slots=2;
+The cpuset column should be used to indicate that each node can handle two jobs.
+Each node should have two identical entries, one with a cpuset number of 0 and
+another with a cpuset number of 1. For example, the correct installation of 
+n001 on Stardev is shown below
 
-TODO:
+
+ resource_id |  type   |      network_address      | state | next_state | finaud_decision | next_finaud_decision | state_num | suspended_jobs | scheduler_priority | cpuset | besteffort | deploy | expiry_date | desktop_computing | last_job_date | available_upto | last_available_upto | drain | queue 
+-------------+---------+---------------------------+-------+------------+-----------------+----------------------+-----------+----------------+--------------------+--------+------------+--------+-------------+-------------------+---------------+----------------+---------------------+-------+-------
+           5 | default | n001.stardev.cs.uiowa.edu | Alive | UnChanged  | NO              | NO                   |         1 | NO             |                  0 | 1      | YES        | NO     |           0 | NO                |    1455639368 |     2147483647 |                   0 | NO    | all.q
+           1 | default | n001.stardev.cs.uiowa.edu | Alive | UnChanged  | NO              | NO                   |         1 | NO             |                  0 | 0      | YES        | NO     |           0 | NO                |    1455639368 |     2147483647 |                   0 | NO    | all.q
+
 
 4) Disable OAR admission rules. Basically, OAR does a bunch of validation and
 and chooses a bunch of defaults that we do not need for our purposes. Again

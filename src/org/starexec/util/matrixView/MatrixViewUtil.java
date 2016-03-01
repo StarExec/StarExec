@@ -24,11 +24,6 @@ public class MatrixViewUtil {
 			logUtil.debug(method, "Number of job pairs in job with id=" + jobId + " is " + job.getJobPairs().size() );
 			
 			int jobSpaceId=job.getPrimarySpace();
-			// this means it's an old job and we should run the backwards-compatibility routine
-			// to get everything set up first
-			if (jobSpaceId == 0) {
-				jobSpaceId = Jobs.setupJobSpaces(jobId);
-			}
 			
 			if (jobSpaceId>0) {
 				// Get all the job pairs for the job as well as basic info.

@@ -172,7 +172,7 @@
 				<tbody>
 				<c:forEach var="proc" items="${bench_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -323,7 +323,7 @@
 			<tbody>
 				<c:forEach var="proc" items="${pre_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -384,7 +384,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${post_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -445,7 +445,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${update_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -493,7 +493,7 @@
 			</table>
 		</form>
 	</fieldset>
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
 </star:template>

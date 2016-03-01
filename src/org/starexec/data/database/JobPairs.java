@@ -66,11 +66,7 @@ public class JobPairs {
 			}
 			if (batchCounter>0) {
 				procedure.executeBatch();
-			}
-			
-
-			//procedure.executeUpdate();
-			
+			}			
 
 			return true;
 		} catch (Exception e) {
@@ -153,7 +149,6 @@ public class JobPairs {
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
-					//procedure.executeUpdate();
 				}
 				
 			}
@@ -182,6 +177,7 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
 			
 			for (JobPair pair : pairs) {
+				pair.setJobId(jobId);
 				procedure.setInt(1, jobId);
 				procedure.setInt(2, pair.getBench().getId());
 				procedure.setInt(3, StatusCode.STATUS_PENDING_SUBMIT.getVal());
@@ -340,10 +336,6 @@ public class JobPairs {
 		return null;
 	}
 	
-	
-	
-	
-	
 	/**
 	 * Adds a new attribute to a job pair
 	 * @param con The connection to make the update on
@@ -407,7 +399,6 @@ public class JobPairs {
 	 */
 	public static boolean addJobPairAttributes(int pairId,int stageId, Properties attributes) {
 		Connection con = null;
-
 		try {
 			con = Common.getConnection();
 			return addJobPairAttributes(pairId,stageId,attributes,con);
@@ -585,9 +576,6 @@ public class JobPairs {
 		return filteredPairs;
 	}
 	
-	
-	
-	
 	/**
 	 * Retrieves all attributes (key/value) of the given job pair. Returns a mapping
 	 * of those attributes to stages based on the jobpair_stage_data.stage_number
@@ -756,7 +744,7 @@ public class JobPairs {
 	 * to have all relevant fields populated and will not need
 	 * to be retrieved from the database
 	 * @param pair
-	 * @return
+	 * @return See getOutputPaths(pairId)
 	 */
 	public static List<File> getOutputPaths(JobPair pair) {
 		File stdout = new File(getPairStdout(pair));
@@ -990,7 +978,7 @@ public class JobPairs {
 			// first, we get the top level info from the job_pairs table
 			if(results.next()){
 				jp = JobPairs.resultToPair(results);
-				
+				jp.setCompletionId(results.getInt("completion_id"));
 				jp.setNode(Cluster.getNodeDetails(con, results.getInt("node_id")));
 				jp.setBench(Benchmarks.get(con, results.getInt("bench_id"),true));
 				
@@ -1214,6 +1202,25 @@ public class JobPairs {
 	 */
 	public static boolean setAllPairStageStatus(int pairId, int statusCode) {
 		return setLaterPairStageStatus(pairId,statusCode,-1);
+	}
+	
+	/**
+	 * Assigns a given status code to a job pair and all of its stages
+	 * @param pairId
+	 * @param statusCode
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setStatusForPairAndStages(int pairId, int statusCode) {
+		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return setPairStatus(pairId, statusCode, con) && setAllPairStageStatus(pairId, statusCode, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
 	}
 	
 	/**
@@ -1465,27 +1472,7 @@ public class JobPairs {
 		}	
 		return false;
 	}
-	
-	/**
-	 * Given a list of JobPair objects that have their jobSpaceIds set, updates the database
-	 * to reflect these new job space ids
-	 * @param jobPairs The pairs to update
-	 * @return True on success and false otherwise
-	 * @author Eric Burns
-	 */
-	
-	public static boolean updateJobSpaces(List<JobPair> jobPairs) {
-		Connection con = null;
-		try {
-			con = Common.getConnection();
-			return updateJobSpaces(jobPairs,con);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-		}		
-		return false;
-	}
+
 	
 
     /**
@@ -1525,11 +1512,11 @@ public class JobPairs {
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return true;
 	}
 	
 	/**

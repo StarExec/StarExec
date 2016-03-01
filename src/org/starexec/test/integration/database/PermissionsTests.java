@@ -19,9 +19,11 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+/**
+ * Tests for org.starexec.data.database.Permissions.java
+ * @author Eric
+ */
 public class PermissionsTests extends TestSequence {
-	
-	
 	User owner=null;
 	User spaceMember=null;
 	User noPerms=null;

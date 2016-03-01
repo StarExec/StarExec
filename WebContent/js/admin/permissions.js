@@ -13,9 +13,7 @@ $(document).ready(function(){
 			primary: "ui-icon-pencil"
 		}
     });
-	
-	$("#dialog-confirm-update").hide();
-	
+		
 	$("#editPermissions").hide();
 	
 	function getUrlVars() {

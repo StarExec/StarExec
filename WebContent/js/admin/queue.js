@@ -4,12 +4,6 @@ var progress = 0;
 
 
 $(document).ready(function() {
-	
-	$('#dialog-warning').hide();
-
-
-
-	
 	InitUI();
 	
 	$('#btnDone').button({

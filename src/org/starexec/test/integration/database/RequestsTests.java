@@ -12,6 +12,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
 
+/**
+ * Tests for org.starexec.data.database.Requests.java
+ * @author Eric
+ */
 public class RequestsTests extends TestSequence {
 
 	User registeredUser=null;
@@ -54,7 +58,7 @@ public class RequestsTests extends TestSequence {
 			commRequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 			User tempUser=ResourceLoader.loadUserIntoDatabase();
-			CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+			ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 

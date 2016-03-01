@@ -5,11 +5,6 @@
 
 <%		
 	try {
-		int userId = SessionUtil.getUserId(request);
-		User user = Users.get(userId);
-		if (!Users.isAdmin(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		}		
 		String sequenceName=request.getParameter("sequenceName");
 		request.setAttribute("sequenceName",GeneralSecurity.getHTMLAttributeSafeString(sequenceName));
 		

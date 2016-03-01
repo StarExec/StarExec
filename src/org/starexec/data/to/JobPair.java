@@ -470,6 +470,10 @@ public class JobPair extends Identifiable {
 		return null;
 		
 	}
+
+	public boolean hasStage( int stageNumber ) {
+		return getStageFromNumber( stageNumber ) != null;
+	}
 	
 	/**
 	 * @return the starexec-result value from attributes list

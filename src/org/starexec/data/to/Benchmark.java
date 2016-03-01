@@ -1,7 +1,9 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -27,9 +29,10 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	private boolean deleted;
 	private boolean recycled;
 	private Boolean usesDependencies = null;
-	
+	private List<BenchmarkDependency> dependencies = null;
 	public Benchmark() {
 		attributes=new Properties();
+		setDependencies(new ArrayList<BenchmarkDependency>());
 	}
 	
 	/**
@@ -188,5 +191,17 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 
 	public void setUsesDependencies(Boolean usesDependencies) {
 		this.usesDependencies = usesDependencies;
+	}
+
+	public List<BenchmarkDependency> getDependencies() {
+		return dependencies;
+	}
+
+	public void setDependencies(List<BenchmarkDependency> dependencies) {
+		this.dependencies = dependencies;
+	}
+	
+	public void addDependency(BenchmarkDependency depend) {
+		this.dependencies.add(depend);
 	}
 }

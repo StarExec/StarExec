@@ -258,6 +258,7 @@ public class R {
     //names of primitive types
 	public static String SOLVER="solver";
 	public static String BENCHMARK="bench";
+	public static String CONFIGURATION="config";
 	public static String SPACE_XML = "spaceXML";
 	public static String JOB_XML = "jobXML";
 	public static String PAIR_OUTPUT = "jp_output";
@@ -266,4 +267,11 @@ public class R {
 	public static String SPACE = "space";
 	public static String PROCESSOR = "proc";
 	public static String JOB_OUTPUTS = "jp_outputs";
+
+	public static final String ANONYMIZE_ALL = "all";
+	public static final String ANONYMIZE_ALL_BUT_BENCH = "allButBench"; 
+	public static final String ANONYMIZE_NONE = "none";
+
+	// 2 years
+	public static final int MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS = 730;
 }	

@@ -133,8 +133,6 @@ $(document).ready(function(){
 
 	setupHandlersForCommunityRequestAcceptDeclineButtons();
 	
-	initDialogs();
-
 	$("#leaveComm").click(function(){
 		$('#dialog-confirm-leave-txt').text('are you sure you want to leave ' + commName + '? This will remove you from every space in the communiity. Your primitives will not be affected.');
 			
@@ -167,15 +165,6 @@ $(document).ready(function(){
 		downloadProcs(id, "update");
 	});
 });
-
-
-/**
- * Hides all jquery ui dialogs for page startup
- */
-function initDialogs() {
-	$( "#dialog-confirm-leave" ).hide();
-	$( "#dialog-confirm-delete" ).hide();
-}
 
 /**
  * Populates the community details panel with information on the given community

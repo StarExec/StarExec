@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
@@ -92,7 +94,8 @@ public class RESTServices {
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 	
-	private static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
+	protected static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
+	private static final ValidatorStatusCode ERROR_INTERNAL_SERVER=new ValidatorStatusCode(false, "There was an internal server error processing your request");
 	private static final ValidatorStatusCode ERROR_INVALID_WEBSITE_TYPE=new ValidatorStatusCode(false, "The supplied website type was invalid");
 	private static final ValidatorStatusCode ERROR_EDIT_VAL_ABSENT=new ValidatorStatusCode(false, "No value specified");
 	private static final ValidatorStatusCode ERROR_IDS_NOT_GIVEN=new ValidatorStatusCode(false, "No ids specified");
@@ -103,8 +106,8 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_SELF=new ValidatorStatusCode(false, "You cannot promote yourself");
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_LEADER=new ValidatorStatusCode(false, "The user is already a leader");
 		
-	private static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
-	private static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
+	protected static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
+	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
 	
 	
 	/**
@@ -138,8 +141,49 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @PathParam("spaceTree") boolean makeSpaceTree, @Context HttpServletRequest request) {					
 		int userId = SessionUtil.getUserId(request);
-		return RESTHelpers.getJobSpacesJson(parentId, jobId, makeSpaceTree, userId);
+		return RESTHelpers.validateAndGetJobSpacesJson(parentId, jobId, makeSpaceTree, userId);
 	}
+
+	/**
+	 * @return a json string representing all the subspaces of the job space
+	 * with the given id
+	 * @author Eric Burns
+	 */
+	@GET
+	@Path("/space/anonymousLink/{anonymousLinkUuid}/jobspaces/{spaceTree}/{primitivesToAnonymizeName}")
+	@Produces("application/json")	
+	public String getJobSpaces(
+			@QueryParam("id") int parentId,
+			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
+			@PathParam("spaceTree") boolean makeSpaceTree, 
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
+			@Context HttpServletRequest request) {					
+		final String methodName = "getJobSpaces";
+		try {
+			logUtil.entry( methodName );
+			Optional<Integer> potentialJobId = Optional.empty();
+			try {
+				potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( anonymousLinkUuid );
+			} catch ( SQLException e ) {
+				logUtil.error( methodName, "Caught an SQLException while trying to retrieve a job id from the anonymous links table in the database." );
+				return gson.toJson( ERROR_DATABASE );
+			}
+			 
+			if ( potentialJobId.isPresent() ) {
+				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+				return RESTHelpers.getJobSpacesJson(parentId, potentialJobId.get(), makeSpaceTree, primitivesToAnonymize);
+			} else {
+				ValidatorStatusCode status = new ValidatorStatusCode( false, "Job does not exist." );
+				return gson.toJson( status );
+			}
+		} catch (RuntimeException e) {
+			// Catch all runtime exceptions so we can debug them
+			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
+			throw e;
+		}
+	}
+
+	
 
 
 	@GET
@@ -777,7 +821,44 @@ public class RESTServices {
 	}
 	
 	
+	@POST
+	@Path("/jobs/pairs/pagination/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}/{primitivesToAnonymizeName}")
+	@Produces("application/json")	
+	public String getJobPairsPaginatedWithAnonymousLink(
+			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
+			@PathParam("stageNumber") int stageNumber,
+			@PathParam("wallclock") boolean wallclock, 
+			@PathParam("jobSpaceId") int jobSpaceId, 
+			@PathParam("syncResults") boolean syncResults, 
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
+			@Context HttpServletRequest request) {			
+
+		final String methodName = "getJobPairsPaginatedWithAnonymousLink";
+		try {
+			logUtil.entry( methodName );
+
+			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
+			logUtil.debug( methodName, "Job id for link " + anonymousLinkUuid + " is " + jobId );
+			
+			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousLinkUuid, jobId );
+
+			if ( !status.isSuccess() ) {
+				return gson.toJson( status );
+			}
+
+
+			PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+			return RESTHelpers.getJobPairsPaginatedJson( jobSpaceId, wallclock, syncResults, 
+					stageNumber, primitivesToAnonymize, request );
+		} catch (RuntimeException e) {
+			// Catch all runtime exceptions so we can debug them
+			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
+			throw e;
+		}
+	}
+
 	
+
 	/**
 	 * Returns the next page of entries for a job pairs table. This is used on the job details page
 	 *
@@ -788,27 +869,51 @@ public class RESTServices {
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Todd Elvers
 	 */
-
 	@POST
 	@Path("/jobs/pairs/pagination/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}")
 	@Produces("application/json")	
 	public String getJobPairsPaginated(@PathParam("stageNumber") int stageNumber,@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("syncResults") boolean syncResults, @Context HttpServletRequest request) {			
 		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
 		ValidatorStatusCode status = JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 		
-		// Query for the next page of job pairs and return them to the user
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,syncResults,stageNumber);
-		if (nextDataTablesPage==null) {
-			return gson.toJson(ERROR_DATABASE);
-		} else if (nextDataTablesPage.has("maxpairs")) {
-			return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
-		}
-		return gson.toJson(nextDataTablesPage); 
+		return RESTHelpers.getJobPairsPaginatedJson( jobSpaceId, wallclock, syncResults, stageNumber, PrimitivesToAnonymize.NONE, request );
 	}
+	
+	/**
+	 * Handles an anonymous request to get a space overview graph for a job details page
+	 * @param jobId The ID of the job to make the graph for
+	 * @param jobSpaceId The job space the chart is for
+	 * @param request Object containing other request information
+	 * @return A json string containing the path to the newly created png chart
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/graphs/spaceOverview/{stageNum}/{primitivesToAnonymizeName}")
+	@Produces("application/json")
+	public String getSpaceOverviewGraph(
+			@PathParam("stageNum") int stageNumber, 
+			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
+			@PathParam("jobSpaceId") int jobSpaceId, 
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
+			@Context HttpServletRequest request) {			
+
+		final String methodName = "getSpaceOverviewGraph";
+		logUtil.entry( methodName );
+
+		JobSpace jobSpace = Spaces.getJobSpace( jobSpaceId );
+		int jobId = jobSpace.getJobId();
+		ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousLinkUuid, jobId );
+		if ( !status.isSuccess() ) {
+			return gson.toJson( status );
+		}
+		
+		PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, primitivesToAnonymize );
+	}
+	
 	/**
 	 * Handles a request to get a space overview graph for a job details page
 	 * @param jobId The ID of the job to make the graph for
@@ -816,46 +921,19 @@ public class RESTServices {
 	 * @param request Object containing other request information
 	 * @return A json string containing the path to the newly created png chart
 	 */
-	
 	@POST
 	@Path("/jobs/{jobSpaceId}/graphs/spaceOverview/{stageNum}")
 	@Produces("application/json")
-	//TODO: Remove usage of 'big' attribute
 	public String getSpaceOverviewGraph(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {			
 		log.debug("Got request to get space overview graph.");
 		int userId = SessionUtil.getUserId(request);
-		String chartPath = null;
 		// Ensure user can view the job they are requesting the pairs from
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		
-		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
-		boolean logX=false;
-		boolean logY=false;
-		if (Util.paramExists("logX", request)) {
-			if (Boolean.parseBoolean((String)request.getParameter("logX"))) {
-				logX=true;
-			}
-			
-		}
-		if (Util.paramExists("logY", request)) {
-			if (Boolean.parseBoolean((String)request.getParameter("logY"))) {
-				logY=true;
-			}
-		}
-		if (configIds.size()<=R.MAXIMUM_SOLVER_CONFIG_PAIRS) {
-			chartPath=Statistics.makeSpaceOverviewChart(jobSpaceId,logX,logY,configIds,stageNumber);
-			if (chartPath.equals("big")) {
-				return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
-			}
-		} else {
-			return gson.toJson(ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS);
-		}
 
-		log.debug("chartPath = "+chartPath);
-		return chartPath == null ? gson.toJson(ERROR_DATABASE) : chartPath;
+		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, PrimitivesToAnonymize.NONE );
 	}
 
 
@@ -924,6 +1002,60 @@ public class RESTServices {
 		return gson.toJson(json);
 	}
 
+	/**
+	 * Handles a request to get a solver comparison graph for the job details page using an anonymous link.
+	 * @param jobId The ID of the job to make the graph for
+	 * @param jobSpaceId The job space the chart is for
+	 * @param config1 The ID of the first configuration to handle
+	 * @param config2 The ID of the second configuration to handle
+	 * @param request Object containing other request information
+	 * @return A json string containing the path to the newly created png chart as well as an image map linking points to benchmarks
+	 * @author Albert Giegerich
+	 */
+	@POST
+	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/graphs/solverComparison/{config1}/{config2}/{edgeLengthInPixels}/{axisColor}/{stageNum}/{primitivesToAnonymizeName}")
+	@Produces("application/json")	
+	public String getAnonymousSolverComparisonGraph(
+			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
+			@PathParam("stageNum") int stageNumber, 
+			@PathParam("jobSpaceId") int jobSpaceId,
+			@PathParam("config1") int config1, 
+			@PathParam("config2") int config2, 
+			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,
+			@PathParam("axisColor") String axisColor, 
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
+			@Context HttpServletRequest request) {		
+
+		final String methodName = "getAnonymousSolverComparisonGraph";
+		try {
+			logUtil.entry( methodName );
+			logUtil.debug( methodName, "Got request to get an anonymous solver comparison graph with parameters:\n"+
+					"\tanonymousLinkUuid: "+anonymousLinkUuid+"\n"+
+					"\tstageNumber: "+stageNumber+"\n"+
+					"\tjobSpaceId: "+jobSpaceId+"\n"+
+					"\tconfig1: "+config1+"\n"+
+					"\tconfig2: "+config2+"\n"+
+					"\tedgeLengthInPixels: "+edgeLengthInPixels+"\n"+
+					"\taxisColor: "+axisColor+"\n");
+						
+			JobSpace jobSpace = Spaces.getJobSpace( jobSpaceId );
+			int jobId = jobSpace.getJobId();
+			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousLinkUuid, jobId );
+
+			if ( !status.isSuccess() ) {
+				return gson.toJson( status );
+			} 
+
+
+			PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+			return RESTHelpers.getSolverComparisonGraphJson(
+					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, primitivesToAnonymize );
+		} catch ( RuntimeException e ) {
+			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace( e ));
+			return gson.toJson( ERROR_INTERNAL_SERVER );
+		} 
+	}
+
   
 	/**
 	 * Handles a request to get a solver comparison graph for a job details page
@@ -943,65 +1075,74 @@ public class RESTServices {
 			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,@PathParam("axisColor") String axisColor, @Context HttpServletRequest request) {		
 		final String methodName = "getSolverComparisonGraph";
 		logUtil.entry(methodName);
+		logUtil.debug( methodName, "Got request to get an anonymous solver comparison graph with parameters:\n"+
+				"\tstageNumber: "+stageNumber+"\n"+
+				"\tjobSpaceId: "+jobSpaceId+"\n"+
+				"\tconfig1: "+config1+"\n"+
+				"\tconfig2: "+config2+"\n"+
+				"\tedgeLengthInPixels: "+edgeLengthInPixels+"\n"+
+				"\taxisColor: "+axisColor+"\n");
 	        
 		int userId = SessionUtil.getUserId(request);
-		List<String> chartPath = null;
 		
 		ValidatorStatusCode status= JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
+		} else {
+			return RESTHelpers.getSolverComparisonGraphJson( 
+					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, PrimitivesToAnonymize.NONE );
 		}
-		
-		Color c = Util.getColorFromString(axisColor);
-		if (c==null) {
-			return gson.toJson(new ValidatorStatusCode(false,"The given color is not valid"));
-		}
-		if (edgeLengthInPixels<=0 || edgeLengthInPixels>2000) {
-			return gson.toJson(new ValidatorStatusCode(false, "The given size is not valid: please choose an integer from 1-2000"));
-					
-		}
-		
-		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber);
-		if (chartPath==null) {
-			return gson.toJson(ERROR_DATABASE);
-		}
-		if (chartPath.get(0).equals("big")) {
-			return gson.toJson(ERROR_TOO_MANY_JOB_PAIRS);
-		}
-		JsonObject json=new JsonObject();
-		json.addProperty("src", chartPath.get(0));
-		json.addProperty("map",chartPath.get(1));
-		
-		return gson.toJson(json);
 	}
-	
-	
-	
-	
+
+	@POST
+	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{primitivesToAnonymizeName}/{shortFormat}/{wallclock}/{stageNum}/")
+	@Produces("application/json")
+	public String getAnonymousJobStatsPaginated( 
+			@PathParam("stageNum") int stageNumber, 
+			@PathParam("jobSpaceId") int jobSpaceId,
+			@PathParam("anonymousJobLink") String anonymousJobLink, 
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
+			@PathParam("shortFormat") boolean shortFormat, 
+			@PathParam("wallclock") boolean wallclock, 
+			@Context HttpServletRequest request ) {
+
+		final String methodName = "getAnonymousJobStatsPaginated";
+		try {
+
+			JobSpace jobSpace = Spaces.getJobSpace(jobSpaceId);
+			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousJobLink, jobSpace.getJobId() );
+			if ( !status.isSuccess() ) {
+				return gson.toJson( status );
+			} else {
+				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock );
+			}
+		} catch (RuntimeException e) {
+			// Catch all runtime exceptions so we can debug them
+			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
+			throw e;
+		}
+	}
 
 	/**
 	 * Returns the next page of stats for the given job and job space
 	 * @param jobID the id of the job to get the next page of solver stats for
 	 * @author Eric Burns
+	 * @throws InterruptedException 
 	 */
 	@POST
 	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
 	@Produces("application/json")
-	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) {
+	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @Context HttpServletRequest request) throws InterruptedException {
 		int userId=SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
 		JobSpace space = Spaces.getJobSpace(jobSpaceId);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(space.getJobId(), userId);
+
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
+		} else {
+			return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, space, PrimitivesToAnonymize.NONE, shortFormat, wallclock );
 		}
-		
-		List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(space,stageNumber);
-
-		nextDataTablesPage=RESTHelpers.convertSolverStatsToJsonObject(stats, new DataTablesQuery(stats.size(), stats.size(),1),space,shortFormat,wallclock);
-
-		return nextDataTablesPage==null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-		
 	}
 
 
@@ -1015,7 +1156,7 @@ public class RESTServices {
 	public String getNodeJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("node", id, userId, request);
+		nextDataTablesPage = RESTHelpers.getNextDataTablesPageCluster("node", id, userId, request);
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -1030,7 +1171,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		try {
-		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageForClusterExplorer("queue", id, userId, request);
+		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageCluster("queue", id, userId, request);
 		}
 		catch(Exception e) {
 		    log.error(e);
@@ -1059,13 +1200,13 @@ public class RESTServices {
 		}
 		
 		if (primType.startsWith("u")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.USER, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.USER, request);
 		}
 		if (primType.startsWith("j")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.JOB, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.JOB, request);
 		}
 		if (primType.startsWith("n")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForAdminExplorer(RESTHelpers.Primitive.NODE, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.NODE, request);
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
@@ -1080,25 +1221,23 @@ public class RESTServices {
 	 * @author Albert Giegerich
 	 */
 	@POST
-	@Path( "/anonymousLink/{primitiveType}/{primitiveId}/{hidePrimitiveName}" )
+	@Path( "/anonymousLink/{primitiveType}/{primitiveId}/{primitivesToAnonymizeName}" )
 	@Produces( "application/json" )
 	public String getAnonymousLinkForPrimitive( 
 			@PathParam("primitiveType") String primitiveType,
 			@PathParam("primitiveId") int primitiveId, 
-			@PathParam("hidePrimitiveName") boolean hidePrimitiveName,
+			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@Context HttpServletRequest request ) {
 
 		final String methodName = "getAnonymousLinkForPrimitive";
-		logUtil.entry( methodName );
-		logUtil.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
-				", hidePrimitiveName = " + hidePrimitiveName );
-
-
-		int userId = SessionUtil.getUserId(request);
-
-		ValidatorStatusCode status = GeneralSecurity.canUserGetAnonymousLinkForPrimitive( userId, primitiveType, primitiveId );
-
 		try {
+			logUtil.entry( methodName );
+			logUtil.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
+					", primitivesToAnonymizeName = " + primitivesToAnonymizeName );
+
+			int userId = SessionUtil.getUserId(request);
+			ValidatorStatusCode status = GeneralSecurity.canUserGetAnonymousLinkForPrimitive( userId, primitiveType, primitiveId );
+		
 			// Check if user has permission to get an anonymous link for this benchmark.
 			if ( status.isSuccess() ) {
 				log.debug( "User with id=" + userId + " is allowed to create anonymous link for primitive.");
@@ -1106,8 +1245,10 @@ public class RESTServices {
 				// Create a new Gson that won't encode the = sign as \u003d
 				Gson tempGson = new GsonBuilder().disableHtmlEscaping().create();
 
+
+				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 				// Return a link associated with the primitive.
-				String anonymousLinkForPrimitive = createAnonymousLinkForPrimitive( primitiveType, primitiveId, hidePrimitiveName );
+				String anonymousLinkForPrimitive = createAnonymousLinkForPrimitive( primitiveType, primitiveId, primitivesToAnonymize );
 				return tempGson.toJson( new ValidatorStatusCode( true, anonymousLinkForPrimitive ));
 			} else {
 				log.debug( "User with id=" + userId + " is not allowed to create anonymous link for primitive.");
@@ -1115,6 +1256,9 @@ public class RESTServices {
 				return gson.toJson( status );
 			}
 		} catch ( SQLException e ) {
+			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
+		} catch ( RuntimeException e) {
+			logUtil.error( methodName, Util.getStackTrace( e ));
 			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
 		}
 	}
@@ -1126,7 +1270,7 @@ public class RESTServices {
 	private String createAnonymousLinkForPrimitive( 
 			final String primitiveType, 
 			final int primitiveId, 
-			final boolean hidePrimitiveName ) throws SQLException {
+			final PrimitivesToAnonymize primitivesToAnonymize ) throws SQLException {
 
 		String primitiveUrlName = getPrimitiveUrlName( primitiveType );
 
@@ -1135,14 +1279,19 @@ public class RESTServices {
 								 "/secure/details/" + primitiveUrlName + ".jsp?anonId=";
 
 		// If the anonymous link for this primitive is already in the database, retrieve and return it.
-		Optional<String> optionalUniqueId = AnonymousLinks.getAnonymousLinkCode( primitiveType, primitiveId, hidePrimitiveName );
+		Optional<String> optionalUniqueId = AnonymousLinks.getAnonymousLinkCode( primitiveType, primitiveId, primitivesToAnonymize );
 		if ( optionalUniqueId.isPresent() ) {
 			return urlPrefix + optionalUniqueId.get();
 		}
 
 		// Generate a unique id to be part of the link URL and store it in the database.
-		final String uniqueId = UUID.randomUUID().toString();
-		AnonymousLinks.addAnonymousLink( uniqueId, primitiveType, primitiveId, hidePrimitiveName );
+		final String uniqueId = AnonymousLinks.addAnonymousLink( primitiveType, primitiveId, primitivesToAnonymize );
+		if ( primitiveType.equals( R.JOB ) && !AnonymousLinks.isNothingAnonymized( primitivesToAnonymize ) 
+			 && !AnonymousLinks.hasJobBeenAnonymized( primitiveId ) ) {
+
+			// If the primitive is a job add anonymous primitive names to the DB for all the primitives in the job.
+			AnonymousLinks.addAnonymousNamesForJob( primitiveId );	
+		}
 
 		// Return the URL with the UUID as a parameter.
 		return urlPrefix + uniqueId; 
@@ -1900,7 +2049,7 @@ public class RESTServices {
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 		}
-		ValidatorStatusCode status=ProcessorSecurity.canUserDeleteProcessors(selectedProcessors, userId);
+		ValidatorStatusCode status=ProcessorSecurity.doesUserOwnProcessors(selectedProcessors, userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -4347,7 +4496,7 @@ public class RESTServices {
  		
  			return gson.toJson(Solvers.getConfiguration(id));
  		} else if (type.equals("processor")) {
- 			ValidatorStatusCode status=ProcessorSecurity.canGetJsonProcessor(id, userId);
+ 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}

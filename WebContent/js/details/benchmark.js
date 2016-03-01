@@ -2,12 +2,9 @@ var bid;
 
 $(document).ready(function(){
 	bid = getParameterByName('id');	
-	$('#anonymousLink').hide();
-	$('#dialog-anonymous-link').hide();
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
 	$('#fieldDepends').expandable(true);
-	$( "#dialog-warning").hide();
 	
 	$('#fieldContents').expandable(true);
 	$('#actions').expandable(true);
@@ -26,7 +23,14 @@ function registerDownloadLinkButtonEventHandler() {
 	$('#downLink').click(function() {
 		createDialog("Processing your download request, please wait. This will take some time for large benchmarks.");
 		var token=Math.floor(Math.random()*100000000);
-		$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
+		log("isAnonymousPage: " + $('#isAnonymousPage').attr('value') );
+		if ( $('#isAnonymousPage').attr('value') === 'true' ) {
+			var anonId = getParameterByName('anonId');
+			log( 'anonId: ' + anonId );
+			$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&anonId=" + anonId );
+		} else {
+			$('#downLink').attr('href', starexecRoot+"secure/download?token=" +token+ "&type=bench&id="+$("#benchId").attr("value"));
+		}
 		destroyOnReturn(token);
 	});
 }
@@ -43,36 +47,13 @@ function registerAnonymousLinkButtonEventHandler() {
 			buttons: {
 				'yes': function() { 
 					$(this).dialog('close');
-					makeAnonymousLinkPost( true );
+					makeAnonymousLinkPost('bench', $('#benchId').attr('value'), 'all');
 				},
 				'no': function() {
 					$(this).dialog('close');
-					makeAnonymousLinkPost( false );
+					makeAnonymousLinkPost('bench', $('#benchId').attr('value'), 'none');
 				}
 			}
 		});	
 	});
 }
-
-function makeAnonymousLinkPost( hidePrimitiveName ) {
-	'use strict';
-	$.post(
-		starexecRoot + 'services/anonymousLink/bench/' + $('#benchId').attr('value') + '/' + hidePrimitiveName,
-		'',
-		function( returnCode ) {
-			log( 'Anonymous Link Return Code: ' + returnCode );
-			if ( returnCode.success ) {
-				$('#dialog-show-anonymous-link').text( 'anonymous link for this benchmark:\n' + returnCode.message );
-				$('#dialog-show-anonymous-link').dialog({
-					width: 750,
-					height: 200,
-				});	
-			} else {
-				parseReturnCode( returnCode );
-			}
-		},
-		'json'
-	);
-}
-
-

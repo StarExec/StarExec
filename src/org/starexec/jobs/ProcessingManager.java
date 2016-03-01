@@ -22,10 +22,10 @@ public class ProcessingManager {
 				break;
 
     		}
-	    
-	   
-	    JobPairs.postProcessPair(triple.getPairId(),triple.getStageNumber(), triple.getProcessorId());
-	    num_processed++;
+		    
+		   
+		    JobPairs.postProcessPair(triple.getPairId(),triple.getStageNumber(), triple.getProcessorId());
+		    num_processed++;
     	}
     	
     	return true;

@@ -20,7 +20,6 @@ function initUI(){
 			secondary: "ui-icon-check"
 		}
 	});
-	$('#dialog-confirm-delete').hide();
 }
 
 

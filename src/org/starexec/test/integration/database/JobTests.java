@@ -8,6 +8,7 @@ import java.util.Random;
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
@@ -26,8 +27,10 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
-
-//TODO: Test counting functions
+/**
+ * Tests for org.starexec.data.database.Jobs.java
+ * @author Eric
+ */
 public class JobTests extends TestSequence {
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job
@@ -265,6 +268,43 @@ public class JobTests extends TestSequence {
 	private void getTimelessPairsByStatusTest() {
 		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), 7);
 		Assert.assertNotNull(pairs);
+	}
+	
+	@StarexecTest
+	private void cleanOrphanedDeletedJobTest() {
+		Job tempJob = ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		List<Integer> job = new ArrayList<Integer>();
+		job.add(tempJob.getId());
+		Spaces.removeJobs(job, space.getId());
+		Jobs.delete(tempJob.getId());
+		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
+		Assert.assertNull(Jobs.getIncludeDeleted(tempJob.getId()));
+	}
+	
+	@StarexecTest
+	private void countOlderPairsTest() {
+		int maxCompletionId = 0;
+		int minCompletionId = Integer.MAX_VALUE;
+		for (JobPair p : job.getJobPairs()) {
+			int completionId = JobPairs.getPairDetailed(p.getId()).getCompletionId();
+			maxCompletionId = Math.max(maxCompletionId, completionId);
+			minCompletionId = Math.min(minCompletionId, completionId);
+		}
+		Assert.assertEquals(job.getJobPairs().size(), Jobs.countOlderPairs(job.getId(), maxCompletionId));
+		Assert.assertEquals(1, Jobs.countOlderPairs(job.getId(), minCompletionId));
+
+	}
+	
+	@StarexecTest
+	private void associateJobsTest() {
+		List<Integer> jobIds = new ArrayList<Integer>();
+		jobIds.add(job.getId());
+		jobIds.add(job2.getId());
+		Space newSpace = ResourceLoader.loadSpaceIntoDatabase(user.getId(), space.getId());
+		Assert.assertTrue(Jobs.associate(jobIds, newSpace.getId()));
+		Assert.assertEquals(2, Jobs.getBySpace(newSpace.getId()).size());
+		
+		Spaces.removeSubspace(newSpace.getId());
 	}
 	
 	@Override

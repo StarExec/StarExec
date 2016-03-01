@@ -28,6 +28,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.dataStructures.TreeNode;
 
+/**
+ * Tests for org.starexec.data.database.Spaces.java
+ * @author Eric
+ */
 public class SpaceTests extends TestSequence {
 	
 	Space community=null;
@@ -49,11 +53,6 @@ public class SpaceTests extends TestSequence {
 		Space test=Spaces.get(community.getId());
 		Assert.assertNotNull(test);
 		Assert.assertEquals(community.getId(), test.getId());
-		test=Communities.getDetails(community.getId());
-		Assert.assertNotNull(test);
-		Assert.assertEquals(community.getId(), test.getId());
-		
-		
 	}
 	
 	@StarexecTest
@@ -264,13 +263,6 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(subspace.getName(),Spaces.getName(subspace.getId()));
 		Assert.assertNotEquals(community.getName(),Spaces.getName(subspace.getId()));
 	}	
-	
-	
-	@StarexecTest
-	private void IsCommunityTest() {
-		//of course, it should actually be a community
-		Assert.assertTrue(Communities.isCommunity(community.getId()));
-	}
 
 	@StarexecTest 
 	private void updateDefaultCpuTimeoutTest() {
@@ -299,19 +291,6 @@ public class SpaceTests extends TestSequence {
 			Assert.fail("Memory limit was not greater than 0");
 		}
 		
-	}
-	
-	
-	@StarexecTest
-	private void inListOfCommunities() throws Exception {
-		List<Space> comms=Communities.getAll();
-		for (Space s : comms) {
-			if (s.getName().equals(community.getName())) {
-				return;
-			}
-		}
-		
-		Assert.fail("community was not found in the list of communities");
 	}
 	
 	@StarexecTest

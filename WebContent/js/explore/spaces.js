@@ -68,28 +68,12 @@ function isFieldsetOpen(fieldset){
 }
 
 /**
- * Hides all jquery ui dialogs for page startup
- */
-function initDialogs() {	
-	$("#dialog-confirm-copy" ).hide();
-	$("#dialog-confirm-delete" ).hide();
-	$("#dialog-download-space").hide();
-	$("#dialog-warning").hide();
-    $("#dialog-spacexml").hide();
-    $("#dialog-spaceUpdateXml").hide();
-	log('all confirmation dialogs hidden');
-}
-
-/**
  * Sets up the 'space details' that consumes the right-hand side of the page
  */
 function initSpaceDetails(){
 
 	// builds the DataTable objects and enables multi-select on them
 	initDataTables();
-
-	// Set up jQuery UI dialog boxes
-	initDialogs();
 
 	// Set up jQuery button UI
 	initButtonUI();
@@ -358,8 +342,8 @@ function onSpaceDrop(event, ui) {
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
-			width: 500,
-			height: 200,
+			width: 600,
+			height: 400,
 			
 			//depending on what the user 
 			buttons: solverCopyDialogButtons
@@ -404,6 +388,8 @@ function onSpaceDrop(event, ui) {
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
+			height: 200,
+			width: 500,
 			buttons: {
 				'yes': function() {
 					log('user confirmed copy action');
@@ -472,8 +458,8 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	// Display the confirmation dialog
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
-		width: 380,
-		height: 165,
+		width: 500,
+		height: 200,
 		buttons: spaceCopyDialogButtons
 	});
 }
@@ -506,8 +492,8 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 	}
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
-		width: 380,
-		height: 165,
+		width: 500,
+		height: 200,
 		buttons: userCopyDialogButtons
 	});		
 }

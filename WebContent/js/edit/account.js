@@ -69,9 +69,6 @@ function initDataTables(){
  * Initializes the user-interface
  */
 function initUI(){
-	$("#dialog-confirm-delete").hide();
-	$("#dialog-createSettingsProfile").hide();
-
 	initDataTables();
 	initButtonIcons();
 	

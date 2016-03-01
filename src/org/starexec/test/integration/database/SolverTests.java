@@ -16,7 +16,10 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
-
+/**
+ * Tests for org.starexec.data.database.Solvers.java
+ * @author Eric
+ */
 public class SolverTests extends TestSequence {
 	private Solver solver;
 	private Configuration config;

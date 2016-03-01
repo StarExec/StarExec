@@ -217,13 +217,13 @@
 			<a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
 		
-		<div id="dialog-confirm-delete" title="confirm delete" class="dialog">
+		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>
-		<div id="dialog-confirm-recycle" title="confirm recycle" class="dialog">
+		<div id="dialog-confirm-recycle" title="confirm recycle" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-recycle-txt"></span></p>
 		</div>
-			<div id="dialog-confirm-copy" title="confirm copy" class="dialog">
+			<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	</c:if>

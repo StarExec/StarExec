@@ -30,8 +30,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Hash;
 
-
-//TODO: Test pagination functions
+/**
+ * Tests for org.starexec.data.database.Users.java
+ * @author Eric
+ */
 public class UserTests extends TestSequence {
 	private User testUser=null;
 	private User user1=null;
@@ -261,7 +263,7 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesUsersBenchmarkDirectoryTest() {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
-		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 		File tempUsersBenchmarkDirectory = new File(R.getBenchmarkPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersBenchmarkDirectory.exists());
 
@@ -343,7 +345,7 @@ public class UserTests extends TestSequence {
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertNotNull(tempJob);	
 
-		File jobDirectory = new File(R.getJobOutputDirectory() +"/"+ tempJob.getId());
+		File jobDirectory = new File( Jobs.getDirectory( tempJob.getId() ) );
 		// Make the job directory since ResourceLoader isn't actually running the job.
 		jobDirectory.mkdir();
 

@@ -47,7 +47,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
 
-	
+	private boolean buildJob;
 	//a list of all the stage attributes for this job, in no particular order
 	private List<StageAttributes> stageAttributes;
 
@@ -62,6 +62,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		queue = new Queue();		
 		setStageAttributes(new ArrayList<StageAttributes>());
 		setSuppressTimestamp(false); // false is default
+		setBuildJob(false); //false is default
 	}
 	
 	/**
@@ -356,5 +357,23 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		this.usingDependencies = usingDependencies;
 	}
 
-	
+	/**
+	 * Gets whether or not this is a buildjob
+	 * @return Whether or not the job is a build job
+	 * @author Andrew Lubinus
+	 */
+
+	public boolean isBuildJob() {
+		return buildJob;
+	}
+
+	/**
+	 * Sets whether or not this is a build job
+	 * @param buildJob boolean representing if this a build job or not
+	 * @author Andrew Lubinus
+	 */
+
+	public void setBuildJob(boolean buildJob) {
+		this.buildJob = buildJob;
+	}
 }

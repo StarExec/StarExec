@@ -151,7 +151,11 @@ function initWorkspaceVariables {
 	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 	
 	# The path to the bin directory of the solver on the execution host
-	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+    if [ $BUILD_JOB == "true" ]; then 
+	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/runsolver"
+    else
+	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+    fi
 	
 	OUT_DIR="$WORKING_DIR/output"
 	
@@ -185,33 +189,38 @@ function isInteger {
 	fi
 	return 0
 }
-# checks to see whether the pair with the given pair SGE ID is actually running using qstat
+# checks to see whether the pair with the given PID is actually running
 function isPairRunning {
-	log "isPairRunning called on pair id = $1" 
-	
-	
+	log "isPairRunning called on pair pid = $1" 
+
 	if ! isInteger $1 ; then
 		log "$1 is not a valid integer, so no pair is running"
-	
 		return 1
 	fi
-	HOST=${HOSTNAME:0:4}
-	output=`ls /cluster/gridengine-8.1.8/default/spool/$HOST/active_jobs/`
+	output=`cat "$LOCK_DIR/$1"`
 	log "$output"
-	
-	#be conservative and say that the pair is running if we fail to check properly
-	if [[ $output == *cannot* ]]
+	currentOutput=`ps -p $1 -o pid,stime,cmd | awk 'NR>1'`
+	log "$currentOutput"
+	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
+	if [[ $currentOutput == *$output* ]]
 	then
-		log "could not carry out ls command-- assuming pair is still running"
+		log "process is still running, so the sandbox is still in use"
 		return 0
 	fi
-	if [[ $output == *$1* ]]
-	then
-		#the active jobs directory still contains the job, so it is still running
-		return 0
-  	fi
   	#otherwise, the job is not still running
 	return 1
+}
+
+# Makes a lock file in for a single sandbox
+# $1 The sandbox to use
+function makeLockFile {
+	log "able to get sandbox $1!"
+	# make a file that is named with the current PID so we know which pair should be running here
+	touch "$LOCK_DIR/$$"
+	processString=`ps -p $$ -o pid,stime,cmd | awk 'NR>1'`
+	log "Found data for this process $processString"
+	echo $processString > "$LOCK_DIR/$$"
+	log "putting this job into sandbox $1 $$"
 }
 
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
@@ -234,34 +243,25 @@ function trySandbox {
 		log "got the right to use the lock for sandbox $1"
 		#check to see if we can make the lock directory-- if so, we can run in sandbox 
 		if mkdir "$LOCK_DIR" ; then
-			log "able to get sandbox $1!"
-			# make a file that is named with the given ID so we know which pair should be running here
-			touch "$LOCK_DIR/$2"
-			
-			log "putting this job into sandbox $1 $2"
+			makeLockFile $1
 			return 0
 		fi
-		#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
+		#if we couldnt get the sandbox directory, there are 2 possibilites. Either it is occupied,
 		#or a previous job did not clean up the lock correctly. To check, we see if the pair given
 		#in the directory is still running
 			
-		pairID=`ls "$LOCK_DIR"`
-		log "found the pairID = $pairID"
+		pairPID=`ls "$LOCK_DIR"`
+		log "found the pairID = $pairPID"
 		
 		
-		if ! isPairRunning $pairID ; then
+		if ! isPairRunning $pairPID ; then
 			#this means the sandbox is NOT actually in use, and that the old pair just did not clean up
 			log "found that the pair is not running in sandbox $1"
 			safeRmLock "$LOCK_DIR"
 			
 			#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
 			if mkdir "$LOCK_DIR" ; then
-				#we got the lock, so take this sandbox
-				touch "$LOCK_DIR/$2"
-				# if we successfully made the directory
-				
-				log "putting this job into sandbox $1 $2"
-				
+				makeLockFile $1
 				return 0
 			fi
 		else
@@ -281,17 +281,17 @@ function trySandbox {
 }
 
 
-#figures out which sandbox the given job pair should run in. First argument is a job pair ID
+#figures out which sandbox the given job pair should run in.
 function initSandbox {
 	#try to get sandbox1 first
-	if trySandbox 1 $1; then
+	if trySandbox 1; then
 		SANDBOX=1
 		initWorkspaceVariables
 		return 0
 	fi
 	
 	#couldn't get sandbox 1, so try sandbox2 next
-	if trySandbox 2 $1 ; then
+	if trySandbox 2 ; then
 		SANDBOX=2
 		initWorkspaceVariables
 		return 0
@@ -574,7 +574,7 @@ product=$[keySize*valueSize]
 #testing to see if key or value is empty
 if (( $product ))
    then
-	log "processing attribute $a (pair=$PAIR_ID, job=$JOB_STAR_ID, key='$key', value='$value')"
+	log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
 else
         log "bad post processing - cannot process attribute $a"
@@ -639,8 +639,6 @@ cat $2
 log "} End watchfile."
 fi
 
-#log "job is $JOB_ID"
-
 log "sent job stats to $REPORT_HOST"
 
 #echo host name = $EXEC_HOST;
@@ -690,14 +688,15 @@ function copyOutputNoStats {
 	
 	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
-	#TODO: Make other output files available to later stages as well
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
+	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
 	
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
+	
+	rsync -r -u $OUT_DIR"/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
 # takes in a stage number as an argument so we know where to put the output
-# TODO: This should also look for the new output directory
 # $1 The current stage number
 function copyOutput {
 	copyOutputNoStats $1
@@ -880,7 +879,21 @@ return $?
 
 
 
+function copySolverBack {
+echo "Old Solverpath: $SOLVER_PATH"
+NEW_SOLVER_PATH=${SOLVER_PATH::-12}
 
+if [ -e $LOCAL_RUNSOLVER_PATH ]; then
+        rm $LOCAL_RUNSOLVER_PATH
+fi
+
+safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
+log "solver copied back to head node"
+log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')" 
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
+
+}
 
 
 function copyDependencies {
@@ -911,7 +924,6 @@ log "solver copy complete"
 	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
 	log "runsolver copy complete"
 	ls -l "$LOCAL_RUNSOLVER_PATH"
-
 	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
 	log "benchmark copy complete"
@@ -930,7 +942,6 @@ log "solver copy complete"
 		rm "$LOCAL_BENCH_PATH"
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
 	fi
-	
 	
 	
 	return $?	

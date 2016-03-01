@@ -20,7 +20,13 @@ import org.starexec.data.to.Processor.ProcessorType;
 public class Processors {
 	private static final Logger log = Logger.getLogger(Processors.class);
 	
-	
+	/**
+	 * Given a result set where the current row points to a  processor, return the processor
+	 * @param results
+	 * @param prefix The table alias given to the processor table in this query. Empty means no prefix.
+	 * @return The processor if it exists
+	 * @throws SQLException If the ResultSet does not contain a required processor attribute
+	 */
 	public static Processor resultSetToProcessor(ResultSet results, String prefix) throws SQLException {
 		if (prefix==null || prefix.isEmpty()) {
 			prefix="";
@@ -203,6 +209,9 @@ public class Processors {
 		return null;
 	}	
 	
+	/**
+	 * @return the system NoType benchmark processor, which is applied when the user has no processor.
+	 */
 	public static Processor getNoTypeProcessor() {
 		return Processors.get(R.NO_TYPE_PROC_ID);
 	}

@@ -266,7 +266,6 @@ function initUI(){
 	$('#newPostProcessTbl').hide();
         $('#newPreProcessTbl').hide();
         $('#newUpdateProcessTbl').hide();
-	$('#dialog-confirm-delete').hide();
 	
 	$('#leaderField').expandable(false);
 	$('#memberField').expandable(false);

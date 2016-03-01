@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,7 @@ import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -60,7 +62,11 @@ import com.mysql.jdbc.ResultSetMetaData;
 public class Statistics {
 	private static final Logger log = Logger.getLogger(Statistics.class);
 	private static final LogUtil logUtil = new LogUtil(log);
-	
+	/**
+	 * This string is returned in place of a file path whenever there
+	 * are too many pairs to render a graph.
+	 */
+	public static final String OVERSIZED_GRAPH_ERROR = "big";
 	
 	/**
 	 * @param con The connection to make the query on
@@ -95,7 +101,7 @@ public class Statistics {
 	 * @return A hashmap that contains the statistic's name to value mapping 
 	 * (this method includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
-	public static HashMap<String, String> getJobPairOverview(int jobId) throws Exception {
+	public static HashMap<String, String> getJobPairOverview(int jobId) {
 		Connection con = null;
 		
 		try {
@@ -198,13 +204,13 @@ public class Statistics {
        
     }
 
-	/**
-	 * Creates test chart
-	 * @return A list of strings of size 2, where the first string is the path to the new graph
-	 * and the second string is an HTML image map. Returns null on failure.
-	 * @author Julio Cervantes
-	 */
-	
+    /**
+     * Creates graphs for analyzing community statistics on Starexec
+     * @param communities The communities to get data for
+     * @param communityInfo A mapping from communities IDs to stats for those communities
+     * @return A JsonObject mapping from 'infoTypes' like users, solvers, and so on to filepaths
+     * to the graphs for those types
+     */
     public static JsonObject makeCommunityGraphs(List<Space> communities, HashMap<Integer,HashMap<String,Long>> communityInfo) {
 		try {
 				
@@ -270,29 +276,38 @@ public class Statistics {
 	 * @param edgeLengthInPixels Side length of the graph, which is square
 	 * @param axisColor The color to make the axis titles and labels
 	 * @param jobSpaceId The ID  of the space containing all the jobs
+	 * @param stageNumber The stage to analyze for all the pairs in this graph.
 	 * @return A list of strings of size 2, where the first string is the path to the new graph
 	 * and the second string is an HTML image map. Returns null on failure.
 	 * @author Eric Burns
 	 */
 	
-	public static List<String> makeSolverComparisonChart(int configId1, int configId2, int jobSpaceId, int edgeLengthInPixels, Color axisColor, int stageNumber) {
+	public static List<String> makeSolverComparisonChart(
+			int configId1, 
+			int configId2, 
+			int jobSpaceId, 
+			int edgeLengthInPixels, 
+			Color axisColor, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
 		logUtil.entry(methodName);
 
 		try {
-			List<JobPair> pairs1=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configId1,stageNumber);
+			List<JobPair> pairs1=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configId1,stageNumber, primitivesToAnonymize);
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
-				answer.add("big");
+				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
 			}
-			List<JobPair> pairs2=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId,configId2,stageNumber);
+			List<JobPair> pairs2=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId,configId2,stageNumber,primitivesToAnonymize);
 			if ((pairs2.size())>R.MAXIMUM_DATA_POINTS ) {
 				List<String> answer=new ArrayList<String>();
-				answer.add("big");
+				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
 			}
-			return makeSolverComparisonChart(pairs1,pairs2, edgeLengthInPixels, axisColor,stageNumber);
+			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels, 
+					axisColor, stageNumber, primitivesToAnonymize );
 		} catch (Exception e) {
 			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
 		}
@@ -315,8 +330,8 @@ public class Statistics {
 	 */
 	
 	@SuppressWarnings("deprecation")
-	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, 
-			int edgeLengthInPixels, Color axisColor, int stageNumber) {
+	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, int jobSpaceId,
+			int edgeLengthInPixels, Color axisColor, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
 			
 			//there are no points if either list of pairs is empty
@@ -333,8 +348,21 @@ public class Statistics {
 			
 			log.debug("making solver comparison chart");
 			
-			String xAxisName=stage1.getSolver().getName()+"/"+stage1.getConfiguration().getName()+" time(s)";
-			String yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
+			String xAxisName = null;
+			String yAxisName = null;
+
+			/* TODO
+			if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize )) {
+				int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
+				// Use anonymous solver names for the axis titles.
+				Map<Integer, String> solverIdToAnonymizedName = AnonymousLinks.getAnonymizedSolverNames(jobId, stageNumber);
+				xAxisName = solverIdToAnonymizedName.get( stage1.getSolver().getId() );
+				yAxisName = solverIdToAnonymizedName.get( stage2.getSolver().getId() );
+			} else {
+			*/
+				xAxisName=stage1.getSolver().getName()+"/"+stage1.getConfiguration().getName()+" time(s)";
+				yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
+			//}
 			//data in these hashmaps is needed to create the image map
 			HashMap<String,Integer> urls=new HashMap<String,Integer>();
 			HashMap<String,String> names=new HashMap<String,String>();
@@ -345,6 +373,8 @@ public class Statistics {
 			//for now, we are not including error pairs in this chart
 			int debugItem=0;
 			int debugSeries=0;
+			// TODO
+			//Map<Integer, String> benchmarkIdToAnonymizedName = AnonymousLinks.getAnonymizedBenchmarkNames( jobId );
 			for (JobPair jp : pairs1) {
 				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
 					JobPair jp2=pairs2Map.get(jp.getBench().getId());
@@ -359,7 +389,13 @@ public class Statistics {
 						
 						//put the name in names so we can create a tooltip of the name
 						//when hovering over the point in the image map
-						names.put(key, jp.getBench().getName());
+						/* TODO
+						if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
+							names.put(key, benchmarkIdToAnonymizedName.get( jp.getBench().getId() ));
+						} else {
+						*/
+							names.put(key, jp.getBench().getName());
+						//}
 						item+=1;
 							
 						stage1=jp.getStageFromNumber(stageNumber);
@@ -386,14 +422,15 @@ public class Statistics {
 			//to 110% of the maximum value
 			double maxX=dataset.getDomainUpperBound(false)*1.1;
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
-			Range range=new Range(0,Math.max(maxX, maxY));
+			Range range=new Range(0,Math.max(0.1, Math.max(maxX, maxY)));
 			
 			
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 			
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
-	        
-	        renderer.setURLGenerator(customURLGenerator);
+			if ( !AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
+				renderer.setURLGenerator(customURLGenerator);
+			}
 	        
 	        XYToolTipGenerator tooltips=new BenchmarkTooltipGenerator(names);
 	        renderer.setToolTipGenerator(tooltips);
@@ -424,7 +461,12 @@ public class Statistics {
 			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
 			String map;
 			
-			map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
+			// Don't include the links to the benchmark pages if we're sending this to an anonymous page.
+			if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
+				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info);
+			} else {
+				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
+			}
 			
 			
 			log.debug("solver comparison chart created succesfully, returning filepath ");
@@ -441,34 +483,46 @@ public class Statistics {
 	/**
 	 * Draws a graph comparing solvers operating in a single job in a single space, saves
 	 * the chart as a png file, and returns a string containing the absolute filepath of the chart
-	 * @param jobId The job id of the job to do the comparison for
-	 * @param spaceId The space that should contain all of the job pairs to compare
+	 * @param jobSpaceId The space that should contain all of the job pairs to compare
 	 * @param logX Whether to use a log scale on the X axis
 	 * @param logY Whether to use a log scale on the Y axis
 	 * @param configIds The IDs of the configurations that should be included in this graph
+	 * @param stageNumber the stage to analyze for all job pairs in the graph
 	 * @return A String filepath to the newly created graph, or null if there was an error. Returns the string
-	 * "big" if there are too many job pairs to display
+	 * Statistics.OVERSIZED_GRAPH_ERROR if there are too many job pairs to display
 	 * @author Eric Burns
 	 */
 	
-	public static String makeSpaceOverviewChart(int jobSpaceId, boolean logX, boolean logY, List<Integer> configIds, int stageNumber) {
+	public static String makeSpaceOverviewChart(
+			int jobSpaceId, 
+			boolean logX, 
+			boolean logY, 
+			List<Integer> configIds, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitivesToAnonymize ) {
+
 		try {
 			if (configIds.size()==0) {
 				return null;
 			}
 			
-			List<JobPair> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(0), stageNumber);
+			List<JobPair> pairs = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds.get(0), stageNumber, primitivesToAnonymize );
+			log.debug( "Number of pairs for primitivesToAnonymize="+AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ) +": "
+						+pairs.size());
+
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
-				return "big";
+				return OVERSIZED_GRAPH_ERROR;
 			}
 			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll(Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber));
+				pairs.addAll( Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, primitivesToAnonymize) );
 				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
-					return "big";
+					return OVERSIZED_GRAPH_ERROR;
 				}
 			}
-			
-			return makeSpaceOverviewChart(pairs, logX,logY,stageNumber);
+
+			log.debug( "Number of pairs after add all for primitivesToAnonymize="+
+					AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ) +": "+pairs.size());
+			return makeSpaceOverviewChart( pairs, logX,logY,stageNumber, primitivesToAnonymize );
 		} catch (Exception e) {
 			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
 		}
@@ -477,14 +531,20 @@ public class Statistics {
 	}
 	
 	/**
-	 * Draws a graph comparing solvers operating on the given set of pairs
-	 * @param jobId The job id of the job to do the comparison for
-	 * @param spaceId The space that should contain all of the job pairs to compare
-	 * @return A String filepath to the newly created graph, or null if there was an error.
-	 * @author Eric Burns
+	 * Creates a graph for plotting the peformance of solvers against a set of job pairs
+	 * @param pairs The pairs to plot results of
+	 * @param logX Whether to use a log scale for the X axis
+	 * @param logY Whether to use a log scale for the Y axis
+	 * @param stageNumber The stage number of analyze for al lthe job pairs
+	 * @param primitivesToAnonymize an enum describing which (if any) primitives to anonymize.
+	 * @return The absolute filepath to the chart that was created
 	 */
-	
-	public static String makeSpaceOverviewChart(List<JobPair> pairs, boolean logX, boolean logY, int stageNumber) {
+	public static String makeSpaceOverviewChart(
+			List<JobPair> pairs, 
+			boolean logX, 
+			boolean logY, 
+			int stageNumber, 
+			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
 			HashMap<Solver,HashMap<Configuration,List<Double>>> data=processJobPairData(pairs,stageNumber);
@@ -492,7 +552,13 @@ public class Statistics {
 			XYSeriesCollection dataset=new XYSeriesCollection();
 			for(Solver s : data.keySet()) {
 				for (Configuration c : data.get(s).keySet()) {
-					d=new XYSeries(s.getName()+"(" +s.getId()+ ") config = "+c.getName());
+					String label = null;
+					if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+						label = s.getName()+" config = "+c.getName();
+					} else {
+						label = s.getName()+"(" +s.getId()+ ") config = "+c.getName();
+					}
+					d=new XYSeries(label);
 					int counter=1;
 					for (Double time : data.get(s).get(c)) {
 						d.add(counter,time);
@@ -503,7 +569,7 @@ public class Statistics {
 				}
 			}
 
-
+			log.debug("making space overview template");
 			JFreeChart chart=ChartFactory.createScatterPlot("Space Overview Plot", "# solved", "time (s)", dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
@@ -521,7 +587,7 @@ public class Statistics {
 				
 			} else {
 				plot.getRangeAxis().setAutoRange(false);
-				plot.getRangeAxis().setRange(new Range(0,dataset.getRangeUpperBound(false)*1.1));
+				plot.getRangeAxis().setRange(new Range(0,Math.max(0.1, dataset.getRangeUpperBound(false)*1.1)));
 			}
 			
 			plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
@@ -529,7 +595,7 @@ public class Statistics {
 			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
 			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
 			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
-			if (pairs.size()>10000)  {
+			if (pairs.size()>100)  {
 				SamplingXYLineRenderer renderer=new SamplingXYLineRenderer();
 				plot.setRenderer(renderer);
 			} else {
@@ -540,18 +606,16 @@ public class Statistics {
 			}
 				
 			String filename=UUID.randomUUID().toString()+".png";
-			
-
-
-			
 			File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
+			log.debug("saving smaller space overview chart");
 			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
 
 			plot.getDomainAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setTickLabelPaint(new Color(0,0,0));
 			plot.getDomainAxis().setLabelPaint(new Color(0,0,0));
 			plot.getRangeAxis().setLabelPaint(new Color(0,0,0));
-			output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename+"600");
+			output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename+"800");
+			log.debug("saving larger space overview chart");
 			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
 
 			log.debug("Chart created succesfully, returning filepath " );
