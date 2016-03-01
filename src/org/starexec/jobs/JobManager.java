@@ -459,8 +459,15 @@ public abstract class JobManager {
 		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, queue.getWallTimeout(), job.getWallclockTimeout()));
 		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
-		
-		
+
+        log.debug("Checking if job is build job: " + job.isBuildJob() + " Job id: " + job.getId());
+
+        if(job.isBuildJob()) {
+                replacements.put("$$BUILD_JOB$$", "true");
+        }
+        else {
+                replacements.put("$$BUILD_JOB$$", "false");
+        }
 		
 		// all arrays from above. Note that we are base64 encoding some for safety
 		replacements.put("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
@@ -843,13 +850,21 @@ public abstract class JobManager {
 		if (sm!=null) {
 			spaceName = sm;
 		}
+        Configuration c = new Configuration();
+        c.setId(1);
+        c.setName("build");
+        c.setSolverId(solverId);
+        c.setDescription("Build Configuration for solver: " + solverId);
+        int cId = Solvers.addConfiguration(s,c);
 		JobPair pair = new JobPair();
 		JoblineStage stage = new JoblineStage();
 		stage.setStageNumber(1);
 		pair.setPrimaryStageNumber(1);
 		stage.setNoOp(false);
 		stage.setSolver(s);
+        stage.setConfiguration(c);
 		pair.addStage(stage);
+        pair.setBench(Benchmarks.get(15)); //This hard coded value should be changed before feature is used.
 		pair.setSpace(Spaces.get(spaceId));
 		pair.setPath(spaceName);
 		j.addJobPair(pair);

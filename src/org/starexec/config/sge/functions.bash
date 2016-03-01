@@ -151,7 +151,11 @@ function initWorkspaceVariables {
 	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 	
 	# The path to the bin directory of the solver on the execution host
-	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+    if [ $BUILD_JOB == "true" ]; then 
+	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/runsolver"
+    else
+	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+    fi
 	
 	OUT_DIR="$WORKING_DIR/output"
 	
@@ -875,7 +879,21 @@ return $?
 
 
 
+function copySolverBack {
+echo "Old Solverpath: $SOLVER_PATH"
+NEW_SOLVER_PATH=${SOLVER_PATH::-12}
 
+if [ -e $LOCAL_RUNSOLVER_PATH ]; then
+        rm $LOCAL_RUNSOLVER_PATH
+fi
+
+safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
+log "solver copied back to head node"
+log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')" 
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
+
+}
 
 
 function copyDependencies {
@@ -906,7 +924,6 @@ log "solver copy complete"
 	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
 	log "runsolver copy complete"
 	ls -l "$LOCAL_RUNSOLVER_PATH"
-
 	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
 	log "benchmark copy complete"
@@ -925,7 +942,6 @@ log "solver copy complete"
 		rm "$LOCAL_BENCH_PATH"
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"		
 	fi
-	
 	
 	
 	return $?	

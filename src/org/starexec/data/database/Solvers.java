@@ -26,6 +26,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
+import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -64,7 +65,7 @@ public class Solvers {
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			procedure.setLong(7, diskUsage);
 			procedure.setInt(8,s.getType().getVal());
-			procedure.setInt(9, s.built());
+			procedure.setInt(9, s.buildStatus().getCode().getVal());
 			
 			procedure.executeUpdate();
 			
@@ -1781,7 +1782,9 @@ public class Solvers {
 		s.setDownloadable(results.getBoolean(prefix+"downloadable"));
 		s.setDiskSize(results.getLong(prefix+"disk_size"));
 		s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
-		s.setBuilt(results.getInt(prefix+"built"));
+        SolverBuildStatus status = new SolverBuildStatus();
+        status.setCode(results.getInt(prefix+"build_status"));
+		s.setBuildStatus(status);
 		
 		return s;
 	}

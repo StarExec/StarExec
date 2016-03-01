@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.starexec.util.Util;
+import org.starexec.data.to.SolverBuildStatus;
 
 import com.google.gson.annotations.Expose;
 
@@ -65,7 +66,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	private boolean recycled;
 	private boolean deleted;
 	private ExecutableType type;
-	private int built;
+	private SolverBuildStatus buildStatus;
 	public Solver() {
 		this.configurations = new LinkedList<Configuration>();
 	}
@@ -198,17 +199,17 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 
 	
 	/**
-	 * @return true if this solver is built.
+	 * @return SolverBuildStatus the solver build status
 	 */
-	public int built() {
-		return built;
+	public SolverBuildStatus buildStatus() {
+		return buildStatus;
 	}
 	
 	/**
 	 * @param built sets the whether this solver has been built or not
 	 */
-	public void setBuilt(int built) {
-		this.built = built;
+	public void setBuildStatus(SolverBuildStatus buildStatus) {
+		this.buildStatus = buildStatus;
 	}
 
 

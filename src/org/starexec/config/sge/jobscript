@@ -43,6 +43,8 @@ export SPACE_PATH='$$SPACE_PATH$$'
 export SCRIPT_PATH='$$SCRIPT_PATH$$'
 export PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$'
 export DB_NAME='$$DB_NAME$$'
+export BUILD_JOB='$$BUILD_JOB$$'
+
 
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
@@ -125,6 +127,10 @@ echo "date: `date`"
 echo "user: $USER_ID"
 echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
+if [ $BUILD_JOB == "true" ]; then
+        echo "This is a solver build job"
+fi
+
 echo ""
 
 sendStatus $STATUS_RUNNING
@@ -259,9 +265,13 @@ fi
 #whether the solver was found in the cache
 SOLVER_CACHED=0
 
-
+if [ $BUILD_JOB == "true" ]; then
+    LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/starexec_build"
+else
 # The path to the config run script on the execution host
-LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+    LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+fi
+
 createDir "$OUT_DIR/output_files"
 
 
@@ -340,7 +350,12 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER &
 		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
-	cd /export/starexec/$SANDBOX_PARAM/solver/bin
+    if [ $BUILD_JOB == "true" ]; then
+        cd /export/starexec/$SANDBOX_PARAM/solver
+        LOCAL_BENCH_PATH=""
+    else
+	    cd /export/starexec/$SANDBOX_PARAM/solver/bin
+    fi
 	pwd
 
 	# run runsolver
@@ -437,6 +452,11 @@ if [ "$JOB_ERROR" = "" ]; then
 	log "STAREXEC job $PAIR_ID completed successfully"	
 else
 	log "STAREXEC job $PAIR_ID exited with errors"
+fi
+
+
+if [ $BUILD_JOB == "true" ]; then
+    copySolverBack
 fi
 
 cleanForNextStage

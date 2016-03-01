@@ -55,6 +55,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.data.to.SolverBuildStatus;
 
 /**
  * Contains helper methods for JSP pages.
@@ -428,7 +429,7 @@ public class JspHelpers {
 			formattedSite[2]=GeneralSecurity.getHTMLSafeString(site.getUrl());
 			formattedSites.add(formattedSite);
 		}
-		String buildStatus = (s.built()) == 1 ? "built" : "not built";
+		String buildStatus = s.buildStatus().getStatus();
 		request.setAttribute("built", buildStatus);	
 
 		request.setAttribute( "solverPageTitle", hideSolverName ? "" : s.getName() );

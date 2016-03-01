@@ -699,7 +699,7 @@ public class Jobs {
 				j.setCpuTimeout(results.getInt("cpuTimeout"));
 				j.setWallclockTimeout(results.getInt("clockTimeout"));
 				j.setMaxMemory(results.getLong("maximum_memory"));
-				
+				j.setBuildJob(results.getBoolean("buildJob"));
 				j.setDescription(results.getString("description"));
 				j.setSeed(results.getLong("seed"));
 				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
@@ -835,6 +835,7 @@ public class Jobs {
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));	
 				j.setCompleteTime(results.getTimestamp("completed"));
+                j.setBuildJob(results.getBoolean("buildJob"));
 
 				j.setSeed(results.getLong("seed"));
 				jobs.add(j);				
@@ -876,6 +877,7 @@ public class Jobs {
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
 				j.setCompleteTime(results.getTimestamp("completed"));
+                j.setBuildJob(results.getBoolean("buildJob"));
 
 				j.setSeed(results.getLong("seed"));
 

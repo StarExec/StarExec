@@ -8,10 +8,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolver;
-CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT, IN _built INT)
+CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT, IN _build_status INT)
 	BEGIN
-		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type, built)
-		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type, _built);
+		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type, build_status)
+		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type, _build_status);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
@@ -394,4 +394,26 @@ CREATE PROCEDURE GetSolversInSharedSpaces(IN _userId INT)
 		WHERE user_assoc.user_id=_userId
 		GROUP BY(solvers.id);
 	END //
+
+-- Sets the build_status status code of the solver
+-- Author: Andrew Lubinus
+DROP PROCEDURE IF EXISTS SetSolverBuildStatus;
+CREATE PROCEDURE SetSolverBuildStatus(IN _solverId INT, IN _build_status INT)
+    BEGIN
+        UPDATE solvers
+        SET build_status = _build_status
+        WHERE id = _solverId;
+    END //
+
+-- Updates path to solver
+-- Author: Andrew Lubinus
+DROP PROCEDURE IF EXISTS SetSolverPath;
+CREATE PROCEDURE SetSolverPath(IN _solverId INT, IN _path TEXT)
+    BEGIN
+        UPDATE solvers
+        SET path = _path
+        WHERE id = _solverId;
+    END //
+
+
 DELIMITER ; -- This should always be at the end of this file
