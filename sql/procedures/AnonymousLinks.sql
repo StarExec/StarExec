@@ -6,10 +6,10 @@ CREATE PROCEDURE AddAnonymousPrimitiveName(
 		IN _anonymousName VARCHAR(36), 
 		IN _primitiveId INT, 
 		IN _primitiveType ENUM('solver', 'bench', 'job', 'config'),
-		IN _jobId INT )
+		IN _jobId INT)
 	BEGIN
-		INSERT INTO anonymous_primitive_names ( anonymous_name, primitive_id, primitive_type, job_id )
-			VALUES ( _anonymousName, _primitiveId, _primitiveType, _jobId );
+		INSERT INTO anonymous_primitive_names ( anonymous_name, primitive_id, primitive_type, job_id)
+			VALUES ( _anonymousName, _primitiveId, _primitiveType, _jobId);
 	END //
 
 DROP PROCEDURE IF EXISTS AddAnonymousLink;
@@ -55,12 +55,18 @@ CREATE PROCEDURE GetPrimitivesToAnonymize( IN _uniqueId VARCHAR(36), IN _primiti
 DROP PROCEDURE IF EXISTS DeleteOldLinks;
 CREATE PROCEDURE DeleteOldLinks( IN _ageThresholdInDays INT )
 	BEGIN
-		DELETE FROM anonymous_links WHERE DATEDIFF( CURDATE(), date_created ) > _ageThresholdInDays; 
+		/* Delete all the anonymous primitive names that correspond to anonymous links for jobs that are being deleted. */
+		DELETE FROM anonymous_primitive_names WHERE job_id IN (SELECT primitive_id FROM anonymous_links 
+				WHERE DATEDIFF( CURDATE(), date_created ) >= _ageThresholdInDays AND primitive_type="job");
+
+		DELETE FROM anonymous_links WHERE DATEDIFF( CURDATE(), date_created ) >= _ageThresholdInDays; 
 	END //
 
 DROP PROCEDURE IF EXISTS DeleteAnonymousLink;
 CREATE PROCEDURE DeleteAnonymousLink( IN _uniqueId VARCHAR(36) )
 	BEGIN
+		DELETE FROM anonymous_primitive_names WHERE anonymous_primitive_names.job_id IN 
+				(SELECT anonymous_links.primitive_id FROM anonymous_links WHERE anonymous_links.unique_id=_uniqueId AND anonymous_links.primitive_type="job");
 		DELETE FROM anonymous_links WHERE unique_id = _uniqueId;
 	END //
 

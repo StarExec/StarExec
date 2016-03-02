@@ -552,11 +552,11 @@ public class AnonymousLinks {
 				Map<Integer, String> anonymizedConfigNames = buildAnonymizedConfigNamesMap( solverId );
 				for ( Integer configId : anonymizedConfigNames.keySet() ) {
 					String anonymousConfigName = anonymizedConfigNames.get( configId );
-					addAnonymousPrimitiveName( anonymousConfigName, configId, R.CONFIGURATION, jobId, con );
+					addAnonymousPrimitiveName( anonymousConfigName, configId, R.CONFIGURATION, jobId,con );
 				}
 
 				String anonymousSolverName = anonymizedSolverNames.get( solverId );
-				addAnonymousPrimitiveName( anonymousSolverName, solverId, R.SOLVER, jobId, con );
+				addAnonymousPrimitiveName( anonymousSolverName, solverId, R.SOLVER, jobId,con );
 			}
 
 			// Generate a map of anonymized benchmark names and add them to the database.
@@ -576,6 +576,10 @@ public class AnonymousLinks {
 		}
 	}
 
+	/**
+	 * @param jobId the id of the anonynmized job to get solver information for.
+	 * @author Albert Giegerich
+	 */
 	public static List<Triple<String, String, Integer>> getAnonymousSolverNamesKey(int jobId) throws SQLException {
 		final String methodName = "getAnonymizedSolverNamesKey";
 		Connection con = null;

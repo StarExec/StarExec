@@ -269,6 +269,39 @@ public class AnonymousLinkTests extends TestSequence {
 		}
 	}
 
+	/* TODO this test cant be used because it will wipe out ALL anonymous names in the database.
+	@StarexecTest
+	public void deleteOldLinksRemovesAnonymousNamesTest() {
+		final String methodName = "deleteOldLinksRemovesAnonymousNamesTest";
+		try {
+			String uuid = AnonymousLinks.addAnonymousLink( "job", job.getId(), PrimitivesToAnonymize.ALL );
+			AnonymousLinks.addAnonymousNamesForJob( job.getId() );
+			AnonymousLinks.deleteOldLinks( 0 );
+			Assert.assertFalse( AnonymousLinks.hasJobBeenAnonymized( job.getId() ) );
+			Assert.assertFalse( AnonymousLinks.getIdOfJobAssociatedWithLink( uuid ).isPresent() );
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
+			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
+		}
+	}
+	*/
+
+	@StarexecTest
+	public void deleteRemovesAnonymousNamesTest() {
+		final String methodName = "deleteRemovesAnonymousNamesTest";
+		try {
+			String uuid = AnonymousLinks.addAnonymousLink( "job", job.getId(), PrimitivesToAnonymize.ALL );
+			AnonymousLinks.addAnonymousNamesForJob( job.getId() );
+			AnonymousLinks.delete( uuid );
+			Assert.assertFalse( AnonymousLinks.hasJobBeenAnonymized( job.getId() ) );
+			Assert.assertFalse( AnonymousLinks.getIdOfJobAssociatedWithLink( uuid ).isPresent() );
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
+			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
+		}
+	}
+
+
 	@StarexecTest
 	public void deleteTest() {
 		final String methodName = "deleteTest";
