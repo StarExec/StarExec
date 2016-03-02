@@ -404,44 +404,55 @@ public class Util {
     	}
     	return executeCommand(newCommand,envp,workingDirectory);
     }
-	
+    
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
-     * and returns the results from the command as a buffered reader which can be processed.
-     * MAKE SURE TO CLOSE THE READER WHEN DONE. Null is returned if the command failed.
+     * and returns the process representing the command
      * @param command An array holding the command and then its arguments
      * @param envp The environment
      * @param workingDirectory the working directory to use
-     * @return A buffered reader holding the output from the command.
+     * @return A String containing both stderr and stdout from the command
+     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
+     */
+    public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
+    	Runtime r = Runtime.getRuntime();
+					
+	    Process p;
+	    if (command.length == 1) {
+			log.debug("Executing the following command: " + command[0]);
+				
+			p = r.exec(command[0], envp);
+	    }
+	    else {
+			StringBuilder b = new StringBuilder();
+			b.append("Executing the following command:\n");
+			for (int i = 0; i < command.length; i++) {
+			    b.append("  ");
+			    b.append(command[i]);
+			}
+	
+			log.info(b.toString());
+				    
+			p = r.exec(command, envp, workingDirectory);
+	    }
+	    return p;
+	
+    }
+	
+    /**
+     * Runs a command on the system command line (bash for unix, command line for windows)
+     * and returns the results from the command as a string
+     * @param command An array holding the command and then its arguments
+     * @param envp The environment
+     * @param workingDirectory the working directory to use
+     * @return A String containing both stderr and stdout from the command
      * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
      * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
 	
     public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
-    	Runtime r = Runtime.getRuntime();
-					
-	    Process p;
-	    if (command.length == 1) {
-		log.debug("Executing the following command: " + command[0]);
-			
-		p = r.exec(command[0], envp);
-	    }
-	    else {
-		StringBuilder b = new StringBuilder();
-		b.append("Executing the following command:\n");
-		for (int i = 0; i < command.length; i++) {
-		    b.append("  ");
-		    b.append(command[i]);
-		}
-
-		log.info(b.toString());
-			    
-		p = r.exec(command, envp, workingDirectory);
-	    }
-
-	    return drainStreams(p);
-
-	
+	    return drainStreams(executeCommandAndReturnProcess(command,envp,workingDirectory));
     }
 	
 
