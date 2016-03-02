@@ -5,16 +5,15 @@
 <%		
 	try {
 		int userId = SessionUtil.getUserId(request);
-		int jobId = Integer.parseInt(request.getParameter("id"));
 		int configId=Integer.parseInt(request.getParameter("c1"));
 		int configId2=Integer.parseInt(request.getParameter("c2"));
-		Job j=null;
 		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
-		
-		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.get(jobId);
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		if(space==null || !JobSecurity.canUserSeeJob(space.getJobId(), userId).isSuccess()) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "This job does not exist or is restricted");
+			return;
 		}
-		
+		Job j = Jobs.get(space.getJobId());
 		
 		if(j != null) {	
 			JobSpace s=Spaces.getJobSpace(jobSpaceId);
@@ -30,10 +29,10 @@
 			request.setAttribute("solver",solver);
 			request.setAttribute("solver2",solver2);
 
-			request.setAttribute("jobId", jobId);
+			request.setAttribute("jobId", space.getJobId());
 			
 		} else {
-				if (Jobs.isJobDeleted(jobId)) {
+				if (Jobs.isJobDeleted(space.getJobId())) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
@@ -46,7 +45,7 @@
 	}
 %>
 
-<star:template title="Comparison of ${solver.name} (${config1.name}) and ${solver2.name} (${config2.name}) in ${space.name} hierarchy" js="lib/jquery.dataTables.min, util/jobDetailsUtilityFunctions, details/shared, details/solverComparison, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Comparison of ${solver.name} (${config1.name}) and ${solver2.name} (${config2.name}) in ${space.name} hierarchy" js="lib/jquery.dataTables.min, util/jobDetailsUtilityFunctions, util/datatablesUtility, details/shared, details/solverComparison, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<span style="display:none" id="jobId" value="${jobId}" > </span>
 	<span style="display:none" id="spaceId" value="${space.id}" > </span>
 	<span style="display:none" id="configId1" value="${configId}" > </span>
