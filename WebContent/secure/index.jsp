@@ -48,19 +48,6 @@
 		</script>
 	</c:if>
 	<c:if test="${user.role != 'unauthorized' || user.role != 'suspended'}">
-		<style type="text/css">
-#content a:link {
-	text-decoration: underline;
-}
-
-#content ul {
-	margin-left: 40px;
-}
-
-#content ul li {
-	padding: 3px;
-}
-</style>
 		<br />
 		<br />
 		<li><a
