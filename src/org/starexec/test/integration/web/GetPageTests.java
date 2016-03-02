@@ -32,7 +32,13 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
-
+/**
+ * This file is used to test whether there are any internal errors caused by loading any JSP
+ * page on the site. The tests in this file use StarexecCommand to directly request
+ * URLs from the current Starexec instance: returning true if the page returned successfully
+ * and false if an HTTP error was sent back
+ *
+ */
 public class GetPageTests extends TestSequence {
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
@@ -191,7 +197,7 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void getSolverComparisonTest() {
 		int c1 = solver.getConfigurations().get(0).getId();
-		int c2 = solver2.getConfigurations().get(1).getId();
+		int c2 = solver2.getConfigurations().get(0).getId();
 		Assert.assertTrue(con.canGetPage("secure/details/solverComparison.jsp?sid="+job.getPrimarySpace()+"&c1="+c1+"&c2="+c2));
 	}
 	
