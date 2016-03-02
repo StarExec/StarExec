@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 
 import org.starexec.util.LogUtil;
 import org.starexec.constants.R;
@@ -539,7 +541,7 @@ public class AnonymousLinks {
 		try {
 
 			// Generate a map of anonymized solver names and add them to the database.
-			Map<Integer, String> anonymizedSolverNames = getAnonymizedSolverNames( solvers );
+			Map<Integer, String> anonymizedSolverNames = buildAnonymizedSolverNamesMap( solvers );
 
 			con = Common.getConnection();
 			Common.beginTransaction(con);
@@ -547,7 +549,7 @@ public class AnonymousLinks {
 			for ( Integer solverId : anonymizedSolverNames.keySet() ) {
 
 				// For each solver, add all the anonymous config names.
-				Map<Integer, String> anonymizedConfigNames = getAnonymizedConfigNames( solverId );
+				Map<Integer, String> anonymizedConfigNames = buildAnonymizedConfigNamesMap( solverId );
 				for ( Integer configId : anonymizedConfigNames.keySet() ) {
 					String anonymousConfigName = anonymizedConfigNames.get( configId );
 					addAnonymousPrimitiveName( anonymousConfigName, configId, R.CONFIGURATION, jobId, con );
@@ -558,7 +560,7 @@ public class AnonymousLinks {
 			}
 
 			// Generate a map of anonymized benchmark names and add them to the database.
-			Map<Integer, String> anonymizedBenchmarkNames = getAnonymizedBenchmarkNames( benchmarks );
+			Map<Integer, String> anonymizedBenchmarkNames = buildAnonymizedBenchmarkNamesMap( benchmarks );
 			for ( Integer benchmarkId : anonymizedBenchmarkNames.keySet() ) {
 				String anonymousBenchmarkName = anonymizedBenchmarkNames.get( benchmarkId );
 				addAnonymousPrimitiveName( anonymousBenchmarkName, benchmarkId, R.BENCHMARK, jobId, con );
@@ -571,6 +573,37 @@ public class AnonymousLinks {
 		} finally {
 			Common.doRollback( con );
 			Common.safeClose( con );
+		}
+	}
+
+	public static List<Triple<String, String, Integer>> getAnonymousSolverNamesKey(int jobId) throws SQLException {
+		final String methodName = "getAnonymizedSolverNamesKey";
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall( "{CALL GetAnonymousSolverNamesAndIds(?)}" );
+			procedure.setInt(1, jobId);
+
+			results = procedure.executeQuery();
+
+			List<Triple<String, String, Integer>> anonymizedSolverNamesKey = new ArrayList<>();
+			while ( results.next() ) {
+				int solverId= results.getInt( "primitive_id" );
+				Solver solver = Solvers.get( con, solverId, false );
+				String anonymizedSolverName = results.getString( "anonymous_name" );
+
+				anonymizedSolverNamesKey.add( new ImmutableTriple<>(solver.getName(), anonymizedSolverName, solverId) );
+			}
+			return anonymizedSolverNamesKey;
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Database failure while geting anonymized solver names key.\n"+Util.getStackTrace( e ) );
+			throw e;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 	}
 
@@ -606,73 +639,11 @@ public class AnonymousLinks {
 
 
 	/**
-	 *
-	 * Anonymizes the names of primitives in a list of job pairs.
-	 * @param jobPairs the job pairs to anonymize.
-	 * @param jobId the job id associated with the job pairs.
-	 * @param stageNumber stage to filter solvers by.
-	 * @param primitivesToAnonymize an enum dictating what should be anonymized.
-	 * @return the anonymized job pairs.
-	 * @author Albert Giegerich
-	public static void anonymizeJobPairs( final List<JobPair> jobPairs, int jobId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
-		final String methodName = "anonymizePrimitiveNames";
-		logUtil.entry( methodName );
-		// There are no primitives to anonymize
-		if ( jobPairs.size() == 0 ) {
-			return;
-		}
-
-		// We don't want to anonymize anything.
-		if ( isNothingAnonymized( primitivesToAnonymize )) {
-			return;
-		}
-
-		// Get a mapping of benchmark/solver ids to their anonymized names.
-		Map<Integer, String> anonymizedBenchmarkNames = getAnonymizedBenchmarkNames( jobId );
-		Map<Integer, String> anonymizedSolverNames = getAnonymizedSolverNames( jobId, stageNumber );
-		for ( JobPair pair : jobPairs ) {
-			if ( areBenchmarksAnonymized( primitivesToAnonymize )) {
-				// Set each benchmark's name to an anonymized one.
-				Benchmark pairBench = pair.getBench();
-				pairBench.setName( anonymizedBenchmarkNames.get( pairBench.getId() ));
-			}
-
-			// Set each solver's name to an anonymized one.
-			Solver pairSolver = pair.getStageFromNumber( stageNumber ).getSolver();
-			pairSolver.setName( anonymizedSolverNames.get( pairSolver.getId() ));
-
-			Map<Integer, String> configToNameMap = Solvers.getConfigToAnonymizedNameMap( pairSolver.getId() );
-			Configuration pairConfig = pair.getStageFromNumber( stageNumber ).getConfiguration();
-			pairConfig.setName( configToNameMap.get( pairConfig.getId() ));
-		}
-	}
-	*/
-
-	/**
-	 * Anonymizes the names of solver stats deterministically based on the job and stage number.
-	 * @param allSolverStats the solver stats to anonymize.
-	 * @param jobId the id of the job which the solver stats are related to.
-	 * @param stageNumber the stage to filter the solvers by.
-	 * @author Albert Giegerich
-	public static void anonymizeSolverStats( List<SolverStats> allSolverStats, int jobId, int stageNumber ) {
-		Map<Integer, String> idToAnonymizedSolverName = getAnonymizedSolverNames( jobId, stageNumber );
-		for ( SolverStats stats : allSolverStats ) {
-			Solver solver = stats.getSolver();
-			Configuration config = stats.getConfiguration();
-			Map<Integer, String> configIdToName = Solvers.getConfigToAnonymizedNameMap( solver.getId() );
-			config.setName( configIdToName.get( config.getId() ));
-
-			solver.setName( idToAnonymizedSolverName.get( solver.getId() ));
-		}
-	}
-	*/
-
-	/**
 	 * @param solverId The solver id to get the configuration map for
 	 * @author Albert Giegerich
 	 * @return A map from configuration id's to their anonymized names for use in the anonymous page feature.
 	 */
-	private static Map<Integer, String> getAnonymizedConfigNames(int solverId) {
+	private static Map<Integer, String> buildAnonymizedConfigNamesMap(int solverId) {
 		List<Configuration> configs = Solvers.getConfigsForSolver( solverId );
 
 		Map<Integer, String> configIdToNameMap  = new HashMap<>();
@@ -691,7 +662,7 @@ public class AnonymousLinks {
 	 * @param jobId The id of the job to get a mapping for.
 	 * @author Albert Giegerich
 	*/
-	private static Map<Integer, String> getAnonymizedSolverNames( final List<Solver> solvers ) {
+	private static Map<Integer, String> buildAnonymizedSolverNamesMap( final List<Solver> solvers ) {
 		// Build a mapping of solvers to anonymized names.
 		Map<Integer, String> solverIdToAnonymizedName = new HashMap<>();
 		int numberToAppend = 1;
@@ -712,8 +683,8 @@ public class AnonymousLinks {
 	 * @return a mapping from benchmark ID's to an anonymous name for the benchmark.
 	 * @author Albert Giegerich
 	 */
-	private static Map<Integer, String> getAnonymizedBenchmarkNames( final List<Benchmark> benchmarks ) {
-		final String methodName = "getAnonymizedBenchmarkNames";
+	private static Map<Integer, String> buildAnonymizedBenchmarkNamesMap( final List<Benchmark> benchmarks ) {
+		final String methodName = "buildAnonymizedBenchmarkNamesMap";
 		logUtil.entry( methodName );
 
 		Map<Integer, String> benchmarkIdToAnonymizedName = new HashMap<>();

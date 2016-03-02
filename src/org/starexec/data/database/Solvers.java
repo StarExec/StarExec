@@ -631,14 +631,14 @@ public class Solvers {
 		setHierarchyExecutable(binDir);//should make entire hierarchy executable
 		return returnList;
 	}
-	
+
 	/**
 	 * @param con The connection to make the query on
 	 * @param solverId The id of the solver to retrieve
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	protected static Solver get(Connection con, int solverId, boolean includeDeleted) throws Exception {	
+	public static Solver get(Connection con, int solverId, boolean includeDeleted) throws SQLException {	
 		CallableStatement procedure=null;
 		
 		ResultSet results= null;
@@ -676,7 +676,7 @@ public class Solvers {
 	public static Solver get(int solverId) {
 		return get(solverId,false);
 	}
-	
+
 	/**
 	 * @param solverId The id of the solver to retrieve
 	 * @param includeDeleted True to include solvers with a true 'deleted' flag in the DB

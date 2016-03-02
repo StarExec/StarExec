@@ -494,7 +494,7 @@ function initUI(){
 	});
 
 	$("#solverNameKeyButton").click(function() {
-		var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?id='+jobId;
+		var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?anonId='+DETAILS_JOB.anonymousLinkUuid;
 		popup(url);
 	});
 

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTHelpers;
@@ -34,6 +35,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 
 import org.starexec.data.security.BenchmarkSecurity;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.SolverSecurity;
 
@@ -193,7 +195,6 @@ public class JspHelpers {
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 			}
-			
 			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
@@ -484,6 +485,30 @@ public class JspHelpers {
 	public static void handleNonAnonymousBenchPage( HttpServletRequest request, HttpServletResponse response ) throws IOException {
 		int benchId = Integer.parseInt(request.getParameter("id"));
 		setBenchmarkPageRequestAttributes( false, false, benchId, request, response );
+	}
+
+	public static void handleAnonymousJobKeyPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
+		int userId = SessionUtil.getUserId( request );
+
+		String jobUuid = request.getParameter( "anonId" );
+		Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( jobUuid );
+
+		if ( !potentialJobId.isPresent() ) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "No job with given ID.");
+			return;
+		}
+
+		int jobId = potentialJobId.get();
+
+		if ( !JobSecurity.userOwnsJobOrIsAdmin( jobId, userId ) ) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not permitted to see this job's anonymous solver name key page.");
+			return;
+		}
+
+		Job job = Jobs.get(jobId);
+		List<Triple<String, String, Integer>> anonymousSolverNamesKey = AnonymousLinks.getAnonymousSolverNamesKey( jobId ); 
+		request.setAttribute( "job", job );
+		request.setAttribute( "solverTripleList", anonymousSolverNamesKey );
 	}
 
 	/**

@@ -26,6 +26,12 @@ CREATE PROCEDURE GetAnonymousNamesForJob( IN _jobId INT )
 		SELECT * FROM anonymous_primitive_names WHERE job_id=_jobId;
 	END // 
 
+DROP PROCEDURE IF EXISTS GetAnonymousSolverNamesAndIds;
+CREATE PROCEDURE GetAnonymousSolverNamesAndIds( IN _jobId INT )
+	BEGIN
+		SELECT anonymous_name, primitive_id FROM anonymous_primitive_names WHERE job_id=_jobId AND primitive_type="solver";
+	END // 
+
 DROP PROCEDURE IF EXISTS GetAnonymousLink;
 CREATE PROCEDURE GetAnonymousLink( IN _primitiveType ENUM('solver', 'bench', 'job'), IN _primitiveId INT, 
 		IN _primitivesToAnonymize ENUM('all', 'allButBench', 'none') )
