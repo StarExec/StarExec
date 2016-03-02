@@ -904,14 +904,11 @@ public class SpaceSecurity {
 		
 		for (Space s : subspaces) {
 		    spaceIds.add(s.getId());
-	
 		}
-			
-		ValidatorStatusCode status;
-	    
+		    
 		List<Integer> permittedSpaceIds = new ArrayList<Integer>();
 		for (Integer sid : spaceIds) {
-		    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
+		    ValidatorStatusCode status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
 		    if (status.isSuccess()) {
 		    	permittedSpaceIds.add(sid);
 		    }

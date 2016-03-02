@@ -576,10 +576,7 @@ public class RESTServices {
 		Permission perm = Permissions.get(userid, spaceId);
 		Space space = Spaces.get(spaceId);
 		Integer parentId = Spaces.getParentSpace(spaceId);
-		boolean isCommunity = false;
-		if (parentId == 1) {
-			isCommunity = true;
-		}
+		boolean isCommunity = parentId==1;
 		User user = Users.get(userid);
 		
 		return gson.toJson(new RESTHelpers.PermissionDetails(perm,space,user,requester, isCommunity));
@@ -596,19 +593,15 @@ public class RESTServices {
 	@Path("/space/{id}")
 	@Produces("application/json")	
 	public String getSpaceDetails(@PathParam("id") int spaceId, @Context HttpServletRequest request) {			
-		final String method = "getSpaceDetails";
-		logUtil.entry(method);
 		int userId = SessionUtil.getUserId(request);
 		
 		Space s = null;
 		Permission p = null;
 		if(SpaceSecurity.canUserSeeSpace(spaceId, userId).isSuccess()) {
-			logUtil.debug(method, "Determined that user with id="+userId+" can see space with id="+spaceId);
 			s = Spaces.get(spaceId); 
 			p = SessionUtil.getPermission(request, spaceId);
 		}					
 		
-		logUtil.exit(method);
 		return limitGson.toJson(new RESTHelpers.SpacePermPair(s, p));				
 	}	
 	
@@ -790,6 +783,12 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
+	
+	/**
+	 * Gets the next page of benchmarks that a user can see.
+	 * @param request
+	 * @return
+	 */
 	@POST
 	@Path("/users/benchmarks/pagination")
 	@Produces("application/json")	
