@@ -16,6 +16,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
@@ -452,9 +453,8 @@ public class SpaceSecurity {
 	 * @param userId The ID of the user in question
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
-	private static ValidatorStatusCode doesUserHaveDiskQuotaForSolvers(List<Integer> solverIds,int userId) {
-		List<Solver> oldSolvers=Solvers.get(solverIds);
-		for (Solver s : oldSolvers) {
+	private static ValidatorStatusCode doesUserHaveDiskQuotaForSolvers(List<Solver> solvers,int userId) {
+		for (Solver s : solvers) {
 			if (s==null) {
 				return new ValidatorStatusCode(false, "At least one of the given solvers does not exist or has been deleted");
 			}
@@ -464,7 +464,7 @@ public class SpaceSecurity {
 		long userDiskUsage=Users.getDiskUsage(userId);
 		long userDiskQuota=Users.get(userId).getDiskQuota();
 		userDiskQuota-=userDiskUsage;
-		for (Solver s : oldSolvers) {
+		for (Solver s : solvers) {
 			userDiskQuota-=s.getDiskSize();
 		}
 		if (userDiskQuota<0) {
@@ -626,7 +626,15 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canCopyOrLinkSolverBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
-			if (!doesUserHaveDiskQuotaForSolvers(solverIdsBeingCopied,userId).isSuccess()) {
+			List<Solver> solvers=Solvers.get(solverIdsBeingCopied);
+			
+			for (Solver s : solvers) {
+				if (s.buildStatus().getCode()==SolverBuildStatusCode.UNBUILT) {
+					return new ValidatorStatusCode(false, "Solvers cannot be copied until they are finished building");
+				}
+			}
+			
+			if (!doesUserHaveDiskQuotaForSolvers(solvers,userId).isSuccess()) {
 				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the solver(s)");
 			}
 		}

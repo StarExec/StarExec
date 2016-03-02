@@ -458,6 +458,7 @@ public class Solvers {
 		newSolver.setDiskSize(s.getDiskSize());
 		newSolver.setDownloadable(s.isDownloadable());
 		newSolver.setType(s.getType());
+		newSolver.setBuildStatus(s.buildStatus());
 		File solverDirectory=new File(s.getPath());
 		
 		File uniqueDir = new File(R.getSolverPath(), "" + userId);
