@@ -33,7 +33,7 @@
 	display: inline-block;
 }
 
-#detailPanel #spaceName, #detailPanel #spaceDesc {
+#detailPanel .spaceName, #detailPanel #spaceDesc {
 	width:90%;
 	word-wrap: break-word;
 }

@@ -72,18 +72,6 @@ $(document).ready(function(){
 	
 });
 
-function getPermissionDetails(user_id, space_id) {	
-	$.get(  
-		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
-		function(data){  			
-			populateDetails(data);			
-		},  
-		"json"
-	).error(function(){
-		showMessage('error',"Internal error getting permission details",5000);
-	});
-}
-
 function populateDetails(data) {
 	if (data.perm == null) {
 		$('#fieldStep1').hide();

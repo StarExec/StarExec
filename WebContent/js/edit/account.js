@@ -299,8 +299,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback,prim){
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
-					
-				
 					// Replace the current page with the newly received page
 					fnCallback(nextDataTablePage);
 				}

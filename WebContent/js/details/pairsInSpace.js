@@ -70,7 +70,7 @@ function initUI(){
  * Initializes the DataTable objects
  */
 function initDataTables(){
-	extendDataTableFunctions();
+	addFilterOnDoneTyping();	
 	// Job pairs table
 	pairTable=$('#pairTbl').dataTable( {
         "sDom"			: 'rt<"bottom"flpi><"clear">',
@@ -92,25 +92,6 @@ function initDataTables(){
 	
 }
 
-/**
- * Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
- */
-function extendDataTableFunctions(){
-	// Changes the filter so that it only queries when the user is done typing
-	jQuery.fn.dataTableExt.oApi.fnFilterOnDoneTyping = function (oSettings) {
-	    var _that = this;
-	    this.each(function (i) {
-	        $.fn.dataTableExt.iApiIndex = i;
-	        var anControl = $('input', _that.fnSettings().aanFeatures.f);
-	        anControl.unbind('keyup').bind('keyup', $.debounce( 400, function (e) {
-                $.fn.dataTableExt.iApiIndex = i;
-                _that.fnFilter(anControl.val());
-	        }));
-	        return this;
-	    });
-	    return this;
-	};
-}
 
 /**
  * Handles querying for pages in a given DataTable object

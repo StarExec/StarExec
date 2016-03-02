@@ -1350,9 +1350,6 @@ function initDataTables(){
 		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
 	});
 	
-
-
-
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset:not(#actions)').expandable(true);
 
@@ -1371,148 +1368,8 @@ function initDataTables(){
  */
 function extendDataTableFunctions(){
 	// Allows manually turning on and off of the processing indicator (used for jobs table)
-	jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function (oSettings, onoff)	{
-		if( typeof(onoff) == 'undefined' ) {
-			onoff = true;
-		}
-		this.oApi._fnProcessingDisplay(oSettings, onoff);
-	};
-
-	// Changes the filter so that it only queries when the user is done typing
-	jQuery.fn.dataTableExt.oApi.fnFilterOnDoneTyping = function (oSettings) {
-		var _that = this;
-		this.each(function (i) {
-			$.fn.dataTableExt.iApiIndex = i;
-			var anControl = $('input', _that.fnSettings().aanFeatures.f);
-			anControl.unbind('keyup').bind('keyup', $.debounce( 400, function (e) {
-				$.fn.dataTableExt.iApiIndex = i;
-				_that.fnFilter(anControl.val());
-			}));
-			return this;
-		});
-		return this;
-	};
-	
-	jQuery.fn.dataTableExt.oPagination.input = {
-		    "fnInit": function ( oSettings, nPaging, fnCallbackDraw )
-		    {
-		        var nFirst = document.createElement( 'span' );
-		        var nPrevious = document.createElement( 'span' );
-		        var nNext = document.createElement( 'span' );
-		        var nLast = document.createElement( 'span' );
-		        var nInput = document.createElement( 'input' );
-		        var nPage = document.createElement( 'span' );
-		        var nOf = document.createElement( 'span' );
-		 
-		        nFirst.innerHTML = oSettings.oLanguage.oPaginate.sFirst;
-		        nPrevious.innerHTML = oSettings.oLanguage.oPaginate.sPrevious;
-		        nNext.innerHTML = oSettings.oLanguage.oPaginate.sNext;
-		        nLast.innerHTML = oSettings.oLanguage.oPaginate.sLast;
-		 
-		        nFirst.className = "paginate_button first";
-		        nPrevious.className = "paginate_button previous";
-		        nNext.className="paginate_button next";
-		        nLast.className = "paginate_button last";
-		        nOf.className = "paginate_of";
-		        nPage.className = "paginate_page";
-		        if ( oSettings.sTableId !== '' )
-		        {
-		            nPaging.setAttribute( 'id', oSettings.sTableId+'_paginate' );
-		            nPrevious.setAttribute( 'id', oSettings.sTableId+'_previous' );
-		            nPrevious.setAttribute( 'id', oSettings.sTableId+'_previous' );
-		            nNext.setAttribute( 'id', oSettings.sTableId+'_next' );
-		            nLast.setAttribute( 'id', oSettings.sTableId+'_last' );
-		        }
-		 
-		        nInput.type = "text";
-		        nInput.style.width = "15px";
-		        nInput.style.display = "inline";
-		        nPage.innerHTML = "Page ";
-		 
-		        nPaging.appendChild( nFirst );
-		        nPaging.appendChild( nPrevious );
-		        nPaging.appendChild( nPage );
-		        nPaging.appendChild( nInput );
-		        nPaging.appendChild( nOf );
-		        nPaging.appendChild( nNext );
-		        nPaging.appendChild( nLast );
-		 
-		        $(nFirst).click( function () {
-		            oSettings.oApi._fnPageChange( oSettings, "first" );
-		            fnCallbackDraw( oSettings );
-		        } );
-		 
-		        $(nPrevious).click( function() {
-		            oSettings.oApi._fnPageChange( oSettings, "previous" );
-		            fnCallbackDraw( oSettings );
-		        } );
-		 
-		        $(nNext).click( function() {
-		            oSettings.oApi._fnPageChange( oSettings, "next" );
-		            fnCallbackDraw( oSettings );
-		        } );
-		 
-		        $(nLast).click( function() {
-		            oSettings.oApi._fnPageChange( oSettings, "last" );
-		            fnCallbackDraw( oSettings );
-		        } );
-		 
-		        $(nInput).keyup( function (e) {
-		            if ( e.which == 38 || e.which == 39 )
-		            {
-		                this.value++;
-		            }
-		            else if ( (e.which == 37 || e.which == 40) && this.value > 1 )
-		            {
-		                this.value--;
-		            }
-		 
-		            if ( this.value === "" || this.value.match(/[^0-9]/) )
-		            {
-		                /* Nothing entered or non-numeric character */
-		                return;
-		            }
-		 
-		            var iNewStart = oSettings._iDisplayLength * (this.value - 1);
-		            if ( iNewStart > oSettings.fnRecordsDisplay() )
-		            {
-		                /* Display overrun */
-		                oSettings._iDisplayStart = (Math.ceil((oSettings.fnRecordsDisplay()-1) /
-		                    oSettings._iDisplayLength)-1) * oSettings._iDisplayLength;
-		                fnCallbackDraw( oSettings );
-		                return;
-		            }
-		 
-		            oSettings._iDisplayStart = iNewStart;
-		            fnCallbackDraw( oSettings );
-		        } );
-		 
-		        /* Take the brutal approach to cancelling text selection */
-		        $('span', nPaging).bind( 'mousedown', function () { return false; } );
-		        $('span', nPaging).bind( 'selectstart', function () { return false; } );
-		    },
-		 
-		 
-		    "fnUpdate": function ( oSettings, fnCallbackDraw )
-		    {
-		        if ( !oSettings.aanFeatures.p )
-		        {
-		            return;
-		        }
-		        var iPages = Math.ceil((oSettings.fnRecordsDisplay()) / oSettings._iDisplayLength);
-		        var iCurrentPage = Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength) + 1;
-		 
-		        /* Loop over each instance of the pager */
-		        var an = oSettings.aanFeatures.p;
-		        for ( var i=0, iLen=an.length ; i<iLen ; i++ )
-		        {
-		            var spans = an[i].getElementsByTagName('span');
-		            var inputs = an[i].getElementsByTagName('input');
-		            spans[3].innerHTML = " of "+iPages;
-		            inputs[0].value = iCurrentPage;
-		        }
-		    }
-		};
+	addProcessingIndicator();
+	addFilterOnDoneTyping();
 }
 
 /**
@@ -1523,116 +1380,13 @@ function getProcessingMessage(){
 	return "processing request";
 }
 
-/**
- * Removes the default 'query on keypress' functionality of a given DataTable
- * filter and queries on the enter key or if the client types 4 or more characters
- * @author Todd Elvers
- */
-function changeFilter(primTable){
-	$(primTable + '_filter input').unbind('keyup');
-	$(primTable + '_filter input').bind('keyup', function(e) {
-
-		if(e.keyCode == 13 || e.currentTarget.value.length > 3) {
-			$(primTable).dataTable().fnFilter(this.value);    
-		}
-		if(e.currentTarget.value.length == 0) {
-			$(primTable).dataTable().fnFilter("");    
-		}
-	});
-}
-
-
-
-
-/**
- * Populates the space details panel with the basic information about the space
- * (e.g. the name, description) but does not query for details about primitives 
- */
-function getSpaceDetails(id) {
-	$('#loader').show();
-	$.post(  
-			starexecRoot+"services/space/" + id,  
-			function(data){ 
-				log('AJAX response received for details of space ' + id);
-				populateSpaceDetails(data, id);			
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error getting space details",5000);
-	});
-}
-
-
-
-/**
- * Populates the space details of the currently selected space and queries
- * for the primitives of any fieldsets that are expanded
- * @param jsonData the basic information about the currently selected space
- */
-function populateSpaceDetails(jsonData, id) {
-	// If the space is null, the user can see the space but is not a member
-	if(jsonData.space == null) {
-		// Go ahead and show the space's name
-		$('#spaceName').fadeOut('fast', function(){
-			$('#spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
-		});
-
-		// Show a message why they can't see the space's details
-		$('#spaceDesc').fadeOut('fast', function(){
-			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
-		});		
-		$('#spaceID').fadeOut('fast');
-		// Hide all the info table fieldsets
-		$('#detailPanel fieldset').fadeOut('fast');		
-		$('#loader').hide();
-
-		// Stop executing the rest of this function
-		return;
-	} else {
-		// Or else the user can see the space, make sure the info table fieldsets are visible
-		$('#detailPanel fieldset').show();
-	}
-
-	// Update the selected space id
-	spaceId = jsonData.space.id;
-	spaceName = jsonData.space.name;
-
-	// Populate space defaults
-	$('#spaceName').fadeOut('fast', function(){
-		$('#spaceName').text(jsonData.space.name).fadeIn('fast');
-	});
-	$('#spaceDesc').fadeOut('fast', function(){
-		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
-	});	
-	$('#spaceID').fadeOut('fast', function() {
-		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
-	});
-	$('#chartPicture').attr('src', starexecRoot+"secure/get/pictures?type=corg&Id=" + spaceId);
-
-	/*
-	 * Issue a redraw to all DataTable objects to force them to requery for
-	 * the newly selected space's primitives.  This will effectively clear
-	 * all entries in every table, update every table with the current space's
-	 * primitives, and update the number displayed in every table's fieldset.
-	 */
+function redrawAllTables() {
 	benchTable.fnDraw();
 	jobTable.fnDraw();
 	userTable.fnDraw();
 	solverTable.fnDraw();
 	spaceTable.fnDraw();
-
-	// Check the new permissions for the loaded space
-	checkPermissions(jsonData.perm, id);
-
-	// Done loading, hide the loader
-	$('#loader').hide();
-
-	log('Client side UI updated with details for ' + spaceName);
 }
-
-
-
-
 
 /**
  * Creates either a leader tooltip, a personal tooltip, a space tooltip, or a expd tooltip for a given element
@@ -1980,32 +1734,6 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	return permWrap;
 }
 
-/**
- * Changes the data on the user's permission table to make the user a leader
- * and changes the UI to show all "true" values for all permissions
- * @param e The button element that was clicked to make the user a leader
- */
-function makeLeader(e) {		
-	var icons = $(e).siblings('table').find('span');
-	$(icons).removeClass('ui-icon-closethick');
-	$(icons).removeClass('ui-icon-check');
-	$(icons).addClass('ui-icon-check');
-
-	var permData = $(e).siblings('table').data('perms');
-	permData.isLeader = true;
-	permData.addSpace = true;
-	permData.addJob = true;
-	permData.addUser = true;
-	permData.addSolver = true;
-	permData.addBenchmark = true;
-	permData.removeSpace = true;
-	permData.removeJob = true;
-	permData.removeUser = true;
-	permData.removeSolver = true;
-	permData.removeBench = true;	
-
-	log('user marked as leader');	
-}
 
 /**
  * Gives back HTML for a table containing only one permission

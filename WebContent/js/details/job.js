@@ -209,7 +209,7 @@ function initSpaceExplorer() {
 			name = data.rslt.obj.attr("name");
 			maxStages = data.rslt.obj.attr("maxStages");
 			setMaxStagesDropdown(parseInt(maxStages));
-			$("#spaceName").text($('.jstree-clicked').text());
+			$(".spaceName").text($('.jstree-clicked').text());
 			$("#displayJobSpaceID").text("job space id  = "+id);
 			//no solvers will be selected when a space changes, so hide this button
 			$("#compareSolvers").hide();
@@ -371,7 +371,7 @@ function initUI(){
 		'use strict';
 		var c1=$(".first_selected").find(".configLink").attr("id");
 		var c2=$(".second_selected").find(".configLink").attr("id");
-		window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?id="+jobId+"&sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
+		window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
 	});
 
 	
@@ -485,7 +485,7 @@ function initUI(){
 	});
 
 	$("#matrixViewButton").click(function() {
-		var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?id='+jobId+'&stage=1&jobSpaceId='+curSpaceId;
+		var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?stage=1&jobSpaceId='+curSpaceId;
 		if (isLocalJobPage) {
 			window.location.href = url;
 		} else {
@@ -525,7 +525,7 @@ function initUI(){
 	
 	$("#popoutPanels").click(function() {
 		// default to primary stage
-		window.open(DETAILS_JOB.starexecUrl+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+curSpaceId+"&stage=1");
+		window.open(DETAILS_JOB.starexecUrl+"secure/details/jobPanelView.jsp?spaceid="+curSpaceId+"&stage=1");
 	});
 
 	$("#collapsePanels").click(function() {
@@ -1159,28 +1159,8 @@ function initDataTables(){
 function extendDataTableFunctions(){
 	
 	// Allows manually turning on and off of the processing indicator (used for jobs table)
-	jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function (oSettings, onoff)	{
-		if( typeof(onoff) == 'undefined' ) {
-			onoff = true;
-		}
-		this.oApi._fnProcessingDisplay(oSettings, onoff);
-	};
-	// Changes the filter so that it only queries when the user is done typing
-	jQuery.fn.dataTableExt.oApi.fnFilterOnDoneTyping = function (oSettings) {
-	    var _that = this;
-	    this.each(function (i) {
-	        $.fn.dataTableExt.iApiIndex = i;
-	        var anControl = $('input', _that.fnSettings().aanFeatures.f);
-	        anControl.unbind('keyup').bind('keyup', $.debounce( 400, function (e) {
-                $.fn.dataTableExt.iApiIndex = i;
-                _that.fnFilter(anControl.val());
-	        }));
-	        return this;
-	    });
-	    return this;
-	};
-	
-	
+	addProcessingIndicator();
+	addFilterOnDoneTyping();
 }
 
 function getPairTableInitializer() {

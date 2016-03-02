@@ -15,7 +15,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/permissions, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/permissions, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, admin/admin">
 	<div id="explorer">
 		<h3>official</h3>
 		<ul id="exploreList"></ul>
