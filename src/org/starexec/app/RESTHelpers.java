@@ -1752,12 +1752,12 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
-	private static StringBuilder getPairsInSpaceLink(String type, int spaceId, int jobId, int configId, int stageNumber) {
+	private static StringBuilder getPairsInSpaceLink(String type, int spaceId, int configId, int stageNumber) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a href=\""
 				+ Util.docRoot("secure/details/pairsInSpace.jsp?type="+type+"&sid="
 						+ spaceId + "&configid="
-						+ configId + "&id=" + jobId+"&stagenum="+stageNumber));
+						+ configId +"&stagenum="+stageNumber));
 		sb.append("\" target=\"_blank\" >");
 		return sb;
 	}
@@ -1797,27 +1797,26 @@ public class RESTHelpers {
 			if (!shortFormat) {
 				
 				int spaceId = space.getId();
-				int jobId = space.getJobId();
 				int configId = js.getConfiguration().getId();
 				int stageNumber = js.getStageNumber();
 				
 				entries.add( getPairsInSpaceHtml(
-							"solver", spaceId, jobId, configId, stageNumber, js.getCorrectOverCompleted(), primitivesToAnonymize ));
+							"solver", spaceId, configId, stageNumber, js.getCorrectOverCompleted(), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
-							"wrong", spaceId, jobId, configId, stageNumber, Integer.toString(js.getIncorrectJobPairs()), primitivesToAnonymize ));
+							"wrong", spaceId, configId, stageNumber, Integer.toString(js.getIncorrectJobPairs()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
-							"resource", spaceId, jobId, configId, stageNumber, Integer.toString(js.getResourceOutJobPairs()), primitivesToAnonymize ));
+							"resource", spaceId, configId, stageNumber, Integer.toString(js.getResourceOutJobPairs()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
-							"failed", spaceId, jobId, configId, stageNumber, Integer.toString(js.getFailedJobPairs()), primitivesToAnonymize ));
+							"failed", spaceId, configId, stageNumber, Integer.toString(js.getFailedJobPairs()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml(
-							"unknown", spaceId, jobId, configId, stageNumber, Integer.toString(js.getUnknown()), primitivesToAnonymize ));
+							"unknown", spaceId, configId, stageNumber, Integer.toString(js.getUnknown()), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml(
-							"incomplete", spaceId, jobId, configId, stageNumber, Integer.toString(js.getIncompleteJobPairs()), primitivesToAnonymize ));
+							"incomplete", spaceId, configId, stageNumber, Integer.toString(js.getIncompleteJobPairs()), primitivesToAnonymize ));
 				
 				if (wallTime) {
 					entries.add(String.valueOf(Math.round(js.getWallTime()*100)/100.0));
@@ -1845,7 +1844,6 @@ public class RESTHelpers {
 	private static String getPairsInSpaceHtml(
 			String type, 
 			int spaceId, 
-			int jobId, 
 			int configId, 
 			int stageNumber, 
 			String linkText, 
@@ -1854,7 +1852,7 @@ public class RESTHelpers {
 		StringBuilder sb = new StringBuilder();
 
 		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
-			sb = getPairsInSpaceLink( type, spaceId, jobId, configId, stageNumber );
+			sb = getPairsInSpaceLink( type, spaceId, configId, stageNumber );
 		}
 
 		sb.append( linkText );
