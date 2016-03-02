@@ -29,8 +29,9 @@
 			<property key="DEBUG_MODE_ACTIVE" value="false" />							
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             
-            <!-- SGE Configuration -->
+            <!-- backend Configuration -->
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
+			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
 			<property key="JOB_SUBMISSION_PERIOD" value="20" />
 			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
 

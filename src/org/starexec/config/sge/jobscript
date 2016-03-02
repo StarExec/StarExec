@@ -44,7 +44,7 @@ export SCRIPT_PATH='$$SCRIPT_PATH$$'
 export PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$'
 export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
-
+export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
@@ -249,7 +249,7 @@ CURRENT_BENCH_SUFFIX=${BENCH_SUFFIXES[$STAGE_INDEX]}
 SUPPRESS_TIMESTAMP=$$SUPPRESS_TIMESTAMP_OPTION$$
 RESULTS_INTERVAL=${RESULTS_INTERVALS[$STAGE_INDEX]}
 #path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+SOLVER_CACHE_PATH="$WORKING_DIR_BASE/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 # directory containing all the output files from a solver. This won't exist until the second stage
 # and onwards
 OTHER_INPUT_PATH=""
@@ -351,10 +351,10 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
     if [ $BUILD_JOB == "true" ]; then
-        cd /export/starexec/$SANDBOX_PARAM/solver
+        cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
         LOCAL_BENCH_PATH=""
     else
-	    cd /export/starexec/$SANDBOX_PARAM/solver/bin
+	    cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
     fi
 	pwd
 

@@ -315,7 +315,7 @@ public abstract class JobManager {
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
-							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
+							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR+"/sandbox",logPath);
 
 							//TODO : need a better way to handle error codes
 							if(!R.BACKEND.isError(execId)){
@@ -489,6 +489,7 @@ public abstract class JobManager {
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
+		replacements.put("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
 		File f = new File(scriptPath);
 		jobScript = addParametersToJobscript(jobScript, replacements);
 
