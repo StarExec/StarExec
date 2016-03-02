@@ -38,6 +38,7 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
+import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
@@ -360,8 +361,11 @@ public class ResourceLoader {
 		try {
 			Solver s=new Solver();
 			s.setName(TestUtil.getRandomSolverName());
-			s.setDescription("solver coming from here");
+			s.setDescription("solver coming from test");
 			s.setUserId(userId);
+			SolverBuildStatus status = new SolverBuildStatus();
+			status.setCode(SolverBuildStatus.SolverBuildStatusCode.BUILT.getVal());
+			s.setBuildStatus(status);
 			File archive=getResource(archiveName);
 			File archiveCopy=new File(archive.getParent(),TestUtil.getRandomAlphaString(20)+".zip");
 			FileUtils.copyFile(archive, archiveCopy);
