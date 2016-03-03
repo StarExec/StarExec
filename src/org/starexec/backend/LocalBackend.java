@@ -2,7 +2,6 @@ package org.starexec.backend;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,7 +10,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.AnonymousLinks;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 
@@ -39,6 +37,7 @@ public class LocalBackend implements Backend {
 	public String toString() {
 			StringBuilder sb = new StringBuilder();
 			sb.append(scriptPath + " ");
+			sb.append(execId+" ");
 			if (process!=null) {
 				sb.append("running");
 			} else {
@@ -261,7 +260,8 @@ public class LocalBackend implements Backend {
 				runJobsForever();
 			}
 		};
-		runLocalJobsRunnable.run();
+		new Thread(runLocalJobsRunnable).start();
+		log.debug("returning from local backend initialization");
 	}
 
 }
