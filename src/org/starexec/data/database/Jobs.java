@@ -1510,14 +1510,14 @@ public class Jobs {
 	 * @param stageNumber The stage number to get data for
 	 * @return All the job pairs in the given job space that are "synchronized" as defined above
 	 */
-	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId,int stageNumber) {
+	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId,int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 	
 		HashSet<String> solverConfigPairs=new HashSet<String>(); // will store all the solver/configuration pairs so we know how many there are
 		HashMap<Integer, Integer> benchmarksCount=new HashMap<Integer,Integer>(); //will store the number of pairs every benchmark has
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		try {
 			//first, get all the completed pairs in the space
-			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber);
+			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber, primitivesToAnonymize);
 			pairs=JobPairs.filterPairsByType(pairs, "complete", 1); //1 because we get only one stage above
 			
 			//then, filter them down to the synced pairs
@@ -1555,8 +1555,8 @@ public class Jobs {
 	 * @param totals Must be a size 2 array. The first slot will have the number of results before the query, and the second slot will have the number of results after the query
 	 * @return The job pairs needed to populate the page
 	 */
-	public static List<JobPair> getSynchronizedJobPairsForNextPageInJobSpace(DataTablesQuery query, int jobSpaceId, boolean wallclock,int stageNumber, int[] totals) {
-		List<JobPair> pairs=Jobs.getSynchronizedPairsInJobSpace(jobSpaceId,stageNumber);
+	public static List<JobPair> getSynchronizedJobPairsForNextPageInJobSpace(DataTablesQuery query, int jobSpaceId, boolean wallclock,int stageNumber, int[] totals, PrimitivesToAnonymize primitivesToAnonymize) {
+		List<JobPair> pairs=Jobs.getSynchronizedPairsInJobSpace(jobSpaceId,stageNumber, primitivesToAnonymize);
 		return getJobPairsForNextPage(pairs,query,"all",wallclock,stageNumber,totals);
 	}
 	
@@ -1797,22 +1797,24 @@ public class Jobs {
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
-	public static List<JobPair> getJobPairsInJobSpace(int jobSpaceId, int stageNumber) {
+	public static List<JobPair> getJobPairsInJobSpace(int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 		
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		log.debug("called getJobPairsInJobSpace with jobSpaceId = "+ jobSpaceId);
 		try {
+			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
 			long a=System.currentTimeMillis();
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsInJobSpace(?,?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsInJobSpace(?,?,?)}");
 			
 			procedure.setInt(1,jobSpaceId);
-			procedure.setInt(2,stageNumber);
+			procedure.setInt(2, jobId );
+			procedure.setInt(3,stageNumber);
 			results = procedure.executeQuery();
 			log.debug("executing query 1 took "+(System.currentTimeMillis()-a));
-			List<JobPair> pairs=processStatResults(results,true, PrimitivesToAnonymize.NONE);
+			List<JobPair> pairs=processStatResults(results,true, primitivesToAnonymize);
 			log.debug("processing query 1 took "+(System.currentTimeMillis()-a));
 
 		
@@ -4095,7 +4097,11 @@ public class Jobs {
 						if (!configs.containsKey(id)) {
 							Configuration config=new Configuration();
 							config.setId(id);
-							config.setName(results.getString("jobpair_stage_data.config_name"));
+							if ( AnonymousLinks.areSolversAnonymized( primitivesToAnonymize ) ) {
+								config.setName( results.getString("anon_config_name") );
+							} else {
+								config.setName(results.getString("jobpair_stage_data.config_name"));
+							}
 							configs.put(id, config);
 						}
 						stage.getSolver().addConfiguration(configs.get(id));

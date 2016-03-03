@@ -624,7 +624,8 @@ public class RESTHelpers {
 							jobSpaceId, 
 							wallclock,
 							stageNumber,
-							totals);
+							totals, 
+							primitivesToAnonymize);
 			query.setTotalRecords(totals[0]);
 			query.setTotalRecordsAfterQuery(totals[1]);
 		}
