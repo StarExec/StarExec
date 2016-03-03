@@ -168,6 +168,10 @@ public class JspHelpers {
 				request.setAttribute( "primitivesToAnonymize", primitivesToAnonymizeName );
 				request.setAttribute( "isAnonymousPage", isAnonymousPage );
 				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
+				if (isAnonymousPage) {
+					// For anonymous pages reset the userId for the permissions actually used on the page.
+					userId = SessionUtil.getUserId( request );
+				}
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
@@ -208,10 +212,9 @@ public class JspHelpers {
 	/**
 	 *
 	 * @author Albert Giegerich
-	 */
 	public static void handleNonAnonymousJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException {
 
-		final String methodName = "handleAnonymousJobPage";
+		final String methodName = "handleNonAnonymousJobPage";
 		logUtil.entry( methodName );
 
 		int userId = SessionUtil.getUserId(request);
@@ -241,7 +244,9 @@ public class JspHelpers {
 			throw e;
 		}
 	}
+	*/
 
+	/*
 	public static void setJobPageRequestAttributes(
 			final boolean isAnonymousPage, 
 			final boolean hideJobName,
@@ -336,6 +341,7 @@ public class JspHelpers {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 		}
 	}
+	*/
 
 	/**
 	 * Handles request/response logic for details/solver.jsp for an anonymous page.
