@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.util.RobustRunnable;
@@ -87,8 +88,9 @@ public class LocalBackend implements Backend {
 	 */
 	private void runJob(LocalJob j){
 		try {
-			j.process = Util.executeCommandAndReturnProcess(new String[] {j.scriptPath, "&>", j.logPath}, null, new File(j.workingDirectoryPath));
+			j.process = Util.executeCommandAndReturnProcess(new String[] {j.scriptPath}, null, new File(j.workingDirectoryPath));
 			j.process.waitFor();
+			FileUtils.writeStringToFile(new File(j.logPath), Util.drainStreams(j.process));
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}

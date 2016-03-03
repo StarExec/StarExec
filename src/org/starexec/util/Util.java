@@ -490,7 +490,7 @@ public class Util {
     }
 
 
-    protected static String drainStreams(final Process p) {
+    public static String drainStreams(final Process p) {
 		    
 		/* to handle the separate streams of regular output and
 		   error output correctly, it is necessary to try draining
