@@ -184,6 +184,8 @@ public class JspHelpers {
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
+				request.setAttribute("pageTitle", isAnonymousPage ? "Anonymous Job" : j.getName() );
+				request.setAttribute("initialSpaceName", isAnonymousPage ? "" : jobSpace.getName() );
 				Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
 				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
 				request.setAttribute("firstPostProc",stage1PostProc);
