@@ -89,8 +89,12 @@ public class LocalBackend implements Backend {
 	private void runJob(LocalJob j){
 		try {
 			j.process = Util.executeCommandAndReturnProcess(new String[] {j.scriptPath}, null, new File(j.workingDirectoryPath));
+	    	ProcessBuilder builder = new ProcessBuilder(new String[] {j.scriptPath});
+	    	builder.redirectErrorStream(true);
+	    	builder.directory(new File(j.workingDirectoryPath));
+	    	builder.redirectOutput(new File(j.logPath));
+	    	j.process = builder.start();
 			j.process.waitFor();
-			FileUtils.writeStringToFile(new File(j.logPath), Util.drainStreams(j.process));
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -109,7 +113,7 @@ public class LocalBackend implements Backend {
 		while (true) {
 			try {
 				if (jobsToRun.isEmpty()) {
-					Thread.sleep(20000);
+					Thread.sleep(R.JOB_SUBMISSION_PERIOD * 1000);
 					continue;
 				}
 			
