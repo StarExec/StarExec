@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import org.starexec.util.Util;
+import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Pipelines;
 import org.starexec.data.to.Job;
@@ -169,7 +170,7 @@ public class JobToXMLer {
 	log.info("Generating Jobs XML " + job.getId());
 	Element jobsElement=null;
 
-	jobsElement = doc.createElementNS(Util.url("public/batchJobSchema.xsd"), "tns:Jobs");
+	jobsElement = doc.createElementNS(Util.url(R.JOB_XML_SCHEMA_RELATIVE_LOC), "tns:Jobs");
 	jobsElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 	jobsElement.setAttribute("xsi:schemaLocation", 
 					   Util.url("public/batchJobSchema.xsd batchJobSchema.xsd"));

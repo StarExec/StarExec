@@ -182,9 +182,6 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("clearTemporaryFilesTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
-				//even though we're clearing unused cache files, they still might build up for a variety
-				//of reasons. To stay robust, we should probably still clear out very old ones
-				Util.clearOldFiles(new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR).getAbsolutePath(), 60,false);
 
 				// clear sandbox files older than one day old
 				Util.clearOldSandboxFiles(Util.getSandboxDirectory().getAbsolutePath(), 1, true);
