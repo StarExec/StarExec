@@ -289,7 +289,11 @@ public class LoadBalanceMonitor {
 		}
 		StringBuilder sb = new StringBuilder();
 		User u = Users.get(d.userId);
-		sb.append(u.getFullName());
+		if (u==null) {
+			sb.append("unknown user");
+		} else {
+			sb.append(u.getFullName());
+		}
 		sb.append(" ");
 		if (!d.active()) {
 			sb.append("(inactive) ");
