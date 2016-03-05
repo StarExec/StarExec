@@ -26,7 +26,7 @@ public class Common {
 	private static Integer connectionsClosed = 0;
 	
 	//args to append to the mysql URL.
-	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true";
+	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
 	
 	/**
 	 * Creates a new historical record in the logins table which keeps track of all user logins.
