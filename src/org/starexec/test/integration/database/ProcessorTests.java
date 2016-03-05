@@ -79,7 +79,7 @@ public class ProcessorTests extends TestSequence {
 	@StarexecTest
 	private void getBenchProcessByUserTest() {
 		boolean found = false;
-		for (Processor p : Processors.getByUser(Users.getTestUser().getId(), ProcessorType.POST)) {
+		for (Processor p : Processors.getByUser(Users.getTestUser().getId(), ProcessorType.BENCH)) {
 			found = found || p.getId()==R.NO_TYPE_PROC_ID;
 		}
 		Assert.assertTrue(found);
