@@ -622,7 +622,7 @@ function setUpButtons() {
 	    $("#dialog-confirm-update").dialog({
 		    modal: true,
 			width: 380,
-			height: 165,
+			height: 265,
 			buttons: {
 			"yes" : function(){changePermissions(true,false)},
 			    "no" : function(){ changePermissions(false,false)},
@@ -656,7 +656,7 @@ function setUpButtons() {
 	    $("#dialog-confirm-update").dialog({
 		    modal: true,
 			width: 380,
-			height: 165,
+			height: 265,
 			buttons: {
 			"change only this space": function(){ changePermissions(false,true)},
 				"change this space's hierarchy" : function(){changePermissions(true,true)},
@@ -678,7 +678,7 @@ function setUpButtons() {
 			$('#dialog-confirm-update').dialog({
 				modal: true,
 				width: 380,
-				height: 165,
+				height: 265,
 				buttons: {
 					'space hierarchy': function() {
 						// If the user actually confirms, close the dialog right away
@@ -707,7 +707,7 @@ function setUpButtons() {
 			$('#dialog-confirm-update').dialog({
 				modal: true,
 				width: 380,
-				height: 165,
+				height: 265,
 				buttons: {
 					'ok': function() {
 						$(this).dialog("close");
@@ -723,7 +723,7 @@ function setUpButtons() {
 		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,
-			height: 165,
+			height: 265,
 			buttons: {
 				'space': function(){
 					$.post(
