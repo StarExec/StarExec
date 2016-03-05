@@ -48,6 +48,8 @@ import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 
@@ -422,7 +424,8 @@ public class ResourceLoader {
 	
 	/**
 	 * Creates a new SolverPipeline for the given user, where a stage is created for each given
-	 * configuration. The pipeline will have no dependencies, and it will have a random name
+	 * configuration. The stages will always depend on previous stages and also on another fake input,
+	 * and it will have a random name
 	 * @param userId The ID of the user who will own the new pipeline
 	 * @param configs The ordered list of configurations to make into a pipeline
 	 * @return The SolverPipeline object
@@ -435,15 +438,24 @@ public class ResourceLoader {
 		for (Configuration c : configs) {
 			PipelineStage stage=new PipelineStage();
 			stage.setConfigId(c.getId());
+			PipelineDependency dep = new PipelineDependency();
+			dep.setType(PipelineInputType.ARTIFACT);
+			dep.setInputNumber(1);
+			dep.setDependencyId(1);
+			
+			stage.addDependency(dep);
+			dep = new PipelineDependency();
+			dep.setType(PipelineInputType.BENCHMARK);
+			dep.setInputNumber(1);
+			dep.setDependencyId(2);
 			pipe.addStage(stage);
 		}
 		int returnValue= Pipelines.addPipelineToDatabase(pipe);
 		if (returnValue>0) {
 	 		return pipe;
-
-		} else {
-			return null;
 		}
+		return null;
+		
 	}
 	
 	/**

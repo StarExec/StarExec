@@ -34,7 +34,7 @@
 				if(jList != null) {			
 					request.setAttribute("jobList", jList);
 					request.setAttribute("userFullName", userFullName);
-				} else {;
+				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 				}
 			}

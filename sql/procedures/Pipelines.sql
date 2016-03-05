@@ -19,7 +19,7 @@ CREATE PROCEDURE GetStagesByPipelineId(IN _id INT)
 DROP PROCEDURE IF EXISTS GetDependenciesForPipelineStage;
 CREATE PROCEDURE GetDependenciesForPipelineStage(IN _id INT)
 	BEGIN
-		SELECT * FROM pipeline_dependencies WHERE stage_id=_id;
+		SELECT * FROM pipeline_dependencies WHERE stage_id=_id ORDER BY input_number;
 	END //
 	
 -- Given a stage ID, gets all the dependencies for the stage
