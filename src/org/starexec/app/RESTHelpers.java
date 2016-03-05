@@ -25,7 +25,6 @@ import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
@@ -630,8 +629,6 @@ public class RESTHelpers {
 			query.setTotalRecordsAfterQuery(totals[1]);
 		}
 
-		int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
 	}
 
@@ -806,7 +803,7 @@ public class RESTHelpers {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
 				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id,"node");
-				query.setTotalRecords(Queues.getCountOfRunningPairsDetailed(id));
+				query.setTotalRecords(Queues.getCountOfRunningPairsOnNode(id));
 				// there is no filter function on this table, so this is always equal to the above
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
@@ -898,7 +895,8 @@ public class RESTHelpers {
 			}
 
 			return convertUsersToJsonObject(usersToDisplay, query, currentUserId);
-
+		default:
+			log.error("invalid type given = "+type);
 		}
 		return null;
 	}
@@ -1027,8 +1025,11 @@ public class RESTHelpers {
 	    		query.setTotalRecordsAfterQuery(Spaces.getCountInSpace(id, userId, query.getSearchQuery()));
 	    	}
 	    	return convertSpacesToJsonObject(spacesToDisplay,query,id);
+	    default:
+			log.error("invalid type given ="+type);
 		}
 		return null;
+		
 	}
 
 	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
@@ -1110,13 +1111,18 @@ public class RESTHelpers {
 		    	}
 	    	
 		    return convertBenchmarksToJsonObject(benchmarksToDisplay,query);
-	    	
+	    default:
+	    	log.error("invalid type given = "+type);
 		}
 		return null;
 	}
 	
 	/**
 	 * Generate the HTML for the next DataTable page of entries
+	 * @param pairs The job pairs to convert
+	 * @param query a DataTablesQuery object
+	 * @param userId The ID of the user making this request
+	 * @return JsonObject a JsonObject representing the pairs + other DataTables fields.
 	 */
 	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, DataTablesQuery query, int userId) {
 		JsonArray dataTablePageEntries = new JsonArray();
@@ -1359,18 +1365,17 @@ public class RESTHelpers {
 	/**
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table
-	 * @param query a DataTAbles query object
+	 * @param query a DataTables query object
 	 * @param includeConfigAndSolver Whether to include columns for the config and solver of each pair
+	 * @param useWallclock Whether to use wallclock time (true) or cpu time (false)
+	 * @param stageNumber The number of the stage to use the data from for each pair
+	 * @param primitivesToAnonymize PrimitivesToAnonymize object representing whether benchmarks, solvers, or both 
+	 * should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobPairsToJsonObject(
-			List<JobPair> pairs, 
-			DataTablesQuery query, 
-			boolean includeConfigAndSolver, 
-			boolean useWallclock, 
-			int stageNumber,
-		    PrimitivesToAnonymize primitivesToAnonymize ) {
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query, 
+			boolean includeConfigAndSolver, boolean useWallclock, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		/**
 		 * Generate the HTML for the next DataTable page of entries
@@ -1769,25 +1774,22 @@ public class RESTHelpers {
 	 * 
 	 * @param stats The SolverStats that will be the rows of the table
 	 * @param query a DataTablesQuery object
+	 * @param space The JobSpace these stats are for
+	 * @param shortFormat Whether to include all fields (false) or only fields for the subspace overview (true)
+	 * @param wallTime Whether to use wallclock times (true) or cpu times (false).
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
 
-	public static JsonObject convertSolverStatsToJsonObject(
-			List<SolverStats> stats, 
-			DataTablesQuery query, 
-			JobSpace space,
-			boolean shortFormat,
-			boolean wallTime,
-			PrimitivesToAnonymize primitivesToAnonymize) {
+	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query, 
+			JobSpace space, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (SolverStats js : stats) {
 			List<String> entries = new ArrayList<String>();
-			StringBuilder sb = new StringBuilder();
 
 			// Create the solver link
 			entries.add( getSolverLink( js.getSolver().getId(), js.getSolver().getName(), primitivesToAnonymize ));
@@ -2140,7 +2142,8 @@ public class RESTHelpers {
 
 	/**
 	 * Gets all pending community requests. 
-	 * @param request The http request.
+	 * @param httpRequest The http request.
+	 * @return a JsonObject representing the requests.
 	 * @author Albert Giegerich
 	 */
 	public static JsonObject getNextDataTablesPageForPendingCommunityRequests(HttpServletRequest httpRequest) {

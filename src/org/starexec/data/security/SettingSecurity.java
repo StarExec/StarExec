@@ -12,9 +12,19 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.Validator;
-
+/**
+ * Security functions for handling DefaultSettings objects
+ * @author Eric
+ *
+ */
 public class SettingSecurity {
 	
+	/**
+	 * Checks whether a user can 
+	 * @param userIdOfOwner
+	 * @param userIdOfCaller
+	 * @return
+	 */
 	public static boolean canUserAddOrSeeProfile(int userIdOfOwner, int userIdOfCaller) {
 		boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
 		boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
@@ -23,7 +33,13 @@ public class SettingSecurity {
 		} 
 		return true;
 	}
-	
+	/**
+	 * 
+	 * @param settingId
+	 * @param userIdOfOwner
+	 * @param userIdOfCaller
+	 * @return
+	 */
 	public static ValidatorStatusCode canUserSeeProfile(int settingId, int userIdOfOwner, int userIdOfCaller) {
 		if (!canUserAddOrSeeProfile(userIdOfOwner, userIdOfCaller)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the given profile.");
