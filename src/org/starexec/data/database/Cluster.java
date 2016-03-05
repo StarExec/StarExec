@@ -49,21 +49,12 @@ public class Cluster {
 		}
 		log.info("Completed loading info for worker nodes into db");
 	}
-
-	/**
-	 * Gets the queue list from BACKEND and adds them to the database if they don't already exist. This must
-	 * be done AFTER nodes are loaded as the queues will make associations to the nodes. This also loads
-	 * attributes for the queue as well as its current usage.
-	 */
-	public static synchronized void loadQueues() {
-		Cluster.loadQueueDetails();
-	}
-
+	
 	/**
 	 * Loads the list of active queues on the system, loads their attributes into the database
 	 * as well as their associations to worker nodes that belong to each queue.
 	 */
-	private static void loadQueueDetails() {
+	public synchronized static void loadQueueDetails() {
 		log.info("Loading queue details into the db");
 		try {			
 

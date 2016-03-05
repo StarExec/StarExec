@@ -84,7 +84,7 @@ public class MoveNodes extends HttpServlet {
 	    R.BACKEND.moveNodes(queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
 
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueues();		
+	    Cluster.loadQueueDetails();		
 	    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 	}
 	catch (Exception e) {

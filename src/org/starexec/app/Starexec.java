@@ -141,7 +141,7 @@ public class Starexec implements ServletContextListener {
 
 			    //TODO : These methods do both grid engine and database tasks, decouple
 			    Cluster.loadWorkerNodes();
-			    Cluster.loadQueues();
+			    Cluster.loadQueueDetails();
 
 			}
 		};	
@@ -297,20 +297,17 @@ public class Starexec implements ServletContextListener {
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
-		    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
-		    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
-		    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-
-		    // checks every day if reports need to be sent 
-		    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
-
-		    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
-
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
-		    
 		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
 		}
+	    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
+	    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
+	    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
+	    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
+	    // checks every day if reports need to be sent 
+	    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
+	    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
+
 		try {
 			PaginationQueries.loadPaginationQueries();
 

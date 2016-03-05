@@ -514,7 +514,7 @@ public class ResourceLoader {
 			
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();
-			Cluster.loadQueues();
+			Cluster.loadQueueDetails();
 			int queueId=Queues.getIdByName(queueName);
 			if (queueId<=0) {
 				log.error("loadQueueIntoDatabase failed to create a queue!");
