@@ -1230,6 +1230,7 @@ public class Benchmarks {
 				// Build benchmark dependency object
 
 				BenchmarkDependency benchD = new BenchmarkDependency();
+				benchD.setId(results.getInt("id"));
 				benchD.setPrimaryBench(Benchmarks.get(results.getInt("primary_bench_id")));
 				benchD.setSecondaryBench(Benchmarks.get(results.getInt("secondary_bench_id")));
 				benchD.setDependencyPath(results.getString("include_path"));

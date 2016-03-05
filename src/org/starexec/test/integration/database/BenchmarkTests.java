@@ -256,10 +256,8 @@ public class BenchmarkTests extends TestSequence {
 		List<BenchmarkDependency> deps = Benchmarks.getBenchDependencies(primaryBench);
 		Assert.assertEquals(1, deps.size());
 		Assert.assertEquals(deps.get(0).getDependencyPath(), "test path");
-		Assert.assertEquals(deps.get(0).getId(), secondaryBench);
-		Assert.assertEquals(deps.get(0).getPrimaryBench(), primaryBench);
-
-
+		Assert.assertEquals(deps.get(0).getSecondaryBench().getId(), secondaryBench);
+		Assert.assertEquals(deps.get(0).getPrimaryBench().getId(), primaryBench);
 	}
 	
 	@Override
