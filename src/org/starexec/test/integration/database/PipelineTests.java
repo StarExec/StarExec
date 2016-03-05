@@ -54,7 +54,7 @@ public class PipelineTests extends TestSequence {
 	protected void setup() throws Exception {
 		u=ResourceLoader.loadUserIntoDatabase();
 		space=ResourceLoader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
-		s=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), u.getId());
+		s=ResourceLoader.loadSolverIntoDatabase(space.getId(), u.getId());
 		pipe=ResourceLoader.loadPipelineIntoDatabase(u.getId(), s.getConfigurations());
 		
 	}
@@ -63,7 +63,7 @@ public class PipelineTests extends TestSequence {
 	protected void teardown() throws Exception {
 		Solvers.deleteAndRemoveSolver(s.getId());
 		Spaces.removeSubspace(space.getId());
-		Pipelines.deletePipelineFromDatabase(pipe.getId());
+		Assert.assertTrue(Pipelines.deletePipelineFromDatabase(pipe.getId()));
 		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
 		
 	}

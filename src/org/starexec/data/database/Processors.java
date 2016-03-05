@@ -59,7 +59,6 @@ public class Processors {
 		try {
 			con = Common.getConnection();		
 			
-			 procedure = null;			
 			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?, ?, ?)}");			
 			procedure.setString(1, processor.getName());
 			procedure.setString(2, processor.getDescription());
