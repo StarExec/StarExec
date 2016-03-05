@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
@@ -323,7 +325,8 @@ public class ResourceLoader {
 		return loadBenchmarksIntoDatabase("benchmarks.zip", parentSpaceId, userId);
 	}
 	/**
-	 * Loads an archive of benchmarks into the database
+	 * Loads an archive of benchmarks into the database. All benchmarks will be given a single attribute after they have been
+	 * added.
 	 * @param archiveName The name of the archive containing the benchmarks in the Resource directory
 	 * @param parentSpaceId The ID of the space to place the benchmarks in. Benchmarks will
 	 * not be made into a hierarchy-- they will all be placed into the given space
@@ -341,6 +344,9 @@ public class ResourceLoader {
 			Permission p=new Permission();
 			List<Integer> ids=BenchmarkUploader.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p, 
 					"dump", statusId, false, false, null);
+			for (Integer i : ids) {
+				Benchmarks.addBenchAttr(i, TestUtil.getRandomAlphaString(10), TestUtil.getRandomAlphaString(10));
+			}
 			return ids;
 		} catch (Exception e) {
 			log.error("loadBenchmarksIntoDatabase says "+e.getMessage(),e);

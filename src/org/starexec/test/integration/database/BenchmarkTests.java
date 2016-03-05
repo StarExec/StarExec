@@ -14,6 +14,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.servlets.BenchmarkUploader;
@@ -33,8 +34,10 @@ public class BenchmarkTests extends TestSequence {
 	private User user2=null;
 	private User admin=null;
 	private Space space=null;
-	private List<Benchmark> benchmarks=null; //owned by user
-	
+	private Space space2 = null;
+	private List<Benchmark> benchmarks=null; //owned by user. Should be the only benchmarks in space
+	//TODO: Use or remove
+	private List<Integer> benchmarks2 = null; //owned by user2
 	@StarexecTest
 	private void GetByUser() {
 		List<Benchmark> benches=Benchmarks.getByOwner(user.getId());
@@ -82,6 +85,18 @@ public class BenchmarkTests extends TestSequence {
 	private void GetAssociatedSpaceIds() {
 		Assert.assertEquals(space.getId(),(int)Benchmarks.getAssociatedSpaceIds(benchmarks.get(0).getId()).get(0));
 	}
+	@StarexecTest
+	private void associateSingleBenchmarkTest() {
+		Assert.assertTrue(Benchmarks.associate(benchmarks.get(0).getId(), space2.getId()));
+		boolean found=false;
+		for (Benchmark b : Spaces.getDetails(space2.getId(), admin.getId()).getBenchmarks()) {
+			found = found || b.getId()==benchmarks.get(0).getId();
+		}
+		Assert.assertTrue(found);
+		List<Integer> temp = new ArrayList<Integer>();
+		temp.add(benchmarks.get(0).getId());
+		Assert.assertTrue(Spaces.removeBenches(temp, space2.getId()));
+	}
 	
 	@StarexecTest
 	private void AssociateBenchmarksTest() {
@@ -126,7 +141,7 @@ public class BenchmarkTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void RecycleAndRestoreAllTest() {
+	private void recycleAndRestoreAllTest() {
 		for (Benchmark b : benchmarks) {
 			Assert.assertFalse(Benchmarks.isBenchmarkRecycled(b.getId()));
 		}
@@ -141,6 +156,14 @@ public class BenchmarkTests extends TestSequence {
 			Assert.assertFalse(Benchmarks.isBenchmarkRecycled(b.getId()));
 		}
 				
+	}
+	
+	@StarexecTest
+	private void recycleAllByWrongUserTest() {
+		Assert.assertTrue(Benchmarks.recycleAllOwnedByUser(benchmarks, user2.getId()));
+		for (Benchmark b : benchmarks) {
+			Assert.assertFalse(Benchmarks.isBenchmarkRecycled(b.getId()));
+		}
 	}
 	
 	@StarexecTest
@@ -199,8 +222,6 @@ public class BenchmarkTests extends TestSequence {
 			Assert.assertFalse(Benchmarks.isBenchmarkDeleted(id));
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
 		}
-		
-		
 	}
 	
 	@StarexecTest
@@ -227,6 +248,20 @@ public class BenchmarkTests extends TestSequence {
 		Users.deleteUser(newUser.getId(), admin.getId());
 	}
 	
+	@StarexecTest
+	private void addBenchmarkDependencyTest() {
+		int primaryBench = benchmarks.get(0).getId();
+		int secondaryBench = benchmarks.get(1).getId();
+		Assert.assertTrue(Benchmarks.addBenchDependency(primaryBench, secondaryBench, "test path"));
+		List<BenchmarkDependency> deps = Benchmarks.getBenchDependencies(primaryBench);
+		Assert.assertEquals(1, deps.size());
+		Assert.assertEquals(deps.get(0).getDependencyPath(), "test path");
+		Assert.assertEquals(deps.get(0).getId(), secondaryBench);
+		Assert.assertEquals(deps.get(0).getPrimaryBench(), primaryBench);
+
+
+	}
+	
 	@Override
 	protected String getTestName() {
 		return "BenchmarkTests";
@@ -238,12 +273,14 @@ public class BenchmarkTests extends TestSequence {
 		user2=ResourceLoader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		space2=ResourceLoader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		List<Integer> ids=new ArrayList<Integer>();
 		ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=new ArrayList<Benchmark>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));
-		}		
+		}
+		benchmarks2 = ResourceLoader.loadBenchmarksIntoDatabase(space2.getId(), user2.getId());
 	}
 
 	@Override
@@ -251,6 +288,10 @@ public class BenchmarkTests extends TestSequence {
 		for (Benchmark b : benchmarks) { 
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
 		}
+		for (Integer i : benchmarks2) {
+			Benchmarks.deleteAndRemoveBenchmark(i);
+		}
+		Spaces.removeSubspace(space2.getId());
 		Spaces.removeSubspace(space.getId());
 		Users.deleteUser(user.getId(), admin.getId());
 		Users.deleteUser(user2.getId(), admin.getId());

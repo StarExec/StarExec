@@ -42,9 +42,6 @@ import org.starexec.util.Validator;
 public class Benchmarks {
 	private static final Logger log = Logger.getLogger(Benchmarks.class);
 	
-
-	
-    
 	/**
 	 * Deletes a benchmark and permanently removes it from the database. This is NOT
 	 * the normal procedure for deleting a benchmark. It is used for testing. Calling "delete"
@@ -52,7 +49,6 @@ public class Benchmarks {
 	 * @param id The ID of the benchmark
 	 * @return True on success and false otherwise
 	 */
-	
 	public static boolean deleteAndRemoveBenchmark(int id) {
 		boolean success=Benchmarks.delete(id);
 		if (!success) {
@@ -125,6 +121,25 @@ public class Benchmarks {
 	
 		return true;
     }	
+    /**
+     * Adds an attribute to an existing benchmark
+     * @param benchId The ID of the benchmark
+     * @param key The attribute key. Will overwrite any other attribute with the same key.
+     * @param val The attribute val
+     * @return True on success and false otherwise.
+     */
+    public static boolean addBenchAttr(int benchId, String key, String val) {
+    	Connection con =null;
+    	try {
+    		con=Common.getConnection();
+    		return addBenchAttr(con,benchId,key,val);
+    	} catch (Exception e) {
+    		log.error(e.getMessage(),e);
+    	} finally {
+    		Common.safeClose(con);
+    	}
+    	return false;
+    }
 
 	/**
 	 * Adds a new attribute to a benchmark
@@ -135,7 +150,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addBenchAttr(Connection con, int benchId, String key, String val) {
+	private static boolean addBenchAttr(Connection con, int benchId, String key, String val) {
 		CallableStatement procedure=null;
 		try {
 			procedure = con.prepareCall("{CALL AddBenchAttr(?, ?, ?)}");
@@ -192,9 +207,9 @@ public class Benchmarks {
 	 * @param secondaryBenchId  e.g. the axiom
 	 * @param includePath  the path that will be used locally at execution time
 	 * @author Benton McCune
-	 * @return
+	 * @return true on success and false otherwise
 	 */
-	private static Boolean addBenchDependency(int primaryBenchId, Integer secondaryBenchId, String includePath) {
+	public static Boolean addBenchDependency(int primaryBenchId, Integer secondaryBenchId, String includePath) {
 		Connection con = null;
 		try {	
 			con = Common.getConnection();
@@ -305,9 +320,6 @@ public class Benchmarks {
 				    log.debug("bench successfully added");
 							
 				    return benchId;
-				} else {
-				    //will throw exception in calling method
-				    return -1;
 				}
 		    } catch (Exception e){
 				log.error(e.getMessage(), e);	
@@ -315,11 +327,11 @@ public class Benchmarks {
 		    } finally {
 		    	Common.safeClose(con);
 		    }
-		} else {
-		    log.debug("Add called on invalid benchmark, no additions will be made to the database");
-			Uploads.setBenchmarkErrorMessage(statusId, "Benchmark validation failed for benchmark " + benchmark.getName() + ".");
 		}
-			return -1;
+		log.debug("Add called on invalid benchmark, no additions will be made to the database");
+		Uploads.setBenchmarkErrorMessage(statusId, "Benchmark validation failed for benchmark " + benchmark.getName() + ".");
+	
+		return -1;
     }
     
 	/**
@@ -343,16 +355,15 @@ public class Benchmarks {
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
 				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
 			}
-			else{
-				benchmarkIds.add(id);
-
-				incrementCounter++;
-				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-					Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
-					incrementCounter=0;
-					timer.reset();
-				}
+			
+			benchmarkIds.add(id);
+			incrementCounter++;
+			if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+				Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
+				incrementCounter=0;
+				timer.reset();
 			}
+			
 		}	
 		Uploads.incrementCompletedBenchmarks(statusId,incrementCounter);
 		
@@ -404,8 +415,7 @@ public class Benchmarks {
 				List<Integer> ids = Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
 				return ids;
 			} catch (Exception e){			
-				
-				
+				log.error(e.getMessage(),e);
 			} 
 		}
 		else {
@@ -422,6 +432,7 @@ public class Benchmarks {
 	 * @return True on success and false otherwise
 	 * @author Albert Giegerich
 	 */
+	//TODO: Pick up benchmark testing here.
 	public static boolean associate(int benchId, int spaceId) {
 		Connection con = null;			
 		try {
