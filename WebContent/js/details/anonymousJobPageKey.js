@@ -1,5 +1,3 @@
-'use strict';
-
 $(document).ready(function(){
 	$('#solverNameKeyTable').dataTable({
         "sDom"			: 'rt<"bottom"flpi><"clear">',
