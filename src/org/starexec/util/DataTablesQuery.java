@@ -25,6 +25,14 @@ public class DataTablesQuery {
 		this.syncValue=syncValue;
 	}
 	
+	public DataTablesQuery(int startRecord, int numRecords, int sortColumn, boolean ASC, String query) {
+		this.startingRecord=startRecord;
+		this.numRecords=numRecords;
+		this.sortColumn=sortColumn;
+		this.sortASC=ASC;
+		this.searchQuery=query;
+	}
+	
 	public boolean isSortASC() {
 		return sortASC;
 	}

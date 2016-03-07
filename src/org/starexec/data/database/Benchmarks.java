@@ -432,7 +432,6 @@ public class Benchmarks {
 	 * @return True on success and false otherwise
 	 * @author Albert Giegerich
 	 */
-	//TODO: Pick up benchmark testing here.
 	public static boolean associate(int benchId, int spaceId) {
 		Connection con = null;			
 		try {
@@ -474,49 +473,6 @@ public class Benchmarks {
 		return false;
 			
 	}
-	
-	
-	/*
-	 * Associates a list of benchmarks with the given space, keeping track of these associations
-	 * in the correct Upload Status object for this upload
-	 * @param benchIds The IDs of the benchmarks to associate
-	 * @param spaceId The ID of the space to add benchmarks to
-	 * @param XMLUploadId The ID of the UploadStatus object to track things in
-	 * @return True on success and false otherwise.
-	 *
-	public static boolean associate(List<Integer> benchIds, int spaceId, int XMLUploadId) {
-		Connection con = null;			
-		int uploadCounter=0;
-		try {
-			con = Common.getConnection();	
-			Common.beginTransaction(con);
-			Timer timer=new Timer();
-			for (int benchId: benchIds) {
-				associate(benchId,spaceId, con);
-				uploadCounter++;
-				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-					Uploads.incrementXMLCompletedBenchmarks(XMLUploadId, uploadCounter);
-					uploadCounter=0;
-					timer.reset();
-				}
-			}
-
-			if (uploadCounter>0) {
-				Uploads.incrementXMLCompletedBenchmarks(XMLUploadId, uploadCounter);
-
-			}
-			Common.endTransaction(con);
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return false;
-	}	
-	*/
 
 	/**
 	 * Associates the benchmarks with the given ids to the given space
@@ -714,11 +670,12 @@ public class Benchmarks {
 		return false;
 	}
 	/**
-	 * Copies a list of benchmarks into a new space, making the given user the new owner
+	 * Copies a list of benchmarks into a new space, making the given user the new owner.
 	 * @param benchmarks The benchmarks to copy
 	 * @param userId The Id of the new owner
 	 * @param spaceId The ID of the space to associate the new benchmarks with
-	 * @return A list of IDs of all the new benchmarks
+	 * @return A list of IDs of all the new benchmarks. Ids will be returned in the same order
+	 * as their copies in the input list of benchmarks.
 	 */
 	public static List<Integer> copyBenchmarks(List<Benchmark> benchmarks,int userId, int spaceId) {
 		List<Integer> ids=new ArrayList<Integer>();
@@ -1198,15 +1155,6 @@ public class Benchmarks {
 		return null;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * Returns a list of benchmark dependencies that have the input benchmark as the primary benchmark
 	 * 
@@ -1260,7 +1208,7 @@ public class Benchmarks {
 	 * @return benchId
 	 * @author Benton McCune
 	 */
-	private static Integer getBenchIdByName(Integer spaceId, String benchName) {
+	public static Integer getBenchIdByName(Integer spaceId, String benchName) {
 
 		Connection con = null;		
 		CallableStatement procedure=null;
@@ -1542,8 +1490,6 @@ public class Benchmarks {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
 	}
 
-
-
 	/**
 	 * Gets the number of Benchmarks in a given space
 	 * 
@@ -1808,8 +1754,6 @@ public class Benchmarks {
 		return (benchmark != null);
 	}	
 	
-	
-
 	/**
 	 * Internal helper method to determine if a benchmark is valid according to its attributes
 	 * @param attrs The attributes of a benchmark
@@ -1986,7 +1930,7 @@ public class Benchmarks {
 			
 			return true;
 		} catch (Exception e) {
-			
+			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2133,6 +2077,26 @@ public class Benchmarks {
 		
 		return true;
 	}
+	
+	/**
+	 * Gets rid of all the attributes a benchmark currently has in the database
+	 * @param benchId The ID of the benchmark in question
+	 * @return True on success, false on error
+	 * @author Eric Burns
+	 */
+	public static boolean clearAttributes(int benchId) {
+		Connection con =null;
+		try {
+			con=Common.getConnection();
+			return clearAttributes(benchId, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+	
 	/**
 	 * Gets rid of all the attributes a benchmark currently has in the database
 	 * @param benchId The ID of the benchmark in question
@@ -2141,7 +2105,7 @@ public class Benchmarks {
 	 * @author Eric Burns
 	 */
 	
-	public static boolean clearAttributes(int benchId, Connection con) {
+	private static boolean clearAttributes(int benchId, Connection con) {
 		CallableStatement procedure=null;
 		try {
 			procedure=con.prepareCall("{CALL ClearBenchAttributes(?)}");
@@ -2167,7 +2131,7 @@ public class Benchmarks {
      * @author Eric Burns
      * @return The ID of an UploadStatus object for tracking progress of this request
      */
-    public static Integer process(int spaceId,Processor p, boolean  hierarchy,int userId,boolean clearOldAttrs) {
+    public static Integer process(int spaceId,Processor p, boolean hierarchy,int userId,boolean clearOldAttrs) {
 		Integer statusId = Uploads.createBenchmarkUploadStatus(spaceId, userId);
 		Uploads.benchmarkFileUploadComplete(statusId);
 		Uploads.fileExtractComplete(statusId);
@@ -2189,7 +2153,7 @@ public class Benchmarks {
 				    process(s,proc,h,u,c,st,l);
 				    Uploads.benchmarkEverythingComplete(st);
 				} catch (Exception e) {
-					
+					log.error(e.getMessage(),e);
 				}
 				
 			}
@@ -2422,11 +2386,11 @@ public class Benchmarks {
 				uniqueBenchmarks.put(s.getId(), s);
 			}
 			
-			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
+			List<Benchmark> benchmarks=new ArrayList<Benchmark>();
 			for (Benchmark s : uniqueBenchmarks.values()) {
-				Benchmarks.add(s);
+				benchmarks.add(s);
 			}
-			return Benchmarks;
+			return benchmarks;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -2456,7 +2420,7 @@ public class Benchmarks {
 					filteredBenchmarks.add(b);
 				}
 			} catch (Exception e) {
-				log.warn("filtering benchmarks had an exception for Benchmark id= " +b.getId());
+				log.error(e.getMessage(),e);
 			}	
 		}
 		return filteredBenchmarks;

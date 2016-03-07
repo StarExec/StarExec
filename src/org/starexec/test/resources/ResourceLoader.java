@@ -98,9 +98,12 @@ public class ResourceLoader {
 		return file;
 	}
 	
+	public static Processor loadBenchProcessorIntoDatabase(int communityId) {
+		return loadProcessorIntoDatabase("benchprc.zip", ProcessorType.BENCH, communityId);
+	}
+	
 	public static Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {
-		return loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, communityId);
-
+		return loadProcessorIntoDatabase("postproc.zip", type, communityId);
 	}
 	
 	/**
@@ -325,8 +328,9 @@ public class ResourceLoader {
 		return loadBenchmarksIntoDatabase("benchmarks.zip", parentSpaceId, userId);
 	}
 	/**
-	 * Loads an archive of benchmarks into the database. All benchmarks will be given a single attribute after they have been
-	 * added.
+	 * Loads an archive of benchmarks into the database. All benchmarks will be given a single random,
+	 * unique attribute after they have been added. They will also be given randomized names that
+	 * tests can assume are unique.
 	 * @param archiveName The name of the archive containing the benchmarks in the Resource directory
 	 * @param parentSpaceId The ID of the space to place the benchmarks in. Benchmarks will
 	 * not be made into a hierarchy-- they will all be placed into the given space
@@ -345,6 +349,8 @@ public class ResourceLoader {
 			List<Integer> ids=BenchmarkUploader.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p, 
 					"dump", statusId, false, false, null);
 			for (Integer i : ids) {
+				Benchmarks.updateDetails(i, TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN-2), TestUtil.getRandomAlphaString(50),
+						false, Processors.getNoTypeProcessor().getId());
 				Benchmarks.addBenchAttr(i, TestUtil.getRandomAlphaString(10), TestUtil.getRandomAlphaString(10));
 			}
 			return ids;
@@ -408,13 +414,14 @@ public class ResourceLoader {
 		space.setName(name);
 		space.setDescription("test desc");
 		space.setParentSpace(parentSpaceId);
+		space.setPublic(false);
 		int id=Spaces.add(space, userId);
 		if (id>0) {
 			space.setId(id);
 			return space;
-		} else {
-			return null;
 		}
+		return null;
+		
 	}
 	
 	/**
