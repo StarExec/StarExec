@@ -99,7 +99,7 @@ public class ResourceLoader {
 	}
 	
 	public static Processor loadBenchProcessorIntoDatabase(int communityId) {
-		return loadProcessorIntoDatabase("benchprc.zip", ProcessorType.BENCH, communityId);
+		return loadProcessorIntoDatabase("benchproc.zip", ProcessorType.BENCH, communityId);
 	}
 	
 	public static Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {

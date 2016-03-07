@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Processors;
@@ -390,7 +391,7 @@ public class BenchmarkTests extends TestSequence {
 		Integer minusOne = -1;
 		String name = benchmarks.get(0).getName();
 		Assert.assertEquals(id, Benchmarks.getBenchIdByName(space.getId(), name));
-		Assert.assertEquals(minusOne, Benchmarks.getBenchIdByName(space.getId(), name+"wrongname"));
+		Assert.assertEquals(minusOne, Benchmarks.getBenchIdByName(space.getId(), TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN-2)));
 		Assert.assertEquals(minusOne, Benchmarks.getBenchIdByName(-1, name));
 	}
 	
