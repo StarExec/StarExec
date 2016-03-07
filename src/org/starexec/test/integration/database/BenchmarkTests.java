@@ -42,6 +42,14 @@ public class BenchmarkTests extends TestSequence {
 	private Space space2 = null;
 	private List<Benchmark> benchmarks=null; //owned by user. Should be the only benchmarks in space
 	Processor benchProcessor = null;
+	
+	
+	@Override
+	protected String getTestName() {
+		return "BenchmarkTests";
+	}
+
+	
 	@StarexecTest
 	private void GetByUser() {
 		List<Benchmark> benches=Benchmarks.getByOwner(user.getId());
@@ -316,13 +324,9 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void getContentsLimitTest() {
-		Assert.assertEquals(1, Benchmarks.getContents(benchmarks.get(0), 1).length());
-		Assert.assertEquals(1, Benchmarks.getContents(benchmarks.get(0).getId(), 1).length());
-	}
-	
-	@Override
-	protected String getTestName() {
-		return "BenchmarkTests";
+		// output should have just one line
+		Assert.assertEquals(1, Benchmarks.getContents(benchmarks.get(0), 1).split("\r\n|\r|\n").length);
+		Assert.assertEquals(1, Benchmarks.getContents(benchmarks.get(0).getId(), 1).split("\r\n|\r|\n").length);
 	}
 
 	@StarexecTest
@@ -370,7 +374,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertEquals(old.getName(), newB.getName());
 		Assert.assertEquals(old.getDescription(), newB.getDescription());
 		Assert.assertEquals(old.getDiskSize(), newB.getDiskSize());
-		Assert.assertEquals(user2.getId(), newB.getId());
+		Assert.assertEquals(user2.getId(), newB.getUserId());
 		Assert.assertEquals(Spaces.getDetails(space2.getId(), user2.getId()).getBenchmarks().get(0).getId(), newId);
 		Benchmarks.deleteAndRemoveBenchmark(newId);
 	}

@@ -1001,6 +1001,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * 
 	 */
+	//TODO: Test this to ensure it is failing, then fix
 	public static List<Benchmark> get(List<Integer> benchIds, boolean includeAttrs) {
 		Connection con = null;			
 
@@ -1103,7 +1104,7 @@ public class Benchmarks {
 	 * Retrieves all attributes (key/value) of the given benchmark
 	 * @param con The connection to make the query on
 	 * @param benchId The id of the benchmark to get the attributes of
-	 * @return The properties object which holds all the benchmark's attributes
+	 * @return The properties object which holds all the benchmark's attributes. Null on error.
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
@@ -1120,12 +1121,6 @@ public class Benchmarks {
 			while(results.next()){
 				prop.setProperty(results.getString("attr_key"), results.getString("attr_value"));
 			}
-
-			if(prop.size() <= 0) {
-			    log.debug("No attributes found for benchmark "+new Integer(benchId));
-			    prop = null;
-			}
-
 			return prop;
 		} catch (Exception e) {
 			log.error("getAttributes says "+e.getMessage(),e);

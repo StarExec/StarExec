@@ -130,31 +130,31 @@ public class Util {
 			
 	    // If we found the correct std out file...
 	    if(f.exists()) {
-		// Create a buffer to store the lines in and an iterator to iterate over the lines
-		StringBuilder sb = new StringBuilder();
-		lineItr = FileUtils.lineIterator(f);
-		int i = 0;
-				
-		// While there are more lines in the file...
-		while (lineItr.hasNext()) {
-		    // If we've reached the line limit, break out, we're done.
-		    if(i++ == lineLimit) {
-			break;
-		    }
+			// Create a buffer to store the lines in and an iterator to iterate over the lines
+			StringBuilder sb = new StringBuilder();
+			lineItr = FileUtils.lineIterator(f);
+			int i = 0;
 					
-		    // If we're still under the limit, add the line to the buffer
-		    sb.append(lineItr.nextLine());
-					
-		    // Don't forget to add a new line, since they are stripped as they are read
-		    sb.append("\n");
-		}
-				
-		// Return the buffer
-		return sb.toString();
-	    } else {
+			// While there are more lines in the file...
+			while (lineItr.hasNext()) {
+			    // If we've reached the line limit, break out, we're done.
+			    if(i++ == lineLimit) {
+				break;
+			    }
+						
+			    // If we're still under the limit, add the line to the buffer
+			    sb.append(lineItr.nextLine());
+						
+			    // Don't forget to add a new line, since they are stripped as they are read
+			    sb.append("\n");
+			}
+						
+			// Return the buffer
+			return sb.toString();
+	    } 
 		// If the file doesn't exist...
 		log.warn("Could not find file to open: " + f.getAbsolutePath());
-	    }
+	    
 	} catch (Exception e) {
 	    log.warn(e.getMessage(), e);
 	} finally {
