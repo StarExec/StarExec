@@ -527,7 +527,7 @@ public class BenchmarkTests extends TestSequence {
 		space2=ResourceLoader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		List<Integer> ids=new ArrayList<Integer>();
 		ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
-		benchmarks=Benchmarks.get(ids);
+		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = ResourceLoader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
 	}
 	

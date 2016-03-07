@@ -2139,8 +2139,9 @@ public class Benchmarks {
 		final boolean c=clearOldAttrs;
 		final Integer st=statusId;
 		int comm=Spaces.getCommunityOfSpace(spaceId);
+		Permission perm = Permissions.get(userId, comm);
 		
-		final boolean l=Permissions.get(userId, comm).isLeader();
+		final boolean l=perm!=null && perm.isLeader();
 		//It will delay the redirect until this method is finished which is why a new thread is used
 		Util.threadPoolExecute(new Runnable() {
 			@Override
