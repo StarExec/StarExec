@@ -287,6 +287,9 @@ public class UploadSolver extends HttpServlet {
 		
 		//extracts the given archive using the sandbox user
 		boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),sandboxDir.getAbsolutePath());
+
+		//give sandbox full permissions over the solver directory
+		Util.sandboxChmodDirectory(sandboxDir);
 		
 		//if there was an extraction error or if the temp directory is still empty.
 		if (!extracted || sandboxDir.listFiles().length==0) {
@@ -305,6 +308,7 @@ public class UploadSolver extends HttpServlet {
 			
             //the old build code I'm workign on replacing:
             
+
             log.debug("the uploaded solver did contain a build script");
             if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
                     FileUtils.deleteDirectory(sandboxDir);
@@ -313,8 +317,6 @@ public class UploadSolver extends HttpServlet {
                     return returnArray;
             }
 
-            //give sandbox full permissions over the solver directory
-            Util.sandboxChmodDirectory(sandboxDir);
 
             //run the build script as sandbox
             String[] command=new String[4];
