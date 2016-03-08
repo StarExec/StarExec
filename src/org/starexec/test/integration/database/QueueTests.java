@@ -71,11 +71,18 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void pauseJobsIfNoRemainingNodesTest() {
+		for (JobPair pair : job1.getJobPairs()) {
+			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		}
 		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		map.put(testQueue.getId(), Cluster.getNodesForQueue(testQueue.getId()).size());
 		Queues.pauseJobsIfNoRemainingNodes(map);
 		Assert.assertTrue(Jobs.isJobPaused(job1.getId()));
+		for (JobPair pair : job1.getJobPairs()) {
+			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
+		}
 		Jobs.resume(job1.getId());
+		
 	}
 	
 	@StarexecTest

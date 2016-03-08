@@ -459,7 +459,8 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void processTest() throws InterruptedException {
-		Integer statusId = Benchmarks.process(space.getId(), benchProcessor, false, user.getId(), true);
+		List<Integer> benchIds = Benchmarks.copyBenchmarks(benchmarks, user.getId(), space2.getId());
+		Integer statusId = Benchmarks.process(space2.getId(), benchProcessor, false, user.getId(), true);
 		Assert.assertTrue(statusId>0);
 		int MAX_LOOPS = 50;
 		while (!Uploads.benchmarkEverythingComplete(statusId)) { 
@@ -467,17 +468,11 @@ public class BenchmarkTests extends TestSequence {
 			MAX_LOOPS--;
 			Assert.assertTrue(MAX_LOOPS>=0);
 		}
-		for (Benchmark b : benchmarks) {
-			Map<String,String> attrs = Benchmarks.getAttributes(b.getId());
+		for (int benchId : benchIds) {
+			Map<String,String> attrs = Benchmarks.getAttributes(benchId);
 			Assert.assertEquals(1, attrs.size());
-			for (String s : attrs.keySet()) {
-				addMessage(s+"="+attrs.get(s));
-			}
 			Assert.assertEquals("test", attrs.get("test-attribute"));
-			Benchmarks.clearAttributes(b.getId());
-			for (String o : b.getAttributes().keySet()) {
-				Benchmarks.addBenchAttr(b.getId(),o,b.getAttributes().get(o));
-			}
+			Benchmarks.deleteAndRemoveBenchmark(benchId);
 		}
 	}
 	
