@@ -458,22 +458,28 @@ public class BenchmarkTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void processTest() throws InterruptedException {
-		List<Integer> benchIds = Benchmarks.copyBenchmarks(benchmarks, user.getId(), space2.getId());
-		Integer statusId = Benchmarks.process(space2.getId(), benchProcessor, false, user.getId(), true);
+	private void processTest() throws Exception {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		Space tempSpace = ResourceLoader.loadSpaceIntoDatabase(tempUser.getId(), 1);
+		
+		List<Integer> benchIds = Benchmarks.copyBenchmarks(benchmarks, tempUser.getId(), tempSpace.getId());
+		Integer statusId = Benchmarks.process(tempSpace.getId(), benchProcessor, false, tempUser.getId(), true);
 		Assert.assertTrue(statusId>0);
 		int MAX_LOOPS = 50;
-		while (!Uploads.benchmarkEverythingComplete(statusId)) { 
+		while (!Uploads.getBenchmarkStatus(statusId).isEverythingComplete()) { 
 			Thread.sleep(1000);
 			MAX_LOOPS--;
 			Assert.assertTrue(MAX_LOOPS>=0);
 		}
 		for (int benchId : benchIds) {
 			Map<String,String> attrs = Benchmarks.getAttributes(benchId);
+			addMessage(benchId+"");
 			Assert.assertEquals(1, attrs.size());
 			Assert.assertEquals("test", attrs.get("test-attribute"));
 			Benchmarks.deleteAndRemoveBenchmark(benchId);
 		}
+		Spaces.removeSubspace(tempSpace.getId());
+		Users.deleteUser(tempUser.getId(),admin.getId());
 	}
 	
 	@StarexecTest
