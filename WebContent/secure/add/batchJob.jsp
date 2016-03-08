@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -9,7 +9,7 @@
 		
 		// Verify this user can add spaces to this space
 		Permission userPerm = SessionUtil.getPermission(request, spaceId);
-		if(Users.hasAdminReadPrivileges(userId) || userPerm.canAddJob()) {
+		if(GeneralSecurity.hasAdminReadPrivileges(userId) || userPerm.canAddJob()) {
 			request.setAttribute("space", Spaces.get(spaceId));
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create jobs here");

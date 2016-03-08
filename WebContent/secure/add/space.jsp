@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -13,7 +13,7 @@
 		request.setAttribute("descLength", R.SPACE_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if( (p == null || !p.canAddSpace()) && !Users.hasAdminReadPrivileges(userId)) {
+		if( (p == null || !p.canAddSpace()) && !GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here");
 		}
 	} catch (NumberFormatException nfe) {

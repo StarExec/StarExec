@@ -17,32 +17,11 @@ public class QueueSecurityTests extends TestSequence {
 	User admin=null;
 	
 	@StarexecTest
-	private void ModifyQueuesTest() {
-		Assert.assertEquals(true,QueueSecurity.canUserModifyQueues(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserModifyQueues(user1.getId()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserModifyQueues(user2.getId()).isSuccess());
-	}
-	
-	@StarexecTest
 	private void canUserMakeQueueTest() {
 		String randomName=TestUtil.getRandomQueueName();
 		Assert.assertEquals(true,QueueSecurity.canUserMakeQueue(admin.getId(), randomName).isSuccess());
 		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user1.getId(),randomName).isSuccess());
 		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user2.getId(),randomName).isSuccess());
-	}
-	
-	
-	
-	
-	
-	@StarexecTest
-	private void canUserUpdateRequest() {
-		String randomName=TestUtil.getRandomQueueName();
-		Assert.assertEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),randomName).isSuccess());
-		//queues need unique names, so make sure we can't choose a name we already have
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName).isSuccess());
 	}
 	
 	@StarexecTest

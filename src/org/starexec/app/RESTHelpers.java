@@ -254,7 +254,7 @@ public class RESTHelpers {
 			if (type.equals("active_queue") || type.equals("inactive_queue")) {
 				this.global = Queues.isQueueGlobal(id);
 			}
-			this.defaultQueueId = Cluster.getDefaultQueueId();
+			this.defaultQueueId = R.DEFAULT_QUEUE_ID;
 		}
 	}
 
@@ -790,10 +790,10 @@ public class RESTHelpers {
 			if (type.equals("queue")) {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
-				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id,"queue");
+				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id);
 				
 				
-				query.setTotalRecords(Queues.getCountOfEnqueuedPairsShallow(id));
+				query.setTotalRecords(Queues.getCountOfEnqueuedPairsByQueue(id));
 				// there is no filter function on this table, so this is always equal to the above
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 				
@@ -802,8 +802,8 @@ public class RESTHelpers {
 			} else if (type.equals("node")) {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
-				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id,"node");
-				query.setTotalRecords(Queues.getCountOfRunningPairsOnNode(id));
+				jobPairsToDisplay = Queues.getPairsRunningOnNode(id);
+				query.setTotalRecords(jobPairsToDisplay.size());
 				// there is no filter function on this table, so this is always equal to the above
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
 				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
@@ -858,24 +858,6 @@ public class RESTHelpers {
 
 			}
 			return convertJobsToJsonObject(jobsToDisplay,query);
-		case NODE:
-			List<WorkerNode> nodesToDisplay = new LinkedList<WorkerNode>();
-			query.setTotalRecords(Cluster.getNodeCount());
-			// Retrieves the relevant Node objects to use in constructing the
-			// JSON to send to the client
-			nodesToDisplay = Cluster.getNodesForNextPageAdmin(query);
-			
-			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-			// TOTAL_RECORDS
-			if (!query.isSortASC()) {
-				query.setTotalRecordsAfterQuery(query.getTotalRecords());
-			}
-			// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-			else {
-				query.setTotalRecordsAfterQuery(nodesToDisplay.size());
-			}
-
-			return convertNodesToJsonObject(nodesToDisplay, query);
 
 		case USER:
 			List<User> usersToDisplay = new LinkedList<User>();

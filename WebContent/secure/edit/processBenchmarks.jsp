@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.constants.*,org.starexec.data.security.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -8,7 +8,7 @@ try {
 	int spaceId = Integer.parseInt((String)request.getParameter("sid"));
 
 	// Grab relevant user id & processor info
-	if (Users.isMemberOfSpace(userId,spaceId) || Users.hasAdminReadPrivileges(userId)) {
+	if (Users.isMemberOfSpace(userId,spaceId) || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 		request.setAttribute("sid",spaceId);
 		List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
 		request.setAttribute("procs",procs);

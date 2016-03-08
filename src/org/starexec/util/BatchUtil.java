@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
@@ -230,17 +231,15 @@ public class BatchUtil {
 			if (includeAttributes) {
 			    String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(benchmark.getUploadDate());
                 benchElement.setAttribute("uploadTime", timeStamp);
-			    Properties attrs = Benchmarks.getAttributes(benchmark.getId());
+			    Map<String,String> attrs = Benchmarks.getAttributes(benchmark.getId());
 			    if (attrs != null) {
-				Enumeration<Object> keys = attrs.keys();
-				while (keys.hasMoreElements()) {
-				    String attr = (String)keys.nextElement();
-				    String val = (String)attrs.get(attr);
-				    Element attre = doc.createElement("Attribute");
-				    attre.setAttribute("name",attr);
-				    attre.setAttribute("value",val);
-				    benchElement.appendChild(attre);
-				}
+					for (String attr : attrs.keySet()) {
+					    String val = attrs.get(attr);
+					    Element attre = doc.createElement("Attribute");
+					    attre.setAttribute("name",attr);
+					    attre.setAttribute("value",val);
+					    benchElement.appendChild(attre);
+					}
 			    }
 			}
 			spaceElement.appendChild(benchElement);

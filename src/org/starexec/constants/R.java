@@ -201,7 +201,7 @@ public class R {
     public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 	"this is your personal space";
     public static int MAX_FAILED_VALIDATIONS=50;							//More than this number of benchmark validation failures triggers a message and ends
-	
+	public static String VALID_BENCHMARK_ATTRIBUTE = "starexec-valid";      //Name of attribute given by benchmark processors to show a benchmark is valid
 	//Reserved Names for users
 	public static String STAREXEC_RESULT = "starexec-result";				// The key used for the starexec result in key-value pairs for a job pair 
 	public static String CONFIGURATION_PREFIX = "starexec_run_";            // The prefix for a file in the solver bin directory to be considered a configuration

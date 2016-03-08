@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.security.*,org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -10,7 +10,7 @@
 		request.setAttribute("configNameLen", R.CONFIGURATION_NAME_LEN-4);
 		request.setAttribute("configDescLen", R.CONFIGURATION_DESC_LEN);
 		// Verify this user is the owner of the solver they are trying to upload configurations to
-		if(solver.getUserId() == userId || Users.hasAdminReadPrivileges(userId)) {
+		if(solver.getUserId() == userId || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			request.setAttribute("solver", solver);
 		} else {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add configurations here.");

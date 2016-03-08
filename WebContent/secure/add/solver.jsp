@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.constants.*,org.starexec.data.security.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -12,7 +12,7 @@
 		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if( !Users.hasAdminReadPrivileges(userId) && (p==null || !p.canAddSolver()) ) {
+		if( !GeneralSecurity.hasAdminReadPrivileges(userId) && (p==null || !p.canAddSolver()) ) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add solvers here");
 		}
 		List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);

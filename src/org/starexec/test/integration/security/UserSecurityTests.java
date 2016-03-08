@@ -62,13 +62,6 @@ public class UserSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void canSuspendOrReinstateUser() {
-		Assert.assertEquals(true, UserSecurity.canUserSuspendOrReinstateUser(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user1.getId()).isSuccess());
-		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user2.getId()).isSuccess());
-	}
-	
-	@StarexecTest
 	private void canViewUserPrimitives() {
 		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),user1.getId()).isSuccess());
 		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),admin.getId()).isSuccess());

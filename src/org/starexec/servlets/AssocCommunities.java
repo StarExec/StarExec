@@ -15,6 +15,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
@@ -43,7 +44,7 @@ public class AssocCommunities extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
 		int userId = SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			String message="You do not have permission to perform this operation";
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
@@ -54,7 +55,7 @@ public class AssocCommunities extends HttpServlet {
 		List<Integer> community_ids = Util.toIntegerList(request.getParameterValues(communities));
 		
 		
-		boolean result = Cluster.setQueueCommunityAccess(community_ids, queue_id);
+		boolean result = Queues.setQueueCommunityAccess(community_ids, queue_id);
 		
 		if (result) {
 			response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));

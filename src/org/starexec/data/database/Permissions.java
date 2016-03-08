@@ -7,11 +7,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.starexec.data.to.BenchmarkUploadStatus;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.SpaceXMLUploadStatus;
 
 /**
  * Handles all database interaction for permissions
@@ -68,7 +67,7 @@ public class Permissions {
 		if (Benchmarks.isPublic(benchId)){
 			return true;
 		}	
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		if (Settings.canUserSeeBenchmarkInSettings(userId, benchId)) {
@@ -129,7 +128,7 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeBenchs(List<Integer> benchIds, int userId) {
 		Connection con = null;			
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		try {
@@ -169,7 +168,7 @@ public class Permissions {
 			if (j==null) {
 				return false;
 			}
-			if (Jobs.isPublic(jobId) || Users.hasAdminReadPrivileges(userId) ){
+			if (Jobs.isPublic(jobId) || GeneralSecurity.hasAdminReadPrivileges(userId) ){
 				return true;
 			}
 			
@@ -207,7 +206,7 @@ public class Permissions {
 		if (Solvers.isPublic(solverId)){
 			return true;
 		}
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
@@ -268,7 +267,7 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeSolvers(Collection<Integer> solverIds, int userId) {
 		Connection con = null;			
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		try {
@@ -290,7 +289,9 @@ public class Permissions {
 	}
 
 	/**
-	 * Checks to see if the user belongs to the given space.
+	 * Checks to see if the user belongs to the given space. Note that this is to check whether a user can 
+	 * see the details of a space, not to check whether they can see the space in the explorer tree due
+	 * to being a member of a subspace.
 	 * @param spaceId The space to check if the user can see
 	 * @param userId The user that is requesting to view the given space
 	 * @return True if the user belongs to the space, false otherwise
@@ -304,7 +305,7 @@ public class Permissions {
 		if (Spaces.isPublicSpace(spaceId)){
 			return true;
 		}
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		Connection con = null;			
@@ -332,32 +333,6 @@ public class Permissions {
 	}
 
 	/**
-	 * Checks to see if the user belongs to the given upload status
-	 * @param statusId The space to check if the user can see
-	 * @param userId The user that is requesting to view the given upload status
-	 * @return True if the user owns the status, false otherwise
-	 * @author Benton McCune
-	 */
-	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
-		if (Users.hasAdminReadPrivileges(userId)) {
-			return true;
-		}
-		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
-		return status.getUserId()==userId;
-	}
-	
-	public static boolean canUserSeeSpaceXMLStatus(int statusId, int userId) {		
-		if (Users.hasAdminReadPrivileges(userId)) {
-			return true;
-		}
-		SpaceXMLUploadStatus status=Uploads.getSpaceXMLStatus(statusId);
-		return status.getUserId()==userId;
-	}
-
-
-
-	
-	/**
 	 * Retrieves the user's maximum set of permissions in a space.
 	 * @param userId The user to get permissions for	
 	 * @param spaceId The id of the space to get the user's permissions on
@@ -376,7 +351,7 @@ public class Permissions {
 		}
 		
 		//the admin has full permissions everywhere
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			log.debug("permissions for an admin were obtained userId = "+userId);
 			return Permissions.getFullPermission();
 		}
@@ -431,7 +406,7 @@ public class Permissions {
 	
 	/**
 	 * Returns a permissions object with every permission set to true. The ID is not set
-	 * @return 
+	 * @return Permissions object
 	 * @author Eric Burns
 	 */
 	
@@ -453,7 +428,7 @@ public class Permissions {
 
 	/**
 	 * Returns a permissions object with every permission set to false. The ID is not set
-	 * @return 
+	 * @return Permissions object
 	 * @author Eric Burns
 	 */
 	
@@ -526,12 +501,6 @@ public class Permissions {
 	 * @param newPerm the new set of permissions to set
 	 * @return true iff the permissions were successfully set, false otherwise
 	 * @author Todd Elvers
-	 */
-	/**
-	 * @param userId
-	 * @param spaceId
-	 * @param newPerm
-	 * @return
 	 */
 	public static boolean set(int userId, int spaceId, Permission newPerm) {
 		Connection con = null;			

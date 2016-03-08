@@ -3,6 +3,7 @@ package org.starexec.test.integration.database;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -382,10 +383,10 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest
 	private void getAttributesTest() {
 		Benchmark b = benchmarks.get(0);
-		Properties attrs = Benchmarks.getAttributes(b.getId());
+		Map<String,String> attrs = Benchmarks.getAttributes(b.getId());
 		Assert.assertEquals(b.getAttributes().size(), attrs.size());
-		for (Object o : b.getAttributes().keySet()) {
-			Assert.assertEquals(b.getAttributes().get(o), attrs.get(o));
+		for (String s : b.getAttributes().keySet()) {
+			Assert.assertEquals(b.getAttributes().get(s), attrs.get(s));
 		}
 	}
 	
@@ -467,12 +468,15 @@ public class BenchmarkTests extends TestSequence {
 			Assert.assertTrue(MAX_LOOPS>=0);
 		}
 		for (Benchmark b : benchmarks) {
-			Properties attrs = Benchmarks.getAttributes(b.getId());
+			Map<String,String> attrs = Benchmarks.getAttributes(b.getId());
 			Assert.assertEquals(1, attrs.size());
-			Assert.assertEquals("test", attrs.getProperty("test-attribute"));
+			for (String s : attrs.keySet()) {
+				addMessage(s+"="+attrs.get(s));
+			}
+			Assert.assertEquals("test", attrs.get("test-attribute"));
 			Benchmarks.clearAttributes(b.getId());
-			for (Object o : b.getAttributes().keySet()) {
-				Benchmarks.addBenchAttr(b.getId(),(String)o, (String) b.getAttributes().get(o));
+			for (String o : b.getAttributes().keySet()) {
+				Benchmarks.addBenchAttr(b.getId(),o,b.getAttributes().get(o));
 			}
 		}
 	}

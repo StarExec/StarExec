@@ -399,7 +399,7 @@ public class JspHelpers {
 
 				boolean downloadable = SolverSecurity.canUserDownloadSolver( s.getId(), userId ).isSuccess();
 				request.setAttribute( "downloadable", downloadable );
-				request.setAttribute( "hasAdminReadPrivileges", Users.hasAdminReadPrivileges( userId ));
+				request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 
 				setSolverPageRequestAttributes( false, false, s, request, response );
 			} else {
@@ -542,7 +542,7 @@ public class JspHelpers {
 		if ( !isAnonymousPage ) {
 			int userId = SessionUtil.getUserId( request );
 			userCanSeeBench = Permissions.canUserSeeBench( benchId, userId );
-			request.setAttribute( "hasAdminReadPrivileges", Users.hasAdminReadPrivileges( userId ));
+			request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 			downloadable = BenchmarkSecurity.canUserDownloadBenchmark( benchId,userId ).isSuccess();
 		}
 		request.setAttribute( "downloadable", downloadable );

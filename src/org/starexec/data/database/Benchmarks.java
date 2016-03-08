@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -93,27 +93,28 @@ public class Benchmarks {
      * @param statusId the id of the upload page, or null if there isn't one
      * @return True on success and false otherwise
      */
-    protected static boolean addAttributeSetToDbIfValid(Connection con, Properties attrs, Benchmark benchmark, Integer statusId) {
+    protected static boolean addAttributeSetToDbIfValid(Connection con, Map<String, String> attrs, Benchmark benchmark, Integer statusId) {
 		if(!Benchmarks.isBenchValid(attrs)) {
 		    Uploads.setBenchmarkErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
-						       +benchmark.getName()+" (starexec-valid was not true)."));
+						       +benchmark.getName()+" ("+R.VALID_BENCHMARK_ATTRIBUTE+" was not true)."));
 		    return false;
 		}
 	
 		// Discard the valid attribute, we don't need it
-		attrs.remove("starexec-valid");
+		attrs.remove(R.VALID_BENCHMARK_ATTRIBUTE);
 		log.info("bench is valid.  Adding " + attrs.entrySet().size() + " attributes");
 		// For each attribute (key, value)...
 		int count = 0;			
-		for(Entry<Object, Object> keyVal : attrs.entrySet()) {
+		for(String key : attrs.keySet()) {
+			String val = attrs.get(key);
 		    // Add the attribute to the database
 		    count++;
 		    log.debug("Adding att number " + count + " " 
-			      + (String)keyVal.getKey() +", " + (String)keyVal.getValue() + " to bench " + benchmark.getId());
+			      + key +", " + val + " to bench " + benchmark.getId());
 		    
-		    if (!Benchmarks.addBenchAttr(con, benchmark.getId(), (String)keyVal.getKey(), (String)keyVal.getValue())) {
+		    if (!Benchmarks.addBenchAttr(con, benchmark.getId(), key, val)) {
 		    	Uploads.setBenchmarkErrorMessage(statusId, "Problem adding the following attribute-value pair to the db, for benchmark "
-						+benchmark.getId()+": "+(String)keyVal.getKey() + ", " + (String)keyVal.getValue());
+						+benchmark.getId()+": "+key + ", " + val);
 			
 		    	return false;
 		    }
@@ -258,7 +259,7 @@ public class Benchmarks {
 		try{
 			Common.beginTransaction(con);
 
-			Properties attrs = benchmark.getAttributes();
+			Map<String,String> attrs = benchmark.getAttributes();
 			// Setup normal information for the benchmark
 			procedure = con.prepareCall("{CALL AddBenchmark(?, ?, ?, ?, ?, ?, ?, ?)}");
 			procedure.setString(1, benchmark.getName());		
@@ -401,8 +402,8 @@ public class Benchmarks {
 					Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
 				} else {
 					for (Benchmark b : benchmarks) {
-						Properties prop = new Properties();
-						prop.put("starexec-valid", "true");
+						Map<String,String> prop = new HashMap<String,String>();
+						prop.put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
 						b.setAttributes(prop);
 					}
 				}
@@ -507,7 +508,8 @@ public class Benchmarks {
 	/**
 	 * Given a set of benchmarks and a processor, this method runs each benchmark through
 	 * the processor and adds a hashmap of attributes to the benchmark that are given from
-	 * the processor.
+	 * the processor. Attributes are NOT added to the database! They are just added to the benchmark
+	 * objects themselves.
 	 * @param benchmarks The set of benchmarks to get attributes for
 	 * @param p The processor to run each benchmark on
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
@@ -541,14 +543,21 @@ public class Benchmarks {
 			FileUtils.deleteQuietly(sandbox);
 			// Load results into a properties file
 			Properties prop = new Properties();
-			prop.load(new StringReader(propstr));							
+			
+			prop.load(new StringReader(propstr));
+			
 			log.debug("read this string from the processor: " + propstr);
 			log.debug("read "+prop.size()+" properties");
 
 			// Attach the attributes to the benchmark
-			b.setAttributes(prop);
+			Map<String,String> attrs = new HashMap<String,String>();
+			
+			for (Object o : prop.keySet()) {
+				attrs.put((String)o, (String)prop.get(o));
+			}
+			b.setAttributes(attrs);
 			count--;
-			if (Benchmarks.isBenchValid(prop)){
+			if (Benchmarks.isBenchValid(attrs)){
 				validatedCounter++;
 				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
 					Uploads.incrementValidatedBenchmarks(statusId,validatedCounter);
@@ -711,12 +720,12 @@ public class Benchmarks {
 			newBenchmark.setDownloadable(b.isDownloadable());
 
 			if (newBenchmark.getAttributes()==null) {
-				newBenchmark.setAttributes(new Properties());
+				newBenchmark.setAttributes(new HashMap<String,String>());
 			}
 
 			//this benchmark must be valid, since it is just a copy of 
 			//an old benchmark that already passed validation
-			newBenchmark.getAttributes().put("starexec-valid", "true");
+			newBenchmark.getAttributes().put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
 			File benchmarkFile=new File(b.getPath());
 
 			File uniqueDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(userId, String.valueOf(b.getId()));
@@ -755,8 +764,6 @@ public class Benchmarks {
 		CallableStatement procedure=null;
 		
 		try {
-			//Cache.invalidateSpacesAssociatedWithBench(id);
-			//Cache.invalidateAndDeleteCache(id, CacheType.CACHE_BENCHMARK);
 			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL SetBenchmarkToDeletedById(?, ?)}");
@@ -1001,7 +1008,6 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * 
 	 */
-	//TODO: Test this to ensure it is failing, then fix
 	public static List<Benchmark> get(List<Integer> benchIds, boolean includeAttrs) {
 		Connection con = null;			
 
@@ -1108,7 +1114,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static Properties getAttributes(Connection con, int benchId) throws Exception {
+	protected static Map<String,String> getAttributes(Connection con, int benchId) throws Exception {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 
@@ -1117,9 +1123,9 @@ public class Benchmarks {
 			procedure.setInt(1, benchId);					
 			results = procedure.executeQuery();
 
-			Properties prop = new Properties();
+			Map<String, String> prop = new HashMap<String,String>();
 			while(results.next()){
-				prop.setProperty(results.getString("attr_key"), results.getString("attr_value"));
+				prop.put(results.getString("attr_key"), results.getString("attr_value"));
 			}
 			return prop;
 		} catch (Exception e) {
@@ -1136,7 +1142,7 @@ public class Benchmarks {
 	 * @return The properties object which holds all the benchmark's attributes
 	 * @author Tyler Jensen
 	 */
-	public static Properties getAttributes(int benchId) {
+	public static Map<String,String> getAttributes(int benchId) {
 		Connection con = null;			
 
 		try {
@@ -1755,9 +1761,9 @@ public class Benchmarks {
 	 * @param attrs The attributes of a benchmark
 	 * @return True if the attributes are of a valid benchmark, false otherwise
 	 */
-	private static boolean isBenchValid(Properties attrs) {
-		// A benchmark is valid if it has attributes and it has the special starexec-valid attribute
-		return (attrs != null && Boolean.parseBoolean(attrs.getProperty("starexec-valid", "false")));
+	private static boolean isBenchValid(Map<String,String> attrs) {
+		// A benchmark is valid if it has attributes and it has the special R.VALID_BENCHMARK_ATTRIBUTE attribute
+		return (attrs != null && Boolean.parseBoolean(attrs.getOrDefault(R.VALID_BENCHMARK_ATTRIBUTE, "false")));
 	}
 	
 	/**
@@ -2033,14 +2039,14 @@ public class Benchmarks {
 	 */
 	private static boolean validateIndBenchDependencies(Benchmark bench, Integer spaceId, Boolean linked,HashMap<String, BenchmarkDependency> foundDependencies){
 
-		Properties atts = bench.getAttributes();
+		Map<String,String> atts = bench.getAttributes();
 
 		String includePath = "";
 		try {
-			Integer numberDependencies = Integer.valueOf(atts.getProperty("starexec-dependencies", "0"));
+			Integer numberDependencies = Integer.valueOf(atts.getOrDefault("starexec-dependencies", "0"));
 			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
-				includePath = atts.getProperty("starexec-dependency-"+i, "");//TODO: test when given bad atts
+				includePath = atts.getOrDefault("starexec-dependency-"+i, "");//TODO: test when given bad atts
 				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
 				if (includePath.length()>0){
 					//checkMap first
@@ -2172,7 +2178,6 @@ public class Benchmarks {
 	 * @param isCommunityLeader True if the user is a community leader for this community and false otherwise
 	 * @return The status ID on success, -1 otherwise
 	 * @author Eric Burns
-
 	 */
 	
 	private static boolean process(int spaceId, Processor p, boolean hierarchy, int userId, boolean clearOldAttrs, Integer statusId, 
@@ -2206,7 +2211,7 @@ public class Benchmarks {
 			    	Benchmarks.clearAttributes(b.getId(),con);
 			    }
 					
-			    Properties attrs=b.getAttributes();
+			    Map<String,String> attrs=b.getAttributes();
 			    if (!addAttributeSetToDbIfValid(con,attrs,b,statusId)) {
 					return false;	
 			    }

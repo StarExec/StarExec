@@ -6,11 +6,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.test.integration.StarexecTest;
@@ -27,7 +30,8 @@ public class BenchmarkSecurityTests extends TestSequence {
 	Space space2=null;
 	List<Integer> benchmarkIds=null; //these are benchmarks owned by user1 and placed in space
 	List<Integer> benchmarkIds2=null; //these are benchmarks owned by user2 and placed in space2
-	
+	BenchmarkUploadStatus benchmarkStatus = null;
+
 	@StarexecTest
 	private void CanDeleteBenchTest() {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user1.getId()).isSuccess());
@@ -153,6 +157,13 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()).isSuccess());
 	}
 	
+	@StarexecTest
+	private void canSeeBenchmarkUploadStatusTest() {
+		Assert.assertTrue(BenchmarkSecurity.canUserSeeBenchmarkStatus(benchmarkStatus.getId(), user1.getId()));
+		Assert.assertTrue(BenchmarkSecurity.canUserSeeBenchmarkStatus(benchmarkStatus.getId(), admin.getId()));
+		Assert.assertFalse(BenchmarkSecurity.canUserSeeBenchmarkStatus(benchmarkStatus.getId(), user2.getId()));
+	}
+	
 	
 	@Override
 	protected String getTestName() {
@@ -174,6 +185,8 @@ public class BenchmarkSecurityTests extends TestSequence {
 		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);	
 		Assert.assertNotNull(benchmarkIds2);
+		benchmarkStatus = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), user1.getId()));
+
 	}
 
 	@Override

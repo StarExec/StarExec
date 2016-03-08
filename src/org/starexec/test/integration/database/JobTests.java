@@ -7,10 +7,12 @@ import java.util.Random;
 
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -21,6 +23,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.jobs.JobManager;
 import org.starexec.test.TestUtil;
@@ -305,6 +308,15 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(2, Jobs.getBySpace(newSpace.getId()).size());
 		
 		Spaces.removeSubspace(newSpace.getId());
+	}
+	
+	@StarexecTest
+	private void updateNodeTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		WorkerNode n = Cluster.getAllNodes().get(0);
+		Assert.assertTrue(JobPairs.updatePairExecutionHost(jp.getId(), n.getId()));
+		Assert.assertEquals(n.getId(), JobPairs.getPairDetailed(jp.getId()).getNode().getId());
+		jp.setNode(n);
 	}
 	
 	@Override

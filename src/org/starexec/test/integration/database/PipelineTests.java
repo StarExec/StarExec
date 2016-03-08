@@ -17,6 +17,7 @@ import org.starexec.test.resources.ResourceLoader;
  * @author Eric
  *
  */
+//TODO: Write tests for gettings pipelines by job
 public class PipelineTests extends TestSequence {
 	User u=null;
 	Solver s=null;

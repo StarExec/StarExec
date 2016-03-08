@@ -16,20 +16,6 @@ CREATE PROCEDURE AssociateQueue(IN _queueName VARCHAR(64), IN _nodeName VARCHAR(
 	END //
 	
 -- Adds a worker node to the database and ignores duplicates
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS AssociateQueueById;
-CREATE PROCEDURE AssociateQueueById(IN _queueId INT, IN _nodeId INT)
-	BEGIN
-		DELETE FROM queue_assoc
-		WHERE node_id = _nodeId;
-		
-		INSERT IGNORE INTO queue_assoc
-		VALUES(_queueId, _nodeId);
-
-	END //
-
-	
--- Adds a worker node to the database and ignores duplicates
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddNode;
 CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
@@ -110,30 +96,10 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 DROP PROCEDURE IF EXISTS GetQueue;
 CREATE PROCEDURE GetQueue(IN _id INT)
 	BEGIN		
-		SELECT id, name, status, slots_used, slots_reserved, slots_free, slots_total,cpuTimeout,clockTimeout,global_access
-		FROM queues
-		WHERE id=_id;
-	END // 
-	
--- Gets the queue with the given ID (includes all SGE attributes)
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetQueueDetails;
-CREATE PROCEDURE GetQueueDetails(IN _id INT)
-	BEGIN		
 		SELECT *
 		FROM queues
 		WHERE id=_id;
-	END // 
-	
--- Updates a queues's usage stats
--- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateQueueUseage;
-CREATE PROCEDURE UpdateQueueUseage(IN _name VARCHAR(64), IN _total INTEGER, IN _free INTEGER, IN _used INTEGER, IN _reserved INTEGER)
-	BEGIN	
-		UPDATE queues
-		SET slots_total=_total, slots_free=_free, slots_used=_used, slots_reserved=_reserved
-		WHERE name=_name;
-	END // 
+	END //  
 
 -- Updates all queues status'
 -- Author: Tyler Jensen
@@ -172,17 +138,6 @@ CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 		SET status=_status
 		WHERE name=_name;
 	END // 
-
--- Get the number of active nodes
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetActiveNodeCount;
-CREATE PROCEDURE GetActiveNodeCount()
-	BEGIN
-		SELECT Count(*)
-		AS nodeCount
-		FROM nodes
-		WHERE status = "ACTIVE";
-	END //
 	
 -- Returns all the nodes in the system that are active
 -- Author: Wyatt Kaiser
@@ -260,110 +215,12 @@ CREATE PROCEDURE GetNodeNameById(IN _nodeId INT)
 		FROM nodes
 		WHERE id = _nodeId;
 	END //
-	
--- Get the id of the default queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetDefaultQueueId;
-CREATE PROCEDURE GetDefaultQueueId(IN _queueName VARCHAR(64))
+
+-- deletes a node from the database
+DROP PROCEDURE IF EXISTS DeleteNode;
+CREATE PROCEDURE DeleteNode(IN _id INT)
 	BEGIN
-		SELECT id
-		FROM queues
-		WHERE name = _queueName;
+		DELETE FROM nodes WHERE id=_id;
 	END //
-	
--- Give the community (leaders) Access to a queue
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS SetQueueCommunityAccess;
-CREATE PROCEDURE SetQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
-	BEGIN
-		INSERT INTO comm_queue
-		VALUES (_communityId, _queueId);
-	END //
-	 
-DROP PROCEDURE IF EXISTS RemoveEmptyNodeCounts;
-CREATE PROCEDURE RemoveEmptyNodeCounts()
-	BEGIN
-		DELETE FROM queue_request_assoc
-		WHERE node_count = 0;
-	END //
-	
-DROP PROCEDURE IF EXISTS GetNextPageOfNodesAdmin;
-CREATE PROCEDURE GetNextPageOfNodesAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of Users without filtering for _query
-		IF (_query = '' OR _query = NULL) THEN
-			IF _sortASC = TRUE THEN
-				SELECT 	id,
-						name,
-						status
-						
-				FROM	nodes
-
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN name
-					WHEN 1 THEN status
-				END) ASC
-				
-				-- Shrink the results to only those required for the next page of Users
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id,
-						name,
-						status
-						
-				FROM	nodes 
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN name
-					WHEN 1 THEN status
-				END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		-- Otherwise, ensure the target Nodes contain _query
-		ELSE
-			IF _sortASC = TRUE THEN
-				SELECT 	id,
-						name,
-						status
-				
-				FROM	nodes
-							
-				-- Exclude Users whose name and description don't contain the query string
-				WHERE 	(name								LIKE	CONCAT('%', _query, '%')
-				OR		status								LIKE 	CONCAT('%', _query, '%'))
-								
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN name
-					WHEN 1 THEN status
-				END) ASC
-					 
-				-- Shrink the results to only those required for the next page of Users
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id,
-						name,
-						status
-						
-				FROM	nodes
-				WHERE
-						(name								LIKE	CONCAT('%', _query, '%')
-				OR		status								LIKE 	CONCAT('%', _query, '%'))
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN name
-					WHEN 1 THEN status
-				END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		END IF;
-	END //
-
-
-
-
 
 DELIMITER ; -- This should always be at the end of this file

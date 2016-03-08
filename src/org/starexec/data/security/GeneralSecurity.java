@@ -19,55 +19,6 @@ public class GeneralSecurity {
 	private static final LogUtil logUtil = new LogUtil( log );
 
 	/**
-	 * Checks to see if the given user has permission to restart Starexec
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserRestartStarexec(int userId){
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see if the given user has permission to clear load balancing data
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserClearLoadBalanceData(int userId){
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see if the given user has permission to change logging settings
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserChangeLogging(int userId){
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	/**
-	 * Checks to see if the given user has permission to view information related to
-	 * testing
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-
-	public static ValidatorStatusCode canUserSeeTestInformation(int userId) {
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
 	 * Checks to see if the given user has permission to execute tests without checking to see if tests are already running
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
@@ -75,7 +26,7 @@ public class GeneralSecurity {
 
 	public static ValidatorStatusCode canUserRunTestsNoRunningCheck(int userId) {
 		//only the admin can run tests, and they cannot be run on production
-		if (!Users.hasAdminWritePrivileges(userId) || Util.isProduction()) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId) || Util.isProduction()) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -139,7 +90,7 @@ public class GeneralSecurity {
 	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, 
 															String newPass, String confirmNewPass) {
 		boolean userIsChangingOwnPassword = (userId == userIdMakingRequest);
-		boolean userIsAdmin = Users.hasAdminWritePrivileges(userIdMakingRequest);
+		boolean userIsAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest);
 		if ( !(userIsChangingOwnPassword || userIsAdmin) ) {
 			return new ValidatorStatusCode(false, "You do not have permission to change this user's password.");
 		}
@@ -162,6 +113,30 @@ public class GeneralSecurity {
 		
 		return new ValidatorStatusCode(true);
 	}
+	
+
+	/**
+	 * Checks to see if a user can view admin only pages.
+	 * @param userId
+	 * @return True if the user is either an admin or developer and false otherwise
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminReadPrivileges(int userId) {
+		return Users.isAdmin(userId) || Users.isDeveloper(userId); 
+	}
+
+	/**
+	 * Checks to see whether a user can make admin-only changes to the website/backend.
+	 * @param userId
+	 * @return True if the user is an admin and false otherwise
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminWritePrivileges(int userId) {
+		return Users.isAdmin(userId);
+	}
+	
+	
+	
 
 	/**
 	 * Checks if a user can generate a public anonymous link for a given primitive.
@@ -174,7 +149,7 @@ public class GeneralSecurity {
 		final String methodName = "canUserGetAnonymousLinkForPrimitive";
 		logUtil.entry( methodName );
 		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
-		if ( Users.isAdmin( userId )) {
+		if ( GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode( true );
 		} else if ( primitiveType.equals( R.BENCHMARK )) {
 			logUtil.debug( methodName, 

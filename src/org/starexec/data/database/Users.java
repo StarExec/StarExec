@@ -1085,6 +1085,9 @@ public class Users {
 	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
+	
+	//TODO: This should just take the user to delete. Security should be handled outside the function, like
+	// everywhere else.
 	public static boolean deleteUser(int userToDeleteId, int userMakingRequestId) throws StarExecSecurityException{
 		log.debug("User with id="+userMakingRequestId+" is attempting to delete user with id="+userToDeleteId);
 		Connection con=null;
@@ -1193,25 +1196,6 @@ public class Users {
 		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
 	}
 
-	/**
-	 * Checks to see if a user can view admin only pages.
-	 * @param userId
-	 * @return True if the user is either an admin or developer and false otherwise
-	 * @author Albert Giegerich
-	 */
-	public static boolean hasAdminReadPrivileges(int userId) {
-		return isAdmin(userId) || isDeveloper(userId); 
-	}
-
-	/**
-	 * Checks to see whether a user can make admin-only changes to the website/backend.
-	 * @param userId
-	 * @return True if the user is an admin and false otherwise
-	 * @author Albert Giegerich
-	 */
-	public static boolean hasAdminWritePrivileges(int userId) {
-		return isAdmin(userId);
-	}
 	
 	/**
 	 * Checks to see whether the given user is the public user

@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
 import org.starexec.util.LogUtil;
@@ -101,7 +102,7 @@ public class Registration extends HttpServlet {
 		}
 
 		
-		boolean adminCreated = Users.isAdmin(userIdOfRequest);
+		boolean adminCreated = GeneralSecurity.hasAdminWritePrivileges(userIdOfRequest);
 		
 		if (!adminCreated) {
 			
@@ -182,7 +183,7 @@ public class Registration extends HttpServlet {
 			}
 			
 			//administrators don't need to provide a message
-			if (!Users.isAdmin(userIdOfRequest)) {
+			if (!GeneralSecurity.hasAdminWritePrivileges(userIdOfRequest)) {
 				if (!Validator.isValidRequestMessage(request.getParameter(Registration.USER_MESSAGE))) {
 		    		return new ValidatorStatusCode(false, "The given request message is not valid-- please refer to the help files to see the proper format");
 		    	}
