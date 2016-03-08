@@ -221,7 +221,7 @@ function populateAttributes(jsonData) {
 	$('#workerName').text(jsonData.name.split('.')[0]);
 	$('#queueID').text("id = "+qid);
 
-	if(jsonData.slotsTotal != null) {
+	if(jsonData.cpuTimeout != null) {
 		//We're dealing with a queue
 		$('#activeStatus').hide();
 

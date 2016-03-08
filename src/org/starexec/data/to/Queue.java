@@ -14,8 +14,6 @@ import com.google.gson.annotations.Expose;
 public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameable{
 	@Expose private String name;
 	@Expose private String status;
-	@Expose private int slotsReserved;
-	@Expose private int slotsAvailable;
 	@Expose private boolean global_access;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
