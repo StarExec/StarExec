@@ -183,10 +183,6 @@ CREATE TABLE queues (
 	id INT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(64) NOT NULL,
 	status VARCHAR(32),
-	slots_used INTEGER DEFAULT 0,
-	slots_reserved INTEGER DEFAULT 0,
-	slots_free INTEGER DEFAULT 0,
-	slots_total INTEGER DEFAULT 0,
 	global_access BOOLEAN DEFAULT FALSE,
 	cpuTimeout INT DEFAULT 259200,
 	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
@@ -689,17 +685,6 @@ CREATE TABLE job_stats (
 	PRIMARY KEY (job_space_id,config_id,stage_number),
 	CONSTRAINT job_stats_job_space_id FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
-);
-
--- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
--- solver, benchmark, job, etc
--- Author: Eric Burns
-CREATE TABLE file_cache (
-	id INT NOT NULL,
-	path TEXT NOT NULL,
-	cache_type INT NOT NULL,
-	last_access TIMESTAMP NOT NULL,
-	PRIMARY KEY (id,cache_type)
 );
 
 -- Table that contains some global flags

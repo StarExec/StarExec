@@ -137,9 +137,6 @@ public class Solvers {
 			
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
-			//invalidate the cache of any spaces with this solver
-			//Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
-			//Cache.invalidateAndDeleteCache(c.getSolverId(), CacheType.CACHE_SOLVER);
 			
 			return newConfigId;						
 		} catch (Exception e){			
@@ -167,7 +164,6 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
-			//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
