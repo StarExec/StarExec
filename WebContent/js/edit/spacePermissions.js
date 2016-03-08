@@ -14,7 +14,6 @@ var usingSpaceChain = false;
 
 
 var curIsLeader = false;
-var curIsAdmin = false;
 
 var communityIdList = null;
 var currentSpacePublic=false; // is the space we are currently in public (true) or private (false)
@@ -49,7 +48,6 @@ $(document).ready(function(){
 	console.log("spacePermissions log start");
 
 	currentUserId=parseInt($("#userId").attr("value"));
-	curIsAdmin = isAdmin();
 	lastSelectedUserId = null;
 	$("#exploreSpaces").button( {
 		icons: {
@@ -139,8 +137,6 @@ function getQueryString(){
   }
 
   return query_string;
-
-
 }
 
 /**
@@ -276,9 +272,7 @@ function fillTableWithPaginatedPrimitives(tableName, primitiveType, spaceId, sSo
 				}
 			},  
 			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
-	});
+	);
 }
 
 function getIdOfSelectedSpace() {
@@ -326,7 +320,7 @@ function updateFieldsetCount(tableName, value, primType){
 function initDataTables(){
 	
 	// Extend the DataTables api and add our custom features
-	extendDataTableFunctions();
+	addFilterOnDoneTyping();
 
 	// Setup the DataTable objects
 	userTable = $('#users').dataTable( {
@@ -401,151 +395,9 @@ function initDataTables(){
 	log('all datatables initialized');
 }
 
-/**
- * Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
- */
-function extendDataTableFunctions(){
-
-	// Changes the filter so that it only queries when the user is done typing
-	jQuery.fn.dataTableExt.oApi.fnFilterOnDoneTyping = function (oSettings) {
-		var _that = this;
-		this.each(function (i) {
-			$.fn.dataTableExt.iApiIndex = i;
-			var anControl = $('input', _that.fnSettings().aanFeatures.f);
-			anControl.unbind('keyup').bind('keyup', $.debounce( 400, function (e) {
-				$.fn.dataTableExt.iApiIndex = i;
-				_that.fnFilter(anControl.val());
-			}));
-			return this;
-		});
-		return this;
-	};
-}
-
-
-
-/**
- * Populates the space details panel with the basic information about the space
- * (e.g. the name, description) but does not query for details about primitives 
- */
-function getSpaceDetails(id) {
-	$('#loader').show();
-	$.post(  
-			starexecRoot+"services/space/" + id,  
-			function(data){ 
-				log('AJAX response received for details of space ' + id);
-				populateSpaceDetails(data, id);			
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error getting space details",5000);
-	});
-}
-
-function getPermissionDetails(user_id, space_id) {	
-	$.get(  
-		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
-		function(data){  			
-		    populatePermissionDetails(data, user_id);			
-		},  
-		"json"
-	).error(function(){
-		showMessage('error',"Internal error getting selectd user's permission details",5000);
-	});
-}
-
-
-
-
-/**
- * Populates the space details of the currently selected space and queries
- * for the primitives of any fieldsets that are expanded
- * TODO : basically the same as in space.js
- * @param jsonData the basic information about the currently selected space
- */
-function populateSpaceDetails(jsonData, id) {
-	// If the space is null, the user can see the space but is not a member
-	if(jsonData.space == null) {
-		// Go ahead and show the space's name
-		$('.spaceName').fadeOut('fast', function(){
-			$('.spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
-		});
-
-		// Show a message why they can't see the space's details
-		$('#spaceDesc').fadeOut('fast', function(){
-			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
-		});		
-		$('#spaceID').fadeOut('fast');
-		// Hide all the info table fieldsets
-		$('#detailPanel fieldset').fadeOut('fast');		
-		$('#loader').hide();
-
-		// Stop executing the rest of this function
-		return;
-	} else {
-		// Or else the user can see the space, make sure the info table fieldsets are visible
-		$('#userField').show();
-		$('#permissionActions').show();
-
-	}
-
-	// Update the selected space id
-	spaceId = jsonData.space.id;
-	spaceName = jsonData.space.name;
-	//if not root
-	if(spaceId != "1"){
-	    curIsLeader = jsonData.perm.isLeader
-	}
-
-	// Populate space defaults
-	$('.spaceName').fadeOut('fast', function(){
-		$('.spaceName').text(jsonData.space.name).fadeIn('fast');
-	});
-	$('#spaceLeader').fadeOut('fast', function(){
-		if(curIsLeader && (spaceId != "1")){
-		    $('#spaceLeader').text("leader of current space").fadeIn('fast');
-		}
-	    });
-	$('#spaceDesc').fadeOut('fast', function(){
-		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
-	});	
-	$('#spaceID').fadeOut('fast', function() {
-		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
-	});
-	
-	if (jsonData.perm.isLeader) {
-		handlePublicButton(id);
-
-    } else {
-		$('#makePublic').fadeOut('fast');
-    }
-	
-	
-	/*
-	 * Issue a redraw to all DataTable objects to force them to requery for
-	 * the newly selected space's primitives.  This will effectively clear
-	 * all entries in every table, update every table with the current space's
-	 * primitives, and update the number displayed in every table's fieldset.
-	 */
+function redrawAllTables() {
 	userTable.fnDraw();
 	addUsersTable.fnDraw();
-
-	// Done loading, hide the loader
-	$('#loader').hide();
-
-	log('Client side UI updated with details for ' + spaceName);
-}
-
-function getPermissionDetails(user_id, space_id) {	
-	$.get(  
-		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
-		function(data){  			
-		    populatePermissionDetails(data, user_id);			
-		},  
-		"json"
-	).error(function(){
-		showMessage('error',"Internal error getting selectd user's permission details",5000);
-	});
 }
 
 function isRoot(space_id){
@@ -564,6 +416,7 @@ function canChangePermissions(user_id){
     	return false;
     }
 }
+
 function populatePermissionDetails(data, user_id) {
 	if (data.perm == null) {
 	    showMessage("error","permissions seem to be null",5000);
@@ -579,10 +432,10 @@ function populatePermissionDetails(data, user_id) {
 	    
 	    if(isCommunity(spaceId)){
 
-			if(canChangePermissions(user_id) && (leaderStatus!=true || curIsAdmin)){
+			if(canChangePermissions(user_id) && (leaderStatus!=true || isAdmin())){
 			    $('#permCheckboxes').show();
 	
-			    if(curIsAdmin){
+			    if(isAdmin()){
 			    	$('#leaderStatusRow').show();
 				
 			    }
@@ -646,22 +499,7 @@ function populatePermissionDetails(data, user_id) {
 	
 }
 
-function isRoot(space_id){
-    return space_id == "1";
-}
 
-function isCommunity(space_id){
-    return ($.inArray(space_id.toString(),communityIdList) != -1);
-}
-
-function canChangePermissions(user_id){
-    if(curIsLeader && !isRoot(spaceId) && (user_id != currentUserId)){
-	return true;
-    }
-    else{
-	return false;
-    }
-}
 
 function checkBoxes(name, value) {
 
@@ -784,7 +622,7 @@ function setUpButtons() {
 	    $("#dialog-confirm-update").dialog({
 		    modal: true,
 			width: 380,
-			height: 165,
+			height: 265,
 			buttons: {
 			"yes" : function(){changePermissions(true,false)},
 			    "no" : function(){ changePermissions(false,false)},
@@ -810,12 +648,6 @@ function setUpButtons() {
 	    
 
 	});
-    /**
-    $("#exploreSpaces").unbind("click");
-    $("#exploreSpaces").click(function(e) {
-	
-	});
-    **/
 
     $("#leaderStatus").unbind('click');
     $("#leaderStatus").click(function(e) {
@@ -824,7 +656,7 @@ function setUpButtons() {
 	    $("#dialog-confirm-update").dialog({
 		    modal: true,
 			width: 380,
-			height: 165,
+			height: 265,
 			buttons: {
 			"change only this space": function(){ changePermissions(false,true)},
 				"change this space's hierarchy" : function(){changePermissions(true,true)},
@@ -846,7 +678,7 @@ function setUpButtons() {
 			$('#dialog-confirm-update').dialog({
 				modal: true,
 				width: 380,
-				height: 165,
+				height: 265,
 				buttons: {
 					'space hierarchy': function() {
 						// If the user actually confirms, close the dialog right away
@@ -875,7 +707,7 @@ function setUpButtons() {
 			$('#dialog-confirm-update').dialog({
 				modal: true,
 				width: 380,
-				height: 165,
+				height: 265,
 				buttons: {
 					'ok': function() {
 						$(this).dialog("close");
@@ -891,7 +723,7 @@ function setUpButtons() {
 		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,
-			height: 165,
+			height: 265,
 			buttons: {
 				'space': function(){
 					$.post(
@@ -956,28 +788,33 @@ function doUserCopyPostCB() {
 	userTable.fnDraw();
 }
 
-function handlePublicButton(id) {
-	$('#loader').show();
-	$.post(  
-			starexecRoot+"services/space/isSpacePublic/" + id,  
-			function(returnCode){
-				$("#makePublic").show(); //the button may be hidden if the user is coming from another space
-				switch(returnCode){
-				case 0:
+function checkPermissions(jsonData, id) {
+	if (jsonData.perm.isLeader) {
+		$('#loader').show();
+		$.post(  
+				starexecRoot+"services/space/isSpacePublic/" + id,  
+				function(returnCode){
+					$("#makePublic").show(); //the button may be hidden if the user is coming from another space
+					switch(returnCode){
+					case 0:
 
-					currentSpacePublic=false;
-					setJqueryButtonText("#makePublic","make public");
-					break;
-				case 1:
-					currentSpacePublic=true;
-					setJqueryButtonText("#makePublic","make private");
-					break;
-				}	
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error getting determining whether space is public",5000);
+						currentSpacePublic=false;
+						setJqueryButtonText("#makePublic","make public");
+						break;
+					case 1:
+						currentSpacePublic=true;
+						setJqueryButtonText("#makePublic","make private");
+						break;
+					}	
+				},  
+				"json"
+		).error(function(){
+			showMessage('error',"Internal error getting determining whether space is public",5000);
+			$('#makePublic').fadeOut('fast');
+		});
+    } else {
 		$('#makePublic').fadeOut('fast');
-	});
+		return
+    }
 }
 

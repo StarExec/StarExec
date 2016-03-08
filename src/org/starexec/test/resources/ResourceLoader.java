@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
@@ -38,6 +40,7 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
+import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
@@ -47,6 +50,8 @@ import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 
@@ -93,9 +98,12 @@ public class ResourceLoader {
 		return file;
 	}
 	
+	public static Processor loadBenchProcessorIntoDatabase(int communityId) {
+		return loadProcessorIntoDatabase("benchproc.zip", ProcessorType.BENCH, communityId);
+	}
+	
 	public static Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {
-		return loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, communityId);
-
+		return loadProcessorIntoDatabase("postproc.zip", type, communityId);
 	}
 	
 	/**
@@ -320,7 +328,9 @@ public class ResourceLoader {
 		return loadBenchmarksIntoDatabase("benchmarks.zip", parentSpaceId, userId);
 	}
 	/**
-	 * Loads an archive of benchmarks into the database
+	 * Loads an archive of benchmarks into the database. All benchmarks will be given a single random,
+	 * unique attribute after they have been added. They will also be given randomized names that
+	 * tests can assume are unique.
 	 * @param archiveName The name of the archive containing the benchmarks in the Resource directory
 	 * @param parentSpaceId The ID of the space to place the benchmarks in. Benchmarks will
 	 * not be made into a hierarchy-- they will all be placed into the given space
@@ -338,6 +348,11 @@ public class ResourceLoader {
 			Permission p=new Permission();
 			List<Integer> ids=BenchmarkUploader.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p, 
 					"dump", statusId, false, false, null);
+			for (Integer i : ids) {
+				Benchmarks.updateDetails(i, TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN-2), TestUtil.getRandomAlphaString(50),
+						false, Processors.getNoTypeProcessor().getId());
+				Benchmarks.addBenchAttr(i, TestUtil.getRandomAlphaString(10), TestUtil.getRandomAlphaString(10));
+			}
 			return ids;
 		} catch (Exception e) {
 			log.error("loadBenchmarksIntoDatabase says "+e.getMessage(),e);
@@ -360,8 +375,11 @@ public class ResourceLoader {
 		try {
 			Solver s=new Solver();
 			s.setName(TestUtil.getRandomSolverName());
-			s.setDescription("solver coming from here");
+			s.setDescription("solver coming from test");
 			s.setUserId(userId);
+			SolverBuildStatus status = new SolverBuildStatus();
+			status.setCode(SolverBuildStatus.SolverBuildStatusCode.BUILT.getVal());
+			s.setBuildStatus(status);
 			File archive=getResource(archiveName);
 			File archiveCopy=new File(archive.getParent(),TestUtil.getRandomAlphaString(20)+".zip");
 			FileUtils.copyFile(archive, archiveCopy);
@@ -396,13 +414,14 @@ public class ResourceLoader {
 		space.setName(name);
 		space.setDescription("test desc");
 		space.setParentSpace(parentSpaceId);
+		space.setPublic(false);
 		int id=Spaces.add(space, userId);
 		if (id>0) {
 			space.setId(id);
 			return space;
-		} else {
-			return null;
 		}
+		return null;
+		
 	}
 	
 	/**
@@ -418,7 +437,8 @@ public class ResourceLoader {
 	
 	/**
 	 * Creates a new SolverPipeline for the given user, where a stage is created for each given
-	 * configuration. The pipeline will have no dependencies, and it will have a random name
+	 * configuration. The stages will always depend on previous stages and also on another fake input,
+	 * and it will have a random name
 	 * @param userId The ID of the user who will own the new pipeline
 	 * @param configs The ordered list of configurations to make into a pipeline
 	 * @return The SolverPipeline object
@@ -431,15 +451,24 @@ public class ResourceLoader {
 		for (Configuration c : configs) {
 			PipelineStage stage=new PipelineStage();
 			stage.setConfigId(c.getId());
+			PipelineDependency dep = new PipelineDependency();
+			dep.setType(PipelineInputType.ARTIFACT);
+			dep.setInputNumber(1);
+			dep.setDependencyId(1);
+			
+			stage.addDependency(dep);
+			dep = new PipelineDependency();
+			dep.setType(PipelineInputType.BENCHMARK);
+			dep.setInputNumber(1);
+			dep.setDependencyId(2);
 			pipe.addStage(stage);
 		}
 		int returnValue= Pipelines.addPipelineToDatabase(pipe);
 		if (returnValue>0) {
 	 		return pipe;
-
-		} else {
-			return null;
 		}
+		return null;
+		
 	}
 	
 	/**
@@ -510,7 +539,7 @@ public class ResourceLoader {
 			
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();
-			Cluster.loadQueues();
+			Cluster.loadQueueDetails();
 			int queueId=Queues.getIdByName(queueName);
 			if (queueId<=0) {
 				log.error("loadQueueIntoDatabase failed to create a queue!");

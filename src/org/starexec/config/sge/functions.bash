@@ -81,12 +81,12 @@ DB_USER=star_report
 DB_PASS=5t4rr3p0rt2012
 
 #lock files that indicate a particular sandbox is in use
-SANDBOX_LOCK_DIR='/export/starexec/sandboxlock.lock'
-SANDBOX2_LOCK_DIR='/export/starexec/sandbox2lock.lock'
+SANDBOX_LOCK_DIR=$WORKING_DIR_BASE'/sandboxlock.lock'
+SANDBOX2_LOCK_DIR=$WORKING_DIR_BASE'/sandbox2lock.lock'
 
 #files that indicate that lock files are currently being modified
-SANDBOX_LOCK_USED='/export/starexec/sandboxlock.active'
-SANDBOX2_LOCK_USED='/export/starexec/sandbox2lock.active'
+SANDBOX_LOCK_USED=$WORKING_DIR_BASE'/sandboxlock.active'
+SANDBOX2_LOCK_USED=$WORKING_DIR_BASE'/sandbox2lock.active'
 
 # Path to local workspace for each node in cluster.
 
@@ -114,9 +114,9 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 function initWorkspaceVariables {
 	if [ $SANDBOX -eq 1 ]
 	then
-	WORKING_DIR='/export/starexec/sandbox'
+	WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 	else
-	WORKING_DIR='/export/starexec/sandbox2'
+	WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
 	fi
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"

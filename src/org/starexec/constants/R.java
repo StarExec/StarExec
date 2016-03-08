@@ -149,11 +149,11 @@ public class R {
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
     public static String STAREXEC_DATA_DIR = null;   						// the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
-    public static String DOWNLOAD_FILE_DIR = null;							// Where to temporarily store processed files for downloading
-    public static String CACHED_FILE_DIR = null;							// Where to temporarily store cached files for downloading
-    public static String SPACE_XML_SCHEMA_RELATIVE_LOC = null;						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
+    public static String DOWNLOAD_FILE_DIR = "/secure/files";				// Where to temporarily store processed files for downloading. Relative to webapp root
+    public static String SPACE_XML_SCHEMA_RELATIVE_LOC = "public/batchSpaceSchema.xsd";						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
+    public static String JOB_XML_SCHEMA_RELATIVE_LOC = "public/batchJobSchema.xsd";
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
-	public static String JOBGRAPH_FILE_DIR = null;
+	public static String JOBGRAPH_FILE_DIR = "/secure/jobgraphs";			// Location to store job graph image files. Relative to webapp root.
 	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
     
 	//Admin user info
@@ -174,8 +174,8 @@ public class R {
     public static String PUBLIC_USER_EMAIL = "public";
     public static String PUBLIC_USER_PASSWORD ="public";
     // Job Manager (JM) constants
-    public static String JOBFILE_FORMAT = null;								// The filename format (with standard java string formatting) for generated jobscript files
-    public static String DEPENDFILE_FORMAT = null;							// The filename format for dependencies
+    public static String JOBFILE_FORMAT = "job_%d.bash";					// The filename format (with standard java string formatting) for generated jobscript files
+    public static String DEPENDFILE_FORMAT = "depend_%d.txt";				// The filename format for dependencies
     public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
 	
     // Misc application properties
@@ -221,6 +221,7 @@ public class R {
 	
     // BACKEND configurations
     public static String BACKEND_ROOT = null; // root directory for the backend executable
+    public static String BACKEND_WORKING_DIR = null;
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
     public static long DEFAULT_PAIR_VMEM = 17179869184L;  					// The default limit on memory (in bytes) for job pairs
     //public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period

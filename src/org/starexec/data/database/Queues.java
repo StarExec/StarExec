@@ -77,7 +77,7 @@ public class Queues {
 	    R.BACKEND.deleteQueue(q.getName());
 			
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueues();	
+	    Cluster.loadQueueDetails();	
 	    return success;
 	}
 
@@ -767,20 +767,19 @@ public class Queues {
 	
 	
 	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
+	 * Counts the number of job pairs running on the given node
 	 * @param con The connection to make the query on 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
+	 * @param nodeId The id of the node to get pairs for
+	 * @return The number of job pairs using the node with StatusCode.STATUS_RUNNING
 	 * @author Wyatt Kaiser
 	 * @throws Exception 
 	 */
-	protected static int getCountOfRunningPairsDetailed(Connection con, int qId) throws Exception {	
+	protected static int getCountOfRunningPairsOnNode(Connection con, int nodeId) throws Exception {	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			procedure = con.prepareCall("{CALL GetCountOfRunningJobPairsByQueue(?)}");
-			procedure.setInt(1, qId);					
+			procedure = con.prepareCall("{CALL GetCountOfRunningJobPairsByNode(?)}");
+			procedure.setInt(1, nodeId);					
 			results = procedure.executeQuery();
 
 			if(results.next()){
@@ -789,7 +788,7 @@ public class Queues {
 
 			return -1;
 		} catch (Exception e) {
-			log.error("getRunningPairsDetailed says "+e.getMessage(),e);
+			log.error("getCountOfRunningPairsOnNode says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -799,20 +798,19 @@ public class Queues {
 	
 	
 	/**
-	 * Gets all job pairs that are running (up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param qId The id of the queue to get pairs for
+	 * Counts the number of job pairs running on the given node.
+	 * @param nodeId The id of the node to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	public static int getCountOfRunningPairsDetailed(int qId) {
+	public static int getCountOfRunningPairsOnNode(int nodeId) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getCountOfRunningPairsDetailed(con, qId);
+			return getCountOfRunningPairsOnNode(con, nodeId);
 		} catch (Exception e){			
-			log.error("getRunningPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
+			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
 		}

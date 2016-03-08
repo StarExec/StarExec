@@ -6,6 +6,7 @@ import java.util.HashMap;
  * @author Eric
  *
  */
+@SuppressWarnings("javadoc")
 public class C {
 	
 	public static String VERSION="February 06, 2016";
@@ -13,12 +14,13 @@ public class C {
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
 			"packaged with.";
-	
-	
-	public static String URL_STAREXEC_BASE = "https://www.starexec.org/starexec/";
-	
 	public static String TYPE_SESSIONID="JSESSIONID=";
-	
+
+	/**
+	 * All of the following URLs are relative to the web app root path.
+	 * They point to the various servlets and RESTServices on Starexec
+	 */
+	public static String URL_STAREXEC_BASE = "https://www.starexec.org/starexec/";
 	public static String URL_HOME= "secure/index.jsp";
 	public static String URL_LOGIN= "secure/j_security_check";
 	public static String URL_DOWNLOAD = "secure/download";
@@ -34,15 +36,12 @@ public class C {
 	public static String URL_EDITSPACEVISIBILITY="services/space/changePublic";
 	public static String URL_UPLOADCONFIG="secure/upload/configurations";
 	public static String URL_POSTJOB="secure/add/job";
-        public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
+    public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_GETPRIMJSON="services/details/{type}/{id}/";
-
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
-	
 	public static String URL_GET_BENCH_UPLOAD_STATUS="services/benchmarks/uploadDescription/{statusId}";
 	public static String URL_GETID="services/users/getid";
-	
 	public static String URL_COPYBENCH="services/spaces/{spaceID}/add/benchmark";
 	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
 	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
@@ -50,10 +49,10 @@ public class C {
 	public static String URL_COPYUSER="services/spaces/{spaceID}/add/user";
 	public static String URL_REMOVEPRIMITIVE="services/remove";
 	public static String URL_PAUSEORRESUME="services/{method}/job/{id}";
-	
 	public static String URL_RERUNPAIR="services/jobs/pairs/rerun/{id}";
-	
 	public static String URL_RERUNJOB="services/jobs/rerunallpairs/{id}";
+	
+	
 	//Success codes for command parsing
 	public static int SUCCESS_EXIT=1;
 	public static int SUCCESS_NOFILE=2;

@@ -8,10 +8,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddBenchmark;
-CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, OUT _benchId INT)
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _description TEXT, OUT _benchId INT)
 	BEGIN	
-		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
-		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
+		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size, description)
+		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize, _description);
 		
 		SELECT LAST_INSERT_ID() INTO _benchId;		
 	END //	

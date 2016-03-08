@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTHelpers;
@@ -34,6 +35,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 
 import org.starexec.data.security.BenchmarkSecurity;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.SolverSecurity;
 
@@ -166,6 +168,10 @@ public class JspHelpers {
 				request.setAttribute( "primitivesToAnonymize", primitivesToAnonymizeName );
 				request.setAttribute( "isAnonymousPage", isAnonymousPage );
 				request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
+				if (isAnonymousPage) {
+					// For anonymous pages reset the userId for the permissions actually used on the page.
+					userId = SessionUtil.getUserId( request );
+				}
 				request.setAttribute("isAdmin",Users.isAdmin(userId));
 				request.setAttribute("usr",u);
 				request.setAttribute("job", j);
@@ -178,6 +184,8 @@ public class JspHelpers {
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
 				request.setAttribute("postProcs", ListOfPostProcessors);
+				request.setAttribute("pageTitle", isAnonymousPage ? "Anonymous Job" : j.getName() );
+				request.setAttribute("initialSpaceName", isAnonymousPage ? "" : jobSpace.getName() );
 				Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
 				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
 				request.setAttribute("firstPostProc",stage1PostProc);
@@ -194,7 +202,6 @@ public class JspHelpers {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 			}
 			
-			
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -207,10 +214,9 @@ public class JspHelpers {
 	/**
 	 *
 	 * @author Albert Giegerich
-	 */
 	public static void handleNonAnonymousJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException {
 
-		final String methodName = "handleAnonymousJobPage";
+		final String methodName = "handleNonAnonymousJobPage";
 		logUtil.entry( methodName );
 
 		int userId = SessionUtil.getUserId(request);
@@ -240,7 +246,9 @@ public class JspHelpers {
 			throw e;
 		}
 	}
+	*/
 
+	/*
 	public static void setJobPageRequestAttributes(
 			final boolean isAnonymousPage, 
 			final boolean hideJobName,
@@ -335,6 +343,7 @@ public class JspHelpers {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 		}
 	}
+	*/
 
 	/**
 	 * Handles request/response logic for details/solver.jsp for an anonymous page.
@@ -484,6 +493,30 @@ public class JspHelpers {
 	public static void handleNonAnonymousBenchPage( HttpServletRequest request, HttpServletResponse response ) throws IOException {
 		int benchId = Integer.parseInt(request.getParameter("id"));
 		setBenchmarkPageRequestAttributes( false, false, benchId, request, response );
+	}
+
+	public static void handleAnonymousJobKeyPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
+		int userId = SessionUtil.getUserId( request );
+
+		String jobUuid = request.getParameter( "anonId" );
+		Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( jobUuid );
+
+		if ( !potentialJobId.isPresent() ) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "No job with given ID.");
+			return;
+		}
+
+		int jobId = potentialJobId.get();
+
+		if ( !JobSecurity.userOwnsJobOrIsAdmin( jobId, userId ) ) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not permitted to see this job's anonymous solver name key page.");
+			return;
+		}
+
+		Job job = Jobs.get(jobId);
+		List<Triple<String, String, Integer>> anonymousSolverNamesKey = AnonymousLinks.getAnonymousSolverNamesKey( jobId ); 
+		request.setAttribute( "job", job );
+		request.setAttribute( "solverTripleList", anonymousSolverNamesKey );
 	}
 
 	/**

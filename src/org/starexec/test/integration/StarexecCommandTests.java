@@ -33,9 +33,6 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
-
-/*TODO: Download[new job info, new job output]
-*/
 public class StarexecCommandTests extends TestSequence {
 	private static final Logger log = Logger.getLogger(StarexecCommandTests.class);	
 	private Connection con;
@@ -548,8 +545,7 @@ public class StarexecCommandTests extends TestSequence {
 	}
 	
 	
-	//TODO: This test fails likely because the output directory of test jobs is not being created
-	//@StarexecTest
+	@StarexecTest
 	private void downloadJobOutput() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(ResourceLoader.getDownloadDirectory(),fileName);

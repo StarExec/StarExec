@@ -7,31 +7,26 @@
 			<property key="MYSQL_DATABASE" value="prod_starexec" />
 			<property key="MYSQL_USERNAME" value="prod_star_app" />
 			<property key="MYSQL_PASSWORD" value="g4qC867ByQ3736i7" />
-			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/prod_starexec" />
 			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
-			<property key="SPACE_XML_SCHEMA_RELATIVE_LOC" value="public/batchSpaceSchema.xsd" /> 
 			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />	
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
 			<property key="SOLVER_BIN_DIR" value="/bin" />
 			<property key="SOLVER_BUILD_OUTPUT" value="starexec_build_log"/>;
-			<property key="DOWNLOAD_FILE_DIR" value="/secure/files" />	
-			<property key="CACHED_FILE_DIR" value="/secure/cache"/>
-			<property key="JOBGRAPH_FILE_DIR" value="/secure/jobgraphs"/>
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
-			<property key="JOBFILE_FORMAT" value="job_%d.bash" />
-			<property key="DEPENDFILE_FORMAT" value="depend_%d.txt" />
 			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="5368709120" />	
 			<property key="DEBUG_MODE_ACTIVE" value="false" />							
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             
-            <!-- SGE Configuration -->
+            <!-- backend Configuration -->
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
-			<property key="JOB_SUBMISSION_PERIOD" value="20" />
+			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
+			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->
 			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
 
 		</class>
@@ -70,7 +65,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_astump" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_astump"/>
@@ -81,7 +76,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_tinelli" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tinelli?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tinelli" />
 		<property key="SANDBOX_DIRECTORY" value="/home/tinelli/starexec_tinelli_data/sandbox"/>
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
@@ -93,7 +88,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_eaburns" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_eaburns?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_eaburns" />
 		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_eaburns"/>
@@ -104,7 +99,7 @@
                 <class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->
                 <property key="MYSQL_DATABASE" value="starexec_alubinus" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_alubinus?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />^M
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_alubinus" />
                 <property key="PUBLIC_USER_ID" value="3" />
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_alubinus"/>
@@ -115,7 +110,7 @@
 		<class name="org.starexec.constants.R">
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_agiegerich" />
-                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_agiegerich?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" />
+                <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_agiegerich" />
 				<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_agiegerich"/>
@@ -140,7 +135,7 @@
   		<property key="MYSQL_DATABASE" value="starexec" /> 
 		<property key="MYSQL_USERNAME" value="tomcat" /> 
 		<property key="MYSQL_PASSWORD" value="tomcat" /> 
-		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" /> 
+		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 
@@ -162,13 +157,12 @@
   		<property key="MYSQL_DATABASE" value="starexec" /> 
 		<property key="MYSQL_USERNAME" value="root" /> 
 		<property key="MYSQL_PASSWORD" value="ceufpxj1" /> 
-		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;rewriteBatchedStatements=true" /> 
+		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Path Configuration   --> 
 	  <property key="CONFIG_PATH" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\src\\org\\starexec\\config" /> 
 	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
-	  <property key="DOWNLOAD_FILE_DIR" value="\\secure\\files\\" />	  
  <!--   Misc. Configuration     --> 
 	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="eric-burns@uiowa.edu" />    

@@ -25,6 +25,8 @@ public class Common {
 	private static Integer connectionsOpened = 0;
 	private static Integer connectionsClosed = 0;
 	
+	//args to append to the mysql URL.
+	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
 	
 	/**
 	 * Creates a new historical record in the logins table which keeps track of all user logins.
@@ -164,7 +166,7 @@ public class Common {
 			log.info(R.MYSQL_DRIVER);
 			log.info(R.MYSQL_USERNAME);
 
-			poolProp.setUrl(R.MYSQL_URL);								// URL to the database we want to use
+			poolProp.setUrl(R.MYSQL_URL+MYSQL_URL_ARGUMENTS);			// URL to the database we want to use
 			poolProp.setDriverClassName(R.MYSQL_DRIVER);				// We're using the JDBC driver
 			poolProp.setUsername(R.MYSQL_USERNAME);						// Database username
 			poolProp.setPassword(R.MYSQL_PASSWORD);						// Database password for the given username

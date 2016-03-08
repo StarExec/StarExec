@@ -301,18 +301,31 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 -- Gets all the job pairs in a job space. No stages are retrieved
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpace;
-CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
+CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
 	BEGIN
 			SELECT job_pairs.status_code,
 			job_pairs.id, job_pairs.bench_id, job_pairs.bench_name,
 			completion_id, jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
 			jobpair_stage_data.config_id,jobpair_stage_data.config_name,jobpair_stage_data.cpu,jobpair_stage_data.stage_id,
 			jobpair_stage_data.wallclock, primary_jobpair_data, job_pairs.path,
+			anonymous_solver_names.anonymous_name AS anon_solver_name,
+			anonymous_config_names.anonymous_name AS anon_config_name,
+			anonymous_bench_names.anonymous_name AS anon_bench_name,
 			job_attributes.attr_value AS result
 			FROM job_pairs 		
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 			LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
+			/* SPAGETT */
+			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names ON 
+						anonymous_solver_names.primitive_id=jobpair_stage_data.solver_id AND anonymous_solver_names.primitive_type="solver"
+						AND anonymous_solver_names.job_id = _jobId
+			LEFT JOIN anonymous_primitive_names AS anonymous_config_names ON
+						anonymous_config_names.primitive_id=jobpair_stage_data.config_id AND anonymous_config_names.primitive_type="config"
+						AND anonymous_config_names.job_id = _jobId 
+			LEFT JOIN anonymous_primitive_names AS anonymous_bench_names ON
+						anonymous_bench_names.primitive_id=job_pairs.bench_id AND anonymous_bench_names.primitive_type="bench"
+						AND anonymous_bench_names.job_id = _jobId
 			WHERE jobpair_stage_data.job_space_id=_jobSpaceId AND 
 			(jobpair_stage_data.stage_number=_stageNumber OR (_stageNumber = 0 AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number));
 		
@@ -321,7 +334,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 -- Gets all the job pairs in a job space hierarchy. No stages are retrieved
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _jobId INT, IN _since INT)
+CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT 
 		status_code,
@@ -333,9 +346,10 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _jobId IN
 		completion_id,
 		primary_jobpair_data 
 			FROM job_pairs 		
+			JOIN job_spaces ON job_spaces.id = job_pairs.job_space_id
 			LEFT JOIN anonymous_primitive_names ON 
 				anonymous_primitive_names.primitive_id=job_pairs.bench_id AND anonymous_primitive_names.primitive_type="bench"
-						AND anonymous_primitive_names.job_id=_jobId
+						AND anonymous_primitive_names.job_id=job_spaces.job_id
 			JOIN job_space_closure ON descendant=job_space_id
 			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 			WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_since);
@@ -359,7 +373,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 -- Gets all the stages of job pairs in a particular job space
 -- TODO: This notion of expected result is not correct for any stage except the primary stage
 DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
-CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _jobId INT, IN _since INT)
+CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT 
 		job_pairs.id AS pair_id,
@@ -378,14 +392,15 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _job
 		anonymous_solver_names.anonymous_name AS anon_solver_name,
 		anonymous_config_names.anonymous_name AS anon_config_name
 			FROM job_pairs 		
+			JOIN job_spaces ON job_spaces.id=job_pairs.job_space_id
 			JOIN job_space_closure ON descendant=job_space_id
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
 			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names ON 
 						anonymous_solver_names.primitive_id=jobpair_stage_data.solver_id AND anonymous_solver_names.primitive_type="solver"
-						AND anonymous_solver_names.job_id = _jobId
+						AND anonymous_solver_names.job_id = job_spaces.job_id
 			LEFT JOIN anonymous_primitive_names AS anonymous_config_names ON
 						anonymous_config_names.primitive_id=jobpair_stage_data.config_id AND anonymous_config_names.primitive_type="config"
-						AND anonymous_config_names.job_id = _jobId
+						AND anonymous_config_names.job_id = job_spaces.job_id
 			LEFT JOIN job_attributes on (job_attributes.pair_id=job_pairs.id AND job_attributes.stage_number=jobpair_stage_data.stage_number and job_attributes.attr_key="starexec-result")
 			LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 

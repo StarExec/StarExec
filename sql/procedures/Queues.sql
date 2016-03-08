@@ -74,13 +74,13 @@ CREATE PROCEDURE GetCountOfEnqueuedJobPairsByQueue(IN _id INT)
 	
 -- Retrieves basic info about running job pairs for the given node id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetCountOfRunningJobPairsByQueue;
-CREATE PROCEDURE GetCountOfRunningJobPairsByQueue(IN _id INT)
+DROP PROCEDURE IF EXISTS GetCountOfRunningJobPairsByNode;
+CREATE PROCEDURE GetCountOfRunningJobPairsByNode(IN _id INT)
 	BEGIN
 		SELECT count(*) AS count
 		FROM job_pairs
-		WHERE node_id = _id AND (status_code = 4 OR status_code = 3);
-		END //	
+		WHERE node_id = _id AND status_code = 4;
+	END //	
 
 -- Get the name of a queue given its id
 -- Author: Wyatt Kaiser

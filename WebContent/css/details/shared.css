@@ -23,11 +23,6 @@ fieldset {
 	text-decoration: underline;
 }
 
-#anonymousLink {
-	display: none;
-}
-
-
 .popoutLink {
 	float: right;
 	margin-top: 7px;

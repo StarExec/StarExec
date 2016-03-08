@@ -130,31 +130,31 @@ public class Util {
 			
 	    // If we found the correct std out file...
 	    if(f.exists()) {
-		// Create a buffer to store the lines in and an iterator to iterate over the lines
-		StringBuilder sb = new StringBuilder();
-		lineItr = FileUtils.lineIterator(f);
-		int i = 0;
-				
-		// While there are more lines in the file...
-		while (lineItr.hasNext()) {
-		    // If we've reached the line limit, break out, we're done.
-		    if(i++ == lineLimit) {
-			break;
-		    }
+			// Create a buffer to store the lines in and an iterator to iterate over the lines
+			StringBuilder sb = new StringBuilder();
+			lineItr = FileUtils.lineIterator(f);
+			int i = 0;
 					
-		    // If we're still under the limit, add the line to the buffer
-		    sb.append(lineItr.nextLine());
-					
-		    // Don't forget to add a new line, since they are stripped as they are read
-		    sb.append("\n");
-		}
-				
-		// Return the buffer
-		return sb.toString();
-	    } else {
+			// While there are more lines in the file...
+			while (lineItr.hasNext()) {
+			    // If we've reached the line limit, break out, we're done.
+			    if(i++ == lineLimit) {
+				break;
+			    }
+						
+			    // If we're still under the limit, add the line to the buffer
+			    sb.append(lineItr.nextLine());
+						
+			    // Don't forget to add a new line, since they are stripped as they are read
+			    sb.append("\n");
+			}
+						
+			// Return the buffer
+			return sb.toString();
+	    } 
 		// If the file doesn't exist...
 		log.warn("Could not find file to open: " + f.getAbsolutePath());
-	    }
+	    
 	} catch (Exception e) {
 	    log.warn(e.getMessage(), e);
 	} finally {
@@ -248,8 +248,6 @@ public class Util {
 		
 	File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
 	downloadDir.mkdirs();
-	File cacheDir=new File(R.STAREXEC_ROOT,R.CACHED_FILE_DIR);
-	cacheDir.mkdirs();
 	File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
 	graphDir.mkdirs();
     }
@@ -404,44 +402,55 @@ public class Util {
     	}
     	return executeCommand(newCommand,envp,workingDirectory);
     }
-	
+    
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
-     * and returns the results from the command as a buffered reader which can be processed.
-     * MAKE SURE TO CLOSE THE READER WHEN DONE. Null is returned if the command failed.
+     * and returns the process representing the command
      * @param command An array holding the command and then its arguments
      * @param envp The environment
      * @param workingDirectory the working directory to use
-     * @return A buffered reader holding the output from the command.
+     * @return A String containing both stderr and stdout from the command
+     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
+     */
+    //TODO: Why isn't the working directory being set if the command has length 1? That seems wrong.
+    public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
+    	Runtime r = Runtime.getRuntime();
+	    Process p;
+	    if (command.length == 1) {
+			log.debug("Executing the following command: " + command[0]);
+				
+			p = r.exec(command[0], envp);
+	    }
+	    else {
+			StringBuilder b = new StringBuilder();
+			b.append("Executing the following command:\n");
+			for (int i = 0; i < command.length; i++) {
+			    b.append("  ");
+			    b.append(command[i]);
+			}
+	
+			log.info(b.toString());
+			
+			p = r.exec(command, envp, workingDirectory);
+	    }
+	    return p;
+	
+    }
+	
+    /**
+     * Runs a command on the system command line (bash for unix, command line for windows)
+     * and returns the results from the command as a string
+     * @param command An array holding the command and then its arguments
+     * @param envp The environment
+     * @param workingDirectory the working directory to use
+     * @return A String containing both stderr and stdout from the command
      * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
      * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
 	
     public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
-    	Runtime r = Runtime.getRuntime();
-					
-	    Process p;
-	    if (command.length == 1) {
-		log.debug("Executing the following command: " + command[0]);
-			
-		p = r.exec(command[0], envp);
-	    }
-	    else {
-		StringBuilder b = new StringBuilder();
-		b.append("Executing the following command:\n");
-		for (int i = 0; i < command.length; i++) {
-		    b.append("  ");
-		    b.append(command[i]);
-		}
-
-		log.info(b.toString());
-			    
-		p = r.exec(command, envp, workingDirectory);
-	    }
-
-	    return drainStreams(p);
-
-	
+	    return drainStreams(executeCommandAndReturnProcess(command,envp,workingDirectory));
     }
 	
 
@@ -479,7 +488,7 @@ public class Util {
     }
 
 
-    protected static String drainStreams(final Process p) {
+    public static String drainStreams(final Process p) {
 		    
 		/* to handle the separate streams of regular output and
 		   error output correctly, it is necessary to try draining

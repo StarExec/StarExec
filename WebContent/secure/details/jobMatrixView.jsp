@@ -15,10 +15,10 @@ import="java.util.ArrayList,
 <%		
 	try {
 		int userId = SessionUtil.getUserId(request);
-		int jobId = Integer.parseInt(request.getParameter("id"));
 		int stageNumber = Integer.parseInt(request.getParameter("stage"));
 		int jobSpaceId = Integer.parseInt(request.getParameter("jobSpaceId"));
-		Job job = MatrixViewUtil.getJobIfAvailableToUser(jobId, userId, response);
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		Job job = MatrixViewUtil.getJobIfAvailableToUser(space.getJobId(), userId, response);
 
 		Matrix matrix = Matrix.getMatrixForJobSpaceFromJobAndStageNumber(job, jobSpaceId, stageNumber);
 

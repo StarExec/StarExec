@@ -14,8 +14,7 @@ $(document).ready(function(){
 
 	$('#anonymousLink').button({
 		icons: {
-			// TODO change to something more appropriate
-			secondary: "ui-icon-arrowthick-1-s"
+			secondary: "ui-icon-link"
 		}
 	});
 	

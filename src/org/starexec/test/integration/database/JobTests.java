@@ -19,6 +19,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.jobs.JobManager;
@@ -257,16 +258,15 @@ public class JobTests extends TestSequence {
 		Assert.assertTrue(count>=0);		
 	}
 	
-	//TODO: This only checks for SQL errors right now
 	@StarexecTest
 	private void getPairsByStatusTest() {
-		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), 7);
-		Assert.assertNotNull(pairs);
+		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), StatusCode.STATUS_COMPLETE.getVal());
+		Assert.assertEquals(job.getJobPairs().size(), pairs.size());
 	}
 	
 	@StarexecTest
 	private void getTimelessPairsByStatusTest() {
-		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), 7);
+		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertNotNull(pairs);
 	}
 	

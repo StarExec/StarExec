@@ -458,6 +458,7 @@ public class Solvers {
 		newSolver.setDiskSize(s.getDiskSize());
 		newSolver.setDownloadable(s.isDownloadable());
 		newSolver.setType(s.getType());
+		newSolver.setBuildStatus(s.buildStatus());
 		File solverDirectory=new File(s.getPath());
 		
 		File uniqueDir = new File(R.getSolverPath(), "" + userId);
@@ -631,14 +632,14 @@ public class Solvers {
 		setHierarchyExecutable(binDir);//should make entire hierarchy executable
 		return returnList;
 	}
-	
+
 	/**
 	 * @param con The connection to make the query on
 	 * @param solverId The id of the solver to retrieve
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	protected static Solver get(Connection con, int solverId, boolean includeDeleted) throws Exception {	
+	public static Solver get(Connection con, int solverId, boolean includeDeleted) throws SQLException {	
 		CallableStatement procedure=null;
 		
 		ResultSet results= null;
@@ -676,7 +677,7 @@ public class Solvers {
 	public static Solver get(int solverId) {
 		return get(solverId,false);
 	}
-	
+
 	/**
 	 * @param solverId The id of the solver to retrieve
 	 * @param includeDeleted True to include solvers with a true 'deleted' flag in the DB
@@ -2180,7 +2181,7 @@ public class Solvers {
 		}
 		searchQuery=searchQuery.toLowerCase();
 		List<Solver> filteredSolvers=new ArrayList<Solver>();
-		for (Solver s : filteredSolvers) {
+		for (Solver s : solvers) {
 			try {
 				if (s.getName().toLowerCase().contains(searchQuery) || s.getDescription().toLowerCase().contains(searchQuery)) {
 					filteredSolvers.add(s);

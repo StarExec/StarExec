@@ -1,0 +1,49 @@
+These are one-time steps needed to get OAR up and running on Starexec. This
+is not a description of how to install OAR, but rather a set of
+Starexec-specific steps to take after OAR has already been installed to
+configure it successfully.
+
+1) Create the queue column for resources. OAR does have a notion of associating
+resources (nodes) with queues by default, but it does support custom attributes.
+This adds a column for 'queue' to the resources table, allowing us to
+enforce our 1-1 relationship between nodes and queues.
+
+oarproperty -a queue -c
+
+2) Create all.q, which is expected to exist by the system. 
+OAR may come with a few default queues of its own: these
+should be deleted from the database. All Starexec queues should use the same
+priority (1 is reasonable) and the same scheduling algorithm.
+It is probably easiest to do this directly in the OAR database.
+
+delete from queues; -- delete all existing OAR queues
+
+-- insert a new queue. Other queues may created like this or through the web interface
+insert into queues values ('all.q', 1,'oar_sched_gantt_with_timesharing', 'Active');
+
+3) Add resources
+
+Compute nodes need to be installed as described in the OAR documentation.
+After nodes have been installed, they need to be inserted into the database
+correctly. In OAR, each individual node may actually be inserted into the
+resources table more than once: it should be there one time for every unique
+resource the node provides. In our simple case, we want each node to be listed
+twice, which allows us to use dual sandboxing.
+
+The cpuset column should be used to indicate that each node can handle two jobs.
+Each node should have two identical entries, one with a cpuset number of 0 and
+another with a cpuset number of 1. For example, the correct installation of 
+n001 on Stardev is shown below
+
+
+ resource_id |  type   |      network_address      | state | next_state | finaud_decision | next_finaud_decision | state_num | suspended_jobs | scheduler_priority | cpuset | besteffort | deploy | expiry_date | desktop_computing | last_job_date | available_upto | last_available_upto | drain | queue 
+-------------+---------+---------------------------+-------+------------+-----------------+----------------------+-----------+----------------+--------------------+--------+------------+--------+-------------+-------------------+---------------+----------------+---------------------+-------+-------
+           5 | default | n001.stardev.cs.uiowa.edu | Alive | UnChanged  | NO              | NO                   |         1 | NO             |                  0 | 1      | YES        | NO     |           0 | NO                |    1455639368 |     2147483647 |                   0 | NO    | all.q
+           1 | default | n001.stardev.cs.uiowa.edu | Alive | UnChanged  | NO              | NO                   |         1 | NO             |                  0 | 0      | YES        | NO     |           0 | NO                |    1455639368 |     2147483647 |                   0 | NO    | all.q
+
+
+4) Disable OAR admission rules. Basically, OAR does a lot of validation and
+and chooses a bunch of defaults that we do not need for our purposes. Again
+in the OAR database, simply execute
+
+update admission_rules SET enabled = 'NO';

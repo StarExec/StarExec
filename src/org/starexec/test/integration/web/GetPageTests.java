@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
@@ -16,7 +15,9 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
@@ -25,17 +26,23 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
-
-//TODO: details/ JobMatrixView, solverComparison, solverconfigs, uploadStatus, xmluploadstatus
-// edit/ processBench + everything after processor needs to be looked at.
+/**
+ * This file is used to test whether there are any internal errors caused by loading any JSP
+ * page on the site. The tests in this file use StarexecCommand to directly request
+ * URLs from the current Starexec instance: returning true if the page returned successfully
+ * and false if an HTTP error was sent back
+ *
+ */
 public class GetPageTests extends TestSequence {
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
+	private Connection nonUserCon; // connection for someone who is not logged in
 	private Space space1=null; //will contain both solvers and benchmarks and is owned by user
 	Space newCommunity = null; //community populated only by the admin
 	private Job job=null;
@@ -43,6 +50,7 @@ public class GetPageTests extends TestSequence {
 	File downloadDir=null;
 
 	Solver solver=null;
+	Solver solver2 = null;
 	List<Integer> benchmarkIds=null;
 	Configuration config=null;
 	Processor proc=null;
@@ -52,7 +60,8 @@ public class GetPageTests extends TestSequence {
 	User admin=null;
 	Space testCommunity=null;	
 	Queue q=null;
-	
+	BenchmarkUploadStatus benchUpload = null;
+	SpaceXMLUploadStatus spaceUpload = null;
 	@StarexecTest
 	private void getSpaceExplorerTest(){
 		Assert.assertTrue(con.canGetPage("secure/explore/spaces.jsp"));
@@ -160,24 +169,46 @@ public class GetPageTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getSpacePermissionsEditTest() {
+		Assert.assertTrue(con.canGetPage("secure/edit/spacePermissions.jsp?id="+space1.getId()));
+	}
+	
+	@StarexecTest
 	private void getJobDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/job.jsp?id="+job.getId()));
 	}
 	
 	@StarexecTest
 	private void getJobPanelViewTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&jobid="+job.getId()+"&stage=1"));
+		Assert.assertTrue(con.canGetPage("secure/details/jobPanelView.jsp?spaceid="+job.getPrimarySpace()+"&stage=1"));
+	}
+	
+	@StarexecTest
+	private void getMatrixViewTest() {
+		Assert.assertTrue(con.canGetPage("secure/details/jobMatrixView.jsp?stage=1&jobSpaceId="+job.getPrimarySpace()));
 	}
 	
 	@StarexecTest
 	private void getPairsInSpaceTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/pairsInSpace.jsp?type=solved&configid="+job.getJobPairs().get(0).getPrimaryStage().getConfiguration().getId()
-				+"&sid="+job.getPrimarySpace()+"&id="+job.getId()));
+				+"&sid="+job.getPrimarySpace()));
+	}
+	
+	@StarexecTest
+	private void getSolverComparisonTest() {
+		int c1 = solver.getConfigurations().get(0).getId();
+		int c2 = solver2.getConfigurations().get(0).getId();
+		Assert.assertTrue(con.canGetPage("secure/details/solverComparison.jsp?sid="+job.getPrimarySpace()+"&c1="+c1+"&c2="+c2));
 	}
 	
 	@StarexecTest
 	private void getPairDetailsTest(){
 		Assert.assertTrue(con.canGetPage("secure/details/pair.jsp?id="+job.getJobPairs().get(0).getId()));
+	}
+	
+	@StarexecTest
+	private void getResubmitPairsTest() {
+		Assert.assertTrue(con.canGetPage("secure/edit/resubmitPairs.jsp?id="+job.getId()));
 	}
 	
 	@StarexecTest
@@ -309,10 +340,35 @@ public class GetPageTests extends TestSequence {
 
 	}
 	
-	//TODO: Get rid of the type argument for the edit processor page.
 	@StarexecTest
 	private void editProcessorTest() {
 		Assert.assertTrue(adminCon.canGetPage("secure/edit/processor.jsp?id="+proc.getId()));
+	}
+	
+	@StarexecTest
+	private void getBenchmarkUploadTest() {
+		Assert.assertTrue(con.canGetPage("secure/details/uploadStatus.jsp?id="+benchUpload.getId()));
+	}
+	
+	@StarexecTest
+	private void getSpaceUploadTest() {
+		Assert.assertTrue(con.canGetPage("secure/details/XMLuploadStatus.jsp?id="+spaceUpload.getId()));
+	}
+	
+	@StarexecTest
+	private void getProcessBenchmarksTest() {
+		Assert.assertTrue(con.canGetPage("secure/edit/processBenchmarks.jsp?sid="+space1.getId()));
+	}
+	
+	@StarexecTest
+	private void getSolverConfigsTest() {
+		Assert.assertTrue(con.canGetPage("secure/details/solverconfigs.jsp?solverid="+solver.getId()+"&limit=100"));
+	}
+	
+	@StarexecTest
+	private void getRegistrationPageTest() {
+		Assert.assertTrue(nonUserCon.canGetPage("public/registration.jsp"));
+
 	}
 	
 	@StarexecTest
@@ -328,6 +384,7 @@ public class GetPageTests extends TestSequence {
 		testCommunity=Communities.getTestCommunity();
 		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		nonUserCon = new Connection("empty", "empty", Util.url(""));
 		con.login();
 		adminCon.login();
 		//space1 will contain solvers and benchmarks
@@ -336,15 +393,21 @@ public class GetPageTests extends TestSequence {
 		
 		q=Queues.getAll().get(0);
 		downloadDir=ResourceLoader.getDownloadDirectory();
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), user.getId());
-		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
-		proc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
+		solver=ResourceLoader.loadSolverIntoDatabase(space1.getId(), user.getId());
+		solver2=ResourceLoader.loadSolverIntoDatabase(space1.getId(), user.getId());
 
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
+		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		proc=ResourceLoader.loadProcessorIntoDatabase(ProcessorType.POST, testCommunity.getId());
+
+		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase(space1.getId(), user.getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
+		solverIds.add(solver2.getId());
 		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
+		
+		benchUpload = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space1.getId(), user.getId()));
+		spaceUpload = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(user.getId()));
 	}
 	
 	@Override
@@ -352,6 +415,7 @@ public class GetPageTests extends TestSequence {
 		Spaces.removeSubspace(space1.getId());
 		Spaces.removeSubspace(newCommunity.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
+		Solvers.deleteAndRemoveSolver(solver2.getId());
 		Processors.delete(proc.getId());
 		for (Integer i : benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(i);

@@ -20,7 +20,8 @@ public class Pipelines {
 	private static final Logger log=Logger.getLogger(Pipelines.class);
 	
 	/**
-	 * Returns a list of dependencies that go with the pipeline stage with the given ID
+	 * Returns a list of dependencies that go with the pipeline stage with the given ID. Dependencies
+	 * will be returned in order of their input_number.
 	 * @param stageId The ID of a pipeline_stage
 	 * @param con An open SQL connection to make the call on 
 	 * @return A list of all the dependencies for the given stage

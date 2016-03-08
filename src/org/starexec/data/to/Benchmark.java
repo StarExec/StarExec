@@ -31,6 +31,7 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	private Boolean usesDependencies = null;
 	private List<BenchmarkDependency> dependencies = null;
 	public Benchmark() {
+		description = "";
 		attributes=new Properties();
 		setDependencies(new ArrayList<BenchmarkDependency>());
 	}

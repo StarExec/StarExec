@@ -92,7 +92,7 @@ public class CreateQueue extends HttpServlet {
 
 		//reloads worker nodes and queues
 		Cluster.loadWorkerNodes();
-		Cluster.loadQueues();
+		Cluster.loadQueueDetails();
 				
 		//DatabaseChanges
 		int queueId=Queues.getIdByName(qName);
