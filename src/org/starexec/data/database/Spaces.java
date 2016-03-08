@@ -2563,6 +2563,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return true iff the update is successful
 	 * @author Skylar Stark
 	 */
+	//TODO: Move permissions check outside, like all other functions
 	public static boolean updateDetails(int userId, Space s) {
 		Connection con = null;			
 		boolean success = false;

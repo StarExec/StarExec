@@ -1611,7 +1611,7 @@ public class JobPairs {
 		CallableStatement procedure =null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL UpdatePairNodeId}");
+			procedure = con.prepareCall("{CALL UpdatePairNodeId(?,?)}");
 			procedure.setInt(1, pairId);
 			procedure.setInt(2, nodeId);
 			procedure.executeUpdate();

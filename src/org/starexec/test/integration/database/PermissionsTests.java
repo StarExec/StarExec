@@ -126,7 +126,7 @@ public class PermissionsTests extends TestSequence {
 	private void GetSpaceDefaultTest() {
 		space.getPermission().setAddSolver(true);
 		space.getPermission().setAddSpace(false);
-		Spaces.updateDetails(admin.getId(), space);
+		Spaces.updateDetails(owner.getId(), space);
 		Permission p=Permissions.getSpaceDefault(space.getId());
 		Assert.assertNotNull(p);
 		Assert.assertFalse(p.isLeader());
@@ -153,7 +153,7 @@ public class PermissionsTests extends TestSequence {
 	
 	@StarexecTest
 	private void EmptyPermissionsTest() {
-		Permission p=Permissions.getFullPermission();
+		Permission p=Permissions.getEmptyPermission();
 		Assert.assertFalse(p.canAddBenchmark());
 		Assert.assertFalse(p.canAddSolver());
 		Assert.assertFalse(p.canAddUser());
@@ -194,7 +194,7 @@ public class PermissionsTests extends TestSequence {
 		
 		admin=Users.getAdmins().get(0);
 		
-		space=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), Communities.getTestCommunity().getId());
+		space=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), Communities.getTestCommunity().getId());
 		
 		Users.associate(spaceMember.getId(), space.getId());
 		
