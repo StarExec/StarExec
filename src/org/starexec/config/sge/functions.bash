@@ -408,6 +408,10 @@ function killDeadlockedJobPair {
 
 	log "killDeadlockedJobPair: About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
 	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
+
+    if [ $BUILD_JOB == "true" ]; then
+        cleanUpAfterKilledBuildJob       
+    fi
 }
 
 # Calls copyOutput at an increment specified. Should be killed
@@ -878,21 +882,66 @@ return $?
 }
 
 
-
+#this is run after a solver is built on starexec
 function copySolverBack {
-echo "Old Solverpath: $SOLVER_PATH"
-NEW_SOLVER_PATH=${SOLVER_PATH::-12}
+
+NEW_SOLVER_PATH="$(echo "$SOLVER_PATH" | sed 's/....$//')"
+
+log "Old Solverpath: $SOLVER_PATH"
+log "NEW solver path is $NEW_SOLVER_PATH"
 
 if [ -e $LOCAL_RUNSOLVER_PATH ]; then
         rm $LOCAL_RUNSOLVER_PATH
 fi
 
+if [ -e $LOCAL_CONFIG_PATH ]; then
+        rm $LOCAL_CONFIG_PATH
+fi
+
+mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
+log "the output to be copied back $PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" 
+log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVERS_ID/"
+cp "$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID/starexec_build_log
+
+echo "DEBUG: BENCHMARK ID TO BE REMOVED: $BENCH_ID"
+
 safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
 log "solver copied back to head node"
 log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
 mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')" 
+log "set build status to built on starexec for $SOLVER_ID"
 mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
+log "deleting build configuration from db for solver: $SOLVER_ID"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
+log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
 
+rm $BENCH_PATH
+
+
+}
+
+#For build jobs this cleans up files used in the build script.
+
+function cleanUpAfterKilledBuildJob {
+ if [ $BUILD_JOB == "true" ]; then
+
+    log "Build job has been failed, cleaning up:"
+
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','3')"
+    log "deleting build configuration from db for solver: $SOLVER_ID"
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
+    log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
+
+    BENCH_PATH_DIR=$(dirname $BENCH_PATH)
+
+    log "Deleting benchmark directory: $BENCH_PATH_DIR"
+
+    safeRm $BENCH_PATH_DIR
+    rm $BENCH_PATH
+
+ fi
 }
 
 

@@ -88,6 +88,10 @@ public class SolverBuildStatus {
                 return SolverBuildStatus.getDescription(this.code.getVal());
         }
 
+        public Boolean hasBeenBuiltOnStarexec() {
+            return code == SolverBuildStatusCode.BUILT_BY_STAREXEC;
+        }
+
         @Override
         public String toString() {
                 return this.getStatus();

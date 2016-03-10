@@ -74,7 +74,7 @@
 						</tr>
 						<tr>
 							<td>build status</td>
-							<td>${built}</td>
+							<td>${buildStatus}</td>
 						</tr>
 					</tbody>				
 				</table>
@@ -176,12 +176,15 @@
 			<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
 				<a href="${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 				<a href="${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
-				<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" id="downBuildInfo">see build info</a>
+                <a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" id="downBuildInfo">see build info</a>
 			</c:if>
 		</c:if>
 		<c:if test="${isAnonymousPage || downloadable || hasAdminReadPrivileges}">			
 			<a type="button" id="downLink3">download</a>
 		</c:if>
+        <c:if test="${!isAnonymousPage && sourceDownloadable && downloadable}">
+            <a id="srcLink">source</a> 
+        </c:if>
 
 	</fieldset>
 	

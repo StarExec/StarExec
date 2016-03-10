@@ -268,6 +268,7 @@ public class R {
 	public static String SPACE = "space";
 	public static String PROCESSOR = "proc";
 	public static String JOB_OUTPUTS = "jp_outputs";
+    public static final String SOLVER_SOURCE = "solverSrc";
 
 	public static final String ANONYMIZE_ALL = "all";
 	public static final String ANONYMIZE_ALL_BUT_BENCH = "allButBench"; 

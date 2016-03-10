@@ -127,7 +127,29 @@ public class Download extends HttpServlet {
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleSolver(s, u.getId(), response, reupload);
-			}  else if (request.getParameter(PARAM_TYPE).equals(R.BENCHMARK)) {
+			} else if (request.getParameter(PARAM_TYPE).equals("solverSrc")) {
+                Solver s = null;
+                String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
+                if ( universallyUniqueId == null ) {
+                    s = Solvers.get(Integer.parseInt(request.getParameter(PARAM_ID)));
+                } else {
+                    Optional<Integer> solverId =  AnonymousLinks.getIdOfSolverAssociatedWithLink( universallyUniqueId );
+                    if ( solverId.isPresent() ) {
+                        s = Solvers.get( solverId.get() );
+                    } else {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver not found.");
+                        return;
+                    }
+                }
+                shortName=s.getName();
+                boolean reupload = false;
+                if (Util.paramExists(PARAM_REUPLOAD, request)) {
+                    reupload = Boolean.parseBoolean(request.getParameter(PARAM_REUPLOAD));
+                }
+                shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
+                response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
+                success = handleSolverSource(s, u.getId(), response);
+            } else if (request.getParameter(PARAM_TYPE).equals(R.BENCHMARK)) {
 				Benchmark b = null;
 				String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
 				if ( universallyUniqueId == null ) {
@@ -144,8 +166,7 @@ public class Download extends HttpServlet {
 						return;
 					}
 				}
-				
-
+			
 				shortName=b.getName();
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
@@ -322,6 +343,23 @@ public class Download extends HttpServlet {
 
 	}
 
+	/**
+	 * Processes a solver source code request to be downloaded. The solver source is archived in a format that is
+	 * specified by the user, given a random name, and placed in a secure folder on the server.
+	 * @param s the solver to be downloaded
+	 * @param userId the id of the user making the download request
+	 * @param format the user's preferred archive type
+	 * @return a file representing the archive to send back to the client
+	 * @author Skylar Stark & Wyatt Kaiser & Andrew Lubinus
+	 */
+	private static boolean handleSolverSource(Solver s, int userId,  HttpServletResponse response) throws Exception {
+
+		String baseName = s.getName();
+		// If we can see this solver AND the solver is downloadable...
+			ArchiveUtil.createAndOutputZip(new File(s.getPath() + "_src"), response.getOutputStream(), baseName,false);
+		return true;
+
+	}
 	/**
 	 * Handles requests for downloading post processors for a given community
 	 * @return a file representing the archive to send back to the client
@@ -1100,6 +1138,7 @@ public class Download extends HttpServlet {
 					type.equals(R.SPACE) ||
 					type.equals(R.PROCESSOR) ||
 					type.equals(R.JOB_OUTPUTS) ||
+                    type.equals(R.SOLVER_SOURCE) ||
 					type.equals(R.JOB_PAGE_DOWNLOAD_TYPE))) {
 
 				return new ValidatorStatusCode(false, "The supplied download type was not valid");

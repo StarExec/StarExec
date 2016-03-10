@@ -118,7 +118,9 @@ public class UploadSolver extends HttpServlet {
 				// Redirect based on success/failure
 				if(return_value>=0) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
-					if (configs == -4) { //If there are no configs. We do not attempt to run a test job in this case
+                    if(buildJob>0) {
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Building Solver On Starexec"));
+                    } else if (configs == -4) { //If there are no configs. We do not attempt to run a test job in this case
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
@@ -303,11 +305,11 @@ public class UploadSolver extends HttpServlet {
         //Checks to see if a build script exists and needs to be built.
 		if (containsBuildScript(sandboxDir)) {
             SolverBuildStatus status = new SolverBuildStatus();
-            status.setCode(2);
+            status.setCode(SolverBuildStatus.SolverBuildStatusCode.UNBUILT);
 			newSolver.setBuildStatus(status);
 			
             //the old build code I'm workign on replacing:
-            
+            /*           
 
             log.debug("the uploaded solver did contain a build script");
             if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
@@ -326,14 +328,13 @@ public class UploadSolver extends HttpServlet {
             command[3]="./"+R.SOLVER_BUILD_SCRIPT;
             buildstr=Util.executeCommand(command, null,sandboxDir);
             build=true;
-            log.debug("got back the output "+buildstr); 
+            log.debug("got back the output "+buildstr); */
 
-            /* This is code for my build feature that's not quite ready, -Andrew:
             returnArray[2] = 1; //Set build flag
-            uniqueDir = new File(newSolver.getPath(), "starexec_src");
+//            uniqueDir = new File(newSolver.getPath(), "starexec_src");
+            uniqueDir = new File(newSolver.getPath() + "_src");
             newSolver.setPath(uniqueDir.getAbsolutePath());
             uniqueDir.mkdirs();
-            */
 		}
 		else {
                 SolverBuildStatus status = new SolverBuildStatus();

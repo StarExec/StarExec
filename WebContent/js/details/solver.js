@@ -21,6 +21,12 @@ function initUI(){
 			secondary: "ui-icon-arrowthick-1-s"
     }});
 
+
+	$('#srcLink').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-s"
+    }});
+
 	registerAnonymousLinkButtonEventHandler();
 
 	$('#fieldSites').expandable(true);
@@ -72,6 +78,10 @@ function initUI(){
 
 
 function attachButtonActions() {
+    $("#srcLink").click(function(){
+        var token=Math.floor(Math.random()*100000000);
+        window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solverSrc&id="+$("#solverId").attr("value");
+        destroyOnReturn(token);})
 	$("#downLink3").click(function(){
 		$('#dialog-confirm-copy-txt').text('How would you like to download the solver?');		
 		$('#dialog-confirm-copy').dialog({

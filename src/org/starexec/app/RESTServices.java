@@ -438,7 +438,7 @@ public class RESTServices {
 		
 		return "not available";
 	}
-	
+
 	/**
 	 * Reruns all the pairs in the given job that have the given status code
 	 * @param id The ID of the job to rerun pairs for

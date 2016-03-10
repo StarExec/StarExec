@@ -438,8 +438,9 @@ public class JspHelpers {
 			formattedSite[2]=GeneralSecurity.getHTMLSafeString(site.getUrl());
 			formattedSites.add(formattedSite);
 		}
-		String buildStatus = s.buildStatus().getStatus();
-		request.setAttribute("built", buildStatus);	
+		SolverBuildStatus buildStatus = s.buildStatus();
+		request.setAttribute("buildStatus", buildStatus.getStatus());
+        request.setAttribute("sourceDownloadable", buildStatus.hasBeenBuiltOnStarexec());
 
 		request.setAttribute( "solverPageTitle", hideSolverName ? "" : s.getName() );
 		request.setAttribute("solver", s);

@@ -43,6 +43,7 @@ import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 import org.starexec.data.database.Queues;
+import org.starexec.servlets.BenchmarkUploader;
 
 /**
  * Handles all SGE interactions for job submission and maintenance
@@ -459,8 +460,7 @@ public abstract class JobManager {
 		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, queue.getWallTimeout(), job.getWallclockTimeout()));
 		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
-
-        log.debug("Checking if job is build job: " + job.isBuildJob() + " Job id: " + job.getId());
+        replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
 
         if(job.isBuildJob()) {
                 replacements.put("$$BUILD_JOB$$", "true");
@@ -842,9 +842,9 @@ public abstract class JobManager {
 			0,
 			q.getCpuTimeout(),
 			q.getWallTimeout(),
-			100000000, //This number gets reset to max memory for the node in the jobscript.
+			R.DEFAULT_PAIR_VMEM,
 			false,
-			0);
+			15);
 		j.setBuildJob(true);
 		String spaceName = "job space";
 		String sm=Spaces.getName(spaceId);
@@ -852,8 +852,7 @@ public abstract class JobManager {
 			spaceName = sm;
 		}
         Configuration c = new Configuration();
-        c.setId(1);
-        c.setName("build");
+        c.setName("starexec_build");
         c.setSolverId(solverId);
         c.setDescription("Build Configuration for solver: " + solverId);
         int cId = Solvers.addConfiguration(s,c);
@@ -864,8 +863,13 @@ public abstract class JobManager {
 		stage.setNoOp(false);
 		stage.setSolver(s);
         stage.setConfiguration(c);
+        int bench = BenchmarkUploader.addBenchmarkFromText(
+                        "dummy benchmark",
+                        "starexec_build_" + s.getName(),
+                        s.getUserId(),
+                        R.NO_TYPE_PROC_ID, true);
 		pair.addStage(stage);
-        pair.setBench(Benchmarks.get(15)); //This hard coded value should be changed before feature is used.
+        pair.setBench(Benchmarks.get(bench)); //This hard coded value should be changed before feature is used.
 		pair.setSpace(Spaces.get(spaceId));
 		pair.setPath(spaceName);
 		j.addJobPair(pair);
