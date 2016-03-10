@@ -374,6 +374,10 @@ function safeRm {
 #cleans up files to prepare for the next stage of the job
 function cleanForNextStage {
 		# Clear the output directory	
+	sudo chown -R `whoami` $WORKING_DIR 
+
+	chmod -R gu+rxw $WORKING_DIR
+
 	safeRm output-directory "$OUT_DIR"
 
 	# Clear the local solver directory	
