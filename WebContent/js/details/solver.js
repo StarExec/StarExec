@@ -57,7 +57,7 @@ function initUI(){
 			primary: "ui-icon-gear"
 		}
     });
-	
+
 	//Warn if there was some error during upload (no configs, running test job failed).
 	var msg = getParameterByName("msg");
 	if (stringExists(msg)) {
@@ -74,8 +74,23 @@ function initUI(){
 			}
 		});
 	}
-}
 
+
+	//Display feedback if the solver is being built on starexec.
+	var msg = getParameterByName("buildmsg");
+	if (stringExists(msg)) {
+		$('#dialog-building-job').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-building-job').dialog('close');
+				}
+			}
+		});
+	}
+}
 
 function attachButtonActions() {
     $("#srcLink").click(function(){

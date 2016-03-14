@@ -119,7 +119,7 @@ public class UploadSolver extends HttpServlet {
 				if(return_value>=0) {
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
                     if(buildJob>0) {
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Building Solver On Starexec"));
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&buildmsg=Building Solver On Starexec"));
                     } else if (configs == -4) { //If there are no configs. We do not attempt to run a test job in this case
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
 					} else {

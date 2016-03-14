@@ -525,7 +525,15 @@ public class Solvers {
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
-			
+
+            String sourcePath = procedure.getString(2) + "_src";
+	        log.info("Deleting solver source from disk, path: " + sourcePath);
+			Util.safeDeleteDirectory(sourcePath);
+			File srcFile=new File(sourcePath);
+			if (srcFile.getParentFile().exists()) {
+				srcFile.getParentFile().delete();
+			}
+
 			// Delete solver file from disk, and the parent directory if it's empty
 			Util.safeDeleteDirectory(procedure.getString(2));
 			File file=new File(procedure.getString(2));
@@ -1822,6 +1830,7 @@ public class Solvers {
 			
 			while (results.next()) {
 				Util.safeDeleteDirectory(results.getString("path")); 
+				Util.safeDeleteDirectory(results.getString("path")+"_src"); 
 				File buildOutput=Solvers.getSolverBuildOutput(results.getInt("id"));
 				if (buildOutput.exists()) {
 					Util.safeDeleteDirectory(buildOutput.getParent());
