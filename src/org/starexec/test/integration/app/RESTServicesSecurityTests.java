@@ -12,6 +12,7 @@ import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -56,6 +57,30 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void rerunAllPairsTest() {
+		assertResultIsInvalid(services.rerunAllJobPairs(job.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.rerunAllJobPairs(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void rerunTimelessPairsTest() {
+		assertResultIsInvalid(services.rerunTimelessJobPairs(job.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.rerunTimelessJobPairs(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void rerunSinglePairTest() {
+		assertResultIsInvalid(services.rerunJobPair(job.getJobPairs().get(0).getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.rerunJobPair(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void rerunAllPairsOfStatusTest() {
+		assertResultIsInvalid(services.rerunJobPairs(job.getId(), StatusCode.STATUS_KILLED.getVal(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.rerunJobPairs(-1, StatusCode.STATUS_KILLED.getVal(), TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
 	private void getBenchmarkUploadDescription() {
 		assertResultIsInvalid(services.getBenchmarkUploadDescription(benchmarkStatus.getId(), TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.getBenchmarkUploadDescription(-1, TestUtil.getMockHttpRequest(admin.getId())));
@@ -76,10 +101,26 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getJobPairStdoutTest() {
+		Assert.assertTrue(services.getJobPairStdout(job.getJobPairs().get(0).getId(), 1, 100,
+				TestUtil.getMockHttpRequest(user.getId())).contains("does not have access"));
+		Assert.assertTrue(services.getJobPairStdout(-1, 1, 100,
+				TestUtil.getMockHttpRequest(admin.getId())).contains("does not have access"));
+	}
+	
+	@StarexecTest
 	private void getBenchmarkContentTest() {
 		Assert.assertTrue(services.getBenchmarkContent(benchmarkIds.get(0), 100, 
 				TestUtil.getMockHttpRequest(user.getId())).contains("not available"));
 		Assert.assertTrue(services.getBenchmarkContent(-1, 100,
+				TestUtil.getMockHttpRequest(admin.getId())).contains("not available"));
+	}
+	
+	@StarexecTest
+	private void getSolverBuildLogTest() {
+		Assert.assertTrue(services.getSolverBuildLog(solver.getId(),
+				TestUtil.getMockHttpRequest(user.getId())).contains("not available"));
+		Assert.assertTrue(services.getSolverBuildLog(-1,
 				TestUtil.getMockHttpRequest(admin.getId())).contains("not available"));
 	}
 	

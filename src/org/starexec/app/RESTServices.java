@@ -379,9 +379,6 @@ public class RESTServices {
 			if(!Util.isNullOrEmpty(log)) {
 				return log;
 			}
-			
-		
-		
 		return "not available";
 	}
 	
@@ -441,7 +438,7 @@ public class RESTServices {
 	/**
 	 * Reruns all the pairs in the given job that have the given status code
 	 * @param id The ID of the job to rerun pairs for
-	 * @param statusCode The status code that all the pairs to be rerun have curently
+	 * @param statusCode The status code that all the pairs to be rerun have currently
 	 * @param request
 	 * @return 0 on success or an error code on failure
 	 */
