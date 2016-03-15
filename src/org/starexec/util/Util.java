@@ -667,14 +667,15 @@ public class Util {
     }
     
     /**
-     * Deletes all files in the given directory that are as old as, or older than the specified number of days
+     * Deletes all files in the given directory that are as old as, or older than the specified number of days.
+     * The given directory itself is NOT deleted
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
      * @param includeDirs True to delete directories as well as files
      */
-    public static void clearOldSandboxFiles(String directory, int daysAgo,boolean includeDirs){
+    public static void clearOldSandboxFiles(String directory, int daysAgo){
 	try {
-	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
+	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,true);
 	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 	    // Remove them all
 	    for(File f : outdatedFiles) {
@@ -885,6 +886,9 @@ public class Util {
      * @throws IOException
      */
     public static void sandboxChmodDirectory(File dir) throws IOException {
+    	if (!dir.isDirectory()) {
+    		return;
+    	}
     	//give sandbox full permissions over the solver directory
 		String[] chmod=new String[7];
 		chmod[0]="sudo";

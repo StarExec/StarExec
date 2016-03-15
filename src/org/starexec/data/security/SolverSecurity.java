@@ -42,9 +42,16 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks whether the user can see the build log for the given solver. They must
+	 * own the solver or be an admin
+	 * @param solverId
+	 * @param userId
+	 * @return A validatorStatusCode object
+	 */
 	public static ValidatorStatusCode canUserSeeBuildLog(int solverId,int userId) {
 		Solver s=Solvers.get(solverId);
-		if (userId!=s.getUserId() &&!GeneralSecurity.hasAdminReadPrivileges(userId)) {
+		if (s==null || userId!=s.getUserId() &&!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the build log for this solver");
 		}
 		return new ValidatorStatusCode(true);

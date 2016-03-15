@@ -51,6 +51,33 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getFinishedPairsForMatrixTest() {
+		assertResultIsInvalid(services.getFinishedJobPairsForMatrix(job.getPrimarySpace(), 
+				1, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getFinishedJobPairsForMatrix(-1, 1, TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getSolverComparisonsPaginatedTest() {
+		int cId = job.getJobPairs().get(0).getPrimaryConfiguration().getId();
+
+		assertResultIsInvalid(services.getSolverComparisonsPaginated(false, job.getPrimarySpace(), cId, cId,
+				TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getSolverComparisonsPaginated(false, -1, cId, cId, TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getJobPairsInSpaceHierarchyByConfigPaginatedTest() {
+		int cId = job.getJobPairs().get(0).getPrimaryConfiguration().getId();
+		assertResultIsInvalid(services.
+				getJobPairsInSpaceHierarchyByConfigPaginated(1, false, job.getPrimarySpace(),"all",cId, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.
+				getJobPairsInSpaceHierarchyByConfigPaginated(1, false, -1,"all",cId, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.
+				getJobPairsInSpaceHierarchyByConfigPaginated(1, false, job.getPrimarySpace(),"badtypestring",cId, TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
 	private void recompileJobSpacesTest() {
 		assertResultIsInvalid(services.recompileJobSpaces(job.getId(), TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.recompileJobSpaces(-1, TestUtil.getMockHttpRequest(admin.getId())));
@@ -103,9 +130,9 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void getJobPairStdoutTest() {
 		Assert.assertTrue(services.getJobPairStdout(job.getJobPairs().get(0).getId(), 1, 100,
-				TestUtil.getMockHttpRequest(user.getId())).contains("does not have access"));
+				TestUtil.getMockHttpRequest(user.getId())).contains("not available"));
 		Assert.assertTrue(services.getJobPairStdout(-1, 1, 100,
-				TestUtil.getMockHttpRequest(admin.getId())).contains("does not have access"));
+				TestUtil.getMockHttpRequest(admin.getId())).contains("not available"));
 	}
 	
 	@StarexecTest
