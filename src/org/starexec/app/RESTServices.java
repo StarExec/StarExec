@@ -369,8 +369,7 @@ public class RESTServices {
 	@Produces("text/plain")		
 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {		
 		int userId = SessionUtil.getUserId(request);
-		int jobId=JobPairs.getPair(id).getJobId();
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobWithPair(id, userId);
 		if (!status.isSuccess()) {
 		    return ("user "+ new Integer(userId) + " does not have access to see job " + new Integer(id));
 		}

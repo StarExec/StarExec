@@ -63,8 +63,8 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void getInvalidUploadedBenchmarkOutput() {
-		assertResultIsInvalid(services.getInvalidUploadedBenchmarkOutput(invalidBenchId, TestUtil.getMockHttpRequest(user.getId())));
-		assertResultIsInvalid(services.getInvalidUploadedBenchmarkOutput(-1, TestUtil.getMockHttpRequest(admin.getId())));
+		Assert.assertTrue(services.getInvalidUploadedBenchmarkOutput(invalidBenchId, 
+				TestUtil.getMockHttpRequest(user.getId())).contains("You may only view your own benchmark uploads"));
 	}
 	
 	@StarexecTest

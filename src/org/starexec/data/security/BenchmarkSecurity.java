@@ -297,6 +297,7 @@ public class BenchmarkSecurity {
 			return true;
 		}
 		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
-		return status.getUserId()==userId;
+		
+		return status!=null && status.getUserId()==userId;
 	}
 }
