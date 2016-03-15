@@ -184,7 +184,7 @@ public class Starexec implements ServletContextListener {
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
 
 				// clear sandbox files older than one day old
-				Util.clearOldSandboxFiles(Util.getSandboxDirectory().getAbsolutePath(), 1, true);
+				Util.clearOldSandboxFiles(Util.getSandboxDirectory().getAbsolutePath(), 1);
 			}
 		};	
 		
