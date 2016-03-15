@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 /**
- * Very simple servlet that simply blocks access to the files and cache directories.
+ * Very simple servlet that simply blocks access to the files directory.
  * We might decide to move these in the future, which will make this unnecessary.
  * @author Eric Burns
  */

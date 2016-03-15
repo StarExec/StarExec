@@ -49,7 +49,6 @@ import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.security.BenchmarkSecurity;
-import org.starexec.data.security.CacheSecurity;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ProcessorSecurity;
@@ -220,7 +219,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getBenchmarkUploadDescription(@PathParam("statusId") int statusId, @Context HttpServletRequest request) {
 		int userId =SessionUtil.getUserId(request);
-		if (!Permissions.canUserSeeBenchmarkStatus(statusId, userId)) {
+		if (!BenchmarkSecurity.canUserSeeBenchmarkStatus(statusId, userId)) {
 			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to view this upload"));
 		}
 		return gson.toJson(new ValidatorStatusCode(true,Uploads.getUploadStatusSummary(statusId)));
@@ -292,7 +291,7 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {	
 		int userId = SessionUtil.getUserId(request);
-		if(id <= 0 && Users.isAdmin(userId)) {
+		if(id <= 0 && GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllAdmin()));
 		} else if (id <= 0) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAll()));
@@ -439,7 +438,7 @@ public class RESTServices {
 		
 		return "not available";
 	}
-	
+
 	/**
 	 * Reruns all the pairs in the given job that have the given status code
 	 * @param id The ID of the job to rerun pairs for
@@ -557,7 +556,7 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getQueueDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
 		log.debug("getting queue details");
-		return gson.toJson(Queues.getDetails(id));
+		return gson.toJson(Queues.get(id));
 	}
 
 	/**
@@ -1303,7 +1302,8 @@ public class RESTServices {
 	
 
 	/**
-	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL)
+	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL).
+	 * These populate tables on the admin pages
 	 * @param primType the type of primitive
 	 * @param request the object containing the DataTable information
 	 * @return a JSON object representing the next page of entries if successful,<br>
@@ -1312,12 +1312,12 @@ public class RESTServices {
 	 * @throws Exception
 	 */
 	@POST
-	@Path("/{primType}/pagination/")
+	@Path("/{primType}/admin/pagination/")
 	@Produces("application/json")
 	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
-		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -1326,9 +1326,6 @@ public class RESTServices {
 		}
 		if (primType.startsWith("j")) {
 			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.JOB, request);
-		}
-		if (primType.startsWith("n")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.NODE, request);
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
@@ -1586,11 +1583,11 @@ public class RESTServices {
 		List<Space> communities = Communities.getAll();
 		for (Space s : communities) {
 			if (spaceId == s.getId()) {
-				if (Users.isAdmin(userId)) {
+				if (GeneralSecurity.hasAdminWritePrivileges(userId)) {
 					return gson.toJson(Permissions.get(userId, spaceId));
-				} else {
-					return gson.toJson(ERROR_INVALID_PERMISSIONS);
 				}
+				return gson.toJson(ERROR_INVALID_PERMISSIONS);
+				
 			}
 		}
 		
@@ -1804,7 +1801,7 @@ public class RESTServices {
 	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 
-		if (!Users.hasAdminWritePrivileges(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(new ValidatorStatusCode(false, "You must be an admin to edit this queue."));
 		}
 
@@ -3797,7 +3794,7 @@ public class RESTServices {
 		int userIdOfPromotion = SessionUtil.getUserId(request);
 		User user = Users.get(userIdOfPromotion);
 		// Permissions check; ensure the user an admin
-		if (!Users.isAdmin(user.getId())) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(user.getId())) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -3968,9 +3965,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getTestsPaginated(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserSeeTestInformation(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		// Query for the next page of job pairs and return them to the user
 		List<TestSequence> tests=TestManager.getAllTestSequences();
@@ -3990,9 +3986,8 @@ public class RESTServices {
 	@Produces("application/json")	
 	public String getTestResultsPaginated(@PathParam("name") String name, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserSeeTestInformation(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		// Query for the next page of job pairs and return them to the user
@@ -4155,9 +4150,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if(!status.isSuccess()) {
-			return gson.toJson(status);
+		if(!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		Queues.removeQueue(queueId);
 		return gson.toJson(new ValidatorStatusCode(true,"Reservation canceled successfully"));
@@ -4219,9 +4213,8 @@ public class RESTServices {
 	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
 		log.debug("starting removeQueue");
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		Queues.removeQueue(queueId);
 
@@ -4243,8 +4236,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String setLoggingLevel(@PathParam("level") String level, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserChangeLogging(userId);
-		if (!status.isSuccess()) {
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		boolean success=false;
@@ -4286,8 +4278,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String setLoggingLevelOffForAllExceptClass(@PathParam("level") String inputLevel, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserChangeLogging(userId);
-		if (!status.isSuccess()) {
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
@@ -4343,8 +4334,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String setLoggingLevel(@PathParam("level") String level, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserChangeLogging(userId);
-		if (!status.isSuccess()) {
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -4379,8 +4369,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String restartStarExec(@Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserRestartStarexec(userId);
-		if (!status.isSuccess()) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.debug("restarting...");
@@ -4400,8 +4389,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearLoadBalanceData(@Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserClearLoadBalanceData(userId);
-		if (!status.isSuccess()) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		JobManager.clearLoadBalanceMonitors();
@@ -4420,8 +4408,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String updateDebugMode(@PathParam("value") boolean value, @Context HttpServletRequest request) throws Exception {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=GeneralSecurity.canUserRestartStarexec(userId);
-		if (!status.isSuccess()) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		R.DEBUG_MODE_ACTIVE = value;
@@ -4440,9 +4427,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String setTestQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		boolean success = Queues.setTestQueue(queueId);
 		
@@ -4460,11 +4446,9 @@ public class RESTServices {
 	@Path("/cache/clear/stats/{jobId}")
 	@Produces("application/json")
 	public String clearCache(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		int userId=SessionUtil.getUserId(request);		
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		return Jobs.removeCachedJobStats(jobId) ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
@@ -4481,9 +4465,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearStatsCache(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=CacheSecurity.canUserClearCache(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		return Jobs.removeAllCachedJobStats() ? gson.toJson(new ValidatorStatusCode(true,"Cache cleared successfully")) : gson.toJson(ERROR_DATABASE);
@@ -4500,9 +4483,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String suspendUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=UserSecurity.canUserSuspendOrReinstateUser(id);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		boolean success = Users.suspend(userId);
@@ -4520,9 +4502,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String reinstateUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=UserSecurity.canUserSuspendOrReinstateUser(id);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		boolean success = Users.reinstate(userId);
@@ -4644,9 +4625,8 @@ public class RESTServices {
 	public String pauseAll(@Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		
-		ValidatorStatusCode status=JobSecurity.canUserPauseAllJobs(userId);
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		log.info("Pausing all jobs in admin/pauseAll REST service");
 		return Jobs.pauseAll() ? gson.toJson(new ValidatorStatusCode(true,"Jobs paused successfully")) : gson.toJson(ERROR_DATABASE);
@@ -4664,10 +4644,8 @@ public class RESTServices {
 		// Permissions check; if user is NOT the owner of the job, deny pause request
 		int userId = SessionUtil.getUserId(request);
 		
-		ValidatorStatusCode status=JobSecurity.canUserResumeAllJobs(userId);
-
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		return Jobs.resumeAll() ? gson.toJson(new ValidatorStatusCode(true,"Jobs resumed successfully")) : gson.toJson(ERROR_DATABASE);
@@ -4683,13 +4661,9 @@ public class RESTServices {
 	@Path("/queue/global/{queueId}")
 	@Produces("application/json")
 	public String makeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
-		int userId = SessionUtil.getUserId(request);
-		
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		int userId = SessionUtil.getUserId(request);		
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		return Queues.makeGlobal(queue_id) ? gson.toJson(new ValidatorStatusCode(true,"Queue is now global")) : gson.toJson(ERROR_DATABASE);
@@ -4706,12 +4680,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String removeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
 		int userId = SessionUtil.getUserId(request);
-		
-		ValidatorStatusCode status=QueueSecurity.canUserModifyQueues(userId);
-		
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+				
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
 		return Queues.removeGlobal(queue_id) ? gson.toJson(new ValidatorStatusCode(true,"Queue no longer global")) : gson.toJson(ERROR_DATABASE);

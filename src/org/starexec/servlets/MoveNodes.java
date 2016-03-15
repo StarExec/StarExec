@@ -3,6 +3,7 @@ package org.starexec.servlets;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.servlet.ServletException;
@@ -15,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.database.Queues;
 
 
@@ -49,7 +51,7 @@ public class MoveNodes extends HttpServlet {
 
 	try {
 		int userId=SessionUtil.getUserId(request);
-		if (!Users.hasAdminWritePrivileges(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			String message="You do not have permission to perform the requested operation";
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
@@ -64,20 +66,24 @@ public class MoveNodes extends HttpServlet {
 	    
 	    LinkedList<String> nodeNames = new LinkedList<String>();
 	    LinkedList<String> queueNames = new LinkedList<String>();
-
+	    // map for counting how many nodes will be removed from each queue
+	    HashMap<Integer, Integer> queueIdToNodesRemoved = new HashMap<Integer, Integer>();
 	    if (nodeIds != null) {
-		for (int id : nodeIds) {
-		    Queue q = Cluster.getQueueForNode(id);
-		    nodeNames.add(Cluster.getNodeNameById(id));
-		    if(q == null){
-		    	queueNames.add(null);
-		    } else{
-		    	queueNames.add(q.getName());
-		    	//Need to call this in prepartion for moving the nodes
-		    	Queues.pauseJobsIfOneWorker(q);
-		    }
-
-		}
+			for (int id : nodeIds) {
+			    Queue q = Cluster.getQueueForNode(id);
+			   
+			    nodeNames.add(Cluster.getNodeNameById(id));
+			    if(q == null){
+			    	queueNames.add(null);
+			    } else{
+			    	queueNames.add(q.getName());
+			    	 if (!queueIdToNodesRemoved.containsKey(q.getId())) {
+			    		 queueIdToNodesRemoved.put(q.getId(), 0);
+					 }
+					 queueIdToNodesRemoved.put(q.getId(), queueIdToNodesRemoved.get(q.getId())+1);
+			    }
+	
+			}
 	    }
 		
 	    //BACKEND Changes

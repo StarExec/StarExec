@@ -18,6 +18,7 @@ import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 import org.starexec.util.LogUtil;
@@ -68,7 +69,7 @@ public class SessionFilter implements Filter {
 				this.logUserLogin(user, httpRequest);				
 			}
 			if (R.DEBUG_MODE_ACTIVE){
-				if (!Users.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
+				if (!GeneralSecurity.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
 					httpRequest.getSession().invalidate();
 					httpResponse.sendRedirect(Util.docRoot(""));	
 					return;

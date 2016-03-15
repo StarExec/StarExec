@@ -3,6 +3,7 @@ package org.starexec.test.integration.database;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -382,10 +383,10 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest
 	private void getAttributesTest() {
 		Benchmark b = benchmarks.get(0);
-		Properties attrs = Benchmarks.getAttributes(b.getId());
+		Map<String,String> attrs = Benchmarks.getAttributes(b.getId());
 		Assert.assertEquals(b.getAttributes().size(), attrs.size());
-		for (Object o : b.getAttributes().keySet()) {
-			Assert.assertEquals(b.getAttributes().get(o), attrs.get(o));
+		for (String s : b.getAttributes().keySet()) {
+			Assert.assertEquals(b.getAttributes().get(s), attrs.get(s));
 		}
 	}
 	
@@ -457,24 +458,28 @@ public class BenchmarkTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void processTest() throws InterruptedException {
-		Integer statusId = Benchmarks.process(space.getId(), benchProcessor, false, user.getId(), true);
+	private void processTest() throws Exception {
+		User tempUser = ResourceLoader.loadUserIntoDatabase();
+		Space tempSpace = ResourceLoader.loadSpaceIntoDatabase(tempUser.getId(), 1);
+		
+		List<Integer> benchIds = Benchmarks.copyBenchmarks(benchmarks, tempUser.getId(), tempSpace.getId());
+		Integer statusId = Benchmarks.process(tempSpace.getId(), benchProcessor, false, tempUser.getId(), true);
 		Assert.assertTrue(statusId>0);
 		int MAX_LOOPS = 50;
-		while (!Uploads.benchmarkEverythingComplete(statusId)) { 
+		while (!Uploads.getBenchmarkStatus(statusId).isEverythingComplete()) { 
 			Thread.sleep(1000);
 			MAX_LOOPS--;
 			Assert.assertTrue(MAX_LOOPS>=0);
 		}
-		for (Benchmark b : benchmarks) {
-			Properties attrs = Benchmarks.getAttributes(b.getId());
+		for (int benchId : benchIds) {
+			Map<String,String> attrs = Benchmarks.getAttributes(benchId);
+			addMessage(benchId+"");
 			Assert.assertEquals(1, attrs.size());
-			Assert.assertEquals("test", attrs.getProperty("test-attribute"));
-			Benchmarks.clearAttributes(b.getId());
-			for (Object o : b.getAttributes().keySet()) {
-				Benchmarks.addBenchAttr(b.getId(),(String)o, (String) b.getAttributes().get(o));
-			}
+			Assert.assertEquals("test", attrs.get("test-attribute"));
+			Benchmarks.deleteAndRemoveBenchmark(benchId);
 		}
+		Spaces.removeSubspace(tempSpace.getId());
+		Users.deleteUser(tempUser.getId(),admin.getId());
 	}
 	
 	@StarexecTest

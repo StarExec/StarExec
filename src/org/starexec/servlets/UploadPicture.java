@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -68,7 +69,7 @@ public class UploadPicture extends HttpServlet {
 
 
 			boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
-			boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
+			boolean callerIsAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller);
 			if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You cannot change this user's picture.");
 				return;

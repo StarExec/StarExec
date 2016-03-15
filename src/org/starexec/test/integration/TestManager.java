@@ -51,7 +51,6 @@ public class TestManager {
 		tests.add(new GeneralSecurityTests());
 		tests.add(new JobSecurityTests());
 		tests.add(new BenchmarkSecurityTests());
-		tests.add(new CacheSecurityTests());
 		tests.add(new UserTests());
 		tests.add(new PermissionsTests());
 		tests.add(new IntroStateTests());
@@ -111,7 +110,6 @@ public class TestManager {
 			return false;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		
 		
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
 		threadPool.execute(new Runnable() {

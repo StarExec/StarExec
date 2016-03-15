@@ -10,6 +10,7 @@ import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
@@ -18,6 +19,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.Validator;
@@ -251,7 +253,7 @@ public class SpaceSecurity {
 	//TODO: Leaders can demote other leaders except at the community level, right?
 	public static ValidatorStatusCode canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
 		// Permissions check; ensures user is the leader of the community or is an admin
-		if(!Users.hasAdminWritePrivileges(userIdDoingDemoting)) {
+		if(!GeneralSecurity.hasAdminWritePrivileges(userIdDoingDemoting)) {
 			return new ValidatorStatusCode(false, "You do not have permission to demote leaders in this space");
 		}
 		return new ValidatorStatusCode(true);
@@ -338,7 +340,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	private static ValidatorStatusCode canCopyPrimFromSpace(int spaceId, int userIdDoingCopying) {
-		if (Users.isAdmin(userIdDoingCopying)) {
+		if (GeneralSecurity.hasAdminWritePrivileges(userIdDoingCopying)) {
 			return new ValidatorStatusCode(true);
 		}
 		// And the space the user is being copied from must not be locked
@@ -541,7 +543,7 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canLinkJobsBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> jobIdsBeingCopied) {
 		
 		ValidatorStatusCode status=null;
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		if (fromSpaceId!=null) {
 			for(Integer jid : jobIdsBeingCopied) {
 				status=	canCopyJobFromSpace(fromSpaceId,userId,jid);
@@ -585,7 +587,7 @@ public class SpaceSecurity {
 				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
 			}
 		}
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		ValidatorStatusCode status=null;
 		if (fromSpaceId!=null) {
 			for(Integer bid : benchmarkIdsBeingCopied) {
@@ -728,7 +730,7 @@ public class SpaceSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to add a user to this space");
 		}
 		
-		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.getCommunityOfSpace(spaceId)) && !Users.isAdmin(userIdMakingRequest)) {
+		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.getCommunityOfSpace(spaceId)) && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "The user is not a member of the community you are trying to move them to. They must request to join the community first");
 		}
 
@@ -813,7 +815,7 @@ public class SpaceSecurity {
 				return new ValidatorStatusCode(false, "You do not have permission to remove a user from this space");
 			}
 			
-			if (!Users.isAdmin(userIdDoingRemoval)) {
+			if (!GeneralSecurity.hasAdminWritePrivileges(userIdDoingRemoval)) {
 				// Validate the list of users to remove by:
 				// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
 				// 2 - Ensuring other leaders of the space aren't in the list of users to remove
@@ -854,7 +856,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserViewCommunityRequests(int userId) {
-		if (!Users.hasAdminReadPrivileges(userId)){
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -868,7 +870,7 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canUserViewCommunityRequestsForCommunity(int userId, int communityId) {
 		Permission perm=Permissions.get(userId, communityId);
 		//must be a leader to make a space public
-		if (Users.hasAdminReadPrivileges(userId)) { 
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) { 
 			return new ValidatorStatusCode(true);
 		} else if (!(perm == null) && perm.isLeader()) {
 			return new ValidatorStatusCode(true);
@@ -942,7 +944,7 @@ public class SpaceSecurity {
 		
 		// Ensure the user to edit the permissions of isn't themselves a leader
 		perm = Permissions.get(userIdBeingUpdated, spaceId);
-		if(perm.isLeader() && !Users.isAdmin(requestUserId) && Communities.isCommunity(spaceId)){
+		if(perm.isLeader() && !GeneralSecurity.hasAdminWritePrivileges(requestUserId) && Communities.isCommunity(spaceId)){
 			return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
 		}	
 		
@@ -953,7 +955,7 @@ public class SpaceSecurity {
     
     
     public static ValidatorStatusCode canUserLinkAllOrphaned(int userId, int userIdOfCaller,  int spaceId) {
-    	if (!Users.isAdmin(userIdOfCaller) && userId!=userIdOfCaller) {
+    	if (!GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller) && userId!=userIdOfCaller) {
     		return new ValidatorStatusCode(false, "You can only perform this operation on your own primitives");
     	}
     	Space s=Spaces.getDetails(spaceId, userIdOfCaller);
@@ -1022,6 +1024,14 @@ public class SpaceSecurity {
 		
 		
 		return new ValidatorStatusCode(true);
+	}
+	
+	public static boolean canUserSeeSpaceXMLStatus(int statusId, int userId) {		
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return true;
+		}
+		SpaceXMLUploadStatus status=Uploads.getSpaceXMLStatus(statusId);
+		return status.getUserId()==userId;
 	}
 
 }

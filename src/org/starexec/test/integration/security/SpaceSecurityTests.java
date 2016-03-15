@@ -4,11 +4,13 @@ import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.integration.StarexecTest;
@@ -24,7 +26,8 @@ public class SpaceSecurityTests extends TestSequence {
 	Space space1=null; //a private space
 	Space space2=null; //a private space
 	Space publicSpace=null; //a public space
-	
+	SpaceXMLUploadStatus spaceStatus = null;
+
 	@StarexecTest
 	private void CanAssociateWebsiteTest() {
 		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
@@ -142,6 +145,13 @@ public class SpaceSecurityTests extends TestSequence {
 
 	}
 	
+	@StarexecTest
+	private void canSeeSpaceXMLUploadStatusTest() {
+		Assert.assertTrue(SpaceSecurity.canUserSeeSpaceXMLStatus(spaceStatus.getId(), owner.getId()));
+		Assert.assertTrue(SpaceSecurity.canUserSeeSpaceXMLStatus(spaceStatus.getId(), admin.getId()));
+		Assert.assertFalse(SpaceSecurity.canUserSeeSpaceXMLStatus(spaceStatus.getId(), noPerms.getId()));
+	}
+	
 	@Override
 	protected String getTestName() {
 		return "SpaceSecurityTests";
@@ -183,6 +193,8 @@ public class SpaceSecurityTests extends TestSequence {
 		Spaces.setPublicSpace(space1.getId(), owner.getId(), false, false);
 		Spaces.setPublicSpace(space2.getId(), owner.getId(), false, false);
 		Spaces.setPublicSpace(publicSpace.getId(), owner.getId(), true, false);
+		spaceStatus = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(owner.getId()));
+
 	}
 
 	@Override

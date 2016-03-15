@@ -45,6 +45,7 @@ export PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$'
 export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
 export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
+export BENCH_ID='$$BENCH_ID$$'
 
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
@@ -352,6 +353,7 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	fi
     if [ $BUILD_JOB == "true" ]; then
         cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
+        rm $LOCAL_BENCH_PATH
         LOCAL_BENCH_PATH=""
     else
 	    cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
@@ -414,6 +416,7 @@ elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" 
   sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
   setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+  cleanUpAfterKilledBuildJob
   break
   
 elif ( grep 'CPU time exceeded' $WATCHFILE ) then
@@ -422,6 +425,7 @@ elif ( grep 'CPU time exceeded' $WATCHFILE ) then
   sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
   setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+  cleanUpAfterKilledBuildJob
   break
   
   
@@ -431,6 +435,7 @@ elif ( grep 'VSize exceeded' $WATCHFILE ) then
   sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
   setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+  cleanUpAfterKilledBuildJob
   break
   
 else

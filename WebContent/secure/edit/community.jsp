@@ -1,10 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.security.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
 		int userId = SessionUtil.getUserId(request);
-		boolean admin = Users.hasAdminReadPrivileges(userId);
+		boolean admin =GeneralSecurity.hasAdminReadPrivileges(userId);
 		
 		request.setAttribute("isAdmin", admin);
 		request.setAttribute("communityNameLen", R.SPACE_NAME_LEN);

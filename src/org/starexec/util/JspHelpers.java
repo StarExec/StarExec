@@ -399,7 +399,7 @@ public class JspHelpers {
 
 				boolean downloadable = SolverSecurity.canUserDownloadSolver( s.getId(), userId ).isSuccess();
 				request.setAttribute( "downloadable", downloadable );
-				request.setAttribute( "hasAdminReadPrivileges", Users.hasAdminReadPrivileges( userId ));
+				request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 
 				setSolverPageRequestAttributes( false, false, s, request, response );
 			} else {
@@ -438,8 +438,9 @@ public class JspHelpers {
 			formattedSite[2]=GeneralSecurity.getHTMLSafeString(site.getUrl());
 			formattedSites.add(formattedSite);
 		}
-		String buildStatus = s.buildStatus().getStatus();
-		request.setAttribute("built", buildStatus);	
+		SolverBuildStatus buildStatus = s.buildStatus();
+		request.setAttribute("buildStatus", buildStatus.getStatus());
+        request.setAttribute("sourceDownloadable", buildStatus.hasBeenBuiltOnStarexec());
 
 		request.setAttribute( "solverPageTitle", hideSolverName ? "" : s.getName() );
 		request.setAttribute("solver", s);
@@ -542,7 +543,7 @@ public class JspHelpers {
 		if ( !isAnonymousPage ) {
 			int userId = SessionUtil.getUserId( request );
 			userCanSeeBench = Permissions.canUserSeeBench( benchId, userId );
-			request.setAttribute( "hasAdminReadPrivileges", Users.hasAdminReadPrivileges( userId ));
+			request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 			downloadable = BenchmarkSecurity.canUserDownloadBenchmark( benchId,userId ).isSuccess();
 		}
 		request.setAttribute( "downloadable", downloadable );

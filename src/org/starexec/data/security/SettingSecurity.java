@@ -27,7 +27,7 @@ public class SettingSecurity {
 	 */
 	public static boolean canUserAddOrSeeProfile(int userIdOfOwner, int userIdOfCaller) {
 		boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
-		boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
+		boolean callerIsAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller);
 		if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 			return false;
 		} 
@@ -67,7 +67,7 @@ public class SettingSecurity {
 			return new ValidatorStatusCode(false, "The given setting profile could not be found");
 		}
 		if (d.getType()==SettingType.USER) {
-			if (d.getPrimId()!=userId && !Users.isAdmin(userId)) {
+			if (d.getPrimId()!=userId && !GeneralSecurity.hasAdminWritePrivileges(userId)) {
 				return new ValidatorStatusCode(false, "You may not update default setting profiles of other users");
 			}
 			if (Users.isPublicUser(userId)) {

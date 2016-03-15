@@ -137,9 +137,6 @@ public class Solvers {
 			
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
-			//invalidate the cache of any spaces with this solver
-			//Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
-			//Cache.invalidateAndDeleteCache(c.getSolverId(), CacheType.CACHE_SOLVER);
 			
 			return newConfigId;						
 		} catch (Exception e){			
@@ -167,7 +164,6 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
-			//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
@@ -529,7 +525,15 @@ public class Solvers {
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
-			
+
+            String sourcePath = procedure.getString(2) + "_src";
+	        log.info("Deleting solver source from disk, path: " + sourcePath);
+			Util.safeDeleteDirectory(sourcePath);
+			File srcFile=new File(sourcePath);
+			if (srcFile.getParentFile().exists()) {
+				srcFile.getParentFile().delete();
+			}
+
 			// Delete solver file from disk, and the parent directory if it's empty
 			Util.safeDeleteDirectory(procedure.getString(2));
 			File file=new File(procedure.getString(2));
@@ -1826,6 +1830,7 @@ public class Solvers {
 			
 			while (results.next()) {
 				Util.safeDeleteDirectory(results.getString("path")); 
+				Util.safeDeleteDirectory(results.getString("path")+"_src"); 
 				File buildOutput=Solvers.getSolverBuildOutput(results.getInt("id"));
 				if (buildOutput.exists()) {
 					Util.safeDeleteDirectory(buildOutput.getParent());

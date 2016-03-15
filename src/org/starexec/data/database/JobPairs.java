@@ -535,6 +535,7 @@ public class JobPairs {
 					filteredComparisons.add(c);
 				}
 			} catch (Exception e) {
+				log.error(e.getMessage(),e);
 			}	
 		}
 		
@@ -1596,6 +1597,31 @@ public class JobPairs {
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_ENQUEUED.getVal()));
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_RUNNING.getVal()));
 		return pairs;
-
+	}
+	
+	/**
+	 * Updates a job pair's node_id in the databse. This is done by leveraging UpdatePairRunSolverStats,
+	 * which 
+	 * @param pairId
+	 * @param nodeId
+	 * @return True on success and false otherwise
+	 */
+	public static boolean updatePairExecutionHost(int pairId, int nodeId) {
+		Connection con=null;
+		CallableStatement procedure =null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL UpdatePairNodeId(?,?)}");
+			procedure.setInt(1, pairId);
+			procedure.setInt(2, nodeId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
 	}
 }

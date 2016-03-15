@@ -74,7 +74,7 @@
 						</tr>
 						<tr>
 							<td>build status</td>
-							<td>${built}</td>
+							<td>${buildStatus}</td>
 						</tr>
 					</tbody>				
 				</table>
@@ -167,7 +167,12 @@
 			<span id="dialog-show-anonymous-link-txt"></span>
 		</p>
 	</div>
-	
+    <c:if test="${!sourceDownloadable}">
+    <div id="dialog-building-job" title="Building..." class="hiddenDialog">
+            <p><span class="ui-icon ui-icon-info" ></span><span id="dialog-building-job-txt">Your solver is being built on Starexec.</span></p>
+    </div>
+    </c:if>
+
 	<!-- Displays 'download' and 'upload configuration' buttons if necessary -->
 	<fieldset id="actions">
 		<legend>actions</legend>
@@ -176,12 +181,15 @@
 			<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
 				<a href="${starexecRoot}/secure/add/configuration.jsp?sid=${solver.id}" id="uploadConfig">add configuration</a>
 				<a href="${starexecRoot}/secure/edit/solver.jsp?id=${solver.id}" id="editLink">edit</a>
-				<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" id="downBuildInfo">see build info</a>
+                <a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput" target="_blank" id="downBuildInfo">see build info</a>
 			</c:if>
 		</c:if>
 		<c:if test="${isAnonymousPage || downloadable || hasAdminReadPrivileges}">			
 			<a type="button" id="downLink3">download</a>
 		</c:if>
+        <c:if test="${!isAnonymousPage && sourceDownloadable && downloadable}">
+            <a id="srcLink">source</a> 
+        </c:if>
 
 	</fieldset>
 	

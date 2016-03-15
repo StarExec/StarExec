@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -158,7 +159,7 @@ public class SaveConfiguration extends HttpServlet {
 			}
 			
 			// Permissions check; ensure the user owns the solver to which they are saving
-			if( Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId && !Users.isAdmin( userId )){
+			if( Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId && !GeneralSecurity.hasAdminWritePrivileges(userId)){
 				return new ValidatorStatusCode(false, "Only owners of a solver may save configurations to it.");
 			}
 			

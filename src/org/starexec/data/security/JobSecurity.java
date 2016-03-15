@@ -36,9 +36,8 @@ public class JobSecurity {
 	
 	
 	public static ValidatorStatusCode canUserRecompileJob(int jobId, int userId) {
-		if (!Users.isAdmin(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "Only administrators can perform this action");
-			
 		}
 		
 		Job j=Jobs.get(jobId);
@@ -126,7 +125,7 @@ public class JobSecurity {
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
 		}
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		
 		if (job.getUserId()!=userId && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to post process this job");
@@ -171,7 +170,7 @@ public class JobSecurity {
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
 		}
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		
 		if (job.getUserId()!=userId && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to rerun pairs in this job");
@@ -309,7 +308,7 @@ public class JobSecurity {
 	 * @param userId The ID of the user making the request
 	 */
 	public static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
-		if (Users.isAdmin(userId)){
+		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return true;
 		}
 
@@ -318,31 +317,6 @@ public class JobSecurity {
 			return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to pause all jobs currently running
-	 * on the system
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise.
-	 */
-	public static ValidatorStatusCode canUserPauseAllJobs(int userId){
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to resume all jobs that the admin has paused
-	 * @param userId the ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and the status code from ValidatorStatusCodes otherwise.
-	 */
-	public static ValidatorStatusCode canUserResumeAllJobs(int userId){
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
 	}
 	
 	/**

@@ -44,7 +44,7 @@ public class SolverSecurity {
 	
 	public static ValidatorStatusCode canUserSeeBuildLog(int solverId,int userId) {
 		Solver s=Solvers.get(solverId);
-		if (userId!=s.getUserId() &&!Users.isAdmin(userId) ) {
+		if (userId!=s.getUserId() &&!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the build log for this solver");
 		}
 		return new ValidatorStatusCode(true);
@@ -76,7 +76,7 @@ public class SolverSecurity {
 		if (s==null) {
 			return new ValidatorStatusCode(false, "The solver could not be found");
 		}
-		if (!Users.isAdmin(userId) && !(s.getUserId()==userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId) && !(s.getUserId()==userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a configuration to this solver");
 		}
 		return new ValidatorStatusCode(true);
@@ -244,7 +244,7 @@ public class SolverSecurity {
 	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserRecycleOrphanedSolvers(int userIdToDelete, int userIdMakingRequest) {
-		if (userIdToDelete!=userIdMakingRequest && !Users.isAdmin(userIdMakingRequest)) {
+		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "You do not have permission to recycle solvers belonging to another user");
 		}
 		
@@ -330,7 +330,7 @@ public class SolverSecurity {
 	 * @return True if the user owns the solver OR is an admin, and false otherwise
 	 */
 	public static boolean userOwnsSolverOrIsAdmin(Solver solver,int userId) {
-		return (solver.getUserId()==userId || Users.isAdmin(userId));
+		return (solver.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId));
 	}
 	/**
 	 * Checks whether a user can remove a solver from a space
@@ -408,7 +408,7 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canUserDownloadSolver(int solverId, int userId) {
 		Solver s=Solvers.get(solverId);
-		boolean userHasAdminReadPrivileges = Users.hasAdminReadPrivileges(userId);
+		boolean userHasAdminReadPrivileges = GeneralSecurity.hasAdminReadPrivileges(userId);
 		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see this solver");
 		

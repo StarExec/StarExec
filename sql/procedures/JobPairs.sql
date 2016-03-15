@@ -19,6 +19,11 @@ CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 		WHERE id = _pairId;
 	END //
 	
+DROP PROCEDURE IF EXISTS UpdatePairNodeId;
+CREATE PROCEDURE UpdatePairNodeId(IN _jobPairId INT, IN _nodeId INT)
+	BEGIN
+		UPDATE job_pairs SET node_id=_nodeId WHERE id=_jobPairId;
+	END  //
 	
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune

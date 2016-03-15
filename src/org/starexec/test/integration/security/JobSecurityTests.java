@@ -66,12 +66,6 @@ public class JobSecurityTests extends TestSequence {
 	private void CanChangeQueues() {
 		//JobSecurity.canChangeQueue(jobId, userId, queueId)
 	}
-	@StarexecTest
-	private void CanPauseAllJobs() {
-		Assert.assertEquals(true,JobSecurity.canUserPauseAllJobs(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,JobSecurity.canUserPauseAllJobs(user.getId()).isSuccess());
-		Assert.assertNotEquals(true,JobSecurity.canUserPauseAllJobs(nonOwner.getId()).isSuccess());
-	}
 	
 	@Override
 	protected String getTestName() {

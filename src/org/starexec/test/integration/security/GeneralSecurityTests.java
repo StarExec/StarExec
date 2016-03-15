@@ -14,25 +14,6 @@ public class GeneralSecurityTests extends TestSequence {
 	String plaintextPassword=null;
 	User admin=null;
 	
-	
-	@StarexecTest
-	private void CanRestartStarexecTest() {
-		Assert.assertEquals(true, GeneralSecurity.canUserRestartStarexec(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserRestartStarexec(user1.getId()).isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanViewTestInfo() {
-		Assert.assertEquals(true, GeneralSecurity.canUserSeeTestInformation(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserSeeTestInformation(user1.getId()).isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanUserChangeLoggingTest() {
-		Assert.assertEquals(true, GeneralSecurity.canUserChangeLogging(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserChangeLogging(user1.getId()).isSuccess());
-	}
-	
 	@StarexecTest 
 	private void canUserRunTests() {
 		Assert.assertEquals(true, GeneralSecurity.canUserRunTestsNoRunningCheck(admin.getId()).isSuccess());

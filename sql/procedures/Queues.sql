@@ -70,16 +70,6 @@ CREATE PROCEDURE GetCountOfEnqueuedJobPairsByQueue(IN _id INT)
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 		WHERE enqueued.queue_id = _id AND job_pairs.status_code = 2;
-	END //
-	
--- Retrieves basic info about running job pairs for the given node id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetCountOfRunningJobPairsByNode;
-CREATE PROCEDURE GetCountOfRunningJobPairsByNode(IN _id INT)
-	BEGIN
-		SELECT count(*) AS count
-		FROM job_pairs
-		WHERE node_id = _id AND status_code = 4;
 	END //	
 
 -- Get the name of a queue given its id
@@ -185,5 +175,42 @@ CREATE PROCEDURE GetTestQueue()
 	BEGIN
 		SELECT test_queue FROM system_flags;
 	END //
-	
+
+-- Give the community (leaders) Access to a queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS SetQueueCommunityAccess;
+CREATE PROCEDURE SetQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
+	BEGIN
+		INSERT INTO comm_queue
+		VALUES (_communityId, _queueId);
+	END //
+		
+
+DROP PROCEDURE IF EXISTS GetPairsRunningOnNode;
+CREATE PROCEDURE GetPairsRunningOnNode(IN _nodeId INT)
+	BEGIN
+		SELECT job_pairs.id,
+			   job_pairs.path,
+			   job_pairs.primary_jobpair_data,
+			   job_pairs.job_id,
+			   job_pairs.bench_id,
+			   job_pairs.bench_name,
+			   job_pairs.queuesub_time,
+			   jobpair_stage_data.solver_id,
+			   jobpair_stage_data.solver_name,
+			   jobpair_stage_data.config_id,
+			   jobpair_stage_data.config_name,
+			   jobs.id,
+			   jobs.name,
+			   users.id,
+			   users.first_name,
+			   users.last_name
+		FROM job_pairs
+		JOIN jobs ON jobs.id = job_pairs.job_id
+		JOIN users ON users.id = jobs.user_id
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+
+		WHERE node_id = _nodeId AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3) AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
+	END //
+
 DELIMITER ; -- This should always be at the end of this file

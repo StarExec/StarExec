@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecException;
@@ -752,7 +753,7 @@ public class Spaces {
 	 */
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
 		//the admin can see every space, so we don't need to worry about finding only spaces some user can see
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			if (hierarchy) {
 				return getCountInSpaceHierarchy(spaceId);
 			}
@@ -1520,7 +1521,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return A List of Space objects
 	 */
 	public static List<Space> getSubSpaceHierarchy(int spaceId, int userId) {
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return getSubSpaceHierarchy(spaceId); //not dependent on user, as admins can see everything
 		}
 		Connection con = null;			
@@ -1655,7 +1656,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
 			procedure.setInt(1, spaceId);
 		} else {
@@ -1963,7 +1964,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			
 			// Commit changes to database
 			Common.endTransaction(con);
-			//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -2098,7 +2098,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			Common.beginTransaction(con);
 			Spaces.removeSolvers(solverIds, spaceId, con);
 			Common.endTransaction(con);
-			//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -2514,7 +2513,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
-		if (Users.isAdmin(userId)){
+		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return spaces;
 		}
 		Iterator<Space> iter = spaces.iterator();
@@ -2564,6 +2563,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return true iff the update is successful
 	 * @author Skylar Stark
 	 */
+	//TODO: Move permissions check outside, like all other functions
 	public static boolean updateDetails(int userId, Space s) {
 		Connection con = null;			
 		boolean success = false;
@@ -2579,7 +2579,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			}
 			
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
-			//Cache.invalidateAndDeleteCache(s.getId(), CacheType.CACHE_SPACE);
 			return success;		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		

@@ -77,7 +77,7 @@ public class ProcessorSecurity {
 			return new ValidatorStatusCode(false, "The given processor could not be found");
 		}
 		
-		if (!Users.isAdmin(userId) && procId!=R.NO_TYPE_PROC_ID && !Users.isMemberOfCommunity(userId, p.getCommunityId())) {
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId) && procId!=R.NO_TYPE_PROC_ID && !Users.isMemberOfCommunity(userId, p.getCommunityId())) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the given processor");
 		}
 		

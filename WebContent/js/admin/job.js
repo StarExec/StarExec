@@ -102,7 +102,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
-			sSource + "jobs/pagination",
+			sSource + "jobs/admin/pagination",
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

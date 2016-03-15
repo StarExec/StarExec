@@ -40,9 +40,6 @@ public class PaginationQueries {
 	public static String GET_SOLVERS_BY_USER_PATH ="/pagination/SolverForUserPagination.sql";
 	public static String GET_SOLVERS_BY_USER_QUERY = "";
 
-	public static String GET_PAIRS_RUNNING_PATH = "/pagination/RunningPairPagination.sql";
-	public static String GET_PAIRS_RUNNING_QUERY = "";
-
 	public static String GET_PAIRS_ENQUEUED_PATH = "/pagination/EnqueuedPairPagination.sql";
 	public static String GET_PAIRS_ENQUEUED_QUERY = "";
 
@@ -62,9 +59,6 @@ public class PaginationQueries {
 		GET_SOLVERS_IN_SPACE_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_SOLVERS_IN_SPACE_PATH));
 		GET_SOLVERS_BY_USER_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_SOLVERS_BY_USER_PATH));
 		GET_PAIRS_IN_SPACE_HIERARCHY_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_PAIRS_IN_SPACE_HIERARCHY_PATH));
-		GET_PAIRS_RUNNING_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_PAIRS_RUNNING_PATH));
 		GET_PAIRS_ENQUEUED_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_PAIRS_ENQUEUED_PATH));
-
-
 	}
 }

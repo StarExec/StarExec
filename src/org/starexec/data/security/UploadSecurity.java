@@ -17,7 +17,7 @@ public class UploadSecurity {
 	 * @return A ValidatorStatusCode ojbect
 	 */
 	public static ValidatorStatusCode canViewUnvalidatedBenchmarkOutput(int userId, int unvalidatedBenchmarkId) {
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(true);
 		}
 		BenchmarkUploadStatus status = Uploads.getUploadStatusForInvalidBenchmarkId(unvalidatedBenchmarkId);

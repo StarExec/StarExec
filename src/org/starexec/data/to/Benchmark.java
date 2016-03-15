@@ -2,8 +2,10 @@ package org.starexec.data.to;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -16,13 +18,13 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Benchmark extends Identifiable implements Iterable<Entry<Object, Object>>, Nameable{
+public class Benchmark extends Identifiable implements Nameable{
 	private int userId = -1;	
 	@Expose private String name;	
 	@Expose private String description = "no description";	
 	@Expose private Processor type;
 	private Timestamp uploadDate;	
-	private Properties attributes;
+	private Map<String,String> attributes;
 	private String path;
 	private boolean isDownloadable;
 	private long diskSize;	
@@ -32,7 +34,7 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	private List<BenchmarkDependency> dependencies = null;
 	public Benchmark() {
 		description = "";
-		attributes=new Properties();
+		attributes=new HashMap<String,String>();
 		setDependencies(new ArrayList<BenchmarkDependency>());
 	}
 	
@@ -154,21 +156,16 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	/**
 	 * @return the attributes
 	 */
-	public Properties getAttributes() {
+	public Map<String,String> getAttributes() {
 		return attributes;
 	}
 
 	/**
 	 * @param attributes the attributes to set
 	 */
-	public void setAttributes(Properties attributes) {
+	public void setAttributes(Map<String,String> attributes) {
 		this.attributes = attributes;
 	}	
-
-	@Override
-	public Iterator<Entry<Object, Object>> iterator() {
-		return this.attributes.entrySet().iterator();
-	}
 
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;

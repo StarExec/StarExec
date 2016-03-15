@@ -19,7 +19,7 @@ public class UserSecurity {
 	 */
 	public static ValidatorStatusCode canAssociateWebsite(int userId, int visitingUserId, String name, String URL){
 
-		boolean visitingUserHasAdminPrivileges = Users.hasAdminWritePrivileges(visitingUserId);
+		boolean visitingUserHasAdminPrivileges = GeneralSecurity.hasAdminWritePrivileges(visitingUserId);
 		boolean visitingUserIsOwner = (userId == visitingUserId);
 		if (!(visitingUserIsOwner || visitingUserHasAdminPrivileges)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a website here.");
@@ -77,7 +77,7 @@ public class UserSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and an error code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canDeleteUser(int userIdBeingDeleted, int userIdMakingRequest) {
-		if (!Users.isAdmin(userIdMakingRequest) || Users.isAdmin(userIdBeingDeleted)){
+		if (!GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest) || Users.isAdmin(userIdBeingDeleted)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		
@@ -92,7 +92,7 @@ public class UserSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUpdateData(int userIdBeingUpdated, int userIdCallingUpdate, String attribute, String newVal ){
-		boolean admin=Users.isAdmin(userIdCallingUpdate);
+		boolean admin=GeneralSecurity.hasAdminWritePrivileges(userIdCallingUpdate);
 		
 		if (userIdBeingUpdated!=userIdCallingUpdate && !admin) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
@@ -135,25 +135,6 @@ public class UserSecurity {
 		return new ValidatorStatusCode(true);
 	}
 
-	public static ValidatorStatusCode canAddOrRemoveDeveloperRole(int userId) {
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user can suspend or reinstate users
-	 * @param userIdMakingRequest The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserSuspendOrReinstateUser(int userIdMakingRequest) {
-		if (!Users.isAdmin(userIdMakingRequest)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-
 	/**
 	 * Checks to see whether the given user can subscribe or unsubscribe users from the report e-mails
 	 * @param userIdMakingRequest The Id of the user making the request
@@ -161,14 +142,14 @@ public class UserSecurity {
 	 * @author Albert Giegerich
 	 */
 	public static ValidatorStatusCode canUserSubscribeOrUnsubscribeUser(int userIdMakingRequest) {
-		if (!Users.hasAdminWritePrivileges(userIdMakingRequest)){
+		if (!GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		return new ValidatorStatusCode(true);
 	}
 
 	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userId) {
-		if (!Users.hasAdminWritePrivileges(userId)){
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -182,7 +163,7 @@ public class UserSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canViewUserPrimitives(int ownerId, int requestUserId){
-		if (Users.hasAdminReadPrivileges(requestUserId) || ownerId==requestUserId){
+		if (GeneralSecurity.hasAdminReadPrivileges(requestUserId) || ownerId==requestUserId){
 			return new ValidatorStatusCode(true);
 		}
 		return new ValidatorStatusCode(false, "You do not have permission to view primitives owned by the given user");

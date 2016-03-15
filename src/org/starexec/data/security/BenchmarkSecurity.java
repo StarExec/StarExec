@@ -5,8 +5,10 @@ import java.util.List;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.util.Validator;
@@ -29,7 +31,7 @@ public class BenchmarkSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to see the given benchmark");
 		
 		}
-		if (!(b.isDownloadable() || b.getUserId()==userId || Users.hasAdminReadPrivileges(userId))) {
+		if (!(b.isDownloadable() || b.getUserId()==userId || GeneralSecurity.hasAdminReadPrivileges(userId))) {
 			return new ValidatorStatusCode(false, "The given benchmark has been marked as being not downloadable");
 		}
 		
@@ -69,16 +71,15 @@ public class BenchmarkSecurity {
 			return new ValidatorStatusCode(false, "The benchmark could not be found");
 		}
 		//the benchmark doesn't need to be downloadable if this is the owner
-		if (b.getUserId()==userId || Users.isAdmin(userId)) {
+		if (b.getUserId()==userId || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(true);
 		}
 		
 		if(Permissions.canUserSeeBench(b.getId(), userId) && b.isDownloadable()) {				
-			return new ValidatorStatusCode(true);
-			
-		} else {
-			return new ValidatorStatusCode(false, "You do not have permission to see the contents of this benchmark");
+			return new ValidatorStatusCode(true);	
 		}
+		return new ValidatorStatusCode(false, "You do not have permission to see the contents of this benchmark");
+		
 	}
 	
 	
@@ -250,7 +251,7 @@ public class BenchmarkSecurity {
 	 */
 	
 	private static boolean userOwnsBenchOrIsAdmin(Benchmark bench,int userId) {
-		return (bench.getUserId()==userId || Users.isAdmin(userId));
+		return (bench.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId));
 	}
 	
 	/**
@@ -260,7 +261,7 @@ public class BenchmarkSecurity {
 	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserRecycleOrphanedBenchmarks(int userIdToDelete, int userIdMakingRequest) {
-		if (userIdToDelete!=userIdMakingRequest && !Users.isAdmin(userIdMakingRequest)) {
+		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "You do not have permission to recycle benchmarks belonging to another user");
 		}
 		
@@ -284,4 +285,18 @@ public class BenchmarkSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks to see if the user belongs to the given upload status
+	 * @param statusId The space to check if the user can see
+	 * @param userId The user that is requesting to view the given upload status
+	 * @return True if the user owns the status, false otherwise
+	 * @author Benton McCune
+	 */
+	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return true;
+		}
+		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
+		return status.getUserId()==userId;
+	}
 }

@@ -675,7 +675,6 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure=null;
 			if (!includeDeleted) {
 				procedure = con.prepareCall("{CALL GetJobById(?)}");
 			} else {
@@ -774,7 +773,7 @@ public class Jobs {
 	 * 
 	 * @param job The job to make the mapping for
 	 * @param stageNumber Stage number to get mapping for
-	 * @return
+	 * @return Map from job space ID to solver stats objects
 	 */
 	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(Job job, int stageNumber) {
 		Map<Integer, List<SolverStats>> outputMap = buildJobSpaceIdToSolverStatsMap(job, stageNumber);
@@ -1508,6 +1507,7 @@ public class Jobs {
 	 * Gets all the JobPairs in a given job space that were solved by every solver/configuration pair in that space
 	 * @param jobSpaceId The ID of the job space to get the pairs for
 	 * @param stageNumber The stage number to get data for
+	 * @param primitivesToAnonymize Object indicating which of solvers and benchmarks to anonymize
 	 * @return All the job pairs in the given job space that are "synchronized" as defined above
 	 */
 	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId,int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
@@ -1552,6 +1552,7 @@ public class Jobs {
 	 * @param jobSpaceId The ID of the job space containing the pairs
 	 * @param wallclock True if we are using wallclock time and false to use CPU time
 	 * @param stageNumber The stage number to get results for
+	 * @param primitivesToAnonymize Object indicating which of solvers and benchmarks to anonymize
 	 * @param totals Must be a size 2 array. The first slot will have the number of results before the query, and the second slot will have the number of results after the query
 	 * @return The job pairs needed to populate the page
 	 */
@@ -1794,6 +1795,7 @@ public class Jobs {
 	 * to display in a SolverStats table. Only the given stage is returned
 	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
 	 * @param stageNumber The stage number to get data for
+	 * @param primitivesToAnonymize Object indicating which of solvers and benchmarks to anonymize
 	 * @return A list of job pairs for the given job for which the solver is in the given space
 	 * @author Eric Burns
 	 */
@@ -2084,9 +2086,7 @@ public class Jobs {
 			
 		
 		}catch (Exception e) {
-			log.error("getJobPairsShallowByConfigInJobSpace says " +e.getMessage(),e);
-		} finally {
-			
+			log.error(e.getMessage(),e);
 		}
 		return null;
 	}
@@ -2256,10 +2256,7 @@ public class Jobs {
 			return jobs;
 		} catch (Exception e){			
 			log.error("getJobsForNextPageSays " + e.getMessage(), e);
-		} finally {
-			
 		}
-
 		return null;
 	}
 
@@ -3027,23 +3024,22 @@ public class Jobs {
 			    //we need to check to see if the benchId and configId are null, since they might
 			    //have been deleted while the the job is still pending
 			    
-			    Integer configId=results.getInt("jobpair_stage_data.config_id");
+			    int configId=results.getInt("jobpair_stage_data.config_id");
 			    String configName=results.getString("jobpair_stage_data.config_name");
 			    Configuration c=new Configuration();
 			    c.setId(configId);
 			    c.setName(configName);
 			    stage.setConfiguration(c);
 
-			    if (configId!=null) {
-				    Solver s = Solvers.resultToSolver(results, "solvers");
-					stage.setSolver(s /* could be null, if Solver s above was null */);
-					if (s!=null) {
-						if (!solverIdsToTimestamps.containsKey(s.getId())) {
-							solverIdsToTimestamps.put(s.getId(), Solvers.getMostRecentTimestamp(con,s.getId()));
-						}
-						s.setMostRecentUpdate(solverIdsToTimestamps.get(s.getId()));
+				Solver s = Solvers.resultToSolver(results, "solvers");
+				stage.setSolver(s /* could be null, if Solver s above was null */);
+				if (s!=null) {
+					if (!solverIdsToTimestamps.containsKey(s.getId())) {
+						solverIdsToTimestamps.put(s.getId(), Solvers.getMostRecentTimestamp(con,s.getId()));
 					}
-			    }			    
+					s.setMostRecentUpdate(solverIdsToTimestamps.get(s.getId()));
+				}
+			    		    
 			} 
 			catch (Exception e) {
 			    log.error("there was an error making a single job pair object");
