@@ -513,19 +513,18 @@ public class RESTServices {
 	@Produces("text/plain")	
 	public String getJobPairStdout(@PathParam("id") int id,@PathParam("stageNumber") int stageNumber, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		JobPair jp = JobPairs.getPair(id);
+		if (jp==null) {
+			return "not available";
+		}
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
 		if (!status.isSuccess()) {
 			return "not available";
-		}
-		if(jp != null) {			
-			String stdout = JobPairs.getStdOut(jp.getId(),stageNumber, limit);
-			if(!Util.isNullOrEmpty(stdout)) {
-				return stdout;
-			}				
-			
-		
-		}
+		}		
+		String stdout = JobPairs.getStdOut(jp.getId(),stageNumber, limit);
+		if(!Util.isNullOrEmpty(stdout)) {
+			return stdout;
+		}				
 		
 		return "not available";
 	}
@@ -4302,7 +4301,7 @@ public class RESTServices {
 		} else if (inputLevel.equalsIgnoreCase("warn")) {
 			level = Level.WARN;
 		} else if (inputLevel.equalsIgnoreCase("clear")) {
-			level = null;
+			// no action needed: level is already null
 		} else {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
@@ -4483,7 +4482,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String suspendUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(id)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
@@ -4502,7 +4501,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String reinstateUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(id)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		
