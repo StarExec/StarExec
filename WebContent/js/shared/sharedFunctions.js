@@ -47,7 +47,7 @@ function setupHandlersForCommunityRequestAcceptDeclineButtons() {
 function initCommunityRequestsTable(tableSelector, getAllCommunities, communityId) {
 	'use strict';
 	return $(tableSelector).dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,

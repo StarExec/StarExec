@@ -15,11 +15,11 @@ $(document).ready(function(){
 	 log('User Id is: ' + userId);
 
 	memberTable = $('#members').dataTable( {
-		"sDom": 'rt<"bottom"flpi><"clear">'
+		"sDom": getDataTablesDom()
 	    });
 	
 	leaderTable = $('#leaders').dataTable( {
-		"sDom": 'rt<"bottom"flpi><"clear">'
+		"sDom": getDataTablesDom()
 	    });	
 
 

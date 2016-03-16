@@ -5,10 +5,10 @@ $(document).ready(function(){
 	var id = $('#comId').val();
 	
 	leaderTable = $('#leaders').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": getDataTablesDom()
     });
 	memberTable = $('#Members').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": getDataTablesDom()
     });
 	
 	$.get(  

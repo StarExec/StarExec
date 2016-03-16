@@ -223,7 +223,7 @@ function initUI(){
 	});
 	
 	 $("#solverList").dataTable({ 
-			"sDom"			: 'rt<"bottom"flpi><"clear">',
+			"sDom"			: getDataTablesDom(),
 			"iDisplayStart"	: 0,
 			"iDisplayLength": defaultPageSize,
 			"bServerSide"	: true,
@@ -241,7 +241,7 @@ function initUI(){
 		});
 	    
 	    $("#benchmarkList").dataTable({ 
-			"sDom"			: 'rt<"bottom"flpi><"clear">',
+			"sDom"			: getDataTablesDom(),
 			"iDisplayStart"	: 0,
 			"iDisplayLength": defaultPageSize,
 			"bServerSide"	: true,

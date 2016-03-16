@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	$('#pairTbl').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": getDataTablesDom()
     });
 	
 	$('#detailTable').dataTable( {
