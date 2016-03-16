@@ -149,9 +149,7 @@ public class GeneralSecurity {
 		final String methodName = "canUserGetAnonymousLinkForPrimitive";
 		logUtil.entry( methodName );
 		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
-		if ( GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return new ValidatorStatusCode( true );
-		} else if ( primitiveType.equals( R.BENCHMARK )) {
+		if ( primitiveType.equals( R.BENCHMARK )) {
 			logUtil.debug( methodName, 
 					"Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
 			return BenchmarkSecurity.canUserGetAnonymousLink( primitiveId, userId );

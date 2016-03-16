@@ -129,33 +129,6 @@ public class SolverSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void canAssociateWebsite() {
-		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","http://www.test.url").isSuccess());
-		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","http://www.test.url").isSuccess());
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new","http://www.test.url").isSuccess());
-		
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>","http://www.test.url").isSuccess());
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>","http://www.test.url").isSuccess());
-		
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","<script>").isSuccess());
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","<script>").isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanDeleteWebsiteTest() {
-		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
-		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0).getId();
-		Assert.assertEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, owner.getId()).isSuccess());
-		Assert.assertEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, admin.getId()).isSuccess());
-
-		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, regular.getId()).isSuccess());
-		
-		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), -1, owner.getId()).isSuccess());
-		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), -1, admin.getId()).isSuccess());
-	}
-	
-	
-	@StarexecTest
 	private void recycleSolverPermissionTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId()).isSuccess());

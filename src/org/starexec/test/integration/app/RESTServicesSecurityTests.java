@@ -1,6 +1,8 @@
 package org.starexec.test.integration.app;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.starexec.app.RESTServices;
@@ -23,8 +25,10 @@ import org.starexec.test.resources.ResourceLoader;
 import com.google.gson.Gson;
 
 /**
- * This class contains tests for RESTServices that should get rejected for security reasons
- * @author Eric
+ * This class contains tests for RESTServices that should get rejected for security reasons. These
+ * tests exist to make sure that requests that would violate permissions actually do get rejected. Tests
+ * for successful RESTService calls should be written in another class.
+ * @author Eric Burns
  *
  */
 public class RESTServicesSecurityTests extends TestSequence {
@@ -67,6 +71,13 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.getSolverComparisonsPaginated(false, job.getPrimarySpace(), cId, cId,
 				TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.getSolverComparisonsPaginated(false, -1, cId, cId, TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getAnonymousLinkForPrimitiveTest() {
+		assertResultIsInvalid(services.getAnonymousLinkForPrimitive("job",job.getId(),"none", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getAnonymousLinkForPrimitive("job",-1,"none", TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getAnonymousLinkForPrimitive("invalid",job.getId(),"none", TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	@StarexecTest
@@ -176,6 +187,69 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void editJobNameTest() {
+		assertResultIsInvalid(services.editJobName(job.getId(), "test name", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.editJobName(-1, "test name", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void editJobDescTest() {
+		assertResultIsInvalid(services.editJobDescription(job.getId(), "test desc", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.editJobDescription(-1, "test desc", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getAllBenchInSpaceTest() {
+		assertResultIsInvalid(services.getAllBenchmarksInSpace(space.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getAllBenchmarksInSpace(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getPrimitiveDetailsPaginatedTest() {
+		assertResultIsInvalid(services.getPrimitiveDetailsPaginated(space.getId(),"solver", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getPrimitiveDetailsPaginated(-1,"solver", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getSolverWebsitesTest() {
+		assertResultIsInvalid(services.getWebsites("solver",solver.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getWebsites("solver",-1, TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getWebsites("invalid",solver.getId(), TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getSpaceWebsitesTest() {
+		assertResultIsInvalid(services.getWebsites("space",space.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getWebsites("space",-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	private Map<String,String> getNameAndUrlParams() {
+		Map<String,String> params = new HashMap<String,String>();
+		params.put("name", "testname");
+		params.put("url", "http://www.testsite.edu");
+		return params;
+	}
+	
+	@StarexecTest
+	private void addSolverWebsiteTest() {
+		assertResultIsInvalid(services.addWebsite("solver",solver.getId(), TestUtil.getMockHttpRequest(user.getId(), getNameAndUrlParams())));
+		assertResultIsInvalid(services.addWebsite("solver",-1, TestUtil.getMockHttpRequest(admin.getId(),getNameAndUrlParams())));
+		assertResultIsInvalid(services.addWebsite("invalid",solver.getId(), TestUtil.getMockHttpRequest(admin.getId(),getNameAndUrlParams())));
+	}
+	
+	@StarexecTest
+	private void addSpaceWebsiteTest() {
+		assertResultIsInvalid(services.addWebsite("space",space.getId(), TestUtil.getMockHttpRequest(user.getId(), getNameAndUrlParams())));
+		assertResultIsInvalid(services.addWebsite("space",-1, TestUtil.getMockHttpRequest(admin.getId(),getNameAndUrlParams())));
+	}
+	
+	@StarexecTest
+	private void addUserWebsiteTest() {
+		assertResultIsInvalid(services.addWebsite("user",admin.getId(), TestUtil.getMockHttpRequest(user.getId(), getNameAndUrlParams())));
+		assertResultIsInvalid(services.addWebsite("user",-1, TestUtil.getMockHttpRequest(admin.getId(),getNameAndUrlParams())));
+	}
+	
+	@StarexecTest
 	private void getBenchmarkUploadDescription() {
 		assertResultIsInvalid(services.getBenchmarkUploadDescription(benchmarkStatus.getId(), TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.getBenchmarkUploadDescription(-1, TestUtil.getMockHttpRequest(admin.getId())));
@@ -228,6 +302,11 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void cleanErrorStatesTest() {
 		assertResultIsInvalid(services.clearErrorStates(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getAllPrimitiveDetailsPaginationTest() {
+		assertResultIsInvalid(services.getAllPrimitiveDetailsPagination("user",TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	

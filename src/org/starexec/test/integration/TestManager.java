@@ -76,10 +76,7 @@ public class TestManager {
 		tests.add(new StatisticsTests());
 		tests.add(new UploadSecurityTests());
 		tests.add(new RESTServicesSecurityTests());
-		//tests.add(new LoginTests());
-		//tests.add(new UploadSolverTests());
-		//tests.add(new UploadBenchmarksTests());
-		//tests.add(new SpaceExplorerTests());
+		tests.add(new WebsiteSecurityTests());
 	}
 	/**
 	 * 

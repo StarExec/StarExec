@@ -10,67 +10,6 @@ import org.starexec.util.Validator;
 public class UserSecurity {
 	
 	/**
-	 * Checks to see whether the given website is allowed to be associated with a user
-	 * @param userId the id of the user who is getting a new website.
-	 * @param visitingUserId the id of the user who is adding the new website.
-	 * @param name The name to be given the new website
-	 * @param URL the URL of the website
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canAssociateWebsite(int userId, int visitingUserId, String name, String URL){
-
-		boolean visitingUserHasAdminPrivileges = GeneralSecurity.hasAdminWritePrivileges(visitingUserId);
-		boolean visitingUserIsOwner = (userId == visitingUserId);
-		if (!(visitingUserIsOwner || visitingUserHasAdminPrivileges)) {
-			return new ValidatorStatusCode(false, "You do not have permission to add a website here.");
-		}
-		if (Users.isPublicUser(visitingUserId)) {
-			return new ValidatorStatusCode(false, "The guest user profile cannot be updated");
-		}
-		
-		
-		if (!Validator.isValidWebsiteName(name)) {
-			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the correct format");
-		}
-		
-		if (!Validator.isValidWebsite(URL)) {
-			return new ValidatorStatusCode(false, "The given URL is not formatted correctly. Please refer to the help pages to see the correct format");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to delete a website associated with a space
-	 * @param websiteId The ID of the website to be deleted
-	 * @param userId The ID of the user who is making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canDeleteWebsite(int userId,int websiteId){
-		if (Users.isPublicUser(userId)) {
-			return new ValidatorStatusCode(false, "The guest user profile cannot be updated");
-		}
-		
-		List<Website> websites=Websites.getAll(userId,WebsiteType.USER);
-		boolean websiteInSpace=false;
-		for (Website w : websites) {
-			
-			if (w.getId()==websiteId) {
-				websiteInSpace=true;
-				break;
-			}
-		}
-		
-		if (!websiteInSpace) {
-			return new ValidatorStatusCode(false, "The given website is not associated with the given user");
-		}
-		
-		return new ValidatorStatusCode(true);
-	}
-	
-	
-	
-	
-	/**
 	 * Checks to see whether one user is allowed to delete another
 	 * @param userIdBeingDeleted The ID of the user that would be deleted
 	 * @param userIdMakingRequest The ID of the user doing the deleting

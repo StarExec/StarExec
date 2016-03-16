@@ -1,7 +1,9 @@
 package org.starexec.test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
@@ -182,10 +184,23 @@ public class TestUtil {
 	 * @return The mock session
 	 */
 	public static HttpServletRequest getMockHttpRequest(int userId) {
+		return getMockHttpRequest(userId, new HashMap<String,String>());
+	}
+	/**
+	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
+	 * the given user
+	 * @param userId
+	 * @param parameters Parameters to add to the mock http session.
+	 * @return The mock session
+	 */
+	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters) {
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpSession session = Mockito.mock(HttpSession.class);
 		User u = new User();
 		Mockito.when(session.getAttribute(SessionUtil.USER)).thenReturn(u);
+		for (String s : parameters.keySet()) {
+			Mockito.when(session.getAttribute(s)).thenReturn(parameters.get(s));
+		}
 		Mockito.when(request.getSession()).thenReturn(session);
 		return request;
 	}

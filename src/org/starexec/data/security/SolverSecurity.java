@@ -17,30 +17,7 @@ import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 
 public class SolverSecurity {
-	/**
-	 * Checks to see whether the given user can add a new website to the given solver
-	 * @param solverId The ID of the solver being checked
-	 * @param userId The ID of the user making the request
-	 * @param name The name to be given the new website
-	 * @param URL The URL of the new website
-	 * @return new ValidatorStatusCode(true) if the operation is allowed or a status code from ValidatorStatusCodes if not
-	 */
-	public static ValidatorStatusCode canAssociateWebsite(int solverId, int userId,String name, String URL) {
-		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to associate a website with this solver");
-		}
-		
-		if (!Validator.isValidWebsiteName(name) ) {
-			return new ValidatorStatusCode(false, "The website name is not formatted correctly. Please refer to the help pages to see the correct format");
-		}
-		
-		if (!Validator.isValidWebsite(URL)) {
-			return new ValidatorStatusCode(false, "The website url is not formatted correctly. Please refer to the help pages to see the correct format");
-		}
-		
-		
-		return new ValidatorStatusCode(true);
-	}
+
 	
 	/**
 	 * Checks whether the user can see the build log for the given solver. They must
@@ -104,12 +81,12 @@ public class SolverSecurity {
 	}
 	
 	/**
-	 * Checks to see whether the given user can add a new website to the given solver
+	 * Checks to see whether the given user can view the given solver
 	 * @param solverId The ID of the solver being checked
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed or a status code from ValidatorStatusCodes if not
 	 */
-	public static ValidatorStatusCode canViewWebsites(int solverId, int userId) {
+	public static ValidatorStatusCode canUserSeeSolver(int solverId, int userId) {
 		
 		if(!Permissions.canUserSeeSolver(solverId, userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see this solver");
@@ -118,31 +95,7 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks to see whether the given user is allowed to delete a website associated with a solver
-	 * @param solverId The ID of the solver that contains the site to be deleted
-	 * @param websiteId The ID of the website to be deleted
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canDeleteWebsite(int solverId,int websiteId,int userId){
-		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to delete websites from this solver");
-		}
-		List<Website> websites=Websites.getAllForJavascript(solverId,WebsiteType.SOLVER);
-		boolean websiteInSolver=false;
-		for (Website w : websites) {
-			if (w.getId()==websiteId) {
-				websiteInSolver=true;
-				break;
-			}
-		}
-		if (!websiteInSolver) {
-			return new ValidatorStatusCode(false, "The given website is not associated with the given solver");
-		}
-		
-		return new ValidatorStatusCode(true);
-	}
+
 	
 	/**
 	 * Checks to see whether the user can update a solver with the given attributes
@@ -327,6 +280,16 @@ public class SolverSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to restore this solver");
 		}
 		return new ValidatorStatusCode(true);
+	}
+	
+	/**
+	 * Checks to see if the given user either owns the given solver or is an admin
+	 * @param solverId
+	 * @param userId
+	 * @return True if the user owns the solver OR is an admin, and false otherwise
+	 */
+	public static boolean userOwnsSolverOrIsAdmin(int solverId,int userId) {
+		return userOwnsSolverOrIsAdmin(Solvers.get(solverId), userId);
 	}
 	
 

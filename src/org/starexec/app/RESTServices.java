@@ -55,6 +55,7 @@ import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.security.WebsiteSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UploadSecurity;
@@ -1236,12 +1237,12 @@ public class RESTServices {
 			@PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock,
 			@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		JobSpace space = Spaces.getJobSpace(jobSpaceId);
-		ValidatorStatusCode status=JobSecurity.canUserSeeJob(space.getJobId(), userId);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		} else {
+			JobSpace space = Spaces.getJobSpace(jobSpaceId);
 			return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, space, PrimitivesToAnonymize.NONE, shortFormat, wallclock );
 		}
 	}
@@ -1294,13 +1295,11 @@ public class RESTServices {
 	 * @return a JSON object representing the next page of entries if successful,<br>
 	 * 		1 if the request fails parameter validation, <br>
 	 * @author Wyatt kaiser
-	 * @throws Exception
 	 */
-	//TODO: Continue
 	@POST
 	@Path("/{primType}/admin/pagination/")
 	@Produces("application/json")
-	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {
+	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
@@ -1485,12 +1484,11 @@ public class RESTServices {
 	 * @param spaceId The ID of the space to get benchmarks for
 	 * @param request
 	 * @return json object for a new DataTables page of benchmarks
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/job/{spaceId}/allbench/pagination/")
 	@Produces("application/json")	
-	public String getPrimitiveDetailsPaginated(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) throws Exception {	
+	public String getAllBenchmarksInSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {	
 		log.debug("got a request to getPrimitiveDetailsPaginated!");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
@@ -1517,12 +1515,11 @@ public class RESTServices {
 	 * 		1 if the request fails parameter validation,<br> 
 	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
 	 * @author Todd Elvers
-	 * @throws Exception 
 	 */
 	@POST
 	@Path("/space/{id}/{primType}/pagination/")
 	@Produces("application/json")	
-	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) throws Exception {	
+	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {	
 		log.debug("got a request to getPrimitiveDetailsPaginated!");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
@@ -1584,7 +1581,6 @@ public class RESTServices {
 		
 		return null;
 	}	
-		
 	
 	/**
 	 * @param request
@@ -1618,11 +1614,18 @@ public class RESTServices {
 	public String getWebsites(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		if(type.equals("user")){
-			return gson.toJson(Websites.getAllForJavascript(userId, WebsiteType.USER));
+			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.USER));
 		} else if(type.equals("space")){
-			//SolverSecurity.canAssociateWebsite(solverId, userId, name)
+			ValidatorStatusCode status = SpaceSecurity.canUserSeeSpace(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
-		} else if (type.equals("solver")) {
+		} else if (type.equals(R.SOLVER)) {
+			ValidatorStatusCode status = SolverSecurity.canUserSeeSolver(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
@@ -1645,29 +1648,15 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		String name = request.getParameter("name");
 		String url = request.getParameter("url");	
-		if (type.equals("user")) {
-			ValidatorStatusCode status=UserSecurity.canAssociateWebsite(id, userId, name, url);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
+		ValidatorStatusCode status = WebsiteSecurity.canUserAddWebsite(id, type, userId, name, url);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		if (type.equals(R.USER)) {
 			success = Websites.add(id, url, name,WebsiteType.USER);
-		} else if (type.equals("space")) {
-			// Make sure this user is capable of adding a website to the space
-			ValidatorStatusCode status=SpaceSecurity.canAssociateWebsite(id, userId,name,url);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
-					
-			log.debug("adding website [" + url + "] to space [" + id + "] under the name [" + name + "].");
+		} else if (type.equals(R.SPACE)) {
 			success = Websites.add(id, url, name, WebsiteType.SPACE);
-			
-		} else if (type.equals("solver")) {
-			//Make sure this user is the solver owner
-			ValidatorStatusCode status=SolverSecurity.canAssociateWebsite(id, userId,name,url);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
-			
+		} else if (type.equals(R.SOLVER)) {
 			success = Websites.add(id, url, name, WebsiteType.SOLVER);
 			
 		}
@@ -1690,33 +1679,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String deleteWebsite(@PathParam("websiteId") int websiteId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		Website w = Websites.getWebsite(websiteId);
-		if (w==null) {
-			return gson.toJson(new ValidatorStatusCode(false, "The given website could not be found"));
-		}
-		if(w.getType()==WebsiteType.USER){
-			ValidatorStatusCode status=UserSecurity.canDeleteWebsite(userId, websiteId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
-		} else if (w.getType()==WebsiteType.SPACE){
-			// Permissions check; ensures the user deleting the website is a leader
-			ValidatorStatusCode status=SpaceSecurity.canDeleteWebsite(w.getPrimId(),websiteId, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
-			
-		} else if (w.getType()==WebsiteType.SOLVER) {
-			
-			ValidatorStatusCode status=SolverSecurity.canDeleteWebsite(w.getPrimId(),websiteId, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
-			
-			
-		} else  {
-			return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
-
+		ValidatorStatusCode status = WebsiteSecurity.canUserDeleteWebsite(websiteId, userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
 		return Websites.delete(websiteId) ? gson.toJson(new ValidatorStatusCode(true,"Website deleted successfully")) : gson.toJson(ERROR_DATABASE);
 
@@ -4686,7 +4651,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getGsonPrimitive(@Context HttpServletRequest request, @PathParam("id") int id, @PathParam("type") String type) {
 		int userId=SessionUtil.getUserId(request);
-		if (type.equals("solver")) {
+		if (type.equals(R.SOLVER)) {
 			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
