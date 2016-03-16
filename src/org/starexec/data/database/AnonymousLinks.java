@@ -142,6 +142,7 @@ public class AnonymousLinks {
 	 * @param primitiveId The id of the primitive for which a public anonymous link will be generated.
 	 * @param primitiveType The type of primitive (benchmark, solver, etc.) that a link will be generated for.
 	 * @param primitivesToAnonymize the enum representing which primitives should be anonymized for this anonymous page.
+	 * @return The unique ID that was used as the new anonymous link
 	 * @throws SQLException if the database fails.
 	 * @author Albert Giegerich
 	 */

@@ -95,6 +95,21 @@ public class JobSecurity {
 	
 	/**
 	 * Checks if a job is associated with a given anonymous link uuid.
+	 * @param anonymousLinkUuid A uuid that needs to be checked if it is connected to the given job space.
+	 * @param jobSpaceId The id of the job space to check
+	 * @return true ValidatorStatusCode if successful otherwise a false ValidatorStatusCode 
+	 * @author Eric Burns
+	 */
+	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJobSpace( String anonymousLinkUuid, int jobSpaceId ) {
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		if (space==null) {
+			return new ValidatorStatusCode(false, "The given job space could not be found");
+		}
+		return isAnonymousLinkAssociatedWithJob(anonymousLinkUuid, space.getJobId());
+	}
+	
+	/**
+	 * Checks if a job is associated with a given anonymous link uuid.
 	 * @param anonymousLinkUuid A uuid that needs to be checked if it is connected to the given job.
 	 * @param jobId The id of the job to check
 	 * @return true ValidatorStatusCode if successful otherwise a false ValidatorStatusCode 

@@ -910,7 +910,6 @@ public class RESTServices {
 	 * @param request
 	 * @return json DataTables object with the next page of job pairs
 	 */
-	//TODO: Resume testing here.
 	@POST
 	@Path("/jobs/pairs/pagination/anonymousLink/{anonymousLinkUuid}/{jobSpaceId}/{wallclock}/{syncResults}/{stageNumber}/{primitivesToAnonymizeName}")
 	@Produces("application/json")	
@@ -926,11 +925,8 @@ public class RESTServices {
 		final String methodName = "getJobPairsPaginatedWithAnonymousLink";
 		try {
 			logUtil.entry( methodName );
-
-			int jobId = Spaces.getJobSpace( jobSpaceId ).getJobId();
-			logUtil.debug( methodName, "Job id for link " + anonymousLinkUuid + " is " + jobId );
 			
-			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousLinkUuid, jobId );
+			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace(anonymousLinkUuid, jobSpaceId);
 
 			if ( !status.isSuccess() ) {
 				return gson.toJson( status );
@@ -999,9 +995,7 @@ public class RESTServices {
 		final String methodName = "getSpaceOverviewGraph";
 		logUtil.entry( methodName );
 
-		JobSpace jobSpace = Spaces.getJobSpace( jobSpaceId );
-		int jobId = jobSpace.getJobId();
-		ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousLinkUuid, jobId );
+		ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace( anonymousLinkUuid, jobSpaceId );
 		if ( !status.isSuccess() ) {
 			return gson.toJson( status );
 		}
@@ -1031,9 +1025,6 @@ public class RESTServices {
 
 		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, PrimitivesToAnonymize.NONE );
 	}
-
-
-
 
     /**
      * Handles a request to get a community statistical overview
@@ -1129,15 +1120,11 @@ public class RESTServices {
 					"\tconfig2: "+config2+"\n"+
 					"\tedgeLengthInPixels: "+edgeLengthInPixels+"\n"+
 					"\taxisColor: "+axisColor+"\n");
-						
-			JobSpace jobSpace = Spaces.getJobSpace( jobSpaceId );
-			int jobId = jobSpace.getJobId();
-			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousLinkUuid, jobId );
+			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace(anonymousLinkUuid, jobSpaceId);
 
 			if ( !status.isSuccess() ) {
 				return gson.toJson( status );
-			} 
-
+			}
 
 			PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 			return RESTHelpers.getSolverComparisonGraphJson(
@@ -1216,12 +1203,13 @@ public class RESTServices {
 		final String methodName = "getAnonymousJobStatsPaginated";
 		try {
 
-			JobSpace jobSpace = Spaces.getJobSpace(jobSpaceId);
-			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob( anonymousJobLink, jobSpace.getJobId() );
+			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace(anonymousJobLink, jobSpaceId);
 			if ( !status.isSuccess() ) {
 				return gson.toJson( status );
 			} else {
 				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
+				JobSpace jobSpace = Spaces.getJobSpace(jobSpaceId);
+
 				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock );
 			}
 		} catch (RuntimeException e) {
@@ -1308,6 +1296,7 @@ public class RESTServices {
 	 * @author Wyatt kaiser
 	 * @throws Exception
 	 */
+	//TODO: Continue
 	@POST
 	@Path("/{primType}/admin/pagination/")
 	@Produces("application/json")

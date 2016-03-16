@@ -550,7 +550,7 @@ public class RESTHelpers {
 		JsonObject nextDataTablesPage = RESTHelpers.convertSolverStatsToJsonObject(
 				solverStats, 
 				new DataTablesQuery( solverStats.size(), solverStats.size(), 1 ), 
-				jobSpace,
+				jobSpace.getId(),
 				shortFormat,
 				wallclock,
 				primitivesToAnonymize
@@ -1756,7 +1756,7 @@ public class RESTHelpers {
 	 * 
 	 * @param stats The SolverStats that will be the rows of the table
 	 * @param query a DataTablesQuery object
-	 * @param space The JobSpace these stats are for
+	 * @param jobSpaceId The space
 	 * @param shortFormat Whether to include all fields (false) or only fields for the subspace overview (true)
 	 * @param wallTime Whether to use wallclock times (true) or cpu times (false).
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
@@ -1765,7 +1765,7 @@ public class RESTHelpers {
 	 */
 
 	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query, 
-			JobSpace space, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
+			int spaceId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1781,7 +1781,6 @@ public class RESTHelpers {
 
 			if (!shortFormat) {
 				
-				int spaceId = space.getId();
 				int configId = js.getConfiguration().getId();
 				int stageNumber = js.getStageNumber();
 				
@@ -1858,7 +1857,7 @@ public class RESTHelpers {
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
 			query.setSyncValue(1);
-			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace,true,wallclock, PrimitivesToAnonymize.NONE);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace.getId(),true,wallclock, PrimitivesToAnonymize.NONE);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}

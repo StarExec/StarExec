@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.app.RESTServices;
+import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
@@ -38,7 +40,8 @@ public class RESTServicesSecurityTests extends TestSequence {
 	BenchmarkUploadStatus benchmarkStatus = null;
 	SpaceXMLUploadStatus spaceStatus = null;
 	int invalidBenchId = 0;
-	private static Gson gson = new Gson();
+	String anonymousJobId = null;
+	private Gson gson = new Gson();
 
 	private void assertResultIsInvalid(String result) {
 		Assert.assertFalse(gson.fromJson(result, ValidatorStatusCode.class).isSuccess());
@@ -65,6 +68,71 @@ public class RESTServicesSecurityTests extends TestSequence {
 				TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.getSolverComparisonsPaginated(false, -1, cId, cId, TestUtil.getMockHttpRequest(user.getId())));
 	}
+	
+	@StarexecTest
+	private void getJobPairsPaginatedWithAnonymousLinkTest() {
+		assertResultIsInvalid(services.getJobPairsPaginatedWithAnonymousLink(anonymousJobId,1, false,
+				-1,false,"none", TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getJobPairsPaginatedWithAnonymousLink("",1, false,
+				job.getPrimarySpace(),false,"none", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+
+	@StarexecTest
+	private void getAnonymousSpaceOverviewGraphTest() {
+		assertResultIsInvalid(services.getSpaceOverviewGraph(1,anonymousJobId,
+				-1,"none", TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getSpaceOverviewGraph(1,"",
+				job.getPrimarySpace(),"none", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getAnonymousSolverComparisonGraphTest() {
+		int cId = job.getJobPairs().get(0).getPrimaryConfiguration().getId();
+		assertResultIsInvalid(services.getAnonymousSolverComparisonGraph(anonymousJobId,1,
+				-1,cId,cId,100,"black","none", TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getAnonymousSolverComparisonGraph("",1,
+				job.getPrimarySpace(),cId,cId,100,"none","black",TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getSpaceOverviewGraphTest() {
+		assertResultIsInvalid(services.getSpaceOverviewGraph(1,-1, TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getSpaceOverviewGraph(1,job.getPrimarySpace(),TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getAnonymousJobStatsTest() {
+		assertResultIsInvalid(services.getAnonymousJobStatsPaginated(1,-1,
+				anonymousJobId,"none",false,false, TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getAnonymousJobStatsPaginated(1,job.getPrimarySpace(),
+				"","none",false,false, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getJobStatsTest() {
+		assertResultIsInvalid(services.getJobStatsPaginated(1,-1,false,false, TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getJobStatsPaginated(1,job.getPrimarySpace(),false,false, TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getSolverComparisonGraphTest() {
+		int cId = job.getJobPairs().get(0).getPrimaryConfiguration().getId();
+		assertResultIsInvalid(services.getSolverComparisonGraph(1,
+				-1,cId,cId,100,"black", TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.getSolverComparisonGraph(1,
+				job.getPrimarySpace(),cId,cId,100,"black",TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	
+	@StarexecTest
+	private void getJobPairsPaginatedTest() {
+		assertResultIsInvalid(services.getJobPairsPaginated(1, false,
+				job.getPrimarySpace(),false,TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getJobPairsPaginated(1, false,
+				-1,false, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
 	
 	@StarexecTest
 	private void getJobPairsInSpaceHierarchyByConfigPaginatedTest() {
@@ -176,6 +244,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 		solver = ResourceLoader.loadSolverIntoDatabase(space.getId(), admin.getId());
 		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
 		job = ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		anonymousJobId = AnonymousLinks.addAnonymousLink("job", job.getId(), PrimitivesToAnonymize.NONE);
 		benchmarkStatus = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), admin.getId()));
 		spaceStatus = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(admin.getId()));
 		Uploads.addFailedBenchmark(benchmarkStatus.getId(), "failed", "test message");
