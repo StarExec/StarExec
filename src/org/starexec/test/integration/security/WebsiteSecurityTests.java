@@ -74,7 +74,7 @@ public class WebsiteSecurityTests extends TestSequence {
 	@StarexecTest
 	private void CanDeleteSolverWebsiteTest() {
 		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
-		int websiteId=Websites.getAll(space.getId(), WebsiteType.SOLVER).get(0).getId();
+		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0).getId();
 		Assert.assertTrue(WebsiteSecurity.canUserDeleteWebsite(websiteId, owner.getId()).isSuccess());
 		Assert.assertTrue(WebsiteSecurity.canUserDeleteWebsite(websiteId, admin.getId()).isSuccess());
 		

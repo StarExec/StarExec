@@ -220,7 +220,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void getSpaceWebsitesTest() {
 		assertResultIsInvalid(services.getWebsites("space",space.getId(), TestUtil.getMockHttpRequest(user.getId())));
-		assertResultIsInvalid(services.getWebsites("space",-1, TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	private Map<String,String> getNameAndUrlParams() {
