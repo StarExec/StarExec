@@ -728,12 +728,13 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getFinishedJobPairsForMatrix(@PathParam("jobSpaceId") int jobSpaceId, 
 											   @PathParam("stageId") int stageNumber, @Context HttpServletRequest request) {
-		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
 		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode valid =JobSecurity.canUserSeeJob(jobId, userId);
+		ValidatorStatusCode valid =JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 		if (!valid.isSuccess()) {
 			return gson.toJson(valid);
 		}
+		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
+
 		final String method = "getFinishedJobPairsForMatrix";
 		logUtil.entry(method);
 		logUtil.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageNumber);

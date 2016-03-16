@@ -61,6 +61,9 @@ public class JobSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeJobSpace(int jobSpaceId, int userId) {
 		JobSpace s = Spaces.getJobSpace(jobSpaceId);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given job space could not be found");
+		}
 		return canUserSeeJob(s.getJobId(), userId);
 	}
 	
