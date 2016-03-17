@@ -43,6 +43,25 @@ public class StageAttributes {
 					return null;				
 			}
 		}
+		
+		/**
+		 * Returns a SaveResultsOption given one of the strings defined
+		 * in batchJobSchema.xsd
+		 * @param val
+		 * @return
+		 */
+		public static SaveResultsOption stringToOption(String val) {
+			switch(val) {
+			case "NoSave":
+				return NO_SAVE;
+			case "Save":
+				return SAVE;
+			case "CreateBench":
+				return CREATE_BENCH;
+			default:
+				return null;
+			}
+		}
 	}
 	
 	

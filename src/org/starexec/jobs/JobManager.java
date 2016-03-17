@@ -42,8 +42,6 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
-import org.starexec.data.database.Queues;
-import org.starexec.servlets.BenchmarkUploader;
 
 /**
  * Handles all SGE interactions for job submission and maintenance
@@ -56,6 +54,12 @@ public abstract class JobManager {
 
 	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
 	
+	/**
+	 * Returns the string representation of the LoadBalanceMonitor for the given queue.
+	 * @param queueId
+	 * @return The string. Note that it may be slightly out of date, as it is only updated once per run of
+	 * JobManager.submitJobs.
+	 */
 	public static String getLoadRepresentationForQueue(int queueId) {
 		log.debug("retrieving load data for queue = "+queueId);
 		if (queueToMonitor.containsKey(queueId)){
@@ -383,6 +387,8 @@ public abstract class JobManager {
 		List<String> argStrings=new ArrayList<String>();
 		List<String> benchSuffixes=new ArrayList<String>();
 		List<Integer> resultsIntervals = new ArrayList<Integer>();
+		List<Integer> stdoutSaveOptions = new ArrayList<Integer>();
+		List<Integer> extraSaveOptions = new ArrayList<Integer>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -405,6 +411,8 @@ public abstract class JobManager {
 			solverPaths.add(stage.getSolver().getPath());
 			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
 			resultsIntervals.add(attrs.getResultsInterval());
+			stdoutSaveOptions.add(attrs.getStdoutSaveOption().getVal());
+			extraSaveOptions.add(attrs.getExtraOutputSaveOption().getVal());
 			if (attrs.getSpaceId()==null) {
 				spaceIds.add(null);
 			} else {
@@ -486,6 +494,9 @@ public abstract class JobManager {
 		replacements.put("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		replacements.put("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
 		replacements.put("$$RESULTS_INTERVAL_ARRAY$$", numsToBashArray("RESULTS_INTERVALS", resultsIntervals));
+		replacements.put("$$STDOUT_SAVE_OPTION_ARRAY$$", numsToBashArray("STDOUT_SAVE_OPTIONS", stdoutSaveOptions));
+		replacements.put("$$EXTRA_SAVE_OPTION_ARRAY$$", numsToBashArray("EXTRA_SAVE_OPTIONS", extraSaveOptions));
+
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));

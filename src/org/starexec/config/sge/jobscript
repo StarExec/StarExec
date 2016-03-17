@@ -93,6 +93,10 @@ $$BENCH_SUFFIX_ARRAY$$
 
 $$RESULTS_INTERVAL_ARRAY$$
 
+$$STDOUT_SAVE_OPTION_ARRAY$$
+
+$$EXTRA_SAVE_OPTION_ARRAY$$
+
 STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
@@ -249,6 +253,9 @@ ARGUMENT_STRING=${STAGE_DEPENDENCIES[$STAGE_INDEX]}
 CURRENT_BENCH_SUFFIX=${BENCH_SUFFIXES[$STAGE_INDEX]}
 SUPPRESS_TIMESTAMP=$$SUPPRESS_TIMESTAMP_OPTION$$
 RESULTS_INTERVAL=${RESULTS_INTERVALS[$STAGE_INDEX]}
+STDOUT_SAVE_OPTION=${STDOUT_SAVE_OPTIONS[$STAGE_INDEX]}
+EXTRA_SAVE_OPTION=${EXTRA_SAVE_OPTIONS[$STAGE_INDEX]}
+
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="$WORKING_DIR_BASE/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 # directory containing all the output files from a solver. This won't exist until the second stage
@@ -334,6 +341,9 @@ log "bench path : $BENCH_PATH"
 log "benchmark suffix : $CURRENT_BENCH_SUFFIX"
 log "argument string : $ARGUMENT_STRING"
 log "results interval : $RESULTS_INTERVAL"
+log "stdout save option : $STDOUT_SAVE_OPTION"
+log "additional output save option : $EXTRA_SAVE_OPTION"
+
 
 if [ "$SANDBOX_FOUND" = true ] ; then
 	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
