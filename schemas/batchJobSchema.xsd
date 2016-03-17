@@ -63,6 +63,17 @@
     	<attribute name="bench-id" type="int" use="required"></attribute>
     </complexType>
     
+    <complexType name="SaveOption">
+        <attribute name="value" type="tns:SaveEnum" use="required"></attribute>
+  	</complexType>
+    
+    <simpleType name="SaveEnum">
+    	<restriction base="string">
+      		<enumeration value="NoSave"/>
+      		<enumeration value="Save"/>
+      		<enumeration value="CreateBench"/>
+    	</restriction>
+    </simpleType>
     
     <complexType name="StageAttributes">
       <sequence>	
@@ -188,13 +199,5 @@
     		<pattern value="[_/\w\-\.\+\^=,!?:$%#@ ]*"/>
   		</restriction>
 	</simpleType>
-	
-	<simpleType name="SaveOption">
-    	<restriction base="string">
-      		<enumeration value="NoSave"/>
-      		<enumeration value="Save"/>
-      		<enumeration value="CreateBench"/>
-    	</restriction>
-  	</simpleType>
     
 </schema>
