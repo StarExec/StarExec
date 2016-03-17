@@ -421,13 +421,15 @@ function killDeadlockedJobPair {
 # $1 Increment, in seconds, at which to copy back output
 # $2 Maximum amount of time to run, in seconds. Should be the timeout for the pair
 # $3 Current stage number
+# $4 the stdout copy option (1 means don't save, otherwise save)
+# $5 the other output copy option (same as above)
 function copyOutputIncrementally {
 	PERIOD=$1
 	TIMEOUT=$2
 	while [ $TIMEOUT -gt 0 ]
 	do
 		sleep $PERIOD
-		copyOutputNoStats $3
+		copyOutputNoStats $3 $4 $5
 		TIMEOUT=$(($TIMEOUT-$PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
@@ -677,6 +679,8 @@ function createDir {
 
 # copys output without doing post-processing or updating the database stats
 # $1 The current stage number
+# $2 the stdout copy option (1 means don't save, otherwise save)
+# $3 the other output copy option (same as above)
 function copyOutputNoStats {
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
@@ -692,8 +696,15 @@ function copyOutputNoStats {
 		
 	fi
 	
-	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
-	rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
+	if [ $2 -ne 1 ]
+	then
+		cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	fi
+	
+	if [ $3 -ne 1 ]
+	then
+		rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
+	fi
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
 	
@@ -704,8 +715,10 @@ function copyOutputNoStats {
 
 # takes in a stage number as an argument so we know where to put the output
 # $1 The current stage number
+# $2 the stdout copy option (1 means don't save, otherwise save)
+# $3 the other output copy option (same as above)
 function copyOutput {
-	copyOutputNoStats $1
+	copyOutputNoStats $1 $2 $3
 	
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE

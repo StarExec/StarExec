@@ -388,7 +388,7 @@ public class JobUtil {
 		}
 		
 		if (DOMHelper.hasElement(stageAttributes, "other-save")) {
-			attrs.setExtraOutputSaveOption(SaveResultsOption.stringToOption(DOMHelper.getElementByName(stageAttributes, "stdout-save").getAttribute("value")));
+			attrs.setExtraOutputSaveOption(SaveResultsOption.stringToOption(DOMHelper.getElementByName(stageAttributes, "other-save").getAttribute("value")));
 		}
 		
 		//validate this new set of parameters

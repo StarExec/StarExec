@@ -358,7 +358,7 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
-		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER &
+		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION &
 		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
     if [ $BUILD_JOB == "true" ]; then
@@ -408,7 +408,7 @@ log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
 # this also does post processing
-copyOutput $CURRENT_STAGE_NUMBER
+copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
 
 if [ "$SPACE_ID" != "" ]; then
 	saveOutputAsBenchmark
