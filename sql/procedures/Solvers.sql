@@ -415,7 +415,7 @@ CREATE PROCEDURE SetSolverPath(IN _solverId INT, IN _path TEXT)
         WHERE id = _solverId;
     END //
 
---This deletes the dummy config from a solver built on Starexec
+-- This deletes the dummy config from a solver built on Starexec
 DROP PROCEDURE IF EXISTS DeleteBuildConfig;
 CREATE PROCEDURE DeleteBuildConfig(IN _solverId INT)
     BEGIN

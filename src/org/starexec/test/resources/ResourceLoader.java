@@ -1,6 +1,7 @@
 package org.starexec.test.resources;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -615,4 +616,29 @@ public class ResourceLoader {
 		}
 	}
 	
+	/**
+	 * Creates a test XML file that uses a solver pipeline and returns the file
+	 * @param configId1 First config to use
+	 * @param configId2 Second config to use
+	 * @param benchId1 First benchmark to use
+	 * @param benchId2 Second benchmark to use
+	 * @return File containing the XML
+	 * @throws IOException
+	 */
+	public static File getTestXMLFile(int configId1, int configId2, int benchId1, int benchId2) throws IOException {
+		File templateFile = getResource("jobXML.xml");
+		String XMLString = FileUtils.readFileToString(templateFile);
+		String schemaLoc = Util.url("public/batchJobSchema.xsd");
+		log.debug("the schema loc is " +schemaLoc);
+		XMLString = XMLString.replace("$$SCHEMA_LOC$$", schemaLoc);
+		XMLString = XMLString.replace("$$CONFIG_ONE$$", configId1+"");
+		XMLString = XMLString.replace("$$CONFIG_TWO$$", configId2+"");
+		
+		XMLString = XMLString.replace("$$BENCH_ONE$$", benchId1+"");
+		XMLString = XMLString.replace("$$BENCH_TWO$$", benchId2+"");
+		log.debug(XMLString);
+		File f = new File(R.DOWNLOAD_FILE_DIR, TestUtil.getRandomAlphaString(50)+".xml");
+		FileUtils.writeStringToFile(f, XMLString);
+		return f;
+	}
 }

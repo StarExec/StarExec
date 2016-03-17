@@ -75,6 +75,9 @@
 		<element name="space-id" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
 		<element name="bench-suffix" type="tns:nameInfo" minOccurs="0" maxOccurs="1"></element>
 		<element name="results-interval" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="stdout-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0"></element>
+		<element name="other-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0"></element>
+		
 		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
 		
@@ -185,5 +188,13 @@
     		<pattern value="[_/\w\-\.\+\^=,!?:$%#@ ]*"/>
   		</restriction>
 	</simpleType>
+	
+	<simpleType name="SaveOption">
+    	<restriction base="string">
+      		<enumeration value="NoSave"/>
+      		<enumeration value="Save"/>
+      		<enumeration value="CreateBench"/>
+    	</restriction>
+  	</simpleType>
     
 </schema>

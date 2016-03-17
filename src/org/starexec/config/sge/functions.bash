@@ -163,9 +163,7 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
-	
-	
-	
+
 }
 
 function createLocalTmpDirectory {

@@ -43,6 +43,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
@@ -602,7 +603,7 @@ public class Jobs {
 	public static boolean addJobStageAttributes(StageAttributes attrs, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL SetJobStageParams(?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,attrs.getJobId());
 			procedure.setInt(2,attrs.getStageNumber());
 			procedure.setInt(3,attrs.getCpuTimeout());
@@ -629,6 +630,8 @@ public class Jobs {
 				procedure.setString(9, attrs.getBenchSuffix());
 			}
 			procedure.setInt(10, attrs.getResultsInterval());
+			procedure.setInt(11, attrs.getStdoutSaveOption().getVal());
+			procedure.setInt(12, attrs.getExtraOutputSaveOption().getVal());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
@@ -4617,6 +4620,9 @@ public class Jobs {
 			attrs.setWallclockTimeout(results.getInt("clockTimeout"));
 			attrs.setBenchSuffix(results.getString("bench_suffix"));
 			attrs.setResultsInterval(results.getInt("results_interval"));
+			attrs.setStdoutSaveOption(SaveResultsOption.valueOf(results.getInt("stdout_save_option")));
+			attrs.setExtraOutputSaveOption(SaveResultsOption.valueOf(results.getInt("extra_output_save_option")));
+
 			return attrs;
 
 		} catch (Exception e) {
