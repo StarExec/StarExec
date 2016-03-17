@@ -410,8 +410,12 @@ grep 'cores:' $WATCHFILE
 # this also does post processing
 copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
 
-if [ "$SPACE_ID" != "" ]; then
-	saveOutputAsBenchmark
+if [ $STDOUT_SAVE_OPTION -eq 3 ]; then
+	saveStdoutAsBenchmark
+fi
+
+if [ $EXTRA_SAVE_OPTION -eq 3 ]; then
+	saveExtraOutputAsBenchmarks
 fi
 
 # cleared below if no error

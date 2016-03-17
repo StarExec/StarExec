@@ -1011,18 +1011,23 @@ log "solver copy complete"
 	return $?	
 }
 
-# Saves the current output 
-function saveOutputAsBenchmark {
-	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
-	CURRENT_OUTPUT_FILE=$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
+# Saves a file as a benchmark on Starexec
+# $1 The path to the file to save
+# $2 1 or 2. Whether to use the pair's benchmark name for the new benchmark name. If 2,
+# uses the name of the given file
+function saveFileAsBenchmark {
+	CURRENT_OUTPUT_FILE=$1
 	BENCH_NAME_ADDON="stage-"
-	
-	# if no suffix is give, we just use the suffix of the benchmark
+	FILE_NAME=$BENCH_NAME
+	if [ $2 -eq 2 ]
+	then
+		FILE_NAME=`basename $1`
+	fi
+	# if no suffix is given, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
-		if [[ "$BENCH_NAME" = *.* ]] ; then
-			CURRENT_BENCH_SUFFIX=".${BENCH_NAME##*.}"
+		if [[ "$FILE_NAME" = *.* ]] ; then
+			CURRENT_BENCH_SUFFIX=".${FILE_NAME##*.}"
 		fi
-		#CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
 	fi
 	 
 	CURRENT_BENCH_NAME=${BENCH_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
@@ -1035,8 +1040,6 @@ function saveOutputAsBenchmark {
 	
 	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
 	
-	
-	
 	createDir $CURRENT_BENCH_PATH
 	
 	CURRENT_BENCH_PATH=$CURRENT_BENCH_PATH/$CURRENT_BENCH_NAME
@@ -1047,6 +1050,24 @@ function saveOutputAsBenchmark {
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
 		log "benchmark $CURRENT_BENCH_NAME copied to $CURRENT_BENCH_PATH"
 	fi
+}
+
+# Saves the current stdout as a new benchmark
+function saveStdoutAsBenchmark {
+	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
+	saveFileAsBenchmark $SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER 1
+}
+
+# Saves the extra output directory as a new set of benchmarks
+function saveExtraOutputAsBenchmarks {
+	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
+	for f in $OUTPUT_DIR 
+	do
+		if [ -f $f ]
+		then
+			saveFileAsBenchmark $f 2
+		fi
+	done
 }
 
 
