@@ -326,8 +326,6 @@ log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
 log "global cpu timeout : $STAREXEC_CPU_LIMIT"
 log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
 log "extra time for job pair after wallclock timeout : $JOB_PAIR_EXTRA_TIME"
-log "stage cpu timeout : ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}"
-log "stage wallclock timeout : ${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}"
 log "mem limit : $CURRENT_STAGE_MEMORY"
 log "solver id : $SOLVER_ID"
 log "solver name : $SOLVER_NAME"
@@ -353,7 +351,7 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
 	echo "Calling killDeadlockedJobPair"
 
-	killDeadlockedJobPair $STAREXEC_WALLCLOCK_LIMIT $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
+	killDeadlockedJobPair $CURRENT_STAGE_WALLCLOCK $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
