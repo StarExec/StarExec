@@ -711,8 +711,6 @@ function copyOutputNoStats {
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
 	
 	rsync -r -u "$OUT_DIR/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
-	echo "contents of $SAVED_PAIR_OTHER_OUTPUT_PATH"
-	ls $SAVED_PAIR_OTHER_OUTPUT_PATH
 }
 
 # takes in a stage number as an argument so we know where to put the output
