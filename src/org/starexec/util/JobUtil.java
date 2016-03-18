@@ -107,6 +107,7 @@ public class JobUtil {
 			Node pipeline = listOfPipelines.item(i);
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
 			if (pipe==null) {
+				log.info("error creating pipeline");
 				return null; // this means there was some error. The error message should have been set already 
 							// the call to createPipelineFromElement
 			}
@@ -225,8 +226,12 @@ public class JobUtil {
 				s.setConfigId(Integer.parseInt(stage.getAttribute("config-id")));
 				// make sure the user is authorized to use the solver they are trying to use
 				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
+				if (solver==null) {
+					errorMessage = "The given configuration could not be found";
+					return null;
+				}
 				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-				    errorMessage = "You do not have permission to see the solver " + solver.getId();
+				    errorMessage = "You do not have permission to see the solver" + solver.getId();
 				    return null;
 				}
 				
