@@ -210,6 +210,19 @@ PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #
 #==============================================================================
 
+
+# directory containing all the output files from a solver. This won't exist until the second stage
+# and onwards
+OTHER_INPUT_PATH=""
+
+# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
+# so, we start with an empty directory here
+if [ $NUM_STAGES -gt 1 ] 
+then
+	mkdir "$OUT_DIR"/empty_output_dir
+	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
+fi
+
 log "the number of stages is $NUM_STAGES"
 
 while [ $STAGE_INDEX -lt $NUM_STAGES ]
@@ -258,17 +271,6 @@ EXTRA_SAVE_OPTION=${EXTRA_SAVE_OPTIONS[$STAGE_INDEX]}
 
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="$WORKING_DIR_BASE/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
-# directory containing all the output files from a solver. This won't exist until the second stage
-# and onwards
-OTHER_INPUT_PATH=""
-
-# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
-# so, we start with an empty directory here
-if [ $NUM_STAGES -gt 1 ] 
-then
-	mkdir "$OUT_DIR"/empty_output_dir
-	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
-fi
 
 #whether the solver was found in the cache
 SOLVER_CACHED=0
