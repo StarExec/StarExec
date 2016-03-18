@@ -637,7 +637,7 @@ public class ResourceLoader {
 		XMLString = XMLString.replace("$$BENCH_ONE$$", benchId1+"");
 		XMLString = XMLString.replace("$$BENCH_TWO$$", benchId2+"");
 		log.debug(XMLString);
-		File f = new File(R.DOWNLOAD_FILE_DIR, TestUtil.getRandomAlphaString(50)+".xml");
+		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50)+".xml");
 		FileUtils.writeStringToFile(f, XMLString);
 		return f;
 	}
