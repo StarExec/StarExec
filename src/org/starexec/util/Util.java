@@ -671,20 +671,23 @@ public class Util {
      * The given directory itself is NOT deleted
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
-     * @param includeDirs True to delete directories as well as files
      */
     public static void clearOldSandboxFiles(String directory, int daysAgo){
-	try {
-	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,true);
-	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
-	    // Remove them all
-	    for(File f : outdatedFiles) {
-	    	sandboxChmodDirectory(f);
-	    	FileUtils.deleteDirectory(f);
-	    }					
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	}
+		try {
+		    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,true);
+		    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
+		    // Remove them all
+		    for(File f : outdatedFiles) {
+		    	sandboxChmodDirectory(f);
+		    	if (f.isDirectory()) {
+			    	FileUtils.deleteDirectory(f);
+		    	} else {
+		    		FileUtils.deleteQuietly(f);
+		    	}
+		    }					
+		} catch (Exception e) {
+		    log.warn(e.getMessage(), e);
+		}
     }
     
     /**
