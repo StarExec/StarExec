@@ -146,7 +146,6 @@ public class JobUtil {
 		
 		logUtil.info(method, "Finished checking to make sure jobs are named.");
 		
-		this.jobCreationSuccess = true;
 		
 		logUtil.info(method, "Creating jobs from elements.");
 		for (int i = 0; i < listOfJobElements.getLength(); i++){
@@ -156,14 +155,13 @@ public class JobUtil {
 				log.info("about to create job from element");
 				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames);
 				if (id < 0) {
-				    this.jobCreationSuccess = false;
 				    break; // out of for loop
 				}
 				jobIds.add(id);
 			}
 		}
 		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
-
+		this.jobCreationSuccess = true;
 		return jobIds;
 	}
 	
@@ -773,7 +771,6 @@ public class JobUtil {
 	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
 		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, Util.url("public/batchJobSchema.xsd"));
 		errorMessage=code.getMessage();
-		this.jobCreationSuccess=code.isSuccess();
 		return code.isSuccess();	
 	}
 
