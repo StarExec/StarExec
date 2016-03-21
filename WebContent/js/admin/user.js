@@ -12,7 +12,7 @@ $(document).ready(function(){
 function initDataTables() {
 	// Setup the DataTable objects
 	userTable = $('#users').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,

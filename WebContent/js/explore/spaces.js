@@ -1217,7 +1217,7 @@ function initDataTables(){
 
 	// Setup the DataTable objects
 	userTable = $('#users').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -1228,7 +1228,7 @@ function initDataTables(){
 		"fnServerData"	: fnPaginationHandler
 	});
 	solverTable = $('#solvers').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -1239,7 +1239,7 @@ function initDataTables(){
 		"fnServerData"	: fnPaginationHandler
 	});
 	benchTable = $('#benchmarks').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -1257,7 +1257,7 @@ function initDataTables(){
 	});
 	
 	jobTable = $('#jobs').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -1274,7 +1274,7 @@ function initDataTables(){
 	});
 
 	spaceTable = $('#spaces').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,

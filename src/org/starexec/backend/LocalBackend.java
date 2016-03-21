@@ -8,16 +8,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
-
-
-//TODO: Setup a thread that starts when the backend is initialized. This thread should just run a single job
-// at a time, sleeping for a while whenever there is no new work. Jobs should just get kept in a simple FIFO queue
-// as they are submitted.
 
 /**
  * This backend implementation does not rely on any external system outside of basic Unix
@@ -49,7 +43,7 @@ public class LocalBackend implements Backend {
 	}	
 	private Map<Integer, LocalJob> activeIds = new HashMap<Integer, LocalJob>();
 	
-	private static final String NODE_NAME = "n001";
+	private String NODE_NAME = "n001";
 	/**
 	 * An ordered queue of all jobs that have been submitted to the backend and have not yet
 	 * completed. Jobs are kept in this queue until they are finished executing, meaning
@@ -250,7 +244,8 @@ public class LocalBackend implements Backend {
 	}
 	
 	@Override
-	public void destroyIf() {		
+	public void destroyIf() {
+		// no deconstruction needed
 	}
 
 	/**
@@ -259,6 +254,13 @@ public class LocalBackend implements Backend {
 	 */
 	@Override
 	public void initialize(String BACKEND_ROOT) {
+		// set the name of the single node used by this backend to the name of the system
+		try {
+			String nodeName = Util.executeCommand("hostname");
+			NODE_NAME=nodeName.split("\n")[0];
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 		final Runnable runLocalJobsRunnable = new RobustRunnable("runLocalJobsRunnable") {
 			@Override
 			protected void dorun() {

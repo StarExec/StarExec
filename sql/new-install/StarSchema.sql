@@ -291,6 +291,8 @@ CREATE TABLE job_stage_params (
 	post_processor INT,
 	pre_processor INT,
 	results_interval INT DEFAULT 0, -- Interval at which to copy back incremental results for pairs, in seconds. 0 means do not use incremental results
+	stdout_save_option INT NOT NULL DEFAULT 2,         -- see SaveResultsOption enum (same for below).
+	extra_output_save_option INT NOT NULL DEFAULT 2,
 	PRIMARY KEY (job_id,stage_number),
 	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,

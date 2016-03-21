@@ -321,7 +321,7 @@ function updateActionId(id, type, global) {
 function initDataTables(){
 	// Setup the DataTable objects
 	requests = $('#qreserves').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,

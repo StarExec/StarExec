@@ -27,40 +27,6 @@ public class SpaceSecurityTests extends TestSequence {
 	Space space2=null; //a private space
 	Space publicSpace=null; //a public space
 	SpaceXMLUploadStatus spaceStatus = null;
-
-	@StarexecTest
-	private void CanAssociateWebsiteTest() {
-		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
-		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","http://www.fake.com").isSuccess());
-		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","http://www.fake.com").isSuccess());
-		Assert.assertEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","http://www.fake.com").isSuccess());
-		
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), nonOwner.getId(),"new","http://www.fake.com").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), nonOwner.getId(),"new","http://www.fake.com").isSuccess());
-		
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"<script>","http://www.fake.com").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"<script>","http://www.fake.com").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"<script>","http://www.fake.com").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"<script>","http://www.fake.com").isSuccess());
-		
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), owner.getId(),"new","<script>").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), owner.getId(),"new","<script>").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space1.getId(), admin.getId(),"new","<script>").isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canAssociateWebsite(space2.getId(), admin.getId(),"new","<script>").isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanDeleteWebsiteTest() {
-		Websites.add(space1.getId(), "https://www.fake.edu", "new", WebsiteType.SPACE);
-		int websiteId=Websites.getAll(space1.getId(), WebsiteType.SPACE).get(0).getId();
-		Assert.assertEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, owner.getId()).isSuccess());
-		Assert.assertEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, admin.getId()).isSuccess());
-
-		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), websiteId, nonOwner.getId()).isSuccess());
-		
-		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, owner.getId()).isSuccess());
-		Assert.assertNotEquals(true,SpaceSecurity.canDeleteWebsite(space1.getId(), -1, admin.getId()).isSuccess());
-	}
 	
 	@StarexecTest
 	private void CanAddUserToSpace() {

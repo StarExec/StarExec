@@ -16,8 +16,10 @@ import org.starexec.constants.R;
 
 import org.starexec.test.integration.StateTests.IntroStateTests;
 import org.starexec.test.integration.app.RESTHelpersTests;
+import org.starexec.test.integration.app.RESTServicesSecurityTests;
 import org.starexec.test.integration.database.*;
 import org.starexec.test.integration.security.*;
+import org.starexec.test.integration.util.JobUtilTests;
 import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
 import org.starexec.test.integration.web.*;
 import org.starexec.util.Util;
@@ -74,10 +76,9 @@ public class TestManager {
 		tests.add(new ProcessorSecurityTests());
 		tests.add(new StatisticsTests());
 		tests.add(new UploadSecurityTests());
-		//tests.add(new LoginTests());
-		//tests.add(new UploadSolverTests());
-		//tests.add(new UploadBenchmarksTests());
-		//tests.add(new SpaceExplorerTests());
+		tests.add(new RESTServicesSecurityTests());
+		tests.add(new WebsiteSecurityTests());
+		tests.add(new JobUtilTests());
 	}
 	/**
 	 * 

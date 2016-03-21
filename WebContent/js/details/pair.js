@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	$('#pairTbl').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": getDataTablesDom()
     });
 	
 	$('#detailTable').dataTable( {
@@ -36,11 +36,11 @@ $(document).ready(function(){
 	});
 	
 	$('#fieldDetails').expandable(false);
-	$('#fieldStats').expandable(true);
-	$('#fieldAttrs').expandable(true);
+	$('.fieldStats').expandable(true);
+	$('.fieldAttrs').expandable(true);
 	$("#fieldActions").expandable(true);
-	$('#fieldOutput').expandable(true);		
-	$('#stageStats').expandable(true);
+	$('.fieldOutput').expandable(true);		
+	$('.stageStats').expandable(true);
 	
 	$('#fieldLog').expandable(true);
 	

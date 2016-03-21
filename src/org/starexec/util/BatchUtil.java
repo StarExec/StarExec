@@ -294,6 +294,7 @@ public class BatchUtil {
 		
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		
 		Document doc = docBuilder.parse(file);
 		Element spacesElement = doc.getDocumentElement();
 		NodeList listOfRootSpaceElements = spacesElement.getChildNodes();

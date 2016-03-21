@@ -88,7 +88,7 @@ function initButton() {
 function initDataTables() {
 	// Setup the DataTable objects
 	jobTable = $('#jobs').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,

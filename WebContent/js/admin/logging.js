@@ -66,7 +66,7 @@ function initUI(){
 	
 	
 	levelTable=$('#tableLevels').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bSort": false,

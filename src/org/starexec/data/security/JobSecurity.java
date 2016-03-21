@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
@@ -18,6 +19,7 @@ import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobPair;
 import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Permission;
@@ -59,6 +61,9 @@ public class JobSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeJobSpace(int jobSpaceId, int userId) {
 		JobSpace s = Spaces.getJobSpace(jobSpaceId);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given job space could not be found");
+		}
 		return canUserSeeJob(s.getJobId(), userId);
 	}
 	
@@ -73,6 +78,34 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to see this job");
 		}
 		return new ValidatorStatusCode(true);
+	}
+	/**
+	 * Checks to see if the given user has permission to see the details of the job that owns the given pair
+	 * @param pairId The ID of the pair
+	 * @param userId The ID of the user making the request
+	 * @return A ValidatorSTatusCode
+	 */
+	public static ValidatorStatusCode canUserSeeJobWithPair(int pairId, int userId) {
+		JobPair jp = JobPairs.getPair(pairId);
+		if (jp==null) {
+			return new ValidatorStatusCode(false, "The given pair could not be found");
+		}
+		return canUserSeeJob(jp.getJobId(),userId);
+	}
+	
+	/**
+	 * Checks if a job is associated with a given anonymous link uuid.
+	 * @param anonymousLinkUuid A uuid that needs to be checked if it is connected to the given job space.
+	 * @param jobSpaceId The id of the job space to check
+	 * @return true ValidatorStatusCode if successful otherwise a false ValidatorStatusCode 
+	 * @author Eric Burns
+	 */
+	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJobSpace( String anonymousLinkUuid, int jobSpaceId ) {
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		if (space==null) {
+			return new ValidatorStatusCode(false, "The given job space could not be found");
+		}
+		return isAnonymousLinkAssociatedWithJob(anonymousLinkUuid, space.getJobId());
 	}
 	
 	/**

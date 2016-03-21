@@ -93,6 +93,10 @@ $$BENCH_SUFFIX_ARRAY$$
 
 $$RESULTS_INTERVAL_ARRAY$$
 
+$$STDOUT_SAVE_OPTION_ARRAY$$
+
+$$EXTRA_SAVE_OPTION_ARRAY$$
+
 STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
@@ -206,6 +210,19 @@ PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #
 #==============================================================================
 
+
+# directory containing all the output files from a solver. This won't exist until the second stage
+# and onwards
+OTHER_INPUT_PATH=""
+
+# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
+# so, we start with an empty directory here
+if [ $NUM_STAGES -gt 1 ] 
+then
+	mkdir "$OUT_DIR"/empty_output_dir
+	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
+fi
+
 log "the number of stages is $NUM_STAGES"
 
 while [ $STAGE_INDEX -lt $NUM_STAGES ]
@@ -249,19 +266,11 @@ ARGUMENT_STRING=${STAGE_DEPENDENCIES[$STAGE_INDEX]}
 CURRENT_BENCH_SUFFIX=${BENCH_SUFFIXES[$STAGE_INDEX]}
 SUPPRESS_TIMESTAMP=$$SUPPRESS_TIMESTAMP_OPTION$$
 RESULTS_INTERVAL=${RESULTS_INTERVALS[$STAGE_INDEX]}
+STDOUT_SAVE_OPTION=${STDOUT_SAVE_OPTIONS[$STAGE_INDEX]}
+EXTRA_SAVE_OPTION=${EXTRA_SAVE_OPTIONS[$STAGE_INDEX]}
+
 #path to where cached solvers are stored
 SOLVER_CACHE_PATH="$WORKING_DIR_BASE/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
-# directory containing all the output files from a solver. This won't exist until the second stage
-# and onwards
-OTHER_INPUT_PATH=""
-
-# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
-# so, we start with an empty directory here
-if [ $NUM_STAGES -gt 1 ] 
-then
-	mkdir "$OUT_DIR"/empty_output_dir
-	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
-fi
 
 #whether the solver was found in the cache
 SOLVER_CACHED=0
@@ -319,8 +328,6 @@ log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
 log "global cpu timeout : $STAREXEC_CPU_LIMIT"
 log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
 log "extra time for job pair after wallclock timeout : $JOB_PAIR_EXTRA_TIME"
-log "stage cpu timeout : ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}"
-log "stage wallclock timeout : ${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}"
 log "mem limit : $CURRENT_STAGE_MEMORY"
 log "solver id : $SOLVER_ID"
 log "solver name : $SOLVER_NAME"
@@ -334,6 +341,9 @@ log "bench path : $BENCH_PATH"
 log "benchmark suffix : $CURRENT_BENCH_SUFFIX"
 log "argument string : $ARGUMENT_STRING"
 log "results interval : $RESULTS_INTERVAL"
+log "stdout save option : $STDOUT_SAVE_OPTION"
+log "additional output save option : $EXTRA_SAVE_OPTION"
+
 
 if [ "$SANDBOX_FOUND" = true ] ; then
 	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
@@ -343,12 +353,12 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
 	echo "Calling killDeadlockedJobPair"
 
-	killDeadlockedJobPair $STAREXEC_WALLCLOCK_LIMIT $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
+	killDeadlockedJobPair $CURRENT_STAGE_WALLCLOCK $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
-		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER &
+		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION &
 		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
     if [ $BUILD_JOB == "true" ]; then
@@ -362,7 +372,6 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 	# run runsolver
 	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-
 	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING
 
 
@@ -398,10 +407,14 @@ log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
 # this also does post processing
-copyOutput $CURRENT_STAGE_NUMBER
+copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
 
-if [ "$SPACE_ID" != "" ]; then
-	saveOutputAsBenchmark
+if [ $STDOUT_SAVE_OPTION -eq 3 ]; then
+	saveStdoutAsBenchmark
+fi
+
+if [ $EXTRA_SAVE_OPTION -eq 3 ]; then
+	saveExtraOutputAsBenchmarks
 fi
 
 # cleared below if no error

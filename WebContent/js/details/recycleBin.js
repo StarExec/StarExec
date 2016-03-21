@@ -90,7 +90,7 @@ $(document).ready(function(){
 
 	//Initiate solver table
 	solverTable = $('#rsolvers').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
@@ -101,7 +101,7 @@ $(document).ready(function(){
    
 	//Initiate benchmark table
 	benchTable = $('#rbenchmarks').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,

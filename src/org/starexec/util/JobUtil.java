@@ -31,6 +31,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.pipelines.*;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.servlets.CreateJob;
 import org.starexec.util.DOMHelper;
 import org.starexec.util.LogUtil;
@@ -106,6 +107,7 @@ public class JobUtil {
 			Node pipeline = listOfPipelines.item(i);
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
 			if (pipe==null) {
+				log.info("error creating pipeline");
 				return null; // this means there was some error. The error message should have been set already 
 							// the call to createPipelineFromElement
 			}
@@ -144,7 +146,6 @@ public class JobUtil {
 		
 		logUtil.info(method, "Finished checking to make sure jobs are named.");
 		
-		this.jobCreationSuccess = true;
 		
 		logUtil.info(method, "Creating jobs from elements.");
 		for (int i = 0; i < listOfJobElements.getLength(); i++){
@@ -154,14 +155,13 @@ public class JobUtil {
 				log.info("about to create job from element");
 				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames);
 				if (id < 0) {
-				    this.jobCreationSuccess = false;
 				    break; // out of for loop
 				}
 				jobIds.add(id);
 			}
 		}
 		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
-
+		this.jobCreationSuccess = true;
 		return jobIds;
 	}
 	
@@ -224,8 +224,12 @@ public class JobUtil {
 				s.setConfigId(Integer.parseInt(stage.getAttribute("config-id")));
 				// make sure the user is authorized to use the solver they are trying to use
 				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
+				if (solver==null) {
+					errorMessage = "The given configuration could not be found";
+					return null;
+				}
 				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-				    errorMessage = "You do not have permission to see the solver " + solver.getId();
+				    errorMessage = "You do not have permission to see the solver" + solver.getId();
 				    return null;
 				}
 				
@@ -304,6 +308,115 @@ public class JobUtil {
 			return null;
 		}
 		return pipeline;
+	}
+	
+	/**
+	 * Converts an XML element to a StageAttributes object
+	 * @param stageAttributes The element to convert
+	 * @param maxStages The max stages present in any pipeline in the job that owns this element. Used
+	 * to verify that stage-nums are chosen properly
+	 * @param userId ID of user that will own this job. Used to verify they have permission to create benchmarks
+	 * in their chosen space
+	 * @param cpuTimeout Default when not specified
+	 * @param wallclock Default when not specified
+	 * @param memoryLimit Default when not specified
+	 * @param queueId ID of the queue for this job. Used to validate chosen timeouts.
+	 * @return
+	 */
+	private StageAttributes elementToStageAttributes(Element stageAttributes, int maxStages, int userId, int cpuTimeout, int wallclock,
+			long memoryLimit, int queueId) {
+		StageAttributes attrs=new StageAttributes();
+		
+		//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
+		
+		int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
+		// the stage number needs to be between 1 and n if there are a maximum of n stages in any pipeline in this job
+		if (neededStageNum<=0 || neededStageNum>maxStages) {
+			errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
+			return null;
+		}
+		attrs.setStageNumber(neededStageNum);
+
+		
+		// all timeouts are optional-- they default to job timeouts if not given
+		int stageCpu=cpuTimeout;
+		if (DOMHelper.hasElement(stageAttributes, "cpu-timeout")) {
+			stageCpu=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "cpu-timeout").getAttribute("value"));
+		}
+		int stageWallclock=wallclock;
+		if (DOMHelper.hasElement(stageAttributes, "wallclock-timeout")) {
+			stageWallclock=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "wallclock-timeout").getAttribute("value"));
+		}
+		long stageMemory=memoryLimit;
+		if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
+			Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+			stageMemory=Util.gigabytesToBytes(gigMem);
+		}
+		
+		//the space to put new benchmarks created from the job output into
+		Integer stageSpace=null;
+		if (DOMHelper.hasElement(stageAttributes, "space-id")) {
+			stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
+		}
+		
+		// if no suffix is given, benchmarks will retain their old suffixes when they are created
+		String stageBenchSuffix=null;
+		if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
+			stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
+		}
+		
+		// If processors are not given in the stage attributes, that means they are not used for this ttage
+		Integer stagePostProcId=null;
+		if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
+			stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
+			attrs.setPostProcessor(Processors.get(stagePostProcId));
+
+		}
+		Integer stagePreProcId=null;
+		if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
+			stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
+			attrs.setPreProcessor(Processors.get(stagePreProcId));
+		
+		}
+		
+		if (DOMHelper.hasElement(stageAttributes, "results-interval")) {
+			int resultsInterval=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "results-interval").getAttribute("value"));
+			attrs.setResultsInterval(resultsInterval);
+		} else {
+			attrs.setResultsInterval(0);
+		}
+		
+		if (DOMHelper.hasElement(stageAttributes, "stdout-save")) {
+			attrs.setStdoutSaveOption(SaveResultsOption.stringToOption(DOMHelper.getElementByName(stageAttributes, "stdout-save").getAttribute("value")));
+		}
+		
+		if (DOMHelper.hasElement(stageAttributes, "other-save")) {
+			attrs.setExtraOutputSaveOption(SaveResultsOption.stringToOption(DOMHelper.getElementByName(stageAttributes, "other-save").getAttribute("value")));
+		}
+		
+		//validate this new set of parameters
+		ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
+		if (!stageStatus.isSuccess()) {
+			errorMessage=stageStatus.getMessage();
+			return null;
+		}
+		
+		//also make sure the user can add both spaces and benchmarks to the given space
+		if (stageSpace!=null) {
+			Permission p = Permissions.get(userId,stageSpace);
+			if (!p.canAddBenchmark() || !p.canAddSpace()) {
+				errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
+				return null;
+			}
+		}
+		
+					
+		attrs.setWallclockTimeout(stageWallclock);
+		attrs.setCpuTimeout(stageCpu);
+		attrs.setMaxMemory(stageMemory);
+		attrs.setSpaceId(stageSpace);
+		attrs.setBenchSuffix(stageBenchSuffix);
+		return attrs;
 	}
 
 	/**
@@ -412,89 +525,10 @@ public class JobUtil {
 			NodeList stageAttributeElements=jobElement.getElementsByTagName("StageAttributes");
 			for (int index=0;index<stageAttributeElements.getLength();index++) {
 				Element stageAttributes= (Element) stageAttributeElements.item(index);
-				StageAttributes attrs=new StageAttributes();
-				
-				
-				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
-				
-				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
-				// the stage number needs to be between 1 and n if there are a maximum of n stages in any pipeline in this job
-				if (neededStageNum<=0 || neededStageNum>maxStages) {
-					errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
+				StageAttributes attrs = elementToStageAttributes(stageAttributes, maxStages, userId, cpuTimeout, wallclock, memoryLimit, queueId);
+				if (attrs==null) {
 					return -1;
 				}
-				attrs.setStageNumber(neededStageNum);
-
-				
-				// all timeouts are optional-- they default to job timeouts if not given
-				int stageCpu=cpuTimeout;
-				if (DOMHelper.hasElement(stageAttributes, "cpu-timeout")) {
-					stageCpu=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "cpu-timeout").getAttribute("value"));
-				}
-				int stageWallclock=wallclock;
-				if (DOMHelper.hasElement(stageAttributes, "wallclock-timeout")) {
-					stageWallclock=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "wallclock-timeout").getAttribute("value"));
-				}
-				long stageMemory=memoryLimit;
-				if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
-					Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
-					stageMemory=Util.gigabytesToBytes(gigMem);
-				}
-				
-				//the space to put new benchmarks created from the job output into
-				Integer stageSpace=null;
-				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
-					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
-				}
-				
-				// if no suffix is given, benchmarks will retain their old suffixes when they are created
-				String stageBenchSuffix=null;
-				if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
-					stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
-				}
-				
-				// If processors are not given in the stage attributes, that means they are not used for this ttage
-				Integer stagePostProcId=null;
-				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
-					stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
-					attrs.setPostProcessor(Processors.get(stagePostProcId));
-
-				}
-				Integer stagePreProcId=null;
-				if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
-					stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
-					attrs.setPreProcessor(Processors.get(stagePreProcId));
-				
-				}
-				
-				if (DOMHelper.hasElement(stageAttributes, "results-interval")) {
-					int resultsInterval=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "results-interval").getAttribute("value"));
-					attrs.setResultsInterval(resultsInterval);
-				} else {
-					attrs.setResultsInterval(0);
-				}
-				
-				//validate this new set of parameters
-				ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
-				if (!stageStatus.isSuccess()) {
-					errorMessage=stageStatus.getMessage();
-					return -1;
-				}
-				
-				//also make sure the user can add both spaces and benchmarks to the given space
-				if (stageSpace!=null) {
-					Permission p = Permissions.get(userId,stageSpace);
-					if (!p.canAddBenchmark() || !p.canAddSpace()) {
-						errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
-						return -1;
-					}
-				}
-							
-				attrs.setWallclockTimeout(stageWallclock);
-				attrs.setCpuTimeout(stageCpu);
-				attrs.setMaxMemory(stageMemory);
-				attrs.setSpaceId(stageSpace);
-				attrs.setBenchSuffix(stageBenchSuffix);
 				job.addStageAttributes(attrs);
 			}
 			
@@ -737,7 +771,6 @@ public class JobUtil {
 	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
 		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, Util.url("public/batchJobSchema.xsd"));
 		errorMessage=code.getMessage();
-		this.jobCreationSuccess=code.isSuccess();
 		return code.isSuccess();	
 	}
 

@@ -159,7 +159,7 @@ public class UploadJobXML extends HttpServlet {
 				if (current!=null) {
 					jobIds.addAll(current);		
 				} else {
-					log.warn("the uploaded job xml was not formatted corectly");
+					log.warn("the uploaded job xml was not formatted correctly");
 				}
 			}
 			logUtil.info(method, "Finished creating jobs from XML files.");

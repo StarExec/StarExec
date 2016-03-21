@@ -316,3 +316,8 @@ function handleAjaxError(textStatus) {
 		showMessage('error',"Internal error populating data table",5000);
 	}
 }
+// returns the string we use throughout Starexec for the DataTables sDom argument,
+// which specifies the layout of the tables (pagination, sorting, filtering, and so on).
+function getDataTablesDom() {
+	return 'rt<"bottom"flpi><"clear">';
+}

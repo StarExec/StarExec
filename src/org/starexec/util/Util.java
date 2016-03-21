@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -33,16 +32,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.FileUtils;
@@ -53,28 +49,16 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
-import org.starexec.data.database.AnonymousLinks;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
-import org.starexec.data.security.BenchmarkSecurity;
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestUtil;
-import org.starexec.util.LogUtil;
 
+/**
+ * This class contains utility functions used throughout Starexec, including many
+ * for executing commands and interacting with the filesystem.
+ * @author Eric
+ *
+ */
 public class Util {	
     private static final Logger log = Logger.getLogger(Util.class);
-	private static final LogUtil logUtil = new LogUtil( log );
 
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
     
@@ -83,7 +67,7 @@ public class Util {
      * if a and b are both null, returns true
      * @param a 
      * @param b
-     * @return
+     * @return True if they are equal and false otherwise
      */
     public static boolean objectsEqual(Object a, Object b) {
     	if (a==null && b==null) {
@@ -166,13 +150,15 @@ public class Util {
     }
     /**
      * Determines whether we are currently running on production.
-     * @return
+     * @return True if this is production and false if it is a test instance
      */
+    //TODO: We need to think this through, as distributing Starexec will mean that there may be
+    //many 'production' instances.
     public static boolean isProduction() {
-	if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
-	    return true; 
-	}
-	return false;
+		if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
+		    return true; 
+		}
+		return false;
     }
 	
     /** 
@@ -181,14 +167,16 @@ public class Util {
      * @author Aaron Stump
      */
     public static void threadPoolExecute(Runnable c) {
-	threadPool.execute(c);
+    	threadPool.execute(c);
     }
     /**
      * Shuts down the reserved threadpool this util uses.
+     * @throws Exception if termination of the thread pool is interrupted for taking
+     * longer than 2 seconds
      */
     public static void shutdownThreadPool() throws Exception {
-	threadPool.shutdown();
-	threadPool.awaitTermination(2, TimeUnit.SECONDS);
+		threadPool.shutdown();
+		threadPool.awaitTermination(2, TimeUnit.SECONDS);
     }
 
 
@@ -210,46 +198,58 @@ public class Util {
      * greater than max, or value if it is between min and max
      */
     public static int clamp(int min, int max, int value) {
-	return Math.max(Math.min(value, max), min);
+    	return Math.max(Math.min(value, max), min);
     }
 	
+    /**
+     * Clamps the given value to within the given range
+     * @param min The min of the range, inclusive
+     * @param max The max of the range, inclusive
+     * @param value The valu to clamp.
+     * @return min, if the value is lower, and max if the value is larger. 
+     * The value itself otherwise
+     */
     public static long clamp(long min, long max, long value) {
-	if (value<min) {
-	    return min;
-	}
-	if (value > max) {
-	    return max;
-	}
-	return value;
+		if (value<min) {
+		    return min;
+		}
+		if (value > max) {
+		    return max;
+		}
+		return value;
     }
 	
+    /**
+     * Initializes Starexec data directories by creating them if they
+     * do not exist
+     */
     public static void initializeDataDirectories() {
-	File file=new File(R.STAREXEC_DATA_DIR);
-	file.mkdir();
-		
-	file=new File(R.getJobInboxDir());
-	file.mkdir();
-	file=new File(R.getJobLogDir());
-	file.mkdir();
-	file=new File(R.getBenchmarkPath());
-	file.mkdir();
-	file=new File(R.getSolverPath());
-	file.mkdir();
-	file=new File(R.getSolverBuildOutputDir());
-	file.mkdir();
-	file=new File(R.getProcessorDir());
-	file.mkdir();
-	file=new File(R.getJobOutputDirectory());
-	file.mkdir();
-	file=new File(R.getPicturePath());
-	file.mkdir();
-		
-		
-		
-	File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
-	downloadDir.mkdirs();
-	File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
-	graphDir.mkdirs();
+		File file=new File(R.STAREXEC_DATA_DIR);
+		file.mkdir();
+			
+		file=new File(R.getJobInboxDir());
+		file.mkdir();
+		file=new File(R.getJobLogDir());
+		file.mkdir();
+		file=new File(R.getBenchmarkPath());
+		file.mkdir();
+		file=new File(R.getSolverPath());
+		file.mkdir();
+		file=new File(R.getSolverBuildOutputDir());
+		file.mkdir();
+		file=new File(R.getProcessorDir());
+		file.mkdir();
+		file=new File(R.getJobOutputDirectory());
+		file.mkdir();
+		file=new File(R.getPicturePath());
+		file.mkdir();
+			
+			
+			
+		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
+		downloadDir.mkdirs();
+		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
+		graphDir.mkdirs();
     }
 	
     /**
@@ -267,20 +267,12 @@ public class Util {
     public static String getLineSeparator(){
 	return System.getProperty("line.separator");
     }
-
-	/**
-	 * Builds a new array of trimmed strings from an existing array.
-	 * @author Albert Giegerich
-	public static String[] trimEach(String[] untrimmed) {
-		final int sizeOfArrays = untrimmed.length;
-		String[] trimmed = new String[sizeOfArrays];
-		for (int i = 0; i < sizeOfArrays; i++) {
-			trimmed[i] = untrimmed[i].trim();
-		}	
-		return trimmed;
-	}
-	*/
-
+    /**
+     * Generates a list of strings from a csv, where each string in the list
+     * is a single value (separated by commas) of the csv
+     * @param csv
+     * @return The list
+     */
 	public static List<String> csvToList(String csv) {
 		log.debug("Entering csvToList");
 		log.debug("Got csv: " + csv);
@@ -291,24 +283,28 @@ public class Util {
 		for (int i = 0; i < splitCsv.length; i++) {
 			csvList.add(splitCsv[i].trim());
 		}
-		/*
-		List<String> csvList = Arrays.asList(csv.split(","))
-				.stream()
-				.map(s -> s.trim())
-				.collect(Collectors.toList());*/
 		
 		log.debug("csvList.size(): "+csvList.size());
 		return csvList;
 	}
 	
 	
-	
+	/**
+	 * 
+	 * @param name
+	 * @param request
+	 * @return True if the value of the param given by name is not null in the given request
+	 */
     public static boolean paramExists(String name, HttpServletRequest request){
-	return !isNullOrEmpty(request.getParameter(name));
+    	return !isNullOrEmpty(request.getParameter(name));
     }
-	
+	/**
+	 * 
+	 * @param s
+	 * @return True if s is null or empty and false otherwise
+	 */
     public static boolean isNullOrEmpty(String s){
-	return (s == null || s.trim().length() <= 0);
+    	return (s == null || s.trim().length() <= 0);
     }	
 	
     /**
@@ -350,6 +346,7 @@ public class Util {
      * Parses a multipart request and returns a hashmap of form parameters
      * @param request The request to parse
      * @return A hashmap containing the field name to field value mapping
+     * @throws Exception If the request is malformed
      */
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
@@ -370,28 +367,56 @@ public class Util {
 		return form;
     }
 	
+    /**
+     * Calls executeCommand with a size 1 String[]
+     * @param command
+     * @return See full executeCommand documentation
+     * @throws IOException
+     */
     public static String executeCommand(String command) throws IOException {
 		String[] cmd = new String[1];
 		cmd[0] = command;
 		return executeCommand(cmd);
     }
-
+    /**
+     * Calls executecommand with a size 1 String[] and a null working directory
+     * @param command
+     * @param env
+     * @return See full executeCommand documentation
+     * @throws IOException
+     */
     public static String executeCommand(String command, String[] env) throws IOException {
 		String[] cmd = new String[1];
 		cmd[0] = command;
 		return executeCommand(cmd,env,null);
     }
 
-    /** Convenience method for executeCommand() 
-     * @throws IOException */
+    /**
+     * Calls executeCommand with a null environment and working directory
+     * @param command
+     * @return See full executeCommand documentation
+     * @throws IOException
+     */
     public static String executeCommand(String[] command) throws IOException {
     	return executeCommand(command,null,null);
     }
-    
+    /**
+     * Calls executeSandboxCommand with a null environment and working directory
+     * @param command
+     * @return See full executeCommand documentation
+     * @throws IOException
+     */
     public static String executeSandboxCommand(String[] command) throws IOException {
     	return executeSandboxCommand(command,null,null);
     }
-    
+    /**
+     * Executes a command as the sandbox user using sudo
+     * @param command The command to execute, tokenized
+     * @param envp Environment variables for the command
+     * @param workingDirectory Directory to use as the command working directory
+     * @return The combined stdout and stderr from the command
+     * @throws IOException
+     */
     public static String executeSandboxCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
     	String[] newCommand=new String[command.length+3];
     	newCommand[0]="sudo";
@@ -468,8 +493,8 @@ public class Util {
 		String line = null;
 		try {
 		    while ((line = reader.readLine()) != null) {
-			readsomething = true;
-			sb.append(line + System.getProperty("line.separator"));
+				readsomething = true;
+				sb.append(line + System.getProperty("line.separator"));
 		    }
 		    reader.close();
 		}
@@ -478,16 +503,20 @@ public class Util {
 		}
 		finally {
 		    try {
-			reader.close();
+		    	reader.close();
 		    }
 		    catch (Exception e) {
-			log.warn("Caught exception closing reader while draining streams.");
+		    	log.warn("Caught exception closing reader while draining streams.");
 		    }
 		}
 		return readsomething;
     }
 
-
+    /**
+     * Drains both the stdout and stderr streams of a process and returns 
+     * @param p
+     * @return The combined stdout and stderr from the process
+     */
     public static String drainStreams(final Process p) {
 		    
 		/* to handle the separate streams of regular output and
@@ -500,9 +529,11 @@ public class Util {
 			@Override
 			    public void run() {
 			    try {
-					if (drainInputStream(b,p.getErrorStream()))
-					    log.error("The process produced stderr output.");
+					if (drainInputStream(b,p.getErrorStream())) {
+						log.error("The process produced stderr output.");
 						log.error(b.toString());
+					}
+					    
 				    }
 			    catch(Exception e) {
 			    	log.error("Error draining stderr from process: "+e.toString());
@@ -511,33 +542,6 @@ public class Util {
 		    });
 		drainInputStream(b,p.getInputStream());
 		return b.toString();
-    }
-
-	
-    /**
-     * Takes in a string buffer and produces a single string out of its contents. This method
-     * will attempt to close the reader when finished.
-     * @param reader The reader to convert
-     * @return The string value that is the result of appending all lines within the buffer.
-     */
-    public static String bufferToString(BufferedReader reader) {
-		try {
-		    StringBuilder sb = new StringBuilder();
-				
-		    String line;		
-		    while((line = reader.readLine()) != null) {
-			sb.append(line + Util.getLineSeparator());
-		    }
-				
-		    return sb.toString();
-		} catch (Exception e) {
-		    log.warn(e.getMessage(), e);
-		} finally {
-		    // Try to safely close the reader
-		    try { reader.close(); } catch (Exception e) {}
-		}
-			
-		return null;
     }
 
     /**
@@ -564,57 +568,60 @@ public class Util {
      * @param f The file to normalize
      */
     public static void normalizeFile(File f) {		
-	File temp = null;
-	BufferedReader bufferIn = null;
-	BufferedWriter bufferOut = null;		
-		
-	try {			
-	    if(f.exists()) {
-		// Create a new temp file to write to
-		temp = new File(f.getAbsolutePath() + ".normalized");
-		temp.createNewFile();
-						
-		// Get a stream to read from the file un-normalized file
-		FileInputStream fileIn = new FileInputStream(f);
-		DataInputStream dataIn = new DataInputStream(fileIn);
-		bufferIn = new BufferedReader(new InputStreamReader(dataIn));
-				
-		// Get a stream to write to the noramlized file
-		FileOutputStream fileOut = new FileOutputStream(temp);
-		DataOutputStream dataOut = new DataOutputStream(fileOut);
-		bufferOut = new BufferedWriter(new OutputStreamWriter(dataOut));
-				
-		// For each line in the un-normalized file
-		String line;
-		while ((line = bufferIn.readLine()) != null) {
-		    // Write the original line plus the operating-system dependent newline
-		    bufferOut.write(line);
-		    bufferOut.newLine();								
-		}
+		File temp = null;
+		BufferedReader bufferIn = null;
+		BufferedWriter bufferOut = null;		
 			
-		bufferIn.close();
-		bufferOut.close();
+		try {			
+		    if(f.exists()) {
+			// Create a new temp file to write to
+			temp = new File(f.getAbsolutePath() + ".normalized");
+			temp.createNewFile();
+							
+			// Get a stream to read from the file un-normalized file
+			FileInputStream fileIn = new FileInputStream(f);
+			DataInputStream dataIn = new DataInputStream(fileIn);
+			bufferIn = new BufferedReader(new InputStreamReader(dataIn));
+					
+			// Get a stream to write to the noramlized file
+			FileOutputStream fileOut = new FileOutputStream(temp);
+			DataOutputStream dataOut = new DataOutputStream(fileOut);
+			bufferOut = new BufferedWriter(new OutputStreamWriter(dataOut));
+					
+			// For each line in the un-normalized file
+			String line;
+			while ((line = bufferIn.readLine()) != null) {
+			    // Write the original line plus the operating-system dependent newline
+			    bufferOut.write(line);
+			    bufferOut.newLine();								
+			}
 				
-		// Remove the original file
-		f.delete();
-				
-		// And rename the original file to the new one
-		temp.renameTo(f);
-	    } else {
-		// If the file doesn't exist...
-		log.warn("Could not find file to open: " + f.getAbsolutePath());
-	    }
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	} finally {
-	    // Clean up, temp should never exist
-	    FileUtils.deleteQuietly(temp);
-	    IOUtils.closeQuietly(bufferIn);
-	    IOUtils.closeQuietly(bufferOut);
-	}
+			bufferIn.close();
+			bufferOut.close();
+					
+			// Remove the original file
+			f.delete();
+					
+			// And rename the original file to the new one
+			temp.renameTo(f);
+		    } else {
+			// If the file doesn't exist...
+			log.warn("Could not find file to open: " + f.getAbsolutePath());
+		    }
+		} catch (Exception e) {
+		    log.warn(e.getMessage(), e);
+		} finally {
+		    // Clean up, temp should never exist
+		    FileUtils.deleteQuietly(temp);
+		    IOUtils.closeQuietly(bufferIn);
+		    IOUtils.closeQuietly(bufferOut);
+		}
     }
 
-	
+	/**
+	 * @param nums
+	 * @return A string containing a comma-separated list of the given numbers
+	 */
     public static String makeCommaSeparatedList(List<Integer> nums) {
     	StringBuilder sb=new StringBuilder();
     	for (Integer id : nums) {
@@ -629,6 +636,8 @@ public class Util {
      * Retrieves all files in the given directory that are as old as, or older than the specified number of days
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
+     * @param includeDirs Whether to include directories as well as files
+     * @return All files older than the given filter
      */
     public static Collection<File> getOldFiles(String directory, int daysAgo, boolean includeDirs) {
     	File dir = new File(directory);
@@ -647,9 +656,7 @@ public class Util {
 	    if (!includeDirs) {
 		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
 		    
-	    } else {
-	    	IOFileFilter dateDirFilter=FileFilterUtils.makeDirectoryOnly(dateFilter);
-	    	
+	    } else {	    	
 	    	File[] files=dir.listFiles((FileFilter)dateFilter);
 	    	outdatedFiles=new ArrayList<File>();
 	    	for (File f : files) {
@@ -660,41 +667,47 @@ public class Util {
     }
     
     /**
-     * Deletes all files in the given directory that are as old as, or older than the specified number of days
+     * Deletes all files in the given directory that are as old as, or older than the specified number of days.
+     * The given directory itself is NOT deleted
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
      */
-    public static void clearOldSandboxFiles(String directory, int daysAgo,boolean includeDirs){
-	try {
-	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
-	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
-	    // Remove them all
-	    for(File f : outdatedFiles) {
-	    	sandboxChmodDirectory(f);
-	    	FileUtils.deleteDirectory(f);
-	    }					
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	}
+    public static void clearOldSandboxFiles(String directory, int daysAgo){
+		try {
+		    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,true);
+		    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
+		    // Remove them all
+		    for(File f : outdatedFiles) {
+		    	sandboxChmodDirectory(f);
+		    	if (f.isDirectory()) {
+			    	FileUtils.deleteDirectory(f);
+		    	} else {
+		    		FileUtils.deleteQuietly(f);
+		    	}
+		    }					
+		} catch (Exception e) {
+		    log.warn(e.getMessage(), e);
+		}
     }
     
     /**
      * Deletes all files in the given directory that are as old as, or older than the specified number of days
      * @param directory The directory to clear old files out of (non-recursive)
      * @param daysAgo Files older than this many days ago will be deleted
+     * @param includeDirs Whether to delete directories as well as files
      */
     public static void clearOldFiles(String directory, int daysAgo,boolean includeDirs){
-	try {
-	    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
-	    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
-	    // Remove them all
-	    for(File f : outdatedFiles) {
-	    	
-	    	FileUtils.deleteQuietly(f);
-	    }					
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	}
+		try {
+		    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
+		    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
+		    // Remove them all
+		    for(File f : outdatedFiles) {
+		    	
+		    	FileUtils.deleteQuietly(f);
+		    }					
+		} catch (Exception e) {
+		    log.warn(e.getMessage(), e);
+		}
     }
    
 	
@@ -744,7 +757,8 @@ public class Util {
     }
     /**
      * Prepend the document root to the given path, to form a site root-relative path.
-     *
+     * @param s
+     * @return a path to the given document relative to STAREXEC_ROOT
      * @author Aaron Stump
      */
     public static String docRoot(String s) {
@@ -753,7 +767,8 @@ public class Util {
     }
     /**
      * Prepend the "https://", the server name, and the document root, to form an absolute path (URL).
-     *
+     * @param s The relative path to create a url for
+     * @return the absolute url associated with the given relative path
      * @author Aaron Stump
      */
     public static String url(String s) {
@@ -783,22 +798,26 @@ public class Util {
     /**
      * Converts gigabytes to bytes.
      * @param gigabytes
-     * @return
+     * @return Number of bytes representing the given gigabytes
      */
     public static long gigabytesToBytes(double gigabytes) {
     	long bytes=(long)(1073741824*gigabytes);
     	return bytes;
     }
     /**
-     * Converts bytes to megabytes, truncated to the nearest integer megabyte
+     * 
      * @param bytes
-     * @return
+     * @return Converts bytes to megabytes, truncated to the nearest integer megabyte
      */
     public static long bytesToMegabytes(long bytes) {
     	return (bytes / (1024*1024));
     }
     
-    
+    /**
+     * 
+     * @param bytes
+     * @return the number of gigabytes representing the given number of bytes
+     */
     public static double bytesToGigabytes(long bytes) {
     	return ((double)bytes/1073741824.0);
     }
@@ -827,12 +846,12 @@ public class Util {
     /**
      * Given a list, a comparator, and all of the attributes needed to paginate a DataTables object,
      * returns a sublist of the given list containing the ordered items to display
+     * @param <T> Type of the given list and comparator. Can be any sortable object type.
      * @param arr List to sort
      * @param compare Comparator object that will be used to determine the ordering of objects during sorting
      * @param start Record to start on
      * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
-     * @param asc True if sort is ascending, false otherwise
-     * @return
+     * @return Entries sorted and filtered according to the given comparator
      */
     
     public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records) {
@@ -870,6 +889,9 @@ public class Util {
      * @throws IOException
      */
     public static void sandboxChmodDirectory(File dir) throws IOException {
+    	if (!dir.isDirectory()) {
+    		return;
+    	}
     	//give sandbox full permissions over the solver directory
 		String[] chmod=new String[7];
 		chmod[0]="sudo";
@@ -883,20 +905,25 @@ public class Util {
 			Util.executeCommand(chmod);
 		}
     }
-    
+    /**
+     * Adds rwx permissions to the directory for either the owner or the group
+     * @param dir The directory to modify
+     * @param group True to modify permissions for the group and false for the directory
+     * @throws IOException
+     */
     public static void chmodDirectory(String dir,boolean group) throws IOException {
-	String[] chmod=new String[4];
-	chmod[0]="chmod";
-	chmod[1]="-R";
-	if (group) {
-	    chmod[2]="g+rwx";	
-
-	} else {
-	    chmod[2]="u+rwx";	
-
-	}
-	chmod[3]=dir;
-	Util.executeCommand(chmod);
+		String[] chmod=new String[4];
+		chmod[0]="chmod";
+		chmod[1]="-R";
+		if (group) {
+		    chmod[2]="g+rwx";	
+	
+		} else {
+		    chmod[2]="u+rwx";	
+	
+		}
+		chmod[3]=dir;
+		Util.executeCommand(chmod);
     }
 
     /**
@@ -904,7 +931,7 @@ public class Util {
      * and returns the sandbox directory. The sandbox user will be the owner and
      * have full permissions over everthing in the sandbox directory. 
      * @param files
-     * @return
+     * @return The sandbox directory that contains all the copied files
      * @throws IOException
      */
     public static File copyFilesToNewSandbox(List<File> files) throws IOException {
@@ -948,7 +975,7 @@ public class Util {
     /**
      * Creates and returns a unique, empty directory immediately inside
      * of the sandbox directory on the head node
-     * @return
+     * @return The sandbox directory that was created
      */
     public static File getRandomSandboxDirectory() {
 		File sandboxDirectory=Util.getSandboxDirectory();
@@ -959,7 +986,9 @@ public class Util {
 		sandboxDir.mkdirs();
 		return sandboxDir;
     }
-    
+    /**
+     * Executes ls -l -R on the sandbox directory and logs the results
+     */
     public static void logSandboxContents() {
     	try {
         	log.debug(Util.executeCommand("ls -l -R "+Util.getSandboxDirectory().getAbsolutePath()));
@@ -973,9 +1002,11 @@ public class Util {
 	/**
 	 * Gets the HTML for a web page as a String with query parameters.
 	 * @param url The url to get the page from.
-	 * @param queryParamaters A mapping of query parameters to their values.
+	 * @param queryParameters A mapping of query parameters to their values.
+	 * @param cookiesToSend Cookies to send with the request
 	 * @return the web page in string form.
 	 * @author Albert Giegerich
+	 * @throws IOException if there is some error getting the web pages
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
 		if (queryParameters.keySet().size() == 0) {
@@ -1002,6 +1033,7 @@ public class Util {
 	/**
 	 * Gets the HTML for a web page as a String.
 	 * @param url The url to get the page from.
+	 * @param cookiesToSend The cookies to attach to this request.
 	 * @return the web page in String form.
 	 * @throws IOException
 	 * @author Albert Giegerich

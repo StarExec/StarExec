@@ -97,10 +97,10 @@
 	<c:forEach var="stage" items="${pair.getStages()}">
 		<c:if test="${moreThanOneStage}">
 			<%-- This fieldset is terminated in an identical <c:if> element further down --%>
-			<fieldset id="fieldStats">
+			<fieldset class="fieldStats">
 			<legend>stage ${stage.stageNumber} statistics</legend>	
 		</c:if>
-			<fieldset id="stageStats">
+			<fieldset class="stageStats">
 				<legend>run statistics</legend>
 				<table id="pairStats" class="shaded">
 					<thead>
@@ -148,7 +148,7 @@
 				</table>
 			</fieldset>
 				
-			<fieldset id="fieldAttrs">
+			<fieldset class="fieldAttrs">
 				<legend>stage attributes</legend>	
 				<c:choose>
 					<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
@@ -177,7 +177,7 @@
 					</c:otherwise>
 				</c:choose>		
 			</fieldset>
-			<fieldset id="fieldOutput">		
+			<fieldset class="fieldOutput">		
 					<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> output</legend>			
 					<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
 					<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>

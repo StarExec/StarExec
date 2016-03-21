@@ -163,9 +163,7 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
-	
-	
-	
+
 }
 
 function createLocalTmpDirectory {
@@ -423,13 +421,15 @@ function killDeadlockedJobPair {
 # $1 Increment, in seconds, at which to copy back output
 # $2 Maximum amount of time to run, in seconds. Should be the timeout for the pair
 # $3 Current stage number
+# $4 the stdout copy option (1 means don't save, otherwise save)
+# $5 the other output copy option (same as above)
 function copyOutputIncrementally {
 	PERIOD=$1
 	TIMEOUT=$2
 	while [ $TIMEOUT -gt 0 ]
 	do
 		sleep $PERIOD
-		copyOutputNoStats $3
+		copyOutputNoStats $3 $4 $5
 		TIMEOUT=$(($TIMEOUT-$PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
@@ -679,6 +679,8 @@ function createDir {
 
 # copys output without doing post-processing or updating the database stats
 # $1 The current stage number
+# $2 the stdout copy option (1 means don't save, otherwise save)
+# $3 the other output copy option (same as above)
 function copyOutputNoStats {
 
 	createDir "$PAIR_OUTPUT_DIRECTORY"
@@ -694,20 +696,29 @@ function copyOutputNoStats {
 		
 	fi
 	
-	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
-	rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
+	if [ $2 -ne 1 ]
+	then
+		cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	fi
+	
+	if [ $3 -ne 1 ]
+	then
+		rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
+	fi
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
 	
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
 	
-	rsync -r -u $OUT_DIR"/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
+	rsync -r -u "$OUT_DIR/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
 # takes in a stage number as an argument so we know where to put the output
 # $1 The current stage number
+# $2 the stdout copy option (1 means don't save, otherwise save)
+# $3 the other output copy option (same as above)
 function copyOutput {
-	copyOutputNoStats $1
+	copyOutputNoStats $1 $2 $3
 	
 	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE
@@ -1000,18 +1011,23 @@ log "solver copy complete"
 	return $?	
 }
 
-# Saves the current output 
-function saveOutputAsBenchmark {
-	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
-	CURRENT_OUTPUT_FILE=$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
+# Saves a file as a benchmark on Starexec
+# $1 The path to the file to save
+# $2 1 or 2. Whether to use the pair's benchmark name for the new benchmark name. If 2,
+# uses the name of the given file
+function saveFileAsBenchmark {
+	CURRENT_OUTPUT_FILE=$1
 	BENCH_NAME_ADDON="stage-"
-	
-	# if no suffix is give, we just use the suffix of the benchmark
+	FILE_NAME=$BENCH_NAME
+	if [ $2 -eq 2 ]
+	then
+		FILE_NAME=`basename $1`
+	fi
+	# if no suffix is given, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
-		if [[ "$BENCH_NAME" = *.* ]] ; then
-			CURRENT_BENCH_SUFFIX=".${BENCH_NAME##*.}"
+		if [[ "$FILE_NAME" = *.* ]] ; then
+			CURRENT_BENCH_SUFFIX=".${FILE_NAME##*.}"
 		fi
-		#CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
 	fi
 	 
 	CURRENT_BENCH_NAME=${BENCH_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
@@ -1024,8 +1040,6 @@ function saveOutputAsBenchmark {
 	
 	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
 	
-	
-	
 	createDir $CURRENT_BENCH_PATH
 	
 	CURRENT_BENCH_PATH=$CURRENT_BENCH_PATH/$CURRENT_BENCH_NAME
@@ -1036,6 +1050,24 @@ function saveOutputAsBenchmark {
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
 		log "benchmark $CURRENT_BENCH_NAME copied to $CURRENT_BENCH_PATH"
 	fi
+}
+
+# Saves the current stdout as a new benchmark
+function saveStdoutAsBenchmark {
+	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
+	saveFileAsBenchmark $SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER 1
+}
+
+# Saves the extra output directory as a new set of benchmarks
+function saveExtraOutputAsBenchmarks {
+	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
+	for f in $OUTPUT_DIR 
+	do
+		if [ -f $f ]
+		then
+			saveFileAsBenchmark $f 2
+		fi
+	done
 }
 
 

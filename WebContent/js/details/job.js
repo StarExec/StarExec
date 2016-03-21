@@ -1166,7 +1166,7 @@ function extendDataTableFunctions(){
 function getPairTableInitializer() {
 	'use strict';
 	var pairTableInitializer = {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
 		"pagingType"    : "full_numbers"
@@ -1184,7 +1184,7 @@ function getPairTableInitializer() {
 function getSolverTableInitializer() {
 	'use strict';
 	var solverTableInitializer = {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bSort"			: true,

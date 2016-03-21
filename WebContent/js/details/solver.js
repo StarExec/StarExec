@@ -35,7 +35,7 @@ function initUI(){
 	
 	// Setup datatable of configurations
 	$('#tblSolverConfig').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">',        
+        "sDom": getDataTablesDom(),        
         "bPaginate": true,        
         "bSort": true        
     });

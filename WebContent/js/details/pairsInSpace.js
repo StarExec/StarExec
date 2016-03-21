@@ -73,7 +73,7 @@ function initDataTables(){
 	addFilterOnDoneTyping();	
 	// Job pairs table
 	pairTable=$('#pairTbl').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,

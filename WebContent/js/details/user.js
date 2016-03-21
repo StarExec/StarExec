@@ -75,7 +75,7 @@ $(document).ready(function(){
 	});
 	//Initiate job table
 	jTable=$('#jobs').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
@@ -86,7 +86,7 @@ $(document).ready(function(){
 	
 	//Initiate solver table
 	solverTable=$('#solvers').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
@@ -97,7 +97,7 @@ $(document).ready(function(){
 	
 	//Initiate benchmark table
 	benchTable=$('#benchmarks').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,

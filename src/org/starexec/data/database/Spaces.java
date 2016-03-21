@@ -1280,7 +1280,7 @@ public class Spaces {
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SUBSPACES_IN_SPACE_QUERY, getSpaceOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con, builder.getSQL());
-			;
+			
 			procedure.setInt("spaceId", spaceId);
 			procedure.setInt("userId", userId);
 			procedure.setString("query", query.getSearchQuery());			
@@ -1292,7 +1292,7 @@ public class Spaces {
 				s.setId(results.getInt("id"));
 				s.setName(results.getString("name"));
 				s.setDescription(results.getString("description"));
-				
+				s.setParentSpace(results.getInt("parent"));
 				spaces.add(s);			
 			}	
 			

@@ -845,10 +845,12 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 	END //
 	
 DROP PROCEDURE IF EXISTS SetJobStageParams;
-CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN _clock INT, IN _mem BIGINT, IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64), IN _resultsInterval INT)
+CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN _clock INT, IN _mem BIGINT,
+IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64), IN _resultsInterval INT, IN _stdoutSave INT, IN _extraSave INT)
 	BEGIN
-		INSERT INTO job_stage_params (job_id, stage_number,cpuTimeout,clockTimeout,maximum_memory, space_id, post_processor, pre_processor, bench_suffix, results_interval) 
-		VALUES (_jobId, _stage,_cpu,_clock,_mem,_space,_postProc,_preProc, _suffix, _resultsInterval);
+		INSERT INTO job_stage_params (job_id, stage_number,cpuTimeout,clockTimeout,maximum_memory,
+		space_id, post_processor, pre_processor, bench_suffix, results_interval, stdout_save_option, extra_output_save_option) 
+		VALUES (_jobId, _stage,_cpu,_clock,_mem,_space,_postProc,_preProc, _suffix, _resultsInterval, _stdoutSave, _extraSave);
 	END //
 	
 -- Gets the ID of every job that is currently running (has incomplete pairs and

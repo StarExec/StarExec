@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	$('#solverNameKeyTable').dataTable({
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
 		"pagingType"    : "full_numbers"
