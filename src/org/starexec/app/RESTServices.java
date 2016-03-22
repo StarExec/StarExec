@@ -1608,7 +1608,6 @@ public class RESTServices {
 	 * the current user/space/solver
 	 * @author Skylar Stark and Todd Elvers
 	 */
-	//TODO: Resume testing here
 	@GET
 	@Path("/websites/{type}/{id}")
 	@Produces("application/json")
@@ -1908,8 +1907,6 @@ public class RESTServices {
 		boolean success=Settings.setDefaultProfileForUser(userIdOfCaller, id);
 		// Passed validation AND Database update successful
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Profile set as default")) : gson.toJson(ERROR_DATABASE);
-		
-		
 	}
 	
 	/**
@@ -1999,8 +1996,6 @@ public class RESTServices {
 		}
 		
 	}
-	
-	
 	
 	/** 
 	 * Updates information for a space in the database using a POST. Attribute and

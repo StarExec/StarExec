@@ -9,14 +9,18 @@ import org.starexec.app.RESTServices;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Websites;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -43,6 +47,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	Job job = null;
 	BenchmarkUploadStatus benchmarkStatus = null;
 	SpaceXMLUploadStatus spaceStatus = null;
+	Website solverWebsite = null;
 	int invalidBenchId = 0;
 	String anonymousJobId = null;
 	private Gson gson = new Gson();
@@ -222,6 +227,11 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.getWebsites("space",space.getId(), TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
+	@StarexecTest
+	private void deleteWebsiteTest() {
+		assertResultIsInvalid(services.deleteWebsite(solverWebsite.getId(), TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
 	private Map<String,String> getNameAndUrlParams() {
 		Map<String,String> params = new HashMap<String,String>();
 		params.put("name", "testname");
@@ -293,6 +303,44 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void editUserInfoTest() {
+		assertResultIsInvalid(services.editUserInfo("firstname",admin.getId(),"newname",TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.editUserInfo("badattr",user.getId(),"newname",TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.editUserInfo("firstname",user.getId(),TestUtil.getRandomAlphaString(500),TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void setSettingsProfileForUserTest() {
+		assertResultIsInvalid(services.setSettingsProfileForUser(Communities.getDefaultSettings(space.getId()).getId(),user.getId(),TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void deleteDefaultSettingsTest() {
+		assertResultIsInvalid(services.deleteDefaultSettings(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void editCommunityDefaultSettingsTest() {
+		assertResultIsInvalid(services.deleteDefaultSettings(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void editQueueInfoTest() {
+		HashMap<String,String> params = new HashMap<String,String>();
+		params.put("cpuTimeout", "10");
+		params.put("wallTimeout", "10");
+		assertResultIsInvalid(services.editQueueInfo(Queues.getAllQ().getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
+	}
+	
+	@StarexecTest
+	private void editQueueInfoInvalidParamsTest() {
+		HashMap<String,String> params = new HashMap<String,String>();
+		params.put("cpuTimeout", "test");
+		params.put("wallTimeout", "10");
+		assertResultIsInvalid(services.editQueueInfo(Queues.getAllQ().getId(),TestUtil.getMockHttpRequest(admin.getId(), params)));
+	}
+	
+	@StarexecTest
 	private void reinstateUserTest() {
 		String result = services.reinstateUser(admin.getId(),TestUtil.getMockHttpRequest(user.getId()));
 		assertResultIsInvalid(result);
@@ -306,6 +354,16 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void getAllPrimitiveDetailsPaginationTest() {
 		assertResultIsInvalid(services.getAllPrimitiveDetailsPagination("user",TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void runTestsByNameTest() {
+		assertResultIsInvalid(services.runTest(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void runAllTestsTest() {
+		assertResultIsInvalid(services.runAllTests(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	
@@ -327,6 +385,8 @@ public class RESTServicesSecurityTests extends TestSequence {
 		spaceStatus = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(admin.getId()));
 		Uploads.addFailedBenchmark(benchmarkStatus.getId(), "failed", "test message");
 		invalidBenchId = Uploads.getFailedBenches(benchmarkStatus.getId()).get(0).getId();
+		Websites.add(solver.getId(), "http://www.fakesite.com", "testsite", WebsiteType.SOLVER);
+		solverWebsite = Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0);
 	}
 
 	@Override

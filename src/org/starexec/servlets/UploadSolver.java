@@ -26,7 +26,6 @@ import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
-import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
@@ -106,21 +105,23 @@ public class UploadSolver extends HttpServlet {
 				int configs = result[1];
 				int buildJob = result[2];
 				
-				if(return_value>=0 && buildJob>0) {
-					int job_return = JobManager.addBuildJob(return_value, spaceId);
-					if (job_return >= 0) {
-						log.info("Job created successfully. JobId: " + job_return);
-					}
-					else {
-						log.debug("Error in job creation for buildJob for solver: " + return_value);
-					}
-				}	
+				
 				// Redirect based on success/failure
 				if(return_value>=0) {
+					if(buildJob>0) {
+						int job_return = JobManager.addBuildJob(return_value, spaceId);
+						if (job_return >= 0) {
+							log.info("Job created successfully. JobId: " + job_return);
+						}
+						else {
+							log.debug("Error in job creation for buildJob for solver: " + return_value);
+						}
+					}
+					
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
                     if(buildJob>0) {
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&buildmsg=Building Solver On Starexec"));
-                    } else if (configs == -4) { //If there are no configs. We do not attempt to run a test job in this case
+                    } else if (configs == -1) { //If there are no configs. We do not attempt to run a test job in this case
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
@@ -158,9 +159,6 @@ public class UploadSolver extends HttpServlet {
 					//Not enough disk quota
 					} else if (return_value==-4) {
 						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File is too large to fit in user's disk quota");
-						//Other Error
-					} else if (return_value==-5) {
-						response.sendError(HttpServletResponse.SC_BAD_REQUEST,"Only community leaders may upload solvers with starexec_build scripts");
 					} else if (return_value==-6) {
 						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Internal error when extracting solver");
 					}
@@ -198,8 +196,6 @@ public class UploadSolver extends HttpServlet {
 	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		log.info("handleSolver begins");
 
-		boolean build=false;
-		String buildstr=null;
 		int[] returnArray = new int[3];
 		returnArray[0] = 0;
 		returnArray[1] = 0;
@@ -308,30 +304,7 @@ public class UploadSolver extends HttpServlet {
             status.setCode(SolverBuildStatus.SolverBuildStatusCode.UNBUILT);
 			newSolver.setBuildStatus(status);
 			
-            //the old build code I'm workign on replacing:
-            /*           
-
-            log.debug("the uploaded solver did contain a build script");
-            if (!SolverSecurity.canUserRunStarexecBuild(userId, spaceId).isSuccess()) { //only community leaders
-                    FileUtils.deleteDirectory(sandboxDir);
-                    FileUtils.deleteDirectory(uniqueDir);
-                    returnArray[0]=-5;                   //fail due to invalid permissions
-                    return returnArray;
-            }
-
-
-            //run the build script as sandbox
-            String[] command=new String[4];
-            command[0]="sudo";
-            command[1]="-u";
-            command[2]="sandbox";
-            command[3]="./"+R.SOLVER_BUILD_SCRIPT;
-            buildstr=Util.executeCommand(command, null,sandboxDir);
-            build=true;
-            log.debug("got back the output "+buildstr); */
-
             returnArray[2] = 1; //Set build flag
-//            uniqueDir = new File(newSolver.getPath(), "starexec_src");
             uniqueDir = new File(newSolver.getPath() + "_src");
             newSolver.setPath(uniqueDir.getAbsolutePath());
             uniqueDir.mkdirs();
@@ -399,7 +372,7 @@ public class UploadSolver extends HttpServlet {
 		Util.logSandboxContents();
 		
 		if (newSolver.getConfigurations().isEmpty()) {
-			returnArray[1] = -4; //It is empty
+			returnArray[1] = -1; //It is empty
 		}
 		newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
 		//Try adding the solver to the database
