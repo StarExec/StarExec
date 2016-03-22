@@ -2153,6 +2153,7 @@ public class RESTServices {
 		ArrayList<Integer> selectedProcessors = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
+			log.debug("got a request to delete processor id = "+id);
 		}
 		ValidatorStatusCode status=ProcessorSecurity.doesUserOwnProcessors(selectedProcessors, userId);
 		if (!status.isSuccess()) {

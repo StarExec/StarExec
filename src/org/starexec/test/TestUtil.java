@@ -190,17 +190,38 @@ public class TestUtil {
 	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
 	 * the given user
 	 * @param userId
-	 * @param parameters Parameters to add to the mock http session.
+	 * @param parameters
 	 * @return The mock session
 	 */
 	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters) {
+		return getMockHttpRequest(userId, parameters, new HashMap<String, List<String>>());
+	}
+	
+	/**
+	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
+	 * the given user
+	 * @param userId
+	 * @param parameters Parameters to add to the mock http session.
+	 * @param arrayParameters Parameter arrays to add to the mock http session
+	 * @return The mock session
+	 */
+	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters, Map<String, List<String>> arrayParameters) {
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpSession session = Mockito.mock(HttpSession.class);
 		User u = new User();
 		Mockito.when(session.getAttribute(SessionUtil.USER)).thenReturn(u);
 		for (String s : parameters.keySet()) {
-			Mockito.when(session.getAttribute(s)).thenReturn(parameters.get(s));
+			Mockito.when(request.getAttribute(s)).thenReturn(parameters.get(s));
 		}
+		for (String s : arrayParameters.keySet()) {
+			List<String> strings = arrayParameters.get(s);
+			String[] arr = new String[strings.size()];
+			for (int i=0;i<strings.size();i++) {
+				arr[i] = strings.get(i);
+			}
+			Mockito.when(request.getParameterValues(s)).thenReturn(arr);
+		}
+		
 		Mockito.when(request.getSession()).thenReturn(session);
 		return request;
 	}

@@ -1,5 +1,6 @@
 package org.starexec.test.integration.app;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestUtil;
@@ -51,7 +53,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	int invalidBenchId = 0;
 	String anonymousJobId = null;
 	private Gson gson = new Gson();
-
+	Processor postProcessor = null;
 	private void assertResultIsInvalid(String result) {
 		Assert.assertFalse(gson.fromJson(result, ValidatorStatusCode.class).isSuccess());
 	}
@@ -165,6 +167,13 @@ public class RESTServicesSecurityTests extends TestSequence {
 	private void recompileJobSpacesTest() {
 		assertResultIsInvalid(services.recompileJobSpaces(job.getId(), TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.recompileJobSpaces(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void postProcessJobTest() {
+		assertResultIsInvalid(services.postProcessJob(job.getId(),1,postProcessor.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.postProcessJob(job.getId(),1,-1,TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.postProcessJob(-1,1,postProcessor.getId(),TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	@StarexecTest
@@ -321,7 +330,28 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editCommunityDefaultSettingsTest() {
-		assertResultIsInvalid(services.deleteDefaultSettings(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId())));
+		Map<String,String> params = new HashMap<String,String>();
+		params.put("val", solver.getId()+"");
+		assertResultIsInvalid(services.editCommunityDefaultSettings("defaultsolver",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
+		assertResultIsInvalid(services.editCommunityDefaultSettings("fakeattr",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), params)));
+	}
+	
+	@StarexecTest
+	private void editCommunityTest() {
+		Map<String,String> params = new HashMap<String,String>();
+		params.put("val", solver.getId()+"");
+		assertResultIsInvalid(services.editCommunityDetails("name",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
+		assertResultIsInvalid(services.editCommunityDetails("fakeattr",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), params)));
+	}
+	
+	@StarexecTest
+	private void editSpaceTest() {
+		Map<String,String> params = new HashMap<String,String>();
+		params.put("name", "name");
+		params.put("description","desc");
+		params.put("locked","false");
+		assertResultIsInvalid(services.editSpace(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
+		assertResultIsInvalid(services.editSpace(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>())));
 	}
 	
 	@StarexecTest
@@ -366,6 +396,25 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.runAllTests(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
+	private static HashMap<String,List<String>> getSelectedIdParams(Object...objects) {
+		HashMap<String,List<String>> map = new HashMap<String,List<String>>();
+		List<String> strs = new ArrayList<String>();
+		for (Object o : objects) {
+			strs.add(o.toString());
+		}
+		map.put("selectedIds[]", strs);
+		return map;
+	}
+	
+	@StarexecTest
+	private void deleteProcessorTest() {
+		assertResultIsInvalid(services.deleteProcessors(TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(postProcessor.getId()))));
+		assertResultIsInvalid(services.deleteProcessors(TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>())));
+
+	}
+	
 	
 	@Override
 	protected String getTestName() {
@@ -387,6 +436,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 		invalidBenchId = Uploads.getFailedBenches(benchmarkStatus.getId()).get(0).getId();
 		Websites.add(solver.getId(), "http://www.fakesite.com", "testsite", WebsiteType.SOLVER);
 		solverWebsite = Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0);
+		postProcessor = ResourceLoader.loadProcessorIntoDatabase(ProcessorType.POST, space.getId());
 	}
 
 	@Override
