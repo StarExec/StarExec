@@ -92,7 +92,7 @@ public class SettingSecurity {
 	 */
 	
 	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) {
-		
+		boolean isInt = Validator.isValidPosInteger(newValue);
 				
 		if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
 			if (! Validator.isValidPosInteger(newValue)) {
@@ -112,6 +112,9 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
 		} else if (attribute.equals("PostProcess")) {
+			if (!isInt) {
+				return new ValidatorStatusCode(false, "The given processor ID is not valid");
+			}
 			int procId=Integer.parseInt(newValue);
 			if (procId>=0) {
 				if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
@@ -124,6 +127,9 @@ public class SettingSecurity {
 			}
 				
 		} else if (attribute.equals("BenchProcess")) {
+			if (!isInt) {
+				return new ValidatorStatusCode(false, "The given processor ID is not valid");
+			}
 			int procId=Integer.parseInt(newValue);
 			if (procId>=0) {
 				if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {
@@ -136,14 +142,23 @@ public class SettingSecurity {
 			}
 			
 		} else if (attribute.equals("defaultbenchmark")) {
+			if (!isInt) {
+				return new ValidatorStatusCode(false, "The given benchmark ID is not valid");
+			}
 			if (!Permissions.canUserSeeBench(Integer.parseInt(newValue), userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
 			}	
 		} else if (attribute.equals("defaultsolver")) {
+			if (!isInt) {
+				return new ValidatorStatusCode(false, "The given solver ID is not valid");
+			}
 			if (!Permissions.canUserSeeSolver(Integer.parseInt(newValue), userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
 			}
 		} else if (attribute.equals("PreProcess")) {
+			if (!isInt) {
+				return new ValidatorStatusCode(false, "The given processor ID is not valid");
+			}
 			int procId=Integer.parseInt(newValue);
 			if (procId>=0) {
 				if (!ProcessorSecurity.canUserSeeProcessor(Integer.parseInt(newValue), userId).isSuccess()) {

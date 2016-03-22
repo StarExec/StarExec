@@ -211,7 +211,7 @@ public class TestUtil {
 		User u = new User();
 		Mockito.when(session.getAttribute(SessionUtil.USER)).thenReturn(u);
 		for (String s : parameters.keySet()) {
-			Mockito.when(request.getAttribute(s)).thenReturn(parameters.get(s));
+			Mockito.when(request.getParameter(s)).thenReturn(parameters.get(s));
 		}
 		for (String s : arrayParameters.keySet()) {
 			List<String> strings = arrayParameters.get(s);

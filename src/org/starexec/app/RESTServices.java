@@ -2370,7 +2370,7 @@ public class RESTServices {
 	@POST
 	@Path("/recycleandremove/benchmark/{spaceID}")
 	@Produces("application/json")
-	public String recycleAndRemoveBenchmarks(@Context HttpServletRequest request,@PathParam("spaceID") int spaceId) {
+	public String recycleAndRemoveBenchmarks(@PathParam("spaceID") int spaceId,@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);

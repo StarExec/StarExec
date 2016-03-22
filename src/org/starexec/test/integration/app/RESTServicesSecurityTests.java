@@ -407,14 +407,75 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void deleteProcessorTest() {
+	private void editProcessorTest() {
+		HashMap<String,String> params = new HashMap<String,String>();
+		params.put("name", "newname");
+		params.put("desc", "newdesc");
+		assertResultIsInvalid(services.editProcessor(postProcessor.getId(),TestUtil.getMockHttpRequest(
+				user.getId(), params)));
+		assertResultIsInvalid(services.editProcessor(postProcessor.getId(),TestUtil.getMockHttpRequest(
+				admin.getId())));
+	}
+	
+	@StarexecTest
+	private void leaveCommunityTest() {
+		assertResultIsInvalid(services.leaveCommunity(space.getId(),TestUtil.getMockHttpRequest(
+				user.getId())));
+		assertResultIsInvalid(services.leaveCommunity(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void deleteProcessorsTest() {
 		assertResultIsInvalid(services.deleteProcessors(TestUtil.getMockHttpRequest(
 				user.getId(), new HashMap<String,String>(), getSelectedIdParams(postProcessor.getId()))));
 		assertResultIsInvalid(services.deleteProcessors(TestUtil.getMockHttpRequest(
 				admin.getId(), new HashMap<String,String>())));
-
 	}
 	
+	
+	@StarexecTest
+	private void removeBenchmarksTest() {
+		assertResultIsInvalid(services.removeBenchmarksFromSpace(space.getId(),TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+		assertResultIsInvalid(services.removeBenchmarksFromSpace(space.getId(),TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>())));
+		assertResultIsInvalid(services.removeBenchmarksFromSpace(-1,TestUtil.getMockHttpRequest(
+				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+	}
+	
+	@StarexecTest
+	private void recycleBenchmarksTest() {
+		assertResultIsInvalid(services.recycleBenchmarks(TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+		assertResultIsInvalid(services.recycleBenchmarks(TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>())));
+	}
+	
+	@StarexecTest
+	private void restoreBenchmarksTest() {
+		assertResultIsInvalid(services.restoreBenchmarks(TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+		assertResultIsInvalid(services.restoreBenchmarks(TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>())));
+	}
+	
+	@StarexecTest
+	private void deleteBenchmarksTest() {
+		assertResultIsInvalid(services.deleteBenchmarks(TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+		assertResultIsInvalid(services.deleteBenchmarks(TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>())));
+	}
+	
+	@StarexecTest
+	private void recycleAndRemoveBenchmarksTest() {
+		assertResultIsInvalid(services.recycleAndRemoveBenchmarks(space.getId(),TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+		assertResultIsInvalid(services.recycleAndRemoveBenchmarks(space.getId(),TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>())));
+		assertResultIsInvalid(services.recycleAndRemoveBenchmarks(-1,TestUtil.getMockHttpRequest(
+				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+	}
 	
 	@Override
 	protected String getTestName() {
