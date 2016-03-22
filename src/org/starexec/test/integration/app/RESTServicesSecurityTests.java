@@ -5,7 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Assert;
+import org.mockito.Mockito;
 import org.starexec.app.RESTServices;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -265,6 +269,51 @@ public class RESTServicesSecurityTests extends TestSequence {
 	private void addUserWebsiteTest() {
 		assertResultIsInvalid(services.addWebsite("user",admin.getId(), TestUtil.getMockHttpRequest(user.getId(), getNameAndUrlParams())));
 		assertResultIsInvalid(services.addWebsite("user",-1, TestUtil.getMockHttpRequest(admin.getId(),getNameAndUrlParams())));
+	}
+	
+	@StarexecTest
+	private void addUsersToSpaceTest() {
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("copyToSubspaces", "true");
+		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(user.getId(), params, getSelectedIdParams(user.getId()))));
+		assertResultIsInvalid(services.addUsersToSpace(-1,TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(user.getId()))));
+		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(user.getId()))));
+		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(admin.getId(),params)));
+	}
+	
+	@StarexecTest
+	private void copySolversToSpaceTest() {
+		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("copyToSubspaces", "true");
+		params.put("copy", "true");
+		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(user.getId(), params, getSelectedIdParams(solver.getId())), response));
+		assertResultIsInvalid(services.copySolversToSpace(-1,
+				TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(solver.getId())), response));
+		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(admin.getId(), params), response));
+		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(-1)), response));
+		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId())), response));
+	}
+	
+	@StarexecTest
+	private void copyBenchmarkssToSpaceTest() {
+		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("copy", "true");
+		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(user.getId(), params, getSelectedIdParams(benchmarkIds.get(0))), response));
+		assertResultIsInvalid(services.copyBenchToSpace(-1,
+				TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(benchmarkIds.get(0))), response));
+		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(admin.getId(), params), response));
+		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(-1)), response));
+		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0))), response));
 	}
 	
 	@StarexecTest
