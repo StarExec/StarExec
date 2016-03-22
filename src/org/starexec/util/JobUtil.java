@@ -155,7 +155,7 @@ public class JobUtil {
 				log.info("about to create job from element");
 				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames);
 				if (id < 0) {
-				    break; // out of for loop
+					return null; // means there was an error. Error message should have been set
 				}
 				jobIds.add(id);
 			}
