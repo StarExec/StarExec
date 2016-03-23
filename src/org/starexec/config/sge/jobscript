@@ -400,7 +400,19 @@ ls -l $OUT_DIR
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
 
+if [ ! -f $WATCHFILE ]; then
+    log "Runsolver watchfile could not be found. Terminating job pair."
+    sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+fi
 
+if [ ! -f $VARFILE ]; then
+    echo "Runsolver varfile could not be found. Terminating job pair."
+    sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+fi
 
 # check for which cores we are on
 log "epilog checking for information on cores, from runsolver's watch file:"
