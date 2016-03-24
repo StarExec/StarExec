@@ -22,6 +22,7 @@
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(communityId,ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getQueuesForUser(userId));
 			List<Solver> solvers = Solvers.getBySpaceDetailed(spaceId);
+            Solvers.sortConfigs(solvers);
 			Solvers.makeDefaultConfigsFirst(solvers);
 			request.setAttribute("solvers", solvers);
 			//request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));

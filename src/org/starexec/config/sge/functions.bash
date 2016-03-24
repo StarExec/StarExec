@@ -909,10 +909,8 @@ fi
 
 mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
 log "the output to be copied back $PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" 
-log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVERS_ID/"
+log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID"
 cp "$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID/starexec_build_log
-
-echo "DEBUG: BENCHMARK ID TO BE REMOVED: $BENCH_ID"
 
 safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
 log "solver copied back to head node"
