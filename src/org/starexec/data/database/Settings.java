@@ -152,7 +152,7 @@ public class Settings {
 	 */
 	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(int userId) {
 		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
-		List<Space> comms=Communities.getAll();
+		List<Space> comms=Communities.getAllCommunitiesUserIsIn(userId);
 		if (comms.size()>0) {
 			for (int i=0;i<comms.size();i++) {
 				DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
@@ -162,7 +162,6 @@ public class Settings {
 		}
 		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
 		if (userSettings!=null) {
-			
 			listOfDefaultSettings.addAll(userSettings);
 		}
 		return listOfDefaultSettings;

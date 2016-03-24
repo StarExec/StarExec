@@ -8,8 +8,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 
 /**
@@ -64,6 +66,10 @@ public class Permissions {
 	 */
 	
 	private static boolean canUserSeeBench(int benchId, int userId, Connection con) {
+		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(benchId, false);
+		if (b==null) {
+			return false;
+		}
 		if (Benchmarks.isPublic(benchId)){
 			return true;
 		}	
@@ -203,6 +209,10 @@ public class Permissions {
 	 * 
 	 */
 	private static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
+		Solver s = Solvers.getIncludeDeleted(solverId);
+		if (s==null) {
+			return false;
+		}
 		if (Solvers.isPublic(solverId)){
 			return true;
 		}

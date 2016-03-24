@@ -300,7 +300,7 @@ public class SolverSecurity {
 	 * @return True if the user owns the solver OR is an admin, and false otherwise
 	 */
 	public static boolean userOwnsSolverOrIsAdmin(Solver solver,int userId) {
-		return (solver.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId));
+		return (solver!=null && (solver.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId)));
 	}
 	/**
 	 * Checks whether a user can remove a solver from a space

@@ -164,7 +164,7 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to post process this job");
 		}
 		Processor p=Processors.get(pid);
-		if (!Users.isMemberOfCommunity(userId, p.getCommunityId()) && !isAdmin) {
+		if (p==null || !Users.isMemberOfCommunity(userId, p.getCommunityId()) && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to use the selected post processor");
 		}
 		
@@ -341,12 +341,14 @@ public class JobSecurity {
 	 * @param userId The ID of the user making the request
 	 */
 	public static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
+		Job j = Jobs.get(jobId);
+		if (j==null) {
+			return false;
+		}
 		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return true;
 		}
-
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
+		if(j.getUserId() != userId){
 			return false;
 		}
 		return true;
