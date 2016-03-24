@@ -103,7 +103,7 @@ public class TestManager {
 	 * @return True if the tests were started, and false if they were not for some reason
 	 */
 	public static boolean executeAllTestSequences() {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return false; //right now, don't run anything on production
 		}
 		//don't do anything if the tests are already running
@@ -149,7 +149,7 @@ public class TestManager {
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTests(String[] testNames) {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return false; //right now, don't run anything on production
 		}
 		//don't run anything if we are already going
@@ -195,7 +195,7 @@ public class TestManager {
 	 */
 	public static boolean executeStressTest(final int userCount,final int spaceCount,final int jobCount, final int minUsersPerSpace, final int maxUsersPerSpace, final int minSolversPerSpace, 
 			final int maxSolversPerSpace,final int minBenchmarksPerSpace,final int maxBenchmarksPerSpace,final int spacesPerJobCount) {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return false; //right now, don't run anything on production
 		}
 		//don't run anything if we are already going
@@ -279,7 +279,7 @@ public class TestManager {
 	 * be running this on production!
 	 */
 	public static void emptyJobOutputDirectory() {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();

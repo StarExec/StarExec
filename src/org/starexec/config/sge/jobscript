@@ -301,11 +301,12 @@ else
 fi
 
 SANDBOX_FOUND=true
+# SANDBOX_PARAM designates which user will run runsolver
 if [ $SANDBOX -eq 1 ] ; then
-	SANDBOX_PARAM="sandbox"
+	SANDBOX_PARAM="$$SANDBOX_USER_ONE$$"
 	CORES="0-3"
 elif [ $SANDBOX -eq 2 ] ; then
-	SANDBOX_PARAM="sandbox2"
+	SANDBOX_PARAM="$$SANDBOX_USER_TWO$$"
 	CORES="4-7"
 else
 	SANDBOX_FOUND=false
@@ -347,7 +348,6 @@ log "additional output save option : $EXTRA_SAVE_OPTION"
 
 
 if [ "$SANDBOX_FOUND" = true ] ; then
-	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
 	echo "Checking who current user is using: whoami ..."	
 	whoami
 

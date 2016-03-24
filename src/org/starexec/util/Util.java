@@ -152,13 +152,8 @@ public class Util {
      * Determines whether we are currently running on production.
      * @return True if this is production and false if it is a test instance
      */
-    //TODO: We need to think this through, as distributing Starexec will mean that there may be
-    //many 'production' instances.
-    public static boolean isProduction() {
-		if (R.STAREXEC_SERVERNAME.equalsIgnoreCase("www.starexec.org")) {
-		    return true; 
-		}
-		return false;
+    public static boolean isTestingAllowed() {
+		return R.ALLOW_TESTING;
     }
 	
     /** 
@@ -752,7 +747,7 @@ public class Util {
     private static void initDocRootUrl() {
     	initDocRoot();
     	if (docRootUrl == null) {
-	    docRootUrl = R.STAREXEC_URL_PREFIX+"://" + R.STAREXEC_SERVERNAME + docRoot;
+    		docRootUrl = R.STAREXEC_URL_PREFIX+"://" + R.STAREXEC_SERVERNAME + docRoot;
     	}
     }
     /**
@@ -948,8 +943,6 @@ public class Util {
     		cpCmd[2]=f.getAbsolutePath();
     		Util.executeCommand(cpCmd);
 	    }
-	    //log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
-	    //log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
 
 	    //next, copy the files over so they are owned by sandbox
 	    String[] sudoCpCmd=new String[4];
@@ -961,9 +954,6 @@ public class Util {
     		sudoCpCmd[2]=f.getAbsolutePath();
     		Util.executeSandboxCommand(sudoCpCmd);
 	    }
-	    //log.debug(Util.executeCommand("ls -l -R "+sandbox.getAbsolutePath()));
-	    //log.debug(Util.executeCommand("ls -l -R "+sandbox2.getAbsolutePath()));
-
 	    sandboxChmodDirectory(sandbox2);
 	}
 	finally {

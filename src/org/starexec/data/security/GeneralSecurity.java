@@ -26,7 +26,7 @@ public class GeneralSecurity {
 
 	public static ValidatorStatusCode canUserRunTestsNoRunningCheck(int userId) {
 		//only the admin can run tests, and they cannot be run on production
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId) || Util.isProduction()) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId) || !Util.isTestingAllowed()) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);

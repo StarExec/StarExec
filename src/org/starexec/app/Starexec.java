@@ -129,7 +129,6 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
-		//event.getServletContext().setAttribute("starexecRoot", R.STAREXEC_APPNAME);		
 		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
 		
 	}	
@@ -144,7 +143,6 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("updateClusterTask (periodic)");
 
-			    //TODO : These methods do both grid engine and database tasks, decouple
 			    Cluster.loadWorkerNodes();
 			    Cluster.loadQueueDetails();
 

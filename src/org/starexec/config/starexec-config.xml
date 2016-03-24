@@ -16,18 +16,18 @@
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
-			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="5368709120" />	
 			<property key="DEBUG_MODE_ACTIVE" value="false" />							
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
-            
+            <property key="ALLOW_TESTING" value="true"/>
             <!-- backend Configuration -->
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
 			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->
 			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
-
+			<property key="SANDBOX_USER_ONE" value="sandbox"/>
+			<property key="SANDBOX_USER_TWO" value="sandbox2"/>
 		</class>
 	</configuration>
 	<configuration name="production" inherit="common_core">
@@ -39,6 +39,7 @@
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
 			<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
+			 <property key="ALLOW_TESTING" value="false"/>
    		</class>
     </configuration>
 	<configuration name="stardev" inherit="common_core">
@@ -151,7 +152,6 @@
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Misc. Configuration     --> 
-	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="eric-burns@uiowa.edu" />    
 	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 

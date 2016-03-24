@@ -164,6 +164,7 @@ public class R {
     public static int DEFAULT_QUEUE_ID=1;
     //Test info
     public static int TEST_COMMUNITY_ID=-1;
+    public static boolean ALLOW_TESTING=false;								// whether tests should be allowed to run on this instance. False for production.
     //Public user info
     public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login
@@ -175,11 +176,11 @@ public class R {
     public static String JOBFILE_FORMAT = "job_%d.bash";					// The filename format (with standard java string formatting) for generated jobscript files
     public static String DEPENDFILE_FORMAT = "depend_%d.txt";				// The filename format for dependencies
     public static String SOLVER_BIN_DIR = "/bin";							// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
-	
+    public static String SANDBOX_USER_ONE=null;								// name of user that executes jobs in sandbox one
+    public static String SANDBOX_USER_TWO=null; 							// name of user that executes jobs in sandbox two
     // Misc application properties
     public static String STAREXEC_SERVERNAME = null;
     public static String STAREXEC_APPNAME = null;
-    public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
     public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
     public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";		// Which datetime format is used to create unique directory names
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
