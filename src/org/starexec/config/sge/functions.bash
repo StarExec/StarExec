@@ -90,12 +90,6 @@ SANDBOX2_LOCK_USED=$WORKING_DIR_BASE'/sandbox2lock.active'
 
 # Path to local workspace for each node in cluster.
 
-
-# Path to Olivier Roussel's runSolver
-RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
-
-
-
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
 

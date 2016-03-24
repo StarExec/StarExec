@@ -46,7 +46,8 @@ export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
 export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
-
+# Path to Olivier Roussel's runSolver
+export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
 

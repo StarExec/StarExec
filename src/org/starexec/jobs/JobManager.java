@@ -150,6 +150,7 @@ public abstract class JobManager {
 			// Impose resource limits
 			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
 			mainTemplate = mainTemplate.replace("$$BENCH_NAME_LENGTH_MAX$$", String.valueOf(R.BENCH_NAME_LEN));
+			mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
 		}
 	}
 
@@ -230,12 +231,7 @@ public abstract class JobManager {
 			
 			/*
 			 * we are going to loop through the schedule adding a few job
-			 * pairs at a time to SGE.  If the count of jobs enqueued
-			 * (starting from how many jobs we though we had enqueued when
-			 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
-			 * then we will not continue with our next pass through the
-			 * schedule.  
-			 *
+			 * pairs at a time to SGE.
 			 */
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
