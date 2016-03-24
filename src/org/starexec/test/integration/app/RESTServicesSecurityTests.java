@@ -537,8 +537,8 @@ public class RESTServicesSecurityTests extends TestSequence {
 		admin = Users.getAdmins().get(0);
 		space = ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
 		solver = ResourceLoader.loadSolverIntoDatabase(space.getId(), admin.getId());
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
-		job = ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), admin.getId());
+		job = ResourceLoader.loadJobIntoDatabase(space.getId(), admin.getId(), solver.getId(), benchmarkIds);
 		anonymousJobId = AnonymousLinks.addAnonymousLink("job", job.getId(), PrimitivesToAnonymize.NONE);
 		benchmarkStatus = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), admin.getId()));
 		spaceStatus = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(admin.getId()));
