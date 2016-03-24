@@ -527,8 +527,8 @@ public class SpaceSecurity {
 		} else {
 			for (Integer bid : benchmarkIdsBeingCopied) {
 				Benchmark b=Benchmarks.get(bid);
-				if (b.getUserId()!=userId && !isAdmin) {
-					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move");
+				if (b==null || (b.getUserId()!=userId && !isAdmin)) {
+					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move, or some do not exist");
 				}
 			}
 		}
