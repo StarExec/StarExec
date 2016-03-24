@@ -517,6 +517,7 @@ public class ResourceLoader {
 		u.setEmail(email);
 		u.setInstitution(institution);
 		u.setRole(role);
+		u.setDiskQuota(R.DEFAULT_USER_QUOTA);
 		int id=Users.add(u);
 		if (id>0) {
 			u.setId(id);

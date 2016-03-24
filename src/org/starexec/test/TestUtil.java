@@ -209,6 +209,7 @@ public class TestUtil {
 		HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
 		HttpSession session = Mockito.mock(HttpSession.class);
 		User u = new User();
+		u.setId(userId);
 		Mockito.when(session.getAttribute(SessionUtil.USER)).thenReturn(u);
 		for (String s : parameters.keySet()) {
 			Mockito.when(request.getParameter(s)).thenReturn(parameters.get(s));

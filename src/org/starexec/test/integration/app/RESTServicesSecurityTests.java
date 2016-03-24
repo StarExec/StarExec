@@ -300,7 +300,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void copyBenchmarkssToSpaceTest() {
+	private void copyBenchmarksToSpaceTest() {
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("copy", "true");
