@@ -34,9 +34,7 @@
    		<class name="org.starexec.constants.R">   		
    			<property key="PUBLIC_USER_ID" value="2" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
-	  		<property key="TEST_USER_ID" value="-1"/>
 			<property key="TEST_COMMUNITY_ID" value="12007"/>
-			<property key="TEST_USER_PASSWORD" value="null"/>
 	  		<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
@@ -48,8 +46,6 @@
 			<property key="PUBLIC_USER_ID" value="3" /> 
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 	  		<property key="PUBLIC_SPACE_ID" value="3" />
-	  		<property key="TEST_USER_ID" value="4"/>
-	  		<property key="TEST_USER_PASSWORD" value="Starexec4ever"/>
 			<property key="TEST_COMMUNITY_ID" value="2"/>
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />

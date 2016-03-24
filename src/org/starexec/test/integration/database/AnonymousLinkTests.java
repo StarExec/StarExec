@@ -29,6 +29,7 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -383,7 +384,7 @@ public class AnonymousLinkTests extends TestSequence {
 		admin = Users.getAdmins().get(0);
 
 		// Setup test user.
-		user=Users.getTestUser();
+		user=ResourceLoader.loadUserIntoDatabase();
 
 		// Setup test space.
 		Space community = Communities.getTestCommunity();
@@ -406,7 +407,7 @@ public class AnonymousLinkTests extends TestSequence {
 	}
 
 	@Override
-	protected void teardown() {
+	protected void teardown() throws StarExecSecurityException {
 		// Delete test space.
 		Spaces.removeSubspace( space.getId() );
 
@@ -420,5 +421,6 @@ public class AnonymousLinkTests extends TestSequence {
 
 		// Delete test job.
 		Jobs.deleteAndRemove( job.getId() );
+		Users.deleteUser(user.getId(), admin.getId());
 	}
 }

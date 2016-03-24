@@ -691,7 +691,7 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		user=Users.getTestUser();
+		user=ResourceLoader.loadUserIntoDatabase();
 		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
 
@@ -747,6 +747,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
 		Processors.delete(proc.getId());
+		Users.deleteUser(user.getId(), Users.getAdmins().get(0).getId());
 	}
 	
 	private boolean isErrorMap(HashMap<Integer,String> mapping) {

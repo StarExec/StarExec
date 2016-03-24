@@ -379,10 +379,10 @@ public class GetPageTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		user=Users.getTestUser();
+		user=ResourceLoader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
 		testCommunity=Communities.getTestCommunity();
-		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
 		adminCon=new Connection(admin.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
 		nonUserCon = new Connection("empty", "empty", Util.url(""));
 		con.login();
@@ -423,6 +423,7 @@ public class GetPageTests extends TestSequence {
 		
 		Jobs.deleteAndRemove(job.getId());
 		Settings.deleteProfile(settings.getId());
+		Users.deleteUser(user.getId(), admin.getId());
 	}
 
 	@Override

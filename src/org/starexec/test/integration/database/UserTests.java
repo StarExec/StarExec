@@ -461,15 +461,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(Hash.hashPassword(user1.getPassword()), Users.getPassword(user1.getId()));
 		
 	}
-	
-	@StarexecTest
-	private void GetTestUserTest() {
-		User testUser=Users.getTestUser();
-		Assert.assertNotNull(testUser);
-		Assert.assertTrue(Users.isMemberOfCommunity(testUser.getId(), Communities.getTestCommunity().getId()));
-		
-	}
-	
+
 	@StarexecTest
 	private void IsAdminTest() {
 		Assert.assertFalse(Users.isAdmin(user1.getId()));
@@ -536,7 +528,7 @@ public class UserTests extends TestSequence {
 		user2=ResourceLoader.loadUserIntoDatabase();
 		user3=ResourceLoader.loadUserIntoDatabase();
 		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
-		testUser=Users.getTestUser();
+		testUser=ResourceLoader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
 		space=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), Communities.getTestCommunity().getId());
 		subspace=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space.getId());
@@ -548,6 +540,7 @@ public class UserTests extends TestSequence {
 		Users.deleteUser(user1.getId(),admin.getId());
 		Users.deleteUser(user2.getId(),admin.getId());
 		Users.deleteUser(user3.getId(),admin.getId());
+		Users.deleteUser(testUser.getId(), admin.getId());
 		Spaces.removeSubspace(space.getId());
 		Spaces.removeSubspace(comm.getId());
 		

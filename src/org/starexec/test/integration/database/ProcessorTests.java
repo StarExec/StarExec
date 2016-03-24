@@ -10,6 +10,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -20,6 +21,7 @@ import org.starexec.test.resources.ResourceLoader;
  * @author Eric
  */
 public class ProcessorTests extends TestSequence {
+	User user = null;
 	private Processor postProc;
 	private Space community;
 	@Override
@@ -70,7 +72,7 @@ public class ProcessorTests extends TestSequence {
 	@StarexecTest
 	private void getPostProcessByUserTest() {
 		boolean found = false;
-		for (Processor p : Processors.getByUser(Users.getTestUser().getId(), ProcessorType.POST)) {
+		for (Processor p : Processors.getByUser(user.getId(), ProcessorType.POST)) {
 			found = found || p.getId()==postProc.getId();
 		}
 		Assert.assertTrue(found);
@@ -79,7 +81,7 @@ public class ProcessorTests extends TestSequence {
 	@StarexecTest
 	private void getBenchProcessByUserTest() {
 		boolean found = false;
-		for (Processor p : Processors.getByUser(Users.getTestUser().getId(), ProcessorType.BENCH)) {
+		for (Processor p : Processors.getByUser(user.getId(), ProcessorType.BENCH)) {
 			found = found || p.getId()==R.NO_TYPE_PROC_ID;
 		}
 		Assert.assertTrue(found);
@@ -125,13 +127,16 @@ public class ProcessorTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
+		user = ResourceLoader.loadUserIntoDatabase();
 		community=Communities.getTestCommunity();
+		Users.associate(user.getId(), community.getId());
 		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
+		Users.deleteUser(user.getId(), Users.getAdmins().get(0).getId());
 		Processors.delete(postProc.getId());
 		
 	}

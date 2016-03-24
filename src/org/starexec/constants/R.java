@@ -163,10 +163,8 @@ public class R {
     public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue
     public static int DEFAULT_QUEUE_ID=1;
     //Test info
-    public static int TEST_USER_ID=-1;
     public static int TEST_COMMUNITY_ID=-1;
-    public static String TEST_USER_PASSWORD=null;
-    
+    public static String TEST_USER_PASSWORD = "Starexec4ever";				//Password belonging to all sample data users
     //Public user info
     public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login

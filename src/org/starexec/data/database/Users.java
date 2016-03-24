@@ -1247,18 +1247,7 @@ public class Users {
 		User u=Users.get(userId);
 		return u!=null && u.getRole().equals(R.DEFAULT_USER_ROLE_NAME);
 	}
-	
-	/**
-		@return The user with the configurable test user role. Returns null
-		if no such user exists
-	 */
-	public static User getTestUser() {
-		User u=Users.get(R.TEST_USER_ID);
-		if (u==null) {
-			log.warn("getTestUser could not find the test user. Please configure one");
-		}
-		return u;
-	}
+
 	/**
 	 * Adds the given user to the database
 	 * @param user The user to add. The user's password should be in plaintext and will be hashed
