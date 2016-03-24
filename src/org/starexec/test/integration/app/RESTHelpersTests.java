@@ -345,8 +345,8 @@ public class RESTHelpersTests extends TestSequence {
 		for (Integer id : benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(id);
 		}
-		Users.deleteUser(testUser.getId(), admin.getId());
-		Users.deleteUser(extraUser.getId(), admin.getId());
+		Users.deleteUser(testUser.getId());
+		Users.deleteUser(extraUser.getId());
 		
 	}
 

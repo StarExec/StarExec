@@ -49,7 +49,7 @@ public class GeneralSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId(),admin.getId());
+		Users.deleteUser(user1.getId());
 		
 	}
 

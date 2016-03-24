@@ -163,7 +163,7 @@ public class SolverTests extends TestSequence {
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Spaces.removeSubspace(space1.getId());
 		Spaces.removeSubspace(space2.getId());		
-		Users.deleteUser(testUser.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(testUser.getId());
 	}
 		
 	

@@ -65,7 +65,7 @@ public class PipelineTests extends TestSequence {
 		Solvers.deleteAndRemoveSolver(s.getId());
 		Spaces.removeSubspace(space.getId());
 		Assert.assertTrue(Pipelines.deletePipelineFromDatabase(pipe.getId()));
-		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(u.getId());
 		
 	}
 

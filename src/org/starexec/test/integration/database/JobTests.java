@@ -353,9 +353,9 @@ public class JobTests extends TestSequence {
 		}
 		Processors.delete(postProc.getId());
 		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
-		Users.deleteUser(nonOwner.getId(),admin.getId());
+		Users.deleteUser(user.getId());
+		Users.deleteUser(user2.getId());
+		Users.deleteUser(nonOwner.getId());
 		
 	}
 

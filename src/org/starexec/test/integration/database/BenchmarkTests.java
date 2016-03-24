@@ -244,7 +244,7 @@ public class BenchmarkTests extends TestSequence {
 		Benchmark b = Benchmarks.get(id);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
-		Users.deleteUser(newUser.getId(), admin.getId());
+		Users.deleteUser(newUser.getId());
 	}
 	
 	@StarexecTest
@@ -258,7 +258,7 @@ public class BenchmarkTests extends TestSequence {
 		Benchmark b = Benchmarks.get(benchId);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(benchId));
-		Users.deleteUser(newUser.getId(), admin.getId());
+		Users.deleteUser(newUser.getId());
 	}
 	
 	@StarexecTest
@@ -479,7 +479,7 @@ public class BenchmarkTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(benchId);
 		}
 		Spaces.removeSubspace(tempSpace.getId());
-		Users.deleteUser(tempUser.getId(),admin.getId());
+		Users.deleteUser(tempUser.getId());
 	}
 	
 	@StarexecTest
@@ -545,8 +545,8 @@ public class BenchmarkTests extends TestSequence {
 		Processors.delete(benchProcessor.getId());
 		Spaces.removeSubspace(space2.getId());
 		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user2.getId(), admin.getId());
+		Users.deleteUser(user.getId());
+		Users.deleteUser(user2.getId());
 		
 	}
 	

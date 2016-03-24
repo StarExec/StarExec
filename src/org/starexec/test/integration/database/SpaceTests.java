@@ -357,13 +357,11 @@ public class SpaceTests extends TestSequence {
 		Spaces.removeSubspace(subspace2.getId());
 		Spaces.removeSubspace(subspace3.getId());
 		boolean success=Spaces.removeSubspace(community.getId());
-		try {
-			Users.deleteUser(leader.getId(),admin.getId());
-			Users.deleteUser(member1.getId(),admin.getId());
-			Users.deleteUser(member2.getId(),admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		
+		Users.deleteUser(leader.getId());
+		Users.deleteUser(member1.getId());
+		Users.deleteUser(member2.getId());
+		
 
 		Assert.assertTrue(success);
 	}

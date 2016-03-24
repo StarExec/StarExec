@@ -290,7 +290,7 @@ public class UploadTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		Spaces.removeSubspace(s.getId());
-		Users.deleteUser(u.getId(),Users.getAdmins().get(0).getId());
+		Users.deleteUser(u.getId());
 		
 	}
 

@@ -87,8 +87,8 @@ public class UserSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId(),admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
+		Users.deleteUser(user1.getId());
+		Users.deleteUser(user2.getId());
 	}
 
 }

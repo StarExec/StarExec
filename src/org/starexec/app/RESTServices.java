@@ -2949,13 +2949,15 @@ public class RESTServices {
 		int callersUserId = SessionUtil.getUserId(request);
 
 		boolean success = false;
-		try {
-			success = Users.deleteUser(userToDeleteId, callersUserId);
-				
-		} catch (StarExecSecurityException e) {
-			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to delete this user."));
+		
+		//Only allow the deletion of non-admin users, and only if the admin is asking
+		ValidatorStatusCode status = UserSecurity.canDeleteUser(userToDeleteId, callersUserId);
+		if (!status.isSuccess()) {
+			log.debug("security permission error when trying to delete user with id = "+userToDeleteId);
+			return gson.toJson(status);
 		}
-
+		
+		success = Users.deleteUser(userToDeleteId);
 		if (success) {
 			return gson.toJson(new ValidatorStatusCode(true, "The user has been successfully deleted."));
 		} else {

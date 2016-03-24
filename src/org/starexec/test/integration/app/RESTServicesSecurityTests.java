@@ -557,7 +557,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
+		Users.deleteUser(user.getId());
 	}
 
 }

@@ -189,11 +189,9 @@ public class UserTests extends TestSequence {
 	private void DeleteUserTest() {
 		User temp=ResourceLoader.loadUserIntoDatabase();
 		Assert.assertNotNull(Users.get(temp.getId()));
-		try {
-			Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		
+		Assert.assertTrue(Users.deleteUser(temp.getId()));
+		
 		Assert.assertNull(Users.get(temp.getId()));
 	}
 
@@ -206,11 +204,8 @@ public class UserTests extends TestSequence {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
 		Solver tempSolver = ResourceLoader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
 
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Users.deleteUser(tempUser.getId());
+		
 
 		Assert.assertNull(Solvers.get(tempSolver.getId()));
 	}
@@ -226,11 +221,8 @@ public class UserTests extends TestSequence {
 		File tempUsersSolverDirectory = new File(R.getSolverPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersSolverDirectory.exists());
 
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Users.deleteUser(tempUser.getId());
+		
 
 		Assert.assertFalse(tempUsersSolverDirectory.exists());
 	}
@@ -244,11 +236,8 @@ public class UserTests extends TestSequence {
 		User tempUser = ResourceLoader.loadUserIntoDatabase();
 		List<Integer> tempBenchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Users.deleteUser(tempUser.getId());
+		
 
 		for (Integer benchmarkId : tempBenchmarkIds) {
 			Assert.assertNotNull(benchmarkId);
@@ -267,11 +256,7 @@ public class UserTests extends TestSequence {
 		File tempUsersBenchmarkDirectory = new File(R.getBenchmarkPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersBenchmarkDirectory.exists());
 
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Users.deleteUser(tempUser.getId());
 
 		Assert.assertFalse(tempUsersBenchmarkDirectory.exists());
 	}
@@ -291,11 +276,8 @@ public class UserTests extends TestSequence {
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertNotNull(tempJob);	
 
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Users.deleteUser(tempUser.getId());
+
 
 		Assert.assertNull(Jobs.get(tempJob.getId()));
 	}
@@ -321,12 +303,7 @@ public class UserTests extends TestSequence {
 		for (JobPair pair : tempJob.getJobPairs()) {
 			Assert.assertNotNull(pair);
 		}
-
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Users.deleteUser(tempUser.getId());
 
 		for (JobPair pair : tempJob.getJobPairs()) {
 			JobPair currentPair = JobPairs.getPair(pair.getId());
@@ -352,12 +329,8 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(jobDirectory.exists());
 
 
-		try {
-			Users.deleteUser(tempUser.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
-
+		Users.deleteUser(tempUser.getId());
+		
 		Assert.assertFalse(jobDirectory.exists());
 
 	}
@@ -408,11 +381,7 @@ public class UserTests extends TestSequence {
 		//this might fail if another user is added to the system at exactly this time,
 		//but that would be atypical, and failure is not highly costly
 		Assert.assertEquals(count+1,Users.getCount());
-		try {
-			Assert.assertTrue(Users.deleteUser(temp.getId(),admin.getId()));
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertTrue(Users.deleteUser(temp.getId()));
 
 	}
 	
@@ -537,10 +506,10 @@ public class UserTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId(),admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
-		Users.deleteUser(user3.getId(),admin.getId());
-		Users.deleteUser(testUser.getId(), admin.getId());
+		Users.deleteUser(user1.getId());
+		Users.deleteUser(user2.getId());
+		Users.deleteUser(user3.getId());
+		Users.deleteUser(testUser.getId());
 		Spaces.removeSubspace(space.getId());
 		Spaces.removeSubspace(comm.getId());
 		

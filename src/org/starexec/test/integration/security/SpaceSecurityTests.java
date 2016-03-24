@@ -168,9 +168,9 @@ public class SpaceSecurityTests extends TestSequence {
 		Spaces.removeSubspace(space1.getId());
 		Spaces.removeSubspace(space2.getId());
 		Spaces.removeSubspace(publicSpace.getId());
-		Users.deleteUser(owner.getId(),admin.getId());
-		Users.deleteUser(nonOwner.getId(),admin.getId());
-		Users.deleteUser(noPerms.getId(),admin.getId());
+		Users.deleteUser(owner.getId());
+		Users.deleteUser(nonOwner.getId());
+		Users.deleteUser(noPerms.getId());
 	}
 
 }

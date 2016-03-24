@@ -1,4 +1,4 @@
-package org.starexec.test.integration;
+package org.starexec.test.integration.web;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,6 +30,8 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
+import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
@@ -695,7 +697,7 @@ public class StarexecCommandTests extends TestSequence {
 		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
 
-		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
 		int status = con.login();
 		Assert.assertEquals(0,status);
 		
@@ -745,9 +747,9 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Jobs.deleteAndRemove(job.getId());
 		
-		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(user2.getId());
 		Processors.delete(proc.getId());
-		Users.deleteUser(user.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(user.getId());
 	}
 	
 	private boolean isErrorMap(HashMap<Integer,String> mapping) {

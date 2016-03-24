@@ -201,10 +201,10 @@ public class CommunitiesTests extends TestSequence {
 		Spaces.removeSubspace(subspace2.getId());
 		Spaces.removeSubspace(subspace1.getId());
 		Spaces.removeSubspace(community.getId());
-		Users.deleteUser(testUser.getId(), admin.getId());
-		Users.deleteUser(user1.getId(), admin.getId());
-		Users.deleteUser(user2.getId(), admin.getId());
-		Users.deleteUser(user3.getId(), admin.getId());
+		Users.deleteUser(testUser.getId());
+		Users.deleteUser(user1.getId());
+		Users.deleteUser(user2.getId());
+		Users.deleteUser(user3.getId());
 
 		
 	}

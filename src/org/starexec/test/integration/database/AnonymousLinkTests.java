@@ -421,6 +421,6 @@ public class AnonymousLinkTests extends TestSequence {
 
 		// Delete test job.
 		Jobs.deleteAndRemove( job.getId() );
-		Users.deleteUser(user.getId(), admin.getId());
+		Users.deleteUser(user.getId());
 	}
 }

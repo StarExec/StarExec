@@ -85,7 +85,7 @@ public class StatisticsTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(owner.getId(), admin.getId());
+		Users.deleteUser(owner.getId());
 	}
 
 }

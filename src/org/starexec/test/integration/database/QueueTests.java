@@ -233,7 +233,7 @@ public class QueueTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		Queues.removeQueue(testQueue.getId());
-		Users.deleteUser(owner.getId(), admin.getId());
+		Users.deleteUser(owner.getId());
 		Spaces.removeSubspace(space.getId());
 		Cluster.deleteNode(fakeNode.getId());
 	}

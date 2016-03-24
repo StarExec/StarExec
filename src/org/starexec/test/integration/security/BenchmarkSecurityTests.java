@@ -196,9 +196,9 @@ public class BenchmarkSecurityTests extends TestSequence {
 		for (Integer i : benchmarkIds2) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
-		Users.deleteUser(user1.getId(),admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
-		Users.deleteUser(user3.getId(),admin.getId());
+		Users.deleteUser(user1.getId());
+		Users.deleteUser(user2.getId());
+		Users.deleteUser(user3.getId());
 		Spaces.removeSubspace(space.getId());
 		Spaces.removeSubspace(space2.getId());
 

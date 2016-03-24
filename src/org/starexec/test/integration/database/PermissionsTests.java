@@ -222,10 +222,10 @@ public class PermissionsTests extends TestSequence {
 		for (Integer i : benchmarks) {
 			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
-		Users.deleteUser(owner.getId(),admin.getId());
-		Users.deleteUser(spaceMember.getId(),admin.getId());
-		Users.deleteUser(noPerms.getId(),admin.getId());
-		Users.deleteUser(developer.getId(), admin.getId());
+		Users.deleteUser(owner.getId());
+		Users.deleteUser(spaceMember.getId());
+		Users.deleteUser(noPerms.getId());
+		Users.deleteUser(developer.getId());
 		
 	}
 

@@ -95,9 +95,9 @@ public class ProcessorSecurityTests extends TestSequence {
 	protected void teardown() throws Exception {
 		Processors.delete(p.getId());
 		Spaces.removeSubspace(community.getId());
-		Users.deleteUser(owner.getId(), admin.getId());
-		Users.deleteUser(otherUser.getId(), admin.getId());
-		Users.deleteUser(notInCommunity.getId(), admin.getId());
+		Users.deleteUser(owner.getId());
+		Users.deleteUser(otherUser.getId());
+		Users.deleteUser(notInCommunity.getId());
 	}
 
 }

@@ -78,9 +78,9 @@ public class DefaultSettingsTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Assert.assertTrue(Users.deleteUser(u.getId(), admin.getId()));
+		Assert.assertTrue(Users.deleteUser(u.getId()));
 		Assert.assertTrue(Settings.deleteProfile(settings.getId()));
-		Assert.assertTrue(Users.deleteUser(u2.getId(),admin.getId()));
+		Assert.assertTrue(Users.deleteUser(u2.getId()));
 		Assert.assertTrue(Settings.deleteProfile(settings2.getId()));
 	}
 

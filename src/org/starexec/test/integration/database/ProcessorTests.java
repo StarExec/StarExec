@@ -136,7 +136,7 @@ public class ProcessorTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(user.getId());
 		Processors.delete(postProc.getId());
 		
 	}
