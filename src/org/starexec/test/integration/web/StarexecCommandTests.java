@@ -13,6 +13,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
@@ -696,7 +697,8 @@ public class StarexecCommandTests extends TestSequence {
 		user=ResourceLoader.loadUserIntoDatabase();
 		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
-
+		Users.associate(user.getId(),testCommunity.getId());
+		Permissions.set(user.getId(), testCommunity.getId(), Permissions.getFullPermission());
 		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
 		int status = con.login();
 		Assert.assertEquals(0,status);
