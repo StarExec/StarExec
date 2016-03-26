@@ -192,8 +192,6 @@ public abstract class JobManager {
 	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
 		LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
-
-			
 			log.debug("submitJobs() begins");
 
 			initMainTemplateIf();
@@ -210,11 +208,17 @@ public abstract class JobManager {
 				// retrieving more than this is wasteful.
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
 				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId());
-				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job,limit).iterator();
+				List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
 				log.debug("finished call to getPendingPairsDetailed");
-				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 
-				schedule.add(s);
+				if (pairs.size()>0) {
+					Iterator<JobPair> pairIter = pairs.iterator();					
+					SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+					schedule.add(s);
+				} else {
+					log.debug("not adding any pairs from job "+job.getId());
+				}
+
 			}
 			
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,

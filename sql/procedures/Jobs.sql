@@ -473,18 +473,25 @@ CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 		WHERE job_id=_jobId AND jobpair_stage_data.status_code=_statusCode AND (jobpair_stage_data.cpu=0 OR jobpair_stage_data.wallclock=0);
 	END //
 	
--- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs
+-- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs.
+-- Excludes any job pairs that are utilizing solvers that have still not been built
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
 CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
 		SELECT *, 
 		(SELECT count(*) FROM bench_dependency WHERE primary_bench_id = benchmarks.id) AS dependency_count
-		FROM job_pairs FORCE INDEX (job_id_2) 
+		FROM job_pairs
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id 
 		LEFT JOIN benchmarks ON benchmarks.id = job_pairs.bench_id
 		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id 
-		WHERE job_id = _id AND job_pairs.status_code = 1 ORDER BY job_pairs.id ASC LIMIT _limit;
+		JOIN (SELECT DISTINCT job_pairs.id FROM job_pairs FORCE INDEX (job_id_2)
+		WHERE job_id = _id AND job_pairs.status_code = 1 
+		AND NOT EXISTS (SELECT 1 FROM jobpair_stage_data
+		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id
+		WHERE jobpair_stage_data.jobpair_id = job_pairs.id AND solvers.build_status=0)
+		ORDER BY job_pairs.id ASC LIMIT _limit) AS temp
+		ON temp.id=job_pairs.id;
 	END //	
 	
 -- Retrieves basic info about enqueued job pairs for the given job id
