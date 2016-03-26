@@ -847,10 +847,10 @@ function sandboxWorkspace {
 	if [[ $WORKING_DIR == *sandbox2* ]] 
 	
 	then
-	log "sandboxing workspace with sandbox2 user"
+	log "sandboxing workspace with second sandbox user"
 	sudo chown -R sandbox2 $WORKING_DIR 
 	else
-		log "sandboxing workspace with sandbox user"
+		log "sandboxing workspace with first sandbox user"
 		sudo chown -R sandbox $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"

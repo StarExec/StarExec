@@ -150,10 +150,11 @@ CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TE
 		SELECT 	COUNT(*) AS benchCount
 		FROM 	bench_assoc
 			JOIN	benchmarks AS benchmarks ON benchmarks.id = bench_assoc.bench_id	
-			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+			LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
 		WHERE 	_spaceId=space_id AND
 				(benchmarks.name LIKE	CONCAT('%', _query, '%')
-				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
+				OR		(benchType.name	LIKE 	CONCAT('%', _query, '%') 
+				OR (benchType.name is null AND 'none' LIKE CONCAT('%', _query, '%'))));
 	END //
 -- Retrieves all benchmarks belonging to a space
 -- Author: Eric Burns
