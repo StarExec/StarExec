@@ -402,8 +402,7 @@ log "listing contents of the output directory"
 ls -l $OUT_DIR
 
 log "recording header of job pair output"
-OUTPUT_SAMPLE=$(head -n 5 "$OUT_DIR/stdout.txt")
-log $OUTPUT_SAMPLE
+head -5 "$OUT_DIR/stdout.txt"
 
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
