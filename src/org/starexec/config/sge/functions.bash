@@ -443,8 +443,6 @@ function cleanWorkspace {
 	
 	chmod -R gu+rxw $WORKING_DIR
 
-    
-
 	# Clear the output directory	
 	safeRm output-directory "$OUT_DIR"
 	
@@ -459,9 +457,6 @@ function cleanWorkspace {
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
 	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
-	
-	
-	
 	
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
@@ -725,7 +720,6 @@ function copyOutput {
 		log "executing post processor"
 		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
-		#cat $OUT_DIR/attributes.txt
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
 

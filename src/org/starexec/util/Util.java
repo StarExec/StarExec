@@ -827,11 +827,11 @@ public class Util {
     public static boolean safeDeleteDirectory(String path) {
     	try {
 	    File file=new File(path);
-	    if (file.isDirectory()) {
-		FileUtils.deleteDirectory(file);
-	    } else {
-		FileUtils.deleteQuietly(file);
-	    }
+		    if (file.isDirectory()) {
+		    	FileUtils.deleteDirectory(file);
+		    } else {
+		    	FileUtils.deleteQuietly(file);
+		    }
     	} catch (Exception e) {
 	    log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}
