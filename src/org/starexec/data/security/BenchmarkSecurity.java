@@ -251,7 +251,7 @@ public class BenchmarkSecurity {
 	 */
 	
 	private static boolean userOwnsBenchOrIsAdmin(Benchmark bench,int userId) {
-		return (bench.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId));
+		return (bench!=null && (bench.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId)));
 	}
 	
 	/**
@@ -293,11 +293,14 @@ public class BenchmarkSecurity {
 	 * @author Benton McCune
 	 */
 	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
+		
+		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
+		if (status==null) {
+			return false;
+		}
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
-		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
-		
-		return status!=null && status.getUserId()==userId;
+		return status.getUserId()==userId;
 	}
 }

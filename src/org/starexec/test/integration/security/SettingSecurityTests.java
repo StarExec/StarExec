@@ -45,8 +45,8 @@ public class SettingSecurityTests extends TestSequence {
 	protected void teardown() throws Exception {
 		Settings.deleteProfile(s.getId());
 
-		Users.deleteUser(u.getId(), admin.getId());
-		Users.deleteUser(u2.getId(), admin.getId());
+		Users.deleteUser(u.getId());
+		Users.deleteUser(u2.getId());
 
 		
 	}

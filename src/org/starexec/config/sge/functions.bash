@@ -90,12 +90,6 @@ SANDBOX2_LOCK_USED=$WORKING_DIR_BASE'/sandbox2lock.active'
 
 # Path to local workspace for each node in cluster.
 
-
-# Path to Olivier Roussel's runSolver
-RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
-
-
-
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
 
@@ -449,8 +443,6 @@ function cleanWorkspace {
 	
 	chmod -R gu+rxw $WORKING_DIR
 
-    
-
 	# Clear the output directory	
 	safeRm output-directory "$OUT_DIR"
 	
@@ -465,9 +457,6 @@ function cleanWorkspace {
 	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
 	
 	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
-	
-	
-	
 	
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
@@ -731,7 +720,6 @@ function copyOutput {
 		log "executing post processor"
 		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
-		#cat $OUT_DIR/attributes.txt
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
 
@@ -853,10 +841,10 @@ function sandboxWorkspace {
 	if [[ $WORKING_DIR == *sandbox2* ]] 
 	
 	then
-	log "sandboxing workspace with sandbox2 user"
+	log "sandboxing workspace with second sandbox user"
 	sudo chown -R sandbox2 $WORKING_DIR 
 	else
-		log "sandboxing workspace with sandbox user"
+		log "sandboxing workspace with first sandbox user"
 		sudo chown -R sandbox $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"
@@ -915,10 +903,8 @@ fi
 
 mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
 log "the output to be copied back $PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" 
-log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVERS_ID/"
+log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID"
 cp "$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID/starexec_build_log
-
-echo "DEBUG: BENCHMARK ID TO BE REMOVED: $BENCH_ID"
 
 safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
 log "solver copied back to head node"
@@ -1030,13 +1016,13 @@ function saveFileAsBenchmark {
 		fi
 	fi
 	 
-	CURRENT_BENCH_NAME=${BENCH_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
+	CURRENT_BENCH_NAME=${FILE_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
 	MAX_BENCH_NAME_LENGTH=$(($BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
 	CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
 	CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
 	
 	
-	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH
+	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$CURRENT_STAGE_NUMBER
 	
 	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
 	
@@ -1060,7 +1046,7 @@ function saveStdoutAsBenchmark {
 
 # Saves the extra output directory as a new set of benchmarks
 function saveExtraOutputAsBenchmarks {
-	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
+	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output/*"
 	for f in $OUTPUT_DIR 
 	do
 		if [ -f $f ]

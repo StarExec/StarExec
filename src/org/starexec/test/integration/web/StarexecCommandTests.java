@@ -1,4 +1,4 @@
-package org.starexec.test.integration;
+package org.starexec.test.integration.web;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
@@ -30,6 +31,8 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
+import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
@@ -691,11 +694,12 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		user=Users.getTestUser();
+		user=ResourceLoader.loadUserIntoDatabase();
 		user2=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
-
-		con=new Connection(user.getEmail(),R.TEST_USER_PASSWORD,Util.url(""));
+		Users.associate(user.getId(),testCommunity.getId());
+		Permissions.set(user.getId(), testCommunity.getId(), Permissions.getFullPermission());
+		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
 		int status = con.login();
 		Assert.assertEquals(0,status);
 		
@@ -745,8 +749,9 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Jobs.deleteAndRemove(job.getId());
 		
-		Users.deleteUser(user2.getId(), Users.getAdmins().get(0).getId());
+		Users.deleteUser(user2.getId());
 		Processors.delete(proc.getId());
+		Users.deleteUser(user.getId());
 	}
 	
 	private boolean isErrorMap(HashMap<Integer,String> mapping) {

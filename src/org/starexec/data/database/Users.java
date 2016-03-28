@@ -1088,19 +1088,12 @@ public class Users {
 	
 	//TODO: This should just take the user to delete. Security should be handled outside the function, like
 	// everywhere else.
-	public static boolean deleteUser(int userToDeleteId, int userMakingRequestId) throws StarExecSecurityException{
-		log.debug("User with id="+userMakingRequestId+" is attempting to delete user with id="+userToDeleteId);
+	public static boolean deleteUser(int userToDeleteId){
+		log.debug("User with id="+userToDeleteId+" is about to be deleted");
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
-			//Only allow the deletion of non-admin users, and only if the admin is asking
-			if (!UserSecurity.canDeleteUser(userToDeleteId, userMakingRequestId).isSuccess()) {
-				log.debug("security permission error when trying to delete user with id = "+userToDeleteId);
-				throw new StarExecSecurityException(
-						"User with id="+userMakingRequestId+" does not have permissions to delete user with id="
-						+userToDeleteId);
-
-			}
+			
 			// Delete the users primitive directories. This must occur before we delete the user
 			// so we can still get the users job id's from the database.
 			deleteUsersPrimitiveDirectories(userToDeleteId);
@@ -1115,8 +1108,6 @@ public class Users {
 
 			log.debug("Successfully deleted user with id="+userToDeleteId);
 			return true;
-		} catch (StarExecSecurityException e) {
-			throw e;
 		} catch (Exception e) {
 			log.error("deleteUser says "+e.getMessage(),e);
 		} finally {
@@ -1247,18 +1238,7 @@ public class Users {
 		User u=Users.get(userId);
 		return u!=null && u.getRole().equals(R.DEFAULT_USER_ROLE_NAME);
 	}
-	
-	/**
-		@return The user with the configurable test user role. Returns null
-		if no such user exists
-	 */
-	public static User getTestUser() {
-		User u=Users.get(R.TEST_USER_ID);
-		if (u==null) {
-			log.warn("getTestUser could not find the test user. Please configure one");
-		}
-		return u;
-	}
+
 	/**
 	 * Adds the given user to the database
 	 * @param user The user to add. The user's password should be in plaintext and will be hashed

@@ -514,12 +514,6 @@ public class SpaceSecurity {
 	 */
 	
 	public static ValidatorStatusCode canCopyOrLinkBenchmarksBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied,boolean copy) {
-		//if we are copying, but not linking, disk quota must be checked
-		if (copy) {
-			if (!doesUserHaveDiskQuotaForBenchmarks(benchmarkIdsBeingCopied,userId)) {
-				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
-			}
-		}
 		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		ValidatorStatusCode status=null;
 		if (fromSpaceId!=null) {
@@ -533,8 +527,8 @@ public class SpaceSecurity {
 		} else {
 			for (Integer bid : benchmarkIdsBeingCopied) {
 				Benchmark b=Benchmarks.get(bid);
-				if (b.getUserId()!=userId && !isAdmin) {
-					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move");
+				if (b==null || (b.getUserId()!=userId && !isAdmin)) {
+					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move, or some do not exist");
 				}
 			}
 		}
@@ -543,6 +537,13 @@ public class SpaceSecurity {
 		status=canCopyBenchmarkToSpace(toSpaceId,userId);
 		if (!status.isSuccess()) {
 			return status;
+		}
+		
+		//if we are copying, but not linking, disk quota must be checked
+		if (copy) {
+			if (!doesUserHaveDiskQuotaForBenchmarks(benchmarkIdsBeingCopied,userId)) {
+				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
+			}
 		}
 			
 		return new ValidatorStatusCode(true);

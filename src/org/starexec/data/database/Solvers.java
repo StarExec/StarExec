@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Collection;
+import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -2244,4 +2246,20 @@ public class Solvers {
 			}
 		}
 	}
+
+	/**
+	 * Sorts configurations alphabetically for a list of solvers 
+	 * @param solvers The list of solvers to sort configs for
+	 * @author Andrew Lubinus
+	 */
+    public static void sortConfigs(List<Solver> solvers) {
+        for(Solver s : solvers) {
+            Collections.sort(s.getConfigurations(), new Comparator<Configuration>() {
+                @Override
+                public int compare(Configuration c1, Configuration c2) {
+                    return c1.getName().compareTo(c2.getName());
+                }
+            });
+        }
+    }
 }

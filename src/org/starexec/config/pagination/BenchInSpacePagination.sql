@@ -21,4 +21,5 @@
 				
 				-- Query Filtering
 				WHERE 	(benchmarks.name 									LIKE	CONCAT('%', :query, '%')
-				OR		processors.name	LIKE 	CONCAT('%', :query, '%'))
+				OR		(processors.name	LIKE 	CONCAT('%', :query, '%') 
+				OR (processors.name is null AND 'none' LIKE CONCAT('%', :query, '%'))))

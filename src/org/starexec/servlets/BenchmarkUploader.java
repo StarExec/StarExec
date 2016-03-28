@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -34,6 +35,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.LogUtil;
@@ -323,7 +325,16 @@ public class BenchmarkUploader extends HttpServlet {
 					
 		// Create a unique path the zip file will be extracted to
 		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
-		uniqueDir = new File(uniqueDir,  shortDate.format(new Date()));
+		Date d= new Date();
+		
+		uniqueDir = new File(uniqueDir,  d.getYear()+"");
+		uniqueDir = new File(uniqueDir, d.getMonth()+"");
+		uniqueDir = new File(uniqueDir, d.getDay()+"");
+		uniqueDir = new File(uniqueDir, d.getHours()+"");
+		uniqueDir = new File(uniqueDir, d.getMinutes()+"");
+		// the random string is to ensure that this directory is unique. It would not be otherwise if the
+		// user uploads two benchmark directories in the same minute, which can easily happen using StarexecCommand
+		uniqueDir = new File(uniqueDir, TestUtil.getRandomAlphaString(20));
 		// Create the paths on the filesystem
 		uniqueDir.mkdirs();
 					

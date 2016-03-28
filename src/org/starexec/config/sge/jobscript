@@ -46,7 +46,8 @@ export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
 export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
-
+# Path to Olivier Roussel's runSolver
+export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
 . /home/starexec/sge_scripts/functions.bash
 
@@ -300,11 +301,12 @@ else
 fi
 
 SANDBOX_FOUND=true
+# SANDBOX_PARAM designates which user will run runsolver
 if [ $SANDBOX -eq 1 ] ; then
-	SANDBOX_PARAM="sandbox"
+	SANDBOX_PARAM="$$SANDBOX_USER_ONE$$"
 	CORES="0-3"
 elif [ $SANDBOX -eq 2 ] ; then
-	SANDBOX_PARAM="sandbox2"
+	SANDBOX_PARAM="$$SANDBOX_USER_TWO$$"
 	CORES="4-7"
 else
 	SANDBOX_FOUND=false
@@ -346,7 +348,6 @@ log "additional output save option : $EXTRA_SAVE_OPTION"
 
 
 if [ "$SANDBOX_FOUND" = true ] ; then
-	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
 	echo "Checking who current user is using: whoami ..."	
 	whoami
 
@@ -370,11 +371,14 @@ if [ "$SANDBOX_FOUND" = true ] ; then
     fi
 	pwd
 
+	log "listing contents of the output directory"
+	ls -l $OUT_DIR
 	# run runsolver
 	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING
 
-
+	# move the working directory back to the top level sandbox
+	cd $WORKING_DIR_BASE/$SANDBOX_PARAM
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
 		kill $COPY_OUTPUT_INCREMENTALLY_PID
 	fi
@@ -394,13 +398,29 @@ else
 	sendStatus $ERROR_RUNSCRIPT
 fi
 
-
+log "listing contents of the output directory"
 ls -l $OUT_DIR
+
+log "recording header of job pair output"
+head -5 "$OUT_DIR/stdout.txt"
+
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
 
+if [ ! -f $WATCHFILE ]; then
+    log "Runsolver watchfile could not be found. Terminating job pair."
+    sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+fi
 
+if [ ! -f $VARFILE ]; then
+    echo "Runsolver varfile could not be found. Terminating job pair."
+    sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+fi
 
 # check for which cores we are on
 log "epilog checking for information on cores, from runsolver's watch file:"

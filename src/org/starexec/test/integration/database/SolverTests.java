@@ -12,6 +12,7 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -148,7 +149,7 @@ public class SolverTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		testUser=Users.getTestUser();
+		testUser=ResourceLoader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
 		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), testCommunity.getId());
@@ -158,10 +159,11 @@ public class SolverTests extends TestSequence {
 	}
 
 	@Override
-	protected void teardown() {
+	protected void teardown() throws StarExecSecurityException {
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		Spaces.removeSubspace(space1.getId());
 		Spaces.removeSubspace(space2.getId());		
+		Users.deleteUser(testUser.getId());
 	}
 		
 	

@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jfree.util.Log;
+import org.starexec.constants.R;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
@@ -375,5 +376,21 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	public void setBuildJob(boolean buildJob) {
 		this.buildJob = buildJob;
+	}
+	
+	/**
+	 * Gets the name of the root space for this job. Doing this requires that at least one job pair
+	 * is populated and that it has the correct path info set.
+	 * @Return the root space name, or null if it cannot be found
+	 */
+	public String getRootSpaceName() {
+		if (getJobPairs().size()==0) {
+			return null;
+		}
+		String rootName=getJobPairs().get(0).getPath();
+		if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+			rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
+		}
+		return rootName;
 	}
 }

@@ -34,6 +34,9 @@ public class WebsiteSecurity {
 			return new ValidatorStatusCode(false, "The website url is not formatted correctly. Please refer to the help pages to see the correct format");
 		}
 		if (type==R.SOLVER) {
+			if (Solvers.get(primId)==null) {
+				return new ValidatorStatusCode(false, "The given solver could not be found");
+			}
 			if (!SolverSecurity.userOwnsSolverOrIsAdmin(primId, userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a website to this solver");
 			}

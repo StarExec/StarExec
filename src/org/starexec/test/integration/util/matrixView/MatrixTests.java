@@ -90,13 +90,10 @@ public class MatrixTests extends TestSequence {
 		}
 		Processors.delete(postProc.getId());
 		Spaces.removeSubspace(space.getId());
-		try {
-			Users.deleteUser(user.getId(), admin.getId());
-			Users.deleteUser(user2.getId(), admin.getId());
-			Users.deleteUser(nonOwner.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			log.error("Failed to delete test users.", e);
-		}
+		Users.deleteUser(user.getId());
+		Users.deleteUser(user2.getId());
+		Users.deleteUser(nonOwner.getId());
+		
 	}
 
 	@StarexecTest

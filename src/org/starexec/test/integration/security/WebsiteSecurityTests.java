@@ -120,8 +120,8 @@ public class WebsiteSecurityTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		Solvers.deleteAndRemoveSolver(solver.getId());
-		Users.deleteUser(owner.getId(), admin.getId());
-		Users.deleteUser(nonOwner.getId(), admin.getId());
+		Users.deleteUser(owner.getId());
+		Users.deleteUser(nonOwner.getId());
 		Spaces.removeSubspace(space.getId());
 	}
 

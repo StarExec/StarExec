@@ -242,10 +242,7 @@ public class Jobs {
 			con = Common.getConnection();
 			
 			// gets the name of the root job space for this job
-			String rootName=job.getJobPairs().get(0).getPath();
-			if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
-				rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
-			}
+			String rootName=job.getRootSpaceName();
 			//start a transaction that encapsulates making new spaces for mirrored hierarchies
 			Common.beginTransaction(con);
 			//get all the different space IDs for the places we need to created mirrors of the job space heirarchy

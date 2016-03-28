@@ -244,7 +244,7 @@ public class BenchmarkTests extends TestSequence {
 		Benchmark b = Benchmarks.get(id);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
-		Users.deleteUser(newUser.getId(), admin.getId());
+		Users.deleteUser(newUser.getId());
 	}
 	
 	@StarexecTest
@@ -258,7 +258,7 @@ public class BenchmarkTests extends TestSequence {
 		Benchmark b = Benchmarks.get(benchId);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(benchId));
-		Users.deleteUser(newUser.getId(), admin.getId());
+		Users.deleteUser(newUser.getId());
 	}
 	
 	@StarexecTest
@@ -281,11 +281,9 @@ public class BenchmarkTests extends TestSequence {
 		List<Benchmark> page = Benchmarks.getBenchmarksForNextPageByUser(new DataTablesQuery(0, 10, 0, true, ""), user.getId(), totals);
 		//ensures the query did not filter anything
 		Assert.assertEquals(totals[0], totals[1]);
+		Assert.assertEquals(page.size(), Math.min(10, benchmarks.size()));
 		//ensures benchmarks are sorted ASC
-		Assert.assertTrue(page.get(1).getName().compareTo(page.get(0).getName())>0);
-		
-		Assert.assertTrue(page.size()>=benchmarks.size());
-		Assert.assertTrue(page.size()<=10);
+		Assert.assertTrue(page.get(1).getName().compareTo(page.get(0).getName())>=0);
 	}
 	
 	@StarexecTest
@@ -479,7 +477,7 @@ public class BenchmarkTests extends TestSequence {
 			Benchmarks.deleteAndRemoveBenchmark(benchId);
 		}
 		Spaces.removeSubspace(tempSpace.getId());
-		Users.deleteUser(tempUser.getId(),admin.getId());
+		Users.deleteUser(tempUser.getId());
 	}
 	
 	@StarexecTest
@@ -545,8 +543,8 @@ public class BenchmarkTests extends TestSequence {
 		Processors.delete(benchProcessor.getId());
 		Spaces.removeSubspace(space2.getId());
 		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user2.getId(), admin.getId());
+		Users.deleteUser(user.getId());
+		Users.deleteUser(user2.getId());
 		
 	}
 	

@@ -62,11 +62,9 @@ public class RequestsTests extends TestSequence {
 			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 
-			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+			Assert.assertTrue(Users.deleteUser(tempUser.getId()));
 		} catch (StarExecDatabaseException e) {
 			Assert.fail("Requests.getPendingCommunityRequestsForCommunity threw an exception: "+e.getMessage());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
 		}
 
 		Assert.assertEquals(commRequestsSizeBefore, commRequestsSizeAfter-1);
@@ -92,11 +90,7 @@ public class RequestsTests extends TestSequence {
 		Assert.assertTrue(Requests.approveCommunityRequest(tempUser.getId(), comm.getId()));
 		Assert.assertNull(Requests.getCommunityRequest(tempRequest.getCode()));
 		Assert.assertTrue(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
-		try {
-			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertTrue(Users.deleteUser(tempUser.getId()));
 	}
 	
 	@StarexecTest
@@ -108,11 +102,7 @@ public class RequestsTests extends TestSequence {
 		Assert.assertTrue(Requests.declineCommunityRequest(tempUser.getId(), comm.getId()));
 		Assert.assertNull(Requests.getCommunityRequest(tempRequest.getCode()));
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
-		try {
-			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertTrue(Users.deleteUser(tempUser.getId()));
 	}
 	
 	@StarexecTest
@@ -152,8 +142,8 @@ public class RequestsTests extends TestSequence {
 	protected void teardown() throws Exception {
 		Spaces.removeSubspace(comm.getId());
 		Spaces.removeSubspace(comm2.getId());
-		Users.deleteUser(registeredUser.getId(), admin.getId());
-		Users.deleteUser(requestedUser.getId(), admin.getId());
+		Users.deleteUser(registeredUser.getId());
+		Users.deleteUser(requestedUser.getId());
 		
 	}
 

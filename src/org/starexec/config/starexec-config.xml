@@ -12,37 +12,34 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />	
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
-			<property key="SOLVER_BIN_DIR" value="/bin" />
 			<property key="SOLVER_BUILD_OUTPUT" value="starexec_build_log"/>;
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
-			<property key="LOG_TO_CONSOLE" value="false" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_USER_QUOTA" value="5368709120" />	
 			<property key="DEBUG_MODE_ACTIVE" value="false" />							
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
-            
+            <property key="ALLOW_TESTING" value="true"/>
             <!-- backend Configuration -->
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
 			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->
 			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
-
+			<property key="SANDBOX_USER_ONE" value="sandbox"/>
+			<property key="SANDBOX_USER_TWO" value="sandbox2"/>
 		</class>
 	</configuration>
 	<configuration name="production" inherit="common_core">
    		<class name="org.starexec.constants.R">   		
    			<property key="PUBLIC_USER_ID" value="2" /> 
 	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
-	  		<property key="TEST_USER_ID" value="-1"/>
 			<property key="TEST_COMMUNITY_ID" value="12007"/>
-			<property key="TEST_USER_PASSWORD" value="null"/>
 	  		<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
-	  		<property key="NUM_JOB_SCRIPTS" value="200" />
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
 			<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
+			 <property key="ALLOW_TESTING" value="false"/>
    		</class>
     </configuration>
 	<configuration name="stardev" inherit="common_core">
@@ -50,11 +47,8 @@
 			<property key="PUBLIC_USER_ID" value="3" /> 
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
 	  		<property key="PUBLIC_SPACE_ID" value="3" />
-	  		<property key="TEST_USER_ID" value="4"/>
-	  		<property key="TEST_USER_PASSWORD" value="Starexec4ever"/>
 			<property key="TEST_COMMUNITY_ID" value="2"/>
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
-	  		<property key="NUM_JOB_SCRIPTS" value="20" />
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                         <property key="STAREXEC_APPNAME" value="starexec"/>
                         <property key="MYSQL_USERNAME" value="stardev" />
@@ -138,9 +132,6 @@
 		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
- <!--   Path Configuration   --> 
-	  <property key="CONFIG_PATH" value="/home/astump/starexec/src/org/starexec/config" /> 
-	  <property key="SOLVER_BIN_DIR" value="/bin" />   
 	  <property key="DOWNLOAD_FILE_DIR" value="/secure/files/" />
  <!--   Misc. Configuration     --> 
 	  <property key="CONTACT_EMAIL" value="aaron.stump@gmail.com" />    
@@ -160,11 +151,7 @@
 		<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec" /> 
 		<property key="MYSQL_POOL_MAX_SIZE" value="100" /> 
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
- <!--   Path Configuration   --> 
-	  <property key="CONFIG_PATH" value="C:\\Users\\Eric\\lunaworkspace\\starexec\\src\\org\\starexec\\config" /> 
-	  <property key="SOLVER_BIN_DIR" value="\\bin" />   
  <!--   Misc. Configuration     --> 
-	  <property key="LOG_TO_CONSOLE" value="true" /> 
 	  <property key="CONTACT_EMAIL" value="eric-burns@uiowa.edu" />    
 	  <property key="PUBLIC_USER_ID" value="3" /> 
 	  <property key="PUBLIC_SPACE_ID" value="4" /> 

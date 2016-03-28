@@ -1608,7 +1608,6 @@ public class RESTServices {
 	 * the current user/space/solver
 	 * @author Skylar Stark and Todd Elvers
 	 */
-	//TODO: Resume testing here
 	@GET
 	@Path("/websites/{type}/{id}")
 	@Produces("application/json")
@@ -1908,8 +1907,6 @@ public class RESTServices {
 		boolean success=Settings.setDefaultProfileForUser(userIdOfCaller, id);
 		// Passed validation AND Database update successful
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Profile set as default")) : gson.toJson(ERROR_DATABASE);
-		
-		
 	}
 	
 	/**
@@ -1999,8 +1996,6 @@ public class RESTServices {
 		}
 		
 	}
-	
-	
 	
 	/** 
 	 * Updates information for a space in the database using a POST. Attribute and
@@ -2158,6 +2153,7 @@ public class RESTServices {
 		ArrayList<Integer> selectedProcessors = new ArrayList<Integer>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
+			log.debug("got a request to delete processor id = "+id);
 		}
 		ValidatorStatusCode status=ProcessorSecurity.doesUserOwnProcessors(selectedProcessors, userId);
 		if (!status.isSuccess()) {
@@ -2374,7 +2370,7 @@ public class RESTServices {
 	@POST
 	@Path("/recycleandremove/benchmark/{spaceID}")
 	@Produces("application/json")
-	public String recycleAndRemoveBenchmarks(@Context HttpServletRequest request,@PathParam("spaceID") int spaceId) {
+	public String recycleAndRemoveBenchmarks(@PathParam("spaceID") int spaceId,@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -2715,6 +2711,8 @@ public class RESTServices {
 	 *          6. there exists a primitive with the same name
 	 * @author Tyler Jensen
 	 */
+	
+	//TODO: Resume testing here
 	@POST
 	@Path("/spaces/{spaceId}/add/job")
 	@Produces("application/json")
@@ -2951,13 +2949,15 @@ public class RESTServices {
 		int callersUserId = SessionUtil.getUserId(request);
 
 		boolean success = false;
-		try {
-			success = Users.deleteUser(userToDeleteId, callersUserId);
-				
-		} catch (StarExecSecurityException e) {
-			return gson.toJson(new ValidatorStatusCode(false, "You do not have permission to delete this user."));
+		
+		//Only allow the deletion of non-admin users, and only if the admin is asking
+		ValidatorStatusCode status = UserSecurity.canDeleteUser(userToDeleteId, callersUserId);
+		if (!status.isSuccess()) {
+			log.debug("security permission error when trying to delete user with id = "+userToDeleteId);
+			return gson.toJson(status);
 		}
-
+		
+		success = Users.deleteUser(userToDeleteId);
 		if (success) {
 			return gson.toJson(new ValidatorStatusCode(true, "The user has been successfully deleted."));
 		} else {

@@ -53,8 +53,8 @@ public class UploadSecurityTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {	
 		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(nonOwner.getId(), admin.getId());
+		Users.deleteUser(user.getId());
+		Users.deleteUser(nonOwner.getId());
 	}
 
 }

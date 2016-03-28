@@ -148,6 +148,7 @@ public class R {
     public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
+    public static String RUNSOLVER_PATH = null;								// The absolute filepath to the runsolver executable
     public static String STAREXEC_DATA_DIR = null;   						// the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
     public static String DOWNLOAD_FILE_DIR = "/secure/files";				// Where to temporarily store processed files for downloading. Relative to webapp root
     public static String SPACE_XML_SCHEMA_RELATIVE_LOC = "public/batchSpaceSchema.xsd";						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
@@ -162,10 +163,8 @@ public class R {
     public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue
     public static int DEFAULT_QUEUE_ID=1;
     //Test info
-    public static int TEST_USER_ID=-1;
     public static int TEST_COMMUNITY_ID=-1;
-    public static String TEST_USER_PASSWORD=null;
-    
+    public static boolean ALLOW_TESTING=false;								// whether tests should be allowed to run on this instance. False for production.
     //Public user info
     public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login
@@ -176,12 +175,12 @@ public class R {
     // Job Manager (JM) constants
     public static String JOBFILE_FORMAT = "job_%d.bash";					// The filename format (with standard java string formatting) for generated jobscript files
     public static String DEPENDFILE_FORMAT = "depend_%d.txt";				// The filename format for dependencies
-    public static String SOLVER_BIN_DIR = null;								// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
-	
+    public static String SOLVER_BIN_DIR = "/bin";							// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
+    public static String SANDBOX_USER_ONE=null;								// name of user that executes jobs in sandbox one
+    public static String SANDBOX_USER_TWO=null; 							// name of user that executes jobs in sandbox two
     // Misc application properties
     public static String STAREXEC_SERVERNAME = null;
     public static String STAREXEC_APPNAME = null;
-    public static boolean LOG_TO_CONSOLE = true;							// Whether or not to output log messages to the console
     public static String PWD_HASH_ALGORITHM = "SHA-512";					// Which algorithm to use to hash user passwords
     public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";		// Which datetime format is used to create unique directory names
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
@@ -224,7 +223,6 @@ public class R {
     public static String BACKEND_WORKING_DIR = null;
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
     public static long DEFAULT_PAIR_VMEM = 17179869184L;  					// The default limit on memory (in bytes) for job pairs
-    //public static int NUM_JOB_SCRIPTS = 100;								// The number of job scripts to write/submit each period
     public static int NODE_MULTIPLIER = 8;                                  // The number of job scripts to submit is the number of nodes in the queue times this
   
     public static int MAX_STAGES_PER_PIPELINE = 10000;

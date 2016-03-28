@@ -97,7 +97,12 @@ public class Starexec implements ServletContextListener {
 
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
-		
+		R.RUNSOLVER_PATH = new File(R.CONFIG_PATH, "sge/runsolver").getAbsolutePath();
+		try {
+			Util.chmodDirectory(R.RUNSOLVER_PATH, false);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		// Load all properties from the starexec-config file
 		ConfigUtil.loadProperties(new File(R.CONFIG_PATH, "starexec-config.xml"));
 		
@@ -124,7 +129,6 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
-		//event.getServletContext().setAttribute("starexecRoot", R.STAREXEC_APPNAME);		
 		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
 		
 	}	
@@ -139,7 +143,6 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    log.info("updateClusterTask (periodic)");
 
-			    //TODO : These methods do both grid engine and database tasks, decouple
 			    Cluster.loadWorkerNodes();
 			    Cluster.loadQueueDetails();
 
