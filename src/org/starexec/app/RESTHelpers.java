@@ -1785,7 +1785,7 @@ public class RESTHelpers {
 				int stageNumber = js.getStageNumber();
 				
 				entries.add( getPairsInSpaceHtml(
-							"solver", spaceId, configId, stageNumber, js.getCorrectOverCompleted(), primitivesToAnonymize ));
+							"solved", spaceId, configId, stageNumber, js.getCorrectOverCompleted(), primitivesToAnonymize ));
 
 				entries.add( getPairsInSpaceHtml( 
 							"wrong", spaceId, configId, stageNumber, Integer.toString(js.getIncorrectJobPairs()), primitivesToAnonymize ));

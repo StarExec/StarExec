@@ -413,6 +413,7 @@ if [ ! -f $WATCHFILE ]; then
     sendStatus $ERROR_RUNSCRIPT
     sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
     setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    exit 0
 fi
 
 if [ ! -f $VARFILE ]; then
@@ -420,6 +421,7 @@ if [ ! -f $VARFILE ]; then
     sendStatus $ERROR_RUNSCRIPT
     sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
     setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    exit 0
 fi
 
 # check for which cores we are on
