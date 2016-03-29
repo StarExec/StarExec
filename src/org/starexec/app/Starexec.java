@@ -14,6 +14,7 @@ import javax.servlet.ServletContextListener;
 
 import java.sql.SQLException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.backend.*;
@@ -97,8 +98,10 @@ public class Starexec implements ServletContextListener {
 
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
-		R.RUNSOLVER_PATH = new File(R.CONFIG_PATH, "sge/runsolver").getAbsolutePath();
+		R.RUNSOLVER_PATH= new File(R.getSolverPath(),"runsolver").getAbsolutePath();
+
 		try {
+			FileUtils.copyFile(new File(R.CONFIG_PATH, "sge/runsolver"), new File(R.RUNSOLVER_PATH));
 			Util.chmodDirectory(R.RUNSOLVER_PATH, false);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
