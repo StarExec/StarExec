@@ -190,6 +190,13 @@ function isPairRunning {
 		return 1
 	fi
 	output=`cat "$LOCK_DIR/$1"`
+	if [ -z "${output// }" ]
+	then
+		echo "no process output was saved in the lock file, so assuming pair was deleted"
+		# the job is not still running
+        return 1
+	fi
+	
 	log "$output"
 	currentOutput=`ps -p $1 -o pid,stime,cmd | awk 'NR>1'`
 	log "$currentOutput"
