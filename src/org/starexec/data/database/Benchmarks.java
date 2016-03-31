@@ -753,7 +753,7 @@ public class Benchmarks {
 			return -1;
 		}
 	}
-	/**
+	/** Sets a benchmark to 'deleted' in the database and actually removes in on disk
 	 * Deletes a benchmark from the database (cascading deletes handle all dependencies)
 	 * @param id the id of the benchmark to delete
 	 * @return True if the operation was a success, false otherwise
@@ -771,8 +771,9 @@ public class Benchmarks {
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
 			
-			Util.safeDeleteDirectory(procedure.getString(2));		
-			return true;
+			return Util.safeDeleteFileAndEmptyParents(procedure.getString(2), R.getBenchmarkPath());
+			//Util.safeDeleteDirectory();		
+			//return true;
 		} catch (Exception e){		
 			log.error(e.getMessage(), e);		
 		} finally {
