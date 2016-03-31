@@ -398,6 +398,13 @@ public class Permissions {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
 					null result and return null */
+					
+					if (GeneralSecurity.hasAdminReadPrivileges(userId)){ 
+						Permission empty = Permissions.getEmptyPermission();
+						empty.setAddSpace(true);
+						empty.setAddUser(true);
+						return empty;
+					}
 					return null;
 				}
 

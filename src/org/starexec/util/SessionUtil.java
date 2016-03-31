@@ -117,17 +117,7 @@ public class SessionUtil {
 		// Return null if the cache couldn't add it and space is private, or it doesn't exist
 		return null;
 	}
-	
-	/**
-	 * Looks up the user's permissions on the given space from the database and adds it
-	 * to the user's permission cache
-	 * @param request The request where the cache is located
-	 * @param spaceId The id of the space to cache the permission for
-	 */
-	public static void cachePermission(HttpServletRequest request, int spaceId) {
-		SessionUtil.cachePermission(request.getSession(), spaceId);
-	}
-	
+
 	/**
 	 * Looks up the user's permissions on the given space from the database and adds it
 	 * to the user's permission cache
