@@ -334,6 +334,20 @@ public class JobSecurity {
 		return new ValidatorStatusCode(false, "You do not have permission to access the selected queue");
 
 	}
+
+	/**
+	 * Checks if a user can add job pairs to a given job.
+	 * @param jobId the id of the job to check permissions for.
+	 * @param userId the id of the user to check permissions for.
+	 * @return an appropriate ValidatorStatusCode.  
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserAddJobPairs( int jobId, int userId ) {
+		if ( !userOwnsJobOrIsAdmin( jobId, userId ) ) {
+			return new ValidatorStatusCode( false, "You do not have permission to add job pairs for this job." );
+		}
+		return new ValidatorStatusCode( true );
+	}
 	
 	/**
 	 * Checks to see if the given user either owns the given job or is an admin

@@ -47,7 +47,7 @@
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
-<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/defaultSettings, common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min">
+<star:template title="run ${space.name}" css="common/delaySpinner, common/table, add/job" js="common/defaultSettings, common/delaySpinner, lib/jquery.validate.min, add/job, lib/jquery.dataTables.min, lib/jquery.qtip.min, add/sharedSolverConfigTableFunctions">
 	<c:forEach items="${defaultSettings}" var="setting">
 		<star:settings setting="${setting}" />
 	</c:forEach>

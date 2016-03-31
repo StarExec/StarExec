@@ -188,6 +188,13 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET start_time=NOW() WHERE id=_id;
 	END //
+
+DROP PROCEDURE IF EXISTS DeleteJobPair;
+CREATE PROCEDURE DeleteJobPair( IN _pairId INT )
+	BEGIN
+		DELETE FROM job_pairs
+		WHERE job_pairs.id = _pairId;
+	END //
 	
 -- Sets the completion time to now (the moment this is called) for the pair with the given id
 -- Also sets the time_delta for the pair in the jobpair_time_delta table.

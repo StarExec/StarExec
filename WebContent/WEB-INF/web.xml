@@ -138,6 +138,15 @@
     <servlet-name>JobCreator</servlet-name>
     <url-pattern>/secure/add/job</url-pattern>
   </servlet-mapping>
+
+  <servlet>
+    <servlet-name>AddJobPairs</servlet-name>
+	<servlet-class>org.starexec.servlets.AddJobPairs</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AddJobPairs</servlet-name>
+    <url-pattern>/secure/add/jobPairs</url-pattern>
+  </servlet-mapping>
   
   <servlet>
   	<servlet-name>JobXMLUploader</servlet-name>

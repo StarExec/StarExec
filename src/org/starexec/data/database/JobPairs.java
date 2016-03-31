@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 /**
@@ -35,6 +37,7 @@ import org.starexec.util.Util;
  */
 public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
+	private static final LogUtil logUtil = new LogUtil( log );
 	
 	/**
 	 * 
@@ -114,12 +117,14 @@ public class JobPairs {
 	 * @return
 	 */
 	private static boolean addJobPairStages(List<JobPair> pairs, Connection con) {
+		final String methodName = "addJobPairStages";
 		CallableStatement procedure=null;
 		try {
 			int batchCounter = 0;
 			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?,?)}");
 			
 			for (JobPair pair : pairs) {
+				logUtil.debug(methodName, "jobpair id of pair that we are adding a stage for: "+pair.getId());
 				for (JoblineStage stage : pair.getStages()) {
 					if (stage.isNoOp()) {
 						continue;
@@ -164,6 +169,23 @@ public class JobPairs {
 		return false;
 		
 	}
+
+	public static boolean addJobPairs( int jobId, List<JobPair> pairs ) throws SQLException {
+		final String methodName = "addJobPairs( int, List<JobPair> )";
+
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return addJobPairs( con, jobId, pairs );
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
+			throw e;
+		} finally  {
+			Common.safeClose( con );
+		}
+
+
+	}
 	
 	/**
 	 * Adds a job pair record to the database. This is a helper method for the Jobs.add method
@@ -171,7 +193,8 @@ public class JobPairs {
 	 * @param pair The pair to add
 	 * @return True if the operation was successful
 	 */
-	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws Exception {
+	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
+		final String methodName = "addJobPairs";
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -192,9 +215,15 @@ public class JobPairs {
 				procedure.executeUpdate();			
 				
 				// Update the pair's ID so it can be used outside this method
-				pair.setId(procedure.getInt(8));
+				int newPairId = procedure.getInt(8);
+				logUtil.debug( methodName, "new pair id: "+ newPairId );
+				pair.setId(newPairId);
+				logUtil.debug( methodName, "pair id after setId: "+ pair.getId() );
+			}
 
-				
+			logUtil.debug( methodName, "All pair id's about to be passed to addJobPairStages and addJobPairInputs: ");
+			for (JobPair pair : pairs) {
+				logUtil.debug(methodName, "\t"+pair.getId());
 			}
 			addJobPairStages(pairs,con);
 			addJobPairInputs(pairs,con);
@@ -260,6 +289,48 @@ public class JobPairs {
 			Common.safeClose(results);
 		}
 		return null;
+	}
+
+
+	/**
+	 * Deletes a list of job pairs.
+	 * @param jobPairs the job pairs to delete.
+	 * @author Albert Giegerich
+	 */
+	public static void deleteJobPairs( List<JobPair> jobPairs ) throws SQLException {
+		final String methodName = "deleteJobPairs";
+		Connection con = null;
+		try { 
+			con = Common.getConnection();
+			Common.beginTransaction( con );
+			for ( JobPair pair : jobPairs ) {
+				deleteJobPair( con, pair );
+			}
+		} catch ( SQLException e ) {
+			logUtil.debug( methodName, "Caught an SQLException, database failed." );
+			throw e;
+		} finally {
+			Common.endTransaction( con );
+			Common.safeClose( con );
+		}
+	}
+
+	// Deletes a given JobPair
+	private static void deleteJobPair( Connection con, JobPair pairToDelete ) throws SQLException {
+		if ( pairToDelete == null ) {
+			throw new NullPointerException("Input JobPair was null.");
+		}
+
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall( "{CALL DeleteJobPair(?)}" );
+			procedure.setInt( 1, pairToDelete.getId() );
+			procedure.executeQuery();
+		} catch ( SQLException e ) {
+			throw e;
+		} finally {
+			Common.safeClose( procedure );
+		}
 	}
 	
 	/**

@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collection;
+import java.util.Set;
 import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
@@ -30,6 +30,7 @@ import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.util.DataTablesQuery;
+import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
@@ -39,6 +40,7 @@ import org.starexec.util.Util;
  */
 public class Solvers {
 	private static final Logger log = Logger.getLogger(Solvers.class);
+	private static final LogUtil logUtil = new LogUtil( log );
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
 	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
 	
@@ -770,7 +772,7 @@ public class Solvers {
 	 * 
 	 * @author Skylar Stark
 	 */
-	private static Solver getByConfigId(int configId) {
+	public static Solver getByConfigId(int configId) {
 		Connection con = null;			
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -940,6 +942,103 @@ public class Solvers {
 		
 		return null;
 	}
+
+	/**
+	 * Gets a list of solvers that appear in a job.
+	 * Only populates name, id, and configs.
+	 * @param jobId the id of the job that we want to get all the solvers for.
+	 * @return a list of solvers in the given job.
+	 * @throws SQLException on database failure.
+	 * @author Albert Giegerich
+	 */
+	public static List<Solver> getByJobSimpleWithConfigs( int jobId ) throws SQLException {
+		final String methodName = "getByJobSimpleWithConfigs";
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllSolversInJob(?)}");	
+			procedure.setInt(1, jobId);					
+
+			results = procedure.executeQuery();
+			List<Solver> solvers = new ArrayList<>();
+			while ( results.next() ) {
+				Solver s = new Solver();
+				s.setId( results.getInt("solver_id") );
+				s.setName( results.getString("solver_name") );
+				solvers.add( s );
+			}
+
+			for(Solver s : solvers) {
+				s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
+			}
+
+			return solvers;
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, "Caught an SQL exception. Database failed.");
+			throw e;
+		} finally {
+			Common.safeClose( results );
+			Common.safeClose( procedure );
+			Common.safeClose( con );
+		}
+	}
+
+	/**
+	 * Gets a set of all the id's of configs being used in a job.
+	 * @param jobId the id of the job for which to get configurations.
+	 * @return the set of configuration ids that are being used in the job.
+	 * @throws SQLException if something goes wrong in the database.
+	 * @author Albert Giegerich
+	 */
+	public static Set<Integer> getConfigIdSetByJob( int jobId ) throws SQLException {
+		List<Configuration> configurations = getConfigsByJobSimple( jobId );
+		Set<Integer> setOfConfigIds = new HashSet<>();
+		for ( Configuration c : configurations ) {
+			setOfConfigIds.add( c.getId() );
+		}
+		return setOfConfigIds;
+	}
+
+	/**
+	 * Gets all the configurations being used in a job.
+	 * @param jobId the id of the job for which to get configurations.
+	 * @return the list of configurations being used in the job.
+	 * @throws SQLException if something goes wrong in the database.
+	 * @author Albert Giegerich
+	 */
+	public static List<Configuration> getConfigsByJobSimple( int jobId ) throws SQLException {
+		final String methodName = "getConfigsByJob";
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllConfigsInJob(?)}");	
+			procedure.setInt(1, jobId);					
+
+			results = procedure.executeQuery();
+			List<Configuration> configs = new ArrayList<>();
+			while ( results.next() ) {
+				Configuration c = new Configuration();
+				c.setId( results.getInt("config_id") );
+				c.setName( results.getString("config_name") );
+				configs.add( c );
+			}
+
+			return configs;
+		} catch ( SQLException e ) {
+			logUtil.error( methodName, "Caught an SQL exception. Database failed.");
+			throw e;
+		} finally {
+			Common.safeClose( results );
+			Common.safeClose( procedure );
+			Common.safeClose( con );
+		}
+	}
 	
 	/**
 	 * @param spaceId The id of the space to get solvers for
@@ -1080,6 +1179,7 @@ public class Solvers {
 				
 		return null;
 	}
+
 	
 	/**
 	 * Gets a particular Configuration
