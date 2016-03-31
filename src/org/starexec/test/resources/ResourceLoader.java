@@ -481,7 +481,7 @@ public class ResourceLoader {
 	}
 	
 	public static User loadUserIntoDatabase(String password) {
-		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa","test");
+		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",R.DEFAULT_USER_ROLE_NAME);
 	}
 	
 	public static CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {

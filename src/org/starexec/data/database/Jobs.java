@@ -3823,16 +3823,7 @@ public class Jobs {
 	}
 	return false;
     }
-	
-    /**
-     * Checks to see if the given job is owned by the test user
-     * @param jobId The job to check
-     * @return True if the job is owned by the test user and false otherwise
-     */
-	public static boolean isTestJob(int jobId) {
-		return Users.isTestUser(Jobs.get(jobId).getUserId());
-	}
-
+   
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
 	 * @return True on success, false otherwise

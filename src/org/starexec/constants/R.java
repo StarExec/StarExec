@@ -242,7 +242,6 @@ public class R {
     public static String SUSPENDED_ROLE_NAME="suspended";
     public static String DEFAULT_USER_ROLE_NAME="user";
     public static String ADMIN_ROLE_NAME="admin";
-    public static String TEST_ROLE_NAME="test";
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
 	public static final String JOB_PAGE_DOWNLOAD_TYPE = "job_page";

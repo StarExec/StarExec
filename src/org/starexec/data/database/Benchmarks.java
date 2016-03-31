@@ -772,8 +772,6 @@ public class Benchmarks {
 			procedure.executeUpdate();
 			
 			return Util.safeDeleteFileAndEmptyParents(procedure.getString(2), R.getBenchmarkPath());
-			//Util.safeDeleteDirectory();		
-			//return true;
 		} catch (Exception e){		
 			log.error(e.getMessage(), e);		
 		} finally {

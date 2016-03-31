@@ -1133,17 +1133,7 @@ public class Solvers {
 		
 		return null;		
 	}
-	
-	/**
-	 * 
-	 * @param solverId
-	 * @return True if the gien solver was uploaded by the test user and false otherwise
-	 */
-	public static boolean isTestSolver(int solverId) {
-		return Users.isTestUser(Solvers.get(solverId).getUserId());
-	}
 
-	
 	/**
 	 * Gets a particular Configuration on a connection
 	 * @param con The connection to query with
