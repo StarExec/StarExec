@@ -238,8 +238,9 @@ public class Jobs {
 			Solver solver = Solvers.getByConfigId( configId );
 			for ( JobPair pair : jobPairs ) {
 				// If a pair contains the solver add a new job pair with the new config to the job.
-				if ( pair.getPrimaryStage().getSolver().getId() == solver.getId() &&
-						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) ) {
+				if (	pair.getStages().size() == 1 && // skip multi-stage pairs
+						pair.getPrimaryStage().getSolver().getId() == solver.getId() && 
+						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) )  {
 					countOfJobPairsToAdd += 1;
 					benchmarksAlreadySeen.add( pair.getBench().getId() );
 				}
@@ -613,11 +614,9 @@ public class Jobs {
 		List<JobPair> jobPairs = job.getJobPairs(); 
 		// Delete every pair that contains a config in the set of configs.
 		for ( JobPair pair : jobPairs ) {
-			for ( JoblineStage stage : pair.getStages() ) {
-				if ( configIds.contains( stage.getConfiguration().getId() ) ) {
-					numberOfJobPairsToBeDeleted += 1;
-					break;
-				}
+			if ( pair.getStages().size() == 1 &&
+				configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
+				numberOfJobPairsToBeDeleted += 1;
 			}
 		}
 
