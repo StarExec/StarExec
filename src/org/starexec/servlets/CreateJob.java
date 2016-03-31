@@ -265,6 +265,16 @@ public class CreateJob extends HttpServlet {
 		}
 		if (j.getJobPairs().size() == 0) {
 			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
+            Space jobSpace = Spaces.getDetails(space, userId);
+            if (jobSpace.getSubspaces().size() == 0) {
+                if(jobSpace.getSolvers().size() == 0) {
+			        message="Error: no job pairs created for the job. There are no solvers in this space. Could not proceed with job submission.";
+                } else if (jobSpace.getBenchmarks().size() == 0) {
+			        message="Error: no job pairs created for the job. There are no benchmarks in this space. Could not proceed with job submission.";
+                }
+            } else if(!Spaces.configBenchPairExistsInHierarchy(space, userId)) {
+			        message="Error: no job pairs created for the job. There are no valid solver benchmark pairs in this space hierarchy. Could not proceed with job submission.";
+            }
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 			// No pairs in the job means something went wrong; error out

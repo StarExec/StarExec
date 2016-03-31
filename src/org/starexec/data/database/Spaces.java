@@ -2759,4 +2759,26 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		
 		return false;
 	}
+
+	/**
+	 * Detects if a valid solver / config pair exists in the space hierarchy.
+     * Used in error messages in the CreateJob servelet
+	 * @param userId The ID of the user who owns the orphaned primitives
+	 * @param spaceId The ID of the space in question
+	 * @return True if a valid pair exists in the hierarchy, false otherwise.
+	 */
+    public static boolean configBenchPairExistsInHierarchy(int spaceId, int usrId) {
+        Space space = Spaces.getDetails(spaceId, usrId);
+        if (space.getSolvers().size() == 0 || space.getBenchmarks().size() == 0) {
+            List<Space> subspaces = space.getSubspaces();
+            for (Space subspace : subspaces) {
+               if(configBenchPairExistsInHierarchy(subspace.getId(), usrId)) {
+                    return true;
+               }
+            }
+            return false;
+        } else {
+                return true;
+        }
+    }
 }
