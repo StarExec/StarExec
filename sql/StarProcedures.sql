@@ -3,7 +3,7 @@
 
 USE starexec;
 
-source procedures/AnonymousLinks.sql
+source procedures/AnonymousLinks.sql;
 source procedures/Benchmarks.sql;
 source procedures/Cluster.sql;
 source procedures/Communities.sql;
