@@ -27,9 +27,12 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Util.getStackTrace( e ));
 	}	
 %>
-<star:template title="Add Job Pairs" js="util/sortButtons, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, add/sharedSolverConfigTableFunctions, add/jobPairs" css="common/table, common/delaySpinner, explore/common, add/job">		
+<star:template title="Add Job Pairs" js="util/sortButtons, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, add/sharedSolverConfigTableFunctions, add/jobPairs" css="common/delaySpinner, explore/common, add/jobPairs">		
 	<form id="addJobPairsForm" method="post" action="${starexecRoot}/secure/add/jobPairs">
 		<input id="jobId" style="display:none" value="${jobId}" name="jobId"></input>
+		<p> Unchecking a configuration will delete all job pairs containing that configuration. </p>
+		<p> Checking a configuration will add a job pair for every job pair in the job that contains the same solver.
+			The new job pair will have the same benchmark and solver with the selected configuration. </p>
 		<fieldset id="fieldSolverSelection">
 			<legend>add/delete by config</legend>
 			<table id="tblSolverConfig" class="contentTbl">	

@@ -1,0 +1,159 @@
+#content fieldset {
+	width: 600px;
+	margin: 50px auto 50px auto;	
+}
+
+.contentTbl {
+	width: 100%;
+}
+
+.contentTbl tr th {
+	padding: 10px;
+}
+
+.contentTbl tr td {
+	padding: 10px;
+	vertical-align: middle;
+}
+
+.contentTbl input[type="text"], 
+.contentTbl textarea {
+	width: 200px;
+}
+
+button {
+	float: right;
+}
+
+#actionBar {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 10px;	
+}
+
+#tblSolverConfig tr td,
+#tblSolverConfig tr th,
+#tblBenchConfig tr td,
+#tblBenchConfig tr th {
+	width: 50%;
+}
+
+div.selectWrap p, div.selectWrap span {
+	display: inline-block;	
+}
+
+div.selectWrap {
+	font-size: 13px;
+	display: inline-block;
+}
+
+.selectAll, .selectNone, .config {
+	cursor: pointer;
+}
+
+div.selectWrap p:hover {
+	text-decoration: underline;
+}
+
+div.selectWrap span {
+	position: relative;
+	top: 3px;
+}
+
+fieldset h6 {
+	padding-top: 20px;
+	text-align: right;
+	font-size: small;
+}
+
+.selectConfigs {
+	height: 80px;
+	overflow: auto;
+}
+
+.processing {
+	margin-right: 8px;
+	margin-bottom: -4px;
+}
+
+.qtip .processing {
+	margin-top: 45px;
+	text-align: center;
+}
+
+select {
+	width:95%;
+}
+
+
+table {
+	table-layout:fixed;
+	width:100%;
+	max-width:100%;
+	overflow-x:scroll;
+	word-wrap:break-word;
+}
+
+table.tooltipTable {
+	table-layout:auto;
+	word-wrap:normal;
+}
+
+#content tbody tr .dataTables_empty:hover {
+	background-color: #222222;
+}
+
+#content tbody td {
+	padding: 10px;
+}
+
+#content thead th {
+	padding: 10px;
+}
+
+#content thead tr {
+	background-color: #111111;
+}
+
+tr.odd {
+	background-color: #222222;
+}
+
+tr.even {
+	background-color: #111111;
+}
+
+.bottom {	
+	border-top: 1px solid #111111;
+	padding-top: 10px;
+}
+
+.clear {
+	clear: both;
+}
+
+.dataTables_empty {
+	text-align: center;
+}
+
+tbody tr.row_selected .dataTables_empty {
+	background-color:#222222;
+}
+
+td.group {
+	background-color: #d1cfd0;
+	border-bottom: 2px solid #A19B9E;
+	border-top: 2px solid #A19B9E;
+}
+
+td.details {
+	background-color: #d1cfd0;
+	border: 2px solid #A19B9E;
+}
+
+
+
+
+
+

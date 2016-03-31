@@ -49,8 +49,12 @@ function initUI() {
 	});
 
 
-	registerSelectAllSolversEventHandler();
-	registerSelectNoneSolversEventHandler();
+    $('.selectAllSolvers').click(function() {
+    	$('.config').prop('checked', true);
+    }); 
+    $('.selectNoneSolvers').click(function() {
+    	$('.config').prop('checked', false);
+    }); 
 	registerSelectAllConfigsEventHandler();
 	registerSelectNoneConfigsEventHandler();
 	registerSolverConfigTableRowSelectionEventHandler();
