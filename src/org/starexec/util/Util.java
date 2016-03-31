@@ -863,12 +863,13 @@ public class Util {
      */
     public static boolean safeDeleteDirectory(String path) {
     	try {
-	    File file=new File(path);
+    		File file=new File(path);
 		    if (file.isDirectory()) {
 		    	FileUtils.deleteDirectory(file);
 		    } else {
 		    	FileUtils.deleteQuietly(file);
 		    }
+		    return true;
     	} catch (Exception e) {
 	    log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}
