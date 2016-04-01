@@ -489,7 +489,9 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 		WHERE job_id = _id AND job_pairs.status_code = 1 
 		AND NOT EXISTS (SELECT 1 FROM jobpair_stage_data
 		LEFT JOIN solvers ON solvers.id = jobpair_stage_data.solver_id
-		WHERE jobpair_stage_data.jobpair_id = job_pairs.id AND solvers.build_status=0)
+		JOIN job_pairs AS jp ON jp.id=jobpair_id
+		JOIN jobs ON jobs.id=jp.job_id
+		WHERE jobpair_stage_data.jobpair_id = job_pairs.id AND solvers.build_status=0 AND buildJob=false)
 		ORDER BY job_pairs.id ASC LIMIT _limit) AS temp
 		ON temp.id=job_pairs.id;
 	END //	
