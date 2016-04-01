@@ -197,6 +197,8 @@ public class JspHelpers {
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
+				request.setAttribute("buildJob", j.isBuildJob());
+				
 				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");

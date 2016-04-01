@@ -377,7 +377,7 @@
 						<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 						<li><button id="downloadJobPageButton" type="button">download job page</button></li>
 						<c:if test="${job.userId == userId or isAdmin}"> 
-							<c:if test="${isPaused or isComplete}">
+							<c:if test="${(isPaused or isComplete) and (not buildJob)}">
 								<li><a id="addJobPairs" href="${starexecRoot}/secure/add/jobPairs.jsp?jobId=${job.id}" >add/delete job pairs</a></li>
 							</c:if>
 							<li><a id="anonymousLink">get anonymous link</a></li>

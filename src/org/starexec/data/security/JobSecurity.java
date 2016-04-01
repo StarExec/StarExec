@@ -346,6 +346,10 @@ public class JobSecurity {
 		if ( !userOwnsJobOrIsAdmin( jobId, userId ) ) {
 			return new ValidatorStatusCode( false, "You do not have permission to add job pairs for this job." );
 		}
+		Job j = Jobs.get(jobId);
+		if (j.isBuildJob()) {
+			return new ValidatorStatusCode(false, "You can not add job pairs to a solver build job");
+		}
 		return new ValidatorStatusCode( true );
 	}
 	
