@@ -295,7 +295,7 @@ public class RESTServices {
 		if(id <= 0 && GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllAdmin()));
 		} else if (id <= 0) {
-			return gson.toJson(RESTHelpers.toQueueList(Queues.getAll()));
+			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllActive()));
 		} else {
 			return gson.toJson(RESTHelpers.toNodeList(Queues.getNodes(id)));
 		}

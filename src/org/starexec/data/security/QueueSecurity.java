@@ -71,7 +71,7 @@ public class QueueSecurity {
 	
 	public static ValidatorStatusCode canGetJsonQueue(int queueId, int userId) {
 		
-		List<Queue> queues=Queues.getQueuesForUser(userId);
+		List<Queue> queues=Queues.getUserQueues(userId);
 		for (Queue q : queues) {
 			if (q.getId()==queueId) {
 				return new ValidatorStatusCode(true);
@@ -85,7 +85,7 @@ public class QueueSecurity {
 		if (Queues.get(queueId)==null) {
 			return new ValidatorStatusCode(false, "The given queue could not be found");
 		}
-		List<Queue> validQueues=Queues.getQueuesForUser(userId);
+		List<Queue> validQueues=Queues.getUserQueues(userId);
 		validQueues.addAll(Queues.getQueuesForSpace(spaceId));
 		for (Queue q : validQueues) {
 			if (q.getId()==queueId) {

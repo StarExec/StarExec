@@ -37,7 +37,7 @@
 			
 			ListOfBenchProcessors.add(Processors.getNoTypeProcessor());
 
-			request.setAttribute("queues", Queues.getQueuesForUser(userId));
+			request.setAttribute("queues", Queues.getUserQueues(userId));
 
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);

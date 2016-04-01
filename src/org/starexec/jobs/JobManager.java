@@ -90,7 +90,7 @@ public abstract class JobManager {
 		    Common.logConnectionsOpen();
 		    log.debug("about to get all queues");
 		    
-		    List<Queue> queues = Queues.getAll();
+		    List<Queue> queues = Queues.getAllActive();
 		    log.debug("found this many queues "+queues.size());
 		    for (Queue q : queues) {
 		    	log.debug("about to submit to queue "+q.getId());

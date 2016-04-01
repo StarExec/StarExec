@@ -282,7 +282,7 @@ public class Queues {
 	 * @return A list of queues 
 	 * @author Aaron Stump
 	 */
-	public static List<Queue> getAll() {
+	public static List<Queue> getAllActive() {
 	    return getQueues(0);
 	}
 	
@@ -458,14 +458,13 @@ public class Queues {
 	 * @param nodeId
 	 * @return The list of job pairs
 	 */
-	//TODO: Pick up queue testing here
 	public static List<JobPair> getPairsRunningOnNode(int nodeId) {
 		Connection con=null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("CALL GetPairsrunningOnNode(?)");
+			procedure = con.prepareCall("CALL GetPairsRunningOnNode(?)");
 			procedure.setInt(1, nodeId);
 			results = procedure.executeQuery();
 			return resultSetToClusterPagePairs(results);
@@ -569,6 +568,18 @@ public class Queues {
 		return null;
 	}
 	
+	private static Queue resultSetToQueue(ResultSet results) throws SQLException  {
+		Queue q = new Queue();
+		q.setName(results.getString("name"));
+		q.setId(results.getInt("id"));	
+		q.setStatus(results.getString("status"));
+		q.setWallTimeout(results.getInt("clockTimeout"));
+		q.setCpuTimeout(results.getInt("cpuTimeout"));
+		q.setGlobalAccess(results.getBoolean("global_access"));
+		
+		return q;
+	}
+	
 	/**
 	 * Gets all queues in the starexec cluster (with no detailed information)
 	 * @param userId return the queues accessible by the given user, or all queues if the userId is 0
@@ -588,7 +599,7 @@ public class Queues {
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
 			} else {
-			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
+			    procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
 			    procedure.setInt(1, userId);
 			}
 
@@ -596,13 +607,8 @@ public class Queues {
 			List<Queue> queues = new LinkedList<Queue>();
 			
 			while(results.next()){
-				Queue q = new Queue();
-				q.setName(results.getString("name"));
-				q.setId(results.getInt("id"));	
-				q.setStatus(results.getString("status"));
-				q.setWallTimeout(results.getInt("clockTimeout"));
-				q.setCpuTimeout(results.getInt("cpuTimeout"));
-				queues.add(q);
+				
+				queues.add(Queues.resultSetToQueue(results));
 			}			
 						
 			return queues;
@@ -616,50 +622,7 @@ public class Queues {
 		
 		return null;
 	}
-	
-	/**
-	 * Retrieves all of the queues that the given user has access to when running a job
-	 * @param userId Id of the user to get queues for
-	 * @return A list of queues, or null on error
-	 */
-	public static List<Queue> getQueuesForUser(int userId) {
-		final String method = "getQueuesForUser";
-		if (GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			logUtil.debug(method, "Getting queues for admin user.");
-			return getQueues(0);
-		}
-		logUtil.debug(method, "Getting queues for non-admin user.");
-		
-		Connection con = null;
-		ResultSet results = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
-			procedure.setInt(1, userId);
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while (results.next()) {
-				Queue q = new Queue();
-				q.setId(results.getInt("id"));
-				q.setName(results.getString("name"));
-				q.setStatus(results.getString("status"));
-				q.setGlobalAccess(results.getBoolean("global_access"));
-				q.setCpuTimeout(results.getInt("cpuTimeout"));
-				q.setWallTimeout(results.getInt("clockTimeout"));
-				queues.add(q);
-			}
-			return queues;
-		} catch (Exception e) {
-			log.error("GetQueuesForUser says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;	
-	}
+
 
 	/**
 	 * Get all the queues that have been reserved for a particular space
@@ -769,7 +732,7 @@ public class Queues {
 	 */
 	public static List<Queue> getUserQueues(int userId) {
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
-			return getAll();
+			return getAllActive();
 		} else {
 			return getQueues(userId);
 		}

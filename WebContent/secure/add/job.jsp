@@ -20,7 +20,7 @@
 			
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(communityId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(communityId,ProcessorType.PRE);
-			request.setAttribute("queues", Queues.getQueuesForUser(userId));
+			request.setAttribute("queues", Queues.getUserQueues(userId));
 			List<Solver> solvers = Solvers.getBySpaceDetailed(spaceId);
             Solvers.sortConfigs(solvers);
 			Solvers.makeDefaultConfigsFirst(solvers);

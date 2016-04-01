@@ -324,7 +324,7 @@ public class JobSecurity {
 		if (q==null){
 			return new ValidatorStatusCode(false, "The given queue could not be found");
 		}
-		List<Queue> queues=Queues.getQueuesForUser(userId);
+		List<Queue> queues=Queues.getUserQueues(userId);
 		for (Queue queue : queues) {
 			if (queue.getId()==queueId) {
 				return new ValidatorStatusCode(true);
