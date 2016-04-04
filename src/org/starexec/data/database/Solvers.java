@@ -1844,6 +1844,8 @@ public class Solvers {
 		s.setDownloadable(results.getBoolean(prefix+"downloadable"));
 		s.setDiskSize(results.getLong(prefix+"disk_size"));
 		s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
+		s.setRecycled(results.getBoolean("recycled"));
+		s.setDeleted(results.getBoolean("deleted"));
         SolverBuildStatus status = new SolverBuildStatus();
         status.setCode(results.getInt(prefix+"build_status"));
 		s.setBuildStatus(status);
