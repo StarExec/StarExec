@@ -26,20 +26,22 @@ public class Reports {
 	 * Set the number of occurrences for an event not related to a queue.
 	 * @param eventName the name of the event.
 	 * @param occurrences the number of times the event occurred.
+	 * @return True on success and false on error
 	 * @author Albert Giegerich
 	 */
-	public static void setEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
-		setEventOccurrences(eventName, occurrences, null);
+	public static boolean setEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
+		return setEventOccurrences(eventName, occurrences, null);
 	}
 
 	/**
 	 * Add occurrences to an event not related to a queue.
 	 * @param eventName the name of the event.
 	 * @param occurrences the number of times the event occurred.
+	 * @return True on success and false on error
 	 * @author Albert Giegerich
 	 */
-	public static void addToEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
-		addToEventOccurrences(eventName, occurrences, null);
+	public static boolean addToEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
+		return addToEventOccurrences(eventName, occurrences, null);
 	}
 
 	/**
@@ -47,9 +49,10 @@ public class Reports {
 	 * @param eventName the name of the event.
 	 * @param occurrences the number of times the event occurred.
 	 * @param queueName the name of the queue related to the event.
+	 * @return True on success and false on error
 	 */
-	public static void addToEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
-		addToEventOccurrences(eventName, occurrences, queueName);
+	public static boolean addToEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
+		return addToEventOccurrences(eventName, occurrences, queueName);
 	}
 
 	/**
@@ -152,7 +155,7 @@ public class Reports {
 	 * @param queueName the name of the queue for which the event occurred. Null the event is unrelated to a queue.
 	 * @author Albert Giegerich
 	 */
-	private static void setEventOccurrences(String eventName, int occurrences, String queueName) {
+	private static boolean setEventOccurrences(String eventName, int occurrences, String queueName) {
 		Connection con = null;
 		CallableStatement procedure = null;
 
@@ -167,12 +170,14 @@ public class Reports {
 			procedure.setString(1, eventName);
 			procedure.setInt(2, occurrences);
 			procedure.executeQuery();
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		return false;
 	}
 
 	/**
@@ -182,9 +187,10 @@ public class Reports {
 	 * @param eventName the name of the event
 	 * @param occurrences the number of times the event occurred
 	 * @param queueName the name of the queue the event is related to. Null if not related to a queue.
+	 * @return True on success and false on error
 	 * @author Albert Giegerich
 	 */
-	private static void addToEventOccurrences(String eventName, int occurrences, String queueName) {
+	private static boolean addToEventOccurrences(String eventName, int occurrences, String queueName) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -201,12 +207,14 @@ public class Reports {
 
 			procedure.executeQuery();
 			log.debug("Added " + occurrences + " occurrences to " + eventName + (queueName == null ? "" : " for queue " + queueName) + ".");
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		return false;
 	}
 	
 	/**
