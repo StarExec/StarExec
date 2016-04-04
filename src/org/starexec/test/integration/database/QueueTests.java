@@ -1,5 +1,6 @@
 package org.starexec.test.integration.database;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
@@ -103,9 +105,15 @@ public class QueueTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getNullNamebyFakeIdTest() {
+		Assert.assertNull(Queues.getNameById(-1));
+
+	}
+	
+	@StarexecTest
 	private void setGlobalTest() {
 		Assert.assertTrue(Queues.removeGlobal(testQueue.getId()));
-		Assert.assertFalse(Queues.get(testQueue.getId()).getGlobalAccess());
+		Assert.assertFalse(Queues.isQueueGlobal(testQueue.getId()));
 		Assert.assertTrue(Queues.makeGlobal(testQueue.getId()));
 		Assert.assertTrue(Queues.get(testQueue.getId()).getGlobalAccess());
 	}
@@ -162,6 +170,27 @@ public class QueueTests extends TestSequence {
 			Assert.assertEquals("ACTIVE",q.getStatus());
 		}		
 	}
+	
+	@StarexecTest
+	private void getUserQueuesAdminTest() {
+		List<Queue> queues=Queues.getUserQueues(admin.getId());
+		Assert.assertNotNull(queues);
+		
+		for (Queue q : queues) {
+			Assert.assertEquals("ACTIVE",q.getStatus());
+		}
+	}
+	
+	@StarexecTest
+	private void getUserQueuesTest() {
+		List<Queue> queues=Queues.getUserQueues(owner.getId());
+		Assert.assertNotNull(queues);
+		
+		for (Queue q : queues) {
+			Assert.assertEquals("ACTIVE",q.getStatus());
+		}
+	}
+	
 	
 	@StarexecTest
 	private void getAllAdminTest() {
@@ -238,6 +267,54 @@ public class QueueTests extends TestSequence {
 		}
 		Cluster.addNodeIfNotExists("faketestnode");
 		fakeNode = Cluster.getNodeDetails(Cluster.getNodeIdByName("faketestnode"));
+	}
+	
+	@StarexecTest 
+	private void getUserLoadOnEmptyQueueTest() {
+		Assert.assertEquals((Integer)0, Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
+	}
+	
+	@StarexecTest
+	private void getUserLoadOnQueueTest() {
+		JobPair jp =job.getJobPairs().get(0);
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_RUNNING.getVal());
+		Assert.assertEquals((Integer)job.getWallclockTimeout(), Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void getSizeOfQueueTest() {
+		JobPair jp =job.getJobPairs().get(0);
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		Assert.assertEquals((Integer)1, Queues.getSizeOfQueue(testQueue.getId()));
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void isQueueGlobalTest() {
+		Assert.assertTrue(Queues.isQueueGlobal(allQueue.getId()));
+	}
+	
+	@StarexecTest
+	private void setTestQueueTest() {
+		int id = Queues.getTestQueue();
+		Assert.assertTrue(Queues.setTestQueue(testQueue.getId()));
+		Assert.assertEquals(testQueue.getId(), Queues.getTestQueue());
+		Assert.assertTrue(Queues.setTestQueue(id));
+	}
+	
+	@StarexecTest
+	private void getAllQTest() {
+		Queue q = Queues.getAllQ();
+		Assert.assertEquals(R.DEFAULT_QUEUE_ID, q.getId());
+		Assert.assertEquals(R.DEFAULT_QUEUE_NAME, q.getName());
+	}
+	
+	@StarexecTest
+	private void setQueueCommunityAccessTest() {
+		List<Integer> ids = new ArrayList<Integer>();
+		ids.add(Communities.getTestCommunity().getId());
+		Assert.assertTrue(Queues.setQueueCommunityAccess(ids, testQueue.getId()));
 	}
 	
 	@Override

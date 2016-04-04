@@ -621,42 +621,6 @@ public class Queues {
 		
 		return null;
 	}
-
-
-	/**
-	 * Get all the queues that have been reserved for a particular space
-	 * @param spaceId The ID of the space to check
-	 * @return A list of valid queues or null on errors
-	 */
-	public static List<Queue> getQueuesForSpace(int spaceId) {
-		Connection con = null;
-		ResultSet results = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetQueuesForSpace(?)}");
-			procedure.setInt(1, spaceId);
-	
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while(results.next()){
-				Queue q = Queues.get(results.getInt("queue_id"));
-				queues.add(q);
-			}			
-						
-			return queues;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
 	/**
 	 * Returns the sum of wallclock timeouts for all pairs that are in the given queue (running
 	 * or enqueued) that are owned by the given user.
@@ -671,10 +635,10 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
+			procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
 			procedure.setInt(1, queueId);					
 			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			while(results.next()){
 				return results.getInt("queue_load");	
@@ -757,9 +721,7 @@ public class Queues {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = null;
-			
+						
 			if(name == null) {
 				// If no name was supplied, apply to all queues
 				procedure = con.prepareCall("{CALL UpdateAllQueueStatus(?)}");
@@ -959,7 +921,7 @@ public class Queues {
 	
 	/**
 	 * Sets the global_access column of the given queue to false
-	 * @param queueId The ID of hte queue to remove
+	 * @param queueId The ID of the queue to remove
 	 * @return True on success and false on error
 	 */
 	public static boolean removeGlobal(int queueId) {
