@@ -642,4 +642,24 @@ public class ResourceLoader {
 		FileUtils.writeStringToFile(f, XMLString);
 		return f;
 	}
+	/**
+	 * Creates a directory with exactly two fake configurations in it.
+	 * @return A size-3 array containing the absolute path to the config directory and the two config names, in that order.
+	 * @throws IOException 
+	 */
+	public static List<String> getTestConfigDirectory() throws IOException {
+		List<String> strs = new ArrayList<String>();
+		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50));
+		strs.add(f.getAbsolutePath());
+		String name = TestUtil.getRandomAlphaString(20);
+		strs.add(name);
+		File config = new File(f, R.CONFIGURATION_PREFIX+name);
+		config.createNewFile();
+		name = TestUtil.getRandomAlphaString(20);
+		strs.add(name);
+		config = new File(f, R.CONFIGURATION_PREFIX+name);
+		config.createNewFile();
+		return strs;
+
+	}
 }

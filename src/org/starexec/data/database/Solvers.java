@@ -207,43 +207,7 @@ public class Solvers {
 		solverIds.add(solverId);
 		return associate(solverIds,spaceId);
 	}
-	
-	/*
-	public static boolean associate(List<Integer> solverIds, int spaceId, int XMLUploadId) {
-		Connection con = null;			
-		int counter=0;
-		Timer timer=new Timer();
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-			
-			for(int sid : solverIds) {
-				Solvers.associate(con, spaceId, sid);
-				counter++;
-				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-					Uploads.incrementXMLCompletedSolvers(XMLUploadId, counter);
-					counter=0;
-					timer.reset();
-				}
-			}	
-			if (counter>0) {
-				Uploads.incrementXMLCompletedSolvers(XMLUploadId, counter);
 
-			}
-			Common.endTransaction(con);
-			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-		}
-		log.error("Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]");
-		return false;
-	}
-	*/
-	
 	/**
 	 * Adds an association between all the given solver ids and the given space
 	 * @param solverIds the ids of the solvers we are associating to the space
@@ -644,10 +608,11 @@ public class Solvers {
 	/**
 	 * @param con The connection to make the query on
 	 * @param solverId The id of the solver to retrieve
+	 * @param includeDeleted If true, also return any solvers marked as 'deleted'. Ignore such solvers otherwise
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	public static Solver get(Connection con, int solverId, boolean includeDeleted) throws SQLException {	
+	public static Solver get(Connection con, int solverId, boolean includeDeleted) {	
 		CallableStatement procedure=null;
 		
 		ResultSet results= null;
@@ -1009,7 +974,7 @@ public class Solvers {
 	 * @throws SQLException if something goes wrong in the database.
 	 * @author Albert Giegerich
 	 */
-	public static List<Configuration> getConfigsByJobSimple( int jobId ) throws SQLException {
+	private static List<Configuration> getConfigsByJobSimple( int jobId ) throws SQLException {
 		final String methodName = "getConfigsByJob";
 		Connection con = null;
 		CallableStatement procedure = null;
