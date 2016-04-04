@@ -607,7 +607,6 @@ public class Queues {
 			List<Queue> queues = new LinkedList<Queue>();
 			
 			while(results.next()){
-				
 				queues.add(Queues.resultSetToQueue(results));
 			}			
 						

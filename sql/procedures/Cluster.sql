@@ -49,7 +49,7 @@ CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 DROP PROCEDURE IF EXISTS GetAllQueues;
 CREATE PROCEDURE GetAllQueues()
 	BEGIN		
-		SELECT id, name, status, cpuTimeout,clockTimeout
+		SELECT id, name, status,global_access, cpuTimeout,clockTimeout
 		FROM queues
 		WHERE status="ACTIVE"
 		ORDER BY name;	
@@ -60,7 +60,7 @@ CREATE PROCEDURE GetAllQueues()
 DROP PROCEDURE IF EXISTS GetAllQueuesAdmin;
 CREATE PROCEDURE GetAllQueuesAdmin()
 	BEGIN		
-		SELECT id, name, status, cpuTimeout, clockTimeout
+		SELECT id, name, status,global_access, cpuTimeout, clockTimeout
 		FROM queues
 		ORDER BY id;	
 	END //
