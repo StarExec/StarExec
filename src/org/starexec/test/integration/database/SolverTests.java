@@ -228,6 +228,7 @@ public class SolverTests extends TestSequence {
 		s = Solvers.getIncludeDeleted(s.getId());
 		Assert.assertTrue(s.isDeleted());
 		Assert.assertFalse(new File(s.getPath()).exists());
+		Solvers.deleteAndRemoveSolver(s.getId());
 	}
 	
 	@StarexecTest
