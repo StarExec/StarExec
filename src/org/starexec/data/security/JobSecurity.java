@@ -192,7 +192,8 @@ public class JobSecurity {
 		}
 		
 		//can't rerun pairs that are not complete
-		if (statusCode>StatusCode.ERROR_GENERAL.getVal()) {
+		if (statusCode>StatusCode.ERROR_GENERAL.getVal() || statusCode==StatusCode.STATUS_ENQUEUED.getVal()  ||
+				statusCode==StatusCode.STATUS_RUNNING.getVal() || statusCode==StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
 			return new ValidatorStatusCode(false, "This pair is not yet completed");
 		}
 		return new ValidatorStatusCode(true);
@@ -207,6 +208,9 @@ public class JobSecurity {
 		
 		if (job.getUserId()!=userId && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to rerun pairs in this job");
+		}
+		if (job.isBuildJob()) {
+			return new ValidatorStatusCode(false, "You may not rerun solver build jobs. Please reupload your solver instead.");
 		}
 		
 		JobStatus status= Jobs.getJobStatusCode(jobId);

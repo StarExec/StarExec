@@ -389,7 +389,9 @@
 						
 						<c:if test="${job.userId == userId or isAdmin}"> 
 							<li><button type="button" id="deleteJob">delete job</button></li>
-							<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+							<c:if test="${not buildJob}">
+								<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+							</c:if>
 								<c:if test="${isRunning}">
 									<li><button type="button" id="pauseJob">pause job</button></li>
 								</c:if>
