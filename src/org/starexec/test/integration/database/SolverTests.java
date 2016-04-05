@@ -2,6 +2,7 @@ package org.starexec.test.integration.database;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Job;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecAfter;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -254,7 +256,7 @@ public class SolverTests extends TestSequence {
 	
 	@StarexecTest
 	private void getByConfigIdTest() {
-		Assert.assertEquals(solver.getId(), Solvers.getByConfigId(solver.getConfigurations().get(0).getId()).getId());
+		Assert.assertEquals(solver.getId(), Solvers.getByConfigId(config.getId()).getId());
 	}
 	
 	@StarexecTest
@@ -276,10 +278,6 @@ public class SolverTests extends TestSequence {
 		List<Solver> solvers = Solvers.getBySpaceDetailed(space1.getId());
 		Assert.assertEquals(1, solvers.size());
 		Assert.assertEquals(solver.getId(), solvers.get(0).getId());
-		addMessage(""+solver.getConfigurations().get(0).getId());
-		for (Configuration c: solvers.get(0).getConfigurations()) {
-			addMessage(""+c.getId());
-		}
 		Assert.assertEquals(solver.getConfigurations().size(), solvers.get(0).getConfigurations().size());
 	}
 	
@@ -325,7 +323,7 @@ public class SolverTests extends TestSequence {
 	private void getConfigIdSetByJobTest() throws SQLException {
 		Set<Integer> configIds = Solvers.getConfigIdSetByJob(job.getId());
 		Assert.assertEquals(1, configIds.size());
-		Assert.assertEquals((Integer)solver.getConfigurations().get(0).getId(), configIds.iterator().next());
+		Assert.assertEquals((Integer)config.getId(), configIds.iterator().next());
 	}
 	
 	@Override
@@ -335,7 +333,7 @@ public class SolverTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(),testCommunity.getId());
 		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
 		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());
-		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		config=solver.getConfigurations().get(0);
 		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space1.getId(), testUser.getId());
 		job = ResourceLoader.loadJobIntoDatabase(space1.getId(), testUser.getId(), solver.getId(), benchmarkIds);
 	}

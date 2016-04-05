@@ -651,7 +651,7 @@ public class ResourceLoader {
 		List<String> strs = new ArrayList<String>();
 		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50));
 		File bin = new File(f, R.SOLVER_BIN_DIR);
-		f.mkdirs();
+		bin.mkdirs();
 		strs.add(f.getAbsolutePath());
 		String name = TestUtil.getRandomAlphaString(20);
 		strs.add(name);
