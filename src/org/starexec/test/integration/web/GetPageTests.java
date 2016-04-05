@@ -392,7 +392,7 @@ public class GetPageTests extends TestSequence {
 		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		newCommunity = ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
 		
-		q=Queues.getAll().get(0);
+		q=Queues.getAllActive().get(0);
 		downloadDir=ResourceLoader.getDownloadDirectory();
 		solver=ResourceLoader.loadSolverIntoDatabase(space1.getId(), user.getId());
 		solver2=ResourceLoader.loadSolverIntoDatabase(space1.getId(), user.getId());

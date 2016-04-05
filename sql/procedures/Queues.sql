@@ -144,24 +144,6 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 		WHERE id = _queueId;
 	END //
 	
--- Gets all of the queues that the given user is allowed to use
-DROP PROCEDURE IF EXISTS GetQueuesForUser;
-CREATE PROCEDURE GetQueuesForUser(IN _userID INT)
-	BEGIN
-		SELECT DISTINCT id, name, status, global_access, cpuTimeout,clockTimeout
-		FROM queues 
-			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
-			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
-		WHERE 	
-			queues.status = "ACTIVE"
-			AND (
-				(IsLeader(comm_queue.space_id, _userId) = 1)	-- Either you are the leader of the community it was given access to
-				OR
-				(global_access = true)							-- or it is a global queue
-				);				 
-	END //
-
-	
 -- Sets the test queue in the database to a new value
 DROP PROCEDURE IF EXISTS SetTestQueue;
 CREATE PROCEDURE SetTestQueue(IN _qid INT)
@@ -212,5 +194,21 @@ CREATE PROCEDURE GetPairsRunningOnNode(IN _nodeId INT)
 
 		WHERE node_id = _nodeId AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3) AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //
-
+	
+	
+-- Gets all of the queues that the given user is allowed to use
+DROP PROCEDURE IF EXISTS GetQueuesForUser;
+CREATE PROCEDURE GetQueuesForUser(IN _userID INT)
+	BEGIN
+		SELECT DISTINCT id, name, status, global_access, cpuTimeout,clockTimeout
+		FROM queues 
+			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
+		WHERE 	
+			queues.status = "ACTIVE"
+			AND (
+				(IsLeader(comm_queue.space_id, _userId) = 1)	-- Either you are the leader of the community it was given access to
+				OR
+				(global_access)							-- or it is a global queue
+				);				 
+	END //
 DELIMITER ; -- This should always be at the end of this file

@@ -479,9 +479,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(Users.suspend(user1.getId()));
 		Assert.assertTrue(Users.isSuspended(user1.getId()));
 		Assert.assertTrue(Users.reinstate(user1.getId()));
-		Assert.assertFalse(Users.isSuspended(user1.getId()));
-		
-		Assert.assertTrue(Users.changeUserRole(user1.getId(), R.TEST_ROLE_NAME));
+		Assert.assertFalse(Users.isSuspended(user1.getId()));		
 	}
 	
 	

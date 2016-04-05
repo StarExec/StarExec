@@ -190,6 +190,13 @@ function isPairRunning {
 		return 1
 	fi
 	output=`cat "$LOCK_DIR/$1"`
+	if [ -z "${output// }" ]
+	then
+		echo "no process output was saved in the lock file, so assuming pair was deleted"
+		# the job is not still running
+        return 1
+	fi
+	
 	log "$output"
 	currentOutput=`ps -p $1 -o pid,stime,cmd | awk 'NR>1'`
 	log "$currentOutput"
@@ -1079,4 +1086,43 @@ function verifyWorkspace {
 	fi		
 
 	return $?
+}
+
+# Marks this pair as having had a runscript error
+# $1 The current stage number
+function markRunscriptError {
+	sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
+    setRunStatsToZeroForLaterStages $(($1-1))
+}
+
+
+# this function checks to make sure that runsolver output was generated correctly.
+# runsolver output should have a terminating line that contains 'EOF'. If this is not present,
+# output was cut off for some reason and we should mark the pair as invalid
+# returns 0 if valid and 1 if invalid
+# $1 Output file to check
+# $2 The current stage number
+# $3 The SUPPRESS_TIMESTAMP param. If this is true, we cannot check for EOF, as it does not exist
+function isOutputValid {
+	log "checking to see if runsolver output is valid for stage $2"
+	if [ ! -f $1 ]; then
+    	log "Runsolver output could not be found"
+		markRunscriptError $2
+    	return 1
+	fi
+	
+	if [ "$3" = true ] ; then
+		log "no EOF line was appended, so we cannot check for it"
+		return 0
+	fi
+
+	LAST_LINE=`tail -n 1 $1`
+	if [[ $LAST_LINE == *"EOF"* ]]
+	then
+		log "Runsolver output was valid"
+		return 0
+	fi
+	log "runsolver output was not valid"
+	return 1
 }

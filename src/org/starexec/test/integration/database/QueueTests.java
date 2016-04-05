@@ -1,5 +1,6 @@
 package org.starexec.test.integration.database;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
@@ -25,6 +27,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.DataTablesQuery;
 
 /**
  * Tests for org.starexec.data.database.Queues.java
@@ -36,14 +39,14 @@ public class QueueTests extends TestSequence {
 	Queue allQueue=null;
 	
 	Queue testQueue=null; //a global queue. Has no nodes
-	WorkerNode n=null;    // some node from allQeueue
+	WorkerNode n=null;    // some node from allQueue
 	
 	WorkerNode fakeNode = null; // fake node that is not actually in the backend
 	
 	Space space = null;
 	Solver solver = null;
 	List<Integer> benchmarkIds = null;
-	Job job1 = null; // will be on test.q
+	private Job job = null; // will be on test.q
 	
 	@Override
 	protected String getTestName() {
@@ -55,7 +58,7 @@ public class QueueTests extends TestSequence {
 		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		map.put(testQueue.getId(), -1);
 		Queues.pauseJobsIfNoRemainingNodes(map);
-		Assert.assertFalse(Jobs.isJobPaused(job1.getId()));
+		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
 	}
 	
 	@StarexecTest
@@ -71,17 +74,17 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void pauseJobsIfNoRemainingNodesTest() {
-		for (JobPair pair : job1.getJobPairs()) {
+		for (JobPair pair : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		}
 		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
 		map.put(testQueue.getId(), Cluster.getNodesForQueue(testQueue.getId()).size());
 		Queues.pauseJobsIfNoRemainingNodes(map);
-		Assert.assertTrue(Jobs.isJobPaused(job1.getId()));
-		for (JobPair pair : job1.getJobPairs()) {
+		Assert.assertTrue(Jobs.isJobPaused(job.getId()));
+		for (JobPair pair : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
-		Jobs.resume(job1.getId());
+		Jobs.resume(job.getId());
 		
 	}
 	
@@ -102,9 +105,15 @@ public class QueueTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getNullNamebyFakeIdTest() {
+		Assert.assertNull(Queues.getNameById(-1));
+
+	}
+	
+	@StarexecTest
 	private void setGlobalTest() {
 		Assert.assertTrue(Queues.removeGlobal(testQueue.getId()));
-		Assert.assertFalse(Queues.get(testQueue.getId()).getGlobalAccess());
+		Assert.assertFalse(Queues.isQueueGlobal(testQueue.getId()));
 		Assert.assertTrue(Queues.makeGlobal(testQueue.getId()));
 		Assert.assertTrue(Queues.get(testQueue.getId()).getGlobalAccess());
 	}
@@ -154,13 +163,34 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void getAllActiveTest() {
-		List<Queue> queues=Queues.getAll();
+		List<Queue> queues=Queues.getAllActive();
 		Assert.assertNotNull(queues);
 		
 		for (Queue q : queues) {
 			Assert.assertEquals("ACTIVE",q.getStatus());
 		}		
 	}
+	
+	@StarexecTest
+	private void getUserQueuesAdminTest() {
+		List<Queue> queues=Queues.getUserQueues(admin.getId());
+		Assert.assertNotNull(queues);
+		
+		for (Queue q : queues) {
+			Assert.assertEquals("ACTIVE",q.getStatus());
+		}
+	}
+	
+	@StarexecTest
+	private void getUserQueuesTest() {
+		List<Queue> queues=Queues.getUserQueues(owner.getId());
+		Assert.assertNotNull(queues);
+		
+		for (Queue q : queues) {
+			Assert.assertEquals("ACTIVE",q.getStatus());
+		}
+	}
+	
 	
 	@StarexecTest
 	private void getAllAdminTest() {
@@ -176,19 +206,19 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void getCountOfEnqueuedPairsTest() {
-		for (JobPair pair : job1.getJobPairs()) {
+		for (JobPair pair : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		}
-		Assert.assertEquals(job1.getJobPairs().size(), Queues.getCountOfEnqueuedPairsByQueue(testQueue.getId()));
+		Assert.assertEquals(job.getJobPairs().size(), Queues.getCountOfEnqueuedPairsByQueue(testQueue.getId()));
 		
-		for (JobPair pair : job1.getJobPairs()) {
+		for (JobPair pair : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
 	}
 	
 	@StarexecTest
 	private void getPairsRunningOnNodeTest() {
-		JobPair jp = job1.getJobPairs().get(0);
+		JobPair jp = job.getJobPairs().get(0);
 		JobPairs.updatePairExecutionHost(jp.getId(), fakeNode.getId());
 		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_RUNNING.getVal());
 		List<JobPair> pairs = Queues.getPairsRunningOnNode(fakeNode.getId());
@@ -196,8 +226,39 @@ public class QueueTests extends TestSequence {
 		Assert.assertEquals(jp.getId(), pairs.get(0).getId());
 		
 		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void getJobPairsForNextClusterPageTest() {
+		JobPair jp =job.getJobPairs().get(0);
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		
+		List<JobPair> pairs = Queues.getJobPairsForNextClusterPage(new DataTablesQuery(0,10,0,true,""), testQueue.getId());
+		Assert.assertEquals(1, pairs.size());
+		Assert.assertEquals(jp.getId(), pairs.get(0).getId());
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
 
-
+	}
+	
+	@StarexecTest
+	private void getNodesEmptyTest() {
+		Assert.assertEquals(0, Queues.getNodes(testQueue.getId()).size());
+	}
+	
+	@StarexecTest
+	private void getPendingJobsTest() {
+		JobPair jp =job.getJobPairs().get(0);
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PENDING_SUBMIT.getVal());
+		
+		List<Job> jobs = Queues.getPendingJobs(testQueue.getId());
+		Assert.assertEquals(1, jobs.size());
+		Assert.assertEquals(job.getId(), jobs.get(0).getId());
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void getPendingJobsEmptyTest() {
+		Assert.assertEquals(0, Queues.getPendingJobs(testQueue.getId()).size());
 	}
 	
 	private void refreshFakeNode() {
@@ -206,6 +267,54 @@ public class QueueTests extends TestSequence {
 		}
 		Cluster.addNodeIfNotExists("faketestnode");
 		fakeNode = Cluster.getNodeDetails(Cluster.getNodeIdByName("faketestnode"));
+	}
+	
+	@StarexecTest 
+	private void getUserLoadOnEmptyQueueTest() {
+		Assert.assertEquals((Integer)0, Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
+	}
+	
+	@StarexecTest
+	private void getUserLoadOnQueueTest() {
+		JobPair jp =job.getJobPairs().get(0);
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_RUNNING.getVal());
+		Assert.assertEquals((Integer)job.getWallclockTimeout(), Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void getSizeOfQueueTest() {
+		JobPair jp =job.getJobPairs().get(0);
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+		Assert.assertEquals((Integer)1, Queues.getSizeOfQueue(testQueue.getId()));
+		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
+	}
+	
+	@StarexecTest
+	private void isQueueGlobalTest() {
+		Assert.assertTrue(Queues.isQueueGlobal(allQueue.getId()));
+	}
+	
+	@StarexecTest
+	private void setTestQueueTest() {
+		int id = Queues.getTestQueue();
+		Assert.assertTrue(Queues.setTestQueue(testQueue.getId()));
+		Assert.assertEquals(testQueue.getId(), Queues.getTestQueue());
+		Assert.assertTrue(Queues.setTestQueue(id));
+	}
+	
+	@StarexecTest
+	private void getAllQTest() {
+		Queue q = Queues.getAllQ();
+		Assert.assertEquals(R.DEFAULT_QUEUE_ID, q.getId());
+		Assert.assertEquals(R.DEFAULT_QUEUE_NAME, q.getName());
+	}
+	
+	@StarexecTest
+	private void setQueueCommunityAccessTest() {
+		List<Integer> ids = new ArrayList<Integer>();
+		ids.add(Communities.getTestCommunity().getId());
+		Assert.assertTrue(Queues.setQueueCommunityAccess(ids, testQueue.getId()));
 	}
 	
 	@Override
@@ -218,8 +327,8 @@ public class QueueTests extends TestSequence {
 		space = ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
 		solver = ResourceLoader.loadSolverIntoDatabase(space.getId(), owner.getId());
 		benchmarkIds =ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), owner.getId());
-		job1 = ResourceLoader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarkIds);
-		Jobs.changeQueue(job1.getId(), testQueue.getId());
+		job = ResourceLoader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarkIds);
+		Jobs.changeQueue(job.getId(), testQueue.getId());
 		admin = Users.getAdmins().get(0);
 		Assert.assertNotNull(testQueue);
 		refreshFakeNode();
@@ -227,7 +336,7 @@ public class QueueTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job1.getId());
+		Jobs.deleteAndRemove(job.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		for (int i : benchmarkIds) {
 			Benchmarks.deleteAndRemoveBenchmark(i);

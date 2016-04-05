@@ -1197,18 +1197,7 @@ public class Users {
 	public static boolean isPublicUser(int userId) {
 		return userId==R.PUBLIC_USER_ID;
 	}
-	
-	
-	/**
-	 * Checks to see whether the given user is a test user
-	 * @param userId
-	 * @return True if the user has the test role and false otherwise (including errors)
-	 */
-	public static boolean isTestUser(int userId) {
-		User u=Users.get(userId);
-		return u!=null && u.getRole().equals(R.TEST_ROLE_NAME);
-	}
-	
+
 	/**
 	 * Checks to see whether the given user is unauthorized
 	 * @param userId

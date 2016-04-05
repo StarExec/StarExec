@@ -93,6 +93,33 @@ CREATE PROCEDURE GetConfiguration(IN _id INT)
 		FROM configurations
 		WHERE id = _id;
 	END //
+
+DROP PROCEDURE IF EXISTS GetAllSolversInJob;
+CREATE PROCEDURE GetAllSolversInJob(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT solver_id, solver_name
+		FROM jobpair_stage_data
+		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllConfigsInJob;
+CREATE PROCEDURE GetAllConfigsInJob(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT config_id, config_name
+		FROM jobpair_stage_data
+		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllConfigIdsInJob;
+CREATE PROCEDURE GetAllConfigIdsInJob( IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT config_id
+		FROM jobpair_stage_data
+		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId;
+	END //
 	
 	
 -- Retrieves the configurations that belong to a solver with the given id

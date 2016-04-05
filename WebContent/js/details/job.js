@@ -374,6 +374,12 @@ function initUI(){
 		window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
 	});
 
+	$("#addJobPairs").button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+    });
+
 	
 	
 	attachSortButtonFunctions();

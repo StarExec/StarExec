@@ -295,7 +295,7 @@ public class RESTServices {
 		if(id <= 0 && GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllAdmin()));
 		} else if (id <= 0) {
-			return gson.toJson(RESTHelpers.toQueueList(Queues.getAll()));
+			return gson.toJson(RESTHelpers.toQueueList(Queues.getAllActive()));
 		} else {
 			return gson.toJson(RESTHelpers.toNodeList(Queues.getNodes(id)));
 		}
@@ -1246,6 +1246,43 @@ public class RESTServices {
 			return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, space, PrimitivesToAnonymize.NONE, shortFormat, wallclock );
 		}
 	}
+
+	@POST
+	@Path("/jobs/addJobPairs/confirmation") 
+	@Produces("application/json")
+	public String getNumberOfPairsToBeAddedAndDeleted( @Context HttpServletRequest request ) {
+		final String methodName = "getNumberOfPairsToBeAddedAndDeleted";
+		final String jobIdParam = "jobId";
+		final String configsParam = "configs";
+		try {
+			final int userId = SessionUtil.getUserId( request );
+			final int jobId = Integer.parseInt( request.getParameter(jobIdParam) );
+
+			Set<Integer> selectedConfigIds = new HashSet<>( Util.toIntegerList( request.getParameterValues( configsParam ) ) );
+			Set<Integer> allConfigIdsInJob = Solvers.getConfigIdSetByJob( jobId );
+
+			Set<Integer> configIdsToDelete = new HashSet<>( allConfigIdsInJob );
+			configIdsToDelete.removeAll( selectedConfigIds );
+			logUtil.debug( methodName, "Config ID's to be deleted: " );
+
+			Map<String, Object> jsonObject = new HashMap<>();
+			jsonObject.put("pairsToBeDeleted", Jobs.countJobPairsToBeDeletedFromConfigIds( jobId, configIdsToDelete ) );
+
+			Set<Integer> configIdsToAdd = new HashSet<>( selectedConfigIds );
+			configIdsToAdd.removeAll( allConfigIdsInJob );
+			logUtil.debug( methodName, "Config ID's to be added: " );
+			jsonObject.put("pairsToBeAdded", Jobs.countJobPairsToBeAddedFromConfigIds( jobId, configIdsToAdd ) );
+
+
+			jsonObject.put("success", true);
+			return gson.toJson( jsonObject );
+		} catch ( Exception e ) {
+			Map<String, Object> jsonObject = new HashMap<>();
+			jsonObject.put("success", false);
+			return gson.toJson( jsonObject );
+		}
+	}
+	
 
 
 	/**

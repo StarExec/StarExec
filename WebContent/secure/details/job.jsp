@@ -109,7 +109,6 @@
 									</tr>
 								</thead>
 								<tbody>
-									<!-- This will be populated by the job pair pagination feature -->
 									<c:forEach var="stats" items="${jobSpaceIdToSolverStatsMap.get(jobspaceIdKey)}">
 										<tr>
 											<td>${stats.getSolver().getName()}</td>
@@ -378,6 +377,9 @@
 						<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
 						<li><button id="downloadJobPageButton" type="button">download job page</button></li>
 						<c:if test="${job.userId == userId or isAdmin}"> 
+							<c:if test="${(isPaused or isComplete) and (not buildJob)}">
+								<li><a id="addJobPairs" href="${starexecRoot}/secure/add/jobPairs.jsp?jobId=${job.id}" >add/delete job pairs</a></li>
+							</c:if>
 							<li><a id="anonymousLink">get anonymous link</a></li>
 						</c:if>
 						<c:if test="${isAdmin}">
@@ -387,7 +389,9 @@
 						
 						<c:if test="${job.userId == userId or isAdmin}"> 
 							<li><button type="button" id="deleteJob">delete job</button></li>
-							<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+							<c:if test="${not buildJob}">
+								<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+							</c:if>
 								<c:if test="${isRunning}">
 									<li><button type="button" id="pauseJob">pause job</button></li>
 								</c:if>

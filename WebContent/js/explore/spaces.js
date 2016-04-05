@@ -607,7 +607,6 @@ function initSpaceExplorer(){
 
 		updateButtonIds(id);
 		getSpaceDetails(id);
-		//setURL(id); don't need to do this anymore
 
 		// Remove all non-permanent tooltips from the page; helps keep
 		// the page from getting filled with hundreds of qtip divs
@@ -648,7 +647,6 @@ function removeBenchmarks(selectedBenches,ownsAll){
 								if (s) {
 									updateTable(benchTable);
 								}
-								
 							},
 							"json"
 					).error(function(){

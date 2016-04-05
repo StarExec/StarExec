@@ -79,6 +79,7 @@ public class TestManager {
 		tests.add(new RESTServicesSecurityTests());
 		tests.add(new WebsiteSecurityTests());
 		tests.add(new JobUtilTests());
+		tests.add(new ReportsTests());
 	}
 	/**
 	 * 

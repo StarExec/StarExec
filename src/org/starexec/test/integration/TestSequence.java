@@ -157,6 +157,7 @@ public abstract class TestSequence {
 		
 		try {
 			List<Method> tests=getTests();
+			List<Method> afters = getAfters();
 			for (Method m : tests) {
 				TestResult t=testResults.get(m.getName());
 				t.clearMessages();
@@ -177,6 +178,17 @@ public abstract class TestSequence {
 					t.setError(e);
 					t.addMessage(e.getMessage());
 					t.getStatus().setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
+				}
+				// after every test, we run the methods marked with @StarexecAfter
+				// these functions are passed the test method so they can easily log the time they are running, if necessary
+				for (Method after : afters) {
+					try {
+						after.setAccessible(true);
+						after.invoke(this, m);
+					} catch (Throwable e) {
+						log.error("error in after method!");
+						log.error(e.getMessage(), e);
+					}
 				}
 				
 			}
@@ -272,11 +284,24 @@ public abstract class TestSequence {
 	 */
 	
 	protected List<Method> getTests() {
+		return getMethodsWithAnnotation(StarexecTest.class);
+	}
+	
+	/**
+	 * Retrieves a list of all methods that have the @StarexecAfter annotation
+	 * @return
+	 */
+	protected List<Method> getAfters() {
+		return getMethodsWithAnnotation(StarexecAfter.class);
+	}
+	
+	
+	private List<Method> getMethodsWithAnnotation(Class annotationClass) {
 		Method[] methods=this.getClass().getDeclaredMethods();
 		
 		List<Method> tests=new ArrayList<Method>();
 		for (Method m : methods) {
-			if (isTest(m)) {
+			if (hasAnnotation(m, annotationClass)) {
 				tests.add(m);
 			}
 		}
@@ -284,29 +309,19 @@ public abstract class TestSequence {
 		return tests;
 	}
 	/**
-	 * Determines whether the given method is a test, based on whether
-	 * it has the @StarexecTest annotation
+	 * Determines whether the given method is an after test method, based on whether
+	 * it has the @StarexecAfter annotation
 	 * @param m The method to check
 	 * @return
 	 */
-	protected static boolean isTest(Method m) {
+	protected static boolean hasAnnotation(Method m, Class annotationClass) {
 		Annotation[] anns=m.getAnnotations();
 		for (Annotation a : anns) {
-			if (isTestAnnotation(a)) {
+			if (a.annotationType().equals(annotationClass)) {
 				return true;
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * Determines whether the given annotation is the @StarexecTest annotation
-	 * @param a The annotation to check
-	 * @return
-	 */
-	
-	protected static boolean isTestAnnotation(Annotation a) {
-		return a.annotationType().equals(StarexecTest.class);
 	}
 	
 	/**

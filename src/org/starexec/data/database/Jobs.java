@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.ResultSet;
 
 import java.util.ArrayList;
@@ -223,6 +224,69 @@ public class Jobs {
 			Common.safeClose(con);
 		}
 		return false;
+	}
+
+	public static int countJobPairsToBeAddedFromConfigIds( int jobId, Set<Integer> configIds ) {
+		Job job = Jobs.getWithSimplePairs( jobId );
+		List<JobPair> jobPairsToAdd = new ArrayList<>();
+		List<JobPair> jobPairs = job.getJobPairs();
+		int countOfJobPairsToAdd = 0;
+
+		for ( Integer configId : configIds ) {
+			Set<Integer> benchmarksAlreadySeen = new HashSet<>();
+			// Get the solver associated with the config we want to add to the job.
+			Solver solver = Solvers.getByConfigId( configId );
+			for ( JobPair pair : jobPairs ) {
+				// If a pair contains the solver add a new job pair with the new config to the job.
+				if (	pair.getStages().size() == 1 && // skip multi-stage pairs
+						pair.getPrimaryStage().getSolver().getId() == solver.getId() && 
+						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) )  {
+					countOfJobPairsToAdd += 1;
+					benchmarksAlreadySeen.add( pair.getBench().getId() );
+				}
+			}
+		}
+		return countOfJobPairsToAdd;
+	}
+
+	/**
+	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that contains the solver
+	 * associated with the configuration.
+	 * @param jobId the id of the job.
+	 * @param configId  the configurations to add to the job.
+	 * @author Albert Giegerich
+	 */
+	public static void addJobPairsFromConfigIds( int jobId, Set<Integer> configIds ) throws SQLException {
+
+		List<JobPair> jobPairsToAdd = new ArrayList<>();
+
+		for ( Integer configId : configIds ) {
+			Set<Integer> benchmarksAlreadySeen = new HashSet<>();
+			// Get the solver associated with the config we want to add to the job.
+			Solver solver = Solvers.getByConfigId( configId );
+
+			// We need a fresh list of job pairs each time so that the references change with each iteration.
+			Job job = Jobs.getWithSimplePairs( jobId );
+			List<JobPair> jobPairs = job.getJobPairs();
+			for ( JobPair pair : jobPairs ) {
+				// If a pair contains the solver add a new job pair with the new config to the job.
+				if (	pair.getStages().size() == 1 && // skip multi-stage pairs
+						pair.getPrimaryStage().getSolver().getId() == solver.getId() && 
+						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) ) {
+					// Modify the current pair by changing the configuration then add the new job pair to the job.
+					JobPair pairToAdd = pair;
+					pair.getPrimaryStage().setConfiguration( Solvers.getConfiguration( configId ) );
+					jobPairsToAdd.add( pair );
+					benchmarksAlreadySeen.add( pair.getBench().getId() );
+				}
+			}
+		}
+
+		// Add the new job pairs.
+		JobPairs.addJobPairs(jobId,jobPairsToAdd );
+
+		// Clear the cached job stats for this job so the new job pairs will contribute to the job stats.
+		removeCachedJobStats( jobId );
 	}
 	
 	/**
@@ -470,6 +534,7 @@ public class Jobs {
 		}
 		return -1;
 	}
+
 	
 	/**
 	 * Deletes the job with the given id from disk, and permanently removes the job from the database.
@@ -541,6 +606,49 @@ public class Jobs {
 		}
 		return false;
 	}
+
+
+	public static int countJobPairsToBeDeletedFromConfigIds( int jobId, Set<Integer> configIds ) {
+		Job job = Jobs.getWithSimplePairs( jobId );
+		int numberOfJobPairsToBeDeleted = 0;
+		List<JobPair> jobPairs = job.getJobPairs(); 
+		// Delete every pair that contains a config in the set of configs.
+		for ( JobPair pair : jobPairs ) {
+			if ( pair.getStages().size() == 1 &&
+				configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
+				numberOfJobPairsToBeDeleted += 1;
+			}
+		}
+
+		return numberOfJobPairsToBeDeleted;
+	}
+
+
+	/**
+	 * Deletes all the job pairs in a job that have a given configuration
+	 * @param jobId the id of the job to delete from.
+	 * @param configIds the configuration ids for which we want to delete job pairs.
+	 * @author Albert Giegerich
+	 */
+	public static void deleteJobPairsWithConfigurationsFromJob( int jobId, Set<Integer> configIds ) throws SQLException {
+		Job job = Jobs.getWithSimplePairs( jobId );
+		List<JobPair> jobPairsToDelete = new ArrayList<>();
+		List<JobPair> jobPairs = job.getJobPairs(); 
+		// Delete every pair that contains a config in the set of configs.
+		for ( JobPair pair : jobPairs ) {
+			// Skip multi-stage pairs
+			if ( pair.getStages().size() == 1 && 
+				 configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
+
+				jobPairsToDelete.add( pair );
+			}
+		}
+		JobPairs.deleteJobPairs( jobPairsToDelete );
+
+		removeCachedJobStatsForConfigs( jobId, configIds );
+	}
+
+
 	
 	
 	
@@ -2288,7 +2396,6 @@ public class Jobs {
 		}
 		return null;
 	}
-	
     
 	/**
 	 * Attempts to retrieve cached SolverStats objects from the database. Returns
@@ -3715,16 +3822,7 @@ public class Jobs {
 	}
 	return false;
     }
-	
-    /**
-     * Checks to see if the given job is owned by the test user
-     * @param jobId The job to check
-     * @return True if the job is owned by the test user and false otherwise
-     */
-	public static boolean isTestJob(int jobId) {
-		return Users.isTestUser(Jobs.get(jobId).getUserId());
-	}
-
+   
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
 	 * @return True on success, false otherwise
@@ -4342,6 +4440,48 @@ public class Jobs {
 		}
 		return false;
 		
+	}
+
+	/**
+	 *
+	 * Deletes cached job stats in a job for the given configurations.
+	 * @param jobId the id of the job to delete job stats from.
+	 * @param configIds the configurations for which to delete job stats.
+	 * @author Albert Giegerich
+	 */
+	public static void removeCachedJobStatsForConfigs( int jobId, Set<Integer> configIds ) throws SQLException {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction( con );
+			Job job = Jobs.get( jobId );
+
+			// get all the job spaces in the job
+			int rootSpaceId = job.getPrimarySpace();
+			List<JobSpace> jobSpacesInJob = Spaces.getSubSpacesForJob(rootSpaceId, true);
+			jobSpacesInJob.add( Spaces.getJobSpace( rootSpaceId ) );
+
+			for ( JobSpace jobSpace : jobSpacesInJob ) {
+				for ( int cid : configIds ) {
+					removeCachedJobStatsForConfigAndJobSpace( con, jobSpace.getId(), cid );
+				}
+			}
+		} finally {
+			Common.endTransaction( con );
+			Common.safeClose( con );
+		}
+	}
+
+	private static void removeCachedJobStatsForConfigAndJobSpace( Connection con, int jobSpaceId, int configId ) throws SQLException {
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL RemoveJobStatsInJobSpaceForConfig(?, ?)}");
+			procedure.setInt( 1, jobSpaceId );
+			procedure.setInt( 2, configId );
+			procedure.executeUpdate();
+		} finally {
+			Common.safeClose( procedure );
+		}
 	}
 
 	/**

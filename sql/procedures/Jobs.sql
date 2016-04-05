@@ -183,6 +183,14 @@ CREATE PROCEDURE RemoveJobStatsInJobSpace(IN _jobSpaceId INT)
 		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
 
+DROP PROCEDURE IF EXISTS RemoveJobStatsInJobSpaceForConfig;
+CREATE PROCEDURE RemoveJobStatsInJobSpaceForConfig( IN _jobSpaceId INT, IN _configId INT )
+	BEGIN
+		DELETE FROM job_stats
+		WHERE job_stats.job_space_id = _jobSpaceId
+			AND job_stats.config_id = _configId;
+	END //
+
 -- Counts the number of pending pairs in a job
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS CountPendingPairs;

@@ -90,7 +90,7 @@ public abstract class JobManager {
 		    Common.logConnectionsOpen();
 		    log.debug("about to get all queues");
 		    
-		    List<Queue> queues = Queues.getAll();
+		    List<Queue> queues = Queues.getAllActive();
 		    log.debug("found this many queues "+queues.size());
 		    for (Queue q : queues) {
 		    	log.debug("about to submit to queue "+q.getId());
@@ -334,6 +334,7 @@ public abstract class JobManager {
 							queueSize++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
+							log.error("setting pair with following ID to submit_fail "+pair.getId());
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}

@@ -192,7 +192,8 @@ public class JobSecurity {
 		}
 		
 		//can't rerun pairs that are not complete
-		if (statusCode>StatusCode.ERROR_GENERAL.getVal()) {
+		if (statusCode>StatusCode.ERROR_GENERAL.getVal() || statusCode==StatusCode.STATUS_ENQUEUED.getVal()  ||
+				statusCode==StatusCode.STATUS_RUNNING.getVal() || statusCode==StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
 			return new ValidatorStatusCode(false, "This pair is not yet completed");
 		}
 		return new ValidatorStatusCode(true);
@@ -207,6 +208,9 @@ public class JobSecurity {
 		
 		if (job.getUserId()!=userId && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to rerun pairs in this job");
+		}
+		if (job.isBuildJob()) {
+			return new ValidatorStatusCode(false, "You may not rerun solver build jobs. Please reupload your solver instead.");
 		}
 		
 		JobStatus status= Jobs.getJobStatusCode(jobId);
@@ -324,7 +328,7 @@ public class JobSecurity {
 		if (q==null){
 			return new ValidatorStatusCode(false, "The given queue could not be found");
 		}
-		List<Queue> queues=Queues.getQueuesForUser(userId);
+		List<Queue> queues=Queues.getUserQueues(userId);
 		for (Queue queue : queues) {
 			if (queue.getId()==queueId) {
 				return new ValidatorStatusCode(true);
@@ -333,6 +337,24 @@ public class JobSecurity {
 		}
 		return new ValidatorStatusCode(false, "You do not have permission to access the selected queue");
 
+	}
+
+	/**
+	 * Checks if a user can add job pairs to a given job.
+	 * @param jobId the id of the job to check permissions for.
+	 * @param userId the id of the user to check permissions for.
+	 * @return an appropriate ValidatorStatusCode.  
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserAddJobPairs( int jobId, int userId ) {
+		if ( !userOwnsJobOrIsAdmin( jobId, userId ) ) {
+			return new ValidatorStatusCode( false, "You do not have permission to add job pairs for this job." );
+		}
+		Job j = Jobs.get(jobId);
+		if (j.isBuildJob()) {
+			return new ValidatorStatusCode(false, "You can not add job pairs to a solver build job");
+		}
+		return new ValidatorStatusCode( true );
 	}
 	
 	/**

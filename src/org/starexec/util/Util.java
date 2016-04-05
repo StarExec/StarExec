@@ -818,6 +818,43 @@ public class Util {
     }
     
     /**
+     * Deletes the file specified by the given path, and then moves up and deletes
+     * empty directories on the path to the the file that was deleted. Will ignore any directories
+     * at or above 'endPath'
+     * @param path The path to the file to delete
+     * @param endPath The path specifying the directory to terminate at. Will not delete any directories
+     * at or above this path.
+     * @return True on success and false otherwise.
+     */
+    public static boolean safeDeleteFileAndEmptyParents(String path, String endPath) {
+    	log.debug("got call to delete file and empty parents on "+path);
+    	log.debug("endPath is " +endPath);
+    	if (!safeDeleteDirectory(path)) {
+    		return false;
+    	}
+    	File file = new File(path);
+    	File endFile = new File(endPath);
+    	while (file!=null) {
+    		file = file.getParentFile();
+    		log.debug("working on parent directory "+file.getAbsolutePath());
+    		if (endFile.getAbsolutePath().equals(file.getAbsolutePath())) {
+    			log.debug("terminating at endpath");
+    			break;
+    		}
+    		if (file.isDirectory()) {
+    			if (!file.delete()) {
+    				log.debug("terminating at non-empty directory");
+    				// if the directory does not get deleted, that just means that it was not empty
+    				break;
+    			}
+    			log.debug("deleted directory");
+    		}
+    	}
+    	
+    	return true;
+    }
+    
+    /**
      * Attempts to delete the directory or file specified the given path without
      * throwing any errors
      * @param path The path to the directory to delete
@@ -826,12 +863,13 @@ public class Util {
      */
     public static boolean safeDeleteDirectory(String path) {
     	try {
-	    File file=new File(path);
+    		File file=new File(path);
 		    if (file.isDirectory()) {
 		    	FileUtils.deleteDirectory(file);
 		    } else {
 		    	FileUtils.deleteQuietly(file);
 		    }
+		    return true;
     	} catch (Exception e) {
 	    log.error("safeDeleteDirectory says "+e.getMessage(),e);
     	}

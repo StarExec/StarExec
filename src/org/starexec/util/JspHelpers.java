@@ -190,13 +190,16 @@ public class JspHelpers {
 				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
 				request.setAttribute("firstPostProc",stage1PostProc);
 				request.setAttribute("firstPreProc",stage1PreProc);
-				request.setAttribute("queues", Queues.getQueuesForUser(userId));
+				
+				request.setAttribute("queues", Queues.getUserQueues(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
 				request.setAttribute("cpu",cpu);
 				request.setAttribute("wallclock",wallclock);
 				request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
 				request.setAttribute("seed",j.getSeed());
+				request.setAttribute("buildJob", j.isBuildJob());
+				
 				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
@@ -210,140 +213,6 @@ public class JspHelpers {
 			}
 		}
 	}
-
-	/**
-	 *
-	 * @author Albert Giegerich
-	public static void handleNonAnonymousJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException {
-
-		final String methodName = "handleNonAnonymousJobPage";
-		logUtil.entry( methodName );
-
-		int userId = SessionUtil.getUserId(request);
-		int jobId = Integer.parseInt(request.getParameter("id"));
-
-		try {
-			if(Permissions.canUserSeeJob(jobId,userId)) {
-				Job j=Jobs.get(jobId);
-				request.setAttribute("isAdmin",Users.isAdmin(userId));
-				User u=Users.get(j.getUserId());
-				request.setAttribute("usr",u);
-				List<Processor> listOfPostProcessors = Processors.getByUser( userId, ProcessorType.POST );
-				request.setAttribute("postProcs", listOfPostProcessors);
-				request.setAttribute("userId",userId);
-				request.setAttribute("queues", Queues.getQueuesForUser(userId));
-
-				setJobPageRequestAttributes( false, false, jobId, Optional.of(userId), request, response );
-			} else {
-				if (Jobs.isJobDeleted(jobId)) {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
-				} else {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
-				}
-			}
-		} catch ( IOException e ) {
-			logUtil.error( methodName, "Caught exception while trying to handle non-anonymous job page: " + e.getMessage() );
-			throw e;
-		}
-	}
-	*/
-
-	/*
-	public static void setJobPageRequestAttributes(
-			final boolean isAnonymousPage, 
-			final boolean hideJobName,
-			final Integer jobId,
-			final Optional<Integer> userId,
-			final HttpServletRequest request, 
-			final HttpServletResponse response ) throws IOException {
-
-
-
-		
-		boolean queueExists = true;
-		boolean queueIsEmpty = false;
-
-		Job j = Jobs.get(jobId);
-		if (j.getQueue() == null) {
-			queueExists = false;
-		} else {
-			Queue q = j.getQueue();
-			List<WorkerNode> nodes = Cluster.getNodesForQueue(q.getId());
-			if (nodes.size() == 0) {
-				queueIsEmpty = true;
-			}
-
-		}
-		
-		int jobSpaceId=j.getPrimarySpace();
-		
-		if (jobSpaceId>0) {
-			j=Jobs.get(jobId);
-			JobStatus status=Jobs.getJobStatusCode(jobId);
-			boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
-			boolean isAdminPaused = Jobs.isSystemPaused();
-			boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
-			boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
-			boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
-			boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
-			int wallclock=j.getWallclockTimeout();
-			int cpu=j.getCpuTimeout();
-			long memory=j.getMaxMemory();
-			JobSpace jobSpace=Spaces.getJobSpace(jobSpaceId);
-
-
-			String jobSpaceTreeJson = null;
-			if ( userId.isPresent() ) {
-				jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId.get());
-			} else {
-				jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), 1);
-			}
-
-			List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
-			jobSpaces.add(jobSpace);
-			request.setAttribute("jobSpaces", jobSpaces);
-			Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
-			request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
-			Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
-				RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
-			request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
-			Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
-					RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
-			request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
-
-			Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
-			request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
-			Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
-					Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
-
-			request.setAttribute("hideJobName", hideJobName);
-			request.setAttribute( "jobPageTitle", hideJobName ? "" : j.getName() );
-			request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
-			request.setAttribute("jobSpaceTreeJson", jobSpaceTreeJson);
-			request.setAttribute("job", j);
-			request.setAttribute("jobspace",jobSpace);
-			request.setAttribute("isPaused", isPaused);
-			request.setAttribute("isAdminPaused", isAdminPaused);
-			request.setAttribute("isKilled", isKilled);
-			request.setAttribute("isRunning", isRunning);
-			request.setAttribute("isComplete", isComplete);
-			request.setAttribute("queueIsEmpty", queueIsEmpty);
-			request.setAttribute("isProcessing", isProcessing);
-			Processor stage1PostProc=j.getStageAttributesByStageNumber(1).getPostProcessor();
-			Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
-			request.setAttribute("firstPostProc",stage1PostProc);
-			request.setAttribute("firstPreProc",stage1PreProc);
-			request.setAttribute("queueExists", queueExists);
-			request.setAttribute("cpu",cpu);
-			request.setAttribute("wallclock",wallclock);
-			request.setAttribute("maxMemory",Util.bytesToGigabytes(memory));
-			request.setAttribute("seed",j.getSeed());
-			request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
-		} else {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
-		}
-	}
-	*/
 
 	/**
 	 * Handles request/response logic for details/solver.jsp for an anonymous page.

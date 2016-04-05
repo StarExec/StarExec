@@ -26,31 +26,22 @@ public class Reports {
 	 * Set the number of occurrences for an event not related to a queue.
 	 * @param eventName the name of the event.
 	 * @param occurrences the number of times the event occurred.
+	 * @return True on success and false on error
 	 * @author Albert Giegerich
 	 */
-	public static void setEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
-		setEventOccurrences(eventName, occurrences, null);
-	}
-
-	/**
-	 * Set the number of occurrences for an event related to a queue.
-	 * @param eventName the name of the event.
-	 * @param occurrences the number of times the event occurred.
-	 * @param queueName the name of the queue related to the event.
-	 * @author Albert Giegerich
-	 */
-	public static void setEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
-		setEventOccurrences(eventName, occurrences, queueName);
+	public static boolean setEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
+		return setEventOccurrences(eventName, occurrences, null);
 	}
 
 	/**
 	 * Add occurrences to an event not related to a queue.
 	 * @param eventName the name of the event.
 	 * @param occurrences the number of times the event occurred.
+	 * @return True on success and false on error
 	 * @author Albert Giegerich
 	 */
-	public static void addToEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
-		addToEventOccurrences(eventName, occurrences, null);
+	public static boolean addToEventOccurrencesNotRelatedToQueue(String eventName, int occurrences) {
+		return addToEventOccurrences(eventName, occurrences, null);
 	}
 
 	/**
@@ -58,34 +49,11 @@ public class Reports {
 	 * @param eventName the name of the event.
 	 * @param occurrences the number of times the event occurred.
 	 * @param queueName the name of the queue related to the event.
+	 * @return True on success and false on error
 	 */
-	public static void addToEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
-		addToEventOccurrences(eventName, occurrences, queueName);
+	public static boolean addToEventOccurrencesForQueue(String eventName, int occurrences, String queueName) {
+		return addToEventOccurrences(eventName, occurrences, queueName);
 	}
-
-
-	/**
-	 * Get the number of times an event has occurred.
-	 * @param eventName the name of the event.
-	 * @return the number of times the event has occurred.
-	 * @author Albert Giegerihc
-	 */
-	public static Integer getEventOccurrencesNotRelatedToQueue(String eventName) {
-		return getEventOccurrences(eventName, null);
-	}
-
-	/**
-	 * Get the number of times an event has occurred not related to a queue.
-	 * @param eventName the name of the event.
-	 * @param queueName the name of the queue the event is related to.
-	 * @return the number of times the event occurred
-	 * @author Albert Giegerich
-	 */
-	public static Integer getEventOccurrencesForQueue(String eventName, String queueName) {
-		return getEventOccurrences(eventName, queueName);
-	}
-
-
 
 	/**
 	 * Gets every event and the number of times it occurred for events that are not related to a queue.
@@ -147,7 +115,7 @@ public class Reports {
 				reportsForAllQueues.add(report);
 			}
 
-			List<List<Report>> reportsByQueue = seperateReportsByQueue(reportsForAllQueues);
+			List<List<Report>> reportsByQueue = separateReportsByQueue(reportsForAllQueues);
 
 			return reportsByQueue;
 		} catch (Exception e) {
@@ -187,7 +155,7 @@ public class Reports {
 	 * @param queueName the name of the queue for which the event occurred. Null the event is unrelated to a queue.
 	 * @author Albert Giegerich
 	 */
-	private static void setEventOccurrences(String eventName, int occurrences, String queueName) {
+	private static boolean setEventOccurrences(String eventName, int occurrences, String queueName) {
 		Connection con = null;
 		CallableStatement procedure = null;
 
@@ -202,12 +170,14 @@ public class Reports {
 			procedure.setString(1, eventName);
 			procedure.setInt(2, occurrences);
 			procedure.executeQuery();
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		return false;
 	}
 
 	/**
@@ -217,9 +187,10 @@ public class Reports {
 	 * @param eventName the name of the event
 	 * @param occurrences the number of times the event occurred
 	 * @param queueName the name of the queue the event is related to. Null if not related to a queue.
+	 * @return True on success and false on error
 	 * @author Albert Giegerich
 	 */
-	private static void addToEventOccurrences(String eventName, int occurrences, String queueName) {
+	private static boolean addToEventOccurrences(String eventName, int occurrences, String queueName) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -236,61 +207,23 @@ public class Reports {
 
 			procedure.executeQuery();
 			log.debug("Added " + occurrences + " occurrences to " + eventName + (queueName == null ? "" : " for queue " + queueName) + ".");
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		return false;
 	}
-
-	/**
-	 * Inner method that gets the number of event occurrences not related to a queue
-	 * if queueName is null, otherwise gets the number of event occurrences related to
-	 * the specified queue.
-	 * @param eventName the name of the event.
-	 * @param queueName the name of the queue the event is related to. Null if not related to a queue.
-	 * @return the number of times the event occurred.
-	 * @author Albert Giegerich
-	 */
-	private static Integer getEventOccurrences(String eventName, String queueName) {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-
-			if (queueName == null) {
-				procedure = con.prepareCall("{CALL GetEventOccurrencesNotRelatedToQueue(?)}");
-			} else {
-				procedure = con.prepareCall("{CALL GetEventOccurrencesForQueue(?, ?)}");
-				procedure.setString(2, queueName);
-			}
-			procedure.setString(1, eventName);
-
-			results = procedure.executeQuery();
-			results.first();
-
-			int occurrences = results.getInt("occurrences");
-
-			return occurrences;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-
+	
 	/**
 	 * Turns a list of reports related to queues into a list of lists related to queues where 
 	 * each inner list is made up of reports related to a different queue.
 	 * @param reports a list of reports related to queues
 	 * @author Albert Giegerich
 	 */
-	private static List<List<Report>> seperateReportsByQueue(List<Report> reports) {
+	private static List<List<Report>> separateReportsByQueue(List<Report> reports) {
 		// Build a map that seperates all the reports into lists based on which queue they're related to.
 		Map<String,List<Report>> reportMap = new HashMap<String,List<Report>>();
 		for (Report report : reports) {
