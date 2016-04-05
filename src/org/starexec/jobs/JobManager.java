@@ -334,6 +334,7 @@ public abstract class JobManager {
 							queueSize++; 
 						} catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
+							log.error("setting pair with following ID to submit_fail "+pair.getId());
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}

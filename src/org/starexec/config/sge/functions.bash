@@ -1113,7 +1113,7 @@ function isOutputValid {
 	fi
 	
 	if [ "$3" = true ] ; then
-		log "no EOF line was appended, so we cannot check for it
+		log "no EOF line was appended, so we cannot check for it"
 		return 0
 	fi
 

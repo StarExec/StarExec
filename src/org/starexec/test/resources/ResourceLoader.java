@@ -650,15 +650,16 @@ public class ResourceLoader {
 	public static List<String> getTestConfigDirectory() throws IOException {
 		List<String> strs = new ArrayList<String>();
 		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50));
+		File bin = new File(f, R.SOLVER_BIN_DIR);
 		f.mkdirs();
 		strs.add(f.getAbsolutePath());
 		String name = TestUtil.getRandomAlphaString(20);
 		strs.add(name);
-		File config = new File(f, R.CONFIGURATION_PREFIX+name);
+		File config = new File(bin, R.CONFIGURATION_PREFIX+name);
 		config.createNewFile();
 		name = TestUtil.getRandomAlphaString(20);
 		strs.add(name);
-		config = new File(f, R.CONFIGURATION_PREFIX+name);
+		config = new File(bin, R.CONFIGURATION_PREFIX+name);
 		config.createNewFile();
 		return strs;
 

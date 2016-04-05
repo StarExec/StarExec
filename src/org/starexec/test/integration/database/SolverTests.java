@@ -276,6 +276,10 @@ public class SolverTests extends TestSequence {
 		List<Solver> solvers = Solvers.getBySpaceDetailed(space1.getId());
 		Assert.assertEquals(1, solvers.size());
 		Assert.assertEquals(solver.getId(), solvers.get(0).getId());
+		addMessage(""+solver.getConfigurations().get(0).getId());
+		for (Configuration c: solvers.get(0).getConfigurations()) {
+			addMessage(""+c.getId());
+		}
 		Assert.assertEquals(solver.getConfigurations().size(), solvers.get(0).getConfigurations().size());
 	}
 	
