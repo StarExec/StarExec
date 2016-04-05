@@ -1103,6 +1103,7 @@ function markRunscriptError {
 # returns 0 if valid and 1 if invalid
 # $1 Output file to check
 # $2 The current stage number
+# $3 The SUPPRESS_TIMESTAMP param. If this is true, we cannot check for EOF, as it does not exist
 function isOutputValid {
 	log "checking to see if runsolver output is valid for stage $2"
 	if [ ! -f $1 ]; then
@@ -1110,6 +1111,12 @@ function isOutputValid {
 		markRunscriptError $2
     	return 1
 	fi
+	
+	if [ "$3" = true ] ; then
+		log "no EOF line was appended, so we cannot check for it
+		return 0
+	fi
+
 	LAST_LINE=`tail -n 1 $1`
 	if [[ $LAST_LINE == *"EOF"* ]]
 	then
@@ -1118,10 +1125,4 @@ function isOutputValid {
 	fi
 	log "runsolver output was not valid"
 	return 1
-}
-
-# Strips off the final line of the given file. Used to remove EOF from runsolver stdout.
-# $1 File to use
-function removeLastLine {
-	sed -i '$ d' $1
 }

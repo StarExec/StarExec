@@ -312,14 +312,12 @@ else
 	SANDBOX_FOUND=false
 fi
 
-# we will strip the EOF off at the end if we are not using it. We do this so we can always validate
-# that runsolver terminated the pair output correctly.
-ADDEOF_PARAM="--add-eof"
-
 if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
   TIMESTAMP_PARAM=""
+  ADDEOF_PARAM=""
 else
   TIMESTAMP_PARAM="--timestamp"
+  ADDEOF_PARAM="--add-eof"
 fi
 
 #Give job pairs 2 extra minutes before we kill them.
@@ -423,15 +421,10 @@ if [ ! -f $VARFILE ]; then
     exit 0
 fi
 
-if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER ; then
+if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER $SUPPRESS_TIMESTAMP ; then
 	log "runsolver output was not valid. Terminating job pair."
 	markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
 	exit 0
-fi
-
-if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
-	log "we are suppressing timestamps, so removing runsolver EOF line"
-	removeLastLine $STDOUT_FILE
 fi
 
 # check for which cores we are on
