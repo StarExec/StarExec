@@ -407,21 +407,24 @@ head -5 "$OUT_DIR/stdout.txt"
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
+STDOUT_FILE="$OUT_DIR"/stdout.txt
 
 if [ ! -f $WATCHFILE ]; then
     log "Runsolver watchfile could not be found. Terminating job pair."
-    sendStatus $ERROR_RUNSCRIPT
-    sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
-    setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
 fi
 
 if [ ! -f $VARFILE ]; then
     echo "Runsolver varfile could not be found. Terminating job pair."
-    sendStatus $ERROR_RUNSCRIPT
-    sendStatusToLaterStages $ERROR_RUNSCRIPT $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
-    setRunStatsToZeroForLaterStages $((${STAGE_NUMBERS[$STAGE_INDEX]}-1))
+	markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
+fi
+
+if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER ; then
+	log "runsolver output was not valid. Terminating job pair."
+	markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+	exit 0
 fi
 
 # check for which cores we are on

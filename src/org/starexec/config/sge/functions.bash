@@ -1087,3 +1087,35 @@ function verifyWorkspace {
 
 	return $?
 }
+
+# Marks this pair as having had a runscript error
+# $1 The current stage number
+function markRunscriptError {
+	sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
+    setRunStatsToZeroForLaterStages $(($1-1))
+}
+
+
+# this function checks to make sure that runsolver output was generated correctly.
+# runsolver output should have a terminating line that contains 'EOF'. If this is not present,
+# output was cut off for some reason and we should mark the pair as invalid
+# returns 0 if valid and 1 if invalid
+# $1 Output file to check
+# $2 The current stage number
+function isOutputValid {
+	log "checking to see if runsolver output is valid for stage $2"
+	if [ ! -f $1 ]; then
+    	log "Runsolver output could not be found"
+		markRunscriptError $2
+    	return 1
+	fi
+	LAST_LINE = `tail -n 1 $1`
+	if [[ $LAST_LINE == *"EOF"* ]]
+	then
+		log "Runsolver output was valid"
+		return 0
+	fi
+	log "runsolver output was not valid"
+	return 1
+}
