@@ -1110,7 +1110,7 @@ function isOutputValid {
 		markRunscriptError $2
     	return 1
 	fi
-	LAST_LINE = `tail -n 1 $1`
+	LAST_LINE=`tail -n 1 $1`
 	if [[ $LAST_LINE == *"EOF"* ]]
 	then
 		log "Runsolver output was valid"
@@ -1118,4 +1118,10 @@ function isOutputValid {
 	fi
 	log "runsolver output was not valid"
 	return 1
+}
+
+# Strips off the final line of the given file. Used to remove EOF from runsolver stdout.
+# $1 File to use
+function removeLastLine {
+	sed -i '$ d' $1
 }
