@@ -2,7 +2,6 @@ package org.starexec.test.integration.database;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Job;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.test.TestUtil;
-import org.starexec.test.integration.StarexecAfter;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -324,6 +322,36 @@ public class SolverTests extends TestSequence {
 		Set<Integer> configIds = Solvers.getConfigIdSetByJob(job.getId());
 		Assert.assertEquals(1, configIds.size());
 		Assert.assertEquals((Integer)config.getId(), configIds.iterator().next());
+	}
+	
+	@StarexecTest
+	private void getCountInSpaceTest() {
+		Assert.assertEquals(1, Solvers.getCountInSpace(space1.getId()));
+	}
+	
+	@StarexecTest
+	private void getCountInSpaceQueryTest() {
+		Assert.assertEquals(1, Solvers.getCountInSpace(space1.getId(), ""));
+		Assert.assertEquals(1, Solvers.getCountInSpace(space1.getId(), solver.getName()));
+		Assert.assertEquals(0, Solvers.getCountInSpace(space1.getId(), TestUtil.getRandomAlphaString(100)));
+	}
+	
+	@StarexecTest
+	private void getPublicSolversTest() {
+		boolean found = false;
+		boolean isPublic = Spaces.isPublicSpace(space1.getId());
+		for (Solver s : Solvers.getPublicSolvers()) {
+			found = found || s.getId()==solver.getId();
+		}
+		Assert.assertEquals(isPublic, found);
+		found = false;
+		Spaces.setPublicSpace(space1.getId(), testUser.getId(), !isPublic, false);
+		for (Solver s : Solvers.getPublicSolvers()) {
+			found = found || s.getId()==solver.getId();
+		}
+		Assert.assertNotEquals(isPublic, found);
+		Spaces.setPublicSpace(space1.getId(), testUser.getId(), isPublic, false);
+		
 	}
 	
 	@Override

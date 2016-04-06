@@ -1200,35 +1200,7 @@ public class Solvers {
 
 		return 0;
 	}
-	
-	
-	/**
-	 *  A method for the public job page.  Gets a default configuration for a solver
-	 *  and returns a singleton List with its id.  A default configuration is a configuration
-	 *  named "default" if it exists, or simply the first configuration if it doesn't.
-	 * @param solverId The solver id to get configurations for
-	 * @return A list with the default configuration Id for the solver 
-	 * @author Benton McCune
-	 */
-	public static List<Integer> getDefaultConfigForSolver(int solverId){
-		List<Configuration> allConfigs = getConfigsForSolver(solverId);
-		List<Integer> defaultConfigList = new LinkedList<Integer>();
-		if (allConfigs!=null && allConfigs.size()>0){
-		Integer defaultConfig = allConfigs.get(0).getId();
-		for (Configuration c: allConfigs)
-		{
-			log.info("Configuration Name = " + c.getName() + ", id = " + c.getId());
-			if (c.getName().equals("default")){
-					defaultConfig = c.getId();
-					break;
-			}
-		}
-		log.info("default config has id " + defaultConfig);
-		defaultConfigList.add(defaultConfig);
-		}
-		return defaultConfigList;
-	}
-	
+
 	/**
 	 * 
 	 * @param solverId

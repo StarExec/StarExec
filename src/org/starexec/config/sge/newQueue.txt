@@ -13,7 +13,7 @@ qname                   $$QUEUENAME$$
 \npe_list               make
 \nrerun                 FALSE
 \nslots                 2
-\ntmpdir                /tmp
+\ntmpdir                /var/tmp
 \nshell                 /bin/csh
 \nprolog                NONE
 \nepilog                NONE

@@ -202,7 +202,8 @@ fillDependArrays
 #todo: alter the way we copy runsolver over so it only happens once
 copyBenchmarkDependencies
 
-TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
+log "the temp directory is $TMP"
 echo $PAIR_OUTPUT_DIRECTORY > $TMP
 PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #==============================================================================
