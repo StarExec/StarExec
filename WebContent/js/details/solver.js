@@ -79,6 +79,7 @@ function initUI(){
 	//Display feedback if the solver is being built on starexec.
 	var msg = getParameterByName("buildmsg");
 	if (stringExists(msg)) {
+        $('#dialog-building-job').text(msg);
 		$('#dialog-building-job').dialog({
 			modal: true,
 			width: 380,

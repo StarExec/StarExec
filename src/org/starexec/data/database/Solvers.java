@@ -2291,4 +2291,30 @@ public class Solvers {
             });
         }
     }
+
+	/**
+	 * Sets the solver build status
+	 * @param s the solver id for the solver to be updated
+     * @param status the integer status code to be set
+	 * @author Andrew Lubinus
+	 */
+    public static boolean setSolverBuildStatus(Solver s, int status) {
+        Connection con = null;
+        CallableStatement procedure = null;
+        try {
+            con = Common.getConnection();
+            procedure = con.prepareCall("{CALL SetSolverBuildStatus(?, ?)}");
+            procedure.setInt(1, s.getId());
+            procedure.setInt(2, status);
+            procedure.executeUpdate();      
+            return true;
+                        
+        } catch (Exception e){          
+            log.error(e.getMessage(), e);       
+        } finally {
+            Common.safeClose(con);
+        }       
+        
+        return false;
+    }
 }

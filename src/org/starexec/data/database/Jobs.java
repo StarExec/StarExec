@@ -37,6 +37,7 @@ import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
@@ -4825,8 +4826,14 @@ public class Jobs {
 			// if SGE does not think this pair should be running, kill it
 			// the kill only happens if the pair's status has not been changed
 			// since getPairsInBackend() was called
-			if (!backendIDs.contains(p.getBackendExecId())) {
-				JobPairs.setBrokenPairStatus(p);
+            if (!backendIDs.contains(p.getBackendExecId())) {
+                if(Jobs.get(p.getJobId()).isBuildJob()) {
+                    Solver s = p.getPrimarySolver();
+                    int status = SolverBuildStatusCode.BUILD_FAILED.getVal();
+                    Solvers.setSolverBuildStatus(s, status);
+                }				
+                JobPairs.setBrokenPairStatus(p);
+
 			}
 		}
 	}
