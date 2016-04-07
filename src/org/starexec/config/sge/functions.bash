@@ -65,6 +65,7 @@ function decodeBenchmarkName {
 	
 	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
 	
+
 	echo $BENCH_PATH > $TMP
 	BENCH_PATH=`base64 -d $TMP`
 	rm $TMP
@@ -103,12 +104,17 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
 
 #initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
-# by calling initSandbox
+# either by calling initSandbox
 function initWorkspaceVariables {
-	WORKING_DIR=`mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
+	if [ $SANDBOX -eq 1 ]
+	then
+	WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
+	else
+	WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
+	fi
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
-	mkdir $LOCAL_TMP_DIR
+	
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 	
@@ -151,7 +157,7 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
-	mkdir $SAVED_OUTPUT_DIR
+
 }
 
 function createLocalTmpDirectory {
@@ -192,7 +198,7 @@ function isPairRunning {
 	fi
 	
 	log "$output"
-	currentOutput=`ps -p $1 -o pid,stime,cmd | awk 'NR>1'`
+	currentOutput=`ps -p $1 -o pid,cmd | awk 'NR>1'`
 	log "$currentOutput"
 	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
 	if [[ $currentOutput == *$output* ]]
@@ -210,7 +216,7 @@ function makeLockFile {
 	log "able to get sandbox $1!"
 	# make a file that is named with the current PID so we know which pair should be running here
 	touch "$LOCK_DIR/$$"
-	processString=`ps -p $$ -o pid,stime,cmd | awk 'NR>1'`
+	processString=`ps -p $$ -o pid,cmd | awk 'NR>1'`
 	log "Found data for this process $processString"
 	echo $processString > "$LOCK_DIR/$$"
 	log "putting this job into sandbox $1 $$"
@@ -228,7 +234,8 @@ function trySandbox {
 		fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
-	
+	log "sandbox contents:"
+	ls "$LOCK_DIR"
 	if (
 	flock -x -w 4 200 || return 1
 		#we have exclusive rights to work on the lock for this sandbox within this block
@@ -292,8 +299,9 @@ function initSandbox {
 	#failed to get either sandbox
 	SANDBOX=-1
 	return 1
+	
+	
 }
-
 
 function log {
 	echo "`date +'%D %r %Z'`: $1"
@@ -407,20 +415,39 @@ function cleanWorkspace {
 	# change ownership and permissions to make sure we can clean everything up
 	sudo chown -R `whoami` $WORKING_DIR 
 
+	mkdir -p $WORKING_DIR
+
 	chmod 770 $WORKING_DIR
 	chmod g+s $WORKING_DIR
 	log "WORKING_DIR is $WORKING_DIR"
 	
 	chmod -R gu+rxw $WORKING_DIR
-	
-	safeRm workspace-directory "$WORKING_DIR"
 
+	# Clear the output directory	
+	safeRm output-directory "$OUT_DIR"
+	
+	# Clear the local solver directory	
+	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+
+	safeRm local-tmp-directory "$LOCAL_TMP_DIR"
+
+	safeRm bench-inputs "$BENCH_INPUT_DIR"
+
+	# Clear the local benchmark directory	
+	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
+	
+	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
+	
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
 	if [ $1 -eq 0 ] ; then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
 		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+		# remove all /tmp files owned by the user that executed this job
+		cd /tmp
+        sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
+        cd $WORKING_DIR
 		if [ $SANDBOX -eq 1 ] 
 		then
 			safeRmLock "$SANDBOX_LOCK_DIR"
@@ -429,14 +456,7 @@ function cleanWorkspace {
 		then
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
-		# remove all /tmp files owned by the user that executed this job
-		cd /tmp
-        sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
-        cd $WORKING_DIR
 	fi
-	 
-	
-	
 	log "execution host $HOSTNAME cleaned"
 	return $?
 }
@@ -801,10 +821,10 @@ function sandboxWorkspace {
 	
 	then
 	log "sandboxing workspace with second sandbox user"
-	sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
+	sudo chown -R sandbox2 $WORKING_DIR 
 	else
 		log "sandboxing workspace with first sandbox user"
-		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
+		sudo chown -R sandbox $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"
 	return 0
