@@ -105,12 +105,7 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 #initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
 # by calling initSandbox
 function initWorkspaceVariables {
-	if [ $SANDBOX -eq 1 ]
-	then
-		WORKING_DIR=`sudo -u $SANDBOX_USER_ONE mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
-	else
-		WORKING_DIR=`sudo -u $SANDBOX_USER_TWO mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
-	fi
+	WORKING_DIR=`mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
 	
@@ -807,10 +802,10 @@ function sandboxWorkspace {
 	
 	then
 	log "sandboxing workspace with second sandbox user"
-	sudo chown -R sandbox2 $WORKING_DIR 
+	sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
 	else
 		log "sandboxing workspace with first sandbox user"
-		sudo chown -R sandbox $WORKING_DIR
+		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"
 	return 0
