@@ -108,7 +108,7 @@ function initWorkspaceVariables {
 	WORKING_DIR=`mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
-	
+	mkdir $LOCAL_TMP_DIR
 	# Path to where the solver will be copied
 	LOCAL_SOLVER_DIR="$WORKING_DIR/solver"
 	
@@ -151,6 +151,7 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
+	mkdir $SAVED_OUTPUT_DIR
 }
 
 function createLocalTmpDirectory {
@@ -405,8 +406,6 @@ function cleanWorkspace {
 	log "cleaning execution host workspace..."
 	# change ownership and permissions to make sure we can clean everything up
 	sudo chown -R `whoami` $WORKING_DIR 
-
-	mkdir -p $WORKING_DIR
 
 	chmod 770 $WORKING_DIR
 	chmod g+s $WORKING_DIR

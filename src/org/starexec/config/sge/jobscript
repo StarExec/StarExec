@@ -166,7 +166,6 @@ fi
 
 
 sendNode "$HOSTNAME" "$SANDBOX"
-cleanWorkspace 1
 setStartTime
 
 createLocalTmpDirectory
