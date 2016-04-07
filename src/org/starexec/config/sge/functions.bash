@@ -588,21 +588,30 @@ else
 fi
 done < $1
 }
+# Returns the wallclock time from the var file from runsolver
+# $1 The var.out file from runsolver
+function getWallclockTimeFromVarfile {
+	WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
+	return $WALLCLOCK_TIME
+}
 
+function getCpuTimeFromVarfile {
+	CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
+	return $CPU_TIME
+}
 
 # updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
 # Ben McCune
 function updateStats {
 
-
-WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
-CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
+WALLCLOCK_TIME=$(getWallclockTimeFromVarfile $1)
+CPU_TIME=$(getCpuTimeFromVarfile $1)
 CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
 SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
 
 log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
-log "temp line: the var file was"
+log "the var file was"
 cat $1
 log "end varfile"
 
