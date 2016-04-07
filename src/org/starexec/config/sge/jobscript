@@ -479,8 +479,9 @@ else
   	  sendStatus $STATUS_COMPLETE
   fi  
 fi
+WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $VARFILE`
 
-if [ $(getWallclockTimeFromVarfile $1) -gt $CURRENT_STAGE_WALLCLOCK]; then
+if (( $(echo "$WALLCLOCK_TIME > $CURRENT_STAGE_WALLCLOCK" | bc -l) )); then
 	log "job pair timed out based on wallclock time, but runsolver did not indicate this!"
 	sendStatus $EXCEED_RUNTIME
   	sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
@@ -488,8 +489,8 @@ if [ $(getWallclockTimeFromVarfile $1) -gt $CURRENT_STAGE_WALLCLOCK]; then
   	log "copying watchfile to log"
   	cat $WATCHFILE
 fi
-
-if [ $(getCpuTimeFromVarfile $1) -gt $CURRENT_STAGE_CPU]; then
+CPU_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $VARFILE`
+if (( $(echo "$CPU_TIME > $CURRENT_STAGE_CPU" | bc -l) )); then
 	log "job pair timed out based on cpu time, but runsolver did not indicate this!"
 	sendStatus $EXCEED_CPU
   	sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
