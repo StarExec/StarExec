@@ -530,5 +530,7 @@ recordJobPairRun
 
 cleanWorkspace 0 $SANDBOX_PARAM
 
+rm $TMP
+
 echo "Jobscript ending."
 
