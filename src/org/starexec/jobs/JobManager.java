@@ -324,7 +324,7 @@ public abstract class JobManager {
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
-							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR+"/sandbox",logPath);
+							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR,logPath);
 
 							//TODO : need a better way to handle error codes
 							if(!R.BACKEND.isError(execId)){

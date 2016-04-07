@@ -46,6 +46,9 @@ export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
 export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
+export SANDBOX_USER_ONE="$$SANDBOX_USER_ONE$$"
+export SANDBOX_USER_TWO="$$SANDBOX_USER_TWO$$"
+
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes

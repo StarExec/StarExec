@@ -65,7 +65,6 @@ function decodeBenchmarkName {
 	
 	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
 	
-
 	echo $BENCH_PATH > $TMP
 	BENCH_PATH=`base64 -d $TMP`
 	rm $TMP
@@ -104,13 +103,13 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
 
 #initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
-# either by calling initSandbox or findSandbox
+# by calling initSandbox
 function initWorkspaceVariables {
 	if [ $SANDBOX -eq 1 ]
 	then
-	WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
+		WORKING_DIR=`sudo -u $SANDBOX_USER_ONE mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
 	else
-	WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
+		WORKING_DIR=`sudo -u $SANDBOX_USER_TWO mktemp $WORKING_DIR_BASE/sandbox.XXXXXXXXXXXXXXXX`
 	fi
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
@@ -157,7 +156,6 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
-
 }
 
 function createLocalTmpDirectory {
@@ -298,38 +296,8 @@ function initSandbox {
 	#failed to get either sandbox
 	SANDBOX=-1
 	return 1
-	
-	
 }
 
-#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs' lock file
-function findSandbox {
-	log "trying to find sandbox for pair ID = $1"
-	log "sandbox 1 contents:"
-	ls "$SANDBOX_LOCK_DIR"
-	
-	log "sandbox 2 contents:"
-	ls "$SANDBOX2_LOCK_DIR"
-	
-	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
-	then
-		log "found that the sandbox is 1 for job $1"
-		SANDBOX=1
-		initWorkspaceVariables
-		return 0
-	fi
-	if [ -e "$SANDBOX2_LOCK_DIR/$1" ] 
-	then
-		log "found that the sandbox is 2 for job $1"
-		SANDBOX=2
-		initWorkspaceVariables
-		return 0
-	fi
-	
-	log "couldn't find a sandbox for pair ID = $1"
-	SANDBOX=-1
-	
-}
 
 function log {
 	echo "`date +'%D %r %Z'`: $1"
@@ -450,22 +418,9 @@ function cleanWorkspace {
 	log "WORKING_DIR is $WORKING_DIR"
 	
 	chmod -R gu+rxw $WORKING_DIR
-
-	# Clear the output directory	
-	safeRm output-directory "$OUT_DIR"
 	
-	# Clear the local solver directory	
-	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
+	safeRm workspace-directory "$WORKING_DIR"
 
-	safeRm local-tmp-directory "$LOCAL_TMP_DIR"
-
-	safeRm bench-inputs "$BENCH_INPUT_DIR"
-
-	# Clear the local benchmark directory	
-	safeRm local-benchmark-directory "$LOCAL_BENCH_DIR"
-	
-	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
-	
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
 	if [ $1 -eq 0 ] ; then
