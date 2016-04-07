@@ -489,7 +489,7 @@ if (( $(echo "$WALLCLOCK_TIME > $CURRENT_STAGE_WALLCLOCK" | bc -l) )); then
   	log "copying watchfile to log"
   	cat $WATCHFILE
 fi
-CPU_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $VARFILE`
+CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $VARFILE`
 if (( $(echo "$CPU_TIME > $CURRENT_STAGE_CPU" | bc -l) )); then
 	log "job pair timed out based on cpu time, but runsolver did not indicate this!"
 	sendStatus $EXCEED_CPU
