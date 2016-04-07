@@ -481,7 +481,7 @@ function cleanWorkspace {
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
 		# remove all /tmp files owned by the user that executed this job
-		find /tmp/* -user $2 -exec rm -fr {} \;
+		sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \;
 	fi
 	 
 	
