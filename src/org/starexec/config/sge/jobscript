@@ -518,7 +518,7 @@ setEndTime
 
 recordJobPairRun
 
-cleanWorkspace 0
+cleanWorkspace 0 $SANDBOX_PARAM
 
 echo "Jobscript ending."
 

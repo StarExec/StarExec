@@ -436,7 +436,8 @@ function copyOutputIncrementally {
 	log "done copying incremental output: the pair's timeout has been reached"
 }
 
-#takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
+# $1 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
+# $2 The name of the user that executed this job. Used to clear out the /tmp directory. Only used if we are done with the job
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
 	# change ownership and permissions to make sure we can clean everything up
@@ -479,6 +480,8 @@ function cleanWorkspace {
 		then
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
+		# remove all /tmp files owned by the user that executed this job
+		find /tmp/* -user $2 -exec rm -fr {} \;
 	fi
 	 
 	
