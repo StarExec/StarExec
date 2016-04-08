@@ -198,7 +198,7 @@ function isPairRunning {
 	fi
 	
 	log "$output"
-	currentOutput=`ps -p $1 -o pid,stime,cmd | awk 'NR>1'`
+	currentOutput=`ps -p $1 -o pid,cmd | awk 'NR>1'`
 	log "$currentOutput"
 	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
 	if [[ $currentOutput == *$output* ]]
@@ -216,7 +216,7 @@ function makeLockFile {
 	log "able to get sandbox $1!"
 	# make a file that is named with the current PID so we know which pair should be running here
 	touch "$LOCK_DIR/$$"
-	processString=`ps -p $$ -o pid,stime,cmd | awk 'NR>1'`
+	processString=`ps -p $$ -o pid,cmd | awk 'NR>1'`
 	log "Found data for this process $processString"
 	echo $processString > "$LOCK_DIR/$$"
 	log "putting this job into sandbox $1 $$"
