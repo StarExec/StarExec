@@ -46,6 +46,8 @@ export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
 export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
+export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
+export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
@@ -304,10 +306,10 @@ fi
 SANDBOX_FOUND=true
 # SANDBOX_PARAM designates which user will run runsolver
 if [ $SANDBOX -eq 1 ] ; then
-	SANDBOX_PARAM="$$SANDBOX_USER_ONE$$"
+	SANDBOX_PARAM=$SANDBOX_USER_ONE
 	CORES="0-3"
 elif [ $SANDBOX -eq 2 ] ; then
-	SANDBOX_PARAM="$$SANDBOX_USER_TWO$$"
+	SANDBOX_PARAM=$SANDBOX_USER_TWO
 	CORES="4-7"
 else
 	SANDBOX_FOUND=false

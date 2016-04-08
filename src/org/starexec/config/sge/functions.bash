@@ -821,10 +821,10 @@ function sandboxWorkspace {
 	
 	then
 	log "sandboxing workspace with second sandbox user"
-	sudo chown -R sandbox2 $WORKING_DIR 
+	sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
 	else
 		log "sandboxing workspace with first sandbox user"
-		sudo chown -R sandbox $WORKING_DIR
+		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"
 	return 0
