@@ -601,8 +601,9 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 		WHERE id = _jobId;
 		
 		UPDATE job_pairs
-		SET status_code = 1
-		WHERE job_id = _jobId AND status_code = 20;
+		JOIN jobpair_stage_data on job_pairs.id=jobpair_stage_data.jobpair_id
+		SET job_pairs.status_code = 1, jobpair_stage_data.status_code=1
+		WHERE job_id = _jobId AND job_pairs.status_code = 20;
 	END //
 	
 -- sets the global paused flag to false

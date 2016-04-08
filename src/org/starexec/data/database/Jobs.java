@@ -3801,9 +3801,9 @@ public class Jobs {
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 	    for (JobPair jp : jobPairsEnqueued) {
-		int execId = jp.getBackendExecId();
-		R.BACKEND.killPair(execId);
-		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+			int execId = jp.getBackendExecId();
+			R.BACKEND.killPair(execId);
+		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 	    }
 	    //Get the running job pairs and remove them
 	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
@@ -3811,7 +3811,7 @@ public class Jobs {
 		for (JobPair jp: jobPairsRunning) {
 		    int execId = jp.getBackendExecId();
 		    R.BACKEND.killPair(execId);
-		    JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 		}
 	    }
 	    log.debug("Deletion of paused job pairs from queue was succesful");
