@@ -164,7 +164,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 function getDetails(id, type, parent_node) {
 	var url = '';
 	selectedId=id;
-	loadQueueLoads();
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
@@ -178,6 +177,8 @@ function getDetails(id, type, parent_node) {
 		showMessage('error',"Invalid node type",5000);
 		return;
 	}
+	loadQueueLoads();
+
 	$('#loader').show();
 	
 	jobPairTable.fnDraw();

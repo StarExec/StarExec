@@ -318,7 +318,6 @@ CREATE TABLE job_pairs (
 	queuesub_time TIMESTAMP(3) DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
-	exit_status INT,
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,

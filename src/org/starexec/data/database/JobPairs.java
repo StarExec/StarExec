@@ -1180,7 +1180,6 @@ public class JobPairs {
 		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
 		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
 		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
-		jp.setExitStatus(result.getInt("job_pairs.exit_status"));
 		
 		jp.setPath(result.getString("job_pairs.path"));
 		jp.setJobSpaceId(result.getInt("job_pairs.job_space_id"));
