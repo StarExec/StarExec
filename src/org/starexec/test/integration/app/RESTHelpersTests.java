@@ -9,13 +9,13 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Util;
-import org.testng.Assert;
 
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -92,9 +92,9 @@ public class RESTHelpersTests extends TestSequence {
 	}
 	
 	private void validateJsonObjectCounts(JsonObject o, int totalRecords, int totalRecordsAfterQuery, int pageSize) {
-		Assert.assertTrue(o.get(TOTAL_RECORDS).getAsInt()==totalRecords);
-		Assert.assertTrue(o.get(TOTAL_RECORDS_AFTER_QUERY).getAsInt()==totalRecordsAfterQuery);
-		Assert.assertTrue(o.get(DATA).getAsJsonArray().size()==pageSize);
+		Assert.assertEquals(totalRecords,o.get(TOTAL_RECORDS).getAsInt());
+		Assert.assertEquals(totalRecordsAfterQuery,o.get(TOTAL_RECORDS_AFTER_QUERY).getAsInt());
+		Assert.assertEquals(pageSize,o.get(DATA).getAsJsonArray().size());
 	}
 	
 	@StarexecTest

@@ -354,10 +354,10 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId 
 		FROM	set_assoc
 		JOIN 	spaces ON spaces.id=set_assoc.child_id
 		JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
-		JOIN 	users ON users.id=user_assoc.user_id
-		JOIN 	user_roles ON user_roles.email=users.id
-		WHERE 	set_assoc.space_id = _spaceId AND (user_assoc.user_id = _userId OR spaces.public_access
-		OR user_roles.role="admin" OR user_roles.role="developer")										
+		JOIN 	users ON users.id=_userId
+		JOIN 	user_roles ON user_roles.email=users.email
+		WHERE 	set_assoc.space_id = _spaceId AND (user_assoc.user_id = _userId OR spaces.public_access OR role="admin"
+		OR role="developer")										
 				AND 	(name			LIKE	CONCAT('%', _query, '%')
 				OR		description		LIKE 	CONCAT('%', _query, '%'));	
 	END //
