@@ -364,7 +364,6 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since IN
 	END //
 
 -- Gets all the stages of job pairs in a particular job space
--- TODO: This notion of expected result is not correct for any stage except the primary stage
 DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpace;
 CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 	BEGIN
@@ -379,7 +378,6 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 	END //
 	
 -- Gets all the stages of job pairs in a particular job space
--- TODO: This notion of expected result is not correct for any stage except the primary stage
 DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
 CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
