@@ -2045,7 +2045,7 @@ public class Benchmarks {
 			Integer numberDependencies = Integer.valueOf(atts.getOrDefault("starexec-dependencies", "0"));
 			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
-				includePath = atts.getOrDefault("starexec-dependency-"+i, "");//TODO: test when given bad atts
+				includePath = atts.getOrDefault("starexec-dependency-"+i, "");
 				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
 				if (includePath.length()>0){
 					//checkMap first

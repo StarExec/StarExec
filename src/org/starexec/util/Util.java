@@ -433,14 +433,13 @@ public class Util {
      * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
      * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
-    //TODO: Why isn't the working directory being set if the command has length 1? That seems wrong.
     public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
     	Runtime r = Runtime.getRuntime();
 	    Process p;
 	    if (command.length == 1) {
 			log.debug("Executing the following command: " + command[0]);
 				
-			p = r.exec(command[0], envp);
+			p = r.exec(command[0], envp, workingDirectory);
 	    }
 	    else {
 			StringBuilder b = new StringBuilder();

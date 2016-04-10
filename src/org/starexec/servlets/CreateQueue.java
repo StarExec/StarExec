@@ -82,8 +82,6 @@ public class CreateQueue extends HttpServlet {
 
 		String qName = queue_name+".q";
 	
-		//TODO : BUG when trying to create a queue using an orphaned node, seems to create queue with right node,
-		//returning wrong status code for some reason? seems related to cputimeout and wallclock timeout
 		String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
 		String[] qNames = queueNames.toArray(new String[queueNames.size()]);
 		boolean backend_success = R.BACKEND.createQueue(qName,nNames,qNames);

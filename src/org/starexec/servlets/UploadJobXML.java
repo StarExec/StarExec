@@ -130,7 +130,6 @@ public class UploadJobXML extends HttpServlet {
 			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);		
 			// Don't need to keep file long - just using download directory
 			
-			// TODO Should we use the same directory as batchSpaces with a slightly different name for job xml uploads?
 			File uniqueDir = new File(R.getBatchSpaceXMLDir(), "Job" + userId);
 			uniqueDir = new File(uniqueDir, "TEMP_JOB_XML_FOLDER_");
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));

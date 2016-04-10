@@ -709,8 +709,7 @@ public class Users {
 	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
 	 * @author Wyatt Kaiser
 	 **/
-	
-	//TODO: This pagination function is not formed correctly
+	// TODO: This should get rewritten in terms of the query builder 
 	public static List<User> getUsersForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
 		CallableStatement procedure= null;
