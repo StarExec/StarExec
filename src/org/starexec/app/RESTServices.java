@@ -3607,9 +3607,7 @@ public class RESTServices {
 				public void run(){
 					try {
 						Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
-						for (String s : bench.get(0).getAttributes().keySet()) {
-							Benchmarks.addBenchAttr(bench.get(0).getId(), s, bench.get(0).getAttributes().get(s));
-						}
+						Benchmarks.addAttributeSetToDbIfValid(bench.get(0).getAttributes(), bench.get(0), null);
 					} catch (Exception e) {
 						log.error(e.getMessage(),e);
 					}

@@ -83,6 +83,27 @@ public class Benchmarks {
 		}
 		return success;
 	}
+	
+	/**
+	 * Adds the given attributes to the given benchmark
+	 * @param attrs The attrs to add. Old attributes sharing keys will be overwritten
+	 * @param benchmark The benchmark to add attributes to
+	 * @param statusId The ID of a benchmark status upload object, or null if we aren't using one
+	 * @return True on success and false otherwise
+	 */
+	public static boolean addAttributeSetToDbIfValid(Map<String,String> attrs, Benchmark benchmark, Integer statusId) {
+		Connection con =null;
+		try {
+			con = Common.getConnection();
+			return addAttributeSetToDbIfValid(con,attrs,benchmark,statusId);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
 
 	
     /** Add the given set of benchmark attributes to the database, if
