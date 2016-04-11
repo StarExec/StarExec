@@ -139,8 +139,6 @@ public class RESTServices {
 	 * with the given id
 	 * @author Eric Burns
 	 */
-	//TODO: Should not be passing both a job space id and a job id in here. If it is absolutely necessary, we need
-	// to carefully validate the space ID and job ID actually match
 	@GET
 	@Path("/space/{jobid}/jobspaces/{spaceTree}")
 	@Produces("application/json")	
@@ -159,7 +157,6 @@ public class RESTServices {
 	 * with the given id
 	 * @author Eric Burns
 	 */
-	//TODO: Association between anonymousLinkUuid and parentId?
 	@GET
 	@Path("/space/anonymousLink/{anonymousLinkUuid}/jobspaces/{spaceTree}/{primitivesToAnonymizeName}")
 	@Produces("application/json")	
@@ -181,6 +178,9 @@ public class RESTServices {
 			}
 			 
 			if ( potentialJobId.isPresent() ) {
+				if (!JobSecurity.isAnonymousLinkAssociatedWithJob(anonymousLinkUuid, potentialJobId.get()).isSuccess()) {
+					return gson.toJson(new ValidatorStatusCode(false, "The given anonymous link is not linked to the given job"));
+				}
 				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 				return RESTHelpers.getJobSpacesJson(parentId, potentialJobId.get(), makeSpaceTree, primitivesToAnonymize);
 			} else {
