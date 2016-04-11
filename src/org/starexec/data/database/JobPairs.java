@@ -124,7 +124,6 @@ public class JobPairs {
 			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?,?)}");
 			
 			for (JobPair pair : pairs) {
-				logUtil.debug(methodName, "jobpair id of pair that we are adding a stage for: "+pair.getId());
 				for (JoblineStage stage : pair.getStages()) {
 					if (stage.isNoOp()) {
 						continue;
@@ -195,6 +194,7 @@ public class JobPairs {
 	 */
 	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
 		final String methodName = "addJobPairs";
+		logUtil.entry( methodName );
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -216,16 +216,12 @@ public class JobPairs {
 				
 				// Update the pair's ID so it can be used outside this method
 				int newPairId = procedure.getInt(8);
-				logUtil.debug( methodName, "new pair id: "+ newPairId );
 				pair.setId(newPairId);
-				logUtil.debug( methodName, "pair id after setId: "+ pair.getId() );
 			}
 
-			logUtil.debug( methodName, "All pair id's about to be passed to addJobPairStages and addJobPairInputs: ");
-			for (JobPair pair : pairs) {
-				logUtil.debug(methodName, "\t"+pair.getId());
-			}
+			logUtil.debug( methodName, "Adding job pair stages." );
 			addJobPairStages(pairs,con);
+			logUtil.debug( methodName, "Adding job pair inputs." );
 			addJobPairInputs(pairs,con);
 			
 			return true;
