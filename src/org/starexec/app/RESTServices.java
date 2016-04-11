@@ -3599,6 +3599,7 @@ public class RESTServices {
 		final Integer benchType = type;
 		// means we need to reprocess this benchmark
 		if (b.getType().getId()!=type) {
+			log.debug("executing new processor on benchmark");
 			List<Benchmark> bench = new ArrayList<Benchmark>();
 			bench.add(Benchmarks.get(benchId));
 			Util.threadPoolExecute(new Runnable() {
@@ -3606,6 +3607,9 @@ public class RESTServices {
 				public void run(){
 					try {
 						Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
+						for (String s : bench.get(0).getAttributes().keySet()) {
+							Benchmarks.addBenchAttr(bench.get(0).getId(), s, bench.get(0).getAttributes().get(s));
+						}
 					} catch (Exception e) {
 						log.error(e.getMessage(),e);
 					}
