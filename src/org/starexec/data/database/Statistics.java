@@ -294,14 +294,15 @@ public class Statistics {
 		logUtil.entry(methodName);
 
 		try {
-			List<JobPair> pairs1=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configId1,stageNumber, primitivesToAnonymize);
-			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS ) {
-				List<String> answer=new ArrayList<String>();
-				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
-				return answer;
-			}
-			List<JobPair> pairs2=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId,configId2,stageNumber,primitivesToAnonymize);
-			if ((pairs2.size())>R.MAXIMUM_DATA_POINTS ) {
+			List<Integer> configIds = new ArrayList<Integer>();
+			configIds.add(configId1);
+			configIds.add(configId2);
+			List<List<JobPair>> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds,stageNumber, primitivesToAnonymize);
+
+			List<JobPair> pairs1=pairs.get(0);
+			List<JobPair> pairs2=pairs.get(1);
+
+			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS || pairs2.size()>R.MAXIMUM_DATA_POINTS) {
 				List<String> answer=new ArrayList<String>();
 				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
@@ -506,18 +507,13 @@ public class Statistics {
 				return null;
 			}
 			
-			List<JobPair> pairs = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds.get(0), stageNumber, primitivesToAnonymize );
-			log.debug( "Number of pairs for primitivesToAnonymize="+AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ) +": "
-						+pairs.size());
-
+			List<List<JobPair>> pairLists = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds, stageNumber, primitivesToAnonymize );
+			List<JobPair> pairs = new ArrayList<JobPair>();
+			for (int x=0;x<pairLists.size();x++) {
+				pairs.addAll(pairLists.get(x));
+			}
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 				return OVERSIZED_GRAPH_ERROR;
-			}
-			for (int x=1;x<configIds.size();x++) {
-				pairs.addAll( Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds.get(x),stageNumber, primitivesToAnonymize) );
-				if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
-					return OVERSIZED_GRAPH_ERROR;
-				}
 			}
 
 			log.debug( "Number of pairs after add all for primitivesToAnonymize="+

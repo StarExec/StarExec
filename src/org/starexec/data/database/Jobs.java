@@ -2161,24 +2161,33 @@ public class Jobs {
 	/**
 	 * Gets job pair information necessary for populating client side graphs
 	 * @param jobSpaceId The ID of the job_space in question
-	 * @param configId The ID of the configuration in question
+	 * @param configIds Configurations to get job pairs for
 	 * @param primitivesToAnonymize enum designating which (if any) primitive names should be anonymized.
-	 * @return A List of JobPair objects
-	 * @author Eric Burns
 	 * @param stageNumber The number of the stage that we are concerned with. If <=0, the primary stage is obtained
+
+	 * @return A list of size equal to configIds. Each element of the list will contain a list of job pairs where
+	 * each job pair in the list uses the configuration at the matching position in configIds.
+	 * @author Eric Burns
 	 */
 	
 	//TODO: Rewrite so this takes in two config IDs instead of one: we are using two database calls where only one
 	// is needed
-	public static List<JobPair> getJobPairsForSolverComparisonGraph(
+	public static List<List<JobPair>> getJobPairsForSolverComparisonGraph(
 			int jobSpaceId, 
-			int configId, 
+			List<Integer> configIds,
 			int stageNumber, 
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {			
 			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, primitivesToAnonymize);
-			List<JobPair> filteredPairs=new ArrayList<JobPair>();
+			List<List<JobPair>> pairLists = new ArrayList<List<JobPair>>();
 			
+			
+			Map<Integer,Integer> configToPosition=new HashMap<Integer,Integer>();
+			
+			for (int i=0;i<configIds.size();i++) {
+				pairLists.add(new ArrayList<JobPair>());
+				configToPosition.put(configIds.get(i), i);
+			}
 			for (JobPair jp : pairs) {
 				
 				JoblineStage stage=jp.getStageFromNumber(stageNumber);
@@ -2186,12 +2195,13 @@ public class Jobs {
 				if (stage==null || stage.isNoOp()) {
 					continue;
 				}
-				if (stage.getConfiguration().getId()==configId) {
+				int configId = stage.getConfiguration().getId();
+				if (configToPosition.containsKey(configId)) {
+					List<JobPair> filteredPairs = pairLists.get(configToPosition.get(configId));
 					filteredPairs.add(jp);
-				}
-				
+				}	
 			}
-			return filteredPairs;
+			return pairLists;
 			
 		
 		}catch (Exception e) {
