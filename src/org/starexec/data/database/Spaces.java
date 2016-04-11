@@ -2563,20 +2563,18 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return true iff the update is successful
 	 * @author Skylar Stark
 	 */
-	//TODO: Move permissions check outside, like all other functions
 	public static boolean updateDetails(int userId, Space s) {
 		Connection con = null;			
 		boolean success = false;
 		try {
 			con = Common.getConnection();
-			// Only perform this update if we have permission to
-			if (Permissions.get(userId, s.getId()).isLeader()) {
-				Common.beginTransaction(con);
 
-				success = Spaces.updateDetails(s, con);
+			Common.beginTransaction(con);
+
+			success = Spaces.updateDetails(s, con);
 				
-				Common.endTransaction(con);
-			}
+			Common.endTransaction(con);
+			
 			
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
 			return success;		

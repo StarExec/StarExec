@@ -515,7 +515,7 @@ public class Benchmarks {
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation is successful and false otherwise
 	 */
-	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) throws IOException, StarExecException {
+	public static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) throws IOException, StarExecException {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
@@ -1969,7 +1969,8 @@ public class Benchmarks {
 	}
 
 	/**
-	 * Updates the details of a benchmark
+	 * Updates the details of a benchmark. This ONLY updates the database: it does not handle actually executing the given
+	 * processor!
 	 * @param id the id of the benchmark to update
 	 * @param name the new name to apply to the benchmark
 	 * @param description the new description to apply to the benchmark

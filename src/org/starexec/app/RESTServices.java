@@ -3556,7 +3556,6 @@ public class RESTServices {
 		
 		// Ensure the parameters exist
 		if(!Util.paramExists("name", request)
-				|| !Util.paramExists("description", request)
 				|| !Util.paramExists("downloadable", request)
 				|| !Util.paramExists("type", request)){
 			return gson.toJson(ERROR_INVALID_PARAMS);
@@ -3564,6 +3563,7 @@ public class RESTServices {
 		
 		// Safely extract the type
 		try{
+			log.debug("typing error");
 			type = Integer.parseInt(request.getParameter("type"));
 		} catch (NumberFormatException nfe){
 			isValidRequest = false;
@@ -3581,15 +3581,43 @@ public class RESTServices {
 		
 		// Extract new benchmark details from request
 		
-		String description = request.getParameter("description");
+		String description = "";
+		if (Util.paramExists("description", request)) {
+			description = request.getParameter("description");
+
+		}
 		boolean isDownloadable = Boolean.parseBoolean(request.getParameter("downloadable"));
 
 		ValidatorStatusCode status=BenchmarkSecurity.canUserEditBenchmark(benchId,name,description,type,userId);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+		
+		
+		String processorString = "";
+		Benchmark b = Benchmarks.get(benchId);
+		final Integer benchType = type;
+		// means we need to reprocess this benchmark
+		if (b.getType().getId()!=type) {
+			List<Benchmark> bench = new ArrayList<Benchmark>();
+			bench.add(Benchmarks.get(benchId));
+			Util.threadPoolExecute(new Runnable() {
+				@Override
+				public void run(){
+					try {
+						Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
+					} catch (Exception e) {
+						log.error(e.getMessage(),e);
+					}
+					
+				}
+			});	
+			
+			
+			processorString=". Benchmark is being processed with the new processor";
+		}
 		// Apply new benchmark details to database
-		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(new ValidatorStatusCode(true,"Benchmark edited successfully")) : gson.toJson(ERROR_DATABASE);
+		return Benchmarks.updateDetails(benchId, name, description, isDownloadable, type) ? gson.toJson(new ValidatorStatusCode(true,"Benchmark edited successfully"+processorString)) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	
