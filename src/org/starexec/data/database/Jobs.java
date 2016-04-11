@@ -2324,9 +2324,6 @@ public class Jobs {
 	 * each job pair in the list uses the configuration at the matching position in configIds.
 	 * @author Eric Burns
 	 */
-	
-	//TODO: Rewrite so this takes in two config IDs instead of one: we are using two database calls where only one
-	// is needed
 	public static List<List<JobPair>> getJobPairsForSolverComparisonGraph(
 			int jobSpaceId, 
 			List<Integer> configIds,

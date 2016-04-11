@@ -709,21 +709,17 @@ public class Users {
 	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
 	 * @author Wyatt Kaiser
 	 **/
-	// TODO: This should get rewritten in terms of the query builder 
 	public static List<User> getUsersForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
-		CallableStatement procedure= null;
+		NamedParameterStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, query.getStartingRecord());
-			procedure.setInt(2,	query.getNumRecords());
-			procedure.setInt(3, query.getSortColumn());
-			procedure.setBoolean(4, query.isSortASC());
-			procedure.setString(5, query.getSearchQuery());
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_ADMIN_QUERY, getUserOrderColumn(query.getSortColumn()), query);
+
+			procedure = new NamedParameterStatement(con,builder.getSQL());
 			results = procedure.executeQuery();
+			
 			List<User> users = new LinkedList<User>();
 			
 			while(results.next()){
@@ -735,11 +731,7 @@ public class Users {
 				u.setEmail(results.getString("email"));
 				u.setRole(results.getString("role"));
 				u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
-
-				//Prevents public user from appearing in table.
-				users.add(u);
-				
-							
+				users.add(u);			
 			}	
 			
 			return users;
@@ -1084,9 +1076,6 @@ public class Users {
 	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
-	
-	//TODO: This should just take the user to delete. Security should be handled outside the function, like
-	// everywhere else.
 	public static boolean deleteUser(int userToDeleteId){
 		log.debug("User with id="+userToDeleteId+" is about to be deleted");
 		Connection con=null;

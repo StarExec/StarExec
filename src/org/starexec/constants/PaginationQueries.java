@@ -42,6 +42,9 @@ public class PaginationQueries {
 
 	public static String GET_PAIRS_ENQUEUED_PATH = "/pagination/EnqueuedPairPagination.sql";
 	public static String GET_PAIRS_ENQUEUED_QUERY = "";
+	
+	public static String GET_USERS_ADMIN_PATH = "/pagination/UsersForAdmin.sql";
+	public static String GET_USERS_ADMIN_QUERY = "";
 
 	/**
 	 * Reads in the queries stored in the config/pagination package
@@ -60,5 +63,6 @@ public class PaginationQueries {
 		GET_SOLVERS_BY_USER_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_SOLVERS_BY_USER_PATH));
 		GET_PAIRS_IN_SPACE_HIERARCHY_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_PAIRS_IN_SPACE_HIERARCHY_PATH));
 		GET_PAIRS_ENQUEUED_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_PAIRS_ENQUEUED_PATH));
+		GET_USERS_ADMIN_QUERY = FileUtils.readFileToString(new File(R.CONFIG_PATH, GET_USERS_ADMIN_PATH));
 	}
 }

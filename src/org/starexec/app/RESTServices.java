@@ -3563,7 +3563,6 @@ public class RESTServices {
 		return Jobs.changeQueue(jobId, queueId) ? gson.toJson(new ValidatorStatusCode(true,"Queue changed successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 	
-	//TODO: Seems like we aren't actually running the given processor on the benchmark -- we probably should
 	/**
 	 * Edits the properties of the given benchmark
 	 * 

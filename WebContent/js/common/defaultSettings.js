@@ -1,4 +1,3 @@
-//TODO: All reliance on ids should be changed to classes for easier mixins in other files
 $(document).ready(function() {
 	$("#settingProfile").change(function() {
 		
