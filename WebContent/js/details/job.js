@@ -1024,7 +1024,6 @@ function initializePanels() {
 		var panelJson = $.parseJSON($("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).attr("value"));
 		handleSpacesData(panelJson);
 	} else if ( DETAILS_JOB.isAnonymousPage ) {
-		//TODO SPAGETT
 		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.primitivesToAnonymize+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	} else {
 		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);

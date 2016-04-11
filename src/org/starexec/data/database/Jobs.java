@@ -227,7 +227,10 @@ public class Jobs {
 		return false;
 	}
 
-	public static int countJobPairsToBeAddedFromConfigIds( int jobId, Set<Integer> configIds ) {
+	public static int countJobPairsToBeAddedFromConfigIdsForPairedBenchmarks( 
+			int jobId, 
+			Set<Integer> configIds, 
+			Set<Integer> idsOfDeletedJobPairs ) {
 		Job job = Jobs.getWithSimplePairs( jobId );
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 		List<JobPair> jobPairs = job.getJobPairs();
@@ -241,13 +244,178 @@ public class Jobs {
 				// If a pair contains the solver add a new job pair with the new config to the job.
 				if (	pair.getStages().size() == 1 && // skip multi-stage pairs
 						pair.getPrimaryStage().getSolver().getId() == solver.getId() && 
-						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) )  {
+						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) &&
+						// Skip pairs that the user has decided to delete.
+				  		!idsOfDeletedJobPairs.contains( pair.getId() ) )  {
 					countOfJobPairsToAdd += 1;
+
 					benchmarksAlreadySeen.add( pair.getBench().getId() );
 				}
 			}
 		}
 		return countOfJobPairsToAdd;
+	}
+
+	public static int countJobPairsToBeAddedFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds, Set<Integer> idsOfDeletedJobPairs ) {
+		int jobPairsToAddCount = 0;
+
+		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
+		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage( jobId );
+
+		Job job = Jobs.getWithSimplePairs( jobId );
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		for ( Integer configIdToAdd : configIds ) {
+
+			// Get the solver associated with the config we want to add to the job.
+			final int solverIdToAdd = Solvers.getByConfigId( configIdToAdd ).getId(); 
+
+
+			for ( JobPair pair : jobPairs ) {
+				final int pairBenchId = pair.getBench().getId();
+
+				// Skip multi-stage pairs.
+				if ( pair.getStages().size() == 1 
+					 && !jobMapContainsBenchSolverConfigTriple(jobMap, pairBenchId, solverIdToAdd, configIdToAdd)
+					 // Skip job pairs the user has deleted.
+				  	 && !idsOfDeletedJobPairs.contains( pair.getId() ) ) {
+
+					// Add the new benchmark-solver-config pair so that we don't add it as a duplicate.
+					addBenchSolverConfigTripleToJobMap( jobMap, pairBenchId, solverIdToAdd, configIdToAdd );
+
+					final int pairSolverId = pair.getPrimaryStage().getSolver().getId();
+					/*
+					log.debug( "Counting job pairs to add, old bench-solver-config triple: "+pairBenchId+"-"+pairSolverId+"-"
+							+pair.getPrimaryStage().getConfiguration().getId() );
+					log.debug( "Counting job pairs to add, new bench-solver-config triple: "+pairBenchId +"-"+solverIdToAdd+"-"+configIdToAdd );
+					log.debug("");
+					*/
+
+
+					jobPairsToAddCount += 1;
+				}
+			}
+		}
+
+		return jobPairsToAddCount;
+	}
+
+	private static boolean jobMapContainsBenchSolverConfigTriple( Map<Integer, Map<Integer, Set<Integer>>> jobMap, int benchId, int solverId, int configId ) {
+		return jobMap.containsKey( benchId ) 
+				&& jobMap.get( benchId ).containsKey( solverId ) 
+				&& jobMap.get( benchId ).get( solverId ).contains( configId );
+	}
+
+	/**
+	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that doesn't already contain the configuration.
+	 * @param jobId the id of the job.
+	 * @param configId  the configurations to add to the job.
+	 * @author Albert Giegerich
+	 */
+	public static void addJobPairsFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
+		List<JobPair> jobPairsToAdd = new ArrayList<>();
+		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
+		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage( jobId );
+		for ( Integer configIdToAdd : configIds ) {
+
+			// Get the solver associated with the config we want to add to the job.
+			final Solver solverToAdd = Solvers.getByConfigId( configIdToAdd );
+			final int solverIdToAdd = solverToAdd.getId(); 
+
+			// Get new job pairs so that we don't modify a reference we've already added to jobPairsToAdd
+			Job job = Jobs.getWithSimplePairs( jobId );
+			List<JobPair> jobPairs = job.getJobPairs();
+
+			for ( JobPair pair : jobPairs ) {
+				final int pairBenchId = pair.getBench().getId();
+
+				// Skip multi-stage pairs.
+				if ( pair.getStages().size() == 1 
+					 && !jobMapContainsBenchSolverConfigTriple(jobMap, pairBenchId, solverIdToAdd, configIdToAdd) ) {
+
+					// Add the new benchmark-solver-config pair so that we don't add it as a duplicate.
+					addBenchSolverConfigTripleToJobMap( jobMap, pairBenchId, solverIdToAdd, configIdToAdd );
+
+					Configuration configToAdd = Solvers.getConfiguration( configIdToAdd );
+					pair.getPrimaryStage().setSolver( solverToAdd );
+					pair.getPrimaryStage().setConfiguration( configToAdd );
+
+					jobPairsToAdd.add( pair );
+				}
+			}
+		}
+
+		// Add the new job pairs.
+		JobPairs.addJobPairs(jobId,jobPairsToAdd );
+
+		// Clear the cached job stats for this job so the new job pairs will contribute to the job stats.
+		removeCachedJobStats( jobId );
+	}
+
+	/**
+	 * Builds a mapping from all benchmarks to solvers paired with those benchmarks (in job pairs) to configs paired with those benchmarks
+	 * and solvers (in job pairs) for a given stage. (Only uses pairs for the given stage.)
+	 * @param jobId The job to get the pairs from to build the mapping.
+	 * @param stageNumber The stage number to filter by.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, Map<Integer, Set<Integer>>> getJobMapForStage( int jobId, int stageNumber ) {
+		return getJobMap( jobId, false, stageNumber );
+	}
+
+	/**
+	 * Builds a mapping from all benchmarks to solvers paired with those benchmarks (in job pairs) to configs paired with those benchmarks
+	 * and solvers (in job pairs) for the primary stage. (Only uses pairs for the primary stage.)
+	 * @param jobId The job to get the pairs from to build the mapping.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, Map<Integer, Set<Integer>>> getJobMapForPrimaryStage( int jobId ) {
+		return getJobMap( jobId, true, -1 );
+	}
+
+	private static Map<Integer, Map<Integer, Set<Integer>>> getJobMap( int jobId, boolean usePrimaryStage, int stageNumber ) {
+		Map<Integer, Map<Integer, Set<Integer>>> jobMap = new HashMap<>();
+
+		Job job = Jobs.getWithSimplePairs( jobId ); List<JobPair> jobPairs = job.getJobPairs();
+
+		for ( JobPair pair : jobPairs ) {
+			JoblineStage stage = usePrimaryStage ? pair.getPrimaryStage() : pair.getStageFromNumber( stageNumber );
+			if ( stage == null ) {
+				log.debug("Found null stage, continuing");
+				continue;
+			}
+
+
+			final int pairBenchId = pair.getBench().getId();
+			final int pairSolverId = stage.getSolver().getId();
+			final int pairConfigId = stage.getConfiguration().getId();
+
+			if (pairBenchId == 1) {
+				log.debug("Building Map - bench-solver-config: "+pairBenchId+"-"+pairSolverId+"-"+pairConfigId);
+			}
+
+			addBenchSolverConfigTripleToJobMap( jobMap, pairBenchId, pairSolverId, pairConfigId );
+		}
+
+		return jobMap;
+	}
+
+	private static void addBenchSolverConfigTripleToJobMap(Map<Integer, Map<Integer, Set<Integer>>> jobMap, int benchId, int solverId, int configId) {
+		if ( jobMap.containsKey( benchId ) ) {
+			if ( jobMap.get( benchId ).containsKey( solverId ) ) {
+				jobMap.get( benchId ).get( solverId ).add( configId );
+			} else {
+				Set<Integer> configs = new HashSet<>();
+				configs.add( configId );
+				jobMap.get( benchId ).put( solverId, configs );
+			}
+		} else {
+			Map<Integer, Set<Integer>> solverToConfigs = new HashMap<>();
+			Set<Integer> configs = new HashSet<>();
+			configs.add( configId );
+			solverToConfigs.put( solverId, configs );
+			jobMap.put( benchId, solverToConfigs );
+		}
 	}
 
 	/**
@@ -257,7 +425,7 @@ public class Jobs {
 	 * @param configId  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
-	public static void addJobPairsFromConfigIds( int jobId, Set<Integer> configIds ) throws SQLException {
+	public static void addJobPairsFromConfigIdsForPairedBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
 
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 
@@ -609,19 +777,19 @@ public class Jobs {
 	}
 
 
-	public static int countJobPairsToBeDeletedFromConfigIds( int jobId, Set<Integer> configIds ) {
+	public static List<JobPair> getJobPairsToBeDeletedFromConfigIds( int jobId, Set<Integer> configIds ) {
 		Job job = Jobs.getWithSimplePairs( jobId );
-		int numberOfJobPairsToBeDeleted = 0;
+		List<JobPair> pairsToDelete = new ArrayList<>();
 		List<JobPair> jobPairs = job.getJobPairs(); 
 		// Delete every pair that contains a config in the set of configs.
 		for ( JobPair pair : jobPairs ) {
 			if ( pair.getStages().size() == 1 &&
 				configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
-				numberOfJobPairsToBeDeleted += 1;
+				pairsToDelete.add( pair );
 			}
 		}
 
-		return numberOfJobPairsToBeDeleted;
+		return pairsToDelete;
 	}
 
 
@@ -632,20 +800,7 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void deleteJobPairsWithConfigurationsFromJob( int jobId, Set<Integer> configIds ) throws SQLException {
-		Job job = Jobs.getWithSimplePairs( jobId );
-		List<JobPair> jobPairsToDelete = new ArrayList<>();
-		List<JobPair> jobPairs = job.getJobPairs(); 
-		// Delete every pair that contains a config in the set of configs.
-		for ( JobPair pair : jobPairs ) {
-			// Skip multi-stage pairs
-			if ( pair.getStages().size() == 1 && 
-				 configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
-
-				jobPairsToDelete.add( pair );
-			}
-		}
-		JobPairs.deleteJobPairs( jobPairsToDelete );
-
+		JobPairs.deleteJobPairs( getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
 		removeCachedJobStatsForConfigs( jobId, configIds );
 	}
 

@@ -801,6 +801,21 @@ public class Solvers {
 	}
 	
 	/**
+	 * Retrieves a list of every solver the given user is allowed to use along with it's configs.
+	 * Solvers a user can see include solvers they own, solvers in public spaces,
+	 * and solvers in spaces the user is also in
+	 * @param userId
+	 * @return The list of solvers
+	 */
+	public static List<Solver> getByUserWithConfigs(int userId) {
+		List<Solver> solvers = getByUser( userId );
+		for(Solver s : solvers) {
+			s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
+		}
+		return solvers;
+	}
+
+	/**
 	 * Retrieves a list of every solver the given user is allowed to use. Used for quick jobs.
 	 * Solvers a user can see include solvers they own, solvers in public spaces,
 	 * and solvers in spaces the user is also in
@@ -1058,6 +1073,16 @@ public class Solvers {
 			}
 		}
 		return filteredSolvers;
+	}
+
+	public static Set<Integer> getConfigIdSetForSolver( int solverId ) {
+		List<Configuration> configs = getConfigsForSolver( solverId );
+		Set<Integer> configIds = new HashSet<>();
+		for ( Configuration c : configs ) {
+			configIds.add( c.getId() );
+		}
+
+		return configIds;
 	}
 	
 	

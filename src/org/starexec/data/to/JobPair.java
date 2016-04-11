@@ -311,10 +311,7 @@ public class JobPair extends Identifiable {
 
 		}
 		
-		
-		// just return the first stage if there is none marked as primary
 		return null;
-		
 	}
 	
 	/**

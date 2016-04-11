@@ -1,28 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.Map, java.util.ArrayList, java.util.List, java.util.Set, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.Collections, java.util.HashMap, java.util.Map, java.util.ArrayList, java.util.List, java.util.Set, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		int jobId = Integer.parseInt( request.getParameter("jobId") ); 
-		final int userId = SessionUtil.getUserId( request );
-		ValidatorStatusCode securityStatus = JobSecurity.canUserAddJobPairs( jobId, userId ); 
-		if ( !securityStatus.isSuccess() ) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
-			return;
-		}
-
-		if ( !( Jobs.isJobPaused( jobId )  || Jobs.isJobComplete( jobId ) ) ) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Job must be finished or paused to add job pairs.");
-			return;
-		}
-
-		List<Solver> solvers = Solvers.getByJobSimpleWithConfigs( jobId );
-		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );	
-		Solvers.makeDefaultConfigsFirst(solvers);
-		request.setAttribute("solvers", solvers);
-		request.setAttribute("configIdSet", configIdSet);
-		request.setAttribute("jobId", jobId);
+		JspHelpers.handleAddJobPairsPage( request, response );
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Util.getStackTrace( e ));
 	}	
@@ -39,6 +21,7 @@
 				<thead>
 					<tr>
 						<th>solver</th>
+						<th>benchmarks</th>
 						<th>configuration</th>						
 					</tr>
 				</thead>
@@ -48,6 +31,10 @@
 						<td>
 							<input type="hidden" name="solver" value="${s.id}"/>
 							<star:solver value='${s}'/>
+						</td>
+						<td>
+							<input class="addToAllCheckbox" type="checkbox" name="addToAll" value="${s.id}"/>all<br>
+							<input class="addToPairedCheckbox" type="checkbox" name="addToPaired" value="${s.id}" checked="checked"/>paired with solver
 						</td>
 						<td>
 							 <div class="selectConfigs">
@@ -62,6 +49,28 @@
 								<c:if test="${!configIdSet.contains(c.id)}">
 									<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
 								</c:if>
+								</c:forEach> 
+							</div> 
+						</td>
+					</tr>
+				</c:forEach>			
+				<c:forEach var="s" items="${usersSolvers}">
+					<tr id="solver_${s.id}" class="solverRow">
+						<td>
+							<input type="hidden" name="solver" value="${s.id}"/>
+							<star:solver value='${s}'/>
+						</td>
+						<td>
+							<input type="hidden" name="addToAll" value="${s.id}" />all<br>
+						</td>
+						<td>
+							 <div class="selectConfigs">
+								<div class="selectWrap configSelectWrap">
+									<p class="selectAll selectAllConfigs"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | 
+									<p class="selectNone selectNoneConfigs"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
+								</div><br />
+								<c:forEach var="c" items="${s.configurations}">
+									<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
 								</c:forEach> 
 							</div> 
 						</td>

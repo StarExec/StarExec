@@ -1254,24 +1254,46 @@ public class RESTServices {
 		final String methodName = "getNumberOfPairsToBeAddedAndDeleted";
 		final String jobIdParam = "jobId";
 		final String configsParam = "configs";
+		final String addToAllParam = "addToAll";
+		final String addToPairedParam = "addToPaired";
 		try {
 			final int userId = SessionUtil.getUserId( request );
 			final int jobId = Integer.parseInt( request.getParameter(jobIdParam) );
+
 
 			Set<Integer> selectedConfigIds = new HashSet<>( Util.toIntegerList( request.getParameterValues( configsParam ) ) );
 			Set<Integer> allConfigIdsInJob = Solvers.getConfigIdSetByJob( jobId );
 
 			Set<Integer> configIdsToDelete = new HashSet<>( allConfigIdsInJob );
 			configIdsToDelete.removeAll( selectedConfigIds );
-			logUtil.debug( methodName, "Config ID's to be deleted: " );
 
 			Map<String, Object> jsonObject = new HashMap<>();
-			jsonObject.put("pairsToBeDeleted", Jobs.countJobPairsToBeDeletedFromConfigIds( jobId, configIdsToDelete ) );
+			List<JobPair> jobPairsToBeDeleted = Jobs.getJobPairsToBeDeletedFromConfigIds( jobId, configIdsToDelete );
+			jsonObject.put("pairsToBeDeleted", jobPairsToBeDeleted.size() );
 
-			Set<Integer> configIdsToAdd = new HashSet<>( selectedConfigIds );
-			configIdsToAdd.removeAll( allConfigIdsInJob );
-			logUtil.debug( methodName, "Config ID's to be added: " );
-			jsonObject.put("pairsToBeAdded", Jobs.countJobPairsToBeAddedFromConfigIds( jobId, configIdsToAdd ) );
+			Set<Integer> solverIdsToAddToAll = new HashSet<>( Util.toIntegerList( request.getParameterValues( addToAllParam ) ) );
+			Set<Integer> solverIdsToAddToPaired = new HashSet<>( Util.toIntegerList( request.getParameterValues( addToPairedParam ) ) );
+
+			Set<Integer> configIdsToAddToAll = new HashSet<>();
+			Set<Integer> configIdsToAddToPaired = new HashSet<>();
+			for ( Integer configId : selectedConfigIds ) {
+				Configuration config = Solvers.getConfiguration( configId );	
+				if ( solverIdsToAddToAll.contains( config.getSolverId() ) ) {
+					configIdsToAddToAll.add( configId );
+				}  else if ( solverIdsToAddToPaired.contains( config.getSolverId() ) ) {
+					configIdsToAddToPaired.add( configId );
+				}
+			}
+
+			configIdsToAddToPaired.removeAll( allConfigIdsInJob );
+
+			Set<Integer> jobPairIdsToBeDeleted = buildJobPairIdSet( jobPairsToBeDeleted );
+			int pairedBenchmarkCount = Jobs.countJobPairsToBeAddedFromConfigIdsForPairedBenchmarks( jobId, configIdsToAddToPaired, jobPairIdsToBeDeleted );
+			log.debug( "pairedBenchmarkCount: "+pairedBenchmarkCount );
+			int allBenchmarkCount = Jobs.countJobPairsToBeAddedFromConfigIdsForAllBenchmarks( jobId, configIdsToAddToAll, jobPairIdsToBeDeleted );
+			log.debug( "allBenchmarkCount: "+allBenchmarkCount );
+
+			jsonObject.put("pairsToBeAdded",  pairedBenchmarkCount + allBenchmarkCount );
 
 
 			jsonObject.put("success", true);
@@ -1282,8 +1304,15 @@ public class RESTServices {
 			return gson.toJson( jsonObject );
 		}
 	}
-	
 
+	private static Set<Integer> buildJobPairIdSet( List<JobPair> jobPairs ) {
+		Set<Integer> jobPairIds = new HashSet<>();
+		for ( JobPair pair : jobPairs ) {
+			jobPairIds.add( pair.getId() );
+		}
+
+		return jobPairIds;
+	}	
 
 	/**
 	 * Gets job pairs running on the given node
