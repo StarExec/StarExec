@@ -147,7 +147,9 @@ public class AddJobPairs extends HttpServlet {
 			}
 			*/
 
+			logUtil.debug( methodName, "Adding job pairs for paired benchmarks." );
 			Jobs.addJobPairsFromConfigIdsForPairedBenchmarks( jobId, configIdsToAddToPaired );
+			logUtil.debug( methodName, "Adding job pairs for all benchmarks." );
 			Jobs.addJobPairsFromConfigIdsForAllBenchmarks( jobId, configIdsToAddToAll );
 
 			response.sendRedirect( Util.docRoot( "secure/details/job.jsp?id=" + jobId ) );
