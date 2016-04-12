@@ -549,8 +549,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.removeUsersFromSpace(space.getId(),TestUtil.getMockHttpRequest(
 				user.getId(), new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
 		assertResultIsInvalid(services.removeUsersFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(-1))));
-		assertResultIsInvalid(services.removeUsersFromSpace(space.getId(),TestUtil.getMockHttpRequest(
 				admin.getId(), new HashMap<String,String>())));
 		assertResultIsInvalid(services.removeUsersFromSpace(-1,TestUtil.getMockHttpRequest(
 				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
@@ -588,8 +586,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 	private void removeSolversTest() {
 		assertResultIsInvalid(services.removeSolversFromSpace(space.getId(),TestUtil.getMockHttpRequest(
 				user.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
-		assertResultIsInvalid(services.removeSolversFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(-1))));
 		assertResultIsInvalid(services.removeSolversFromSpace(space.getId(),TestUtil.getMockHttpRequest(
 				admin.getId(), new HashMap<String,String>())));
 		assertResultIsInvalid(services.removeSolversFromSpace(-1,TestUtil.getMockHttpRequest(
@@ -692,9 +688,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 				admin.getId(), new HashMap<String,String>())));
 		assertResultIsInvalid(services.removeJobsFromSpace(-1,TestUtil.getMockHttpRequest(
 				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
-		
-		assertResultIsInvalid(services.removeJobsFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(-1))));
 	}
 	
 	@StarexecTest

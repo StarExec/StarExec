@@ -320,7 +320,7 @@ public class SpaceTests extends TestSequence {
 	@StarexecTest
 	private void getChainToRootTest() {
 		List<Integer> path = Spaces.getChainToRoot(subspace3.getId());
-		Assert.assertEquals(5, path.size());
+		Assert.assertEquals(4, path.size());
 		Assert.assertEquals((Integer)1, path.get(0));
 		Assert.assertEquals((Integer)community.getId(), path.get(1));
 		Assert.assertEquals((Integer)subspace2.getId(), path.get(2));

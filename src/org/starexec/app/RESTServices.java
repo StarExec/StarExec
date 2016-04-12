@@ -2901,7 +2901,7 @@ public class RESTServices {
 			return Spaces.removeSolversFromHierarchy(selectedSolvers, spaceId,userId) ? gson.toJson(new ValidatorStatusCode(true,"Solver(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 
 		} else {
-			// Permissions check; ensures user has permisison to remove solver
+			// Permissions check; ensures user has permissison to remove solver
 			ValidatorStatusCode status=SolverSecurity.canUserRemoveSolver(spaceId, SessionUtil.getUserId(request));
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
