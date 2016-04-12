@@ -565,7 +565,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	private void demoteLeaderTest() {
 		assertResultIsInvalid(services.demoteLeader(space.getId(),user.getId(),TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.demoteLeader(-1,user.getId(),TestUtil.getMockHttpRequest(admin.getId())));
-		assertResultIsInvalid(services.demoteLeader(space.getId(),1,TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.demoteLeader(space.getId(),-1,TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	
