@@ -1690,7 +1690,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	
 	
 	/**
-	 * Gets all the subspaces of the given space that are used by the given job
+	 * Gets all the subspaces of the given job space
 	 * 
 	 * @param jobSpaceId The id of the space to get the subspaces of
 	 * @param recursive Whether to get all subspaces (true) or only the first level (false)

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -17,6 +18,7 @@ import org.starexec.data.database.Users;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -44,10 +46,10 @@ public class SpaceTests extends TestSequence {
 	User member2=null;
 	
 	
-	
+	//all primitives owned by leader and placed into subspace
 	Solver solver = null;
-	List<Benchmark> benchmarks=null; //all primitives owned by leader and placed into subspace
-	
+	List<Benchmark> benchmarks=null; 
+	Job job = null;
 	@StarexecTest
 	private void getSpaceTest() {
 		Space test=Spaces.get(community.getId());
@@ -315,6 +317,32 @@ public class SpaceTests extends TestSequence {
 		
 	}
 	
+	@StarexecTest
+	private void getChainToRootTest() {
+		List<Integer> path = Spaces.getChainToRoot(subspace3.getId());
+		Assert.assertEquals(5, path.size());
+		Assert.assertEquals((Integer)1, path.get(0));
+		Assert.assertEquals((Integer)community.getId(), path.get(1));
+		Assert.assertEquals((Integer)subspace2.getId(), path.get(2));
+		Assert.assertEquals((Integer)subspace3.getId(), path.get(3));
+	}
+	
+	@StarexecTest
+	private void getChainToRootWithRootTest() {
+		List<Integer> path = Spaces.getChainToRoot(1);
+		Assert.assertEquals(1, path.size());
+		Assert.assertEquals((Integer)1, path.get(0));
+	}
+	
+	@StarexecTest
+	private void setJobSpaceMaxStagesTest() {
+		JobSpace s = Spaces.getJobSpace(job.getPrimarySpace());
+		int maxStages = s.getMaxStages();
+		Assert.assertTrue(Spaces.setJobSpaceMaxStages(s.getId(), maxStages+1));
+		Assert.assertEquals((Integer)(maxStages+1), Spaces.getJobSpace(s.getId()).getMaxStages());
+		Assert.assertTrue(Spaces.setJobSpaceMaxStages(s.getId(), maxStages));
+
+	}
 	
 	
 	@Override
@@ -342,12 +370,14 @@ public class SpaceTests extends TestSequence {
 		benchmarks=new ArrayList<Benchmark>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));
-		}	
+		}
+		job = ResourceLoader.loadJobIntoDatabase(subspace.getId(), leader.getId(), solver.getId(), ids);
 		
 	}
 	
 	@Override
 	protected void teardown() {
+		Jobs.deleteAndRemove(job.getId());
 		Solvers.deleteAndRemoveSolver(solver.getId());
 		for (Benchmark b : benchmarks)  {
 			Benchmarks.deleteAndRemoveBenchmark(b.getId());
@@ -367,7 +397,7 @@ public class SpaceTests extends TestSequence {
 	}
 	@Override
 	protected String getTestName() {
-		return "SpacePropertiesTest";
+		return "SpaceTests";
 	}
 
 }

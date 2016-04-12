@@ -2762,7 +2762,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Associates (i.e. 'copies') a job from one space into another
+	 * Associates a job from one space into another
 	 * 
 	 * @param spaceId the id of the destination space we are copying to
 	 * @param request The request that contains data about the operation including a 'selectedIds'
@@ -2778,11 +2778,10 @@ public class RESTServices {
 	 * @author Tyler Jensen
 	 */
 	
-	//TODO: Resume testing here
 	@POST
 	@Path("/spaces/{spaceId}/add/job")
 	@Produces("application/json")
-	public String copyJobToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+	public String associateJobWithSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		// Make sure we have a list of benchmarks to add and the space it's coming from
 		if(null == request.getParameterValues("selectedIds[]")){
@@ -2925,7 +2924,7 @@ public class RESTServices {
 	@POST
 	@Path("/recycleandremove/solver/{spaceID}")
 	@Produces("application/json")
-	public String recycleAndRemoveSolvers(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
+	public String recycleAndRemoveSolvers(@PathParam("spaceID") int spaceId, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
@@ -3212,23 +3211,9 @@ public class RESTServices {
 			if(null == config){
 				return gson.toJson(ERROR_DATABASE);
 			}
-			
-			// Permissions check; if user is NOT the owner of the configuration file's solver, deny deletion request
-			Solver solver = Solvers.get(config.getSolverId());
-			
-			
+						
 			// Attempt to remove the configuration's physical file from disk
 			if(!Solvers.deleteConfigurationFile(config)){
-				return gson.toJson(ERROR_DATABASE);
-			}
-			
-			// Attempt to remove the configuration's entry in the database
-			if(!Solvers.deleteConfiguration(id)){
-				return gson.toJson(ERROR_DATABASE);
-			}
-			
-			// Attempt to update the disk_size of the parent solver to reflect the file deletion
-			if(!Solvers.updateSolverDiskSize(solver)){
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
@@ -3285,7 +3270,7 @@ public class RESTServices {
 	@POST
 	@Path("/deleteandremove/job/{spaceID}")
 	@Produces("application/json")
-	public String deleteAndRemoveJobs(@Context HttpServletRequest request, @PathParam("spaceID") int spaceId) {
+	public String deleteAndRemoveJobs(@PathParam("spaceID") int spaceId,@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
@@ -3667,6 +3652,14 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editUserPassword(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int userIdOfCaller = SessionUtil.getUserId(request);
+		
+		// Ensure the parameters exist
+		if(!Util.paramExists("current", request)
+			|| !Util.paramExists("newpass", request)
+			|| !Util.paramExists("confirm", request)){
+				return gson.toJson(ERROR_INVALID_PARAMS);
+		}
+		
 		String currentPass = request.getParameter("current");
 		String newPass = request.getParameter("newpass");
 		String confirmPass = request.getParameter("confirm");
