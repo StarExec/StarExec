@@ -189,6 +189,9 @@ public class SpaceSecurity {
 		if (Users.get(userIdBeingDemoted)==null) {
 			return new ValidatorStatusCode(false, "The given user could not be found");
 		}
+		if (Spaces.get(spaceId)==null) {
+			return new ValidatorStatusCode(false, "The given space could not be found");
+		}
 		if(!GeneralSecurity.hasAdminWritePrivileges(userIdDoingDemoting)) {
 			return new ValidatorStatusCode(false, "You do not have permission to demote leaders in this space");
 		}

@@ -4548,7 +4548,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String subscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUser(id);
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUser(userId,id);
 		// Users can always subscribe themselves.
 		if (!status.isSuccess() && id != userId) {
 			return gson.toJson(status);
@@ -4570,7 +4570,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String unsubscribeUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUser(id);
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUser(userId,id);
 		// Users can always unsubscribe themselves.
 		if (!status.isSuccess() && id != userId) {
 			return gson.toJson(status);
