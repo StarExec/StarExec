@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.mockito.Mockito;
 import org.starexec.app.RESTServices;
+import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
@@ -61,12 +62,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 	Queue allQ = null;
 	private void assertResultIsInvalid(String result) {
 		Assert.assertFalse(gson.fromJson(result, ValidatorStatusCode.class).isSuccess());
-	}
-	
-	@StarexecTest
-	private void restartStarexecTest() throws Exception {
-		String result = services.restartStarExec(TestUtil.getMockHttpRequest(user.getId()));
-		assertResultIsInvalid(result);
 	}
 	
 	@StarexecTest
@@ -421,12 +416,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void reinstateUserTest() {
-		String result = services.reinstateUser(admin.getId(),TestUtil.getMockHttpRequest(user.getId()));
-		assertResultIsInvalid(result);
-	}
-	
-	@StarexecTest
 	private void cleanErrorStatesTest() {
 		assertResultIsInvalid(services.clearErrorStates(TestUtil.getMockHttpRequest(user.getId())));
 	}
@@ -562,6 +551,28 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void makeLeaderTest() {
+		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(user.getId()))));
+		
+		assertResultIsInvalid(services.makeLeader(-1,TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
+		
+		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(admin.getId())));
+		
+		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(
+				-1, new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
+	}
+	
+	@StarexecTest
+	private void demoteLeaderTest() {
+		assertResultIsInvalid(services.demoteLeader(space.getId(),user.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.demoteLeader(-1,user.getId(),TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.demoteLeader(space.getId(),1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	
+	@StarexecTest
 	private void editUserPasswordTest() {
 		HashMap<String,String> params = new HashMap<String,String>();
 		params.put("current", admin.getPassword());
@@ -656,6 +667,16 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void editConfigurationTest() {
+		HashMap<String,String> params = new HashMap<String,String>();
+		params.put("name", "test");
+		int configId = solver.getConfigurations().get(0).getId();
+		assertResultIsInvalid(services.editConfigurationDetails(configId,TestUtil.getMockHttpRequest(user.getId(), params)));
+		assertResultIsInvalid(services.editConfigurationDetails(configId,TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.editConfigurationDetails(-1,TestUtil.getMockHttpRequest(admin.getId(), params)));
+	}
+	
+	@StarexecTest
 	private void editSolverTest() {
 		HashMap<String,String> params = new HashMap<String,String>();
 		params.put("name", "test");
@@ -743,9 +764,255 @@ public class RESTServicesSecurityTests extends TestSequence {
 				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(-1))));
 	}
 	
+	@StarexecTest
+	private void copySubspaceTest() {
+		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+
+		int destSpace = Communities.getTestCommunity().getId();
+		HashMap<String,String> params = new HashMap<String,String>();
+		params.put("copyHierarchy", "false");
+		assertResultIsInvalid(services.copySubSpaceToSpace(destSpace,TestUtil.getMockHttpRequest(
+				user.getId(), new HashMap<String,String>(), getSelectedIdParams(space.getId())), response));
+		
+		assertResultIsInvalid(services.copySubSpaceToSpace(-1,TestUtil.getMockHttpRequest(
+				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(space.getId())), response));
+		
+		assertResultIsInvalid(services.copySubSpaceToSpace(destSpace,TestUtil.getMockHttpRequest(
+				admin.getId()), response));
+	}
+	
+	@StarexecTest
+	private void makePublicTest() {
+		assertResultIsInvalid(services.makePublic(space.getId(), false, false, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.makePublic(-1, false, false, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getUserJobsPaginatedTest() {
+		assertResultIsInvalid(services.getUserJobsPaginated(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getUserJobsPaginated(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getUserSolversPaginatedTest() {
+		assertResultIsInvalid(services.getUserSolversPaginated(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getUserSolversPaginated(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getUserRecycledSolversPaginatedTest() {
+		assertResultIsInvalid(services.getUserRecycledSolversPaginated(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getUserRecycledSolversPaginated(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getUserBenchmarksPaginatedTest() {
+		assertResultIsInvalid(services.getUserBenchmarksPaginated(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getUserBenchmarksPaginated(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getUserRecycledBenchmarksPaginatedTest() {
+		assertResultIsInvalid(services.getUserRecycledBenchmarksPaginated(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getUserRecycledBenchmarksPaginated(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getTestsPagninatedTest() {
+		assertResultIsInvalid(services.getTestsPaginated(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void removeQueueTest() {
+		assertResultIsInvalid(services.removeQueue(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.removeQueue(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void setLoggingLevelForClassTest() {
+		assertResultIsInvalid(services.setLoggingLevel("trace", "org.starexec.app.RESTServices.java",
+				TestUtil.getMockHttpRequest(user.getId())));
+		
+		assertResultIsInvalid(services.setLoggingLevel("badlevel", "org.starexec.app.RESTServices.java",
+				TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.setLoggingLevel("trace", "badclass",
+				TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void setLoggingLevelTest() {
+		assertResultIsInvalid(services.setLoggingLevel("trace",
+				TestUtil.getMockHttpRequest(user.getId())));
+		
+		assertResultIsInvalid(services.setLoggingLevel("badlevel",TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void setLoggingLevelOffForAllExceptClassTest() {
+		assertResultIsInvalid(services.setLoggingLevelOffForAllExceptClass("trace", "org.starexec.app.RESTServices.java",
+				TestUtil.getMockHttpRequest(user.getId())));
+		
+		assertResultIsInvalid(services.setLoggingLevelOffForAllExceptClass("badlevel", "org.starexec.app.RESTServices.java",
+				TestUtil.getMockHttpRequest(admin.getId())));
+		assertResultIsInvalid(services.setLoggingLevelOffForAllExceptClass("trace", "badclass",
+				TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getTestResultsPagninatedTest() {
+		assertResultIsInvalid(services.getTestResultsPaginated(testName,TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getTestResultsPaginated(TestUtil.getRandomAlphaString(50),TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getAllPendingCommunityRequestsTest() {
+		assertResultIsInvalid(services.getAllPendingCommunityRequests(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void getPendingCommunityRequestsForCommunityTest() {
+		int cId = Communities.getTestCommunity().getId();
+		assertResultIsInvalid(services.getPendingCommunityRequestsForCommunity(cId,TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getPendingCommunityRequestsForCommunity(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void restartStarexecTest() throws Exception {
+		assertResultIsInvalid(services.restartStarExec(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void clearCacheTest() throws Exception {
+		assertResultIsInvalid(services.clearCache(job.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.clearCache(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void clearStatsCacheTest() throws Exception {
+		assertResultIsInvalid(services.clearStatsCache(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void pauseAllTest() throws Exception {
+		assertResultIsInvalid(services.pauseAll(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void resumeAllTest() throws Exception {
+		assertResultIsInvalid(services.resumeAll(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void makeQueueGlobalTest() throws Exception {
+		assertResultIsInvalid(services.makeQueueGlobal(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.makeQueueGlobal(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void removeQueueGlobalTest() throws Exception {
+		assertResultIsInvalid(services.removeQueueGlobal(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.removeQueueGlobal(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void suspendUserTest() {
+		assertResultIsInvalid(services.suspendUser(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.suspendUser(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void reinstateUserTest() {
+		assertResultIsInvalid(services.reinstateUser(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.reinstateUser(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void subscribeUserTest() {
+		assertResultIsInvalid(services.subscribeUser(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.subscribeUser(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void unsubscribeUserTest() {
+		assertResultIsInvalid(services.unsubscribeUser(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.unsubscribeUser(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void grantDeveloperStatusTest() {
+		assertResultIsInvalid(services.grantDeveloperStatus(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.grantDeveloperStatus(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void suspendDeveloperStatusTest() {
+		assertResultIsInvalid(services.suspendDeveloperStatus(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.suspendDeveloperStatus(-1, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void clearLoadBalanceDataTest() throws Exception {
+		assertResultIsInvalid(services.clearLoadBalanceData(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void updateDebugModeTest() throws Exception {
+		assertResultIsInvalid(services.updateDebugMode(false,TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
+	private void setTestQueueTest() throws Exception {
+		assertResultIsInvalid(services.setTestQueue(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.setTestQueue(-1,TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveSolverTest() {
+		assertResultIsInvalid(services.getGsonPrimitive(solver.getId(), R.SOLVER, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getGsonPrimitive(-1, R.SOLVER, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveBenchmarkTest() {
+		assertResultIsInvalid(services.getGsonPrimitive(benchmarkIds.get(0), "bench", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getGsonPrimitive(-1, "bench", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveJobTest() {
+		assertResultIsInvalid(services.getGsonPrimitive(job.getId(), R.JOB, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getGsonPrimitive(-1, R.JOB, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveSpaceTest() {
+		assertResultIsInvalid(services.getGsonPrimitive(space.getId(), R.SPACE, TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getGsonPrimitive(-1, R.SPACE, TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveProcessorTest() {
+		assertResultIsInvalid(services.getGsonPrimitive(postProcessor.getId(), "processor", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getGsonPrimitive(-1,"processor", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveConfigurationTest() {
+		int cId = solver.getConfigurations().get(0).getId();
+		assertResultIsInvalid(services.getGsonPrimitive(cId, "configuration", TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.getGsonPrimitive(-1, "configuration", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	@StarexecTest
+	private void getGsonPrimitiveInvalidTypeTest() {
+		assertResultIsInvalid(services.getGsonPrimitive(1, "badType", TestUtil.getMockHttpRequest(admin.getId())));
+	}
+	
+	private static String testName = "RESTServicesSecurityTests";
+	
 	@Override
 	protected String getTestName() {
-		return "RESTServicesSecurityTests";
+		return testName;
 	}
 
 	@Override

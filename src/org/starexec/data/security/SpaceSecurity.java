@@ -802,6 +802,7 @@ public class SpaceSecurity {
 	/**
 	 * Checks whether the given user is allowed to see the current new community requests
 	 * @param userId The ID of the user in question
+	 * @param communityId The ID of the community to get requests for
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserViewCommunityRequestsForCommunity(int userId, int communityId) {
@@ -812,7 +813,7 @@ public class SpaceSecurity {
 		} else if (!(perm == null) && perm.isLeader()) {
 			return new ValidatorStatusCode(true);
 		} else {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation.");
+			return new ValidatorStatusCode(false, "Only community leaders may view requests to join communities");
 		}
 	}
 	

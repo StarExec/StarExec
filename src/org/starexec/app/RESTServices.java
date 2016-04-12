@@ -3811,7 +3811,7 @@ public class RESTServices {
 	
 
 	/**
-	 * Make a list of users the leaders of a space. This is an admin only function
+	 * Promotes a set of users to leaders in the given space
 	 * @param spaceId The Id of the space  
 	 * @param request The HttpRequestServlet object containing the list of user's Id
 	 * @return 0: Success.
@@ -3983,7 +3983,7 @@ public class RESTServices {
 	@POST
 	@Path("/users/{id}/jobs/pagination")
 	@Produces("application/json")	
-	public String getUsrJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+	public String getUserJobsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
 		if (!status.isSuccess()) {
@@ -4032,7 +4032,9 @@ public class RESTServices {
 		
 		// Query for the next page of job pairs and return them to the user
 		List<TestResult> tests=TestManager.getAllTestResults(name);
-		
+		if (tests==null) {
+			return gson.toJson(new ValidatorStatusCode(false, "No test sequence with the given name could be found"));
+		}
 		JsonObject nextDataTablesPage=RESTHelpers.convertTestResultsToJsonObject(tests, new DataTablesQuery(tests.size(), tests.size(), -1));
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
@@ -4049,7 +4051,7 @@ public class RESTServices {
 	@POST
 	@Path("/users/{id}/solvers/pagination/")
 	@Produces("application/json")	
-	public String getUsrSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+	public String getUserSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
 		if (!status.isSuccess()) {
@@ -4072,7 +4074,7 @@ public class RESTServices {
 	@POST
 	@Path("/users/{id}/benchmarks/pagination")
 	@Produces("application/json")	
-	public String getUsrBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+	public String getUserBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
 		if (!status.isSuccess()) {
@@ -4095,7 +4097,7 @@ public class RESTServices {
 	@POST
 	@Path("/users/{id}/rsolvers/pagination/")
 	@Produces("application/json")	
-	public String getUsrRecycledSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+	public String getUserRecycledSolversPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
 		if (!status.isSuccess()) {
@@ -4118,7 +4120,7 @@ public class RESTServices {
 	@POST
 	@Path("/users/{id}/rbenchmarks/pagination")
 	@Produces("application/json")	
-	public String getUsrRecycledBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+	public String getUserRecycledBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
 		if (!status.isSuccess()) {
@@ -4175,29 +4177,7 @@ public class RESTServices {
 		else
 			return gson.toJson(0);
 	}
-	
-	/**
-	 * Cancels a queue reservation 
-	 * @param spaceId the id of the space the reservation was for
-	 * @param queueId the id of the queue the reservation was for
-	 * @param request the object containing the dataTable information
-	 * @return a JSON object representing the success/failure of the cancellation
-	 * @author Wyatt Kaiser
-	 * @throws Exception
-	 */
-	@POST
-	@Path("/cancel/queueReservation/{spaceId}/{queueId}")
-	@Produces("application/json")
-	public String cancelQueueReservation(@PathParam("spaceId") int spaceId, @PathParam("queueId") int queueId, @Context HttpServletRequest request) throws Exception {
-		int userId=SessionUtil.getUserId(request);
-		if(!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
-		}
-		Queues.removeQueue(queueId);
-		return gson.toJson(new ValidatorStatusCode(true,"Reservation canceled successfully"));
-	}
-	
-	
+
 	/**
 	 * Returns the next page of entries in a given DataTable
 	 * @param request the object containing the DataTable information
@@ -4209,7 +4189,7 @@ public class RESTServices {
 	@GET
 	@Path("/community/pending/requests/")
 	@Produces("application/json")
-	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) throws Exception {
+	public String getAllPendingCommunityRequests(@Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		ValidatorStatusCode status=SpaceSecurity.canUserViewCommunityRequests(userId);
@@ -4274,7 +4254,7 @@ public class RESTServices {
 	@POST
 	@Path("/logging/{level}/{className}")
 	@Produces("application/json")
-	public String setLoggingLevel(@PathParam("level") String level, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
+	public String setLoggingLevel(@PathParam("level") String level, @PathParam("className") String className, @Context HttpServletRequest request){
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4316,13 +4296,12 @@ public class RESTServices {
 	@POST
 	@Path("/logging/allOffExcept/{level}/{className}")
 	@Produces("application/json")
-	public String setLoggingLevelOffForAllExceptClass(@PathParam("level") String inputLevel, @PathParam("className") String className, @Context HttpServletRequest request) throws Exception {
+	public String setLoggingLevelOffForAllExceptClass(@PathParam("level") String inputLevel, @PathParam("className") String className, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
-		
 		Level level = null; 
 
 		boolean success=false;
@@ -4372,7 +4351,7 @@ public class RESTServices {
 	@POST
 	@Path("/logging/{level}")
 	@Produces("application/json")
-	public String setLoggingLevel(@PathParam("level") String level, @Context HttpServletRequest request) throws Exception {
+	public String setLoggingLevel(@PathParam("level") String level, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4469,6 +4448,9 @@ public class RESTServices {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		if (Queues.get(queueId)==null) {
+			return gson.toJson(new ValidatorStatusCode(false, "The given queue could not be found"));
 		}
 		boolean success = Queues.setTestQueue(queueId);
 		
@@ -4700,7 +4682,7 @@ public class RESTServices {
 	@POST
 	@Path("/queue/global/{queueId}")
 	@Produces("application/json")
-	public String makeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
+	public String makeQueueGlobal(@PathParam("queueId") int queue_id,@Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);		
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4718,7 +4700,7 @@ public class RESTServices {
 	@POST
 	@Path("/queue/global/remove/{queueId}")
 	@Produces("application/json")
-	public String removeQueueGlobal(@Context HttpServletRequest request, @PathParam("queueId") int queue_id) {
+	public String removeQueueGlobal(@PathParam("queueId") int queue_id,@Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
 				
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
@@ -4738,7 +4720,7 @@ public class RESTServices {
 	@GET
 	@Path("/details/{type}/{id}")
 	@Produces("application/json")
-	public String getGsonPrimitive(@Context HttpServletRequest request, @PathParam("id") int id, @PathParam("type") String type) {
+	public String getGsonPrimitive(@PathParam("id") int id, @PathParam("type") String type, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (type.equals(R.SOLVER)) {
 			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
@@ -4752,14 +4734,14 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id,false));
-		} else if (type.equals("job")) {
+		} else if (type.equals(R.JOB)) {
 			ValidatorStatusCode status=JobSecurity.canGetJsonJob(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
 			return gson.toJson(Jobs.getIncludeDeleted(id));
 			
- 		} else if (type.equals("space")) {
+ 		} else if (type.equals(R.SPACE)) {
  			ValidatorStatusCode status=SpaceSecurity.canGetJsonSpace(id, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
