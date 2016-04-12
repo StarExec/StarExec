@@ -142,6 +142,9 @@ public class SolverSecurity {
 		}
 		
 		Configuration c= Solvers.getConfiguration(configId);
+		if (c==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		Solver solver = Solvers.getSolverByConfig(configId,false);
 
 		// If the old config and new config names are NOT the same, ensure the file pointed to by
@@ -420,6 +423,9 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canGetJsonConfiguration(int configId, int userId) {
 		Solver s=Solvers.getSolverByConfig(configId, true);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the specified solver");
 		}

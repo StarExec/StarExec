@@ -4233,8 +4233,9 @@ public class RESTServices {
 	public String removeQueue(@PathParam("id") int queueId, @Context HttpServletRequest request) {
 		log.debug("starting removeQueue");
 		int userId = SessionUtil.getUserId(request);
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		ValidatorStatusCode status = QueueSecurity.canUserEditQueue(userId, queueId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
 		Queues.removeQueue(queueId);
 
@@ -4505,10 +4506,10 @@ public class RESTServices {
 	@Produces("application/json")
 	public String suspendUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		if (!GeneralSecurity.hasAdminWritePrivileges(id)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		ValidatorStatusCode status = GeneralSecurity.canUserSuspendOrReinstateUser(userId, id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
-		
 		boolean success = Users.suspend(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User suspended successfully")) : gson.toJson(ERROR_DATABASE);
 
@@ -4524,8 +4525,9 @@ public class RESTServices {
 	@Produces("application/json")
 	public String reinstateUser(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		if (!GeneralSecurity.hasAdminWritePrivileges(id)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		ValidatorStatusCode status = GeneralSecurity.canUserSuspendOrReinstateUser(userId, id);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
 		
 		boolean success = Users.reinstate(userId);
@@ -4588,7 +4590,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String grantDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(userId,id);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -4607,7 +4609,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String suspendDeveloperStatus(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int id = SessionUtil.getUserId(request);
-		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(id);
+		ValidatorStatusCode status = UserSecurity.canUserGrantOrSuspendDeveloperPrivileges(userId,id);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
@@ -4676,38 +4678,38 @@ public class RESTServices {
 	/**
 	 * Marks a queue as being globally available
 	 * @param request 
-	 * @param queue_id The ID of the queue to update
+	 * @param queueId The ID of the queue to update
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
 	@Path("/queue/global/{queueId}")
 	@Produces("application/json")
-	public String makeQueueGlobal(@PathParam("queueId") int queue_id,@Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);		
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+	public String makeQueueGlobal(@PathParam("queueId") int queueId,@Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);	
+		ValidatorStatusCode status = QueueSecurity.canUserEditQueue(userId, queueId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
-		
-		return Queues.makeGlobal(queue_id) ? gson.toJson(new ValidatorStatusCode(true,"Queue is now global")) : gson.toJson(ERROR_DATABASE);
+		return Queues.makeGlobal(queueId) ? gson.toJson(new ValidatorStatusCode(true,"Queue is now global")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**
 	 * Removes a queue from the set of globally accessible queues
 	 * @param request
-	 * @param queue_id The ID of the queue to update
+	 * @param queueId The ID of the queue to update
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
 	@Path("/queue/global/remove/{queueId}")
 	@Produces("application/json")
-	public String removeQueueGlobal(@PathParam("queueId") int queue_id,@Context HttpServletRequest request) {
+	public String removeQueueGlobal(@PathParam("queueId") int queueId,@Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-				
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		ValidatorStatusCode status = QueueSecurity.canUserEditQueue(userId, queueId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
 		}
 		
-		return Queues.removeGlobal(queue_id) ? gson.toJson(new ValidatorStatusCode(true,"Queue no longer global")) : gson.toJson(ERROR_DATABASE);
+		return Queues.removeGlobal(queueId) ? gson.toJson(new ValidatorStatusCode(true,"Queue no longer global")) : gson.toJson(ERROR_DATABASE);
 	}
 	
 	/**

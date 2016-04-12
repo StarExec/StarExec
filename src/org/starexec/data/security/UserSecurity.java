@@ -90,8 +90,11 @@ public class UserSecurity {
 		return new ValidatorStatusCode(true);
 	}
 
-	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userId) {
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)){
+	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userIdToUpdate, int userIdMakingRequest) {
+		if (Users.get(userIdToUpdate)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (!GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}
 		return new ValidatorStatusCode(true);

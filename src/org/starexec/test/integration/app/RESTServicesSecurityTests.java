@@ -559,9 +559,6 @@ public class RESTServicesSecurityTests extends TestSequence {
 				user.getId(), new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
 		
 		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(admin.getId())));
-		
-		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(
-				-1, new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
 	}
 	
 	@StarexecTest
@@ -928,13 +925,13 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void subscribeUserTest() {
-		assertResultIsInvalid(services.subscribeUser(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.subscribeUser(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.subscribeUser(-1, TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	@StarexecTest
 	private void unsubscribeUserTest() {
-		assertResultIsInvalid(services.unsubscribeUser(user.getId(), TestUtil.getMockHttpRequest(user.getId())));
+		assertResultIsInvalid(services.unsubscribeUser(admin.getId(), TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.unsubscribeUser(-1, TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	

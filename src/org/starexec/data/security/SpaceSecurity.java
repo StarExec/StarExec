@@ -186,6 +186,9 @@ public class SpaceSecurity {
 	//TODO: Leaders can demote other leaders except at the community level, right?
 	public static ValidatorStatusCode canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
 		// Permissions check; ensures user is the leader of the community or is an admin
+		if (Users.get(userIdBeingDemoted)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
 		if(!GeneralSecurity.hasAdminWritePrivileges(userIdDoingDemoting)) {
 			return new ValidatorStatusCode(false, "You do not have permission to demote leaders in this space");
 		}
