@@ -16,6 +16,9 @@ public class UserSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and an error code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canDeleteUser(int userIdBeingDeleted, int userIdMakingRequest) {
+		if (Users.get(userIdBeingDeleted)==null) {
+			return new ValidatorStatusCode(false, "The given user does not exist");
+		}
 		if (!GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest) || Users.isAdmin(userIdBeingDeleted)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 		}

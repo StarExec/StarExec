@@ -488,6 +488,9 @@ public class SpaceSecurity {
 		} else {
 			for (Integer jid : jobIdsBeingCopied) {
 				Job j=Jobs.get(jid);
+				if (j==null) {
+					return new ValidatorStatusCode(false, "The given job could not be found");
+				}
 				if (j.getUserId()!=userId && !isAdmin) {
 					return new ValidatorStatusCode(false, "You are not the owner of all the jobs you are trying to move");
 				}
@@ -878,6 +881,9 @@ public class SpaceSecurity {
 		
 		// Ensure the user to edit the permissions of isn't themselves a leader
 		perm = Permissions.get(userIdBeingUpdated, spaceId);
+		if (perm==null) {
+			return new ValidatorStatusCode(false, "The given user is not a member of the given space");
+		}
 		if(perm.isLeader() && !GeneralSecurity.hasAdminWritePrivileges(requestUserId) && Communities.isCommunity(spaceId)){
 			return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
 		}	
@@ -889,6 +895,9 @@ public class SpaceSecurity {
     
     
     public static ValidatorStatusCode canUserLinkAllOrphaned(int userId, int userIdOfCaller,  int spaceId) {
+    	if (Users.get(userId)==null) {
+    		return new ValidatorStatusCode(false, "The given user could not be found");
+    	}
     	if (!GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller) && userId!=userIdOfCaller) {
     		return new ValidatorStatusCode(false, "You can only perform this operation on your own primitives");
     	}

@@ -204,6 +204,9 @@ public class SolverSecurity {
 	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserRecycleOrphanedSolvers(int userIdToDelete, int userIdMakingRequest) {
+		if (Users.get(userIdToDelete)==null) {
+			return new ValidatorStatusCode(false, "The given user does not exist");
+		}
 		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "You do not have permission to recycle solvers belonging to another user");
 		}
@@ -359,7 +362,9 @@ public class SolverSecurity {
 
 	public static ValidatorStatusCode canUserDeleteConfiguration(int configId, int userId) {
 		Configuration config=Solvers.getConfiguration(configId);
-		
+		if (config==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		Solver solver = Solvers.get(config.getSolverId());
 		if (solver==null) {
 			return new ValidatorStatusCode(false, "The solver associated with the given configuration could not be found");
