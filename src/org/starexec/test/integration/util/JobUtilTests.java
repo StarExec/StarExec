@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
@@ -31,6 +32,7 @@ public class JobUtilTests extends TestSequence {
 		JobUtil util = new JobUtil();
 		List<Integer> jobIds = util.createJobsFromFile(xml, admin.getId(), Communities.getTestCommunity().getId());
 		Assert.assertEquals(1, jobIds.size());
+		Jobs.deleteAndRemove(jobIds.get(0));
 	}
 	
 	@Override
