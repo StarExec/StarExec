@@ -234,8 +234,6 @@ function trySandbox {
 		fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
-	log "sandbox contents:"
-	ls "$LOCK_DIR"
 	if (
 	flock -x -w 4 200 || return 1
 		#we have exclusive rights to work on the lock for this sandbox within this block

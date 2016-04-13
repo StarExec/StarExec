@@ -572,11 +572,15 @@ public class SpaceSecurity {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
 			List<Solver> solvers=Solvers.get(solverIdsBeingCopied);
-			
+			int index=0;
 			for (Solver s : solvers) {
+				if (s==null) {
+					return new ValidatorStatusCode(false, "The following solver could not be found. ID = "+solverIdsBeingCopied.get(index));
+				}
 				if (s.buildStatus().getCode()==SolverBuildStatusCode.UNBUILT) {
 					return new ValidatorStatusCode(false, "Solvers cannot be copied until they are finished building");
 				}
+				index++;
 			}
 			
 			if (!doesUserHaveDiskQuotaForSolvers(solvers,userId).isSuccess()) {
