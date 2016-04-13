@@ -388,14 +388,15 @@ public class GridEngineBackend implements Backend{
 		
 			newHost = "group_name @" + shortQueueName + "hosts" +
 					  "\nhostlist " + hostList;
-			File f = new File("/var/tmp/newHost30.hgrp");
+			
+			File f = new File("/tmp/newHost30.hgrp");
 			FileUtils.writeStringToFile(f, newHost);
 			f.setReadable(true, false);
 			f.setWritable(true, false);
 
 			//Add the host
 
-			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Ahgrp /var/tmp/newHost30.hgrp", getSGEEnv());			
+			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Ahgrp /tmp/newHost30.hgrp", getSGEEnv());			
 			
 			// Create newQueue.q [COMPLETE]
 			String newQueue;
@@ -415,7 +416,7 @@ public class GridEngineBackend implements Backend{
 						"\npe_list               make" +
 						"\nrerun                 FALSE" +
 						"\nslots                 2" +
-						"\ntmpdir                /var/tmp" +
+						"\ntmpdir                /tmp" +
 						"\nshell                 /bin/csh" +
 						"\nprolog                NONE" +
 						"\nepilog                NONE" +
@@ -451,12 +452,12 @@ public class GridEngineBackend implements Backend{
 						"\ns_vmem                INFINITY"+
 						"\nh_vmem                INFINITY";
 			
-			File f2 = new File("/var/tmp/newQueue30.q");
+			File f2 = new File("/tmp/newQueue30.q");
 			FileUtils.writeStringToFile(f2, newQueue);
 			f2.setReadable(true, false);
 			f2.setWritable(true, false);
 				
-			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Aq /var/tmp/newQueue30.q", getSGEEnv());
+			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Aq /tmp/newQueue30.q", getSGEEnv());
 
 		    log.debug("created queue successfully");
 			return true;
