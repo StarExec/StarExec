@@ -123,6 +123,17 @@ public interface Backend{
      */
     public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames);
 
+
+    /**
+     * creates a new queue with variable number of slots, currently not implemented for non-grid backengines
+     *@param newQueueName the name of the destination queue
+     *@param nodeNames the names of the nodes to be moved 
+     *@param sourceQueueNames the names of the source queues
+     *@param slots the number of jobs run per queue node
+     *@return true if successful, false otherwise
+     */
+    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots);
+
     /**
      *@param destQueueName the name of the destination queue
      *@param nodeNames the names of the nodes to be moved 
