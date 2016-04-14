@@ -13,8 +13,13 @@
 	<form id="addJobPairsForm" method="post" action="${starexecRoot}/secure/add/jobPairs">
 		<input id="jobId" style="display:none" value="${jobId}" name="jobId"></input>
 		<p> Unchecking a configuration will delete all job pairs containing that configuration. </p>
-		<p> Checking a configuration will add a job pair for every job pair in the job that contains the same solver.
-			The new job pair will have the same benchmark and solver with the selected configuration. </p>
+		<br>
+		<p> If "all" is selected for a solver then checking a configuration will add a job pair for each 
+			selected configuration for all benchmarks in the job.</p>
+		<br>
+		<p> If "paired with solver" is selected then checking a configuration will add a job pair for every 
+			job pair in the job that contains the same solver. The new job pair will have the same benchmark 
+			and solver with the selected configuration. </p>
 		<fieldset id="fieldSolverSelection">
 			<legend>add/delete by config</legend>
 			<table id="tblSolverConfig" class="contentTbl">	
