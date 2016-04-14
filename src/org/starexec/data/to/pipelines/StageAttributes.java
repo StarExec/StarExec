@@ -84,6 +84,8 @@ public class StageAttributes {
 		cpuTimeout=-1;
 		maxMemory=-1;
 		spaceId=null;
+		preProcessor=null;
+		postProcessor=null;
 		setResultsInterval(0);
 		setStdoutSaveOption(SaveResultsOption.SAVE);
 		setExtraOutputSaveOption(SaveResultsOption.SAVE);
