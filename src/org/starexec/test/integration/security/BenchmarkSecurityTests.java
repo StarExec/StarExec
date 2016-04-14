@@ -171,17 +171,17 @@ public class BenchmarkSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user1=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		user3=ResourceLoader.loadUserIntoDatabase();
+		user1=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		user3=loader.loadUserIntoDatabase();
 		
 		Users.associate(user2.getId(), Communities.getTestCommunity().getId());
 		
-		space=ResourceLoader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
+		space=loader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
+		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		admin=Users.getAdmins().get(0);
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
-		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
+		benchmarkIds2=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);	
 		Assert.assertNotNull(benchmarkIds2);
 		benchmarkStatus = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), user1.getId()));
@@ -190,20 +190,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		for (Integer i : benchmarkIds2) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Users.deleteUser(user1.getId());
-		Users.deleteUser(user2.getId());
-		Users.deleteUser(user3.getId());
-		Spaces.removeSubspace(space.getId());
-		Spaces.removeSubspace(space2.getId());
-
-		
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

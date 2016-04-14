@@ -315,39 +315,26 @@ public class RESTHelpersTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		testUser = ResourceLoader.loadUserIntoDatabase();
-		extraUser = ResourceLoader.loadUserIntoDatabase();
-		community = ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), 1);
-		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
-		childOf1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
+		testUser = loader.loadUserIntoDatabase();
+		extraUser = loader.loadUserIntoDatabase();
+		community = loader.loadSpaceIntoDatabase(testUser.getId(), 1);
+		space1=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
+		space2=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
+		childOf1=loader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
 		admin = Users.getAdmins().get(0);
 		Users.associate(extraUser.getId(), community.getId());
-		s1 = ResourceLoader.loadSolverIntoDatabase(community.getId(), testUser.getId());
-		s2 = ResourceLoader.loadSolverIntoDatabase(community.getId(), testUser.getId());
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(community.getId(), testUser.getId());
-		j1 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
+		s1 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());
+		s2 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());
+		benchmarkIds = loader.loadBenchmarksIntoDatabase(community.getId(), testUser.getId());
+		j1 = loader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
 		j1PrimarySpace = Spaces.getJobSpace(j1.getPrimarySpace());
-		j2 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
+		j2 = loader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
 		q=Queues.getAllQ();
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(j1.getId());
-		Jobs.deleteAndRemove(j2.getId());
-		Spaces.removeSubspace(childOf1.getId());
-		Spaces.removeSubspace(space2.getId());
-		Spaces.removeSubspace(space1.getId());
-		Spaces.removeSubspace(community.getId());
-		Solvers.deleteAndRemoveSolver(s1.getId());
-		Solvers.deleteAndRemoveSolver(s2.getId());
-		for (Integer id : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(id);
-		}
-		Users.deleteUser(testUser.getId());
-		Users.deleteUser(extraUser.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

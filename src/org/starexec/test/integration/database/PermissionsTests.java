@@ -188,19 +188,19 @@ public class PermissionsTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		owner=ResourceLoader.loadUserIntoDatabase();
-		spaceMember=ResourceLoader.loadUserIntoDatabase();
-		noPerms=ResourceLoader.loadUserIntoDatabase();
+		owner=loader.loadUserIntoDatabase();
+		spaceMember=loader.loadUserIntoDatabase();
+		noPerms=loader.loadUserIntoDatabase();
 		
 		admin=Users.getAdmins().get(0);
 		
-		space=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), Communities.getTestCommunity().getId());
+		space=loader.loadSpaceIntoDatabase(owner.getId(), Communities.getTestCommunity().getId());
 		
 		Users.associate(spaceMember.getId(), space.getId());
 		
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), owner.getId());
-		solver2=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), owner.getId());
-		benchmarks=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), owner.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), owner.getId());
+		solver2=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), owner.getId());
+		benchmarks=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), owner.getId());
 		benchmarkDownloadable=Benchmarks.get(benchmarks.get(0));
 		Benchmarks.updateDetails(benchmarkDownloadable.getId(), benchmarkDownloadable.getName(), 
 				benchmarkDownloadable.getDescription(), true, benchmarkDownloadable.getType().getId());
@@ -208,24 +208,13 @@ public class PermissionsTests extends TestSequence {
 		benchmarkNoDownload=Benchmarks.get(benchmarks.get(1));
 		Benchmarks.updateDetails(benchmarkNoDownload.getId(), benchmarkNoDownload.getName(), 
 				benchmarkNoDownload.getDescription(), false, benchmarkNoDownload.getType().getId());
-		job = ResourceLoader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarks);
-		developer = ResourceLoader.loadUserIntoDatabase("test", "dev", "dev@uiowa.edu", "pass", "Iowa", R.DEVELOPER_ROLE_NAME);		
+		job = loader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarks);
+		developer = loader.loadUserIntoDatabase("test", "dev", "dev@uiowa.edu", "pass", "Iowa", R.DEVELOPER_ROLE_NAME);		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		
-		Jobs.deleteAndRemove(job.getId());
-		Spaces.removeSubspace(space.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Solvers.deleteAndRemoveSolver(solver2.getId());
-		for (Integer i : benchmarks) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Users.deleteUser(owner.getId());
-		Users.deleteUser(spaceMember.getId());
-		Users.deleteUser(noPerms.getId());
-		Users.deleteUser(developer.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 

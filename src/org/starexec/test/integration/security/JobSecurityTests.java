@@ -74,32 +74,24 @@ public class JobSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
+		user=loader.loadUserIntoDatabase();
+		nonOwner=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,100,100,1);
+		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,100,100,1);
 		Assert.assertNotNull(Jobs.get(job.getId()));
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Processors.delete(postProc.getId());
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
-		Users.deleteUser(nonOwner.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

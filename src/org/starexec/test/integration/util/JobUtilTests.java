@@ -32,7 +32,7 @@ public class JobUtilTests extends TestSequence {
 	@StarexecTest
 	private void testJobXMLUpload() throws Exception {
 		int cId = solver.getConfigurations().get(0).getId();
-		File xml = ResourceLoader.getTestXMLFile(cId, cId, benchmarkIds.get(0), benchmarkIds.get(1));
+		File xml = loader.getTestXMLFile(cId, cId, benchmarkIds.get(0), benchmarkIds.get(1));
 		JobUtil util = new JobUtil();
 		List<Integer> jobIds = util.createJobsFromFile(xml, admin.getId(), Communities.getTestCommunity().getId());
 		Assert.assertEquals(1, jobIds.size());
@@ -67,18 +67,14 @@ public class JobUtilTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		admin = Users.getAdmins().get(0);
-		solver = ResourceLoader.loadSolverIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
+		solver = loader.loadSolverIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
+		benchmarkIds = loader.loadBenchmarksIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (int i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

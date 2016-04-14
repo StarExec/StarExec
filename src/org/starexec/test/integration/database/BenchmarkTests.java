@@ -113,7 +113,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void AssociateBenchmarksTest() {
-		Space subspace=ResourceLoader.loadSpaceIntoDatabase(user.getId(), space.getId());
+		Space subspace=loader.loadSpaceIntoDatabase(user.getId(), space.getId());
 		List<Integer> ids= new ArrayList<Integer>();
 		for (Benchmark b : benchmarks) {
 			ids.add(b.getId());
@@ -199,7 +199,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteBenchTest() {
-		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		for (Integer id : ids) {
 			Assert.assertNotNull(Benchmarks.get(id));
 			Assert.assertTrue(Benchmarks.delete(id));
@@ -211,8 +211,8 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void setRecycledToDeletedTest() {
-		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
-		List<Integer> ids2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user2.getId());
+		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		List<Integer> ids2=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user2.getId());
 
 		for (Integer id : ids) {
 			Assert.assertTrue(Benchmarks.recycle(id));
@@ -239,26 +239,22 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void addBenchmarkFromTextTest() throws Exception {
-		User newUser = ResourceLoader.loadUserIntoDatabase();
-		Integer id = BenchmarkUploader.addBenchmarkFromText("new benchmark", "test bench", newUser.getId(), Processors.getNoTypeProcessor().getId(), false);
+		Integer id = BenchmarkUploader.addBenchmarkFromText("new benchmark", "test bench", user.getId(), Processors.getNoTypeProcessor().getId(), false);
 		Benchmark b = Benchmarks.get(id);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
-		Users.deleteUser(newUser.getId());
 	}
 	
 	@StarexecTest
 	private void addBenchmarkFromFileTest() throws Exception {
-		User newUser = ResourceLoader.loadUserIntoDatabase();
 
 		File f = Util.getSandboxDirectory();
 		File benchFile = new File(f, "benchmark.txt");
 		FileUtils.writeStringToFile(benchFile, "new benchmark");
-		int benchId = BenchmarkUploader.addBenchmarkFromFile(benchFile, newUser.getId(), Processors.getNoTypeProcessor().getId(), false);
+		int benchId = BenchmarkUploader.addBenchmarkFromFile(benchFile, user.getId(), Processors.getNoTypeProcessor().getId(), false);
 		Benchmark b = Benchmarks.get(benchId);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(benchId));
-		Users.deleteUser(newUser.getId());
 	}
 	
 	@StarexecTest
@@ -330,7 +326,7 @@ public class BenchmarkTests extends TestSequence {
 
 	@StarexecTest
 	private void cleanDeletedOrphanedBenchmarksTest() {
-		List<Integer> benchIds = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
+		List<Integer> benchIds = loader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
 		Spaces.removeBenches(benchIds, space.getId());
 		for (int id : benchIds) {
 			Benchmarks.delete(id);
@@ -432,7 +428,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void isPublicInPublicSpaceTest() {
-		Space newSpace = ResourceLoader.loadSpaceIntoDatabase(user.getId(), space.getId());
+		Space newSpace = loader.loadSpaceIntoDatabase(user.getId(), space.getId());
 		Spaces.setPublicSpace(newSpace.getId(), user.getId(), true, false);
 		int id = benchmarks.get(0).getId();
 		Benchmarks.associate(id, newSpace.getId());
@@ -457,8 +453,8 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void processTest() throws Exception {
-		User tempUser = ResourceLoader.loadUserIntoDatabase();
-		Space tempSpace = ResourceLoader.loadSpaceIntoDatabase(tempUser.getId(), 1);
+		User tempUser = loader.loadUserIntoDatabase();
+		Space tempSpace = loader.loadSpaceIntoDatabase(tempUser.getId(), 1);
 		
 		List<Integer> benchIds = Benchmarks.copyBenchmarks(benchmarks, tempUser.getId(), tempSpace.getId());
 		Integer statusId = Benchmarks.process(tempSpace.getId(), benchProcessor, false, tempUser.getId(), true);
@@ -476,8 +472,6 @@ public class BenchmarkTests extends TestSequence {
 			Assert.assertEquals("test", attrs.get("test-attribute"));
 			Benchmarks.deleteAndRemoveBenchmark(benchId);
 		}
-		Spaces.removeSubspace(tempSpace.getId());
-		Users.deleteUser(tempUser.getId());
 	}
 	
 	@StarexecTest
@@ -506,7 +500,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void recycleOrphansTest() {
-		List<Integer> newBenchmarks = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
+		List<Integer> newBenchmarks = loader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
 		Spaces.removeBenches(newBenchmarks, space.getId());
 		Assert.assertTrue(Benchmarks.recycleOrphanedBenchmarks(user.getId()));
 		for (Integer i : newBenchmarks) {
@@ -523,29 +517,21 @@ public class BenchmarkTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
+		user=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		List<Integer> ids=new ArrayList<Integer>();
-		ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);
-		benchProcessor = ResourceLoader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
+		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
 	}
 	
 
 	@Override
 	protected void teardown() throws Exception {
-		for (Benchmark b : benchmarks) { 
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
-		}
-		Processors.delete(benchProcessor.getId());
-		Spaces.removeSubspace(space2.getId());
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
-		Users.deleteUser(user2.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 	
 	private boolean containsBenchmark(List<Benchmark> benches, Benchmark b) {

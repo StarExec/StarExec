@@ -256,36 +256,25 @@ public class JobPairTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
+		user=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		nonOwner=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
-		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
+		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Assert.assertNotNull(Jobs.get(job.getId()));				
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job.getId());
-		Jobs.deleteAndRemove(job2.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Processors.delete(postProc.getId());
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
-		Users.deleteUser(user2.getId());
-		Users.deleteUser(nonOwner.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

@@ -127,9 +127,9 @@ public class SpaceSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		Space testCommunity=Communities.getTestCommunity();
 		
-		owner=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
-		noPerms=ResourceLoader.loadUserIntoDatabase();
+		owner=loader.loadUserIntoDatabase();
+		nonOwner=loader.loadUserIntoDatabase();
+		noPerms=loader.loadUserIntoDatabase();
 		
 		Assert.assertNotNull(owner);
 		Assert.assertNotNull(nonOwner);
@@ -137,10 +137,10 @@ public class SpaceSecurityTests extends TestSequence {
 
 		
 		admin=Users.getAdmins().get(0);
-		space1=ResourceLoader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
+		space1=loader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
+		space2=loader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
 		Assert.assertTrue(Permissions.get(owner.getId(), space1.getId()).isLeader() );
-		publicSpace=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), testCommunity.getId());
+		publicSpace=loader.loadSpaceIntoDatabase(owner.getId(), testCommunity.getId());
 		Users.associate(nonOwner.getId(), space2.getId());
 		Users.associate(noPerms.getId(),space2.getId());
 		
@@ -165,12 +165,7 @@ public class SpaceSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspace(space1.getId());
-		Spaces.removeSubspace(space2.getId());
-		Spaces.removeSubspace(publicSpace.getId());
-		Users.deleteUser(owner.getId());
-		Users.deleteUser(nonOwner.getId());
-		Users.deleteUser(noPerms.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

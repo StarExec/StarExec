@@ -69,23 +69,17 @@ public class StatisticsTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		spaceOverviewPairs = TestUtil.getFakeJobPairs(2000);
-		owner = ResourceLoader.loadUserIntoDatabase();
+		owner = loader.loadUserIntoDatabase();
 		admin = Users.getAdmins().get(0);
-		space = ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
-		solver = ResourceLoader.loadSolverIntoDatabase(space.getId(), owner.getId());
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), owner.getId());
-		job = ResourceLoader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarkIds);
+		space = loader.loadSpaceIntoDatabase(owner.getId(), 1);
+		solver = loader.loadSolverIntoDatabase(space.getId(), owner.getId());
+		benchmarkIds = loader.loadBenchmarksIntoDatabase(space.getId(), owner.getId());
+		job = loader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarkIds);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Integer i :benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(owner.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

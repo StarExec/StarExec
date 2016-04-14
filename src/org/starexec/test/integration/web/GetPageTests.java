@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.command.Connection;
-import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -379,7 +378,7 @@ public class GetPageTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
+		user=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
 		testCommunity=Communities.getTestCommunity();
 		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
@@ -389,23 +388,23 @@ public class GetPageTests extends TestSequence {
 		con.login();
 		adminCon.login();
 		//space1 will contain solvers and benchmarks
-		space1=ResourceLoader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
-		newCommunity = ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
+		space1=loader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
+		newCommunity = loader.loadSpaceIntoDatabase(admin.getId(), 1);
 		
 		q=Queues.getAllActive().get(0);
-		downloadDir=ResourceLoader.getDownloadDirectory();
-		solver=ResourceLoader.loadSolverIntoDatabase(space1.getId(), user.getId());
-		solver2=ResourceLoader.loadSolverIntoDatabase(space1.getId(), user.getId());
+		downloadDir=loader.getDownloadDirectory();
+		solver=loader.loadSolverIntoDatabase(space1.getId(), user.getId());
+		solver2=loader.loadSolverIntoDatabase(space1.getId(), user.getId());
 
-		config=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
-		proc=ResourceLoader.loadProcessorIntoDatabase(ProcessorType.POST, testCommunity.getId());
+		config=loader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		proc=loader.loadProcessorIntoDatabase(ProcessorType.POST, testCommunity.getId());
 
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase(space1.getId(), user.getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase(space1.getId(), user.getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
 		solverIds.add(solver2.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
-		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(user.getId());
+		job=loader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
+		settings=loader.loadDefaultSettingsProfileIntoDatabase(user.getId());
 		
 		benchUpload = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space1.getId(), user.getId()));
 		spaceUpload = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(user.getId()));
@@ -413,18 +412,7 @@ public class GetPageTests extends TestSequence {
 	
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspace(space1.getId());
-		Spaces.removeSubspace(newCommunity.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Solvers.deleteAndRemoveSolver(solver2.getId());
-		Processors.delete(proc.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		
-		Jobs.deleteAndRemove(job.getId());
-		Settings.deleteProfile(settings.getId());
-		Users.deleteUser(user.getId());
+		loader.deleteAllPrimitives();
 	}
 
 	@Override

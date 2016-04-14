@@ -42,15 +42,14 @@ public class GeneralSecurityTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		plaintextPassword=Util.getTempPassword();
-		user1=ResourceLoader.loadUserIntoDatabase(plaintextPassword);
+		user1=loader.loadUserIntoDatabase(plaintextPassword);
 		admin=Users.getAdmins().get(0);
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

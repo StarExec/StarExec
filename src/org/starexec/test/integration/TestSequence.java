@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.starexec.test.TestUtil;
+import org.starexec.test.resources.ResourceLoader;
 
 public abstract class TestSequence {
 	protected static final Logger log = Logger.getLogger(TestSequence.class);	
@@ -18,6 +19,7 @@ public abstract class TestSequence {
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
+	protected ResourceLoader loader = null; 
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
 	
@@ -63,6 +65,7 @@ public abstract class TestSequence {
 		try {
 			testsPassed=0;
 			testsFailed=0;
+			loader = new ResourceLoader();
 			clearResults();
 			status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 			turnOffExternalLogging(); 

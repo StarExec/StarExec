@@ -230,9 +230,9 @@ public class SpaceTests extends TestSequence {
 
 	@StarexecTest
 	private void SpacePathCreateTest() {
-		Space space1=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		Space space1=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
 		String space1Path=community.getName()+R.JOB_PAIR_PATH_DELIMITER+space1.getName();
-		Space space2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
+		Space space2=loader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
 		String space2Path=space1Path+R.JOB_PAIR_PATH_DELIMITER+space2.getName();
 		
 		List<Space> spaceList=new ArrayList<Space>();
@@ -347,14 +347,14 @@ public class SpaceTests extends TestSequence {
 	
 	@Override
 	protected void setup() {
-		leader=ResourceLoader.loadUserIntoDatabase();
-		member1=ResourceLoader.loadUserIntoDatabase();
-		member2=ResourceLoader.loadUserIntoDatabase();
+		leader=loader.loadUserIntoDatabase();
+		member1=loader.loadUserIntoDatabase();
+		member2=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		community = ResourceLoader.loadSpaceIntoDatabase(leader.getId(), 1);	
-		subspace=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
-		subspace2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
-		subspace3=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
+		community = loader.loadSpaceIntoDatabase(leader.getId(), 1);	
+		subspace=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		subspace2=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		subspace3=loader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
 		Users.associate(member1.getId(), community.getId());
 		Users.associate(member2.getId(), community.getId());
 		Users.associate(member1.getId(), subspace.getId());
@@ -364,36 +364,20 @@ public class SpaceTests extends TestSequence {
 		
 		
 		
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
 
-		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
+		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
 		benchmarks=new ArrayList<Benchmark>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));
 		}
-		job = ResourceLoader.loadJobIntoDatabase(subspace.getId(), leader.getId(), solver.getId(), ids);
+		job = loader.loadJobIntoDatabase(subspace.getId(), leader.getId(), solver.getId(), ids);
 		
 	}
 	
 	@Override
 	protected void teardown() {
-		Jobs.deleteAndRemove(job.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Benchmark b : benchmarks)  {
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
-		}
-		
-		Spaces.removeSubspace(subspace.getId());
-		Spaces.removeSubspace(subspace2.getId());
-		Spaces.removeSubspace(subspace3.getId());
-		boolean success=Spaces.removeSubspace(community.getId());
-		
-		Users.deleteUser(leader.getId());
-		Users.deleteUser(member1.getId());
-		Users.deleteUser(member2.getId());
-		
-
-		Assert.assertTrue(success);
+		loader.deleteAllPrimitives();
 	}
 	@Override
 	protected String getTestName() {

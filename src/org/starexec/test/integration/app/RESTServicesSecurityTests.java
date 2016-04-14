@@ -1014,12 +1014,12 @@ public class RESTServicesSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user = ResourceLoader.loadUserIntoDatabase();
+		user = loader.loadUserIntoDatabase();
 		admin = Users.getAdmins().get(0);
-		space = ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
-		solver = ResourceLoader.loadSolverIntoDatabase(space.getId(), admin.getId());
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), admin.getId());
-		job = ResourceLoader.loadJobIntoDatabase(space.getId(), admin.getId(), solver.getId(), benchmarkIds);
+		space = loader.loadSpaceIntoDatabase(admin.getId(), 1);
+		solver = loader.loadSolverIntoDatabase(space.getId(), admin.getId());
+		benchmarkIds = loader.loadBenchmarksIntoDatabase(space.getId(), admin.getId());
+		job = loader.loadJobIntoDatabase(space.getId(), admin.getId(), solver.getId(), benchmarkIds);
 		anonymousJobId = AnonymousLinks.addAnonymousLink("job", job.getId(), PrimitivesToAnonymize.NONE);
 		benchmarkStatus = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), admin.getId()));
 		spaceStatus = Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(admin.getId()));
@@ -1027,19 +1027,13 @@ public class RESTServicesSecurityTests extends TestSequence {
 		invalidBenchId = Uploads.getFailedBenches(benchmarkStatus.getId()).get(0).getId();
 		Websites.add(solver.getId(), "http://www.fakesite.com", "testsite", WebsiteType.SOLVER);
 		solverWebsite = Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0);
-		postProcessor = ResourceLoader.loadProcessorIntoDatabase(ProcessorType.POST, space.getId());
+		postProcessor = loader.loadProcessorIntoDatabase(ProcessorType.POST, space.getId());
 		allQ = Queues.getAllQ();
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Jobs.deleteAndRemove(job.getId());
-		for (int i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

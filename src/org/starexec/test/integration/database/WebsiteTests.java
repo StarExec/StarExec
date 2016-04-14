@@ -99,19 +99,16 @@ public class WebsiteTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
+		user=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }
