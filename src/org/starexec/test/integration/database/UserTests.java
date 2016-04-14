@@ -13,10 +13,11 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
@@ -29,6 +30,7 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Hash;
+
 
 /**
  * Tests for org.starexec.data.database.Users.java
@@ -393,6 +395,11 @@ public class UserTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void GetCountInSpaceQueryTest() {
+		Assert.assertEquals(1, Users.getCountInSpace(space.getId(), testUser.getFirstName()));
+	}
+	
+	@StarexecTest
 	private void GetDiskUsageTest() {
 		Assert.assertEquals(0,Users.getDiskUsage(user1.getId()));
 		Solver solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user1.getId());
@@ -482,6 +489,40 @@ public class UserTests extends TestSequence {
 		Assert.assertFalse(Users.isSuspended(user1.getId()));		
 	}
 	
+	@StarexecTest
+	private void createNewDefaultSettingsTest() {
+		DefaultSettings d = new DefaultSettings();
+		d.setCpuTimeout(101);
+		d.setWallclockTimeout(2421);
+		int id = Users.createNewDefaultSettings(d);
+		Assert.assertEquals(d,Settings.getProfileById(id));
+	}
+	
+	@StarexecTest
+	private void subscribeAndUnsubscribeTest() {
+		Assert.assertTrue(Users.subscribeToReports(user1.getId()));
+		boolean found = false;
+		for (User u : Users.getAllUsersSubscribedToReports()) {
+			found = found || u.getId()==user1.getId();
+		}
+		
+		Assert.assertTrue(found);
+		
+		Assert.assertTrue(Users.unsubscribeFromReports(user1.getId()));
+		found = false;
+		for (User u : Users.getAllUsersSubscribedToReports()) {
+			found = found || u.getId()==user1.getId();
+		}
+		Assert.assertFalse(found);
+	}
+	
+	@StarexecTest
+	private void getUnregisteredTest() {
+		Assert.assertNull(Users.getUnregistered(user1.getId()));
+		User unregisteredUser = ResourceLoader.loadUserIntoDatabase("test", "user", "temp@fake.com", "abc", "Iowa", R.UNAUTHORIZED_ROLE_NAME);
+		Assert.assertEquals(unregisteredUser.getId(), Users.getUnregistered(unregisteredUser.getId()));
+		Users.deleteUser(unregisteredUser.getId());
+	}
 	
 	
 	@Override
@@ -500,6 +541,7 @@ public class UserTests extends TestSequence {
 		space=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), Communities.getTestCommunity().getId());
 		subspace=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space.getId());
 		comm=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
+		Users.associate(admin.getId(), space.getId());
 	}
 
 	@Override

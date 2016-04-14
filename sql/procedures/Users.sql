@@ -293,18 +293,6 @@ CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 		WHERE user_id  = _userId
 		AND   space_id = _spaceId;
 	END // 
-	
--- Gets the user that owns the given job
-DROP PROCEDURE IF EXISTS GetUserByJob;
-CREATE PROCEDURE GetUserByJob(IN _jobId INT)
-	BEGIN
-		SELECT *
-		FROM users
-			INNER JOIN jobs AS owner ON users.id = owner.user_id
-			INNER JOIN user_roles AS roles ON users.email = roles.email
-
-		WHERE owner.id = _jobId;
-	END //
 
 -- Gets every user subscribed to the weekly reports
 -- Author: Albert Giegerich

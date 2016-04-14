@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
@@ -557,9 +556,9 @@ public class Users {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
+			procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
 			procedure.setInt(1, id);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
 			if (results.next()) {
 				return resultSetToUser(results);
@@ -611,36 +610,6 @@ public class Users {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @param jobId the job id to get the user for
-	 * @return the user/owner of the job
-	 * @author Wyatt Kaiser
-	 */
-	public static User getUserByJob(int jobId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserByJob(?)}");
-			procedure.setInt(1, jobId);
-			 results = procedure.executeQuery();
-			while (results.next()) {
-				User u = resultSetToUser(results);
-				return u;
-			}
-				
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-	
 	private static String getUserOrderColumn(int columnIndex) {
 		if (columnIndex==0) {
 			return "full_name";
@@ -1297,7 +1266,7 @@ public class Users {
 	 * @param willBeSubscribed True to subscribe and false to unsubscribe
 	 * @return True on success and false otherwise
 	 */
-	public static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
+	private static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{

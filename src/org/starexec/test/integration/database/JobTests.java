@@ -58,15 +58,7 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(testJob.getName(),job.getName());
 		
 	}
-	
-	@StarexecTest
-	private void getUserByJobTest() {
-		User u=Users.getUserByJob(job.getId());
-		Assert.assertEquals(user.getId(),u.getId());
-	}
-	
-	
-	
+
 	@StarexecTest
 	private void GetByUserTest() {
 		List<Job> jobs=Jobs.getByUserId(user.getId());

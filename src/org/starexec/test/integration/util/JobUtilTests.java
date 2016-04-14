@@ -54,7 +54,7 @@ public class JobUtilTests extends TestSequence {
 		
 		Assert.assertEquals(1, j.getJobPairs().size());
 		JobPair jp = j.getJobPairs().get(0);
-		Assert.assertEquals(4, jp.getStages().size());
+		Assert.assertEquals(3, jp.getStages().size());
 		
 		Jobs.deleteAndRemove(j.getId());
 	}
