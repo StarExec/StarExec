@@ -926,7 +926,7 @@ function cleanUpAfterKilledBuildJob {
 function copyDependencies {
 safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
 log "solver copy complete"
-	if [ $SOLVER_CACHED -eq 0 ]; then
+if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
 			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
