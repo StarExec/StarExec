@@ -369,10 +369,17 @@ public class Solvers {
 			procedure=con.prepareCall("CALL GetDeletedSolvers()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				int id=results.getInt("id");
+				Solver s = resultSetToSolver(results);
+				if (new File(s.getPath()).exists()) {
+					log.warn("a deleted solver still has an on-disk directory! ID = "+s.getId());
+					if (!FileUtils.deleteQuietly(new File(s.getPath()))) {
+						log.warn("failed to delete solver on disk! Not removing solver from database.");
+						continue;
+					}
+				}
 				// the solver has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedSolvers.contains(id)) {
-					removeSolverFromDatabase(id,con);
+				if (!parentedSolvers.contains(s.getId())) {
+					removeSolverFromDatabase(s.getId(),con);
 				}
 			}	
 			return true;

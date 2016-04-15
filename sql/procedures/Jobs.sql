@@ -556,7 +556,7 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 		SET deleted=true
 		WHERE id = _jobId;
 		DELETE FROM job_pairs
-		WHERE job_id=_jobId;
+		WHERE job_id=_jobId;		
 	END //
 
 DROP PROCEDURE IF EXISTS GetOrphanedJobIds;
@@ -807,12 +807,16 @@ CREATE PROCEDURE SetPairsOfStatusToStatus(IN _jobId INT, IN _newCode INT, IN _cu
 	
 -- Removes all jobs in the database that are deleted and also orphaned. Runs periodically.
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveDeletedOrphanedJobs;
-CREATE PROCEDURE RemoveDeletedOrphanedJobs()
+DROP PROCEDURE IF EXISTS GetDeletedJobs;
+CREATE PROCEDURE GetDeletedJobs()
 	BEGIN
-		DELETE jobs FROM jobs
-			LEFT JOIN job_assoc ON job_assoc.job_id=jobs.id
-		WHERE deleted=true AND job_assoc.space_id IS NULL;
+		SELECT * FROM jobs WHERE deleted = true;
+	END //
+	
+DROP PROCEDURE IF EXISTS GetJobsAssociatedWithSpaces;
+CREATE PROCEDURE GetJobsAssociatedWithSpaces()
+	BEGIN
+		SELECT DISTINCT job_id AS ID FROM job_assoc;
 	END //
 	
 -- Gives back the number of pairs with the given status
@@ -928,5 +932,11 @@ CREATE PROCEDURE GetAllJobPairBenchmarkInputsByJob(IN _jobId INT)
 		FROM jobpair_inputs JOIN job_pairs ON job_pairs.id=jobpair_inputs.jobpair_id
 		WHERE job_pairs.job_id=_jobId ORDER BY input_number ASC;
 	END //
+	
+DROP PROCEDURE IF EXISTS GetAllJobIds;
+CREATE PROCEDURE GetAllJobIds()
+	BEGIN
+		SELECT id FROM jobs;
+	END // 
 	
 DELIMITER ; -- this should always be at the end of the file

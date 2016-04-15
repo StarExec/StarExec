@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
@@ -659,16 +660,46 @@ public class Jobs {
 	public static boolean cleanOrphanedDeletedJobs() {
 		Connection con=null;
 		CallableStatement procedure=null;
+		ResultSet results = null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedJobs()}");
-			procedure.executeUpdate();
+			//will contain the id of every job that is associated with a space
+			HashSet<Integer> parentedJobs = new HashSet<Integer>();
+			procedure=con.prepareCall("{CALL GetJobsAssociatedWithSpaces()}");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				parentedJobs.add(results.getInt("id"));
+			}
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+			procedure=con.prepareCall("CALL GetDeletedJobs()");
+			results=procedure.executeQuery();
+			
+			while (results.next()) {
+				Job j = resultsToJob(results);
+				
+				if (new File(Jobs.getDirectory(j.getId())).exists()) {
+					log.warn("a deleted job still exists on disk! id = "+j.getId());
+					if (!FileUtils.deleteQuietly(new File(Jobs.getDirectory(j.getId())))) {
+						log.warn("the job could not be deleted! Not removing job from the database");
+						continue;
+					}
+				}
+				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
+				if (!parentedJobs.contains(j.getId())) {
+					removeJobFromDatabase(j.getId());
+				}
+			}	
+			
+			
 			return true;
 		} catch (Exception e) {
 			log.error("cleanOrphanedDeletedJobs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}
@@ -737,13 +768,36 @@ public class Jobs {
 	 */
 	public static boolean delete(int jobId) {
 		Connection con=null;
+		CallableStatement procedure = null;
 		try {
+			//we should kill jobs before deleting  them so no additional pairs are run
+			if (!Jobs.isJobComplete(jobId)) {
+				Jobs.kill(jobId);
+			}
+			// we should delete on disk first. If some error occurs during the delete process,
+			// it is better that the job is not marked deleted, as the user can simply press delete
+			// again as long as we don't mark it.
+			if (!Util.safeDeleteDirectory(getDirectory(jobId))) {
+				log.error("there was an error deleting the job directory!");
+				return false;
+			}
+			
+			
 			con=Common.getConnection();
-			return delete(jobId,con);
+			
+			
+			// Remove the jobs stats from the database.
+			Jobs.removeCachedJobStats(jobId,con);
+			procedure = con.prepareCall("{CALL DeleteJob(?)}");
+			procedure.setInt(1, jobId);	
+			procedure.executeUpdate();
+
+			return true;
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -804,46 +858,6 @@ public class Jobs {
 		removeCachedJobStatsForConfigs( jobId, configIds );
 	}
 
-
-	
-	
-	
-	/**
-	 * Deletes a job from disk, and also sets the delete property to true in the database. Jobs
-	 * are only removed from  the database entirely when they have no more space associations.
-	 * @param jobId The ID of the job to delete
-	 * @param con An open database connection
-	 * @return True on success, false otherwise
-	 * @author Eric Burns
-	 */
-	protected static boolean delete(int jobId, Connection con) {
-		log.info("Deleting job " + jobId);
-		//we should kill jobs before deleting  them so no additional pairs are run
-		if (!Jobs.isJobComplete(jobId)) {
-			Jobs.kill(jobId);
-		}
-		CallableStatement procedure = null;
-		try {
-			// Remove the jobs stats from the database.
-			Jobs.removeCachedJobStats(jobId,con);
-
-			procedure = con.prepareCall("{CALL DeleteJob(?)}");
-			procedure.setInt(1, jobId);		
-			procedure.executeUpdate();	
-			
-			Util.safeDeleteDirectory(getDirectory(jobId));
-			
-			return true;
-		} catch (Exception e) {
-			log.error("Delete Job with jobId = "+jobId+" says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
-
-
-	
 	/**
 	 * Gets information about the job with the given ID. Job pair information is not returned.
 	 * Deleted jobs are not returned.
@@ -933,6 +947,23 @@ public class Jobs {
 		return get(jobId, false, true);
 	}
 
+	private static Job resultsToJob(ResultSet results) throws SQLException {
+		Job j = new Job();
+		j.setId(results.getInt("id"));
+		j.setUserId(results.getInt("user_id"));
+		j.setName(results.getString("name"));
+		j.setPrimarySpace(results.getInt("primary_space"));
+		j.setCreateTime(results.getTimestamp("created"));
+		j.setCompleteTime(results.getTimestamp("completed"));
+		j.setCpuTimeout(results.getInt("cpuTimeout"));
+		j.setWallclockTimeout(results.getInt("clockTimeout"));
+		j.setMaxMemory(results.getLong("maximum_memory"));
+		j.setBuildJob(results.getBoolean("buildJob"));
+		j.setDescription(results.getString("description"));
+		j.setSeed(results.getLong("seed"));
+		return j;
+	}
+	
 	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {
 		Connection con = null;
 		ResultSet results=null;
@@ -948,23 +979,11 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
 			if(results.next()){
-				Job j = new Job();
+				Job j = resultsToJob(results);
 				if (getSimplePairs) {
 					j.setJobPairs(getPairsSimple(jobId));
 				}
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));
 				j.setQueue(Queues.get(con,results.getInt("queue_id")));
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setCompleteTime(results.getTimestamp("completed"));
-				j.setCpuTimeout(results.getInt("cpuTimeout"));
-				j.setWallclockTimeout(results.getInt("clockTimeout"));
-				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setBuildJob(results.getBoolean("buildJob"));
-				j.setDescription(results.getString("description"));
-				j.setSeed(results.getLong("seed"));
 				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
 				return j;
 			}
@@ -3797,6 +3816,34 @@ public class Jobs {
 			Common.safeClose(con);
 		}
 		return 0;
+	}
+	
+	/**
+	 * Returns the IDs of all jobs in the system
+	 * @param jobId 
+	 * @return
+	 */
+	public static List<Integer> getAllJobIds() {
+		Connection con=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllJobIds()}");
+			results = procedure.executeQuery();
+			List<Integer> ids = new ArrayList<Integer>();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			return ids;
+		} catch (Exception e) {
+			log.error("isJobPausedOrKilled says " +e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
 	}
 	
 	/**

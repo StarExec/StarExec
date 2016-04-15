@@ -268,8 +268,12 @@ public class JobTests extends TestSequence {
 		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 		List<Integer> job = new ArrayList<Integer>();
 		job.add(tempJob.getId());
-		Spaces.removeJobs(job, space.getId());
 		Jobs.delete(tempJob.getId());
+		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
+		Assert.assertNotNull(Jobs.getIncludeDeleted(tempJob.getId()));
+		
+		Spaces.removeJobs(job, space.getId());
+		
 		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
 		Assert.assertNull(Jobs.getIncludeDeleted(tempJob.getId()));
 	}

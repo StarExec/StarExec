@@ -369,7 +369,7 @@ CREATE PROCEDURE GetBenchmarksAssociatedWithPairs()
 DROP PROCEDURE IF EXISTS GetDeletedBenchmarks;
 CREATE PROCEDURE GetDeletedBenchmarks()
 	BEGIN	
-		SELECT id FROM benchmarks WHERE deleted=true;
+		SELECT * FROM benchmarks WHERE deleted=true;
 	END //
 	
 	

@@ -684,10 +684,17 @@ public class Benchmarks {
 			procedure=con.prepareCall("CALL GetDeletedBenchmarks()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				int id=results.getInt("id");
+				Benchmark b = resultToBenchmark(results,"");
+				if (new File(b.getPath()).exists()) {
+					log.warn("a deleted benchmark still exists on disk! id = "+b.getId());
+					if (!Util.safeDeleteFileAndEmptyParents(b.getPath(), R.getBenchmarkPath())) {
+						log.warn("the benchmark could not be deleted! Not removing benchmark from the database");
+						continue;
+					}
+				}
 				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedBenchmarks.contains(id)) {
-					removeBenchmarkFromDatabase(id,con);
+				if (!parentedBenchmarks.contains(b.getId())) {
+					removeBenchmarkFromDatabase(b.getId(),con);
 				}
 			}	
 			return true;

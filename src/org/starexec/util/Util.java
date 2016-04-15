@@ -683,6 +683,13 @@ public class Util {
 		    log.warn(e.getMessage(), e);
 		}
     }
+    /**
+     * Clears out directories under joboutput that do not belong to any job in the database. These
+     * directories are ones that were not cleared correctly.
+     */
+    public static void clearOrphanedJobDirectories() {
+    	//TODO;
+    }
     
     /**
      * Deletes all files in the given directory that are as old as, or older than the specified number of days

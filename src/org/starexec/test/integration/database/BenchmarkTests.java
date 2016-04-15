@@ -327,14 +327,21 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest
 	private void cleanDeletedOrphanedBenchmarksTest() {
 		List<Integer> benchIds = loader.loadBenchmarksIntoDatabase(space.getId(), user.getId());
-		Spaces.removeBenches(benchIds, space.getId());
 		for (int id : benchIds) {
 			Benchmarks.delete(id);
 		}
 		Assert.assertTrue(Benchmarks.cleanOrphanedDeletedBenchmarks());
 		for (int id : benchIds) {
+			Assert.assertNotNull(Benchmarks.getIncludeDeletedAndRecycled(id, false));
+		}
+		
+		Spaces.removeBenches(benchIds, space.getId());
+		
+		Assert.assertTrue(Benchmarks.cleanOrphanedDeletedBenchmarks());
+		for (int id : benchIds) {
 			Assert.assertNull(Benchmarks.getIncludeDeletedAndRecycled(id, false));
 		}
+
 	}
 	
 	@StarexecTest

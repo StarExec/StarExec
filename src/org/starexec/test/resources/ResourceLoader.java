@@ -299,10 +299,6 @@ public class ResourceLoader {
 		settings.setMaxMemory(rand.nextInt(1000)+1);
 		int id=Users.createNewDefaultSettings(settings);
 		if (id>0) {
-			settings.setBenchId(0);
-			settings.setSolverId(0);
-			settings.setPreProcessorId(0);
-			settings.setPostProcessorId(0);
 			createdSettingsIds.add(id);
 			return settings;
 		}
