@@ -49,6 +49,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Jobs;
 import org.starexec.test.TestUtil;
 
 /**
@@ -684,11 +685,43 @@ public class Util {
 		}
     }
     /**
+     * THIS IS NOT SAFE TO RUN ON STAREXEC
+     * 
+     * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after
+     * redeploying and resetting the stardev database causes job directories to clear out. This procedure may also
+     * be useful on Starexec, but extreme care needs to be taken to make sure the correct directories are deleted.
+     * This should not be used on Starexec without going through the code below line by line, as changes in the
+     * job output directory since this was written (April 2016) may cause unexpected results.
+     * 
      * Clears out directories under joboutput that do not belong to any job in the database. These
      * directories are ones that were not cleared correctly.
      */
     public static void clearOrphanedJobDirectories() {
-    	//TODO;
+    	File outputDirectory = new File(R.getJobOutputDirectory());
+    	// we are going to consider removing all files / directories under the job output directory
+    	HashSet<String> filesToConsider = new HashSet<String>();
+    	for (File f : outputDirectory.listFiles()) {
+    		filesToConsider.add(f.getAbsolutePath());
+    	}
+    	// exclude the log directory from removal
+    	filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
+    	
+    	// exclude the directories of existing jobs from removal. This should be safe from race conditions
+    	// because we are getting the list of jobs after getting the list of files. As such, jobs directories
+    	// created between these operations will not be present in filesToConsider
+    	for (Integer i : Jobs.getAllJobIds()) {
+    		filesToConsider.remove(Jobs.getDirectory(i));
+    	}
+    	
+    	for (String s : filesToConsider) {
+    		log.info("deleting the following orphaned job directory");
+    		log.info(s);
+    		if(!Util.safeDeleteDirectory(s)) {
+    			log.error("failed to deleted directory "+s);
+    		}
+    	}
+    	
+    	
     }
     
     /**

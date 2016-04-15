@@ -1317,7 +1317,7 @@ public class Jobs {
 	}
 	
 	/**
-	 * Returns the filepath to the directory containing this job's output
+	 * Returns the absolute filepath to the directory containing this job's output
 	 * @param jobId The job to get the filepath for
 	 * @return A string representing the path to the output directory
 	 * @author Eric Burns
