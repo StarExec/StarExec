@@ -521,7 +521,6 @@ public class UserTests extends TestSequence {
 		Assert.assertNull(Users.getUnregistered(user1.getId()));
 		User unregisteredUser = loader.loadUserIntoDatabase("test", "user", "temp@fake.com", "abc", "Iowa", R.UNAUTHORIZED_ROLE_NAME);
 		Assert.assertEquals(unregisteredUser.getId(), Users.getUnregistered(unregisteredUser.getId()));
-		Users.deleteUser(unregisteredUser.getId());
 	}
 	
 	

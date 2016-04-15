@@ -42,8 +42,6 @@ public class JobTests extends TestSequence {
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
-	private User nonOwner=null;
-	private User admin=null;
 	private int wallclockTimeout=100;
 	private int cpuTimeout=100;
 	private int gbMemory=1;
@@ -320,8 +318,6 @@ public class JobTests extends TestSequence {
 	protected void setup() throws Exception {
 		user=loader.loadUserIntoDatabase();
 		user2=loader.loadUserIntoDatabase();
-		nonOwner=loader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
