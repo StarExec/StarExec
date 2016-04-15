@@ -267,6 +267,7 @@ public class Users {
 		u.setDiskQuota(results.getLong("disk_quota"));
 		u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
 		u.setRole(results.getString("role"));
+		u.setPairQuota(results.getInt("job_pair_quota"));
 		return u;
 	}
 	
@@ -808,7 +809,7 @@ public class Users {
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
 			
 			// Register output of ID the user is inserted under
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
@@ -1201,22 +1202,22 @@ public class Users {
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			log.debug("hashedPass = " + hashedPass);
-			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?)}");
+			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
 			procedure.setString(7,user.getRole());
-
+			procedure.setInt(8, R.DEFAULT_PAIR_QUOTA);
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			procedure.registerOutParameter(9, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();						
 			// Extract id from OUT parameter
-			user.setId(procedure.getInt(8));
+			user.setId(procedure.getInt(9));
 			log.debug("newid = " + user.getId());
 			return user.getId();
 		} catch (Exception e){	

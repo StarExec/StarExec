@@ -19,10 +19,10 @@ CREATE PROCEDURE AddUser(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN
 	END //
 	
 DROP PROCEDURE IF EXISTS AddUserAuthorized;
-CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20),IN _role VARCHAR(24), OUT _id INT)
+CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20),IN _role VARCHAR(24), IN _pairQuota INT, OUT _id INT)
 	BEGIN
-		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
-		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota);
+		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota, job_pair_quota)
+		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota, _pairQuota);
 		SELECT LAST_INSERT_ID() INTO _id;
 		
 		INSERT INTO user_roles(email, role)

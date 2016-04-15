@@ -17,7 +17,8 @@
 			<!-- Misc. Configuration -->
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
-			<property key="DEFAULT_USER_QUOTA" value="5368709120" />	
+			<property key="DEFAULT_DISK_QUOTA" value="5368709120" />	
+			<property key="DEFAULT_PAIR_QUOTA" value="750000"/>
 			<property key="DEBUG_MODE_ACTIVE" value="false" />							
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             <property key="ALLOW_TESTING" value="true"/>

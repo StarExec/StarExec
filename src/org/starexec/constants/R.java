@@ -196,7 +196,8 @@ public class R {
     public static HashMap<Integer,HashMap<String,Long>> COMM_INFO_MAP = null;
     public static Long COMM_ASSOC_LAST_UPDATE = null;    //last time community_assoc table was updated (milliseconds)
     public static long COMM_ASSOC_UPDATE_PERIOD = 21600000;  //how much time we should wait before requerying for community_assoc table, currentely set to a 10 seconds (milliseconds)
-    public static long DEFAULT_USER_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
+    public static long DEFAULT_DISK_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
+    public static int DEFAULT_PAIR_QUOTA = 750000;							// The default max number of pairs a user should be able to own
     public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 	"this is your personal space";
     public static int MAX_FAILED_VALIDATIONS=50;							//More than this number of benchmark validation failures triggers a message and ends

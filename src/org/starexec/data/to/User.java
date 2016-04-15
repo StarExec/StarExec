@@ -23,6 +23,7 @@ public class User extends Identifiable {
 	private List<Website> websites;
 	private long diskQuota;
 	private boolean subscribedToReports;
+	private int pairQuota;
 	
 	/**
 	 * @return the user's disk quota (in bytes)
@@ -191,5 +192,19 @@ public class User extends Identifiable {
 	@Override
 	public String toString() {
 		return this.getFullName();
+	}
+
+	/**
+	 * @return the pairQuota
+	 */
+	public int getPairQuota() {
+		return pairQuota;
+	}
+
+	/**
+	 * @param pairQuota the pairQuota to set
+	 */
+	public void setPairQuota(int pairQuota) {
+		this.pairQuota = pairQuota;
 	}
 }

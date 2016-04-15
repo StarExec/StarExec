@@ -12,6 +12,7 @@ CREATE TABLE users (
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
 	disk_quota BIGINT NOT NULL,
+	job_pair_quota INT DEFAULT 750000 NOT NULL,
 	subscribed_to_reports BOOLEAN NOT NULL DEFAULT FALSE,
 	default_page_size INT NOT NULL DEFAULT 10,
 	default_settings_profile INT DEFAULT NULL,
