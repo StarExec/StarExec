@@ -61,31 +61,31 @@ public class DefaultSettings extends Identifiable {
 		type=null;
 		setPrimId(-1);
 	}
-	public void setPreProcessorId(int preProcessorId) {
+	public void setPreProcessorId(Integer preProcessorId) {
 		this.preProcessorId = preProcessorId;
 	}
 	public Integer getPreProcessorId() {
 		return preProcessorId;
 	}
-	public void setPostProcessorId(int postProcessorId) {
+	public void setPostProcessorId(Integer postProcessorId) {
 		this.postProcessorId = postProcessorId;
 	}
 	public Integer getPostProcessorId() {
 		return postProcessorId;
 	}
-	public void setBenchProcessorId(int benchProcessorId) {
+	public void setBenchProcessorId(Integer benchProcessorId) {
 		this.benchProcessorId = benchProcessorId;
 	}
 	public Integer getBenchProcessorId() {
 		return benchProcessorId;
 	}
-	public void setBenchId(int benchId) {
+	public void setBenchId(Integer benchId) {
 		this.benchId = benchId;
 	}
 	public Integer getBenchId() {
 		return benchId;
 	}
-	public void setSolverId(int solverId) {
+	public void setSolverId(Integer solverId) {
 		this.solverId = solverId;
 	}
 	public Integer getSolverId() {

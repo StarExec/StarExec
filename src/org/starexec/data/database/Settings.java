@@ -92,13 +92,28 @@ public class Settings {
 			DefaultSettings settings=new DefaultSettings();
 			settings.setId(results.getInt("id"));
 			settings.setPreProcessorId(results.getInt("pre_processor"));
+			if (results.wasNull()) {
+				settings.setPreProcessorId(null);
+			}
 			settings.setWallclockTimeout(results.getInt("clock_timeout"));
 			settings.setCpuTimeout(results.getInt("cpu_timeout"));
 			settings.setPostProcessorId(results.getInt("post_processor"));
+			if (results.wasNull()) {
+				settings.setPostProcessorId(null);
+			}
 			settings.setDependenciesEnabled(results.getBoolean("dependencies_enabled"));
 			settings.setBenchId(results.getInt("default_benchmark"));
+			if (results.wasNull()) {
+				settings.setBenchId(null);
+			}
 			settings.setSolverId(results.getInt("default_solver"));
+			if (results.wasNull()) {
+				settings.setSolverId(null);
+			}
 			settings.setBenchProcessorId(results.getInt("bench_processor"));
+			if (results.wasNull()) {
+				settings.setBenchProcessorId(null);
+			}
 			settings.setMaxMemory(results.getLong("maximum_memory"));
 			settings.setName(results.getString("name"));
 			settings.setPrimId(results.getInt("prim_id"));

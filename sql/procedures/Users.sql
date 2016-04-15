@@ -108,7 +108,7 @@ DROP PROCEDURE IF EXISTS GetUnregisteredUserById;
 CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 	BEGIN
 		SELECT * 
-		FROM users NATURAL JOIN user_roles
+		FROM users JOIN user_roles ON users.email = user_roles.email
 		WHERE users.id = _id 
 		AND user_roles.role = 'unauthorized';
 	END //
