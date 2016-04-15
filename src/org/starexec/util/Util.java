@@ -697,12 +697,14 @@ public class Util {
      * directories are ones that were not cleared correctly.
      */
     public static void clearOrphanedJobDirectories() {
+    	log.info("calling clearOrphanedJobDirectories");
     	File outputDirectory = new File(R.getJobOutputDirectory());
     	// we are going to consider removing all files / directories under the job output directory
     	HashSet<String> filesToConsider = new HashSet<String>();
     	for (File f : outputDirectory.listFiles()) {
     		filesToConsider.add(f.getAbsolutePath());
     	}
+    	log.info("found this many job output subdirectories to consider "+filesToConsider.size());
     	// exclude the log directory from removal
     	filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
     	
@@ -712,7 +714,8 @@ public class Util {
     	for (Integer i : Jobs.getAllJobIds()) {
     		filesToConsider.remove(Jobs.getDirectory(i));
     	}
-    	
+    	log.info("found this many job output subdirectories to consider after filter "+filesToConsider.size());
+
     	for (String s : filesToConsider) {
     		log.info("deleting the following orphaned job directory");
     		log.info(s);
