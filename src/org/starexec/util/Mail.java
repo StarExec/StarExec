@@ -3,6 +3,7 @@ package org.starexec.util;
 import java.io.File;
 import java.io.IOException;
 import java.lang.NullPointerException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -267,7 +268,7 @@ public class Mail {
 	 * @author Albert Giegerich
 	 * @return the String representation of the email.
 	 */
-	public static String generateGenericReportsEmail() throws IOException {
+	public static String generateGenericReportsEmail() throws IOException, SQLException {
 		String email = null;
 		try {
 			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reports_email.txt"));

@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,7 +94,7 @@ public class Reports {
 	 * @return  a list of Reports representing the event, the number of times it occurred, and which queue it occurred on.
 	 * @author Albert Giegerich
 	 */
-	public static List<List<Report>> getAllReportsForAllQueues() {
+	public static List<List<Report>> getAllReportsForAllQueues() throws SQLException {
 		LinkedList<Report> reportsForAllQueues = new LinkedList<Report>();
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -107,10 +108,10 @@ public class Reports {
 			while (results.next()) {
 				String event = results.getString("event_name");
 				Integer occurrences = results.getInt("occurrences");
-				Integer queueId = results.getInt("queue_id");
-				String queueName = results.getString("name");
+				//Integer queueId = results.getInt("queue_id");
+				String queueName = results.getString("queue_name");
 
-				Report report = new Report(event, occurrences, queueId, queueName); 
+				Report report = new Report(event, occurrences, queueName); 
 
 				reportsForAllQueues.add(report);
 			}
@@ -118,14 +119,11 @@ public class Reports {
 			List<List<Report>> reportsByQueue = separateReportsByQueue(reportsForAllQueues);
 
 			return reportsByQueue;
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null;
 	}
 
 	/**
