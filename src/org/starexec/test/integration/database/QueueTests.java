@@ -134,7 +134,7 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteQueueTest() {
-		Queue tempQueue=ResourceLoader.loadQueueIntoDatabase(1000,1000);
+		Queue tempQueue=loader.loadQueueIntoDatabase(1000,1000);
 		Assert.assertNotNull(Queues.get(tempQueue.getId()));
 		Assert.assertTrue(Queues.removeQueue(tempQueue.getId()));
 		Assert.assertNull(Queues.get(tempQueue.getId()));		
@@ -321,13 +321,13 @@ public class QueueTests extends TestSequence {
 	protected void setup() throws Exception {
 		allQueue=Queues.get(Queues.getIdByName(R.DEFAULT_QUEUE_NAME));
 		n=Queues.getNodes(allQueue.getId()).get(0);
-		testQueue=ResourceLoader.loadQueueIntoDatabase(1000,1000);
+		testQueue=loader.loadQueueIntoDatabase(1000,1000);
 		Queues.setStatus(testQueue.getName(),R.QUEUE_STATUS_INACTIVE);
-		owner = ResourceLoader.loadUserIntoDatabase();
-		space = ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
-		solver = ResourceLoader.loadSolverIntoDatabase(space.getId(), owner.getId());
-		benchmarkIds =ResourceLoader.loadBenchmarksIntoDatabase(space.getId(), owner.getId());
-		job = ResourceLoader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarkIds);
+		owner = loader.loadUserIntoDatabase();
+		space = loader.loadSpaceIntoDatabase(owner.getId(), 1);
+		solver = loader.loadSolverIntoDatabase(space.getId(), owner.getId());
+		benchmarkIds =loader.loadBenchmarksIntoDatabase(space.getId(), owner.getId());
+		job = loader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarkIds);
 		Jobs.changeQueue(job.getId(), testQueue.getId());
 		admin = Users.getAdmins().get(0);
 		Assert.assertNotNull(testQueue);
@@ -336,14 +336,7 @@ public class QueueTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (int i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Queues.removeQueue(testQueue.getId());
-		Users.deleteUser(owner.getId());
-		Spaces.removeSubspace(space.getId());
+		loader.deleteAllPrimitives();
 		Cluster.deleteNode(fakeNode.getId());
 	}
 

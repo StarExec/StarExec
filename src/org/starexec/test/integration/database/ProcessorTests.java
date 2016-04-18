@@ -127,17 +127,16 @@ public class ProcessorTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user = ResourceLoader.loadUserIntoDatabase();
+		user = loader.loadUserIntoDatabase();
 		community=Communities.getTestCommunity();
 		Users.associate(user.getId(), community.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user.getId());
-		Processors.delete(postProc.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 	

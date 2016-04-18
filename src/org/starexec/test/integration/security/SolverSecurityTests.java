@@ -190,15 +190,15 @@ public class SolverSecurityTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		admin=Users.getAdmins().get(0);
-		owner=ResourceLoader.loadUserIntoDatabase();
-		regular=ResourceLoader.loadUserIntoDatabase();
+		owner=loader.loadUserIntoDatabase();
+		regular=loader.loadUserIntoDatabase();
 		
-		tempCommunity=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
-		tempCommunity2=ResourceLoader.loadSpaceIntoDatabase(regular.getId(), 1);
+		tempCommunity=loader.loadSpaceIntoDatabase(owner.getId(), 1);
+		tempCommunity2=loader.loadSpaceIntoDatabase(regular.getId(), 1);
 
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
-		solver2=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
-		solver3=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), regular.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
+		solver2=loader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
+		solver3=loader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), regular.getId());
 		
 		c=Solvers.getConfigsForSolver(solver.getId()).get(0);
 		c2=Solvers.getConfigsForSolver(solver2.getId()).get(0);
@@ -210,17 +210,7 @@ public class SolverSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Solvers.deleteAndRemoveSolver(solver2.getId());
-		Solvers.deleteAndRemoveSolver(solver3.getId());
-		
-		Users.deleteUser(regular.getId());
-		Users.deleteUser(owner.getId());
-		
-		Spaces.removeSubspace(tempCommunity.getId());
-		Spaces.removeSubspace(tempCommunity2.getId());
-
-	
+		loader.deleteAllPrimitives();
 	}
 
 	@Override

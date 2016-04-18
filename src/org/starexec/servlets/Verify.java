@@ -114,7 +114,6 @@ public class Verify extends HttpServlet {
 		
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
 
-
 		// TODO Give requests that were sent by email parameter too.
 		boolean sentFromCommunityPage = Util.paramExists(Web.SENT_FROM_COMMUNITY_PAGE, request);
 

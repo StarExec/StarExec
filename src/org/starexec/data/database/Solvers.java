@@ -369,10 +369,17 @@ public class Solvers {
 			procedure=con.prepareCall("CALL GetDeletedSolvers()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				int id=results.getInt("id");
+				Solver s = resultSetToSolver(results);
+				if (new File(s.getPath()).exists()) {
+					log.warn("a deleted solver still has an on-disk directory! ID = "+s.getId());
+					if (!FileUtils.deleteQuietly(new File(s.getPath()))) {
+						log.warn("failed to delete solver on disk! Not removing solver from database.");
+						continue;
+					}
+				}
 				// the solver has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedSolvers.contains(id)) {
-					removeSolverFromDatabase(id,con);
+				if (!parentedSolvers.contains(s.getId())) {
+					removeSolverFromDatabase(s.getId(),con);
 				}
 			}	
 			return true;
@@ -552,7 +559,8 @@ public class Solvers {
 		return false;
 	}
 	/**
-	 * Deletes a given configuration object's physical file from disk
+	 * Deletes a given configuration object's physical file from disk, then deletes the configuration in the 
+	 * database and updates the solver disk size in the database
 	 *
 	 * @param config the configuration whose physical file is to be deleted from disk
 	 * @return true iff the configuration object's corresponding physical file is successfully deleted from disk,
@@ -561,14 +569,27 @@ public class Solvers {
 	 */
 	public static boolean deleteConfigurationFile(Configuration config) {
 		try {
+			Solver s = Solvers.getSolverByConfig(config.getId(), false);
 			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
-			File configFile = new File(Util.getSolverConfigPath(Solvers.getSolverByConfig(config.getId(),false).getPath(), config.getName()));
+			File configFile = new File(Util.getSolverConfigPath(s.getPath(), config.getName()));
 			if(configFile.delete()){
 				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
-				return true;
 			}
+			
+			
+			// Attempt to remove the configuration's entry in the database
+			if(!Solvers.deleteConfiguration(config.getId())){
+				return false;
+			}
+			
+			// Attempt to update the disk_size of the parent solver to reflect the file deletion
+			if(!Solvers.updateSolverDiskSize(s)){
+				return false;
+			}
+			return true;
+
 		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 		
 		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
@@ -800,6 +821,21 @@ public class Solvers {
 		return null; //error
 	}
 	
+	/**
+	 * Retrieves a list of every solver the given user is allowed to use along with it's configs.
+	 * Solvers a user can see include solvers they own, solvers in public spaces,
+	 * and solvers in spaces the user is also in
+	 * @param userId
+	 * @return The list of solvers
+	 */
+	public static List<Solver> getByUserWithConfigs(int userId) {
+		List<Solver> solvers = getByUser( userId );
+		for(Solver s : solvers) {
+			s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
+		}
+		return solvers;
+	}
+
 	/**
 	 * Retrieves a list of every solver the given user is allowed to use. Used for quick jobs.
 	 * Solvers a user can see include solvers they own, solvers in public spaces,
@@ -1059,6 +1095,16 @@ public class Solvers {
 		}
 		return filteredSolvers;
 	}
+
+	public static Set<Integer> getConfigIdSetForSolver( int solverId ) {
+		List<Configuration> configs = getConfigsForSolver( solverId );
+		Set<Integer> configIds = new HashSet<>();
+		for ( Configuration c : configs ) {
+			configIds.add( c.getId() );
+		}
+
+		return configIds;
+	}
 	
 	
 	/**
@@ -1200,35 +1246,7 @@ public class Solvers {
 
 		return 0;
 	}
-	
-	
-	/**
-	 *  A method for the public job page.  Gets a default configuration for a solver
-	 *  and returns a singleton List with its id.  A default configuration is a configuration
-	 *  named "default" if it exists, or simply the first configuration if it doesn't.
-	 * @param solverId The solver id to get configurations for
-	 * @return A list with the default configuration Id for the solver 
-	 * @author Benton McCune
-	 */
-	public static List<Integer> getDefaultConfigForSolver(int solverId){
-		List<Configuration> allConfigs = getConfigsForSolver(solverId);
-		List<Integer> defaultConfigList = new LinkedList<Integer>();
-		if (allConfigs!=null && allConfigs.size()>0){
-		Integer defaultConfig = allConfigs.get(0).getId();
-		for (Configuration c: allConfigs)
-		{
-			log.info("Configuration Name = " + c.getName() + ", id = " + c.getId());
-			if (c.getName().equals("default")){
-					defaultConfig = c.getId();
-					break;
-			}
-		}
-		log.info("default config has id " + defaultConfig);
-		defaultConfigList.add(defaultConfig);
-		}
-		return defaultConfigList;
-	}
-	
+
 	/**
 	 * 
 	 * @param solverId
@@ -1253,7 +1271,6 @@ public class Solvers {
 	 * @author Benton McCune
 	 */
 	
-	//TODO: This does not currently return community default solvers
 	public static List<Solver> getPublicSolvers(){
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -2318,5 +2335,31 @@ public class Solvers {
                 }
             });
         }
+    }
+
+	/**
+	 * Sets the solver build status
+	 * @param s the solver id for the solver to be updated
+     * @param status the integer status code to be set
+	 * @author Andrew Lubinus
+	 */
+    public static boolean setSolverBuildStatus(Solver s, int status) {
+        Connection con = null;
+        CallableStatement procedure = null;
+        try {
+            con = Common.getConnection();
+            procedure = con.prepareCall("{CALL SetSolverBuildStatus(?, ?)}");
+            procedure.setInt(1, s.getId());
+            procedure.setInt(2, status);
+            procedure.executeUpdate();      
+            return true;
+                        
+        } catch (Exception e){          
+            log.error(e.getMessage(), e);       
+        } finally {
+            Common.safeClose(con);
+        }       
+        
+        return false;
     }
 }

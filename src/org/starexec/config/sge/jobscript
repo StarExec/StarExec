@@ -46,6 +46,8 @@ export DB_NAME='$$DB_NAME$$'
 export BUILD_JOB='$$BUILD_JOB$$'
 export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
+export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
+export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
@@ -202,7 +204,8 @@ fillDependArrays
 #todo: alter the way we copy runsolver over so it only happens once
 copyBenchmarkDependencies
 
-TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
+log "the temp directory is $TMP"
 echo $PAIR_OUTPUT_DIRECTORY > $TMP
 PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #==============================================================================
@@ -303,10 +306,10 @@ fi
 SANDBOX_FOUND=true
 # SANDBOX_PARAM designates which user will run runsolver
 if [ $SANDBOX -eq 1 ] ; then
-	SANDBOX_PARAM="$$SANDBOX_USER_ONE$$"
+	SANDBOX_PARAM=$SANDBOX_USER_ONE
 	CORES="0-3"
 elif [ $SANDBOX -eq 2 ] ; then
-	SANDBOX_PARAM="$$SANDBOX_USER_TWO$$"
+	SANDBOX_PARAM=$SANDBOX_USER_TWO
 	CORES="4-7"
 else
 	SANDBOX_FOUND=false
@@ -452,18 +455,12 @@ elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" 
   log "epilog detects wall clock time exceeded"
   sendStatus $EXCEED_RUNTIME
   sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
-  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  cleanUpAfterKilledBuildJob
   break
   
 elif ( grep 'CPU time exceeded' $WATCHFILE ) then
   log "epilog detects cpu time exceeded"
   sendStatus $EXCEED_CPU
   sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
-  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  cleanUpAfterKilledBuildJob
   break
   
   
@@ -471,9 +468,6 @@ elif ( grep 'VSize exceeded' $WATCHFILE ) then
   log "epilog detects max virtual memory exceeded"
   sendStatus $EXCEED_MEM
   sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
-  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  cleanUpAfterKilledBuildJob
   break
   
 else
@@ -485,16 +479,17 @@ else
   then
   	  log "job finished successfully"
   	  sendStatus $STATUS_COMPLETE
-  fi
-  
-  
+  fi  
 fi
 
+
 if [ "$JOB_ERROR" = "" ]; then
-	
 	log "STAREXEC job $PAIR_ID completed successfully"	
 else
 	log "STAREXEC job $PAIR_ID exited with errors"
+	sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  	setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+  	cleanUpAfterKilledBuildJob
 fi
 
 
@@ -517,7 +512,9 @@ setEndTime
 
 recordJobPairRun
 
-cleanWorkspace 0
+cleanWorkspace 0 $SANDBOX_PARAM
+
+rm $TMP
 
 echo "Jobscript ending."
 

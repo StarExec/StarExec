@@ -34,6 +34,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -323,9 +324,8 @@ public abstract class JobManager {
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
-							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR+"/sandbox",logPath);
+							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR,logPath);
 
-							//TODO : need a better way to handle error codes
 							if(!R.BACKEND.isError(execId)){
 							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
@@ -880,7 +880,7 @@ public abstract class JobManager {
         stage.setConfiguration(c);
         int bench = BenchmarkUploader.addBenchmarkFromText(
                         "dummy benchmark",
-                        "starexec_build_" + s.getName(),
+                        "starexec_build",
                         s.getUserId(),
                         R.NO_TYPE_PROC_ID, true);
 		pair.addStage(stage);
@@ -891,8 +891,11 @@ public abstract class JobManager {
 		boolean submitSuccess = Jobs.add(j, spaceId);
 		if (submitSuccess) {
 			return j.getId();
-		}
-		return -1; //error
+		} else {
+            int status = SolverBuildStatusCode.BUILD_FAILED.getVal();
+            Solvers.setSolverBuildStatus(s, status);
+		    return -1; //error
+        }
 	}
 
 	/**

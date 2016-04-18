@@ -9,13 +9,13 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Util;
-import org.testng.Assert;
 
 import com.google.gson.JsonObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -92,9 +92,9 @@ public class RESTHelpersTests extends TestSequence {
 	}
 	
 	private void validateJsonObjectCounts(JsonObject o, int totalRecords, int totalRecordsAfterQuery, int pageSize) {
-		Assert.assertTrue(o.get(TOTAL_RECORDS).getAsInt()==totalRecords);
-		Assert.assertTrue(o.get(TOTAL_RECORDS_AFTER_QUERY).getAsInt()==totalRecordsAfterQuery);
-		Assert.assertTrue(o.get(DATA).getAsJsonArray().size()==pageSize);
+		Assert.assertEquals(totalRecords,o.get(TOTAL_RECORDS).getAsInt());
+		Assert.assertEquals(totalRecordsAfterQuery,o.get(TOTAL_RECORDS_AFTER_QUERY).getAsInt());
+		Assert.assertEquals(pageSize,o.get(DATA).getAsJsonArray().size());
 	}
 	
 	@StarexecTest
@@ -315,39 +315,26 @@ public class RESTHelpersTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		testUser = ResourceLoader.loadUserIntoDatabase();
-		extraUser = ResourceLoader.loadUserIntoDatabase();
-		community = ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), 1);
-		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
-		childOf1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
+		testUser = loader.loadUserIntoDatabase();
+		extraUser = loader.loadUserIntoDatabase();
+		community = loader.loadSpaceIntoDatabase(testUser.getId(), 1);
+		space1=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
+		space2=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
+		childOf1=loader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
 		admin = Users.getAdmins().get(0);
 		Users.associate(extraUser.getId(), community.getId());
-		s1 = ResourceLoader.loadSolverIntoDatabase(community.getId(), testUser.getId());
-		s2 = ResourceLoader.loadSolverIntoDatabase(community.getId(), testUser.getId());
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(community.getId(), testUser.getId());
-		j1 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
+		s1 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());
+		s2 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());
+		benchmarkIds = loader.loadBenchmarksIntoDatabase(community.getId(), testUser.getId());
+		j1 = loader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
 		j1PrimarySpace = Spaces.getJobSpace(j1.getPrimarySpace());
-		j2 = ResourceLoader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
+		j2 = loader.loadJobIntoDatabase(community.getId(), testUser.getId(), s1.getId(), benchmarkIds);
 		q=Queues.getAllQ();
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(j1.getId());
-		Jobs.deleteAndRemove(j2.getId());
-		Spaces.removeSubspace(childOf1.getId());
-		Spaces.removeSubspace(space2.getId());
-		Spaces.removeSubspace(space1.getId());
-		Spaces.removeSubspace(community.getId());
-		Solvers.deleteAndRemoveSolver(s1.getId());
-		Solvers.deleteAndRemoveSolver(s2.getId());
-		for (Integer id : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(id);
-		}
-		Users.deleteUser(testUser.getId());
-		Users.deleteUser(extraUser.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

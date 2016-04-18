@@ -142,6 +142,9 @@ public class SolverSecurity {
 		}
 		
 		Configuration c= Solvers.getConfiguration(configId);
+		if (c==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		Solver solver = Solvers.getSolverByConfig(configId,false);
 
 		// If the old config and new config names are NOT the same, ensure the file pointed to by
@@ -204,6 +207,9 @@ public class SolverSecurity {
 	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserRecycleOrphanedSolvers(int userIdToDelete, int userIdMakingRequest) {
+		if (Users.get(userIdToDelete)==null) {
+			return new ValidatorStatusCode(false, "The given user does not exist");
+		}
 		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "You do not have permission to recycle solvers belonging to another user");
 		}
@@ -359,7 +365,9 @@ public class SolverSecurity {
 
 	public static ValidatorStatusCode canUserDeleteConfiguration(int configId, int userId) {
 		Configuration config=Solvers.getConfiguration(configId);
-		
+		if (config==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		Solver solver = Solvers.get(config.getSolverId());
 		if (solver==null) {
 			return new ValidatorStatusCode(false, "The solver associated with the given configuration could not be found");
@@ -415,6 +423,9 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canGetJsonConfiguration(int configId, int userId) {
 		Solver s=Solvers.getSolverByConfig(configId, true);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the specified solver");
 		}

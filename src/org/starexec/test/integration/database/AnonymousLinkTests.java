@@ -384,43 +384,30 @@ public class AnonymousLinkTests extends TestSequence {
 		admin = Users.getAdmins().get(0);
 
 		// Setup test user.
-		user=ResourceLoader.loadUserIntoDatabase();
+		user=loader.loadUserIntoDatabase();
 
 		// Setup test space.
 		Space community = Communities.getTestCommunity();
-		space = ResourceLoader.loadSpaceIntoDatabase( user.getId(), community.getId() );
+		space = loader.loadSpaceIntoDatabase( user.getId(), community.getId() );
 
 		// Setup test benchmarks
-		List<Integer> benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		List<Integer> benchmarkIds = loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks = new ArrayList<Benchmark>();
 		for ( Integer id : benchmarkIds ) {
 			benchmarks.add( Benchmarks.get( id ) );
 		}		
 
 		// Setup test solver.
-		solver = ResourceLoader.loadSolverIntoDatabase( "CVC4.zip", space.getId(), user.getId() );
+		solver = loader.loadSolverIntoDatabase( "CVC4.zip", space.getId(), user.getId() );
 
 		// Setup test job.
-		job = ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		job = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 
 
 	}
 
 	@Override
 	protected void teardown() throws StarExecSecurityException {
-		// Delete test space.
-		Spaces.removeSubspace( space.getId() );
-
-		// Delete test benchmarks.
-		for (Benchmark bench : benchmarks) { 
-			Benchmarks.deleteAndRemoveBenchmark( bench.getId() );
-		}
-		
-		// Delete test solver.
-		Solvers.deleteAndRemoveSolver( solver.getId() );
-
-		// Delete test job.
-		Jobs.deleteAndRemove( job.getId() );
-		Users.deleteUser(user.getId());
+		loader.deleteAllPrimitives();
 	}
 }

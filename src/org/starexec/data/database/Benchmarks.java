@@ -50,6 +50,9 @@ public class Benchmarks {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean deleteAndRemoveBenchmark(int id) {
+		if (Benchmarks.get(id)==null) {
+			return true;
+		}
 		boolean success=Benchmarks.delete(id);
 		if (!success) {
 			log.warn("there was an error deleting benchmark with id = "+id);
@@ -82,6 +85,27 @@ public class Benchmarks {
 			}
 		}
 		return success;
+	}
+	
+	/**
+	 * Adds the given attributes to the given benchmark
+	 * @param attrs The attrs to add. Old attributes sharing keys will be overwritten
+	 * @param benchmark The benchmark to add attributes to
+	 * @param statusId The ID of a benchmark status upload object, or null if we aren't using one
+	 * @return True on success and false otherwise
+	 */
+	public static boolean addAttributeSetToDbIfValid(Map<String,String> attrs, Benchmark benchmark, Integer statusId) {
+		Connection con =null;
+		try {
+			con = Common.getConnection();
+			return addAttributeSetToDbIfValid(con,attrs,benchmark,statusId);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
 	}
 
 	
@@ -515,7 +539,7 @@ public class Benchmarks {
 	 * @param statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation is successful and false otherwise
 	 */
-	protected static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) throws IOException, StarExecException {
+	public static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) throws IOException, StarExecException {
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...
@@ -663,10 +687,17 @@ public class Benchmarks {
 			procedure=con.prepareCall("CALL GetDeletedBenchmarks()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				int id=results.getInt("id");
+				Benchmark b = resultToBenchmark(results,"");
+				if (new File(b.getPath()).exists()) {
+					log.warn("a deleted benchmark still exists on disk! id = "+b.getId());
+					if (!Util.safeDeleteFileAndEmptyParents(b.getPath(), R.getBenchmarkPath())) {
+						log.warn("the benchmark could not be deleted! Not removing benchmark from the database");
+						continue;
+					}
+				}
 				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedBenchmarks.contains(id)) {
-					removeBenchmarkFromDatabase(id,con);
+				if (!parentedBenchmarks.contains(b.getId())) {
+					removeBenchmarkFromDatabase(b.getId(),con);
 				}
 			}	
 			return true;
@@ -1969,7 +2000,8 @@ public class Benchmarks {
 	}
 
 	/**
-	 * Updates the details of a benchmark
+	 * Updates the details of a benchmark. This ONLY updates the database: it does not handle actually executing the given
+	 * processor!
 	 * @param id the id of the benchmark to update
 	 * @param name the new name to apply to the benchmark
 	 * @param description the new description to apply to the benchmark
@@ -2045,7 +2077,7 @@ public class Benchmarks {
 			Integer numberDependencies = Integer.valueOf(atts.getOrDefault("starexec-dependencies", "0"));
 			log.info("# of dependencies = " + numberDependencies);
 			for (int i = 1; i <= numberDependencies; i++){
-				includePath = atts.getOrDefault("starexec-dependency-"+i, "");//TODO: test when given bad atts
+				includePath = atts.getOrDefault("starexec-dependency-"+i, "");
 				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
 				if (includePath.length()>0){
 					//checkMap first

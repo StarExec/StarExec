@@ -25,9 +25,9 @@
 # will do a base 64 decode on all solver_names, all solver_paths, and the bench path
 function decodePathArrays {
 	log "decoding all base 64 encoded strings"
-	# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
+	# create a temporary file in $TMPDIR using the template starexec_base64.XXXXXXXX
 	
-	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
 	
 	TEMP_ARRAY_INDEX=0
 	
@@ -63,7 +63,7 @@ function decodePathArrays {
 
 function decodeBenchmarkName {
 	
-	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
 	
 
 	echo $BENCH_PATH > $TMP
@@ -104,7 +104,7 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
 
 #initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
-# either by calling initSandbox or findSandbox
+# either by calling initSandbox
 function initWorkspaceVariables {
 	if [ $SANDBOX -eq 1 ]
 	then
@@ -234,7 +234,6 @@ function trySandbox {
 		fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
-	
 	if (
 	flock -x -w 4 200 || return 1
 		#we have exclusive rights to work on the lock for this sandbox within this block
@@ -299,35 +298,6 @@ function initSandbox {
 	SANDBOX=-1
 	return 1
 	
-	
-}
-
-#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs' lock file
-function findSandbox {
-	log "trying to find sandbox for pair ID = $1"
-	log "sandbox 1 contents:"
-	ls "$SANDBOX_LOCK_DIR"
-	
-	log "sandbox 2 contents:"
-	ls "$SANDBOX2_LOCK_DIR"
-	
-	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
-	then
-		log "found that the sandbox is 1 for job $1"
-		SANDBOX=1
-		initWorkspaceVariables
-		return 0
-	fi
-	if [ -e "$SANDBOX2_LOCK_DIR/$1" ] 
-	then
-		log "found that the sandbox is 2 for job $1"
-		SANDBOX=2
-		initWorkspaceVariables
-		return 0
-	fi
-	
-	log "couldn't find a sandbox for pair ID = $1"
-	SANDBOX=-1
 	
 }
 
@@ -436,7 +406,8 @@ function copyOutputIncrementally {
 	log "done copying incremental output: the pair's timeout has been reached"
 }
 
-#takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
+# $1 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
+# $2 The name of the user that executed this job. Used to clear out the /tmp directory. Only used if we are done with the job
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
 	# change ownership and permissions to make sure we can clean everything up
@@ -471,6 +442,10 @@ function cleanWorkspace {
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
 		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+		# remove all /tmp files owned by the user that executed this job
+		cd /tmp
+        sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
+        cd $WORKING_DIR
 		if [ $SANDBOX -eq 1 ] 
 		then
 			safeRmLock "$SANDBOX_LOCK_DIR"
@@ -480,9 +455,6 @@ function cleanWorkspace {
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
 	fi
-	 
-	
-	
 	log "execution host $HOSTNAME cleaned"
 	return $?
 }
@@ -586,11 +558,9 @@ fi
 done < $1
 }
 
-
 # updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
 # Ben McCune
 function updateStats {
-
 
 WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
 CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
@@ -599,7 +569,7 @@ SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
 MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
 
 log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
-log "temp line: the var file was"
+log "the var file was"
 cat $1
 log "end varfile"
 
@@ -849,10 +819,10 @@ function sandboxWorkspace {
 	
 	then
 	log "sandboxing workspace with second sandbox user"
-	sudo chown -R sandbox2 $WORKING_DIR 
+	sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
 	else
 		log "sandboxing workspace with first sandbox user"
-		sudo chown -R sandbox $WORKING_DIR
+		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
 	ls -lR "$WORKING_DIR"
 	return 0
@@ -956,7 +926,7 @@ function cleanUpAfterKilledBuildJob {
 function copyDependencies {
 safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
 log "solver copy complete"
-	if [ $SOLVER_CACHED -eq 0 ]; then
+if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
 			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then

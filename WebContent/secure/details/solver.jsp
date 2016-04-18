@@ -169,7 +169,7 @@
 	</div>
     <c:if test="${!sourceDownloadable}">
     <div id="dialog-building-job" title="Building..." class="hiddenDialog">
-            <p><span class="ui-icon ui-icon-info" ></span><span id="dialog-building-job-txt">Your solver is being built on Starexec.</span></p>
+            <p><span class="ui-icon ui-icon-info" ></span><span id="dialog-building-job-txt"></span></p>
     </div>
     </c:if>
 

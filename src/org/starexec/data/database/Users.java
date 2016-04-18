@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
@@ -268,6 +267,7 @@ public class Users {
 		u.setDiskQuota(results.getLong("disk_quota"));
 		u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
 		u.setRole(results.getString("role"));
+		u.setPairQuota(results.getInt("job_pair_quota"));
 		return u;
 	}
 	
@@ -557,9 +557,9 @@ public class Users {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
+			procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
 			procedure.setInt(1, id);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
 			if (results.next()) {
 				return resultSetToUser(results);
@@ -611,36 +611,6 @@ public class Users {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @param jobId the job id to get the user for
-	 * @return the user/owner of the job
-	 * @author Wyatt Kaiser
-	 */
-	public static User getUserByJob(int jobId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserByJob(?)}");
-			procedure.setInt(1, jobId);
-			 results = procedure.executeQuery();
-			while (results.next()) {
-				User u = resultSetToUser(results);
-				return u;
-			}
-				
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-	
 	private static String getUserOrderColumn(int columnIndex) {
 		if (columnIndex==0) {
 			return "full_name";
@@ -709,22 +679,17 @@ public class Users {
 	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
 	 * @author Wyatt Kaiser
 	 **/
-	
-	//TODO: This pagination function is not formed correctly
 	public static List<User> getUsersForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
-		CallableStatement procedure= null;
+		NamedParameterStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, query.getStartingRecord());
-			procedure.setInt(2,	query.getNumRecords());
-			procedure.setInt(3, query.getSortColumn());
-			procedure.setBoolean(4, query.isSortASC());
-			procedure.setString(5, query.getSearchQuery());
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_ADMIN_QUERY, getUserOrderColumn(query.getSortColumn()), query);
+
+			procedure = new NamedParameterStatement(con,builder.getSQL());
 			results = procedure.executeQuery();
+			
 			List<User> users = new LinkedList<User>();
 			
 			while(results.next()){
@@ -736,11 +701,7 @@ public class Users {
 				u.setEmail(results.getString("email"));
 				u.setRole(results.getString("role"));
 				u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
-
-				//Prevents public user from appearing in table.
-				users.add(u);
-				
-							
+				users.add(u);			
 			}	
 			
 			return users;
@@ -848,7 +809,7 @@ public class Users {
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
 			
 			// Register output of ID the user is inserted under
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
@@ -1085,9 +1046,6 @@ public class Users {
 	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
-	
-	//TODO: This should just take the user to delete. Security should be handled outside the function, like
-	// everywhere else.
 	public static boolean deleteUser(int userToDeleteId){
 		log.debug("User with id="+userToDeleteId+" is about to be deleted");
 		Connection con=null;
@@ -1244,22 +1202,22 @@ public class Users {
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			log.debug("hashedPass = " + hashedPass);
-			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?)}");
+			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
 			procedure.setString(7,user.getRole());
-
+			procedure.setInt(8, R.DEFAULT_PAIR_QUOTA);
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			procedure.registerOutParameter(9, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();						
 			// Extract id from OUT parameter
-			user.setId(procedure.getInt(8));
+			user.setId(procedure.getInt(9));
 			log.debug("newid = " + user.getId());
 			return user.getId();
 		} catch (Exception e){	
@@ -1309,7 +1267,7 @@ public class Users {
 	 * @param willBeSubscribed True to subscribe and false to unsubscribe
 	 * @return True on success and false otherwise
 	 */
-	public static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
+	private static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{

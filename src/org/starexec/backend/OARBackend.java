@@ -184,6 +184,10 @@ public class OARBackend implements Backend {
 		
 		return false;
 	}
+
+    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots) {
+        return createQueue(newQueueName, nodeNames, sourceQueueNames); 
+    }
 	
 	
 	@Override

@@ -17,7 +17,7 @@ import org.starexec.test.resources.ResourceLoader;
  * @author Eric
  *
  */
-//TODO: Write tests for gettings pipelines by job
+//TODO: Write tests for getting pipelines by job
 public class PipelineTests extends TestSequence {
 	User u=null;
 	Solver s=null;
@@ -53,20 +53,16 @@ public class PipelineTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		space=ResourceLoader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
-		s=ResourceLoader.loadSolverIntoDatabase(space.getId(), u.getId());
-		pipe=ResourceLoader.loadPipelineIntoDatabase(u.getId(), s.getConfigurations());
+		u=loader.loadUserIntoDatabase();
+		space=loader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
+		s=loader.loadSolverIntoDatabase(space.getId(), u.getId());
+		pipe=loader.loadPipelineIntoDatabase(u.getId(), s.getConfigurations());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(s.getId());
-		Spaces.removeSubspace(space.getId());
-		Assert.assertTrue(Pipelines.deletePipelineFromDatabase(pipe.getId()));
-		Users.deleteUser(u.getId());
-		
+		loader.deleteAllPrimitives();		
 	}
 
 }

@@ -12,6 +12,7 @@ CREATE TABLE users (
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
 	disk_quota BIGINT NOT NULL,
+	job_pair_quota INT DEFAULT 750000 NOT NULL,
 	subscribed_to_reports BOOLEAN NOT NULL DEFAULT FALSE,
 	default_page_size INT NOT NULL DEFAULT 10,
 	default_settings_profile INT DEFAULT NULL,
@@ -318,7 +319,6 @@ CREATE TABLE job_pairs (
 	queuesub_time TIMESTAMP(3) DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
-	exit_status INT,
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
@@ -703,12 +703,11 @@ CREATE TABLE system_flags (
 CREATE TABLE report_data (
 	id INT NOT NULL AUTO_INCREMENT,
 	event_name VARCHAR(64),
-	queue_id INT, -- NULL if data is not associated with a queue 
+	queue_name VARCHAR(64), -- NULL if data is not associated with a queue 
 	occurrences INT NOT NULL,
 
-	UNIQUE KEY(event_name, queue_id),
 	PRIMARY KEY(id),
-	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
+	UNIQUE KEY event_name_queue_name (event_name, queue_name)
 );
 
 -- Creates a view of the closure table that includes only communities as ancestors
@@ -722,5 +721,5 @@ ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primar
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 
 
-INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
+INSERT INTO report_data (event_name, queue_name, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 

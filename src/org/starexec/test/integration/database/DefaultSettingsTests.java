@@ -36,7 +36,7 @@ public class DefaultSettingsTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteSettingsTest() {
-		DefaultSettings temp=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(u.getId());
+		DefaultSettings temp=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
 		Assert.assertTrue(Settings.deleteProfile(temp.getId()));
 		Assert.assertNull(Settings.getProfileById(temp.getId()));
 	}
@@ -68,20 +68,17 @@ public class DefaultSettingsTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		u2=ResourceLoader.loadUserIntoDatabase();
+		u=loader.loadUserIntoDatabase();
+		u2=loader.loadUserIntoDatabase();
 		
-		settings=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(u.getId());
-		settings2=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(u2.getId());
+		settings=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
+		settings2=loader.loadDefaultSettingsProfileIntoDatabase(u2.getId());
 		admin=Users.getAdmins().get(0);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Assert.assertTrue(Users.deleteUser(u.getId()));
-		Assert.assertTrue(Settings.deleteProfile(settings.getId()));
-		Assert.assertTrue(Users.deleteUser(u2.getId()));
-		Assert.assertTrue(Settings.deleteProfile(settings2.getId()));
+		loader.deleteAllPrimitives();
 	}
 
 }

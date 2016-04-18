@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
@@ -37,6 +38,7 @@ import org.starexec.data.to.SolverStats;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
@@ -226,7 +228,10 @@ public class Jobs {
 		return false;
 	}
 
-	public static int countJobPairsToBeAddedFromConfigIds( int jobId, Set<Integer> configIds ) {
+	public static int countJobPairsToBeAddedFromConfigIdsForPairedBenchmarks( 
+			int jobId, 
+			Set<Integer> configIds, 
+			Set<Integer> idsOfDeletedJobPairs ) {
 		Job job = Jobs.getWithSimplePairs( jobId );
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 		List<JobPair> jobPairs = job.getJobPairs();
@@ -240,13 +245,178 @@ public class Jobs {
 				// If a pair contains the solver add a new job pair with the new config to the job.
 				if (	pair.getStages().size() == 1 && // skip multi-stage pairs
 						pair.getPrimaryStage().getSolver().getId() == solver.getId() && 
-						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) )  {
+						!benchmarksAlreadySeen.contains( pair.getBench().getId() ) &&
+						// Skip pairs that the user has decided to delete.
+				  		!idsOfDeletedJobPairs.contains( pair.getId() ) )  {
 					countOfJobPairsToAdd += 1;
+
 					benchmarksAlreadySeen.add( pair.getBench().getId() );
 				}
 			}
 		}
 		return countOfJobPairsToAdd;
+	}
+
+	public static int countJobPairsToBeAddedFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds, Set<Integer> idsOfDeletedJobPairs ) {
+		int jobPairsToAddCount = 0;
+
+		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
+		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage( jobId );
+
+		Job job = Jobs.getWithSimplePairs( jobId );
+		List<JobPair> jobPairs = job.getJobPairs();
+
+		for ( Integer configIdToAdd : configIds ) {
+
+			// Get the solver associated with the config we want to add to the job.
+			final int solverIdToAdd = Solvers.getByConfigId( configIdToAdd ).getId(); 
+
+
+			for ( JobPair pair : jobPairs ) {
+				final int pairBenchId = pair.getBench().getId();
+
+				// Skip multi-stage pairs.
+				if ( pair.getStages().size() == 1 
+					 && !jobMapContainsBenchSolverConfigTriple(jobMap, pairBenchId, solverIdToAdd, configIdToAdd)
+					 // Skip job pairs the user has deleted.
+				  	 && !idsOfDeletedJobPairs.contains( pair.getId() ) ) {
+
+					// Add the new benchmark-solver-config pair so that we don't add it as a duplicate.
+					addBenchSolverConfigTripleToJobMap( jobMap, pairBenchId, solverIdToAdd, configIdToAdd );
+
+					final int pairSolverId = pair.getPrimaryStage().getSolver().getId();
+					/*
+					log.debug( "Counting job pairs to add, old bench-solver-config triple: "+pairBenchId+"-"+pairSolverId+"-"
+							+pair.getPrimaryStage().getConfiguration().getId() );
+					log.debug( "Counting job pairs to add, new bench-solver-config triple: "+pairBenchId +"-"+solverIdToAdd+"-"+configIdToAdd );
+					log.debug("");
+					*/
+
+
+					jobPairsToAddCount += 1;
+				}
+			}
+		}
+
+		return jobPairsToAddCount;
+	}
+
+	private static boolean jobMapContainsBenchSolverConfigTriple( Map<Integer, Map<Integer, Set<Integer>>> jobMap, int benchId, int solverId, int configId ) {
+		return jobMap.containsKey( benchId ) 
+				&& jobMap.get( benchId ).containsKey( solverId ) 
+				&& jobMap.get( benchId ).get( solverId ).contains( configId );
+	}
+
+	/**
+	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that doesn't already contain the configuration.
+	 * @param jobId the id of the job.
+	 * @param configId  the configurations to add to the job.
+	 * @author Albert Giegerich
+	 */
+	public static void addJobPairsFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
+		List<JobPair> jobPairsToAdd = new ArrayList<>();
+		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
+		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage( jobId );
+		for ( Integer configIdToAdd : configIds ) {
+
+			// Get the solver associated with the config we want to add to the job.
+			final Solver solverToAdd = Solvers.getByConfigId( configIdToAdd );
+			final int solverIdToAdd = solverToAdd.getId(); 
+
+			// Get new job pairs so that we don't modify a reference we've already added to jobPairsToAdd
+			Job job = Jobs.getWithSimplePairs( jobId );
+			List<JobPair> jobPairs = job.getJobPairs();
+
+			for ( JobPair pair : jobPairs ) {
+				final int pairBenchId = pair.getBench().getId();
+
+				// Skip multi-stage pairs.
+				if ( pair.getStages().size() == 1 
+					 && !jobMapContainsBenchSolverConfigTriple(jobMap, pairBenchId, solverIdToAdd, configIdToAdd) ) {
+
+					// Add the new benchmark-solver-config pair so that we don't add it as a duplicate.
+					addBenchSolverConfigTripleToJobMap( jobMap, pairBenchId, solverIdToAdd, configIdToAdd );
+
+					Configuration configToAdd = Solvers.getConfiguration( configIdToAdd );
+					pair.getPrimaryStage().setSolver( solverToAdd );
+					pair.getPrimaryStage().setConfiguration( configToAdd );
+
+					jobPairsToAdd.add( pair );
+				}
+			}
+		}
+
+		// Add the new job pairs.
+		JobPairs.addJobPairs(jobId,jobPairsToAdd );
+
+		// Clear the cached job stats for this job so the new job pairs will contribute to the job stats.
+		removeCachedJobStats( jobId );
+	}
+
+	/**
+	 * Builds a mapping from all benchmarks to solvers paired with those benchmarks (in job pairs) to configs paired with those benchmarks
+	 * and solvers (in job pairs) for a given stage. (Only uses pairs for the given stage.)
+	 * @param jobId The job to get the pairs from to build the mapping.
+	 * @param stageNumber The stage number to filter by.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, Map<Integer, Set<Integer>>> getJobMapForStage( int jobId, int stageNumber ) {
+		return getJobMap( jobId, false, stageNumber );
+	}
+
+	/**
+	 * Builds a mapping from all benchmarks to solvers paired with those benchmarks (in job pairs) to configs paired with those benchmarks
+	 * and solvers (in job pairs) for the primary stage. (Only uses pairs for the primary stage.)
+	 * @param jobId The job to get the pairs from to build the mapping.
+	 * @author Albert Giegerich
+	 */
+	public static Map<Integer, Map<Integer, Set<Integer>>> getJobMapForPrimaryStage( int jobId ) {
+		return getJobMap( jobId, true, -1 );
+	}
+
+	private static Map<Integer, Map<Integer, Set<Integer>>> getJobMap( int jobId, boolean usePrimaryStage, int stageNumber ) {
+		Map<Integer, Map<Integer, Set<Integer>>> jobMap = new HashMap<>();
+
+		Job job = Jobs.getWithSimplePairs( jobId ); List<JobPair> jobPairs = job.getJobPairs();
+
+		for ( JobPair pair : jobPairs ) {
+			JoblineStage stage = usePrimaryStage ? pair.getPrimaryStage() : pair.getStageFromNumber( stageNumber );
+			if ( stage == null ) {
+				log.debug("Found null stage, continuing");
+				continue;
+			}
+
+
+			final int pairBenchId = pair.getBench().getId();
+			final int pairSolverId = stage.getSolver().getId();
+			final int pairConfigId = stage.getConfiguration().getId();
+
+			if (pairBenchId == 1) {
+				log.debug("Building Map - bench-solver-config: "+pairBenchId+"-"+pairSolverId+"-"+pairConfigId);
+			}
+
+			addBenchSolverConfigTripleToJobMap( jobMap, pairBenchId, pairSolverId, pairConfigId );
+		}
+
+		return jobMap;
+	}
+
+	private static void addBenchSolverConfigTripleToJobMap(Map<Integer, Map<Integer, Set<Integer>>> jobMap, int benchId, int solverId, int configId) {
+		if ( jobMap.containsKey( benchId ) ) {
+			if ( jobMap.get( benchId ).containsKey( solverId ) ) {
+				jobMap.get( benchId ).get( solverId ).add( configId );
+			} else {
+				Set<Integer> configs = new HashSet<>();
+				configs.add( configId );
+				jobMap.get( benchId ).put( solverId, configs );
+			}
+		} else {
+			Map<Integer, Set<Integer>> solverToConfigs = new HashMap<>();
+			Set<Integer> configs = new HashSet<>();
+			configs.add( configId );
+			solverToConfigs.put( solverId, configs );
+			jobMap.put( benchId, solverToConfigs );
+		}
 	}
 
 	/**
@@ -256,7 +426,7 @@ public class Jobs {
 	 * @param configId  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
-	public static void addJobPairsFromConfigIds( int jobId, Set<Integer> configIds ) throws SQLException {
+	public static void addJobPairsFromConfigIdsForPairedBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
 
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 
@@ -490,16 +660,46 @@ public class Jobs {
 	public static boolean cleanOrphanedDeletedJobs() {
 		Connection con=null;
 		CallableStatement procedure=null;
+		ResultSet results = null;
 		try {
 			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL RemoveDeletedOrphanedJobs()}");
-			procedure.executeUpdate();
+			//will contain the id of every job that is associated with a space
+			HashSet<Integer> parentedJobs = new HashSet<Integer>();
+			procedure=con.prepareCall("{CALL GetJobsAssociatedWithSpaces()}");
+			results=procedure.executeQuery();
+			while (results.next()) {
+				parentedJobs.add(results.getInt("id"));
+			}
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			
+			procedure=con.prepareCall("CALL GetDeletedJobs()");
+			results=procedure.executeQuery();
+			
+			while (results.next()) {
+				Job j = resultsToJob(results);
+				
+				if (new File(Jobs.getDirectory(j.getId())).exists()) {
+					log.warn("a deleted job still exists on disk! id = "+j.getId());
+					if (!FileUtils.deleteQuietly(new File(Jobs.getDirectory(j.getId())))) {
+						log.warn("the job could not be deleted! Not removing job from the database");
+						continue;
+					}
+				}
+				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
+				if (!parentedJobs.contains(j.getId())) {
+					removeJobFromDatabase(j.getId());
+				}
+			}	
+			
+			
 			return true;
 		} catch (Exception e) {
 			log.error("cleanOrphanedDeletedJobs says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 		return false;
 	}
@@ -568,13 +768,36 @@ public class Jobs {
 	 */
 	public static boolean delete(int jobId) {
 		Connection con=null;
+		CallableStatement procedure = null;
 		try {
+			//we should kill jobs before deleting  them so no additional pairs are run
+			if (!Jobs.isJobComplete(jobId)) {
+				Jobs.kill(jobId);
+			}
+			// we should delete on disk first. If some error occurs during the delete process,
+			// it is better that the job is not marked deleted, as the user can simply press delete
+			// again as long as we don't mark it.
+			if (!Util.safeDeleteDirectory(getDirectory(jobId))) {
+				log.error("there was an error deleting the job directory!");
+				return false;
+			}
+			
+			
 			con=Common.getConnection();
-			return delete(jobId,con);
+			
+			
+			// Remove the jobs stats from the database.
+			Jobs.removeCachedJobStats(jobId,con);
+			procedure = con.prepareCall("{CALL DeleteJob(?)}");
+			procedure.setInt(1, jobId);	
+			procedure.executeUpdate();
+
+			return true;
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 		
 		return false;
@@ -608,19 +831,19 @@ public class Jobs {
 	}
 
 
-	public static int countJobPairsToBeDeletedFromConfigIds( int jobId, Set<Integer> configIds ) {
+	public static List<JobPair> getJobPairsToBeDeletedFromConfigIds( int jobId, Set<Integer> configIds ) {
 		Job job = Jobs.getWithSimplePairs( jobId );
-		int numberOfJobPairsToBeDeleted = 0;
+		List<JobPair> pairsToDelete = new ArrayList<>();
 		List<JobPair> jobPairs = job.getJobPairs(); 
 		// Delete every pair that contains a config in the set of configs.
 		for ( JobPair pair : jobPairs ) {
 			if ( pair.getStages().size() == 1 &&
 				configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
-				numberOfJobPairsToBeDeleted += 1;
+				pairsToDelete.add( pair );
 			}
 		}
 
-		return numberOfJobPairsToBeDeleted;
+		return pairsToDelete;
 	}
 
 
@@ -631,63 +854,10 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void deleteJobPairsWithConfigurationsFromJob( int jobId, Set<Integer> configIds ) throws SQLException {
-		Job job = Jobs.getWithSimplePairs( jobId );
-		List<JobPair> jobPairsToDelete = new ArrayList<>();
-		List<JobPair> jobPairs = job.getJobPairs(); 
-		// Delete every pair that contains a config in the set of configs.
-		for ( JobPair pair : jobPairs ) {
-			// Skip multi-stage pairs
-			if ( pair.getStages().size() == 1 && 
-				 configIds.contains( pair.getPrimaryStage().getConfiguration().getId() ) ) {
-
-				jobPairsToDelete.add( pair );
-			}
-		}
-		JobPairs.deleteJobPairs( jobPairsToDelete );
-
+		JobPairs.deleteJobPairs( getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
 		removeCachedJobStatsForConfigs( jobId, configIds );
 	}
 
-
-	
-	
-	
-	/**
-	 * Deletes a job from disk, and also sets the delete property to true in the database. Jobs
-	 * are only removed from  the database entirely when they have no more space associations.
-	 * @param jobId The ID of the job to delete
-	 * @param con An open database connection
-	 * @return True on success, false otherwise
-	 * @author Eric Burns
-	 */
-	protected static boolean delete(int jobId, Connection con) {
-		log.info("Deleting job " + jobId);
-		//we should kill jobs before deleting  them so no additional pairs are run
-		if (!Jobs.isJobComplete(jobId)) {
-			Jobs.kill(jobId);
-		}
-		CallableStatement procedure = null;
-		try {
-			// Remove the jobs stats from the database.
-			Jobs.removeCachedJobStats(jobId,con);
-
-			procedure = con.prepareCall("{CALL DeleteJob(?)}");
-			procedure.setInt(1, jobId);		
-			procedure.executeUpdate();	
-			
-			Util.safeDeleteDirectory(getDirectory(jobId));
-			
-			return true;
-		} catch (Exception e) {
-			log.error("Delete Job with jobId = "+jobId+" says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
-		}
-		return false;
-	}
-
-
-	
 	/**
 	 * Gets information about the job with the given ID. Job pair information is not returned.
 	 * Deleted jobs are not returned.
@@ -777,6 +947,23 @@ public class Jobs {
 		return get(jobId, false, true);
 	}
 
+	private static Job resultsToJob(ResultSet results) throws SQLException {
+		Job j = new Job();
+		j.setId(results.getInt("id"));
+		j.setUserId(results.getInt("user_id"));
+		j.setName(results.getString("name"));
+		j.setPrimarySpace(results.getInt("primary_space"));
+		j.setCreateTime(results.getTimestamp("created"));
+		j.setCompleteTime(results.getTimestamp("completed"));
+		j.setCpuTimeout(results.getInt("cpuTimeout"));
+		j.setWallclockTimeout(results.getInt("clockTimeout"));
+		j.setMaxMemory(results.getLong("maximum_memory"));
+		j.setBuildJob(results.getBoolean("buildJob"));
+		j.setDescription(results.getString("description"));
+		j.setSeed(results.getLong("seed"));
+		return j;
+	}
+	
 	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {
 		Connection con = null;
 		ResultSet results=null;
@@ -792,23 +979,11 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
 			if(results.next()){
-				Job j = new Job();
+				Job j = resultsToJob(results);
 				if (getSimplePairs) {
 					j.setJobPairs(getPairsSimple(jobId));
 				}
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));
 				j.setQueue(Queues.get(con,results.getInt("queue_id")));
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setCompleteTime(results.getTimestamp("completed"));
-				j.setCpuTimeout(results.getInt("cpuTimeout"));
-				j.setWallclockTimeout(results.getInt("clockTimeout"));
-				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setBuildJob(results.getBoolean("buildJob"));
-				j.setDescription(results.getString("description"));
-				j.setSeed(results.getLong("seed"));
 				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
 				return j;
 			}
@@ -1142,7 +1317,7 @@ public class Jobs {
 	}
 	
 	/**
-	 * Returns the filepath to the directory containing this job's output
+	 * Returns the absolute filepath to the directory containing this job's output
 	 * @param jobId The job to get the filepath for
 	 * @return A string representing the path to the output directory
 	 * @author Eric Burns
@@ -2160,24 +2335,30 @@ public class Jobs {
 	/**
 	 * Gets job pair information necessary for populating client side graphs
 	 * @param jobSpaceId The ID of the job_space in question
-	 * @param configId The ID of the configuration in question
+	 * @param configIds Configurations to get job pairs for
 	 * @param primitivesToAnonymize enum designating which (if any) primitive names should be anonymized.
-	 * @return A List of JobPair objects
-	 * @author Eric Burns
 	 * @param stageNumber The number of the stage that we are concerned with. If <=0, the primary stage is obtained
+
+	 * @return A list of size equal to configIds. Each element of the list will contain a list of job pairs where
+	 * each job pair in the list uses the configuration at the matching position in configIds.
+	 * @author Eric Burns
 	 */
-	
-	//TODO: Rewrite so this takes in two config IDs instead of one: we are using two database calls where only one
-	// is needed
-	public static List<JobPair> getJobPairsForSolverComparisonGraph(
+	public static List<List<JobPair>> getJobPairsForSolverComparisonGraph(
 			int jobSpaceId, 
-			int configId, 
+			List<Integer> configIds,
 			int stageNumber, 
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {			
 			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, primitivesToAnonymize);
-			List<JobPair> filteredPairs=new ArrayList<JobPair>();
+			List<List<JobPair>> pairLists = new ArrayList<List<JobPair>>();
 			
+			
+			Map<Integer,Integer> configToPosition=new HashMap<Integer,Integer>();
+			
+			for (int i=0;i<configIds.size();i++) {
+				pairLists.add(new ArrayList<JobPair>());
+				configToPosition.put(configIds.get(i), i);
+			}
 			for (JobPair jp : pairs) {
 				
 				JoblineStage stage=jp.getStageFromNumber(stageNumber);
@@ -2185,12 +2366,13 @@ public class Jobs {
 				if (stage==null || stage.isNoOp()) {
 					continue;
 				}
-				if (stage.getConfiguration().getId()==configId) {
+				int configId = stage.getConfiguration().getId();
+				if (configToPosition.containsKey(configId)) {
+					List<JobPair> filteredPairs = pairLists.get(configToPosition.get(configId));
 					filteredPairs.add(jp);
-				}
-				
+				}	
 			}
-			return filteredPairs;
+			return pairLists;
 			
 		
 		}catch (Exception e) {
@@ -3637,6 +3819,34 @@ public class Jobs {
 	}
 	
 	/**
+	 * Returns the IDs of all jobs in the system
+	 * @param jobId 
+	 * @return
+	 */
+	public static List<Integer> getAllJobIds() {
+		Connection con=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con=Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllJobIds()}");
+			results = procedure.executeQuery();
+			List<Integer> ids = new ArrayList<Integer>();
+			while (results.next()) {
+				ids.add(results.getInt("id"));
+			}
+			return ids;
+		} catch (Exception e) {
+			log.error("isJobPausedOrKilled says " +e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
+	/**
 	 * Returns whether the job is public. A job is public if it was run by the public user or
 	 * if it is in any public space
 	 * @param jobId The ID of the job in question
@@ -3800,9 +4010,9 @@ public class Jobs {
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
 	    for (JobPair jp : jobPairsEnqueued) {
-		int execId = jp.getBackendExecId();
-		R.BACKEND.killPair(execId);
-		JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+			int execId = jp.getBackendExecId();
+			R.BACKEND.killPair(execId);
+		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 	    }
 	    //Get the running job pairs and remove them
 	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
@@ -3810,7 +4020,7 @@ public class Jobs {
 		for (JobPair jp: jobPairsRunning) {
 		    int execId = jp.getBackendExecId();
 		    R.BACKEND.killPair(execId);
-		    JobPairs.UpdateStatus(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
 		}
 	    }
 	    log.debug("Deletion of paused job pairs from queue was succesful");
@@ -4825,8 +5035,14 @@ public class Jobs {
 			// if SGE does not think this pair should be running, kill it
 			// the kill only happens if the pair's status has not been changed
 			// since getPairsInBackend() was called
-			if (!backendIDs.contains(p.getBackendExecId())) {
-				JobPairs.setBrokenPairStatus(p);
+            if (!backendIDs.contains(p.getBackendExecId())) {
+                if(Jobs.get(p.getJobId()).isBuildJob()) {
+                    Solver s = p.getPrimarySolver();
+                    int status = SolverBuildStatusCode.BUILD_FAILED.getVal();
+                    Solvers.setSolverBuildStatus(s, status);
+                }				
+                JobPairs.setBrokenPairStatus(p);
+
 			}
 		}
 	}

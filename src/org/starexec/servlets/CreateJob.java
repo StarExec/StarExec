@@ -93,7 +93,9 @@ public class CreateJob extends HttpServlet {
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
 		List<Integer> configIds = new ArrayList<Integer>();
 		for (Configuration c :config) {
-			configIds.add(c.getId());
+            if(!c.getName().equals("starexec_build")){
+			    configIds.add(c.getId());
+            }
 		}
 		List<Integer> benchmarkIds = new ArrayList<Integer>();
 		benchmarkIds.add(benchId);

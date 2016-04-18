@@ -70,7 +70,15 @@ try {
 				</c:forEach>
 				</tbody>					
 			</table>		
-		</fieldset>
+    </fieldset>
+	<fieldset id="numberOfJobsField">
+        <legend>jobs per node</legend>
+        Select number of jobs run per node:
+        <select id="numberOfJobs" name="numberOfJobs">
+                <option value="1">1</option>
+                <option selected="selected" value="2">2</option>
+        </select>
+    </fieldset>
 	<div id="actionBar">
 		<fieldset>
 			<legend>actions</legend>

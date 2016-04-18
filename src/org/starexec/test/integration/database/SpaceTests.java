@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -17,6 +18,7 @@ import org.starexec.data.database.Users;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -44,10 +46,10 @@ public class SpaceTests extends TestSequence {
 	User member2=null;
 	
 	
-	
+	//all primitives owned by leader and placed into subspace
 	Solver solver = null;
-	List<Benchmark> benchmarks=null; //all primitives owned by leader and placed into subspace
-	
+	List<Benchmark> benchmarks=null; 
+	Job job = null;
 	@StarexecTest
 	private void getSpaceTest() {
 		Space test=Spaces.get(community.getId());
@@ -228,9 +230,9 @@ public class SpaceTests extends TestSequence {
 
 	@StarexecTest
 	private void SpacePathCreateTest() {
-		Space space1=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		Space space1=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
 		String space1Path=community.getName()+R.JOB_PAIR_PATH_DELIMITER+space1.getName();
-		Space space2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
+		Space space2=loader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
 		String space2Path=space1Path+R.JOB_PAIR_PATH_DELIMITER+space2.getName();
 		
 		List<Space> spaceList=new ArrayList<Space>();
@@ -315,18 +317,44 @@ public class SpaceTests extends TestSequence {
 		
 	}
 	
+	@StarexecTest
+	private void getChainToRootTest() {
+		List<Integer> path = Spaces.getChainToRoot(subspace3.getId());
+		Assert.assertEquals(4, path.size());
+		Assert.assertEquals((Integer)1, path.get(0));
+		Assert.assertEquals((Integer)community.getId(), path.get(1));
+		Assert.assertEquals((Integer)subspace2.getId(), path.get(2));
+		Assert.assertEquals((Integer)subspace3.getId(), path.get(3));
+	}
+	
+	@StarexecTest
+	private void getChainToRootWithRootTest() {
+		List<Integer> path = Spaces.getChainToRoot(1);
+		Assert.assertEquals(1, path.size());
+		Assert.assertEquals((Integer)1, path.get(0));
+	}
+	
+	@StarexecTest
+	private void setJobSpaceMaxStagesTest() {
+		JobSpace s = Spaces.getJobSpace(job.getPrimarySpace());
+		int maxStages = s.getMaxStages();
+		Assert.assertTrue(Spaces.setJobSpaceMaxStages(s.getId(), maxStages+1));
+		Assert.assertEquals((Integer)(maxStages+1), Spaces.getJobSpace(s.getId()).getMaxStages());
+		Assert.assertTrue(Spaces.setJobSpaceMaxStages(s.getId(), maxStages));
+
+	}
 	
 	
 	@Override
 	protected void setup() {
-		leader=ResourceLoader.loadUserIntoDatabase();
-		member1=ResourceLoader.loadUserIntoDatabase();
-		member2=ResourceLoader.loadUserIntoDatabase();
+		leader=loader.loadUserIntoDatabase();
+		member1=loader.loadUserIntoDatabase();
+		member2=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		community = ResourceLoader.loadSpaceIntoDatabase(leader.getId(), 1);	
-		subspace=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
-		subspace2=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
-		subspace3=ResourceLoader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
+		community = loader.loadSpaceIntoDatabase(leader.getId(), 1);	
+		subspace=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		subspace2=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		subspace3=loader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
 		Users.associate(member1.getId(), community.getId());
 		Users.associate(member2.getId(), community.getId());
 		Users.associate(member1.getId(), subspace.getId());
@@ -336,38 +364,24 @@ public class SpaceTests extends TestSequence {
 		
 		
 		
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
 
-		List<Integer> ids=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
+		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
 		benchmarks=new ArrayList<Benchmark>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));
-		}	
+		}
+		job = loader.loadJobIntoDatabase(subspace.getId(), leader.getId(), solver.getId(), ids);
 		
 	}
 	
 	@Override
 	protected void teardown() {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Benchmark b : benchmarks)  {
-			Benchmarks.deleteAndRemoveBenchmark(b.getId());
-		}
-		
-		Spaces.removeSubspace(subspace.getId());
-		Spaces.removeSubspace(subspace2.getId());
-		Spaces.removeSubspace(subspace3.getId());
-		boolean success=Spaces.removeSubspace(community.getId());
-		
-		Users.deleteUser(leader.getId());
-		Users.deleteUser(member1.getId());
-		Users.deleteUser(member2.getId());
-		
-
-		Assert.assertTrue(success);
+		loader.deleteAllPrimitives();
 	}
 	@Override
 	protected String getTestName() {
-		return "SpacePropertiesTest";
+		return "SpaceTests";
 	}
 
 }

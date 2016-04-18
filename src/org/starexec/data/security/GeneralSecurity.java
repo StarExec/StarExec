@@ -135,7 +135,17 @@ public class GeneralSecurity {
 		return Users.isAdmin(userId);
 	}
 	
-	
+	public static ValidatorStatusCode canUserSuspendOrReinstateUser(int userIdBeingUpdated, int userIdMakingCall) {
+		if (Users.get(userIdBeingUpdated)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (!GeneralSecurity.hasAdminWritePrivileges(userIdMakingCall)) {
+			return new ValidatorStatusCode(false, "You do not have permission to suspend or reinstate users");
+		}
+		
+		return new ValidatorStatusCode(false);
+		
+	}
 	
 
 	/**

@@ -11,7 +11,7 @@
 		</PipelineStage>
 </SolverPipeline>
 
-<Job name="another test">
+<Job name="test xml job">
 <JobAttributes>
 <description value="test job"/>
 <queue-id value="1"/>

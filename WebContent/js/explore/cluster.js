@@ -1,5 +1,6 @@
 var jobPairTable;
-var qid=0;
+var qid=0; // ID of the selected queue, or the queue that owns the selected node
+var selectedId = 0;  // ID of the selected primitive
 // When the document is ready to be executed on
 $(document).ready(function(){
 	initDataTables();
@@ -101,8 +102,9 @@ function initClusterExplorer() {
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane		
-		id = data.rslt.obj.attr("id");
-		getDetails(id,data.rslt.obj.attr("rel"));
+		id = data.rslt.obj.attr("id");		
+		parent_node = $.jstree._reference('#exploreList')._get_parent(data.rslt.obj);
+		getDetails(id,data.rslt.obj.attr("rel"),parent_node);
 	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
 }
 
@@ -159,21 +161,24 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 /**
  * Populates the node details panel with information on the given node
  */
-function getDetails(id, type) {
+function getDetails(id, type, parent_node) {
 	var url = '';
-	qid=id;
-	loadQueueLoads();
+	selectedId=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		url = starexecRoot+"services/cluster/queues/details/" + id;	
+		qid=id;
 		window['type'] = 'queues';
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
 		url = starexecRoot+"services/cluster/nodes/details/" + id;
+		qid=parent_node.attr("id");
 		window['type'] = 'nodes';
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
 	}
+	loadQueueLoads();
+
 	$('#loader').show();
 	
 	jobPairTable.fnDraw();
@@ -219,7 +224,7 @@ function loadQueueLoads() {
 function populateAttributes(jsonData) {	
 	// Populate node details	
 	$('#workerName').text(jsonData.name.split('.')[0]);
-	$('#queueID').text("id = "+qid);
+	$('#queueID').text("id = "+selectedId);
 
 	if(jsonData.cpuTimeout != null) {
 		//We're dealing with a queue

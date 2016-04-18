@@ -278,8 +278,8 @@ public class UploadTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		s=ResourceLoader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
+		u=loader.loadUserIntoDatabase();
+		s=loader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
 		bs=Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(s.getId(), u.getId()));
 		Assert.assertNotNull(bs);
 		ss=Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(u.getId()));
@@ -289,9 +289,7 @@ public class UploadTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspace(s.getId());
-		Users.deleteUser(u.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

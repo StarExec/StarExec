@@ -362,20 +362,3 @@ function clearErrorStates() {
 			"json"
 		);
 }
-
-function cancelReservation(spaceId, queueId) {
-	$.post(
-		starexecRoot+"services/cancel/queueReservation/" + spaceId + "/" + queueId,
-		function(returnCode) {
-			s=parseReturnCode(returnCode);
-			if (s) {
-				setTimeout(function() {location.reload(true);}, 1000);
-			}
-				
-		},
-		"json"
-	);
-}
-
-
-

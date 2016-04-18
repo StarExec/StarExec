@@ -82,22 +82,18 @@ public class ProcessorSecurityTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		admin=Users.getAdmins().get(0);
-		owner = ResourceLoader.loadUserIntoDatabase();
-		otherUser = ResourceLoader.loadUserIntoDatabase();
-		notInCommunity = ResourceLoader.loadUserIntoDatabase();
-		community=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
+		owner = loader.loadUserIntoDatabase();
+		otherUser = loader.loadUserIntoDatabase();
+		notInCommunity = loader.loadUserIntoDatabase();
+		community=loader.loadSpaceIntoDatabase(owner.getId(), 1);
 		Users.associate(otherUser.getId(),community.getId());
-		p = ResourceLoader.loadProcessorIntoDatabase(ProcessorType.POST, community.getId());
+		p = loader.loadProcessorIntoDatabase(ProcessorType.POST, community.getId());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Processors.delete(p.getId());
-		Spaces.removeSubspace(community.getId());
-		Users.deleteUser(owner.getId());
-		Users.deleteUser(otherUser.getId());
-		Users.deleteUser(notInCommunity.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

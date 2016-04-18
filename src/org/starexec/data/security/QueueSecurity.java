@@ -57,10 +57,21 @@ public class QueueSecurity {
 		
 		return new ValidatorStatusCode(true);
 	}
+	
+	public static ValidatorStatusCode canUserEditQueue(int userId, int queueId) {
+		if (Queues.get(queueId)==null) {
+			return new ValidatorStatusCode(false, "The given queue could not be found");
+		}
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to update the given queue");
+		}
+		return new ValidatorStatusCode(true);
+	}
 
 	public static ValidatorStatusCode canUserSetTestQueue(int userId, int queueId) {
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to modify queues");
+		ValidatorStatusCode status = canUserEditQueue(userId, queueId);
+		if (!status.isSuccess()) {
+			return status;
 		}
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
 		if (nodes==null || nodes.size()==0) {

@@ -35,20 +35,15 @@ public class SettingSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		u2=ResourceLoader.loadUserIntoDatabase();
-		s=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(u.getId());
+		u=loader.loadUserIntoDatabase();
+		u2=loader.loadUserIntoDatabase();
+		s=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
 		admin=Users.getAdmins().get(0);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Settings.deleteProfile(s.getId());
-
-		Users.deleteUser(u.getId());
-		Users.deleteUser(u2.getId());
-
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

@@ -43,18 +43,16 @@ public class UploadSecurityTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		admin = Users.getAdmins().get(0);
-		user = ResourceLoader.loadUserIntoDatabase();
-		nonOwner = ResourceLoader.loadUserIntoDatabase();
-		space = ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		user = loader.loadUserIntoDatabase();
+		nonOwner = loader.loadUserIntoDatabase();
+		space = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		status = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), user.getId()));
 		Uploads.addFailedBenchmark(status.getId(), "failed", "failed bench");
 	}
 
 	@Override
 	protected void teardown() throws Exception {	
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
-		Users.deleteUser(nonOwner.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

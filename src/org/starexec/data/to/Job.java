@@ -16,6 +16,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -322,13 +323,10 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		
 		StageAttributes attrs=new StageAttributes();
 		attrs.setStageNumber(stageNumber);
-		attrs.setSpaceId(null);
 		attrs.setCpuTimeout(cpuTimeout);
 		attrs.setWallclockTimeout(wallclockTimeout);
 		attrs.setJobId(this.getId());
 		attrs.setMaxMemory(maxMemory);
-		attrs.setPostProcessor(null);
-		attrs.setPreProcessor(null);
 		return attrs;
 	}
 

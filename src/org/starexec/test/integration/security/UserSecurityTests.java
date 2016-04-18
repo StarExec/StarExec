@@ -76,8 +76,8 @@ public class UserSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user1=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
+		user1=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
 
 		admin=Users.getAdmins().get(0);
 		Assert.assertNotNull(user1);
@@ -87,8 +87,7 @@ public class UserSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId());
-		Users.deleteUser(user2.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

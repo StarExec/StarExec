@@ -261,6 +261,9 @@ public class BenchmarkSecurity {
 	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserRecycleOrphanedBenchmarks(int userIdToDelete, int userIdMakingRequest) {
+		if (Users.get(userIdToDelete)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
 		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "You do not have permission to recycle benchmarks belonging to another user");
 		}

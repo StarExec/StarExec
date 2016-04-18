@@ -36,6 +36,7 @@ public class CreateQueue extends HttpServlet {
 	private static final String nodes = "node";
 	private static final String maxCpuTimeout="cpuTimeout";
 	private static final String maxWallTimeout="wallTimeout";
+    private static final String numberOfJobsPerQueue="numberOfJobs";
 	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -60,7 +61,6 @@ public class CreateQueue extends HttpServlet {
 		
 		//String node_name = (String)request.getParameter(Nodes);
 		List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
-
 		
 		log.debug("nodeIds = " + nodeIds);
 		LinkedList<String> nodeNames = new LinkedList<String>();
@@ -81,12 +81,12 @@ public class CreateQueue extends HttpServlet {
 		log.debug("queue_name: " + queue_name);
 
 		String qName = queue_name+".q";
-	
-		//TODO : BUG when trying to create a queue using an orphaned node, seems to create queue with right node,
-		//returning wrong status code for some reason? seems related to cputimeout and wallclock timeout
+
+		Integer jobsPerQueue = Integer.parseInt(request.getParameter(numberOfJobsPerQueue));
+
 		String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
 		String[] qNames = queueNames.toArray(new String[queueNames.size()]);
-		boolean backend_success = R.BACKEND.createQueue(qName,nNames,qNames);
+		boolean backend_success = R.BACKEND.createQueueWithSlots(qName,nNames,qNames,jobsPerQueue);
 
 		log.debug("backend_success: " + backend_success);
 
@@ -126,7 +126,11 @@ public class CreateQueue extends HttpServlet {
 				return new ValidatorStatusCode(false,"Timeouts need to be greater than 0.");
 			}
 			
-			
+		    Integer jobsPerQueue = Integer.parseInt(request.getParameter(numberOfJobsPerQueue));
+            if (jobsPerQueue != 1 && jobsPerQueue != 2) {
+                return new ValidatorStatusCode(false,"Number of jobs must be 1 or 2");
+            }
+
 			return	QueueSecurity.canUserMakeQueue(userId, queueName);
 
 		} catch (Exception e) {

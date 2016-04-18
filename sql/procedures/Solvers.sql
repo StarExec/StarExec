@@ -378,7 +378,7 @@ CREATE PROCEDURE GetSolversAssociatedWithPairs()
 DROP PROCEDURE IF EXISTS GetDeletedSolvers;
 CREATE PROCEDURE GetDeletedSolvers()
 	BEGIN	
-		SELECT id FROM solvers WHERE deleted=true;
+		SELECT * FROM solvers WHERE deleted=true;
 	END //
 -- Sets the recycled flag for a single solver back to false
 -- Author: Eric Burns

@@ -110,19 +110,16 @@ public class WebsiteSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		owner=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
+		owner=loader.loadUserIntoDatabase();
+		nonOwner=loader.loadUserIntoDatabase();
 		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
-		solver=ResourceLoader.loadSolverIntoDatabase(space.getId(), owner.getId());
+		space=loader.loadSpaceIntoDatabase(owner.getId(), 1);
+		solver=loader.loadSolverIntoDatabase(space.getId(), owner.getId());
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Users.deleteUser(owner.getId());
-		Users.deleteUser(nonOwner.getId());
-		Spaces.removeSubspace(space.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

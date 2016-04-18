@@ -186,6 +186,12 @@ public class SpaceSecurity {
 	//TODO: Leaders can demote other leaders except at the community level, right?
 	public static ValidatorStatusCode canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
 		// Permissions check; ensures user is the leader of the community or is an admin
+		if (Users.get(userIdBeingDemoted)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (Spaces.get(spaceId)==null) {
+			return new ValidatorStatusCode(false, "The given space could not be found");
+		}
 		if(!GeneralSecurity.hasAdminWritePrivileges(userIdDoingDemoting)) {
 			return new ValidatorStatusCode(false, "You do not have permission to demote leaders in this space");
 		}
@@ -488,6 +494,9 @@ public class SpaceSecurity {
 		} else {
 			for (Integer jid : jobIdsBeingCopied) {
 				Job j=Jobs.get(jid);
+				if (j==null) {
+					return new ValidatorStatusCode(false, "The given job could not be found");
+				}
 				if (j.getUserId()!=userId && !isAdmin) {
 					return new ValidatorStatusCode(false, "You are not the owner of all the jobs you are trying to move");
 				}
@@ -563,11 +572,15 @@ public class SpaceSecurity {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
 			List<Solver> solvers=Solvers.get(solverIdsBeingCopied);
-			
+			int index=0;
 			for (Solver s : solvers) {
+				if (s==null) {
+					return new ValidatorStatusCode(false, "The following solver could not be found. ID = "+solverIdsBeingCopied.get(index));
+				}
 				if (s.buildStatus().getCode()==SolverBuildStatusCode.UNBUILT) {
 					return new ValidatorStatusCode(false, "Solvers cannot be copied until they are finished building");
 				}
+				index++;
 			}
 			
 			if (!doesUserHaveDiskQuotaForSolvers(solvers,userId).isSuccess()) {
@@ -799,6 +812,7 @@ public class SpaceSecurity {
 	/**
 	 * Checks whether the given user is allowed to see the current new community requests
 	 * @param userId The ID of the user in question
+	 * @param communityId The ID of the community to get requests for
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserViewCommunityRequestsForCommunity(int userId, int communityId) {
@@ -809,7 +823,7 @@ public class SpaceSecurity {
 		} else if (!(perm == null) && perm.isLeader()) {
 			return new ValidatorStatusCode(true);
 		} else {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation.");
+			return new ValidatorStatusCode(false, "Only community leaders may view requests to join communities");
 		}
 	}
 	
@@ -878,6 +892,9 @@ public class SpaceSecurity {
 		
 		// Ensure the user to edit the permissions of isn't themselves a leader
 		perm = Permissions.get(userIdBeingUpdated, spaceId);
+		if (perm==null) {
+			return new ValidatorStatusCode(false, "The given user is not a member of the given space");
+		}
 		if(perm.isLeader() && !GeneralSecurity.hasAdminWritePrivileges(requestUserId) && Communities.isCommunity(spaceId)){
 			return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
 		}	
@@ -889,6 +906,9 @@ public class SpaceSecurity {
     
     
     public static ValidatorStatusCode canUserLinkAllOrphaned(int userId, int userIdOfCaller,  int spaceId) {
+    	if (Users.get(userId)==null) {
+    		return new ValidatorStatusCode(false, "The given user could not be found");
+    	}
     	if (!GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller) && userId!=userIdOfCaller) {
     		return new ValidatorStatusCode(false, "You can only perform this operation on your own primitives");
     	}

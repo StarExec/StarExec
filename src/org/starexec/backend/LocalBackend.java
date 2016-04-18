@@ -233,6 +233,11 @@ public class LocalBackend implements Backend {
 		return false;
 	}
 
+    @Override
+    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots) {
+            return false;
+    }
+
 	@Override
 	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
 		return true;

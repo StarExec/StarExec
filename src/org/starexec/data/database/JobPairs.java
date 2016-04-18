@@ -46,8 +46,10 @@ public class JobPairs {
 	 * @return
 	 */
 	private static boolean addJobPairInputs(List<JobPair> pairs, Connection con) {
+		final String methodName = "addJobPairInputs";
 		CallableStatement procedure=null;
 		int batchCounter = 0;
+		int totalPairsSubmitted = 0;
 		try {
 			procedure=con.prepareCall("{CALL AddJobPairInput(?,?,?)}");
 
@@ -60,7 +62,10 @@ public class JobPairs {
 					
 					procedure.addBatch();
 					batchCounter++;
-					if (batchCounter > 1000) {
+					final int batchSize = 1000;
+					if (batchCounter > batchSize) {
+						totalPairsSubmitted += batchSize;
+						logUtil.debug( methodName, "Submitting batch of "+ batchSize+", total pairs submitted: "+totalPairsSubmitted);
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
@@ -68,6 +73,8 @@ public class JobPairs {
 				
 			}
 			if (batchCounter>0) {
+				totalPairsSubmitted += batchCounter;
+				logUtil.debug( methodName, "Submitting batch of "+ batchCounter+", total pairs submitted: "+totalPairsSubmitted);
 				procedure.executeBatch();
 			}			
 
@@ -79,7 +86,7 @@ public class JobPairs {
 		}
 		return false;
 	}	
-	
+
 	/**
 	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.
 	 * Inputs will be ordered by their input numbers (in other words, first input, second input, and so on)
@@ -119,18 +126,16 @@ public class JobPairs {
 	private static boolean addJobPairStages(List<JobPair> pairs, Connection con) {
 		final String methodName = "addJobPairStages";
 		CallableStatement procedure=null;
+		int totalPairsSubmitted = 0;
 		try {
 			int batchCounter = 0;
 			procedure=con.prepareCall("{CALL AddJobPairStage(?,?,?,?,?,?,?,?,?)}");
 			
 			for (JobPair pair : pairs) {
-				logUtil.debug(methodName, "jobpair id of pair that we are adding a stage for: "+pair.getId());
 				for (JoblineStage stage : pair.getStages()) {
 					if (stage.isNoOp()) {
 						continue;
 					}
-					
-					
 					
 					procedure.setInt(1, pair.getId());
 					if (stage.getStageId()!=null) {
@@ -150,7 +155,10 @@ public class JobPairs {
 					procedure.addBatch();
 					
 					batchCounter++;
-					if (batchCounter > 1000) {
+					final int batchSize = 1000;
+					if (batchCounter > batchSize) {
+						totalPairsSubmitted += batchSize;
+						logUtil.debug( methodName, "Submitting batch of " + batchSize +", total pairs submitted: "+totalPairsSubmitted );
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
@@ -158,6 +166,8 @@ public class JobPairs {
 				
 			}
 			if (batchCounter > 0) {
+				totalPairsSubmitted += batchCounter;
+				logUtil.debug( methodName, "Submitting batch of " + batchCounter +", total pairs submitted: "+totalPairsSubmitted );
 				procedure.executeBatch();
 			}
 			return true;
@@ -176,11 +186,14 @@ public class JobPairs {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
+			Common.beginTransaction( con );
 			return addJobPairs( con, jobId, pairs );
 		} catch ( SQLException e ) {
 			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
+			Common.doRollback( con );
 			throw e;
 		} finally  {
+			Common.endTransaction( con );
 			Common.safeClose( con );
 		}
 
@@ -195,10 +208,11 @@ public class JobPairs {
 	 */
 	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
 		final String methodName = "addJobPairs";
+		logUtil.entry( methodName );
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
-			
+			int pairsProcessed = 0;
 			for (JobPair pair : pairs) {
 				pair.setJobId(jobId);
 				procedure.setInt(1, jobId);
@@ -216,16 +230,18 @@ public class JobPairs {
 				
 				// Update the pair's ID so it can be used outside this method
 				int newPairId = procedure.getInt(8);
-				logUtil.debug( methodName, "new pair id: "+ newPairId );
 				pair.setId(newPairId);
-				logUtil.debug( methodName, "pair id after setId: "+ pair.getId() );
-			}
 
-			logUtil.debug( methodName, "All pair id's about to be passed to addJobPairStages and addJobPairInputs: ");
-			for (JobPair pair : pairs) {
-				logUtil.debug(methodName, "\t"+pair.getId());
+				pairsProcessed+=1;
+				if (pairsProcessed % 1000 == 0) {
+					logUtil.debug(methodName, "Pairs Processed: "+pairsProcessed);
+				}
 			}
+			logUtil.debug(methodName, "Pairs Processed: "+pairsProcessed);
+
+			logUtil.debug( methodName, "Adding job pair stages." );
 			addJobPairStages(pairs,con);
+			logUtil.debug( methodName, "Adding job pair inputs." );
 			addJobPairInputs(pairs,con);
 			
 			return true;
@@ -308,6 +324,7 @@ public class JobPairs {
 			}
 		} catch ( SQLException e ) {
 			logUtil.debug( methodName, "Caught an SQLException, database failed." );
+			Common.doRollback( con );
 			throw e;
 		} finally {
 			Common.endTransaction( con );
@@ -562,8 +579,8 @@ public class JobPairs {
 	    if (statusCode.getVal()==StatusCode.STATUS_COMPLETE.getVal()) {
 			if (stage.getAttributes()!=null) {
 				Properties attrs = stage.getAttributes();
-				log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
-				log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
+				//log.debug("expected = "+attrs.get(R.EXPECTED_RESULT));
+				//log.debug("actual = "+attrs.get(R.STAREXEC_RESULT));
 				if (attrs.containsKey(R.STAREXEC_RESULT) && attrs.get(R.STAREXEC_RESULT).equals(R.STAREXEC_UNKNOWN)) {
 					//don't know the result, so don't mark as correct or incorrect.	
 					return 2;
@@ -1180,7 +1197,6 @@ public class JobPairs {
 		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
 		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
 		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
-		jp.setExitStatus(result.getInt("job_pairs.exit_status"));
 		
 		jp.setPath(result.getString("job_pairs.path"));
 		jp.setJobSpaceId(result.getInt("job_pairs.job_space_id"));

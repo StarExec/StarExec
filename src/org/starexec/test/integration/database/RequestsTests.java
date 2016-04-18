@@ -57,8 +57,8 @@ public class RequestsTests extends TestSequence {
 		try {
 			commRequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
-			User tempUser=ResourceLoader.loadUserIntoDatabase();
-			ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+			User tempUser=loader.loadUserIntoDatabase();
+			loader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 
@@ -83,8 +83,8 @@ public class RequestsTests extends TestSequence {
 	
 	@StarexecTest
 	private void approveCommunityRequestTest() {
-		User tempUser=ResourceLoader.loadUserIntoDatabase();
-		CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+		User tempUser=loader.loadUserIntoDatabase();
+		CommunityRequest tempRequest=loader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
 
 		Assert.assertTrue(Requests.approveCommunityRequest(tempUser.getId(), comm.getId()));
@@ -95,8 +95,8 @@ public class RequestsTests extends TestSequence {
 	
 	@StarexecTest
 	private void declineCommunityRequestTest() {
-		User tempUser=ResourceLoader.loadUserIntoDatabase();
-		CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+		User tempUser=loader.loadUserIntoDatabase();
+		CommunityRequest tempRequest=loader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
 
 		Assert.assertTrue(Requests.declineCommunityRequest(tempUser.getId(), comm.getId()));
@@ -129,21 +129,18 @@ public class RequestsTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		registeredUser=ResourceLoader.loadUserIntoDatabase();
-		requestedUser=ResourceLoader.loadUserIntoDatabase();
+		registeredUser=loader.loadUserIntoDatabase();
+		requestedUser=loader.loadUserIntoDatabase();
    
 		admin=Users.getAdmins().get(0);
-		comm=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
-		comm2=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
-		request= ResourceLoader.loadCommunityRequestIntoDatabase(requestedUser.getId(), comm.getId());
+		comm=loader.loadSpaceIntoDatabase(admin.getId(), 1);
+		comm2=loader.loadSpaceIntoDatabase(admin.getId(), 1);
+		request= loader.loadCommunityRequestIntoDatabase(requestedUser.getId(), comm.getId());
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspace(comm.getId());
-		Spaces.removeSubspace(comm2.getId());
-		Users.deleteUser(registeredUser.getId());
-		Users.deleteUser(requestedUser.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 

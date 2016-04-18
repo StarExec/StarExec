@@ -42,8 +42,6 @@ public class JobTests extends TestSequence {
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
-	private User nonOwner=null;
-	private User admin=null;
 	private int wallclockTimeout=100;
 	private int cpuTimeout=100;
 	private int gbMemory=1;
@@ -58,15 +56,7 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(testJob.getName(),job.getName());
 		
 	}
-	
-	@StarexecTest
-	private void getUserByJobTest() {
-		User u=Users.getUserByJob(job.getId());
-		Assert.assertEquals(user.getId(),u.getId());
-	}
-	
-	
-	
+
 	@StarexecTest
 	private void GetByUserTest() {
 		List<Job> jobs=Jobs.getByUserId(user.getId());
@@ -159,7 +149,7 @@ public class JobTests extends TestSequence {
 	private void DeleteJobTest() {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		Job temp=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
 		Assert.assertTrue(Jobs.delete(temp.getId()));
 		
@@ -275,11 +265,15 @@ public class JobTests extends TestSequence {
 	
 	@StarexecTest
 	private void cleanOrphanedDeletedJobTest() {
-		Job tempJob = ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 		List<Integer> job = new ArrayList<Integer>();
 		job.add(tempJob.getId());
-		Spaces.removeJobs(job, space.getId());
 		Jobs.delete(tempJob.getId());
+		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
+		Assert.assertNotNull(Jobs.getIncludeDeleted(tempJob.getId()));
+		
+		Spaces.removeJobs(job, space.getId());
+		
 		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
 		Assert.assertNull(Jobs.getIncludeDeleted(tempJob.getId()));
 	}
@@ -303,7 +297,7 @@ public class JobTests extends TestSequence {
 		List<Integer> jobIds = new ArrayList<Integer>();
 		jobIds.add(job.getId());
 		jobIds.add(job2.getId());
-		Space newSpace = ResourceLoader.loadSpaceIntoDatabase(user.getId(), space.getId());
+		Space newSpace = loader.loadSpaceIntoDatabase(user.getId(), space.getId());
 		Assert.assertTrue(Jobs.associate(jobIds, newSpace.getId()));
 		Assert.assertEquals(2, Jobs.getBySpace(newSpace.getId()).size());
 		
@@ -326,36 +320,24 @@ public class JobTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
+		user=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
-		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
+		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Assert.assertNotNull(Jobs.get(job.getId()));
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job.getId());
-		Jobs.deleteAndRemove(job2.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Processors.delete(postProc.getId());
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId());
-		Users.deleteUser(user2.getId());
-		Users.deleteUser(nonOwner.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 

@@ -49,6 +49,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Jobs;
 import org.starexec.test.TestUtil;
 
 /**
@@ -433,14 +434,13 @@ public class Util {
      * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
      * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
-    //TODO: Why isn't the working directory being set if the command has length 1? That seems wrong.
     public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
     	Runtime r = Runtime.getRuntime();
 	    Process p;
 	    if (command.length == 1) {
 			log.debug("Executing the following command: " + command[0]);
 				
-			p = r.exec(command[0], envp);
+			p = r.exec(command[0], envp, workingDirectory);
 	    }
 	    else {
 			StringBuilder b = new StringBuilder();
@@ -683,6 +683,48 @@ public class Util {
 		} catch (Exception e) {
 		    log.warn(e.getMessage(), e);
 		}
+    }
+    /**
+     * THIS IS NOT SAFE TO RUN ON STAREXEC
+     * 
+     * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after
+     * redeploying and resetting the stardev database causes job directories to clear out. This procedure may also
+     * be useful on Starexec, but extreme care needs to be taken to make sure the correct directories are deleted.
+     * This should not be used on Starexec without going through the code below line by line, as changes in the
+     * job output directory since this was written (April 2016) may cause unexpected results.
+     * 
+     * Clears out directories under joboutput that do not belong to any job in the database. These
+     * directories are ones that were not cleared correctly.
+     */
+    public static void clearOrphanedJobDirectories() {
+    	log.info("calling clearOrphanedJobDirectories");
+    	File outputDirectory = new File(R.getJobOutputDirectory());
+    	// we are going to consider removing all files / directories under the job output directory
+    	HashSet<String> filesToConsider = new HashSet<String>();
+    	for (File f : outputDirectory.listFiles()) {
+    		filesToConsider.add(f.getAbsolutePath());
+    	}
+    	log.info("found this many job output subdirectories to consider "+filesToConsider.size());
+    	// exclude the log directory from removal
+    	filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
+    	
+    	// exclude the directories of existing jobs from removal. This should be safe from race conditions
+    	// because we are getting the list of jobs after getting the list of files. As such, jobs directories
+    	// created between these operations will not be present in filesToConsider
+    	for (Integer i : Jobs.getAllJobIds()) {
+    		filesToConsider.remove(Jobs.getDirectory(i));
+    	}
+    	log.info("found this many job output subdirectories to consider after filter "+filesToConsider.size());
+
+    	for (String s : filesToConsider) {
+    		log.info("deleting the following orphaned job directory");
+    		log.info(s);
+    		if(!Util.safeDeleteDirectory(s)) {
+    			log.error("failed to deleted directory "+s);
+    		}
+    	}
+    	
+    	
     }
     
     /**

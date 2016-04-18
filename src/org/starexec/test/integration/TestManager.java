@@ -142,7 +142,11 @@ public class TestManager {
 	 * @return results for all tests in the sequence with the given name
 	 */
 	public static List<TestResult> getAllTestResults(String sequenceName) {
-		return TestManager.getTestSequence(sequenceName).getTestResults();
+		TestSequence seq = TestManager.getTestSequence(sequenceName);
+		if (seq==null) {
+			return null;
+		}
+		return seq.getTestResults();
 	}
 	/**
 	 * Executes the tests that have the given name.

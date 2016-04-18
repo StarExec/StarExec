@@ -119,7 +119,7 @@ public class UploadSolver extends HttpServlet {
 					}
 					
 					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
-                    if(buildJob>0) {
+                    if(buildJob>0 && !runTestJob) {
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&buildmsg=Building Solver On Starexec"));
                     } else if (configs == -1) { //If there are no configs. We do not attempt to run a test job in this case
 					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
@@ -136,7 +136,9 @@ public class UploadSolver extends HttpServlet {
 							}
 							
 							int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId,settingsId);
-							if (jobId>0) {
+                            if (buildJob>0 && jobId>0) {
+					            response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
+                            } else if (jobId>0) {
 								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id="+jobId));
 							} else {
 							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job-- solver uploaded successfully"));

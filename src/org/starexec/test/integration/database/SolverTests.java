@@ -2,7 +2,6 @@ package org.starexec.test.integration.database;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.Job;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.test.TestUtil;
-import org.starexec.test.integration.StarexecAfter;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -127,7 +125,7 @@ public class SolverTests extends TestSequence {
 	}
 	@StarexecTest 
 	private void deleteConfigTest() {
-		Configuration c=ResourceLoader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
+		Configuration c=loader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
 		Assert.assertNotNull(c);
 		Assert.assertNotNull(Solvers.getConfiguration(c.getId()));
 		Assert.assertTrue(Solvers.deleteConfiguration(c.getId()));
@@ -212,7 +210,7 @@ public class SolverTests extends TestSequence {
 	
 	@StarexecTest
 	private void cleanOrphanedDeletedSolversTest() {
-		Solver s = ResourceLoader.loadSolverIntoDatabase(space1.getId(), testUser.getId());
+		Solver s = loader.loadSolverIntoDatabase(space1.getId(), testUser.getId());
 		Solvers.delete(s.getId());
 		Assert.assertTrue(Solvers.cleanOrphanedDeletedSolvers());
 		Assert.assertNotNull(Solvers.getIncludeDeleted(s.getId()));
@@ -225,7 +223,7 @@ public class SolverTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteSolverTest() {
-		Solver s = ResourceLoader.loadSolverIntoDatabase(space1.getId(), testUser.getId());
+		Solver s = loader.loadSolverIntoDatabase(space1.getId(), testUser.getId());
 		Assert.assertTrue(Solvers.delete(s.getId()));
 		s = Solvers.getIncludeDeleted(s.getId());
 		Assert.assertTrue(s.isDeleted());
@@ -240,7 +238,7 @@ public class SolverTests extends TestSequence {
 	
 	@StarexecTest
 	private void findConfigsTest() throws IOException {
-		List<String> strs = ResourceLoader.getTestConfigDirectory();
+		List<String> strs = loader.getTestConfigDirectory();
 		List<Configuration> configurations = Solvers.findConfigs(strs.get(0));
 		Assert.assertEquals(2, configurations.size());
 		Assert.assertTrue(strs.contains(configurations.get(0).getName()));
@@ -283,7 +281,7 @@ public class SolverTests extends TestSequence {
 	
 	@StarexecTest
 	private void getBySpaceHierarchyTest() {
-		Solver newSolver = ResourceLoader.loadSolverIntoDatabase(space2.getId(), testUser.getId());
+		Solver newSolver = loader.loadSolverIntoDatabase(space2.getId(), testUser.getId());
 		Solvers.associate(newSolver.getId(), space2.getId());
 		List<Solver> solvers = Solvers.getBySpaceHierarchy(space1.getId(), testUser.getId());
 		Assert.assertEquals(2, solvers.size());
@@ -326,28 +324,51 @@ public class SolverTests extends TestSequence {
 		Assert.assertEquals((Integer)config.getId(), configIds.iterator().next());
 	}
 	
+	@StarexecTest
+	private void getCountInSpaceTest() {
+		Assert.assertEquals(1, Solvers.getCountInSpace(space1.getId()));
+	}
+	
+	@StarexecTest
+	private void getCountInSpaceQueryTest() {
+		Assert.assertEquals(1, Solvers.getCountInSpace(space1.getId(), ""));
+		Assert.assertEquals(1, Solvers.getCountInSpace(space1.getId(), solver.getName()));
+		Assert.assertEquals(0, Solvers.getCountInSpace(space1.getId(), TestUtil.getRandomAlphaString(100)));
+	}
+	
+	@StarexecTest
+	private void getPublicSolversTest() {
+		boolean found = false;
+		boolean isPublic = Spaces.isPublicSpace(space1.getId());
+		for (Solver s : Solvers.getPublicSolvers()) {
+			found = found || s.getId()==solver.getId();
+		}
+		Assert.assertEquals(isPublic, found);
+		found = false;
+		Spaces.setPublicSpace(space1.getId(), testUser.getId(), !isPublic, false);
+		for (Solver s : Solvers.getPublicSolvers()) {
+			found = found || s.getId()==solver.getId();
+		}
+		Assert.assertNotEquals(isPublic, found);
+		Spaces.setPublicSpace(space1.getId(), testUser.getId(), isPublic, false);
+		
+	}
+	
 	@Override
 	protected void setup() throws Exception {
-		testUser=ResourceLoader.loadUserIntoDatabase();
+		testUser=loader.loadUserIntoDatabase();
 		testCommunity=Communities.getTestCommunity();
-		space1=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(),testCommunity.getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());
+		space1=loader.loadSpaceIntoDatabase(testUser.getId(),testCommunity.getId());
+		space2=loader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space1.getId(), testUser.getId());
 		config=solver.getConfigurations().get(0);
-		benchmarkIds = ResourceLoader.loadBenchmarksIntoDatabase(space1.getId(), testUser.getId());
-		job = ResourceLoader.loadJobIntoDatabase(space1.getId(), testUser.getId(), solver.getId(), benchmarkIds);
+		benchmarkIds = loader.loadBenchmarksIntoDatabase(space1.getId(), testUser.getId());
+		job = loader.loadJobIntoDatabase(space1.getId(), testUser.getId(), solver.getId(), benchmarkIds);
 	}
 
 	@Override
 	protected void teardown() throws StarExecSecurityException {
-		Jobs.deleteAndRemove(job.getId());
-		for (int id : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(id);
-		}
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Spaces.removeSubspace(space1.getId());
-		Spaces.removeSubspace(space2.getId());		
-		Users.deleteUser(testUser.getId());
+		loader.deleteAllPrimitives();
 	}
 		
 	

@@ -350,7 +350,14 @@ public class GridEngineBackend implements Backend{
      *@param queueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-    public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames){
+
+    public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames) {
+        return createQueueWithSlots(queueName, nodeNames, queueNames, 2);
+    }
+
+
+    @Override
+    public boolean createQueueWithSlots(String queueName, String[] nodeNames, String[] queueNames, Integer slots){
     	try {
 			log.debug("begin createQueue");
 			String[] split = queueName.split("\\.");
@@ -388,6 +395,7 @@ public class GridEngineBackend implements Backend{
 		
 			newHost = "group_name @" + shortQueueName + "hosts" +
 					  "\nhostlist " + hostList;
+			
 			File f = new File("/tmp/newHost30.hgrp");
 			FileUtils.writeStringToFile(f, newHost);
 			f.setReadable(true, false);
@@ -414,7 +422,7 @@ public class GridEngineBackend implements Backend{
 						"\nckpt_list             NONE" +
 						"\npe_list               make" +
 						"\nrerun                 FALSE" +
-						"\nslots                 2" +
+						"\nslots                 " + slots +
 						"\ntmpdir                /tmp" +
 						"\nshell                 /bin/csh" +
 						"\nprolog                NONE" +

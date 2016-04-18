@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +25,7 @@ import org.starexec.data.database.Pipelines;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Requests;
+import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
@@ -65,15 +65,59 @@ import org.starexec.data.to.pipelines.SolverPipeline;
  */
 
 public class ResourceLoader {
-	private static final Logger log = Logger.getLogger(ResourceLoader.class);	
+	private final Logger log = Logger.getLogger(ResourceLoader.class);	
 	
+	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
+	// will delete all of these objects
+	private List<Integer> createdUserIds = new ArrayList<Integer>();
+	private List<Integer> createdJobIds = new ArrayList<Integer>();
+	private List<Integer> createdBenchmarkIds = new ArrayList<Integer>();
+	private List<Integer> createdSolverIds = new ArrayList<Integer>();
+	private List<Integer> createdProcessorIds = new ArrayList<Integer>();
+	private List<Integer> createdSettingsIds = new ArrayList<Integer>();
+	private List<Integer> createdSpaceIds = new ArrayList<Integer>();
+	private List<Integer> createdQueueIds = new ArrayList<Integer>();
+	private List<Integer> createdPipelineIds = new ArrayList<Integer>();
+	/**
+	 * Deletes all of the primitives that were created using any of the 'load' methods
+	 * of this class
+	 */
+	public void deleteAllPrimitives() {
+		for (Integer i : createdJobIds) {
+			Jobs.deleteAndRemove(i);
+		}
+		for (Integer i : createdSettingsIds) {
+			Settings.deleteProfile(i);
+		}
+		for (Integer i : createdBenchmarkIds) {
+			Benchmarks.deleteAndRemoveBenchmark(i);
+		}
+		for (Integer i :createdSolverIds) {
+			Solvers.deleteAndRemoveSolver(i);
+		}
+		for (Integer i : createdProcessorIds) {
+			Processors.delete(i);
+		}
+		for (Integer i : createdSpaceIds) {
+			Spaces.removeSubspace(i);
+		}
+		for (Integer i : createdUserIds) {
+			Users.deleteUser(i);
+		}
+		for (Integer i : createdQueueIds) {
+			Queues.removeQueue(i);
+		}
+		for (Integer i : createdPipelineIds) {
+			Pipelines.deletePipelineFromDatabase(i);
+		}
+	}
 	
 	/**
 	 * Returns the path to the resource directory, which is where we are storing files like solvers
 	 * and benchmarks that are used during processing
 	 * @return The absolute file path
 	 */
-	public static String getResourcePath() {
+	public String getResourcePath() {
 		return ResourceLoader.class.getResource("/org/starexec/test/resources").getFile();
 	}
 	
@@ -82,7 +126,7 @@ public class ResourceLoader {
 	 * @param name The name of the file, which must be present in the resource directory
 	 * @return 
 	 */
-	public static File getResource(String name) {
+	public File getResource(String name) {
 		
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
@@ -92,18 +136,18 @@ public class ResourceLoader {
 	 * should be placed. For example, StarexecCommand tests use this downloads directory.
 	 * @return
 	 */
-	public static File getDownloadDirectory() {
+	public File getDownloadDirectory() {
 		String filePath=getResourcePath();
 		File file=new File(filePath,"downloads");
 		file.mkdir();
 		return file;
 	}
 	
-	public static Processor loadBenchProcessorIntoDatabase(int communityId) {
+	public Processor loadBenchProcessorIntoDatabase(int communityId) {
 		return loadProcessorIntoDatabase("benchproc.zip", ProcessorType.BENCH, communityId);
 	}
 	
-	public static Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {
+	public Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {
 		return loadProcessorIntoDatabase("postproc.zip", type, communityId);
 	}
 	
@@ -114,7 +158,7 @@ public class ResourceLoader {
 	 * @param communityId The ID of the community to place the processor in
 	 * @return The Processor object, with all of its attributes set (name, ID, etc.)
 	 */
-	public static Processor loadProcessorIntoDatabase(String fileName,ProcessorType type, int communityId) {
+	public Processor loadProcessorIntoDatabase(String fileName,ProcessorType type, int communityId) {
 		try {
 			Processor p=new Processor();
 			p.setName(TestUtil.getRandomSolverName());
@@ -135,6 +179,7 @@ public class ResourceLoader {
 			int id=Processors.add(p);
 			if (id>0) {
 				p.setId(id);
+				createdProcessorIds.add(id);
 				return p;
 			}
 			
@@ -145,13 +190,13 @@ public class ResourceLoader {
 		
 	}
 	
-	public static Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
+	public Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
 		List<Integer> solvers=new ArrayList<Integer>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId, -1,-1, solvers,benchmarkIds,10,10,1);
 	}
 	
-	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
+	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
 		List<Integer> solvers=new ArrayList<Integer>();
 		solvers.add(solverId);
@@ -179,7 +224,7 @@ public class ResourceLoader {
 	 * @param benchmarks The benchmarkIDs to run
 	 * @return The job object
 	 */
-	public static Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds,
+	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
 		
 		
@@ -201,8 +246,9 @@ public class ResourceLoader {
 		Jobs.add(job, spaceId);
 		for (JobPair p : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(p.getId(), StatusCode.STATUS_COMPLETE.getVal());
-			ResourceLoader.writeFakeJobPairOutput(p);
+			writeFakeJobPairOutput(p);
 		}
+		createdJobIds.add(job.getId());
 		return job;
 	}
 	/**
@@ -213,7 +259,7 @@ public class ResourceLoader {
 	 * @param postProcessorId
 	 * @return
 	 */
-	public static Job loadJobHierarchyIntoDatabase(int rootSpaceId, int userId, int preProcessorId, int postProcessorId) {
+	public Job loadJobHierarchyIntoDatabase(int rootSpaceId, int userId, int preProcessorId, int postProcessorId) {
 		List<Space> spaces = Spaces.getSubSpaceHierarchy(rootSpaceId, userId); 
 		spaces.add(Spaces.get(rootSpaceId));
 		log.debug("loading this number of spaces into the job ="+spaces.size());
@@ -222,7 +268,7 @@ public class ResourceLoader {
 
 		Job job=JobManager.setupJob(userId, name, "test job", preProcessorId, postProcessorId, q.getId(),0,10,10,Util.gigabytesToBytes(1), false, 0);
 		job.setPrimarySpace(rootSpaceId);
-		HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, spaces, rootSpaceId);
+		HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, spaces, rootSpaceId);
 		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
 		for (Space s : spaces) {
 			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
@@ -234,6 +280,7 @@ public class ResourceLoader {
 			log.error("could not load a job hierarchy into the database");
 			return null;
 		}
+		createdJobIds.add(job.getId());
 		return job;
 	}
 	
@@ -242,7 +289,7 @@ public class ResourceLoader {
 	 * @param userId The user that will be the owner of the new profile
 	 * @return
 	 */
-	public static DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
+	public DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
 		Random rand=new Random();
 		DefaultSettings settings=new DefaultSettings();
 		settings.setName(TestUtil.getRandomAlphaString(R.SETTINGS_NAME_LEN-1));
@@ -252,10 +299,7 @@ public class ResourceLoader {
 		settings.setMaxMemory(rand.nextInt(1000)+1);
 		int id=Users.createNewDefaultSettings(settings);
 		if (id>0) {
-			settings.setBenchId(0);
-			settings.setSolverId(0);
-			settings.setPreProcessorId(0);
-			settings.setPostProcessorId(0);
+			createdSettingsIds.add(id);
 			return settings;
 		}
 		return null;
@@ -268,7 +312,7 @@ public class ResourceLoader {
 	 * @return The Configuration object with all of its fields set (name, ID, etc.)
 	 */
 	
-	public static Configuration loadConfigurationFileIntoDatabase(String fileName, int solverId)  {
+	public Configuration loadConfigurationFileIntoDatabase(String fileName, int solverId) {
 		try {
 			File file=getResource(fileName);
 			return loadConfigurationIntoDatabase(FileUtils.readFileToString(file), solverId);
@@ -286,7 +330,7 @@ public class ResourceLoader {
 	 * @return The Configuration object with all of its fields set (name, ID, etc.)
 	 */
 	
-	public static Configuration loadConfigurationIntoDatabase(String contents,int solverId)  {
+	public Configuration loadConfigurationIntoDatabase(String contents,int solverId) {
 		try {
 			Configuration c=new Configuration();
 			c.setName(TestUtil.getRandomSolverName());
@@ -325,7 +369,7 @@ public class ResourceLoader {
 	 * @param userId
 	 * @return A list of benchmark Ids for the newly created benchmarks
 	 */
-	public static List<Integer> loadBenchmarksIntoDatabase(int parentSpaceId, int userId) {
+	public List<Integer> loadBenchmarksIntoDatabase(int parentSpaceId, int userId) {
 		return loadBenchmarksIntoDatabase("benchmarks.zip", parentSpaceId, userId);
 	}
 	/**
@@ -338,7 +382,7 @@ public class ResourceLoader {
 	 * @param userId The ID of the owner of the benchmarks
 	 * @return A list of benchmark Ids for the newly created benchmarks
 	 */
-	public static List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
+	public List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			File archive=getResource(archiveName);
 			
@@ -354,6 +398,7 @@ public class ResourceLoader {
 						false, Processors.getNoTypeProcessor().getId());
 				Benchmarks.addBenchAttr(i, TestUtil.getRandomAlphaString(10), TestUtil.getRandomAlphaString(10));
 			}
+			createdBenchmarkIds.addAll(ids);
 			return ids;
 		} catch (Exception e) {
 			log.error("loadBenchmarksIntoDatabase says "+e.getMessage(),e);
@@ -362,7 +407,7 @@ public class ResourceLoader {
 
 	}
 	
-	public static Solver loadSolverIntoDatabase(int parentSpaceId, int userId) {
+	public Solver loadSolverIntoDatabase(int parentSpaceId, int userId) {
 		return loadSolverIntoDatabase("CVC4.zip",parentSpaceId, userId);
 	}
 	/**
@@ -372,7 +417,7 @@ public class ResourceLoader {
 	 * @param userId The ID of the user that will own the solver
 	 * @return The Solver object will all of its fields set.
 	 */
-	public static Solver loadSolverIntoDatabase(String archiveName, int parentSpaceId, int userId) {
+	public Solver loadSolverIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			Solver s=new Solver();
 			s.setName(TestUtil.getRandomSolverName());
@@ -398,6 +443,7 @@ public class ResourceLoader {
 			
 			int id=Solvers.add(s, parentSpaceId);
 			if (id>0) {
+				createdSolverIds.add(id);
 				s.setId(id);
 				return s;
 			} else {
@@ -410,7 +456,7 @@ public class ResourceLoader {
 		return null;	
 	}
 	
-	public static Space loadSpaceIntoDatabase(int userId, int parentSpaceId, String name) {
+	public Space loadSpaceIntoDatabase(int userId, int parentSpaceId, String name) {
 		Space space=new Space();
 		space.setName(name);
 		space.setDescription("test desc");
@@ -418,6 +464,7 @@ public class ResourceLoader {
 		space.setPublic(false);
 		int id=Spaces.add(space, userId);
 		if (id>0) {
+			createdSpaceIds.add(id);
 			space.setId(id);
 			return space;
 		}
@@ -431,7 +478,7 @@ public class ResourceLoader {
 	 * @param parentSpaceId The ID of the parent space for the new subspace
 	 * @return The Space object with all of its fields set.
 	 */
-	public static Space loadSpaceIntoDatabase(int userId, int parentSpaceId) {
+	public Space loadSpaceIntoDatabase(int userId, int parentSpaceId) {
 		return loadSpaceIntoDatabase(userId, parentSpaceId,TestUtil.getRandomSpaceName() );
 		
 	}
@@ -444,7 +491,7 @@ public class ResourceLoader {
 	 * @param configs The ordered list of configurations to make into a pipeline
 	 * @return The SolverPipeline object
 	 */
-	public static SolverPipeline loadPipelineIntoDatabase(int userId, List<Configuration> configs) {
+	public SolverPipeline loadPipelineIntoDatabase(int userId, List<Configuration> configs) {
 		SolverPipeline pipe=new SolverPipeline();
 		pipe.setName(TestUtil.getRandomAlphaString(10));
 		pipe.setUserId(userId);
@@ -466,6 +513,7 @@ public class ResourceLoader {
 		}
 		int returnValue= Pipelines.addPipelineToDatabase(pipe);
 		if (returnValue>0) {
+			createdPipelineIds.add(returnValue);
 	 		return pipe;
 		}
 		return null;
@@ -476,15 +524,15 @@ public class ResourceLoader {
 	 * Loads a user into the database, without any particular name, email, password, and so on. Useful for testing.
 	 * @return The user, with their ID and all parameters set, or null on error
 	 */
-	public static User loadUserIntoDatabase() {
+	public User loadUserIntoDatabase() {
 		return loadUserIntoDatabase(TestUtil.getRandomPassword());
 	}
 	
-	public static User loadUserIntoDatabase(String password) {
+	public User loadUserIntoDatabase(String password) {
 		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",R.DEFAULT_USER_ROLE_NAME);
 	}
 	
-	public static CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
+	public CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
 		CommunityRequest req=new CommunityRequest();
 		req.setCode(UUID.randomUUID().toString());
 		req.setCommunityId(commId);
@@ -509,7 +557,7 @@ public class ResourceLoader {
 	 * @param role The role of the user-- should be either "user" or "admin"
 	 * @return The User on success, or null on error. Their ID will be set on success.
 	 */
-	public static User loadUserIntoDatabase(String fname, String lname, String email, String password, String institution, String role) {
+	public User loadUserIntoDatabase(String fname, String lname, String email, String password, String institution, String role) {
 		User u=new User();
 		u.setFirstName(fname);
 		u.setLastName(lname);
@@ -517,9 +565,10 @@ public class ResourceLoader {
 		u.setEmail(email);
 		u.setInstitution(institution);
 		u.setRole(role);
-		u.setDiskQuota(R.DEFAULT_USER_QUOTA);
+		u.setDiskQuota(R.DEFAULT_DISK_QUOTA);
 		int id=Users.add(u);
 		if (id>0) {
+			createdUserIds.add(id);
 			u.setId(id);
 			return u;
 		}
@@ -534,7 +583,7 @@ public class ResourceLoader {
 	 * @return
 	 */
 	
-	public static Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
+	public Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
 			R.BACKEND.createQueue(queueName, null,null);
@@ -548,9 +597,9 @@ public class ResourceLoader {
 				return null;
 			}
 			
-			boolean success =  Queues.updateQueueCpuTimeout(queueId, wallTimeout);
+			boolean success = Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
-			
+			createdQueueIds.add(queueId);
 			return Queues.get(queueId);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -565,29 +614,29 @@ public class ResourceLoader {
 	 * @param password The password of the user to log in
 	 * @return
 	 */
-	public static WebDriver getWebDriver(String email, String password, boolean visible) {
+	public WebDriver getWebDriver(String email, String password, boolean visible) {
 		WebDriver driver=null;
 		if (visible) {
-		    driver = new FirefoxDriver();
+		  driver = new FirefoxDriver();
 
 		} else {
-		    driver = new HtmlUnitDriver(false);
-		    HtmlUnitDriver test=(HtmlUnitDriver) driver;
-		   
+		  driver = new HtmlUnitDriver(false);
+		  HtmlUnitDriver test=(HtmlUnitDriver) driver;
+		  
 		}
-	       
-	        driver.get(Util.url("secure/index.jsp"));
-	        WebElement userName=driver.findElement(By.name("j_username"));
-	        userName.sendKeys(email);
-	        driver.findElement(By.name("j_password")).sendKeys(password);
-	        driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-	        userName.submit();
-	        
-	       return driver;
+	    
+	    driver.get(Util.url("secure/index.jsp"));
+	    WebElement userName=driver.findElement(By.name("j_username"));
+	    userName.sendKeys(email);
+	    driver.findElement(By.name("j_password")).sendKeys(password);
+	    driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+	    userName.submit();
+	    
+	    return driver;
 	}
 	
-	public static WebDriver getFirefoxDriver(String email, String password) {
-	   return getWebDriver(email,password,true);
+	public WebDriver getFirefoxDriver(String email, String password) {
+	  return getWebDriver(email,password,true);
 	}
 	
 	/**
@@ -596,15 +645,15 @@ public class ResourceLoader {
 	 * @param password
 	 * @return
 	 */
-	public static WebDriver getWebDriver(String email, String password) {
-	   return getWebDriver(email,password,false);
+	public WebDriver getWebDriver(String email, String password) {
+	  return getWebDriver(email,password,false);
 	}
 	
 	/**
 	 * Writes 1000 characters of output to the location this pairs output should be placed
 	 * @param pair
 	 */
-	public static void writeFakeJobPairOutput(JobPair pair) {
+	public void writeFakeJobPairOutput(JobPair pair) {
 		try {
 			File f=new File(JobPairs.getPairStdout(pair));
 			f=f.getParentFile();
@@ -626,7 +675,7 @@ public class ResourceLoader {
 	 * @return File containing the XML
 	 * @throws IOException
 	 */
-	public static File getTestXMLFile(int configId1, int configId2, int benchId1, int benchId2) throws IOException {
+	public File getTestXMLFile(int configId1, int configId2, int benchId1, int benchId2) throws IOException {
 		File templateFile = getResource("jobXML.xml");
 		String XMLString = FileUtils.readFileToString(templateFile);
 		String schemaLoc = Util.url("public/batchJobSchema.xsd");
@@ -647,7 +696,7 @@ public class ResourceLoader {
 	 * @return A size-3 array containing the absolute path to the config directory and the two config names, in that order.
 	 * @throws IOException 
 	 */
-	public static List<String> getTestConfigDirectory() throws IOException {
+	public List<String> getTestConfigDirectory() throws IOException {
 		List<String> strs = new ArrayList<String>();
 		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50));
 		File bin = new File(f, R.SOLVER_BIN_DIR);
