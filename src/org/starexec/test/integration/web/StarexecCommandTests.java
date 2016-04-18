@@ -424,7 +424,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
 		for (Integer i : benchIds) {
-			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
+			Benchmarks.deleteAndRemoveBenchmark(i);
 		}
 		
 		Spaces.removeSubspace(toCopy.getId());		

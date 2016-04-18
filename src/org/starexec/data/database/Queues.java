@@ -53,7 +53,7 @@ public class Queues {
 	    
 	    Queue q=Queues.get(queueId);
 		if (q==null) {
-			return false;
+			return true;
 		}
 	    //Pause jobs that are running on the queue
 	    List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);

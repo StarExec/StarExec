@@ -37,7 +37,7 @@ import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
-
+//TODO: Update job pair count at the end?
 public class AddJobPairs extends HttpServlet {
 	private static final Logger log = Logger.getLogger(AddJobPairs.class);	
 	private static final LogUtil logUtil = new LogUtil( log );
@@ -88,7 +88,6 @@ public class AddJobPairs extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
 				return;
 			}
-
 			/*
 			int spaceId = 
 			HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);

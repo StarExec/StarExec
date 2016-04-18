@@ -50,6 +50,9 @@ public class Benchmarks {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean deleteAndRemoveBenchmark(int id) {
+		if (Benchmarks.get(id)==null) {
+			return true;
+		}
 		boolean success=Benchmarks.delete(id);
 		if (!success) {
 			log.warn("there was an error deleting benchmark with id = "+id);
