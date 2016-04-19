@@ -1037,6 +1037,9 @@ public class Spaces {
 	public static Space getDetails(int spaceId, int userId) {		
 		try {			
 			Space s = Spaces.get(spaceId);
+			if (s==null) {
+				return null;
+			}
 			s.setUsers(Spaces.getUsers(spaceId));
 			s.setBenchmarks(Benchmarks.getBySpace(spaceId));
 			s.setSolvers(Solvers.getBySpace(spaceId));
