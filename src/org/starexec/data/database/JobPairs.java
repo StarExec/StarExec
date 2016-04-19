@@ -187,7 +187,11 @@ public class JobPairs {
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction( con );
-			return addJobPairs( con, jobId, pairs );
+			boolean success = addJobPairs( con, jobId, pairs );
+			if (!success) {
+				return false;
+			}
+			return incrementTotalJobPairsForJob(jobId, pairs.size(),con);
 		} catch ( SQLException e ) {
 			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
 			Common.doRollback( con );
@@ -243,7 +247,6 @@ public class JobPairs {
 			addJobPairStages(pairs,con);
 			logUtil.debug( methodName, "Adding job pair inputs." );
 			addJobPairInputs(pairs,con);
-			incrementTotalJobPairsForJob(jobId, pairs.size(),con);
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPair says "+e.getMessage(),e);
