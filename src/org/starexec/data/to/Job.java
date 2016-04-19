@@ -58,6 +58,8 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	
 	private boolean usingDependencies = false;
 	
+	private int totalPairs; // number of pairs this job owns
+	
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
 		
@@ -390,5 +392,19 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 			rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
 		}
 		return rootName;
+	}
+
+	/**
+	 * @return the totalPairs
+	 */
+	public int getTotalPairs() {
+		return totalPairs;
+	}
+
+	/**
+	 * @param totalPairs the totalPairs to set
+	 */
+	public void setTotalPairs(int totalPairs) {
+		this.totalPairs = totalPairs;
 	}
 }

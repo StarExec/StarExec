@@ -566,7 +566,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -582,11 +582,12 @@ public class Jobs {
 			procedure.setBoolean(10, job.timestampIsSuppressed());
 			procedure.setBoolean(11, job.isUsingDependencies());
 			procedure.setBoolean(12, job.isBuildJob());
-			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.setInt(13, job.getJobPairs().size());
+			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(13));
+			job.setId(procedure.getInt(14));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
@@ -854,7 +855,7 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void deleteJobPairsWithConfigurationsFromJob( int jobId, Set<Integer> configIds ) throws SQLException {
-		JobPairs.deleteJobPairs( getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
+		JobPairs.deleteJobPairs(jobId, getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
 		removeCachedJobStatsForConfigs( jobId, configIds );
 	}
 
@@ -961,7 +962,36 @@ public class Jobs {
 		j.setBuildJob(results.getBoolean("buildJob"));
 		j.setDescription(results.getString("description"));
 		j.setSeed(results.getLong("seed"));
+		j.setTotalPairs(results.getInt("total_pairs"));
 		return j;
+	}
+	
+	/**
+	 * Counts how many pairs a user has in total. In other words, sums up the pairs
+	 * in all jobs created by the user.
+	 * @param userId The ID of the user to count for
+	 * @return The count, or -1 on error. Answer will be 0 if user does not exist.
+	 */
+	public static int countPairsByUser(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL CountPairsbyUser(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("total_pairs");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}  finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
 	}
 	
 	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {

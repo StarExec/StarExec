@@ -243,7 +243,7 @@ public class JobPairs {
 			addJobPairStages(pairs,con);
 			logUtil.debug( methodName, "Adding job pair inputs." );
 			addJobPairInputs(pairs,con);
-			
+			incrementTotalJobPairsForJob(jobId, pairs.size(),con);
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPair says "+e.getMessage(),e);
@@ -306,14 +306,37 @@ public class JobPairs {
 		}
 		return null;
 	}
-
+	/**
+	 * Updates the total_pairs column for the given job by summing it with the given increment
+	 * @param jobId The ID of the job to update
+	 * @param increment The amount to change total_pairs by. Note that if this is negative it
+	 * means the total_pairs column will decrease
+	 * @param con The open connection to make the call on
+	 * @return true on success and false otherwise
+	 */
+	public static boolean incrementTotalJobPairsForJob(int jobId, int increment, Connection con) {
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL IncrementTotalJobPairsForJob(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, increment);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
 
 	/**
-	 * Deletes a list of job pairs.
+	 * Deletes a list of job pairs. All pairs are expected to belong to the same job
 	 * @param jobPairs the job pairs to delete.
 	 * @author Albert Giegerich
 	 */
-	public static void deleteJobPairs( List<JobPair> jobPairs ) throws SQLException {
+	public static void deleteJobPairs(int jobId, List<JobPair> jobPairs ) throws SQLException {
 		final String methodName = "deleteJobPairs";
 		Connection con = null;
 		try { 
@@ -322,6 +345,7 @@ public class JobPairs {
 			for ( JobPair pair : jobPairs ) {
 				deleteJobPair( con, pair );
 			}
+			incrementTotalJobPairsForJob(jobId,Math.negateExact(jobPairs.size()), con);
 		} catch ( SQLException e ) {
 			logUtil.debug( methodName, "Caught an SQLException, database failed." );
 			Common.doRollback( con );

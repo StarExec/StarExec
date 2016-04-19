@@ -209,7 +209,7 @@ CREATE PROCEDURE GetJobPairOverview(IN _jobId INT)
 		-- This is messy in order to get back pretty column names.
 		-- Derived tables must have identifiers which is why a, b, c, d and e exist but aren't used
 		SELECT * FROM (
-			(SELECT COUNT(*) AS totalPairs FROM job_pairs WHERE job_id=_jobId) AS a, -- Gets the total number of pairs
+			(SELECT total_pairs AS totalPairs FROM jobs WHERE job_id=id) AS a, -- Gets the total number of pairs
 			(SELECT COUNT(*) AS completePairs FROM job_pairs WHERE job_id=_jobId AND status_code=7) AS b, -- Gets number of pairs with COMPLETE status codes
 			(SELECT COUNT(*) AS pendingPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6 OR status_code=22)) AS c, -- Gets number of pairs with non complete and non error status codes
 			(SELECT COUNT(*) AS errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 8 AND 17 OR status_code=0)) AS d, -- Gets number of UNKNOWN or ERROR status code pairs
@@ -547,13 +547,14 @@ CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 	END //
 	
 
--- Sets the "deleted" property of a job to true and deletes all its job pairs from the database
+-- Sets the "deleted" property of a job to true and deletes all its job pairs from the database.
+-- Also updates the total_pairs column to 0, which is due to deleting all pairs from the job.
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS DeleteJob;
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
-		SET deleted=true
+		SET deleted=true, total_pairs=0
 		WHERE id = _jobId;
 		DELETE FROM job_pairs
 		WHERE job_id=_jobId;		
@@ -659,10 +660,10 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
-CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, IN _suppressTimestamp BOOLEAN, IN _usingDeps INT, IN _buildJob BOOLEAN, OUT _id INT)
+CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, IN _suppressTimestamp BOOLEAN, IN _usingDeps INT, IN _buildJob BOOLEAN, IN _totalPairs INT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp, using_dependencies, buildJob)
-		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob);
+		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp, using_dependencies, buildJob, total_pairs)
+		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob, _totalPairs);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	
@@ -938,5 +939,17 @@ CREATE PROCEDURE GetAllJobIds()
 	BEGIN
 		SELECT id FROM jobs;
 	END // 
+	
+DROP PROCEDURE IF EXISTS CountPairsByUser;
+CREATE PROCEDURE CountPairsByUser(IN _userId INT)
+	BEGIN
+		SELECT SUM(total_pairs) AS total_pairs FROM jobs WHERE user_id=_userId;
+	END //
+	
+DROP PROCEDURE IF EXISTS IncrementTotalJobPairsForJob;
+CREATE PROCEDURE IncrementTotalJobPairsForJob(IN _jobId INT, IN _increment INT)
+	BEGIN
+		UPDATE jobs SET total_pairs=total_pairs+_increment WHERE id=_jobId;
+	END //
 	
 DELIMITER ; -- this should always be at the end of the file

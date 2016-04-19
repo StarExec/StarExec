@@ -275,6 +275,7 @@ CREATE TABLE jobs (
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
 	buildJob BOOLEAN NOT NULL DEFAULT FALSE,
+	total_pairs INT NOT NULL, -- How many pairs are in this job? Used to avoid needing to count from pairs table for efficiency
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
