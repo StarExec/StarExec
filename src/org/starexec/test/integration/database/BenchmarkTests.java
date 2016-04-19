@@ -300,7 +300,7 @@ public class BenchmarkTests extends TestSequence {
 		}
 		//ensures benchmarks are sorted ASC
 		Assert.assertTrue(page.get(1).getName().compareTo(page.get(0).getName())>0);
-		Assert.assertTrue(page.size()==benchmarks.size());
+		Assert.assertEquals(benchmarks.size(),page.size());
 	}
 	
 	// test getting pages of benchmarks a user owns
