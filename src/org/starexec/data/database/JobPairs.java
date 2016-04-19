@@ -187,11 +187,15 @@ public class JobPairs {
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction( con );
-			boolean success = addJobPairs( con, jobId, pairs );
+			log.debug("addJobPairs one");
+			boolean success = incrementTotalJobPairsForJob(jobId, pairs.size(),con);
 			if (!success) {
 				return false;
 			}
-			return incrementTotalJobPairsForJob(jobId, pairs.size(),con);
+			log.debug("addJobPairs two");
+			success = addJobPairs( con, jobId, pairs );
+			log.debug("addJobPairs three");
+			return success;
 		} catch ( SQLException e ) {
 			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
 			Common.doRollback( con );
