@@ -13,10 +13,10 @@
 		User t_user = Users.get(userId);
 		int visiting_userId = SessionUtil.getUserId(request);		
 		
-		long disk_usage = Users.getDiskUsage(t_user.getId());		
 		
 		if(t_user != null) {
-			
+			long disk_usage = Users.getDiskUsage(t_user.getId());		
+
 			boolean owner = true;
 			boolean hasAdminReadPrivileges = GeneralSecurity.hasAdminReadPrivileges(visiting_userId);
 			boolean hasAdminWritePrivileges = GeneralSecurity.hasAdminWritePrivileges(visiting_userId);
@@ -40,6 +40,9 @@
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("preProcs", ListOfPreProcessors);
 				request.setAttribute("benchProcs",ListOfBenchProcessors);
+				request.setAttribute("pairQuota", t_user.getPairQuota());
+				request.setAttribute("pairUsage",Jobs.countPairsByUser(t_user.getId()));
+
 			}
 			
 			request.setAttribute("owner", owner);
@@ -106,7 +109,7 @@
 	</fieldset>
 	<c:if test="${hasAdminReadPrivileges}">
 		<fieldset>
-			<legend>user disk quota</legend>
+			<legend>user quotas</legend>
 				<table id="diskUsageTable" class="shaded" uid="${userId}">
 					<thead>
 						<tr>
@@ -122,6 +125,14 @@
 						<tr>
 							<td>current disk usage</td>
 							<td>${diskUsage}</td>
+						</tr>
+						<tr>
+							<td>job pair quota</td>
+							<td id="editpairquota">${pairQuota}</td>
+						</tr>
+						<tr>
+							<td>job pairs owned</td>
+							<td>${pairUsage}</td>
 						</tr>
 					</tbody>			
 				</table>

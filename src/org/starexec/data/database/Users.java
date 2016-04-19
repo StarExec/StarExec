@@ -849,6 +849,34 @@ public class Users {
 	}
 	
 	/**
+	 * Sets a new pair quota for a given user
+	 * 
+	 * @param userId the user to set the new pair quota for
+	 * @param newPairQuota The new number of job pairs
+	 * @return true iff the new pair quota is successfully set, false otherwise
+	 */
+	public static boolean setPairQuota(int userId, int newPairQuota) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL UpdateUserPairQuota(?, ?)}");
+			procedure.setInt(1, userId);					
+			procedure.setInt(2, newPairQuota);
+			
+			procedure.executeUpdate();	
+			
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Sets a new disk quota for a given user (input should always be bytes)
 	 * 
 	 * @param userId the user to set the new disk quota for
@@ -876,8 +904,7 @@ public class Users {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
-		
+
 		log.warn(String.format("Failed to change disk quota to [%s] for user [%d]", FileUtils.byteCountToDisplaySize(newDiskQuota), userId));
 		return false;
 	}

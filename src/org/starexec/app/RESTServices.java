@@ -1930,7 +1930,16 @@ public class RESTServices {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 				messageToUser = "Edit successful.";
 			}
+		} else if (attribute.equals("pairquota")) {
+			log.debug("pairquota");
+			success=Users.setPairQuota(userId, Integer.parseInt(newValue));
+			log.debug("success = " + success);
+			if (success) {
+				SessionUtil.getUser(request).setPairQuota(Integer.parseInt(newValue));
+				messageToUser = "Edit successful.";
+			}
 		} else if (attribute.equals("pagesize")) {
+
 			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
 			if (success) {
 				messageToUser = "Edit successful.";

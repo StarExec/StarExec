@@ -258,6 +258,15 @@ CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 		WHERE id = _userId;
 	END //
 	
+-- Sets the user pair quota limit for the given user
+DROP PROCEDURE IF EXISTS UpdateUserPairQuota;
+CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
+	BEGIN
+		UPDATE users
+		SET job_pair_quota = _newQuota
+		WHERE id = _userId;
+	END //
+	
 -- Returns the number of bytes a given user's benchmarks is consuming on disk
 -- Author: Eric Burns	
 	

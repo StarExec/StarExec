@@ -29,6 +29,8 @@
 				List<Job> jList = Jobs.getByUserId(t_user.getId());
 				long disk_usage = Users.getDiskUsage(t_user.getId());
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
+				request.setAttribute("pairQuota", t_user.getPairQuota());
+				request.setAttribute("pairUsage",Jobs.countPairsByUser(t_user.getId()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 				
 				if(jList != null) {			
@@ -144,6 +146,14 @@
 					<tr>
 						<td>current disk usage</td>
 						<td>${diskUsage}</td>
+					</tr>
+					<tr>
+						<td>job pair quota</td>
+						<td>${pairQuota}</td>
+					</tr>
+					<tr>
+						<td>job pairs owned</td>
+						<td>${pairUsage}</td>
 					</tr>
 				</tbody>			
 			</table>
