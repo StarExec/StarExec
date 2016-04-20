@@ -32,7 +32,8 @@ public class ClearCacheManager {
 	}
 	
 	/**
-	 * Submits one job per node to clear the solver cache in every node
+	 * Submits one job per node to clear the solver cache in every node. Note that only nodes associated with
+	 * some queue can be cleared!
 	 * @throws IOException
 	 */
 	public static void clearSolverCacheOnAllNodes() throws IOException {
@@ -45,6 +46,9 @@ public class ClearCacheManager {
 			File logPath = new File(logBase,node);
 			currentScript = currentScript.replace("$$NODE_NAME$$", node);
 			Queue q = Cluster.getQueueForNode(Cluster.getNodeIdByName(node)); // TODO: will need to get number of slots here to ensure no job runs concurrently
+			if (q==null) {
+				continue;
+			}
 			currentScript = currentScript.replace("$$SLOTS$$", 2+"");
 			currentScript = currentScript.replace("$$QUEUE$$",q.getName());
 
