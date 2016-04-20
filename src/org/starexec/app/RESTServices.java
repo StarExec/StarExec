@@ -4440,7 +4440,11 @@ public class RESTServices {
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
-		ClearCacheManager.clearSolverCacheOnAllNodes();
+		try {
+			ClearCacheManager.clearSolverCacheOnAllNodes();
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
 		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
 	}
 	
