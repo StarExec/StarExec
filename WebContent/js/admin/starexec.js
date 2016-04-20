@@ -50,6 +50,12 @@ function initUI(){
 		}
     });
 	
+	$("#clearSolverCacheData").button({
+		icons: {
+			primary: "ui-icon-trash"
+		}
+    });
+	
 		
 	$("#restartStarExec").click(function(){
 		$('#dialog-confirm-restart-txt').text('are you sure you want to restart StarExec?');
@@ -97,6 +103,16 @@ function initUI(){
 	$("#clearLoadData").click(function(){
 		$.post(
 				starexecRoot+"services/jobs/clearloadbalance/",
+				function(returnCode) {
+					parseReturnCode(returnCode);
+				},
+				"json"
+			);
+	});
+	
+	$("#clearSolverCacheData").click(function(){
+		$.post(
+				starexecRoot+"services/jobs/clearsolvercache/",
 				function(returnCode) {
 					parseReturnCode(returnCode);
 				},

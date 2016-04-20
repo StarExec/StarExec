@@ -65,6 +65,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.jobs.ClearCacheManager;
 import org.starexec.jobs.JobManager;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.integration.TestManager;
@@ -4422,6 +4423,24 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 		JobManager.clearLoadBalanceMonitors();
+		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
+	}
+	
+	/**
+	 * Deletes all solvercache directories on all compute nodes
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/jobs/clearsolvercache")
+	@Produces("application/json")
+	public String clearSolverCache(@Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		ClearCacheManager.clearSolverCacheOnAllNodes();
 		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
 	}
 	

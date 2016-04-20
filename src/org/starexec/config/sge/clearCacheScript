@@ -1,0 +1,34 @@
+#!/bin/bash
+# The queue to submit to
+#$ -q $$QUEUE$$
+#OAR -q $$QUEUE$$
+#OAR -p queue='$$QUEUE$$'
+
+
+# Submit under sandbox user 
+#$ -u sandbox
+
+# Resource limits
+#$ -l slots=$$SLOTS$$,h=$$NODE_NAME$$
+
+# Default shell is bash
+#$ -S /bin/bash
+
+# Make these jobs high priority
+#$ -p 1024
+
+# Merge stdout and stderr streams
+#$ -j y
+
+export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
+
+# Include common functions and status codes
+. /home/starexec/sge_scripts/functions.bash
+
+
+log "deleting solver cache on node"
+
+clearSolverCache
+
+log "cache script ending."
+

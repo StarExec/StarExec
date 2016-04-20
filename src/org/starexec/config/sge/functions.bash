@@ -739,6 +739,10 @@ function checkCache {
 	fi	
 }
 
+function clearSolverCache {
+	safeRm "solver cache directory" "$WORKING_DIR_BASE/solvercache"
+}
+
 function copyBenchmarkDependencies {
 
 	
