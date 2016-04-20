@@ -9,7 +9,7 @@
 #$ -u sandbox
 
 # Resource limits
-#$ -l slots=$$SLOTS$$,h=$$NODE_NAME$$
+#$ -l s_fsize=$$MAX_WRITE$$G,slots=$$SLOTS$$,h=$$NODE_NAME$$
 
 # Default shell is bash
 #$ -S /bin/bash

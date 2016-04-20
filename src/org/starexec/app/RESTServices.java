@@ -4444,8 +4444,9 @@ public class RESTServices {
 			ClearCacheManager.clearSolverCacheOnAllNodes();
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
+			return gson.toJson(new ValidatorStatusCode(false, "There was an internal error clearing the solver cache"));
 		}
-		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
+		return gson.toJson(new ValidatorStatusCode(true,"Solver cache clearing jobs started successfully"));
 	}
 	
 	/**

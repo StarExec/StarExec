@@ -26,7 +26,7 @@ public class ClearCacheManager {
 			}
 			scriptTemplate = scriptTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			scriptTemplate = scriptTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
-
+			scriptTemplate = scriptTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
 
 		}
 	}
