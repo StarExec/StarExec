@@ -146,7 +146,6 @@ public abstract class JobManager {
 			}
 			mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
-			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
 			// Impose resource limits
 			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
@@ -154,6 +153,8 @@ public abstract class JobManager {
 			mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_TWO$$", R.SANDBOX_USER_TWO);
+			mainTemplate = mainTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
+
 
 		}
 	}
@@ -504,7 +505,6 @@ public abstract class JobManager {
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
-		replacements.put("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
 		File f = new File(scriptPath);
 		jobScript = addParametersToJobscript(jobScript, replacements);
 

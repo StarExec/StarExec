@@ -12,7 +12,7 @@
 #$ -notify
 
 # Submit under sandbox user 
-#$ -u sandbox
+#$ -u $$SANDBOX_USER_ONE$$
 
 # Resource limits
 #$ -l s_fsize=$$MAX_WRITE$$G 
