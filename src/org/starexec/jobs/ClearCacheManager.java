@@ -14,7 +14,7 @@ public class ClearCacheManager {
 	private static final Logger log = Logger.getLogger(ClearCacheManager.class);
 
 	private static String scriptTemplate=null;
-	protected static void initscriptTemplateIf() {
+	protected static void initScriptTemplateIf() {
 		if (scriptTemplate == null) {
 			// Read in the job script template and format it for this global configuration
 			File f = new File(R.CONFIG_PATH, "sge/jobscript");
@@ -37,7 +37,9 @@ public class ClearCacheManager {
 	 */
 	public static void clearSolverCacheOnAllNodes() throws IOException {
 		log.info("calling clearSolverCacheOnAllNodes");
+		initScriptTemplateIf();
 		File logBase = new File(R.getSolverCacheClearLogDir());
+	
 		for (String node : R.BACKEND.getWorkerNodes()) {
 			String currentScript = scriptTemplate;
 			File logPath = new File(logBase,node);
