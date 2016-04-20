@@ -17,7 +17,7 @@ public class ClearCacheManager {
 	protected static void initScriptTemplateIf() {
 		if (scriptTemplate == null) {
 			// Read in the job script template and format it for this global configuration
-			File f = new File(R.CONFIG_PATH, "sge/jobscript");
+			File f = new File(R.CONFIG_PATH, "sge/clearCacheScript");
 			try {
 				scriptTemplate = FileUtils.readFileToString(f);
 			} 
