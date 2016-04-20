@@ -90,6 +90,8 @@ public class Registration extends HttpServlet {
 		user.setEmail(request.getParameter(Registration.USER_EMAIL));
 		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
 		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));
+		user.setPairQuota(R.DEFAULT_PAIR_QUOTA);
+		user.setDiskQuota(R.DEFAULT_DISK_QUOTA);
 		user.setRole("user");
 		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		

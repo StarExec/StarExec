@@ -565,7 +565,8 @@ public class ResourceLoader {
 		u.setEmail(email);
 		u.setInstitution(institution);
 		u.setRole(role);
-		u.setDiskQuota(R.DEFAULT_DISK_QUOTA);
+		u.setDiskQuota(Long.MAX_VALUE);
+		u.setPairQuota(Integer.MAX_VALUE);
 		int id=Users.add(u);
 		if (id>0) {
 			createdUserIds.add(id);

@@ -1235,9 +1235,9 @@ public class Users {
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
+			procedure.setLong(6, user.getDiskQuota());
 			procedure.setString(7,user.getRole());
-			procedure.setInt(8, R.DEFAULT_PAIR_QUOTA);
+			procedure.setInt(8, user.getPairQuota());
 			// Register output of ID the user is inserted under
 			procedure.registerOutParameter(9, java.sql.Types.INTEGER);
 			
