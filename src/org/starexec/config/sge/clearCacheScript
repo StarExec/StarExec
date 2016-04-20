@@ -20,15 +20,17 @@
 # Merge stdout and stderr streams
 #$ -j y
 
-export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
-
-# Include common functions and status codes
-. /home/starexec/sge_scripts/functions.bash
+WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 
 
-log "deleting solver cache on node"
+echo "deleting solver cache on $$NODE_NAME$$"
 
-clearSolverCache
+rm -rf "$WORKING_DIR_BASE/solvercache"
+mkdir "$WORKING_DIR_BASE/solvercache"
+chmod gu+rwx "$WORKING_DIR_BASE/solvercache"
 
-log "cache script ending."
+# doing ls to confirm the directory was removed
+ls -l "$WORKING_DIR_BASE/solvercache"
+
+echo "cache script ending."
 
