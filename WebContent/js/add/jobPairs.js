@@ -24,24 +24,41 @@ function initUI() {
 			success: function(data) {
 				if ( data.success ) {
 					destroyDialog();
-					$('#dialog-confirm-add-delete-txt').text( data.pairsToBeDeleted + ' job pairs will be deleted.\n'+
-						data.pairsToBeAdded + ' job pairs will be added.\nWould you like to continue?' );		
-
-					$('#dialog-confirm-add-delete').dialog({
-						modal: true,
-						width: 500,
-						height: 300,
-						buttons: {
-							'continue': function() {
-								createDialog("Adding/deleting job pairs. Please wait. (May take a minute or two for large jobs.)");
-								$('#addJobPairsForm').unbind('submit');
-								$('#addJobPairsForm').submit();
-							},
-							'cancel': function() {
-								$(this).dialog('close');
+					var pairsAdded = data.pairsToBeAdded - data.pairsToBeDeleted
+					if (data.pairsToBeAdded > 0 && (data.remainingQuota -pairsAdded)<0) {
+						$('#dialog-confirm-add-delete-txt').text("Your are currently over your job pair quota, and so you may" +
+								" not add any new pairs without first deleting some old jobs or pairs");
+						$('#dialog-confirm-add-delete').dialog({
+							modal: true,
+							width: 500,
+							height: 300,
+							buttons: {
+								'cancel': function() {
+									$(this).dialog('close');
+								}
 							}
-						}
-					});
+						});
+					} else {
+						$('#dialog-confirm-add-delete-txt').text( data.pairsToBeDeleted + ' job pairs will be deleted.\n'+
+								data.pairsToBeAdded + ' job pairs will be added.\nWould you like to continue?' );		
+
+							$('#dialog-confirm-add-delete').dialog({
+								modal: true,
+								width: 500,
+								height: 300,
+								buttons: {
+									'continue': function() {
+										createDialog("Adding/deleting job pairs. Please wait. (May take a minute or two for large jobs.)");
+										$('#addJobPairsForm').unbind('submit');
+										$('#addJobPairsForm').submit();
+									},
+									'cancel': function() {
+										$(this).dialog('close');
+									}
+								}
+							});
+					}
+					
 				} else {
 					alert ( data.message );
 				}

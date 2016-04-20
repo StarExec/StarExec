@@ -1294,7 +1294,7 @@ public class RESTServices {
 			log.debug( "allBenchmarkCount: "+allBenchmarkCount );
 
 			jsonObject.put("pairsToBeAdded",  pairedBenchmarkCount + allBenchmarkCount );
-
+			jsonObject.put("remainingQuota", Users.get(userId).getPairQuota()-Jobs.countPairsByUser(userId));
 
 			jsonObject.put("success", true);
 			return gson.toJson( jsonObject );

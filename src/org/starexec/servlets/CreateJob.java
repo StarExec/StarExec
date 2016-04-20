@@ -22,6 +22,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -32,6 +33,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -265,6 +267,10 @@ public class CreateJob extends HttpServlet {
 				JobManager.buildJob(j, benchmarkIds, configIds, space);
 			}
 		}
+		
+		
+		
+		int pairCount = j.getJobPairs().size();
 		if (j.getJobPairs().size() == 0) {
 			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
             Space jobSpace = Spaces.getDetails(space, userId);
@@ -282,6 +288,19 @@ public class CreateJob extends HttpServlet {
 			// No pairs in the job means something went wrong; error out
 			return;
 		}
+		
+		 User u = Users.get(userId);
+		 int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
+		 // This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
+		 // for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
+		 if (pairsAvailable<pairCount) {
+			String message = "Error: You are trying to create "+pairCount+" pairs, but you have "+pairsAvailable+" remaining in your quota. Please delete some old jobs before continuing.";
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+			// No pairs in the job means something went wrong; error out
+			return;
+		 }
+		
 
 		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
@@ -351,7 +370,7 @@ public class CreateJob extends HttpServlet {
 			    return new ValidatorStatusCode(false, "You do not have permission to use the given postprocessor, or it does not exist");
 			} 
 		 }
-		
+
 		return new ValidatorStatusCode(true);
 	}
 	
@@ -367,7 +386,7 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidPosInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
-
+			
 			int userId = SessionUtil.getUserId(request);
 			int sid = Integer.parseInt(request.getParameter(spaceId));
 			// Make sure the user has access to the space

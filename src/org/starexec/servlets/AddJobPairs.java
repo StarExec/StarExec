@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.starexec.app.RESTServices;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -37,6 +38,10 @@ import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 //TODO: Update job pair count at the end?
 public class AddJobPairs extends HttpServlet {
 	private static final Logger log = Logger.getLogger(AddJobPairs.class);	
@@ -45,6 +50,7 @@ public class AddJobPairs extends HttpServlet {
 	private final String configsParam = "configs";
 	private final String addToAllParam = "addToAll";
 	private final String addToPairedParam = "addToPaired";
+	JsonParser parser = new JsonParser();
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -68,6 +74,17 @@ public class AddJobPairs extends HttpServlet {
 				response.sendError( HttpServletResponse.SC_BAD_REQUEST, validationStatus.getMessage() );
 				return;
 			}
+			
+			RESTServices services = new RESTServices();
+			JsonObject o = parser.parse(services.getNumberOfPairsToBeAddedAndDeleted(request)).getAsJsonObject();
+			int pairsAdded = o.get("pairsToBeAdded").getAsInt();
+			int pairsDeleted = o.get("pairsToBeDeleted").getAsInt();
+			int remainingQuota = o.get("remainingQuota").getAsInt();
+			int netPairs = pairsAdded - pairsDeleted;
+			if (pairsAdded>0 && (remainingQuota+netPairs)<0) {
+				response.sendError( HttpServletResponse.SC_BAD_REQUEST, "You do not have sufficient job pair quota to add these pairs" );
+				return;
+			}
 
 			logUtil.debug( methodName, "Getting the job id from the request parameter.");
 			final int jobId = Integer.parseInt( request.getParameter(jobIdParam) );
@@ -88,11 +105,6 @@ public class AddJobPairs extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
 				return;
 			}
-			/*
-			int spaceId = 
-			HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(spaceId, userId), spaceId);
-			*/
-
 			Set<Integer> solverIdsToAddToAll = new HashSet<>( Util.toIntegerList( request.getParameterValues( addToAllParam ) ) );
 			Set<Integer> solverIdsToAddToPaired = new HashSet<>( Util.toIntegerList( request.getParameterValues( addToPairedParam ) ) );
 
@@ -138,13 +150,6 @@ public class AddJobPairs extends HttpServlet {
 			}
 
 			configIdsToAddToPaired.removeAll( allConfigIdsInJob );
-
-			/*
-			logUtil.debug( methodName, "Config ID's to be added: " );
-			for ( Integer cid : configIdsToAdd ) {
-				logUtil.debug( methodName, "\t"+cid );
-			}
-			*/
 
 			logUtil.debug( methodName, "Adding job pairs for paired benchmarks." );
 			Jobs.addJobPairsFromConfigIdsForPairedBenchmarks( jobId, configIdsToAddToPaired );
