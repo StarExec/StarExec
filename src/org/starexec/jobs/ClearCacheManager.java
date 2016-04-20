@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
+import org.starexec.data.to.Queue;
 
 public class ClearCacheManager {
 	private static final Logger log = Logger.getLogger(ClearCacheManager.class);
@@ -41,8 +42,9 @@ public class ClearCacheManager {
 			String currentScript = scriptTemplate;
 			File logPath = new File(logBase,node);
 			currentScript = currentScript.replace("$$NODE_NAME$$", node);
-			Cluster.getQueueForNode(Cluster.getNodeIdByName(node)); // TODO: will need to get number of slots here to ensure no job runs concurrently
+			Queue q = Cluster.getQueueForNode(Cluster.getNodeIdByName(node)); // TODO: will need to get number of slots here to ensure no job runs concurrently
 			currentScript = currentScript.replace("$$SLOTS$$", 2+"");
+			currentScript = currentScript.replace("$$QUEUE$$",q.getName());
 
 			String scriptPath = String.format("%s/%s", R.getJobInboxDir(), "cacheclear"+node+".bash");
 			File f = new File(scriptPath);
