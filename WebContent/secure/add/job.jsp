@@ -54,7 +54,7 @@
 	<c:forEach items="${defaultSettings}" var="setting">
 		<star:settings setting="${setting}" />
 	</c:forEach>
-	<span id="remainingQuota" style="display:none" value="${remainingQuota}"></span>
+	<span id="remainingQuota" style="display:none" value="${remainingPairQuota}"></span>
 	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
 	<form id="addForm" method="post" action="${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" id="spaceIdInput" value="${space.id}"/>
