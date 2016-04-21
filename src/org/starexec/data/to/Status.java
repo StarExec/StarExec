@@ -25,7 +25,7 @@ public class Status {
 		ERROR_RESULTS(10),
 		ERROR_RUNSCRIPT(11),
 		ERROR_BENCHMARK(12),
-		ERROR_ENVIRONMENT(13),
+		ERROR_DISK_QUOTA_EXCEEDED(13),
 		EXCEED_RUNTIME(14),
 		EXCEED_CPU(15),
 		EXCEED_FILE_WRITE(16),
@@ -98,7 +98,7 @@ public class Status {
 			    case 12:
 				return ERROR_BENCHMARK;
 			    case 13:
-				return ERROR_ENVIRONMENT;
+				return ERROR_DISK_QUOTA_EXCEEDED;
 			    case 14:
 				return EXCEED_RUNTIME;
 			    case 15:
