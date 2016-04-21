@@ -43,6 +43,9 @@ public class ClearCacheManager {
 		for (String node : R.BACKEND.getWorkerNodes()) {
 			String currentScript = scriptTemplate;
 			File logPath = new File(logBase,node);
+			if (logPath.exists()) {
+				logPath.delete();
+			}
 			currentScript = currentScript.replace("$$NODE_NAME$$", node);
 
 			String scriptPath = String.format("%s/%s", R.getJobInboxDir(), "cacheclear"+node+".bash");

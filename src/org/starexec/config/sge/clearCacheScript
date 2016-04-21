@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#OAR -p network_address='$$NODE_NAME$$'
+
 # Submit under sandbox user 
 #$ -u $$SANDBOX_USER_ONE$$
 
@@ -17,7 +19,7 @@
 
 WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 
-
+date
 echo "deleting solver cache on $$NODE_NAME$$"
 echo "confirming host using the hostname command"
 hostname
