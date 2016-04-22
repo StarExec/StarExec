@@ -554,7 +554,7 @@ DROP PROCEDURE IF EXISTS DeleteJob;
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
-		SET deleted=true, total_pairs=0
+		SET deleted=true, total_pairs=0, disk_size=0
 		WHERE id = _jobId;
 		DELETE FROM job_pairs
 		WHERE job_id=_jobId;		
@@ -883,6 +883,16 @@ CREATE PROCEDURE GetRunningJobs()
 		SELECT id, GetJobStatus(id) AS status
 		FROM jobs
 		WHERE paused=false AND killed=false) AS temp
+		WHERE status="incomplete";
+	END //
+	
+DROP PROCEDURE IF EXISTS GetRunningJobsByUser;
+CREATE PROCEDURE GetRunningJobsByUser(IN _userId INT)
+	BEGIN
+		SELECT id FROM (
+		SELECT id, GetJobStatus(id) AS status
+		FROM jobs
+		WHERE paused=false AND killed=false AND user_id=_userId) AS temp
 		WHERE status="incomplete";
 	END //
 

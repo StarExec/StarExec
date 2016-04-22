@@ -267,9 +267,20 @@ CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
 		WHERE id = _userId;
 	END //
 	
+-- Gets the total disk usage for a given user.
+DROP PROCEDURE IF EXISTS GetUserDiskUsage;
+CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
+	BEGIN
+		SELECT SUM(disk_size) AS disk_usage FROM
+		(SELECT disk_size FROM solvers WHERE user_id=_userID
+		UNION ALL 
+		SELECT disk_size FROM benchmarks WHERE user_id=_userID
+		UNION ALL
+		SELECT disk_size FROM jobs WHERE user_id=_userID) AS tmp;
+	END //
+
 -- Returns the number of bytes a given user's benchmarks is consuming on disk
 -- Author: Eric Burns	
-	
 DROP PROCEDURE IF EXISTS GetUserBenchmarkDiskUsage;
 CREATE PROCEDURE GetUserBenchmarkDiskUsage(IN _userID INT)
 	BEGIN

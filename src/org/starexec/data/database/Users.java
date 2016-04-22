@@ -461,45 +461,28 @@ public class Users {
 		return 0;
 	}
 	
+	public static boolean isDiskQuotaExceeded(int userId) {
+		return Users.get(userId).getDiskQuota() <= Users.getDiskUsage(userId);
+	}
+	
 	/**
 	 * Gets the number of bytes a user is consuming on disk
 	 * 
 	 * @param userId the id of the user to get the disk usage of
 	 * @return the disk usage of the given user
-	 * @author Todd Elvers
 	 */
 	public static long getDiskUsage(int userId) {
 		Connection con = null;
-		long solverUsage=0;
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserSolverDiskUsage(?)}");
+			procedure = con.prepareCall("{CALL GetUserDiskUsage(?)}");
 			procedure.setInt(1, userId);
 
 			results = procedure.executeQuery();
-			while(results.next()){
-				solverUsage=results.getLong("disk_usage");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		con = null;
-		
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserBenchmarkDiskUsage(?)}");
-			procedure.setInt(1, userId);
-
-			 results = procedure.executeQuery();
-			while(results.next()){
-				return solverUsage+results.getLong("disk_usage");
+			if(results.next()){
+				return results.getLong("disk_usage");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

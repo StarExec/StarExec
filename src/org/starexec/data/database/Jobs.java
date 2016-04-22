@@ -4062,7 +4062,19 @@ public class Jobs {
 	}
 	return false;
     }
-   
+    
+    /**
+     * Pauses all jobs owned by the given user
+     * @param userId
+     * @return True on success and false on error
+     */
+    public static boolean pauseAllUserJobs(int userId) {
+    	boolean success = true;
+    	for (Integer i : Jobs.getRunningJobs(userId)) {
+    		success = success && Jobs.pause(i);
+    	}	
+    	return success;
+    }
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
 	 * @return True on success, false otherwise
@@ -4869,6 +4881,37 @@ public class Jobs {
 		}
 		return 0;
 	}
+	/**
+	 * Returns all jobs owned by the given user that have pairs either running or pending
+	 * @param userId The ID of the user to search for
+	 * @return The list of distinct job IDs
+	 */
+	public static List<Integer> getRunningJobs(int userId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetRunningJobsByUser(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			
+			List<Integer> jobs = new LinkedList<Integer>();
+			while (results.next()) {
+				jobs.add(results.getInt("id"));
+			}
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	
 	/**
 	 * Gets all the jobs on the system that currently have pairs pending or running
 	 * and which are not currently paused or killed

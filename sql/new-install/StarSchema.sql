@@ -276,6 +276,7 @@ CREATE TABLE jobs (
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
 	buildJob BOOLEAN NOT NULL DEFAULT FALSE,
 	total_pairs INT NOT NULL, -- How many pairs are in this job? Used to avoid needing to count from pairs table for efficiency
+	disk_size BIGINT NOT NULL,
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
@@ -351,9 +352,9 @@ CREATE TABLE jobpair_stage_data (
 	solver_id INT,
 	config_id INT,
 	job_space_id INT,
+	disk_size BIGINT NOT NULL,
 	KEY (job_space_id, config_id),
 	KEY (job_space_id, solver_name),
-	-- KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
 	KEY (status_code),
 	PRIMARY KEY (jobpair_id,stage_number),

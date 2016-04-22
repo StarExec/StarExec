@@ -602,9 +602,10 @@ if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES
 if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
-log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER)\""
+DISK_SIZE=$(GetTotalOutputSizeToCopy)
+log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
 
-if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER)" ; then
+if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
 log "Error copying stats from watchfile into database. Copying varfile to log {"
 cat $1
 log "} End varfile."
@@ -1013,6 +1014,44 @@ function saveFileAsBenchmark {
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
 		log "benchmark $CURRENT_BENCH_NAME copied to $CURRENT_BENCH_PATH"
 	fi
+}
+
+# Gets the size, in bytes, of all the output we are copying back to the head node
+# $1 The argument for whether we are copying back the stdout (1 = no copy, 2 = copy, 3 = copy + benchmark)
+# $2 The argument for whether we are copying back the other output files
+function getTotalOutputSizeToCopy {
+	STDOUT_SIZE=0
+	OTHER_SIZE=0
+		
+	if [ $1 -ne 1 ]
+	then
+		STODUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
+	fi
+	
+	if [ $1 -e 3 ]
+	then
+		# user is requesting two copies
+		STODUT_SIZE=$(($STDOUT_SIZE * 2))
+	fi
+	log "found the following stdout size"
+	log $STDOUT_SIZE
+	
+	if [ $2 -ne 1 ]
+	then
+		OTHER_SIZE=`du -sb "$OUT_DIR/output_files/" | awk '{print $1}'`
+	fi
+	
+	if [ $2 -e 3 ]
+	then
+		# user is requesting two copies
+		OTHER_SIZE=$(($OTHER_SIZE * 2))
+	fi
+	log "found the following other files size"
+	log $OTHER_SIZE
+	DISK_SIZE=$(($OTHER_SIZE + $STDOUT_SIZE))
+	log "returning the following disk size"
+	log $DISK_SIZE
+	return $DISK_SIZE
 }
 
 # Saves the current stdout as a new benchmark

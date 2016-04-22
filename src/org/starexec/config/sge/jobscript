@@ -48,6 +48,7 @@ export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
 export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
 export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
+export DISK_QUOTA='$$DISK_QUOTA$$'
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes

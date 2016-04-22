@@ -266,7 +266,7 @@ public class JobSecurity {
 	}
 	
 	/**
-	 * Checks to see if the given user has permission to resume of the given job
+	 * Checks to see if the given user has permission to resume the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
@@ -275,6 +275,10 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserResumeJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to resume this job");
+		}
+		
+		if (Users.isDiskQuotaExceeded(userId)) {
+			return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");
 		}
 		
 		return new ValidatorStatusCode(true);

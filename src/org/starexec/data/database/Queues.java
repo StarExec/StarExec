@@ -556,6 +556,7 @@ public class Queues {
 				j.getQueue().setId(queueId);
 
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
+				j.setUser(Users.get(j.getUserId()));
 				jobs.add(j);				
 			}							
 			return jobs;

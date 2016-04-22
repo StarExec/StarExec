@@ -28,7 +28,7 @@ CREATE PROCEDURE UpdatePairNodeId(IN _jobPairId INT, IN _nodeId INT)
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
-CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT)
+CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
 		UPDATE jobpair_stage_data
@@ -37,8 +37,10 @@ CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHA
 			user_time=_userTime,
 			system_time=_systemTime,
 			max_vmem=_maxVmem,
-			max_res_set=_maxResSet
+			max_res_set=_maxResSet,
+			disk_size=_diskSize
 		WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
+		UPDATE jobs SET disk_size=disk_size+_diskSize WHERE id=(SELECT job_id FROM job_pairs WHERE id=_jobPairId);
 	END //
 	
 -- Updates a job pairs node Id
@@ -192,6 +194,8 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 DROP PROCEDURE IF EXISTS DeleteJobPair;
 CREATE PROCEDURE DeleteJobPair( IN _pairId INT )
 	BEGIN
+		UPDATE jobs SET disk_size=disk_size-(SELECT disk_size FROM job_pairs WHERE id=_pairId) WHERE id=(SELECT job_id FROM job_pairs WHERE id=_jobPairId);
+
 		DELETE FROM job_pairs
 		WHERE job_pairs.id = _pairId;
 	END //

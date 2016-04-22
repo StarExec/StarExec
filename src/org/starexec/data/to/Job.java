@@ -28,6 +28,7 @@ import com.google.gson.annotations.Expose;
  */
 public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private int userId = -1;		
+	private User user = null; // this is populated for the JobManager
 	@Expose private String name;
 	@Expose private String description = "no description"; 
 	private Queue queue = null;
@@ -406,5 +407,19 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public void setTotalPairs(int totalPairs) {
 		this.totalPairs = totalPairs;
+	}
+
+	/**
+	 * @return the user
+	 */
+	public User getUser() {
+		return user;
+	}
+
+	/**
+	 * @param user the user to set
+	 */
+	public void setUser(User user) {
+		this.user = user;
 	}
 }

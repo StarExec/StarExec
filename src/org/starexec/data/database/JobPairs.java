@@ -1718,8 +1718,7 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Updates a job pair's node_id in the databse. This is done by leveraging UpdatePairRunSolverStats,
-	 * which 
+	 * Updates a job pair's node_id in the database.
 	 * @param pairId
 	 * @param nodeId
 	 * @return True on success and false otherwise

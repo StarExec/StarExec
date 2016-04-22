@@ -23,6 +23,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -74,7 +75,8 @@ public class AddJobPairs extends HttpServlet {
 				response.sendError( HttpServletResponse.SC_BAD_REQUEST, validationStatus.getMessage() );
 				return;
 			}
-			
+			final int userId = SessionUtil.getUserId( request );
+
 			RESTServices services = new RESTServices();
 			JsonObject o = parser.parse(services.getNumberOfPairsToBeAddedAndDeleted(request)).getAsJsonObject();
 			int pairsAdded = o.get("pairsToBeAdded").getAsInt();
@@ -83,6 +85,10 @@ public class AddJobPairs extends HttpServlet {
 			int netPairs = pairsAdded - pairsDeleted;
 			if (pairsAdded>0 && (remainingQuota+netPairs)<0) {
 				response.sendError( HttpServletResponse.SC_BAD_REQUEST, "You do not have sufficient job pair quota to add these pairs" );
+				return;
+			}
+			if (pairsAdded>0 && Users.isDiskQuotaExceeded(userId)) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,"Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");
 				return;
 			}
 
@@ -96,7 +102,6 @@ public class AddJobPairs extends HttpServlet {
 				return;
 			}
 
-			final int userId = SessionUtil.getUserId( request );
 			logUtil.debug( methodName, "\tuserid = "+userId );
 
 			// Make sure the user has permission to add job pairs to this job.

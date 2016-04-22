@@ -387,7 +387,12 @@ public class CreateJob extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
 			
+			
+			
 			int userId = SessionUtil.getUserId(request);
+			if (Users.isDiskQuotaExceeded(userId)) {
+				return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");
+			}
 			int sid = Integer.parseInt(request.getParameter(spaceId));
 			// Make sure the user has access to the space
 			Permission perm = Permissions.get(userId, sid);
