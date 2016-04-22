@@ -560,6 +560,10 @@ done < $1
 
 # updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
 # Ben McCune
+# $1 the varfile
+# $2 the watchfile
+# $3 The option on how to copy back stdout
+# $4 The option on how to copy back the other output fiels
 function updateStats {
 
 WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
@@ -602,7 +606,7 @@ if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES
 if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
-DISK_SIZE=$(GetTotalOutputSizeToCopy)
+DISK_SIZE=$(getTotalOutputSizeToCopy $3 $4)
 log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
 
 if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
@@ -688,7 +692,7 @@ function copyOutput {
 	copyOutputNoStats $1 $2 $3
 	
 	log "job output copy complete - now sending stats"
-	updateStats $VARFILE $WATCHFILE
+	updateStats $VARFILE $WATCHFILE $2 $3
 	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"
 		mkdir $OUT_DIR/postProcessor
