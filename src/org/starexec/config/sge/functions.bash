@@ -1037,7 +1037,8 @@ function setRemainingDiskQuota {
 	log "user disk usage is $DISK_USAGE"
 	REMAINING_DISK_QUOTA=$(($DISK_QUOTA - $DISK_USAGE))
 	REMAINING_DISK_QUOTA=$(($REMAINING_DISK_QUOTA + 1073741824))
-	log "remaining usage disk quota is 
+	log "remaining user disk quota is"
+	log $REMAINING_DISK_QUOTA
 	if [ $REMAINING_DISK_QUOTA -lt 0 ]
 	then
 		REMAINING_DISK_QUOTA=0
