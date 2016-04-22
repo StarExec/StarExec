@@ -658,7 +658,7 @@ function createDir {
 # $2 the stdout copy option (1 means don't save, otherwise save)
 # $3 the other output copy option (same as above)
 function copyOutputNoStats {
-	setDiskQuotaExceeded
+	setDiskQuotaExceeded $2 $3
 	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
 	then
 		log "not saving output: user disk quota exceeded"
@@ -1033,7 +1033,7 @@ function saveFileAsBenchmark {
 # sets the variable REMAINING_DISK_QUOTA with the number of bytes the user should be allowed
 # to write. This includes a 1G buffer for going over their quota
 function setRemainingDiskQuota {
-	DISK_USAGE=$(mysql -u'$DB_USER' -p'$DB_PASS' -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
+	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
 	log "user disk usage is $DISK_USAGE"
 	REMAINING_DISK_QUOTA=$(($DISK_QUOTA - $DISK_USAGE))
 	REMAINING_DISK_QUOTA=$(($REMAINING_DISK_QUOTA + 1073741824))
@@ -1046,12 +1046,14 @@ function setRemainingDiskQuota {
 }
 
 # Sets the DISK_QUOTA_EXCEEDED variable to 1 if the user is over their quota.
+# Option to copy back stdout 
+# Option to copy back other output files
 function setDiskQuotaExceeded {
 	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
 	then
 		return
 	fi
-	getTotalOutputSizeToCopy
+	getTotalOutputSizeToCopy $1 $2
 	setRemainingDiskQuota
 	if [ $DISK_SIZE -gt $REMAINING_DISK_QUOTA ]
 	then
