@@ -606,7 +606,7 @@ if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES
 if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
-DISK_SIZE=$(getTotalOutputSizeToCopy $3 $4)
+GetTotalOutputSizeToCopy $3 $4
 log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
 
 if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
@@ -1026,7 +1026,9 @@ function saveFileAsBenchmark {
 function getTotalOutputSizeToCopy {
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
-		
+	log "calling getTotalOutputSizeToCopy"
+	log $1
+	log $2
 	if [ $1 -ne 1 ]
 	then
 		STODUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
@@ -1055,7 +1057,6 @@ function getTotalOutputSizeToCopy {
 	DISK_SIZE=$(($OTHER_SIZE + $STDOUT_SIZE))
 	log "returning the following disk size"
 	log $DISK_SIZE
-	echo $DISK_SIZE
 }
 
 # Saves the current stdout as a new benchmark
