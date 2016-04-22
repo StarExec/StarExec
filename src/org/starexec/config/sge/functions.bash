@@ -1051,7 +1051,7 @@ function getTotalOutputSizeToCopy {
 	DISK_SIZE=$(($OTHER_SIZE + $STDOUT_SIZE))
 	log "returning the following disk size"
 	log $DISK_SIZE
-	return $DISK_SIZE
+	echo $DISK_SIZE
 }
 
 # Saves the current stdout as a new benchmark
