@@ -401,6 +401,11 @@ function copyOutputIncrementally {
 	do
 		sleep $PERIOD
 		copyOutputNoStats $3 $4 $5
+		
+		if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+		then
+			break
+		fi
 		TIMEOUT=$(($TIMEOUT-$PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
@@ -653,7 +658,12 @@ function createDir {
 # $2 the stdout copy option (1 means don't save, otherwise save)
 # $3 the other output copy option (same as above)
 function copyOutputNoStats {
-
+	setDiskQuotaExceeded
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		log "not saving output: user disk quota exceeded"
+		return
+	fi
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
 	OUTPUT_SUFFIX="_output"
@@ -1020,20 +1030,54 @@ function saveFileAsBenchmark {
 	fi
 }
 
-# Gets the size, in bytes, of all the output we are copying back to the head node
+# sets the variable REMAINING_DISK_QUOTA with the number of bytes the user should be allowed
+# to write. This includes a 1G buffer for going over their quota
+function setRemainingDiskQuota {
+	DISK_USAGE=$(mysql -u'$DB_USER' -p'$DB_PASS' -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
+	log "user disk usage is $DISK_USAGE"
+	REMAINING_DISK_QUOTA=$(($DISK_QUOTA - $DISK_USAGE))
+	REMAINING_DISK_QUOTA=$(($REMAINING_DISK_QUOTA + 1073741824))
+	log "remaining usage disk quota is 
+	if [ $REMAINING_DISK_QUOTA -lt 0 ]
+	then
+		REMAINING_DISK_QUOTA=0
+	fi
+}
+
+# Sets the DISK_QUOTA_EXCEEDED variable to 1 if the user is over their quota.
+function setDiskQuotaExceeded {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		return
+	fi
+	getTotalOutputSizeToCopy
+	setRemainingDiskQuota
+	if [ $DISK_SIZE -gt $REMAINING_DISK_QUOTA ]
+	then
+		DISK_QUOTA_EXCEEDED=1
+		# we may have already copied some data, so we want to delete that
+		safeRm $PAIR_OUTPUT_DIRECTORY
+	fi
+}
+
+# Gets the size, in bytes, of all the output we are copying back to the head node. If DISK_QUOTA_EXCEEDED
+# is already set, this will simply set DISK_QUOTA to 0, as we won't be copying anything
 # $1 The argument for whether we are copying back the stdout (1 = no copy, 2 = copy, 3 = copy + benchmark)
 # $2 The argument for whether we are copying back the other output files
 function getTotalOutputSizeToCopy {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		DISK_SIZE=0
+		return
+	fi
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
-	STDOUT_FILE_OPTION=$1
-	OTHER_FILES_OPTION=$2
-	if [ $STDOUT_FILE_OPTION -ne 1 ]
+	if [ $1 -ne 1 ]
 	then
 		STDOUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
 	fi
 	
-	if [ $STDOUT_FILE_OPTION -e 3 ]
+	if [ $1 -eq 3 ]
 	then
 		# user is requesting two copies
 		STDOUT_SIZE=$(($STDOUT_SIZE * 2))
@@ -1041,12 +1085,12 @@ function getTotalOutputSizeToCopy {
 	log "found the following stdout size"
 	log $STDOUT_SIZE
 	
-	if [ $OTHER_FILES_OPTION -ne 1 ]
+	if [ $2 -ne 1 ]
 	then
-		OTHER_SIZE=`du -sb "$OUT_DIR/output_files/" | awk '{print $1}'`
+		OTHER_SIZE=`du -sb "$OUT_DIR/output_files" | awk '{print $1}'`
 	fi
 	
-	if [ $OTHER_FILES_OPTION -e 3 ]
+	if [ $2 -eq 3 ]
 	then
 		# user is requesting two copies
 		OTHER_SIZE=$(($OTHER_SIZE * 2))
@@ -1060,12 +1104,22 @@ function getTotalOutputSizeToCopy {
 
 # Saves the current stdout as a new benchmark
 function saveStdoutAsBenchmark {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		log "not saving new benchmark: user disk quota has been exceeded"
+		return
+	fi
 	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
 	saveFileAsBenchmark $SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER 1
 }
 
 # Saves the extra output directory as a new set of benchmarks
 function saveExtraOutputAsBenchmarks {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		log "not saving new benchmarks: user disk quota has been exceeded"
+		return
+	fi
 	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output/*"
 	for f in $OUTPUT_DIR 
 	do
