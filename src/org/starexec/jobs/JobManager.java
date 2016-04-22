@@ -42,6 +42,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
@@ -705,7 +706,7 @@ public abstract class JobManager {
 	 * @return the new job object with the specified properties
 	 */
 	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval) {
+			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval, SaveResultsOption otherOutputOption) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -729,6 +730,7 @@ public abstract class JobManager {
 		attrs.setStageNumber(1);
 		attrs.setSpaceId(null);
 		attrs.setResultsInterval(resultsInterval);
+		attrs.setExtraOutputSaveOption(otherOutputOption);
 		if(preProcessorId > 0) {
 			attrs.setPreProcessor(Processors.get(preProcessorId));
 		} else {
@@ -876,7 +878,8 @@ public abstract class JobManager {
 			q.getWallTimeout(),
 			R.DEFAULT_PAIR_VMEM,
 			false,
-			15);
+			15,
+			SaveResultsOption.SAVE);
 		j.setBuildJob(true);
 		String spaceName = "job space";
 		String sm=Spaces.getName(spaceId);

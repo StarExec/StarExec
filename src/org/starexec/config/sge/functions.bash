@@ -606,7 +606,7 @@ if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES
 if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
-GetTotalOutputSizeToCopy $3 $4
+getTotalOutputSizeToCopy $3 $4
 log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
 
 if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
@@ -1026,28 +1026,27 @@ function saveFileAsBenchmark {
 function getTotalOutputSizeToCopy {
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
-	log "calling getTotalOutputSizeToCopy"
-	log $1
-	log $2
-	if [ $1 -ne 1 ]
+	STDOUT_FILE_OPTION=$1
+	OTHER_FILES_OPTION=$2
+	if [ $STDOUT_FILE_OPTION -ne 1 ]
 	then
-		STODUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
+		STDOUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
 	fi
 	
-	if [ $1 -e 3 ]
+	if [ $STDOUT_FILE_OPTION -e 3 ]
 	then
 		# user is requesting two copies
-		STODUT_SIZE=$(($STDOUT_SIZE * 2))
+		STDOUT_SIZE=$(($STDOUT_SIZE * 2))
 	fi
 	log "found the following stdout size"
 	log $STDOUT_SIZE
 	
-	if [ $2 -ne 1 ]
+	if [ $OTHER_FILES_OPTION -ne 1 ]
 	then
 		OTHER_SIZE=`du -sb "$OUT_DIR/output_files/" | awk '{print $1}'`
 	fi
 	
-	if [ $2 -e 3 ]
+	if [ $OTHER_FILES_OPTION -e 3 ]
 	then
 		# user is requesting two copies
 		OTHER_SIZE=$(($OTHER_SIZE * 2))

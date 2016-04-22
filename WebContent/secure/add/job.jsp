@@ -183,6 +183,15 @@
 							<input type="text" name="resultsInterval" id="resultsInterval" value="0">
 						</td>
 					</tr>
+					<tr class="noHover" title="Whether to save solver output that is placed into the extra output directory given to each solver">
+						<td>
+							<p>Save Additional Output Files</p>
+						</td>
+						<td>
+							Yes<input type="radio" id="radioYesSaveExtraOutput" name="saveOtherOutput" value="true"/>
+							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
+						</td>
+					</tr>
 				</tbody>					
 			</table>
 		</fieldset>

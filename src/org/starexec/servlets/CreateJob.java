@@ -34,6 +34,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -64,6 +65,7 @@ public class CreateJob extends HttpServlet {
 	private static final String maxMemory="maxMem";
 	private static final String randSeed="seed";
 	private static final String resultsInterval="resultsInterval";
+	private static final String otherOutputOption="saveOtherOutput";
 	
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -121,7 +123,7 @@ public class CreateJob extends HttpServlet {
 				settings.getPreProcessorId(),
 				settings.getPostProcessorId(), 
 				Queues.getTestQueue(),
-				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0);
+				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0, SaveResultsOption.SAVE);
 		
 		buildQuickJob(j, solverId, settings.getBenchId(), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
@@ -189,7 +191,15 @@ public class CreateJob extends HttpServlet {
 			suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
 		}
 		log.debug("("+method+")"+" User chose "+(suppressTimestamp?"":"not ")+"to suppress timestamps.");
-
+		
+		SaveResultsOption option = SaveResultsOption.SAVE;
+		
+		if (Util.paramExists(otherOutputOption, request)) {
+			if (!Boolean.parseBoolean(request.getParameter(otherOutputOption))) {
+				option = SaveResultsOption.NO_SAVE;
+			}
+		}
+		
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -198,7 +208,7 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
-				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp, resultsIntervalNum);
+				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp, resultsIntervalNum,option);
 		
 
 		String selection = request.getParameter(run);
@@ -471,6 +481,11 @@ public class CreateJob extends HttpServlet {
 			}		
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
+			}
+			if (Util.paramExists(otherOutputOption, request)) {
+				if (!Validator.isValidBool(request.getParameter(otherOutputOption))) {
+					return new ValidatorStatusCode(false, "Whether to save extra output files needs to be a valid boolean");
+				}
 			}
 
 			if (request.getParameter(run).equals("quickJob")) {
