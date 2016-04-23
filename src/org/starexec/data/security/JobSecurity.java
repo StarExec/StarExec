@@ -37,6 +37,23 @@ public class JobSecurity {
 	private static final LogUtil logUtil = new LogUtil(log);
 	
 	
+	/**
+	 * Checks to see whether a user can delete all the orphaned jobs owned by some user
+	 * @param userIdToDelete The ID of the user having their jobs deleted
+	 * @param userIdMakingRequest The ID of the user making the request
+	 * @return A ValidatorStatusCide
+	 */
+	public static ValidatorStatusCode canUserDeleteOrphanedJobs(int userIdToDelete, int userIdMakingRequest) {
+		if (Users.get(userIdToDelete)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
+			return new ValidatorStatusCode(false, "You do not have permission to delete jobs belonging to another user");
+		}
+		
+		return new ValidatorStatusCode(true);
+	}
+	
 	public static ValidatorStatusCode canUserRecompileJob(int jobId, int userId) {
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "Only administrators can perform this action");

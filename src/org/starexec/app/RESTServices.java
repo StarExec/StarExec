@@ -3111,6 +3111,28 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
+	@Path("/deleteOrphaned/job/{userId}")
+	@Produces("application/json")
+	public String deleteOrphanedJobs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int userIdOfCaller = SessionUtil.getUserId(request);
+		ValidatorStatusCode status=JobSecurity.canUserDeleteOrphanedJobs(userId, userIdOfCaller);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		
+		return Jobs.deleteOrphanedJobs(userId) ?  gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully")) :
+			gson.toJson(new ValidatorStatusCode(false, "Internal database error deleting jobs"));
+	}
+	
+	/**
+	 * Recycles all benchmarks that have been orphaned belonging to a specific user. Users have this option
+	 * from their account page
+	 * @param userId The Id of the user to recycle benchmarks for.
+	 * @param request
+	 * @return json ValidatorStatusCode
+	 * @author Eric Burns
+	 */
+	@POST
 	@Path("/recycleOrphaned/benchmark/{userId}")
 	@Produces("application/json")
 	public String recycleOrphanedBenchmarks(@PathParam("userId") int userId, @Context HttpServletRequest request) {
