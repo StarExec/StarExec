@@ -9,29 +9,27 @@ Intel(R) Xeon(R) CPU E5-2609 0 @ 2.40GHz (2393 MHZ)
     258294 MB main memory
 
 # Software:
-OS:	Red Hat Enterprise Linux Workstation release 6.3 (Santiago)
-kernel:	2.6.32-431.1.2.el6.x86_64
-glibc:	gcc-4.4.6-4.el6.x86_64
-	        glibc-2.12-1.132.el6.i686
+OS:    Red Hat Enterprise Linux Server release 7.2 (Maipo)
+kernel:    3.10.0-327.10.1.el7.x86_64
+glibc:    gcc-4.8.5-4.el7.x86_64
+        glibc-2.17-106.el7_2.4.i686
 
 ------------------------------------------------------------------------------------
 Stats gathered from these commands on the nodes:
-[root@n075 ~]# cat /etc/redhat-release 
-Red Hat Enterprise Linux Workstation release 6.3 (Santiago)
+cat /etc/redhat-release
+Red Hat Enterprise Linux Server release 7.2 (Maipo)
 
-[root@n075 ~]# uname -r
-2.6.32-504.8.1.el6.x86_64
+[root@n060 ~]# uname -r
+3.10.0-327.10.1.el7.x86_64
 
 [root@n075 ~]# cat /proc/cpuinfo  | egrep "^model name|^cache size" | head -2
-model name	: Intel(R) Xeon(R) CPU E5-2609 0 @ 2.40GHz
-cache size	: 10240 KB
+model name    : Intel(R) Xeon(R) CPU E5-2609 0 @ 2.40GHz
+cache size    : 10240 KB
 
 [root@n075 ~]# cat /proc/meminfo  | grep MemTotal
 MemTotal:       264493492 kB
 
-[root@n075 ~]# rpm -qa | egrep "^glibc-[0-9]|^gcc-[0-9]"
-gcc-4.4.6-4.el6.x86_64
-glibc-2.12-1.149.el6_6.5.x86_64
-glibc-2.12-1.149.el6_6.5.i686
-
-------------------------------------------------------------------------------------
+[root@n060 ~]# rpm -qa | egrep "^glibc-[0-9]|^gcc-[0-9]"
+glibc-2.17-106.el7_2.4.x86_64
+glibc-2.17-106.el7_2.4.i686
+gcc-4.8.5-4.el7.x86_64
