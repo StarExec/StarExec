@@ -557,6 +557,14 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 		SET deleted=true, total_pairs=0, disk_size=0
 		WHERE id = _jobId;		
 	END //
+	
+DROP PROCEDURE IF EXISTS UpdateJobDiskSize;
+CREATE PROCEDURE UpdateJobDiskSize(IN _jobId INT, IN _diskSize BIGINT)
+	BEGIN
+		UPDATE jobs
+		SET disk_size=_diskSize
+		WHERE id=_jobId;
+	END //
 
 -- Deletes every job pair belonging to the given job
 DROP PROCEDURE IF EXISTS DeleteAllJobPairsInJob;

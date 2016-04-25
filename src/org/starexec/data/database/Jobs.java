@@ -5146,4 +5146,47 @@ public class Jobs {
 			}
 		}
 	}
+	
+	
+	private static boolean setJobDiskSize(int jobId, long diskSize) {
+		Connection con=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL UpdateJobDiskSize(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setLong(2, diskSize);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Backfills the disk_size column in the jobs table. For efficiency, does NOT
+	 * backfill the jobpair_stage_data table.
+	 * @return
+	 */
+	public static boolean backfillJobDiskQuota() {
+		try {
+			List<Integer> jobs = Jobs.getAllJobIds();
+			for (Integer i : jobs) {
+				if (Jobs.isJobDeleted(i)) {
+					continue;
+				}
+				long size = FileUtils.sizeOfDirectory(new File(Jobs.getDirectory(i)));
+				setJobDiskSize(i,size);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return false;
+	}
 }

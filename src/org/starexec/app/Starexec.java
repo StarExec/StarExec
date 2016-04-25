@@ -325,6 +325,17 @@ public class Starexec implements ServletContextListener {
 			log.error(e.getMessage(),e);
 		}
 		
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {	
+					Jobs.backfillJobDiskQuota();
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}	
+			}
+		});	
+		
 	}
 	
 }
