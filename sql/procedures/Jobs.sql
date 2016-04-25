@@ -547,17 +547,23 @@ CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 	END //
 	
 
--- Sets the "deleted" property of a job to true and deletes all its job pairs from the database.
--- Also updates the total_pairs column to 0, which is due to deleting all pairs from the job.
+-- Sets the "deleted" property of a job to true
+-- Also updates the total_pairs and disk_size columns to 0
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS DeleteJob;
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
 		SET deleted=true, total_pairs=0, disk_size=0
-		WHERE id = _jobId;
+		WHERE id = _jobId;		
+	END //
+
+-- Deletes every job pair belonging to the given job
+DROP PROCEDURE IF EXISTS DeleteAllJobPairsInJob;
+CREATE PROCEDURE DeleteAllJobPairsInJob(IN _jobId INT)
+	BEGIN
 		DELETE FROM job_pairs
-		WHERE job_id=_jobId;		
+		WHERE job_id=_jobId;
 	END //
 
 DROP PROCEDURE IF EXISTS GetOrphanedJobIds;

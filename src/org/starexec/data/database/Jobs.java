@@ -762,6 +762,31 @@ public class Jobs {
 	}
 	
 	/**
+	 * Sets the job's 'deleted' column to to true, indicating it has been deleted.
+	 * Also updates the disk_size and total_pairs columns to 0
+	 * @param jobId
+	 * @return true on success and false otherwise
+	 */
+	public static boolean setDeletedColumn(int jobId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try  {
+			con=Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL DeleteJob(?)}");
+			procedure.setInt(1, jobId);	
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
 	 * in the database jobs table to true. 
 	 * @param jobId The ID of the job to delete
@@ -775,24 +800,24 @@ public class Jobs {
 			if (!Jobs.isJobComplete(jobId)) {
 				Jobs.kill(jobId);
 			}
-			// we should delete on disk first. If some error occurs during the delete process,
-			// it is better that the job is not marked deleted, as the user can simply press delete
-			// again as long as we don't mark it.
+			Jobs.setDeletedColumn(jobId);
+			con=Common.getConnection();
+			
+			// Remove the jobs stats from the database.
+			Jobs.removeCachedJobStats(jobId,con);
+			
+			procedure = con.prepareCall("{CALL DeleteAllJobPairsInJob(?)}");
+			procedure.setInt(1, jobId);	
+			procedure.executeUpdate();
+
+			// we should delete on disk second. This takes a long time, and
+			// we want users to quickly see that a job has been deleted
 			if (!Util.safeDeleteDirectory(getDirectory(jobId))) {
 				log.error("there was an error deleting the job directory!");
 				return false;
 			}
 			
 			
-			con=Common.getConnection();
-			
-			
-			// Remove the jobs stats from the database.
-			Jobs.removeCachedJobStats(jobId,con);
-			procedure = con.prepareCall("{CALL DeleteJob(?)}");
-			procedure.setInt(1, jobId);	
-			procedure.executeUpdate();
-
 			return true;
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
@@ -968,7 +993,8 @@ public class Jobs {
 	
 	/**
 	 * Counts how many pairs a user has in total. In other words, sums up the pairs
-	 * in all jobs created by the user.
+	 * in all jobs created by the user. Excludes deleted jobs, which may be in the middle
+	 * of deleting pairs
 	 * @param userId The ID of the user to count for
 	 * @return The count, or -1 on error. Answer will be 0 if user does not exist.
 	 */

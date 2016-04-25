@@ -3363,12 +3363,34 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+		// We first simply set the 'deleted' column of each job to true. From the user's perspective,
+		// this completes the delete operation
 		for (int id : selectedJobs) {
-			boolean success_delete = Jobs.delete(id);
+			boolean success_delete = Jobs.setDeletedColumn(id);
 			if (!success_delete) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
+		
+		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
+		// so we spin off a new thread so the user does not have to wait.
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {
+					for (int id : selectedJobs) {
+						boolean success_delete = Jobs.delete(id);
+						if (!success_delete) {
+							log.error("there were one or more errors in deleting the list of jobs!");
+						}
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}
+				
+			}
+		});	
+		
 	
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully"));
 	}
