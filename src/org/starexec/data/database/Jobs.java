@@ -5179,8 +5179,12 @@ public class Jobs {
 				if (Jobs.isJobDeleted(i)) {
 					continue;
 				}
-				long size = FileUtils.sizeOfDirectory(new File(Jobs.getDirectory(i)));
-				setJobDiskSize(i,size);
+				File f = new File(Jobs.getDirectory(i));
+				if (f.exists()) {
+					long size = FileUtils.sizeOfDirectory(f);
+					setJobDiskSize(i,size);
+				}
+				
 			}
 			return true;
 		} catch (Exception e) {
