@@ -3114,13 +3114,32 @@ public class RESTServices {
 	@Path("/deleteOrphaned/job/{userId}")
 	@Produces("application/json")
 	public String deleteOrphanedJobs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		log.debug("calling deleteOrphaned");
 		int userIdOfCaller = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserDeleteOrphanedJobs(userId, userIdOfCaller);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+		log.debug("passed validation check");
 		
-		return Jobs.deleteOrphanedJobs(userId) ?  gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully")) :
+		List<Integer> jobIds = Jobs.getOrphanedJobs(userId);
+		boolean success = true;
+		for (Integer i : jobIds) {
+			success = success && Jobs.setDeletedColumn(i);
+		}
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {	
+						if (!Jobs.deleteOrphanedJobs(userId)) {
+							log.error("there were one or more errors in deleting the orphaned jobs!");
+						}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}	
+			}
+		});			
+		return success ?  gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully")) :
 			gson.toJson(new ValidatorStatusCode(false, "Internal database error deleting jobs"));
 	}
 	
@@ -3321,18 +3340,42 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+		Spaces.removeJobs(selectedJobs, spaceId);
+
 		
 		
 		for (int id : selectedJobs) {
 			
 			log.debug("the current job ID to remove = "+id);
 			
-			boolean success_delete = Jobs.delete(id);
+			boolean success_delete = Jobs.setDeletedColumn(id);
 			if (!success_delete) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		Spaces.removeJobs(selectedJobs, spaceId);
+				
+		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
+		// so we spin off a new thread so the user does not have to wait.
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {
+					for (int id : selectedJobs) {
+						boolean success_delete = Jobs.delete(id);
+						if (!success_delete) {
+							log.error("there were one or more errors in deleting the list of jobs!");
+						}
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}	
+			}
+		});	
+		
+		
+		
+		
+		
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully and removed from spaces"));
 	}
 

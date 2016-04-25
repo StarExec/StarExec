@@ -5038,6 +5038,7 @@ public class Jobs {
 			for (Integer id : ids) {
 				Jobs.delete(id);
 			}
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}

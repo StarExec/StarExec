@@ -877,6 +877,9 @@ public class Util {
     	File endFile = new File(endPath);
     	while (file!=null) {
     		file = file.getParentFile();
+    		if (file==null) {
+    			break;
+    		}
     		log.debug("working on parent directory "+file.getAbsolutePath());
     		if (endFile.getAbsolutePath().equals(file.getAbsolutePath())) {
     			log.debug("terminating at endpath");
