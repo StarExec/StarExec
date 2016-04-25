@@ -13,6 +13,9 @@
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId) && (p == null || !p.canAddJob())) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
+			User u = Users.get(userId);
+			int pairsUsed = Jobs.countPairsByUser(userId);
+			int remainingQuota = Math.max(0,u.getPairQuota()-pairsUsed);
 			request.setAttribute("space", Spaces.get(spaceId));
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
@@ -21,11 +24,11 @@
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(communityId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(communityId,ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getUserQueues(userId));
+			request.setAttribute("remainingPairQuota", remainingQuota);
 			List<Solver> solvers = Solvers.getBySpaceDetailed(spaceId);
             Solvers.sortConfigs(solvers);
 			Solvers.makeDefaultConfigsFirst(solvers);
 			request.setAttribute("solvers", solvers);
-			//request.setAttribute("benchs", Benchmarks.getBySpace(spaceId));
 			//This is for the currently shuttered select from hierarchy
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
@@ -51,8 +54,8 @@
 	<c:forEach items="${defaultSettings}" var="setting">
 		<star:settings setting="${setting}" />
 	</c:forEach>
+	<span id="remainingQuota" style="display:none" value="${remainingPairQuota}"></span>
 	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
-	
 	<form id="addForm" method="post" action="${starexecRoot}/secure/add/job">	
 		<input type="hidden" name="sid" id="spaceIdInput" value="${space.id}"/>
 		<fieldset id="fieldStep1">
@@ -178,6 +181,15 @@
 						</td>
 						<td>
 							<input type="text" name="resultsInterval" id="resultsInterval" value="0">
+						</td>
+					</tr>
+					<tr class="noHover" title="Whether to save solver output that is placed into the extra output directory given to each solver">
+						<td>
+							<p>Save Additional Output Files</p>
+						</td>
+						<td>
+							Yes<input type="radio" id="radioYesSaveExtraOutput" name="saveOtherOutput" value="true"/>
+							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
 				</tbody>					

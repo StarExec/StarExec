@@ -12,7 +12,7 @@
 #$ -notify
 
 # Submit under sandbox user 
-#$ -u sandbox
+#$ -u $$SANDBOX_USER_ONE$$
 
 # Resource limits
 #$ -l s_fsize=$$MAX_WRITE$$G 
@@ -48,6 +48,8 @@ export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
 export BENCH_ID='$$BENCH_ID$$'
 export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
 export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
+export DISK_QUOTA='$$DISK_QUOTA$$'
+export DISK_QUOTA_EXCEEDED=0
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
@@ -348,6 +350,7 @@ log "argument string : $ARGUMENT_STRING"
 log "results interval : $RESULTS_INTERVAL"
 log "stdout save option : $STDOUT_SAVE_OPTION"
 log "additional output save option : $EXTRA_SAVE_OPTION"
+log "user disk quota : $DISK_QUOTA"
 
 
 if [ "$SANDBOX_FOUND" = true ] ; then
@@ -470,6 +473,13 @@ elif ( grep 'VSize exceeded' $WATCHFILE ) then
   sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
   break
   
+elif [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+then
+	log "Error: disk quota exceeded"
+	sendStatus $ERROR_DISK_QUOTA_EXCEEDED
+	sendStageStatus $ERROR_DISK_QUOTA_EXCEEDED ${STAGE_NUMBERS[$STAGE_INDEX]}
+	break
+
 else
   JOB_ERROR="";
   log "execution on $HOSTNAME complete"

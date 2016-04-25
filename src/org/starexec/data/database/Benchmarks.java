@@ -50,10 +50,15 @@ public class Benchmarks {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean deleteAndRemoveBenchmark(int id) {
-		if (Benchmarks.get(id)==null) {
+		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(id, false);
+		if (b==null) {
 			return true;
 		}
-		boolean success=Benchmarks.delete(id);
+		
+		boolean success=true;
+		if (!b.isDeleted()) {
+			success=Benchmarks.delete(id);
+		}
 		if (!success) {
 			log.warn("there was an error deleting benchmark with id = "+id);
 			return false;

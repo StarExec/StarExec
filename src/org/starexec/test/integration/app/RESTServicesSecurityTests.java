@@ -953,6 +953,11 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void clearSolverCacheTest() throws Exception {
+		assertResultIsInvalid(services.clearSolverCache(TestUtil.getMockHttpRequest(user.getId())));
+	}
+	
+	@StarexecTest
 	private void updateDebugModeTest() throws Exception {
 		assertResultIsInvalid(services.updateDebugMode(false,TestUtil.getMockHttpRequest(user.getId())));
 	}

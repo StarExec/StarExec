@@ -461,45 +461,28 @@ public class Users {
 		return 0;
 	}
 	
+	public static boolean isDiskQuotaExceeded(int userId) {
+		return Users.get(userId).getDiskQuota() <= Users.getDiskUsage(userId);
+	}
+	
 	/**
 	 * Gets the number of bytes a user is consuming on disk
 	 * 
 	 * @param userId the id of the user to get the disk usage of
 	 * @return the disk usage of the given user
-	 * @author Todd Elvers
 	 */
 	public static long getDiskUsage(int userId) {
 		Connection con = null;
-		long solverUsage=0;
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserSolverDiskUsage(?)}");
+			procedure = con.prepareCall("{CALL GetUserDiskUsage(?)}");
 			procedure.setInt(1, userId);
 
 			results = procedure.executeQuery();
-			while(results.next()){
-				solverUsage=results.getLong("disk_usage");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		con = null;
-		
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserBenchmarkDiskUsage(?)}");
-			procedure.setInt(1, userId);
-
-			 results = procedure.executeQuery();
-			while(results.next()){
-				return solverUsage+results.getLong("disk_usage");
+			if(results.next()){
+				return results.getLong("disk_usage");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -849,6 +832,34 @@ public class Users {
 	}
 	
 	/**
+	 * Sets a new pair quota for a given user
+	 * 
+	 * @param userId the user to set the new pair quota for
+	 * @param newPairQuota The new number of job pairs
+	 * @return true iff the new pair quota is successfully set, false otherwise
+	 */
+	public static boolean setPairQuota(int userId, int newPairQuota) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL UpdateUserPairQuota(?, ?)}");
+			procedure.setInt(1, userId);					
+			procedure.setInt(2, newPairQuota);
+			
+			procedure.executeUpdate();	
+			
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Sets a new disk quota for a given user (input should always be bytes)
 	 * 
 	 * @param userId the user to set the new disk quota for
@@ -876,8 +887,7 @@ public class Users {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
-		
+
 		log.warn(String.format("Failed to change disk quota to [%s] for user [%d]", FileUtils.byteCountToDisplaySize(newDiskQuota), userId));
 		return false;
 	}
@@ -1208,9 +1218,9 @@ public class Users {
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
+			procedure.setLong(6, user.getDiskQuota());
 			procedure.setString(7,user.getRole());
-			procedure.setInt(8, R.DEFAULT_PAIR_QUOTA);
+			procedure.setInt(8, user.getPairQuota());
 			// Register output of ID the user is inserted under
 			procedure.registerOutParameter(9, java.sql.Types.INTEGER);
 			

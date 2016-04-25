@@ -41,6 +41,8 @@ public class BenchmarkTests extends TestSequence {
 	private User admin=null;
 	private Space space=null;
 	private Space space2 = null;
+	private Space scratchSpace = null; // A space that is not ever read in any test. Use this space to place benchmarks
+									   // needed for single tests
 	private List<Benchmark> benchmarks=null; //owned by user. Should be the only benchmarks in space
 	Processor benchProcessor = null;
 	
@@ -199,7 +201,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteBenchTest() {
-		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", scratchSpace.getId(), user.getId());
 		for (Integer id : ids) {
 			Assert.assertNotNull(Benchmarks.get(id));
 			Assert.assertTrue(Benchmarks.delete(id));
@@ -211,8 +213,8 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void setRecycledToDeletedTest() {
-		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
-		List<Integer> ids2=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user2.getId());
+		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", scratchSpace.getId(), user.getId());
+		List<Integer> ids2=loader.loadBenchmarksIntoDatabase("benchmarks.zip", scratchSpace.getId(), user2.getId());
 
 		for (Integer id : ids) {
 			Assert.assertTrue(Benchmarks.recycle(id));
@@ -300,7 +302,7 @@ public class BenchmarkTests extends TestSequence {
 		}
 		//ensures benchmarks are sorted ASC
 		Assert.assertTrue(page.get(1).getName().compareTo(page.get(0).getName())>0);
-		Assert.assertTrue(page.size()==benchmarks.size());
+		Assert.assertEquals(benchmarks.size(),page.size());
 	}
 	
 	// test getting pages of benchmarks a user owns
@@ -529,6 +531,7 @@ public class BenchmarkTests extends TestSequence {
 		admin=Users.getAdmins().get(0);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
+		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		List<Integer> ids=new ArrayList<Integer>();
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);

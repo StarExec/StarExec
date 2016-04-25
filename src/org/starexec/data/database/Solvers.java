@@ -460,7 +460,14 @@ public class Solvers {
 	 */
 	
 	public static boolean deleteAndRemoveSolver(int id) {
-		boolean success=delete(id);
+		Solver s = Solvers.getIncludeDeleted(id);
+		if (s==null) {
+			return true;
+		}
+		boolean success=true;
+		if (!s.isDeleted()) {
+			success=delete(id);
+		}
 		if (!success) {
 			return false;
 		}

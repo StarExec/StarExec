@@ -55,12 +55,12 @@ public class UserSecurity {
 			if (!Validator.isValidEmail(newVal)) {
 				return new ValidatorStatusCode(false, "The new email is not in the proper format.");
 			}
-		} else if (attribute.equals("diskquota")) {
+		} else if (attribute.equals("diskquota") || attribute.equals("pairquota")) {
 			if (!admin) {
 				return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 			}
 			if (!Validator.isValidLong(newVal)) {
-				return new ValidatorStatusCode(false, "The new disk quota is not in the proper format. It must be an integer");
+				return new ValidatorStatusCode(false, "The new quota is not in the proper format. It must be an integer");
 			}
 
 		} else if (attribute.equals("pagesize")) {

@@ -566,7 +566,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -582,11 +582,12 @@ public class Jobs {
 			procedure.setBoolean(10, job.timestampIsSuppressed());
 			procedure.setBoolean(11, job.isUsingDependencies());
 			procedure.setBoolean(12, job.isBuildJob());
-			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.setInt(13, job.getJobPairs().size());
+			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(13));
+			job.setId(procedure.getInt(14));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
@@ -761,6 +762,31 @@ public class Jobs {
 	}
 	
 	/**
+	 * Sets the job's 'deleted' column to to true, indicating it has been deleted.
+	 * Also updates the disk_size and total_pairs columns to 0
+	 * @param jobId
+	 * @return true on success and false otherwise
+	 */
+	public static boolean setDeletedColumn(int jobId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try  {
+			con=Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL DeleteJob(?)}");
+			procedure.setInt(1, jobId);	
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Deletes the job with the given id from disk, and sets the "deleted" column
 	 * in the database jobs table to true. 
 	 * @param jobId The ID of the job to delete
@@ -774,24 +800,24 @@ public class Jobs {
 			if (!Jobs.isJobComplete(jobId)) {
 				Jobs.kill(jobId);
 			}
-			// we should delete on disk first. If some error occurs during the delete process,
-			// it is better that the job is not marked deleted, as the user can simply press delete
-			// again as long as we don't mark it.
+			Jobs.setDeletedColumn(jobId);
+			con=Common.getConnection();
+			
+			// Remove the jobs stats from the database.
+			Jobs.removeCachedJobStats(jobId,con);
+			
+			procedure = con.prepareCall("{CALL DeleteAllJobPairsInJob(?)}");
+			procedure.setInt(1, jobId);	
+			procedure.executeUpdate();
+
+			// we should delete on disk second. This takes a long time, and
+			// we want users to quickly see that a job has been deleted
 			if (!Util.safeDeleteDirectory(getDirectory(jobId))) {
 				log.error("there was an error deleting the job directory!");
 				return false;
 			}
 			
 			
-			con=Common.getConnection();
-			
-			
-			// Remove the jobs stats from the database.
-			Jobs.removeCachedJobStats(jobId,con);
-			procedure = con.prepareCall("{CALL DeleteJob(?)}");
-			procedure.setInt(1, jobId);	
-			procedure.executeUpdate();
-
 			return true;
 		} catch (Exception e) {
 			log.error("deleteJob says "+e.getMessage(),e);
@@ -854,7 +880,7 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void deleteJobPairsWithConfigurationsFromJob( int jobId, Set<Integer> configIds ) throws SQLException {
-		JobPairs.deleteJobPairs( getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
+		JobPairs.deleteJobPairs(getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
 		removeCachedJobStatsForConfigs( jobId, configIds );
 	}
 
@@ -961,7 +987,37 @@ public class Jobs {
 		j.setBuildJob(results.getBoolean("buildJob"));
 		j.setDescription(results.getString("description"));
 		j.setSeed(results.getLong("seed"));
+		j.setTotalPairs(results.getInt("total_pairs"));
 		return j;
+	}
+	
+	/**
+	 * Counts how many pairs a user has in total. In other words, sums up the pairs
+	 * in all jobs created by the user. Excludes deleted jobs, which may be in the middle
+	 * of deleting pairs
+	 * @param userId The ID of the user to count for
+	 * @return The count, or -1 on error. Answer will be 0 if user does not exist.
+	 */
+	public static int countPairsByUser(int userId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL CountPairsbyUser(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return results.getInt("total_pairs");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}  finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return -1;
 	}
 	
 	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {
@@ -2858,6 +2914,7 @@ public class Jobs {
 
 			while(results.next()){
 			    JobPair jp = new JobPair();
+			    jp.setJobId(jobId);
 			    JoblineStage stage=new JoblineStage();
 			    stage.setStageNumber(results.getInt("stage_number"));
 			    jp.setPrimaryStageNumber(results.getInt("stage_number"));
@@ -4032,7 +4089,19 @@ public class Jobs {
 	}
 	return false;
     }
-   
+    
+    /**
+     * Pauses all jobs owned by the given user
+     * @param userId
+     * @return True on success and false on error
+     */
+    public static boolean pauseAllUserJobs(int userId) {
+    	boolean success = true;
+    	for (Integer i : Jobs.getRunningJobs(userId)) {
+    		success = success && Jobs.pause(i);
+    	}	
+    	return success;
+    }
 	/**
 	 * pauses all running jobs (via admin page), and also sets the paused & paused_admin to true in the database. 
 	 * @return True on success, false otherwise
@@ -4840,6 +4909,37 @@ public class Jobs {
 		return 0;
 	}
 	/**
+	 * Returns all jobs owned by the given user that have pairs either running or pending
+	 * @param userId The ID of the user to search for
+	 * @return The list of distinct job IDs
+	 */
+	public static List<Integer> getRunningJobs(int userId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetRunningJobsByUser(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+			
+			List<Integer> jobs = new LinkedList<Integer>();
+			while (results.next()) {
+				jobs.add(results.getInt("id"));
+			}
+			return jobs;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	
+	/**
 	 * Gets all the jobs on the system that currently have pairs pending or running
 	 * and which are not currently paused or killed
 	 * @return A list of Job objects for the running jobs. Pairs are not populated
@@ -4939,6 +5039,7 @@ public class Jobs {
 			for (Integer id : ids) {
 				Jobs.delete(id);
 			}
+			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -5045,5 +5146,53 @@ public class Jobs {
 
 			}
 		}
+	}
+	
+	
+	private static boolean setJobDiskSize(int jobId, long diskSize) {
+		Connection con=null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL UpdateJobDiskSize(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setLong(2, diskSize);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Backfills the disk_size column in the jobs table. For efficiency, does NOT
+	 * backfill the jobpair_stage_data table.
+	 * @return
+	 */
+	public static boolean backfillJobDiskQuota() {
+		try {
+			List<Integer> jobs = Jobs.getAllJobIds();
+			for (Integer i : jobs) {
+				log.info("backfilling disk_size for job "+i);
+				if (Jobs.isJobDeleted(i)) {
+					continue;
+				}
+				File f = new File(Jobs.getDirectory(i));
+				if (f.exists()) {
+					long size = FileUtils.sizeOfDirectory(f);
+					setJobDiskSize(i,size);
+				}
+				
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}
+		
+		return false;
 	}
 }

@@ -22,6 +22,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -32,6 +33,8 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -62,6 +65,7 @@ public class CreateJob extends HttpServlet {
 	private static final String maxMemory="maxMem";
 	private static final String randSeed="seed";
 	private static final String resultsInterval="resultsInterval";
+	private static final String otherOutputOption="saveOtherOutput";
 	
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -119,7 +123,7 @@ public class CreateJob extends HttpServlet {
 				settings.getPreProcessorId(),
 				settings.getPostProcessorId(), 
 				Queues.getTestQueue(),
-				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0);
+				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0, SaveResultsOption.SAVE);
 		
 		buildQuickJob(j, solverId, settings.getBenchId(), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
@@ -187,7 +191,15 @@ public class CreateJob extends HttpServlet {
 			suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
 		}
 		log.debug("("+method+")"+" User chose "+(suppressTimestamp?"":"not ")+"to suppress timestamps.");
-
+		
+		SaveResultsOption option = SaveResultsOption.SAVE;
+		
+		if (Util.paramExists(otherOutputOption, request)) {
+			if (!Boolean.parseBoolean(request.getParameter(otherOutputOption))) {
+				option = SaveResultsOption.NO_SAVE;
+			}
+		}
+		
 		//Setup the job's attributes
 		Job j = JobManager.setupJob(
 				userId,
@@ -196,7 +208,7 @@ public class CreateJob extends HttpServlet {
 				Integer.parseInt((String)request.getParameter(preProcessor)),
 				Integer.parseInt((String)request.getParameter(postProcessor)), 
 				Integer.parseInt((String)request.getParameter(workerQueue)),
-				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp, resultsIntervalNum);
+				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp, resultsIntervalNum,option);
 		
 
 		String selection = request.getParameter(run);
@@ -265,6 +277,10 @@ public class CreateJob extends HttpServlet {
 				JobManager.buildJob(j, benchmarkIds, configIds, space);
 			}
 		}
+		
+		
+		
+		int pairCount = j.getJobPairs().size();
 		if (j.getJobPairs().size() == 0) {
 			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
             Space jobSpace = Spaces.getDetails(space, userId);
@@ -282,6 +298,19 @@ public class CreateJob extends HttpServlet {
 			// No pairs in the job means something went wrong; error out
 			return;
 		}
+		
+		 User u = Users.get(userId);
+		 int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
+		 // This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
+		 // for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
+		 if (pairsAvailable<pairCount) {
+			String message = "Error: You are trying to create "+pairCount+" pairs, but you have "+pairsAvailable+" remaining in your quota. Please delete some old jobs before continuing.";
+			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+			// No pairs in the job means something went wrong; error out
+			return;
+		 }
+		
 
 		boolean submitSuccess = Jobs.add(j, space);
 		String start_paused = request.getParameter(pause);
@@ -351,7 +380,7 @@ public class CreateJob extends HttpServlet {
 			    return new ValidatorStatusCode(false, "You do not have permission to use the given postprocessor, or it does not exist");
 			} 
 		 }
-		
+
 		return new ValidatorStatusCode(true);
 	}
 	
@@ -367,8 +396,13 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidPosInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
-
+			
+			
+			
 			int userId = SessionUtil.getUserId(request);
+			if (Users.isDiskQuotaExceeded(userId)) {
+				return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");
+			}
 			int sid = Integer.parseInt(request.getParameter(spaceId));
 			// Make sure the user has access to the space
 			Permission perm = Permissions.get(userId, sid);
@@ -447,6 +481,11 @@ public class CreateJob extends HttpServlet {
 			}		
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
+			}
+			if (Util.paramExists(otherOutputOption, request)) {
+				if (!Validator.isValidBool(request.getParameter(otherOutputOption))) {
+					return new ValidatorStatusCode(false, "Whether to save extra output files needs to be a valid boolean");
+				}
 			}
 
 			if (request.getParameter(run).equals("quickJob")) {

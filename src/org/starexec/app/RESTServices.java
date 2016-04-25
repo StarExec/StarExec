@@ -65,6 +65,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.jobs.ClearCacheManager;
 import org.starexec.jobs.JobManager;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.integration.TestManager;
@@ -1294,7 +1295,7 @@ public class RESTServices {
 			log.debug( "allBenchmarkCount: "+allBenchmarkCount );
 
 			jsonObject.put("pairsToBeAdded",  pairedBenchmarkCount + allBenchmarkCount );
-
+			jsonObject.put("remainingQuota", Users.get(userId).getPairQuota()-Jobs.countPairsByUser(userId));
 
 			jsonObject.put("success", true);
 			return gson.toJson( jsonObject );
@@ -1930,7 +1931,16 @@ public class RESTServices {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 				messageToUser = "Edit successful.";
 			}
+		} else if (attribute.equals("pairquota")) {
+			log.debug("pairquota");
+			success=Users.setPairQuota(userId, Integer.parseInt(newValue));
+			log.debug("success = " + success);
+			if (success) {
+				SessionUtil.getUser(request).setPairQuota(Integer.parseInt(newValue));
+				messageToUser = "Edit successful.";
+			}
 		} else if (attribute.equals("pagesize")) {
+
 			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
 			if (success) {
 				messageToUser = "Edit successful.";
@@ -3101,6 +3111,47 @@ public class RESTServices {
 	 * @author Eric Burns
 	 */
 	@POST
+	@Path("/deleteOrphaned/job/{userId}")
+	@Produces("application/json")
+	public String deleteOrphanedJobs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		log.debug("calling deleteOrphaned");
+		int userIdOfCaller = SessionUtil.getUserId(request);
+		ValidatorStatusCode status=JobSecurity.canUserDeleteOrphanedJobs(userId, userIdOfCaller);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		log.debug("passed validation check");
+		
+		List<Integer> jobIds = Jobs.getOrphanedJobs(userId);
+		boolean success = true;
+		for (Integer i : jobIds) {
+			success = success && Jobs.setDeletedColumn(i);
+		}
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {	
+						if (!Jobs.deleteOrphanedJobs(userId)) {
+							log.error("there were one or more errors in deleting the orphaned jobs!");
+						}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}	
+			}
+		});			
+		return success ?  gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully")) :
+			gson.toJson(new ValidatorStatusCode(false, "Internal database error deleting jobs"));
+	}
+	
+	/**
+	 * Recycles all benchmarks that have been orphaned belonging to a specific user. Users have this option
+	 * from their account page
+	 * @param userId The Id of the user to recycle benchmarks for.
+	 * @param request
+	 * @return json ValidatorStatusCode
+	 * @author Eric Burns
+	 */
+	@POST
 	@Path("/recycleOrphaned/benchmark/{userId}")
 	@Produces("application/json")
 	public String recycleOrphanedBenchmarks(@PathParam("userId") int userId, @Context HttpServletRequest request) {
@@ -3289,18 +3340,42 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+		Spaces.removeJobs(selectedJobs, spaceId);
+
 		
 		
 		for (int id : selectedJobs) {
 			
 			log.debug("the current job ID to remove = "+id);
 			
-			boolean success_delete = Jobs.delete(id);
+			boolean success_delete = Jobs.setDeletedColumn(id);
 			if (!success_delete) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
-		Spaces.removeJobs(selectedJobs, spaceId);
+				
+		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
+		// so we spin off a new thread so the user does not have to wait.
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {
+					for (int id : selectedJobs) {
+						boolean success_delete = Jobs.delete(id);
+						if (!success_delete) {
+							log.error("there were one or more errors in deleting the list of jobs!");
+						}
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}	
+			}
+		});	
+		
+		
+		
+		
+		
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully and removed from spaces"));
 	}
 
@@ -3331,12 +3406,34 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
+		// We first simply set the 'deleted' column of each job to true. From the user's perspective,
+		// this completes the delete operation
 		for (int id : selectedJobs) {
-			boolean success_delete = Jobs.delete(id);
+			boolean success_delete = Jobs.setDeletedColumn(id);
 			if (!success_delete) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
+		
+		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
+		// so we spin off a new thread so the user does not have to wait.
+		Util.threadPoolExecute(new Runnable() {
+			@Override
+			public void run(){
+				try {
+					for (int id : selectedJobs) {
+						boolean success_delete = Jobs.delete(id);
+						if (!success_delete) {
+							log.error("there were one or more errors in deleting the list of jobs!");
+						}
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
+				}
+				
+			}
+		});	
+		
 	
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully"));
 	}
@@ -4414,6 +4511,29 @@ public class RESTServices {
 		}
 		JobManager.clearLoadBalanceMonitors();
 		return gson.toJson(new ValidatorStatusCode(true,"Load balancing cleared successfully"));
+	}
+	
+	/**
+	 * Deletes all solvercache directories on all compute nodes
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@POST
+	@Path("/jobs/clearsolvercache")
+	@Produces("application/json")
+	public String clearSolverCache(@Context HttpServletRequest request) throws Exception {
+		int userId=SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+		try {
+			ClearCacheManager.clearSolverCacheOnAllNodes();
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			return gson.toJson(new ValidatorStatusCode(false, "There was an internal error clearing the solver cache"));
+		}
+		return gson.toJson(new ValidatorStatusCode(true,"Solver cache clearing jobs started successfully"));
 	}
 	
 	/**

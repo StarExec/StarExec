@@ -56,6 +56,9 @@ public class R {
 	public static String getJobLogDir() {
 		return getJobOutputDirectory()+"/logs";
 	}
+	public static String getSolverCacheClearLogDir() {
+		return getJobLogDir()+"/solvercache";
+	}
 
 	public static String getBatchSpaceXMLDir() {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";

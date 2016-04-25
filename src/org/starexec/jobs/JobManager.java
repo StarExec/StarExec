@@ -25,6 +25,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Configuration;
@@ -41,6 +42,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
@@ -146,7 +148,6 @@ public abstract class JobManager {
 			}
 			mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
-			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
 			// Impose resource limits
 			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
@@ -154,6 +155,8 @@ public abstract class JobManager {
 			mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_TWO$$", R.SANDBOX_USER_TWO);
+			mainTemplate = mainTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
+
 
 		}
 	}
@@ -204,6 +207,7 @@ public abstract class JobManager {
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+				jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
@@ -236,6 +240,10 @@ public abstract class JobManager {
 			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
+			
+			// contains users that we have identified as exceeding their quota. These users will be skipped
+			HashSet<Integer> quotaExceededUsers = new HashSet<Integer>();
+			
 			
 			/*
 			 * we are going to loop through the schedule adding a few job
@@ -276,14 +284,25 @@ public abstract class JobManager {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
 						it.remove();
 						continue;
-					}		
+					}
+					
+					if (quotaExceededUsers.contains(s.job.getUserId())) {
+						it.remove();
+						continue;
+					}
+					if (Users.isDiskQuotaExceeded(s.job.getUserId())) {
+						//TODO: Handle in a new thread perhaps? 
+						Jobs.pauseAllUserJobs(s.job.getUserId());
+						it.remove();
+						quotaExceededUsers.add(s.job.getUserId());
+						continue;
+					}
 					
 
 					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
 							+"for job " + s.job.getId() 
 							+ ", queue = "+q.getName() 
 							+ ", user = "+s.job.getUserId());
-					
 					int i = 0;
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
@@ -504,7 +523,6 @@ public abstract class JobManager {
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
-		replacements.put("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
 		File f = new File(scriptPath);
 		jobScript = addParametersToJobscript(jobScript, replacements);
 
@@ -688,7 +706,7 @@ public abstract class JobManager {
 	 * @return the new job object with the specified properties
 	 */
 	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval) {
+			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval, SaveResultsOption otherOutputOption) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -712,6 +730,7 @@ public abstract class JobManager {
 		attrs.setStageNumber(1);
 		attrs.setSpaceId(null);
 		attrs.setResultsInterval(resultsInterval);
+		attrs.setExtraOutputSaveOption(otherOutputOption);
 		if(preProcessorId > 0) {
 			attrs.setPreProcessor(Processors.get(preProcessorId));
 		} else {
@@ -859,7 +878,8 @@ public abstract class JobManager {
 			q.getWallTimeout(),
 			R.DEFAULT_PAIR_VMEM,
 			false,
-			15);
+			15,
+			SaveResultsOption.SAVE);
 		j.setBuildJob(true);
 		String spaceName = "job space";
 		String sm=Spaces.getName(spaceId);

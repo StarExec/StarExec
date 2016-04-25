@@ -160,7 +160,7 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 			jobs.deleted,
 			jobs.primary_space,
 			GetJobStatus(jobs.id)		AS status,
-			GetTotalPairs(jobs.id) 		AS totalPairs,
+			jobs.total_pairs	 		AS totalPairs,
 			GetCompletePairs(jobs.id) 	AS completePairs,
 			GetPendingPairs(jobs.id) 	AS pendingPairs,
 			GetErrorPairs(jobs.id) 		AS errorPairs

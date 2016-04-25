@@ -74,22 +74,6 @@ CREATE FUNCTION GetPendingPairs(_jobId INT)
 		
 		RETURN pendingPairs;
 	END //
-	
-	
--- Gets the total number of job pairs for a given job id
--- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetTotalPairs;
-CREATE FUNCTION GetTotalPairs(_jobId INT) 
-	RETURNS INT
-	BEGIN
-		DECLARE totalPairs INT;
-		
-		SELECT COUNT(*) INTO totalPairs 
-		FROM job_pairs 
-		WHERE job_id=_jobId;
-		
-		RETURN totalPairs;
-	END //
 
 --  Tells you whether a space is public or not
 -- Author: Eric Burns

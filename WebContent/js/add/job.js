@@ -39,7 +39,9 @@ $(document).ready(function(){
 		$('#tblBenchMethodSelection tbody').children('tr').not('.row_selected').find('input').remove();
 	  	return true;
 	});
-	
+	if ($("#remainingQuota").attr("value")<=0) {
+		showMessage("warn","You have reached your pair quota. You will not be able to submit new jobs without removing some old jobs first.", 8000);
+	}
 	
 	
 });

@@ -239,9 +239,8 @@ public class Util {
 		file.mkdir();
 		file=new File(R.getPicturePath());
 		file.mkdir();
-			
-			
-			
+		file = new File(R.getSolverCacheClearLogDir());
+		file.mkdir();
 		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
 		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
@@ -878,6 +877,9 @@ public class Util {
     	File endFile = new File(endPath);
     	while (file!=null) {
     		file = file.getParentFile();
+    		if (file==null) {
+    			break;
+    		}
     		log.debug("working on parent directory "+file.getAbsolutePath());
     		if (endFile.getAbsolutePath().equals(file.getAbsolutePath())) {
     			log.debug("terminating at endpath");

@@ -86,6 +86,16 @@ public class JobTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void countPairsByUserTest() {
+		Assert.assertEquals(job.getJobPairs().size(), Jobs.countPairsByUser(user.getId()));
+	}
+	
+	@StarexecTest
+	private void countPairsByFakeUserTest() {
+		Assert.assertEquals(0, Jobs.countPairsByUser(-1));
+	}
+	
+	@StarexecTest
 	private void GetCountInSpaceTest() {
 		Assert.assertEquals(2,Jobs.getCountInSpace(space.getId()));
 	}

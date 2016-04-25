@@ -87,6 +87,7 @@ function initUI(){
 	editable("lastname");
 	editable("institution");
 	editable("diskquota");
+	editable("pairquota");
 	editable("pagesize");
 	editable("email");
 	// If the client's picture is clicked on, pop it up in a JQuery modal window

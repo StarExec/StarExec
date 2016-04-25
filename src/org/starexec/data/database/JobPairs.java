@@ -187,7 +187,15 @@ public class JobPairs {
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction( con );
-			return addJobPairs( con, jobId, pairs );
+			log.debug("addJobPairs one");
+			boolean success = incrementTotalJobPairsForJob(jobId, pairs.size(),con);
+			if (!success) {
+				return false;
+			}
+			log.debug("addJobPairs two");
+			success = addJobPairs( con, jobId, pairs );
+			log.debug("addJobPairs three");
+			return success;
 		} catch ( SQLException e ) {
 			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
 			Common.doRollback( con );
@@ -243,7 +251,6 @@ public class JobPairs {
 			addJobPairStages(pairs,con);
 			logUtil.debug( methodName, "Adding job pair inputs." );
 			addJobPairInputs(pairs,con);
-			
 			return true;
 		} catch (Exception e) {
 			log.error("addJobPair says "+e.getMessage(),e);
@@ -306,21 +313,47 @@ public class JobPairs {
 		}
 		return null;
 	}
-
+	/**
+	 * Updates the total_pairs column for the given job by summing it with the given increment
+	 * @param jobId The ID of the job to update
+	 * @param increment The amount to change total_pairs by. Note that if this is negative it
+	 * means the total_pairs column will decrease
+	 * @param con The open connection to make the call on
+	 * @return true on success and false otherwise
+	 */
+	public static boolean incrementTotalJobPairsForJob(int jobId, int increment, Connection con) {
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL IncrementTotalJobPairsForJob(?,?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, increment);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
 
 	/**
-	 * Deletes a list of job pairs.
+	 * Deletes a list of job pairs. All pairs are expected to belong to the same job
 	 * @param jobPairs the job pairs to delete.
 	 * @author Albert Giegerich
 	 */
-	public static void deleteJobPairs( List<JobPair> jobPairs ) throws SQLException {
+	public static void deleteJobPairs(List<JobPair> jobPairs ) throws SQLException {
 		final String methodName = "deleteJobPairs";
 		Connection con = null;
+		
 		try { 
 			con = Common.getConnection();
 			Common.beginTransaction( con );
+			log.debug("beginning to delete pairs");
 			for ( JobPair pair : jobPairs ) {
 				deleteJobPair( con, pair );
+				log.debug("pair deleted");
 			}
 		} catch ( SQLException e ) {
 			logUtil.debug( methodName, "Caught an SQLException, database failed." );
@@ -340,8 +373,18 @@ public class JobPairs {
 
 		CallableStatement procedure = null;
 		try {
-			procedure = con.prepareCall( "{CALL DeleteJobPair(?)}" );
+			List<File> files = JobPairs.getOutputPaths(pairToDelete);
+			// calculating size of job pair on disk so we can subtract this from the disk_size
+			// of the job. Needed because we are not backfilling disk_size for job_pairs.
+			long size = 0;
+			for (File f : files) {
+				if (f!=null && f.exists()) {
+					size+=FileUtils.sizeOf(f);
+				}
+			}
+			procedure = con.prepareCall( "{CALL DeleteJobPair(?,?)}" );
 			procedure.setInt( 1, pairToDelete.getId() );
+			procedure.setLong(2,size);
 			procedure.executeQuery();
 		} catch ( SQLException e ) {
 			throw e;
@@ -1687,8 +1730,7 @@ public class JobPairs {
 	}
 	
 	/**
-	 * Updates a job pair's node_id in the databse. This is done by leveraging UpdatePairRunSolverStats,
-	 * which 
+	 * Updates a job pair's node_id in the database.
 	 * @param pairId
 	 * @param nodeId
 	 * @return True on success and false otherwise
