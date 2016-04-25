@@ -880,7 +880,7 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void deleteJobPairsWithConfigurationsFromJob( int jobId, Set<Integer> configIds ) throws SQLException {
-		JobPairs.deleteJobPairs(jobId, getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
+		JobPairs.deleteJobPairs(getJobPairsToBeDeletedFromConfigIds( jobId, configIds ) );
 		removeCachedJobStatsForConfigs( jobId, configIds );
 	}
 
@@ -2914,6 +2914,7 @@ public class Jobs {
 
 			while(results.next()){
 			    JobPair jp = new JobPair();
+			    jp.setJobId(jobId);
 			    JoblineStage stage=new JoblineStage();
 			    stage.setStageNumber(results.getInt("stage_number"));
 			    jp.setPrimaryStageNumber(results.getInt("stage_number"));

@@ -239,8 +239,6 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 		WHERE id = _id;
 	END //	
 
-
-
 -- Retrieves basic info about job pairs for the given job id (simple version). Gets only the primary stage
 -- Author: Julio Cervantes
 DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;

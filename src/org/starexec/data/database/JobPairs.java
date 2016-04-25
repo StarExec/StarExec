@@ -343,9 +343,10 @@ public class JobPairs {
 	 * @param jobPairs the job pairs to delete.
 	 * @author Albert Giegerich
 	 */
-	public static void deleteJobPairs(int jobId, List<JobPair> jobPairs ) throws SQLException {
+	public static void deleteJobPairs(List<JobPair> jobPairs ) throws SQLException {
 		final String methodName = "deleteJobPairs";
 		Connection con = null;
+		
 		try { 
 			con = Common.getConnection();
 			Common.beginTransaction( con );
@@ -372,8 +373,18 @@ public class JobPairs {
 
 		CallableStatement procedure = null;
 		try {
-			procedure = con.prepareCall( "{CALL DeleteJobPair(?)}" );
+			List<File> files = JobPairs.getOutputPaths(pairToDelete);
+			// calculating size of job pair on disk so we can subtract this from the disk_size
+			// of the job. Needed because we are not backfilling disk_size for job_pairs.
+			long size = 0;
+			for (File f : files) {
+				if (f!=null && f.exists()) {
+					size+=FileUtils.sizeOf(f);
+				}
+			}
+			procedure = con.prepareCall( "{CALL DeleteJobPair(?,?)}" );
 			procedure.setInt( 1, pairToDelete.getId() );
+			procedure.setLong(2,size);
 			procedure.executeQuery();
 		} catch ( SQLException e ) {
 			throw e;

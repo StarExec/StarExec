@@ -161,7 +161,8 @@ CREATE PROCEDURE SetBackendExecId(IN _jobPairId INT, IN _execId INT)
 DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
-		SELECT job_id,job_pairs.job_space_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
+		SELECT job_id,job_pairs.job_space_id,path,jobpair_stage_data.solver_name,
+		jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		WHERE job_pairs.id=_pairId and jobpair_stage_data.stage_number = job_pairs.primary_jobpair_data;
 	END //
@@ -192,10 +193,15 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 	END //
 
 DROP PROCEDURE IF EXISTS DeleteJobPair;
-CREATE PROCEDURE DeleteJobPair( IN _pairId INT )
+CREATE PROCEDURE DeleteJobPair( IN _pairId INT, IN _pairSize INT)
 	BEGIN
+		DECLARE pair_disk_size BIGINT DEFAULT 0;
+		SELECT sum(jobpair_stage_data.disk_size) INTO pair_disk_size
+		FROM job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id 
+		WHERE job_pairs.id=_pairId;
+		
 		UPDATE jobs 
-		SET disk_size=jobs.disk_size-(SELECT sum(jobpair_stage_data.disk_size) FROM job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id WHERE job_pairs.id=_pairId), 
+		SET disk_size=IF(pair_disk_size=0,jobs.disk_size-_pairSize,jobs.disk_size-pair_disk_size),
 		total_pairs=total_pairs-1 
 		WHERE id=(SELECT job_id FROM job_pairs WHERE id=_pairId);
 
