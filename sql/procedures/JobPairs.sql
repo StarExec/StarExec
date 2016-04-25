@@ -194,7 +194,10 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 DROP PROCEDURE IF EXISTS DeleteJobPair;
 CREATE PROCEDURE DeleteJobPair( IN _pairId INT )
 	BEGIN
-		UPDATE jobs SET disk_size=disk_size-(SELECT disk_size FROM job_pairs WHERE id=_pairId), total_pairs=total_pairs-1 WHERE id=(SELECT job_id FROM job_pairs WHERE id=_pairId);
+		UPDATE jobs 
+		SET disk_size=jobs.disk_size-(SELECT sum(jobpair_stage_data.disk_size) FROM job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id WHERE job_pairs.id=_pairId), 
+		total_pairs=total_pairs-1 
+		WHERE id=(SELECT job_id FROM job_pairs WHERE id=_pairId);
 
 		DELETE FROM job_pairs
 		WHERE job_pairs.id = _pairId;
