@@ -5177,6 +5177,7 @@ public class Jobs {
 		try {
 			List<Integer> jobs = Jobs.getAllJobIds();
 			for (Integer i : jobs) {
+				log.info("backfilling disk_size for job "+i);
 				if (Jobs.isJobDeleted(i)) {
 					continue;
 				}
