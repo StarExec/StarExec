@@ -349,10 +349,11 @@ public class JobPairs {
 		try { 
 			con = Common.getConnection();
 			Common.beginTransaction( con );
+			log.debug("beginning to delete pairs");
 			for ( JobPair pair : jobPairs ) {
 				deleteJobPair( con, pair );
+				log.debug("pair deleted");
 			}
-			incrementTotalJobPairsForJob(jobId,Math.negateExact(jobPairs.size()), con);
 		} catch ( SQLException e ) {
 			logUtil.debug( methodName, "Caught an SQLException, database failed." );
 			Common.doRollback( con );
