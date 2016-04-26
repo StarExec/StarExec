@@ -70,7 +70,7 @@ public class StatisticsTests extends TestSequence {
 	protected void setup() throws Exception {
 		spaceOverviewPairs = TestUtil.getFakeJobPairs(2000);
 		owner = loader.loadUserIntoDatabase();
-		admin = Users.getAdmins().get(0);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space = loader.loadSpaceIntoDatabase(owner.getId(), 1);
 		solver = loader.loadSolverIntoDatabase(space.getId(), owner.getId());
 		benchmarkIds = loader.loadBenchmarksIntoDatabase(space.getId(), owner.getId());

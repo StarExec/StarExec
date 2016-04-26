@@ -23,6 +23,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.app.RESTHelpers;
 import org.starexec.app.RESTHelpers.Primitive;
+import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Jobs;
@@ -321,7 +322,7 @@ public class RESTHelpersTests extends TestSequence {
 		space1=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
 		space2=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
 		childOf1=loader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
-		admin = Users.getAdmins().get(0);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		Users.associate(extraUser.getId(), community.getId());
 		s1 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());
 		s2 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());

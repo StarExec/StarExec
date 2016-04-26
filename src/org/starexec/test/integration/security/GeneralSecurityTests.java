@@ -1,9 +1,11 @@
 package org.starexec.test.integration.security;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -43,7 +45,7 @@ public class GeneralSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		plaintextPassword=Util.getTempPassword();
 		user1=loader.loadUserIntoDatabase(plaintextPassword);
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		
 	}
 

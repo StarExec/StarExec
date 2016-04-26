@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -18,6 +19,7 @@ import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -76,7 +78,7 @@ public class JobSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		user=loader.loadUserIntoDatabase();
 		nonOwner=loader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());

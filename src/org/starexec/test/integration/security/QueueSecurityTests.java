@@ -1,6 +1,7 @@
 package org.starexec.test.integration.security;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.QueueSecurity;
@@ -44,7 +45,7 @@ public class QueueSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		user1=loader.loadUserIntoDatabase();
 		user2=loader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
 		Assert.assertNotNull(admin);

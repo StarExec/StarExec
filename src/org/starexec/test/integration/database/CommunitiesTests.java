@@ -16,6 +16,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -157,7 +158,7 @@ public class CommunitiesTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		admin = Users.getAdmins().get(0);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		testUser = loader.loadUserIntoDatabase();
 		user1 = loader.loadUserIntoDatabase();
 		user2 = loader.loadUserIntoDatabase();

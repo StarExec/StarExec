@@ -3,6 +3,7 @@ package org.starexec.test.integration.database;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -100,7 +101,7 @@ public class WebsiteTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		user=loader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		

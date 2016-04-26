@@ -81,7 +81,7 @@ public class ProcessorSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		owner = loader.loadUserIntoDatabase();
 		otherUser = loader.loadUserIntoDatabase();
 		notInCommunity = loader.loadUserIntoDatabase();
