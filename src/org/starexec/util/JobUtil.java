@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,6 +24,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -29,6 +32,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.*;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
@@ -96,7 +100,21 @@ public class JobUtil {
 		if (listOfJobLines.getLength()+listOfJobPairs.getLength()==0) {
 			errorMessage="Every job must have at least one job pair or job line to be created";
 			return null;
-		}		
+		}
+		User u = Users.get(userId);
+		int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
+		int pairCount = listOfJobPairs.getLength()+listOfJobLines.getLength();
+		// This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
+		// for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
+		if (pairsAvailable<pairCount) {
+			errorMessage = "Error: You are trying to create "+pairCount+" pairs, but you have "+pairsAvailable+" remaining in your quota. Please delete some old jobs before continuing.";
+			return null;
+		}
+		
+		if (Users.isDiskQuotaExceeded(userId)) {
+			errorMessage = "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding";
+			return null;
+		}
 		
 		//validate all solver pipelines
 		

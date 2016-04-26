@@ -60,7 +60,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private boolean usingDependencies = false;
 	
 	private int totalPairs; // number of pairs this job owns
-	
+	private long diskSize; // in bytes
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
 		
@@ -421,5 +421,19 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	/**
+	 * @return the diskSize
+	 */
+	public long getDiskSize() {
+		return diskSize;
+	}
+
+	/**
+	 * @param diskSize the diskSize to set
+	 */
+	public void setDiskSize(long diskSize) {
+		this.diskSize = diskSize;
 	}
 }

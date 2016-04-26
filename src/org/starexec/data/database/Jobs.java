@@ -988,6 +988,7 @@ public class Jobs {
 		j.setDescription(results.getString("description"));
 		j.setSeed(results.getLong("seed"));
 		j.setTotalPairs(results.getInt("total_pairs"));
+		j.setDiskSize(results.getLong("disk_size"));
 		return j;
 	}
 	
@@ -5178,7 +5179,8 @@ public class Jobs {
 			List<Integer> jobs = Jobs.getAllJobIds();
 			for (Integer i : jobs) {
 				log.info("backfilling disk_size for job "+i);
-				if (Jobs.isJobDeleted(i)) {
+				Job job = Jobs.get(i);
+				if (job.isDeleted() || job.getDiskSize()>0) {
 					continue;
 				}
 				File f = new File(Jobs.getDirectory(i));

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
@@ -16,6 +17,7 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -66,7 +68,7 @@ public class JobUtilTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		admin = Users.getAdmins().get(0);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		solver = loader.loadSolverIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
 		benchmarkIds = loader.loadBenchmarksIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
 		

@@ -965,7 +965,7 @@ CREATE PROCEDURE GetAllJobIds()
 DROP PROCEDURE IF EXISTS CountPairsByUser;
 CREATE PROCEDURE CountPairsByUser(IN _userId INT)
 	BEGIN
-		SELECT SUM(total_pairs) AS total_pairs FROM jobs WHERE user_id=_userId;
+		SELECT SUM(total_pairs) AS total_pairs FROM jobs WHERE user_id=_userId AND deleted=false;
 	END //
 	
 DROP PROCEDURE IF EXISTS IncrementTotalJobPairsForJob;

@@ -536,7 +536,7 @@ public class UserTests extends TestSequence {
 		user3=loader.loadUserIntoDatabase();
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		testUser=loader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(testUser.getId(), Communities.getTestCommunity().getId());
 		subspace=loader.loadSpaceIntoDatabase(testUser.getId(), space.getId());
 		comm=loader.loadSpaceIntoDatabase(admin.getId(), 1);

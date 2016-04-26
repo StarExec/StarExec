@@ -94,7 +94,7 @@ public class Processors {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
+			procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
 			procedure.setInt(1, processorId);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
@@ -104,12 +104,18 @@ public class Processors {
 			log.debug(String.format("Removal of processor [id=%d] was successful.", processorId));
 			
 			// Try and delete file referenced by processor_path and its parent directory
-			if(processorFile.delete()){
-				log.debug(String.format("File [%s] was deleted at [%s] because it was no inter referenced anywhere.", processorFile.getName(), processorFile.getAbsolutePath()));
+			if (processorFile.exists()) {
+				if(processorFile.delete()){
+					log.debug(String.format("File [%s] was deleted at [%s] because it was not inter referenced anywhere.", processorFile.getName(), processorFile.getAbsolutePath()));
+				}
+				if (processorFile.getParentFile()!=null) {
+					if(processorFile.getParentFile().delete()){
+						log.debug(String.format("Directory [%s] was deleted because it was empty.", processorFile.getParentFile().getAbsolutePath()));
+					}
+				}
+				
 			}
-			if(processorFile.getParentFile().delete()){
-				log.debug(String.format("Directory [%s] was deleted because it was empty.", processorFile.getParentFile().getAbsolutePath()));
-			}
+			
 			
 			return true;
 		} catch (Exception e){			

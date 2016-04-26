@@ -9,6 +9,7 @@ import org.starexec.data.database.Websites;
 import org.starexec.data.security.WebsiteSecurity;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -112,7 +113,7 @@ public class WebsiteSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		owner=loader.loadUserIntoDatabase();
 		nonOwner=loader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(owner.getId(), 1);
 		solver=loader.loadSolverIntoDatabase(space.getId(), owner.getId());
 	}

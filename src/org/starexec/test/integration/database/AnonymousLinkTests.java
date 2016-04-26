@@ -381,7 +381,7 @@ public class AnonymousLinkTests extends TestSequence {
 	protected void setup() {
 
 		// Get admin user.
-		admin = Users.getAdmins().get(0);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 
 		// Setup test user.
 		user=loader.loadUserIntoDatabase();
