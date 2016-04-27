@@ -130,7 +130,7 @@
 	</fieldset>
 	<c:if test="${owner}">
 		<fieldset>
-			<legend>user disk quota</legend>
+			<legend>user quotas</legend>
 			<table id="diskUsageTable" class="shaded">
 				<thead>
 					<tr>

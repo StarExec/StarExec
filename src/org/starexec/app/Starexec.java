@@ -325,6 +325,7 @@ public class Starexec implements ServletContextListener {
 			log.error(e.getMessage(),e);
 		}
 		
+		//TODO: Once the backfill completes on Starexec, this can safely be removed
 		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){

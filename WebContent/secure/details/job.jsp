@@ -366,6 +366,10 @@
 								<td>random seed</td>
 								<td>${seed}</td>
 							</tr>
+							<tr title="the amount of disk space this job is using">
+								<td>disk usage</td>
+								<td>${diskUsage}</td>
+							</tr>
 						</tbody>
 					</table>	
 				</fieldset>
