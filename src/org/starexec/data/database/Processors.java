@@ -92,6 +92,9 @@ public class Processors {
 		if (processorId==R.NO_TYPE_PROC_ID) {
 			return false; // the no type processor is required for the system
 		}
+		if (Processors.get(processorId)==null) {
+			return true;
+		}
 		Connection con = null;			
 		File processorFile = null;
 		CallableStatement procedure = null;

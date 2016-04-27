@@ -384,11 +384,10 @@ public class GetPageTests extends TestSequence {
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		testCommunity=Communities.getTestCommunity();
 		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
-		//TODO: Load a user into the database here
-		adminCon=new Connection(admin.getEmail(),"Starexec4ever",Util.url(""));
+		adminCon=new Connection(admin.getEmail(),admin.getPassword(),Util.url(""));
 		nonUserCon = new Connection("empty", "empty", Util.url(""));
-		con.login();
-		adminCon.login();
+		Assert.assertEquals(0, con.login());
+		Assert.assertEquals(0, adminCon.login());
 		//space1 will contain solvers and benchmarks
 		space1=loader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		newCommunity = loader.loadSpaceIntoDatabase(admin.getId(), 1);
