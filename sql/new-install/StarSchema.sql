@@ -725,3 +725,8 @@ ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (def
 
 INSERT INTO report_data (event_name, queue_name, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 
+
+-- insert no_type processor, which the system does not expect actually exists on disk. This is mandatory for
+-- the system to function.
+INSERT INTO processors (id,name,description,path,community,processor_type,disk_size) 
+VALUES (1,"no_type", "this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type n=no_type","no path",1,3,0);

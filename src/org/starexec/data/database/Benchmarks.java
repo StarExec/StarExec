@@ -427,16 +427,8 @@ public class Benchmarks {
 
 				log.info("About to attach attributes to " + benchmarks.size());
 				
-				if (p.getId()!=Processors.getNoTypeProcessor().getId()) {
-					Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
-				} else {
-					for (Benchmark b : benchmarks) {
-						Map<String,String> prop = new HashMap<String,String>();
-						prop.put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
-						b.setAttributes(prop);
-					}
-				}
-
+				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
+				
 				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
 				if (!success) {
 					Uploads.setBenchmarkErrorMessage(statusId, "Benchmark dependencies failed to validate. Please check your processor output");
@@ -545,6 +537,19 @@ public class Benchmarks {
 	 * @return True if the operation is successful and false otherwise
 	 */
 	public static Boolean attachBenchAttrs(List<Benchmark> benchmarks, Processor p, Integer statusId) throws IOException, StarExecException {
+		// if we are using the no_type processor, we do not need to actually execute anything-- just validate every
+		// benchmark.
+		if (p.getId()==Processors.getNoTypeProcessor().getId()) {
+			for (Benchmark b : benchmarks) {
+				Map<String,String> prop = new HashMap<String,String>();
+				prop.put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
+				b.setAttributes(prop);
+			}
+			Uploads.incrementValidatedBenchmarks(statusId,benchmarks.size());
+			return true;
+		}
+		
+		
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");			
 		int count = benchmarks.size();
 		// For each benchmark in the list to process...

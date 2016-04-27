@@ -474,6 +474,7 @@ public class BenchmarkUploader extends HttpServlet {
 	
 	private static ValidatorStatusCode doSpaceNamesConflict(File uniqueDir, int parentSpaceId) {
 		try {
+			//TODO: We should not be relying on getAdmins() here. What if no admins exist? This dependency should not be needed
 			Space parent=Spaces.getDetails(parentSpaceId,Users.getAdmins().get(0).getId());
 			HashSet<String> curNames=new HashSet<String>();
 			for (Space s : parent.getSubspaces()) {
