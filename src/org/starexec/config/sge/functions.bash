@@ -76,10 +76,6 @@ decodeBenchmarkName
 
 #################################################################################
 
-# DB username and password for status reporting
-DB_USER=star_report
-DB_PASS=5t4rr3p0rt2012
-
 #lock files that indicate a particular sandbox is in use
 SANDBOX_LOCK_DIR=$WORKING_DIR_BASE'/sandboxlock.lock'
 SANDBOX2_LOCK_DIR=$WORKING_DIR_BASE'/sandbox2lock.lock'

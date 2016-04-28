@@ -29,6 +29,8 @@
 			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
 			<property key="SANDBOX_USER_ONE" value="sandbox"/>
 			<property key="SANDBOX_USER_TWO" value="sandbox2"/>
+			<property key="COMPUTE_NODE_MYSQL_USERNAME" value="star_report"/>
+			<property key="COMPUTE_NODE_MYSQL_PASSWORD" VALUE="5t4rr3p0rt2012"/>
 		</class>
 	</configuration>
 	<configuration name="production" inherit="common_core">
