@@ -474,20 +474,19 @@ public class BenchmarkUploader extends HttpServlet {
 	
 	private static ValidatorStatusCode doSpaceNamesConflict(File uniqueDir, int parentSpaceId) {
 		try {
-			//TODO: We should not be relying on getAdmins() here. What if no admins exist? This dependency should not be needed
-			Space parent=Spaces.getDetails(parentSpaceId,Users.getAdmins().get(0).getId());
-			HashSet<String> curNames=new HashSet<String>();
-			for (Space s : parent.getSubspaces()) {
-				curNames.add(s.getName());
+			List<Space> subspaces=Spaces.getSubSpaces(parentSpaceId);
+			HashSet<String> subspaceNames=new HashSet<String>();
+			for (Space s : subspaces) {
+				subspaceNames.add(s.getName());
 			}
 			for(File f : uniqueDir.listFiles()) {
 				// If it's a sub-directory and as such a subspace
 				if(f.isDirectory()) {
 					String curName=f.getName();
-					if (curNames.contains(curName)) {
+					if (subspaceNames.contains(curName)) {
 						return new ValidatorStatusCode(false,"Creating spaces for your benchmarks would lead to having two subspaces with the name "+ curName); // found a conflict
 					}
-					curNames.add(curName);
+					subspaceNames.add(curName);
 				} 
 			}
 			
