@@ -379,7 +379,6 @@ CREATE TABLE jobpair_time_delta (
 );
 
 -- Stores all inputs to a particular job pair, outside of the primary benchmark
--- TODO: Do we want delete cascades on benchmarks? Might confuse users who accidentally delete benchmark inputs
 CREATE TABLE jobpair_inputs (
 	jobpair_id INT NOT NULL,
 	input_number SMALLINT NOT NULL, -- ordered from 1 to n, with n being the number of inputs

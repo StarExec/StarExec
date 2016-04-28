@@ -33,7 +33,7 @@ public class IntroStateTests extends TestSequence {
 	private void UniqueSubspaceNamesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		for (Space s : spaces) {
-			List<Space> subspaces=Spaces.getSubSpaces(s.getId(), admin.getId());
+			List<Space> subspaces=Spaces.getSubSpaces(s.getId());
 			HashSet<String> names=new HashSet<String>();
 			for (Space sub : subspaces) {
 				if (names.contains(sub.getName())) {

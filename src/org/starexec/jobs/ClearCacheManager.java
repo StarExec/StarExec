@@ -58,9 +58,6 @@ public class ClearCacheManager {
 			if(!f.setExecutable(true, false) || !f.setReadable(true, false)) {
 				log.error("Can't change owner permissions on jobscript file. This will prevent the grid engine from being able to open the file. Script path: " + scriptPath);
 			}
-			//TODO: Delete these temp logging lines
-			log.info("submitting following script to SGE");
-			log.info(currentScript);
 			FileWriter out = new FileWriter(f);
 			out.write(currentScript);
 			out.close();
