@@ -1180,7 +1180,7 @@ public class Download extends HttpServlet {
 
 		int id=Integer.parseInt(request.getParameter(PARAM_ID));
 		ValidatorStatusCode status=null;
-		if (type.equals(R.SOLVER)) {
+		if (type.equals(R.SOLVER) || type.equals(R.SOLVER_SOURCE)) {
 			status=SolverSecurity.canUserDownloadSolver(id,userId);
 			if (!status.isSuccess()) {
 				return status;
