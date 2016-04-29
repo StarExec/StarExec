@@ -214,15 +214,11 @@ public abstract class JobManager {
 					if (quotaExceededUsers.get(job.getUserId())) {
 						Jobs.pauseAllUserJobs(job.getUserId());
 					}
-					continue;
 				}
 				if (quotaExceededUsers.get(job.getUserId())) {
 					continue;
 				}
-				
-				
-				
-				
+
 				// jobTemplate is a version of mainTemplate customized for this job
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
