@@ -271,7 +271,7 @@ CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
 DROP PROCEDURE IF EXISTS GetUserDiskUsage;
 CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 	BEGIN
-		SELECT disk_usage FROM users WHERE id=_userID;
+		SELECT disk_size FROM users WHERE id=_userID;
 	END //
 
 -- Sums up the disk_size columns of solvers, benchmarks, and jobs and places that value in the

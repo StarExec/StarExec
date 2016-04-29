@@ -20,6 +20,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.SpaceXMLUploadStatus;
+import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.Validator;
@@ -402,8 +403,9 @@ public class SpaceSecurity {
 		}
 		//first, validate that the user has enough disk quota to copy all the selected solvers
 		//we don't copy any unless they have room for all of them
-		long userDiskUsage=Users.getDiskUsage(userId);
-		long userDiskQuota=Users.get(userId).getDiskQuota();
+		User u = Users.get(userId);
+		long userDiskUsage=u.getDiskUsage();
+		long userDiskQuota=u.getDiskQuota();
 		userDiskQuota-=userDiskUsage;
 		for (Solver s : solvers) {
 			userDiskQuota-=s.getDiskSize();
@@ -425,8 +427,9 @@ public class SpaceSecurity {
 		List<Benchmark> oldBenches=Benchmarks.get(benchIDs);
 		//first, validate that the user has enough disk quota to copy all the selected solvers
 		//we don't copy any unless they have room for all of them
-		long userDiskUsage=Users.getDiskUsage(userId);
-		long userDiskQuota=Users.get(userId).getDiskQuota();
+		User u = Users.get(userId);
+		long userDiskUsage=u.getDiskUsage();
+		long userDiskQuota=u.getDiskQuota();
 		userDiskQuota-=userDiskUsage;
 		for (Benchmark b : oldBenches) {
 			userDiskQuota-=b.getDiskSize();

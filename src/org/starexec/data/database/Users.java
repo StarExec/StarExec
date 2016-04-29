@@ -517,7 +517,7 @@ public class Users {
 
 			results = procedure.executeQuery();
 			if(results.next()){
-				return results.getLong("disk_usage");
+				return results.getLong("disk_size");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
