@@ -159,8 +159,8 @@
 			
 			
 		</fieldset>	
-
 	</div>	
+	<br class=".clear" />
 	
 	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>

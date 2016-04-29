@@ -1,0 +1,18 @@
+
+@media only screen and (max-width: 767px) {
+	#picSection {
+		display: none;
+	}
+
+	#wrapper fieldset {
+		width: 75%;
+
+	}
+
+	#tblSolverConfig tr > *:nth-child(2) {
+		display: none;
+	}
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}

@@ -78,3 +78,104 @@ fieldset h6 {
 	height: 80px;
 	overflow: auto;
 }
+
+@media only screen and (max-width: 767px) {
+
+	#wrapper .ui-button-icon-primary, #wrapper .ui-button-icon-secondary {
+		position: static;
+		margin: 0;
+		padding: 0;
+	}
+
+	#wrapper #btnBack .ui-button-icon-primary {
+		float: left;
+		margin: 4px 0 0 5px;
+	}
+
+	#wrapper #btnBack .ui-button-text {
+		float: right;
+	}
+
+	#wrapper #btnPrev .ui-button-icon-primary {
+		float: left;
+		margin: 4px 0 0 5px;
+	}
+
+	#wrapper #btnPrev .ui-button-text {
+		float: right;
+	}
+
+	#wrapper #btnDone .ui-button-icon-secondary {
+		float: right;
+		margin: 4px 3px 0 0;
+	}
+
+	#wrapper #btnDone .ui-button-text {
+		float: left;
+	}
+
+	#wrapper #btnNext .ui-button-icon-secondary {
+		float: right;
+		margin: 4px 3px 0 0;
+	}
+
+	#wrapper #btnNext .ui-button-text {
+		float: left;
+	}
+
+
+	#wrapper fieldset {
+		width: 75%;
+	}
+
+	#wrapper #actionBar {
+		position: static;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		text-align: center;
+	}
+
+	#wrapper #actionBar button {
+		display: block;
+		float: none;
+		position: static;
+		margin: 5px auto;
+		padding: 0;
+	}
+
+	/*
+	#wrapper #fieldStep1 {
+		width: 75%;
+	}
+
+	#wrapper #fieldSolverMethod {
+		width: 75%;
+	}
+	*/
+
+	#wrapper #wallclockTimeout, #wrapper #cpuTimeout, #wrapper #maxMem, #wrapper #seed, #wrapper #resultsInterval,  #wrapper #txtJobName {
+		width: 95%
+	}
+
+	#wrapper #txtDesc {
+		width: 95%;
+	}
+
+	#wrapper #tblSolverConfig td, #wrapper #tblSolverConfig th  {
+		padding: 0;
+		margin: 0;
+	}
+
+	#wrapper #tblSolverConfig tr > *:nth-child(1) {
+		width: 30%;
+		text-align: center;
+	}
+
+	#wrapper #tblSolverConfig tr > *:nth-child(2) {
+		width: 30%;
+	}
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}

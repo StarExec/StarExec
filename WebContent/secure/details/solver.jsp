@@ -21,7 +21,7 @@
 	}
 %>
 
-<star:template title="${solverPageTitle}" js="common/delaySpinner, details/shared, details/solver, lib/jquery.dataTables.min" css="common/delaySpinner, common/table, details/shared">				
+<star:template title="${solverPageTitle}" js="common/delaySpinner, details/shared, details/solver, lib/jquery.dataTables.min" css="common/delaySpinner, common/table, details/shared, details/solver">				
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>

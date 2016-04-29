@@ -23,3 +23,16 @@
 	width: 700px;
 	margin: 50px auto 50px auto;	
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 75%;
+	}
+
+	#wrapper .contentTbl input[type="text"] {
+		width: 95%;
+	}
+	#wrapper .contentTbl textarea {
+		width: 95%;
+	}
+}

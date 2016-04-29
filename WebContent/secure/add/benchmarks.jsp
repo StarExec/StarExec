@@ -72,16 +72,21 @@
 					</tr>
 					<tr id="permRow"
 						title="if StarExec expands your archive into spaces, the new spaces will have these default permissions">
-						<td class="label"><p>default</p></td>
+						<td class="label">
+							<p>default</p>
+							<span class="showMobile">
+								<br /><br />so = solver<br />b = bench<br />u = user<br />sp = space<br />j = job
+							</span>
+						</td>
 						<td>
 							<table id="tblDefaultPerm">
 								<tr>
 									<th></th>
-									<th>solver</th>
-									<th>bench</th>
-									<th>users</th>
-									<th>space</th>
-									<th>job</th>
+									<th><span class="hideMobile">solver</span><span class="showMobile">so</span></th>
+									<th><span class="hideMobile">bench</span><span class="showMobile">b</span></th>
+									<th><span class="hideMobile">users</span><span class="showMobile">u</span></th>
+									<th><span class="hideMobile">space</span><span class="showMobile">sp</span></th>
+									<th><span class="hideMobile">job</span><span class="showMobile">j</span></th>
 								</tr>
 								<tr>
 									<td>add</td>

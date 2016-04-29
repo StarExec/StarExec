@@ -44,7 +44,7 @@
 	}
 %>
 
-<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared">			
+<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared, details/pair">			
 	<span id="pairId" value="${pair.id}"></span>
 	<fieldset id="fieldDetails">
 		<legend>details</legend>

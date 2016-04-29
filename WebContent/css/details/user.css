@@ -9,3 +9,34 @@
 .community {
 	text-align: center;
 }
+
+@media only screen and (max-width: 767px) {
+	#picSection {
+		display: none;
+	}
+
+	#wrapper #detailPanel.userDetailPanel {
+		border-left: initial;
+	}
+
+	#jobs tr > *:nth-child(2) {
+		display: none;
+	}
+	#jobs tr > *:nth-child(3) {
+		display: none;
+	}
+	#jobs tr > *:nth-child(4) {
+		display: none;
+	}
+	#jobs tr > *:nth-child(5) {
+		display: none;
+	}
+
+	#jobs tr > *:nth-child(6) {
+		display: none;
+	}
+
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}

@@ -22,7 +22,7 @@
 	}
 %>
 
-<star:template title="${benchPageTitle}" js="common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table">				
+<star:template title="${benchPageTitle}" js="common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table, details/benchmark">				
 	<span style="display:none;" id="isAnonymousPage" value="${isAnonymousPage}"></span>
 	<c:if test="${!isAnonymousPage}">
 		<span style="display:none;" id="benchId" value="${bench.id}"></span>
