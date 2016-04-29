@@ -207,7 +207,7 @@ CREATE PROCEDURE DeleteJobPair( IN _pairId INT, IN _pairSize INT)
 		WHERE job_pairs.id=_pairId;
 		
 		UPDATE users
-		SET disk_size=IF(pair_disk_size=0,jobs.disk_size-_pairSize,jobs.disk_size-pair_disk_size)
+		SET disk_size=IF(pair_disk_size=0,users.disk_size-_pairSize,users.disk_size-pair_disk_size)
 		WHERE id = (SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_pairId);
 		
 		UPDATE jobs 
