@@ -10,6 +10,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 DROP PROCEDURE IF EXISTS AddBenchmark;
 CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _description TEXT, OUT _benchId INT)
 	BEGIN	
+		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size, description)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize, _description);
 		
@@ -18,7 +19,8 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _download
 	
 DROP PROCEDURE IF EXISTS AddAndAssociateBenchmark;
 CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _spaceId INT, OUT _benchId INT)
-	BEGIN	
+	BEGIN
+		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
 		
@@ -91,12 +93,12 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 DROP PROCEDURE IF EXISTS SetBenchmarkToDeletedById;
 CREATE PROCEDURE SetBenchmarkToDeletedById(IN _benchmarkId INT, OUT _path TEXT)
 	BEGIN
+		UPDATE users JOIN benchmarks on benchmarks.user_id=users.id
+		SET users.disk_size=users.disk_size-benchmarks.disk_size 
+		WHERE benchmarks.id = _benchmarkId;
 		SELECT path INTO _path FROM benchmarks WHERE id = _benchmarkId;
 		UPDATE benchmarks
-		SET deleted=true
-		WHERE id = _benchmarkId;
-		UPDATE benchmarks
-		SET disk_size=0
+		SET deleted=true, disk_size=0
 		WHERE id = _benchmarkId;
 
 	END //	
@@ -284,6 +286,9 @@ CREATE PROCEDURE GetRecycledBenchmarkPaths(IN _userId INT)
 DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted;
 CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT) 
 	BEGIN
+		UPDATE users
+		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM benchmarks WHERE user_id=_userId AND recycled=true)
+		WHERE users.id=_userId;
 		UPDATE benchmarks
 		SET deleted=true, disk_size=0
 		WHERE user_id = _userId AND recycled=true;

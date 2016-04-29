@@ -551,6 +551,10 @@ CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 DROP PROCEDURE IF EXISTS DeleteJob;
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
 	BEGIN
+		UPDATE users JOIN jobs ON jobs.user_id=users.id
+		SET users.disk_size=users.disk_size-jobs.disk_size
+		WHERE jobs.id=_jobId;
+		
 		UPDATE jobs
 		SET deleted=true, total_pairs=0, disk_size=0
 		WHERE id = _jobId;		
@@ -559,6 +563,11 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 DROP PROCEDURE IF EXISTS UpdateJobDiskSize;
 CREATE PROCEDURE UpdateJobDiskSize(IN _jobId INT, IN _diskSize BIGINT)
 	BEGIN
+		UPDATE users JOIN jobs ON jobs.user_id=users.id
+		SET users.disk_size=(users.disk_size-jobs.disk_size)+_diskSize
+		WHERE jobs.id=_jobId;
+		
+		
 		UPDATE jobs
 		SET disk_size=_diskSize
 		WHERE id=_jobId;

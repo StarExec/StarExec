@@ -268,6 +268,7 @@ public class Users {
 		u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
 		u.setRole(results.getString("role"));
 		u.setPairQuota(results.getInt("job_pair_quota"));
+		u.setDiskUsage(results.getLong("disk_size"));
 		return u;
 	}
 	
@@ -466,7 +467,41 @@ public class Users {
 	}
 	
 	/**
-	 * Gets the number of bytes a user is consuming on disk
+	 * Iterates through every user in the DB, updating their disk_size fields
+	 * in the DB. 
+	 * @return
+	 */
+	public static boolean updateAllUserDiskSizes() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			for (User u: Users.getUsersForNextPageAdmin(new DataTablesQuery(0,Integer.MAX_VALUE,0,false,""))) {
+				procedure = con.prepareCall("{CALL UpdateUserDiskUsage(?,?)}");
+				procedure.setInt(1, u.getId());
+				procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+				procedure.executeUpdate();
+				long difference = procedure.getLong(2);
+				Common.safeClose(procedure);
+				
+				if (difference!=0) {
+					log.info("Disk usage did not match between users table "
+							+ "and other tables for user "+u.getId()+". Difference was "+difference);
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the number of bytes a user is consuming on disk by returning the disk_usage column from the
+	 * users table.
 	 * 
 	 * @param userId the id of the user to get the disk usage of
 	 * @return the disk usage of the given user

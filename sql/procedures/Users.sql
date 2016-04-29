@@ -271,12 +271,28 @@ CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
 DROP PROCEDURE IF EXISTS GetUserDiskUsage;
 CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 	BEGIN
-		SELECT SUM(disk_size) AS disk_usage FROM
+		SELECT disk_usage FROM users WHERE id=_userID;
+	END //
+
+-- Sums up the disk_size columns of solvers, benchmarks, and jobs and places that value in the
+-- the user disk_size column. Returns the difference between the old and new values in _sizeDelta
+DROP PROCEDURE IF EXISTS UpdateUserDiskUsage;
+CREATE PROCEDURE UpdateUserDiskUsage(IN _userID INT, OUT _sizeDelta BIGINT)
+	BEGIN
+		DECLARE _sumDiskSize BIGINT;
+		DECLARE _userDiskSize BIGINT;
+		SELECT COALESCE(SUM(disk_size),0) AS disk_usage FROM
 		(SELECT disk_size FROM solvers WHERE user_id=_userID AND deleted=false
 		UNION ALL 
 		SELECT disk_size FROM benchmarks WHERE user_id=_userID AND deleted=false
 		UNION ALL
-		SELECT disk_size FROM jobs WHERE user_id=_userID AND deleted=false) AS tmp;
+		SELECT disk_size FROM jobs WHERE user_id=_userID AND deleted=false) AS tmp INTO _sumDiskSize;
+		
+		SELECT disk_size FROM users WHERE id=_userID INTO _userDiskSize;
+		
+		SELECT (_userDiskSize-_sumDiskSize) INTO _sizeDelta;
+		
+		UPDATE users SET disk_size=_sumDiskSize WHERE id=_userID;
 	END //
 
 -- Returns the number of bytes a given user's benchmarks is consuming on disk

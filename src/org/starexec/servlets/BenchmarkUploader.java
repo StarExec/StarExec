@@ -216,7 +216,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		User currentUser=Users.get(userId);
 		long allowedBytes=currentUser.getDiskQuota();
-		long usedBytes=Users.getDiskUsage(userId);
+		long usedBytes=currentUser.getDiskUsage();
 		
 		if (fileSize>allowedBytes-usedBytes) {
 			archiveFile.delete();

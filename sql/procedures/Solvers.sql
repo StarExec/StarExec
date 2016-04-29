@@ -10,6 +10,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 DROP PROCEDURE IF EXISTS AddSolver;
 CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT, IN _build_status INT)
 	BEGIN
+		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
 		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type, build_status)
 		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type, _build_status);
 		
@@ -65,13 +66,14 @@ CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 DROP PROCEDURE IF EXISTS SetSolverToDeletedById;
 CREATE PROCEDURE SetSolverToDeletedById(IN _solverId INT, OUT _path TEXT)
 	BEGIN
+		UPDATE users JOIN solvers ON solvers.user_id=users.id
+		SET users.disk_size=users.disk_size-solvers.disk_size 
+		WHERE solvers.id = _solverId;
+		
 		SELECT path INTO _path FROM solvers WHERE id = _solverId;
 		UPDATE solvers
-		SET deleted=true
+		SET deleted=true, disk_size=0
 		WHERE id = _solverId;
-		UPDATE solvers
-		SET disk_size=0
-		WHERE id = _solverId;		
 	END //	
 	
 -- Gets the IDs of all the spaces associated with the given solver
@@ -237,6 +239,9 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 DROP PROCEDURE IF EXISTS UpdateSolverDiskSize;
 CREATE PROCEDURE UpdateSolverDiskSize(IN _solverId INT, IN _newDiskSize BIGINT)
 	BEGIN
+		UPDATE users JOIN solvers ON solvers.user_id=users.id
+		SET users.disk_size=(users.disk_size-solvers.disk_size)+_newDiskSize
+		WHERE solvers.id = _solverId;
 		UPDATE solvers
 		SET disk_size = _newDiskSize
 		WHERE id = _solverId;
@@ -334,6 +339,9 @@ CREATE PROCEDURE GetRecycledSolverPaths(IN _userId INT)
 DROP PROCEDURE IF EXISTS SetRecycledSolversToDeleted;
 CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT) 
 	BEGIN
+		UPDATE users
+		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM solvers WHERE user_id=_userId AND recycled=true)
+		WHERE users.id=_userId;
 		UPDATE solvers
 		SET deleted=true, disk_size=0
 		WHERE user_id = _userId AND recycled=true;
