@@ -31,7 +31,8 @@ DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
 CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
-		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = (SELECT user_id FROM job_pairs WHERE id=_jobPairId);
+		UPDATE users SET users.disk_size=users.disk_size+_diskSize 
+		WHERE id = (SELECT user_id FROM job_pairs JOIN jobs ON jobs.id = job_pairs.job_id WHERE job_pairs.id=_jobPairId);
 		UPDATE jobpair_stage_data
 		SET wallclock = _wallClock,
 			cpu=_cpu,
