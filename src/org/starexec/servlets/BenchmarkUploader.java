@@ -216,7 +216,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		User currentUser=Users.get(userId);
 		long allowedBytes=currentUser.getDiskQuota();
-		long usedBytes=Users.getDiskUsage(userId);
+		long usedBytes=currentUser.getDiskUsage();
 		
 		if (fileSize>allowedBytes-usedBytes) {
 			archiveFile.delete();
@@ -474,19 +474,19 @@ public class BenchmarkUploader extends HttpServlet {
 	
 	private static ValidatorStatusCode doSpaceNamesConflict(File uniqueDir, int parentSpaceId) {
 		try {
-			Space parent=Spaces.getDetails(parentSpaceId,Users.getAdmins().get(0).getId());
-			HashSet<String> curNames=new HashSet<String>();
-			for (Space s : parent.getSubspaces()) {
-				curNames.add(s.getName());
+			List<Space> subspaces=Spaces.getSubSpaces(parentSpaceId);
+			HashSet<String> subspaceNames=new HashSet<String>();
+			for (Space s : subspaces) {
+				subspaceNames.add(s.getName());
 			}
 			for(File f : uniqueDir.listFiles()) {
 				// If it's a sub-directory and as such a subspace
 				if(f.isDirectory()) {
 					String curName=f.getName();
-					if (curNames.contains(curName)) {
+					if (subspaceNames.contains(curName)) {
 						return new ValidatorStatusCode(false,"Creating spaces for your benchmarks would lead to having two subspaces with the name "+ curName); // found a conflict
 					}
-					curNames.add(curName);
+					subspaceNames.add(curName);
 				} 
 			}
 			

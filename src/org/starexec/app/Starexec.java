@@ -238,6 +238,18 @@ public class Starexec implements ServletContextListener {
 				}
 			}
 		};
+		
+		final Runnable updateUserDiskSizesTask = new RobustRunnable("updateUserDiskSizesTask") {
+			@Override
+			protected void dorun() {
+				log.info( "updateUserDiskSizesTask (periodic)" );
+				
+				if (!Users.updateAllUserDiskSizes()) {
+					log.error("failed to update user disk sizes (periodic)");
+				}
+				
+			}
+		};
 
 		final Runnable deleteOldAnonymousLinksTask = new RobustRunnable("deleteOldAnonymousLinksTask") {
 			@Override
@@ -316,7 +328,7 @@ public class Starexec implements ServletContextListener {
 	    // checks every day if reports need to be sent 
 	    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
 	    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
-
+	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.DAYS);
 		try {
 			PaginationQueries.loadPaginationQueries();
 
@@ -325,6 +337,7 @@ public class Starexec implements ServletContextListener {
 			log.error(e.getMessage(),e);
 		}
 		
+		//TODO: Once the backfill completes on Starexec, this can safely be removed
 		Util.threadPoolExecute(new Runnable() {
 			@Override
 			public void run(){

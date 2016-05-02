@@ -147,6 +147,8 @@ public abstract class JobManager {
 				log.error("Error reading the jobscript at "+f,e);
 			}
 			mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
+			mainTemplate = mainTemplate.replace("$$DB_USER$$", R.COMPUTE_NODE_MYSQL_USERNAME);
+			mainTemplate = mainTemplate.replace("$$DB_PASS$$", R.COMPUTE_NODE_MYSQL_PASSWORD);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
 			// Impose resource limits
@@ -203,6 +205,20 @@ public abstract class JobManager {
 			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (Job job : joblist) {
+				// contains users that we have identified as exceeding their quota. These users will be skipped
+				HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
+				
+				if (!quotaExceededUsers.containsKey(job.getUserId())) {
+					//TODO: Handle in a new thread perhaps? 
+					quotaExceededUsers.put(job.getUserId(), Users.isDiskQuotaExceeded(job.getUserId()));
+					if (quotaExceededUsers.get(job.getUserId())) {
+						Jobs.pauseAllUserJobs(job.getUserId());
+					}
+				}
+				if (quotaExceededUsers.get(job.getUserId())) {
+					continue;
+				}
+
 				// jobTemplate is a version of mainTemplate customized for this job
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
@@ -240,10 +256,6 @@ public abstract class JobManager {
 			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
-			
-			// contains users that we have identified as exceeding their quota. These users will be skipped
-			HashSet<Integer> quotaExceededUsers = new HashSet<Integer>();
-			
 			
 			/*
 			 * we are going to loop through the schedule adding a few job
@@ -285,19 +297,6 @@ public abstract class JobManager {
 						it.remove();
 						continue;
 					}
-					
-					if (quotaExceededUsers.contains(s.job.getUserId())) {
-						it.remove();
-						continue;
-					}
-					if (Users.isDiskQuotaExceeded(s.job.getUserId())) {
-						//TODO: Handle in a new thread perhaps? 
-						Jobs.pauseAllUserJobs(s.job.getUserId());
-						it.remove();
-						quotaExceededUsers.add(s.job.getUserId());
-						continue;
-					}
-					
 
 					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
 							+"for job " + s.job.getId() 

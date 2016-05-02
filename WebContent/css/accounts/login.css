@@ -15,7 +15,7 @@
 }
 										
 #loginForm tr .label {
-	width: 160px;				
+	display: block;
 }
 
 #loginForm fieldset {
@@ -43,3 +43,39 @@
 #emailRow {
 	margin-bottom:3px;
 }
+
+@media only screen and (max-width: 767px) {
+	#loginForm {
+		margin: 20px 0 0 10px;
+		width: 100%;		
+	}
+
+	body form #loginFieldset {
+		width: 50%;
+	}
+
+	body #loginForm input {
+		margin-left: 6px;
+		width: 150px;
+	}
+
+	#loginForm tr .label {
+		width: 25%;
+	}
+
+	h1 {
+		margin: 20px auto 0 auto;
+	}
+
+	body #pageFooter ul li {
+		margin: 0 0 10px 0;
+	}
+
+	body #pageFooter ul {
+		margin: 0 0 10px 0;
+	}
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}
+

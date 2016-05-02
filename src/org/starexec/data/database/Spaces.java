@@ -1641,6 +1641,63 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		return null;
 	}
 	
+	
+	/**
+	 * Gets all subspaces of the given space
+	 * @param spaceId The ID of the space to get subspaces for
+	 * @return A list of subspaces, or null on error
+	 */
+	public static List<Space> getSubSpaces(int spaceId) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return getSubSpaces(spaceId,con);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets all subspaces of the given space
+	 * @param spaceId The ID of the space to get subspaces for
+	 * @param con The open connection to make the call on
+	 * @return A list of subspaces, or null on error
+	 */
+	public static List<Space> getSubSpaces(int spaceId, Connection con) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
+			procedure.setInt(1, spaceId);
+			results = procedure.executeQuery();
+			
+			results = procedure.executeQuery();
+			List<Space> subSpaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getInt("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				subSpaces.add(s);
+			}
+			
+			return subSpaces;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
 	/**
 	 * Helper method for getSubSpaces() - gets either the first level of subspaces of a space or, recursively, all
 	 * subspaces of a given space
@@ -1653,21 +1710,18 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws Exception
 	 * @author Todd Elvers & Skylar Stark & Benton McCune & Wyatt Kaiser
 	 */
-	
 
 	protected static List<Space> getSubSpaces(int spaceId, int userId,Connection con) throws Exception{
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return getSubSpaces(spaceId,con);
+		}
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
-		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
-			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
-			procedure.setInt(1, spaceId);
-		} else {
+
+		try {
 			procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-		}
-		try {
 			results = procedure.executeQuery();
 			List<Space> subSpaces = new LinkedList<Space>();
 			

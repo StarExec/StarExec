@@ -176,3 +176,70 @@ div.selectWrap span {
 			
 };
 
+@media only screen and (min-width: 768px) {
+}
+
+
+
+@media only screen and (max-width: 767px) {
+	#explorer {
+		width: 100%;
+		float:none;
+	}
+
+	#jobs tr > *:nth-child(2) {
+		display: none;
+	}
+	#jobs tr > *:nth-child(3) {
+		display: none;
+	}
+	#jobs tr > *:nth-child(4) {
+		display: none;
+	}
+
+	#jobs tr > *:nth-child(5) {
+		display: none;
+	}
+
+	#jobs tr > *:nth-child(6) {
+		display: none;
+	}
+
+	#solvers tr > *:nth-child(2) {
+		display: none;
+	}
+
+	#solvers tr > *:nth-child(3) {
+		display: none;
+	}
+
+	#users tr > *:nth-child(2) {
+		display: none;
+	}
+
+	#spaces tr > *:nth-child(2) {
+		display: none;
+	}
+
+	/*
+	#benchmarks tr > *:nth-child(2) {
+		display: none;
+	}
+	*/
+
+
+	.jstree-icon {
+		width: 30px;
+	}
+
+	#wrapper #detailPanel {
+		width: 75%;
+		float: none;
+		margin: auto;
+		border-left: initial;
+	}
+
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}

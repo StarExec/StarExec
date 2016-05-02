@@ -5178,17 +5178,20 @@ public class Jobs {
 		try {
 			List<Integer> jobs = Jobs.getAllJobIds();
 			for (Integer i : jobs) {
-				log.info("backfilling disk_size for job "+i);
-				Job job = Jobs.get(i);
-				if (job.isDeleted() || job.getDiskSize()>0) {
-					continue;
+				try {
+					log.info("backfilling disk_size for job "+i);
+					Job job = Jobs.getIncludeDeleted(i);
+					if (job==null || job.isDeleted() || job.getDiskSize()>0) {
+						continue;
+					}
+					File f = new File(Jobs.getDirectory(i));
+					if (f.exists()) {
+						long size = FileUtils.sizeOfDirectory(f);
+						setJobDiskSize(i,size);
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(),e);
 				}
-				File f = new File(Jobs.getDirectory(i));
-				if (f.exists()) {
-					long size = FileUtils.sizeOfDirectory(f);
-					setJobDiskSize(i,size);
-				}
-				
 			}
 			return true;
 		} catch (Exception e) {

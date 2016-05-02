@@ -551,6 +551,10 @@ CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 DROP PROCEDURE IF EXISTS DeleteJob;
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
 	BEGIN
+		UPDATE users JOIN jobs ON jobs.user_id=users.id
+		SET users.disk_size=users.disk_size-jobs.disk_size
+		WHERE jobs.id=_jobId;
+		
 		UPDATE jobs
 		SET deleted=true, total_pairs=0, disk_size=0
 		WHERE id = _jobId;		
@@ -559,6 +563,11 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 DROP PROCEDURE IF EXISTS UpdateJobDiskSize;
 CREATE PROCEDURE UpdateJobDiskSize(IN _jobId INT, IN _diskSize BIGINT)
 	BEGIN
+		UPDATE users JOIN jobs ON jobs.user_id=users.id
+		SET users.disk_size=(users.disk_size-jobs.disk_size)+_diskSize
+		WHERE jobs.id=_jobId;
+		
+		
 		UPDATE jobs
 		SET disk_size=_diskSize
 		WHERE id=_jobId;
@@ -667,15 +676,16 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _status TINYINT, 
 DROP PROCEDURE IF EXISTS AddJobPairStage;
 CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber INT, IN _primary BOOLEAN, IN _solverId INT, IN _solverName VARCHAR(255), IN _configId INT, IN _configName VARCHAR (255), IN _jobSpace INT)
 	BEGIN
-		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number,solver_id,solver_name,config_id,config_name,job_space_id,status_code) VALUES (_pairId, _stageId,_stageNumber,_solverId,_solverName,_configId,_configName, _jobSpace,1); 
+		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number,solver_id,solver_name,config_id,config_name,job_space_id,status_code, disk_size)
+		VALUES (_pairId, _stageId,_stageNumber,_solverId,_solverName,_configId,_configName, _jobSpace,1,0); 
 	END //
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
 CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, IN _suppressTimestamp BOOLEAN, IN _usingDeps INT, IN _buildJob BOOLEAN, IN _totalPairs INT, OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp, using_dependencies, buildJob, total_pairs)
-		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob, _totalPairs);
+		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp, using_dependencies, buildJob, total_pairs, disk_size)
+		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob, _totalPairs, 0);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	

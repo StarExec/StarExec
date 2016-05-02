@@ -31,6 +31,8 @@ DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
 CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
+		UPDATE users SET users.disk_size=users.disk_size+_diskSize 
+		WHERE id = (SELECT user_id FROM job_pairs JOIN jobs ON jobs.id = job_pairs.job_id WHERE job_pairs.id=_jobPairId);
 		UPDATE jobpair_stage_data
 		SET wallclock = _wallClock,
 			cpu=_cpu,
@@ -192,6 +194,10 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 		UPDATE job_pairs SET start_time=NOW() WHERE id=_id;
 	END //
 
+-- Deletes a job pair from the database. The _pairSize argument is in bytes, and it is only
+-- used in cases where the disk_size field is not set in the stages of the pair to be deleted.
+-- This is necessary only for old pairs with no disk_size set
+-- TODO: The _pairSize argument can be removed after the Starexec backfill finished
 DROP PROCEDURE IF EXISTS DeleteJobPair;
 CREATE PROCEDURE DeleteJobPair( IN _pairId INT, IN _pairSize INT)
 	BEGIN
@@ -199,6 +205,10 @@ CREATE PROCEDURE DeleteJobPair( IN _pairId INT, IN _pairSize INT)
 		SELECT sum(jobpair_stage_data.disk_size) INTO pair_disk_size
 		FROM job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id 
 		WHERE job_pairs.id=_pairId;
+		
+		UPDATE users
+		SET disk_size=IF(pair_disk_size=0,users.disk_size-_pairSize,users.disk_size-pair_disk_size)
+		WHERE id = (SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_pairId);
 		
 		UPDATE jobs 
 		SET disk_size=IF(pair_disk_size=0,jobs.disk_size-_pairSize,jobs.disk_size-pair_disk_size),

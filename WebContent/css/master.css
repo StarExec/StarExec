@@ -203,6 +203,7 @@ ul.horizontal li {
 	display:block;
 	position: relative;
 	overflow: hidden;
+	clear: right;
 }
 
 #content h1 {
@@ -388,4 +389,125 @@ ul.horizontal li {
 	margin-bottom: 1em;
 }
 
+@media only screen and (min-width: 768px) {
+	#starexecLogoWrapper {
+		float: left;
+	}
 
+	#starexecNavWrapper {
+		float: right;
+	}
+
+	.showMobile {
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 767px) {
+	/*
+	body #content {
+		overflow: auto;
+	}
+	*/
+	.hideMobile {
+		display: none;
+	}
+
+
+	html, body {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
+	#wrapper {
+		width: inherit;
+		height: inherit;
+		margin: 0;
+		padding: 0;
+	}
+
+	#pageHeader {
+		width: inherit;
+	}
+
+	#starexecLogoWrapper {
+		float: none;
+		width: inherit;
+		text-align: center;
+	}
+
+	#starexecLogoWrapper a {
+		display: inline;
+	}
+
+	#starexecNavWrapper {
+		width: inherit;
+		float: none;
+		display: block;
+		padding-bottom: 15px;
+	}
+
+	#starexecNavWrapper nav {
+		width: inherit;
+	}
+
+	#starexecNavWrapper ul {
+		text-align: center;
+		width: inherit;
+		padding: 0 0 28px 0;
+	}
+
+	#starexecNavWrapper li {
+		margin: 0 0 10px 0;
+	}
+
+	#content {
+		background-color: purple;
+		width: inherit;
+		/*
+		display: block;
+		clear: left;
+		padding: 0;
+		height: inherit;
+		*/
+	}
+
+	#mainHeaderWrapper {
+		text-align: center;
+		width: inherit;
+	}
+
+	body h1 {
+		margin: 20px auto 0 auto;
+	}
+
+	#wrapper #pageFooter {
+		width: inherit;
+		text-align: center;
+	}
+
+	body #pageFooter ul {
+		width: inherit;
+		display: block;
+		text-align: center;
+		margin: 0 0 10px 0;
+	}
+
+	body #pageFooter ul li {
+		margin: 0 0 10px 0;
+	}
+
+	#wrapper #pageFooter .copyright {
+		float: none;
+		display: inline;
+	}
+
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+	#content {
+		background-color: darkviolet;
+	}	
+}

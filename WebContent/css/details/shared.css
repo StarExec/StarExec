@@ -135,3 +135,13 @@ fieldset {
 	margin-left: 5px;
 	margin-bottom: 10px;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 75%;
+
+	}
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}

@@ -50,6 +50,9 @@ export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
 export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
 export DISK_QUOTA='$$DISK_QUOTA$$'
 export DISK_QUOTA_EXCEEDED=0
+# DB username and password for status reporting
+export DB_USER="$$DB_USER$$"
+export DB_PASS="$$DB_PASS$$"
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes

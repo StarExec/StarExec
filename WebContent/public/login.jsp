@@ -20,7 +20,7 @@
 	
 	<form method="POST" action="j_security_check" id="loginForm">	
 		<span id="uniqueLoginTag"></span>		
-		<fieldset>
+		<fieldset id="loginFieldset">
 			<legend>Credentials</legend>
 			<table cellspacing="10px">								
 			<tr id="emailRow">
@@ -33,7 +33,7 @@
 			</tr>												
 			<tr>
 				<td><a href="${starexecRoot}/public/password_reset.jsp">Forgot password?</a></td>
-				<td><button type="submit">Login</button></td>
+				<td><button type="submit" id="loginButton">Login</button></td>
 			</tr>
 			<tr> 
 				<td><a href="${starexecRoot}/public/registration.jsp">New user?</a></td>

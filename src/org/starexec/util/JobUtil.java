@@ -677,6 +677,7 @@ public class JobUtil {
 					if (currentPipe.getRequiredNumberOfInputs()!=jobPair.getBenchInputs().size()) {
 						errorMessage="Job pairs have invalid inputs. Given inputs = "+jobPair.getBenchInputs().size()+", but "
 								+ "required inputs = "+currentPipe.getRequiredNumberOfInputs();
+						return -1;
 					}
 					
 					

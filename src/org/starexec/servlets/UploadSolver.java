@@ -270,7 +270,7 @@ public class UploadSolver extends HttpServlet {
 		
 		User currentUser=Users.get(userId);
 		long allowedBytes=currentUser.getDiskQuota();
-		long usedBytes=Users.getDiskUsage(userId);
+		long usedBytes=currentUser.getDiskUsage();
 		
 		//the user does not have enough disk quota to upload this solver
 		if (fileSize>allowedBytes-usedBytes) {

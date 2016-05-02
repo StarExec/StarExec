@@ -219,3 +219,34 @@ table.panel .solvedHead, table.panel .timeHead {
 .stageSelector {
     width: 90px;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper #explorer {
+		width: 100%;
+		float:none;
+	}
+
+	#wrapper fieldset {
+		width: 75%;
+	}
+
+	#wrapper fieldset.panelField {
+		max-width: 100%;
+		width: 100%;
+		float: none;
+	}
+
+	.jstree-icon {
+		width: 30px;
+	}
+
+	#wrapper #detailPanel {
+		width: 100%;
+		float: none;
+		margin: 0;
+		border-left: initial;
+	}
+}
+
+@media only screen and (min-width: 560px) and (max-width: 767px)  {
+}

@@ -142,6 +142,8 @@ public class R {
     public static String MYSQL_URL = null;									// MySQL connection string for JDBC
     public static String MYSQL_USERNAME = null;								// Starexec's username for the database
     public static String MYSQL_PASSWORD = null;								// Starexec database password
+    public static String COMPUTE_NODE_MYSQL_USERNAME = null;                // username for database to use from compute nodes
+    public static String COMPUTE_NODE_MYSQL_PASSWORD = null;				// DB password for COMPUTE_NODE_MYSQL_USERNAME
     public static String MYSQL_DRIVER = "com.mysql.jdbc.Driver";			// MySQL java driver class (we use JDBC)
     public static int MYSQL_POOL_MAX_SIZE = 1;								// The maximum number of connections in the database pool
     public static int MYSQL_POOL_MIN_SIZE = 1;								// The minimum number of connections to keep open to the database	
