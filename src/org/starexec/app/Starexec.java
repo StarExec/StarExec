@@ -328,7 +328,7 @@ public class Starexec implements ServletContextListener {
 	    // checks every day if reports need to be sent 
 	    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
 	    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.DAYS);
+	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.HOURS);
 		try {
 			PaginationQueries.loadPaginationQueries();
 
