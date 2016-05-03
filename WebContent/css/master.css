@@ -464,9 +464,9 @@ ul.horizontal li {
 	}
 
 	#content {
-		background-color: purple;
 		width: inherit;
 		/*
+		background-color: purple;
 		display: block;
 		clear: left;
 		padding: 0;
@@ -507,7 +507,9 @@ ul.horizontal li {
 }
 
 @media only screen and (min-width: 560px) and (max-width: 767px)  {
+	/*
 	#content {
 		background-color: darkviolet;
 	}	
+	*/
 }
