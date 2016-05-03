@@ -335,19 +335,7 @@ public class Starexec implements ServletContextListener {
 		} catch (Exception e) {
 			log.error("unable to correctly load pagination queries");
 			log.error(e.getMessage(),e);
-		}
-		
-		//TODO: Once the backfill completes on Starexec, this can safely be removed
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {	
-					Jobs.backfillJobDiskQuota();
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}	
-			}
-		});	
+		}	
 		
 	}
 	

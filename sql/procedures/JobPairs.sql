@@ -64,6 +64,18 @@ CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128), IN _
 		UPDATE job_pairs SET status_code = 10 WHERE node_id = _nodeID AND status_code = 4 AND id!=_jobPairId AND sandbox_num=_sandbox;
 	END //
 	
+-- Sets a pair's disk_usage to 0, updating jobpair_stage_data, jobs, and users
+DROP PROCEDURE IF EXISTS RemoveJobPairDiskSize;
+CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
+	BEGIN
+		DECLARE _sumDiskSize BIGINT;
+		SELECT SUM(disk_size) FROM jobpair_stage_data WHERE jobpair_id=_jobPairId INTO _sumDiskSize;
+		UPDATE jobs SET jobs.disk_size=jobs.disk_size - (_sumDiskSize) WHERE jobs.id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId);
+		UPDATE users SET users.disk_size=users.disk_size - (_sumDiskSize) 
+		WHERE users.id=(SELECT user_id FROM jobs JOIN job_pairs ON job_pairs.job_id=jobs.id WHERE job_pairs.id=_jobPairId);
+		UPDATE jobpair_stage_data SET disk_size=0 WHERE jobpair_id=_jobPairId;
+	END //
+
 -- Updates a job pair's status
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdatePairStatus;
@@ -197,9 +209,8 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 -- Deletes a job pair from the database. The _pairSize argument is in bytes, and it is only
 -- used in cases where the disk_size field is not set in the stages of the pair to be deleted.
 -- This is necessary only for old pairs with no disk_size set
--- TODO: The _pairSize argument can be removed after the Starexec backfill finished
 DROP PROCEDURE IF EXISTS DeleteJobPair;
-CREATE PROCEDURE DeleteJobPair( IN _pairId INT, IN _pairSize INT)
+CREATE PROCEDURE DeleteJobPair( IN _pairId INT)
 	BEGIN
 		DECLARE pair_disk_size BIGINT DEFAULT 0;
 		SELECT sum(jobpair_stage_data.disk_size) INTO pair_disk_size
@@ -207,11 +218,11 @@ CREATE PROCEDURE DeleteJobPair( IN _pairId INT, IN _pairSize INT)
 		WHERE job_pairs.id=_pairId;
 		
 		UPDATE users
-		SET disk_size=IF(pair_disk_size=0,users.disk_size-_pairSize,users.disk_size-pair_disk_size)
+		SET users.disk_size=users.disk_size-pair_disk_size
 		WHERE id = (SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_pairId);
 		
 		UPDATE jobs 
-		SET disk_size=IF(pair_disk_size=0,jobs.disk_size-_pairSize,jobs.disk_size-pair_disk_size),
+		SET jobs.disk_size=jobs.disk_size-pair_disk_size,
 		total_pairs=total_pairs-1 
 		WHERE id=(SELECT job_id FROM job_pairs WHERE id=_pairId);
 
