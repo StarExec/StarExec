@@ -706,8 +706,8 @@ public class Users {
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_ADMIN_QUERY, getUserOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con,builder.getSQL());
+        	procedure.setString("query", query.getSearchQuery());		
 			results = procedure.executeQuery();
-			
 			List<User> users = new LinkedList<User>();
 			
 			while(results.next()){
