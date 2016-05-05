@@ -35,9 +35,6 @@
 	<star:head title="${title}" css="${css}" js="${js}"/>	
 	<! This viewport meta tag should not be deleted. Allows website to render on phones. >
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-	<!TODO META tags for debugging, delete when finished>
-	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-	<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 	<body>			
 		<div id="wrapper">
 			<star:header />

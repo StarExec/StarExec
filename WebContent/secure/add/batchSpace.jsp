@@ -20,7 +20,7 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to upload spaces to this space or the space does not exist");		
 	}
 %>
-<star:template title="upload XML representation of space hierarchy to ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner, lib/jquery.validate.min, add/batchSpace">
+<star:template title="upload XML representation of space hierarchy to ${space.name}" css="common/delaySpinner, add/batchSpace" js="common/delaySpinner, lib/jquery.validate.min, add/batchSpace">
 	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/space" id="upForm">
 		<input type="hidden" name="space" value="${space.id}"/>
 		<fieldset>

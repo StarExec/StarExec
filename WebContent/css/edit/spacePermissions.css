@@ -1,3 +1,43 @@
 .addUsersTitle {
 	margin: 70px 0 0 0;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 85%;
+	}
+
+	#wrapper #usersTable {
+		width: 100%;
+	}
+
+	#wrapper #usersTable tr > *:first-child {
+		width: 50%;
+	}
+	#wrapper #usersTable tr > *:nth-child(2) {
+		display: none;
+	}
+	#wrapper #usersTable tr > *:nth-child(3) {
+		width: 50%;
+	}
+
+	#wrapper #usersTable tr > *:first-child {
+		width: 50%
+	}
+	
+	#wrapper #addUsers tr > *:nth-child(2) {
+		display: none;
+	}
+
+	#wrapper #usersTable tr > *:nth-child(3) {
+		width: 50%
+	}
+
+	body table td {
+		text-align: center;
+	}
+
+	#permissionActions a {
+		margin: 0 5px 5px 0;
+	}
+}

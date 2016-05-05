@@ -44,3 +44,9 @@ tr th {
 	margin-left:5px;
 	margin-bottom:10px;
 }
+
+@media only screen and (max-width: 767px) {
+	#editProcForm fieldset {
+		width: 85%;
+	}
+}

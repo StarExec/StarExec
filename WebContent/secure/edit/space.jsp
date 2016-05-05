@@ -93,16 +93,21 @@
 						<td><textarea id="description" name="description" length=${descLength}>${space.description}</textarea></td>
 					</tr>
 					<tr>
-						<td class="label"><p>default</p></td>
+						<td class="label">
+							<p>default</p>
+							<span class="showMobile">
+								<br />so = solver<br />b = bench<br />u = user<br />sp = space<br />j = job
+							</span>
+						</td>
 						<td>			
 							<table id="tblDefaultPerm">
 								<tr>
 									<th></th>
-									<th>solver</th>
-									<th>bench</th>
-									<th>users</th>
-									<th>space</th>
-									<th>jobs</th>
+									<th><span class="hideMobile">solver</span><span class="showMobile">so</span></th>
+									<th><span class="hideMobile">bench</span><span class="showMobile">b</span></th>
+									<th><span class="hideMobile">users</span><span class="showMobile">u</span></th>
+									<th><span class="hideMobile">space</span><span class="showMobile">sp</span></th>
+									<th><span class="hideMobile">job</span><span class="showMobile">j</span></th>
 								</tr>
 								<tr>
 									<td>add</td>

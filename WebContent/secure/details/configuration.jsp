@@ -42,7 +42,7 @@ try {
 }
 %>
 
-<star:template title="edit ${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
+<star:template title="${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
 	<input type="hidden" id="solverId" value="${solver.id}"/>
 	<fieldset>
 		<legend>details</legend>

@@ -22,3 +22,27 @@ fieldset {
 #pairActions > select {
     width: 20%;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 85%;
+	}
+
+	#wrapper button {
+		margin: 0 0 5px 0;
+	}
+
+	#wrapper #pairTbl {
+		width: 100%;
+	}
+
+	#pairTbl td, #pairTbl th {
+		width: 25%;
+	}
+	#pairTbl tr > *:nth-child(4) {
+		display: none;
+	}
+	#pairTbl tr > *:nth-child(6) {
+		display: none;
+	}
+}

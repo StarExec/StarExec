@@ -48,7 +48,7 @@
 
 		<fieldset>
 			<legend>solver details</legend>
-			<table class="shaded">
+			<table id="solverDetails" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>
