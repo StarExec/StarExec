@@ -97,7 +97,7 @@ public class JobUtil {
 		NodeList listOfJobLines= doc.getElementsByTagName("JobLine");
 		logUtil.info(method, " # of JobLines = "+listOfJobLines.getLength());
 		//this job has nothing to run
-		if (listOfJobLines.getLength()+listOfJobPairs.getLength()==0) {
+		if (listOfJobLines.getLength() + listOfJobPairs.getLength()==0) {
 			errorMessage="Every job must have at least one job pair or job line to be created";
 			return null;
 		}
@@ -106,7 +106,7 @@ public class JobUtil {
 		int pairCount = listOfJobPairs.getLength()+listOfJobLines.getLength();
 		// This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
 		// for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
-		if (pairsAvailable<pairCount) {
+		if (pairsAvailable < pairCount) {
 			errorMessage = "Error: You are trying to create "+pairCount+" pairs, but you have "+pairsAvailable+" remaining in your quota. Please delete some old jobs before continuing.";
 			return null;
 		}
@@ -755,13 +755,11 @@ public class JobUtil {
 			
 			log.info("job pair size nonzero");
 	
-			boolean startPaused = false;
-	
-			if(DOMHelper.hasElement(jobAttributes,"start-paused")){
-			    Element startPausedEle = DOMHelper.getElementByName(jobAttributes,"start-paused");
-			    log.info("startPausedEle: " + startPausedEle.getAttribute("value"));
-			    startPaused = Boolean.valueOf(startPausedEle.getAttribute("value"));
-			}
+			boolean startPaused = getBooleanElementValue( false, "start-paused", jobAttributes );
+			boolean suppressTimestamps = getBooleanElementValue( false, "suppress-timestamps", jobAttributes );
+
+			job.setSuppressTimestamp( suppressTimestamps );
+
 	
 			log.info("start-paused: " + (new Boolean(startPaused).toString()));
 	
@@ -780,6 +778,23 @@ public class JobUtil {
 			errorMessage = "Internal error when creating your job: "+e.getMessage();
 			return -1;
 	    }
+	}
+
+	/**
+	 * Gets the value of a boolean element contained in an XML element.
+	 * @param defaultValue return this value if the element is not found.
+	 * @param elementName the name of the element to get the value of.
+	 * @param attributes the containing element of the element to find.
+	 * @author Albert Giegerich
+	 */
+	public boolean getBooleanElementValue( boolean defaultValue, String elementName, Element attributes ) {
+		if( DOMHelper.hasElement( attributes, elementName ) ) {
+			Element booleanElement = DOMHelper.getElementByName( attributes, elementName );
+			log.info( elementName + booleanElement.getAttribute( "value" ) );
+			return Boolean.valueOf( booleanElement.getAttribute( "value" ) );
+		} else {
+			return defaultValue;
+		}
 	}
 
 	/**
