@@ -1,0 +1,41 @@
+Installation Notes
+
+This document describes how to describe StarExec and its
+dependencies on a Linux system. 
+
+
+********************************** MySQL **************************************
+
+StarExec depends on MySQL Community Server 5.5.49. It is possible that newer
+versions may also work, but this can't be guaranteed. MySQL can be obtained
+at
+
+http://dev.mysql.com/downloads/mysql/
+
+Clicking the button 'Looking for previous GA versions?' will allow you to
+select version 5.5.49, and then you will need to select the appropriate
+version based on the system you are installing on.
+
+
+
+********************************** EMAIL **************************************
+
+Starexec sends automated emails for several purposes, such as sending notifications
+when new users are registered or sending weekly status updates. To do this, Starexec
+requires an email address that it can send emails from. In starexec-config.xml,
+the EMAIL_USER field should be set to the email address to send from, and EMAIL_PWD,
+EMAIL_SMTP, and EMAIL_SMTP_PORT should be set as decribed.
+
+Any email server that supports SMTP can be used, but the default settings included
+in the config file show how to use a Gmail account. The EMAIL_SMTP field is set
+correctly for Gmail, and the SMTP_PORT field is set to 587, as Starexec uses
+TLS. You should be able to use any desired Gmail account by plugging in your own
+account and password. Note that Gmail may initially block the Starexec app from
+sending mail until you log onto your account and confirm the activity. Moreover,
+you may need to go into your Gmail account settings and allow access from less
+secure apps. Creating a fresh Gmail account for sole use by Starexec may be
+beneficial if you do not want to change your settings.
+
+Starexec has been tested using Gmail, but other email servers should also work
+provided you look up the correct SMTP server and port. Various settings may
+need to be changed in other email providers as well.

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<starexec-configuration default="production">
+        <!-- common settings across stardev and production -->
+	<configuration name="common_core">
+		<!-- This class must encapsulate all declared properties -->
+		<class name="org.starexec.constants.R">
+			<!-- MYSQL Configuration -->			
+			<property key="MYSQL_DATABASE" value="starexec" />
+			<property key="MYSQL_USERNAME" value="MYSQL_USERNAME" />
+			<property key="MYSQL_PASSWORD" value="MYSQL_PASSWORD" />
+			<!-- URL at which to connect to MySQL server -->
+			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec" />
+			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
+			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
+			
+			<!-- Directory at which Starexec will save data (solvers, benchmarks, job results, and so on) -->
+			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />	
+			
+			<!-- TODO: We should move this directory under the STAREXEC_DATA_DIR and delete this configuration -->
+			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
+			<property key="STAREXEC_URL_PREFIX" value="https"/>									
+			<!-- Misc. Configuration -->
+			<property key="EMAIL_USER" value="gmailaccount@gmail.com" />
+			<property key="EMAIL_PWD" value="GMAIL_PASSWORD" />
+			
+			<property key="EMAIL_SMTP" value="smtp.gmail.com" />
+			<property key="EMAIL_SMTP_PORT" value="587" />
+			
+			
+			
+			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
+			<property key="DEFAULT_DISK_QUOTA" value="5368709120" />	
+			<property key="DEFAULT_PAIR_QUOTA" value="750000"/>
+			<property key="DEBUG_MODE_ACTIVE" value="false" />
+			<!-- Indicates whether a working backend is configured. If false, jobs will not be submitted-->						
+            <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
+            <!-- Whether tests can be initialized through the web interface. Tests can alter the database and should not be used on any production instance -->
+            <property key="ALLOW_TESTING" value="false"/>
+            <!-- backend Configuration -->
+            <!-- Directory containing SGE on head node. This is not required to use the OAR or local backends -->
+			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
+			
+			<!-- Directory on compute nodes in which to execute jobs -->
+			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
+			<!-- Frequency with which new jobs are submitted to the grid backend-->
+			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->
+			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
+			
+			<!-- System names of users who will run jobs. Two users exist to allow running two jobs per node  -->
+			<property key="SANDBOX_USER_ONE" value="sandbox"/>
+			<property key="SANDBOX_USER_TWO" value="sandbox2"/>
+			<!-- Username and password used to connect to MySQL from compute nodes. Can be the same or different user as declared above -->
+			<property key="COMPUTE_NODE_MYSQL_USERNAME" value="NODE_MYSQL_USERNAME"/>
+			<property key="COMPUTE_NODE_MYSQL_PASSWORD" value="NODE_MYSQL_PASSWORD"/>
+		</class>
+	</configuration>
+	
+	
+	
+	<!-- You can have multiple configs, and configs can inherit from other configs. Inheritance means undeclared properties default to the parent values -->	
+	<configuration name="production" inherit="common_core">
+   		<class name="org.starexec.constants.R">   		
+   			<property key="PUBLIC_USER_ID" value="2" /> 
+	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
+			<property key="TEST_COMMUNITY_ID" value="12007"/>
+	  		<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
+            <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
+            <property key="STAREXEC_APPNAME" value="starexec"/>
+			<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
+   		</class>
+    </configuration>
+  
+</starexec-configuration>
