@@ -44,7 +44,7 @@
 
 <star:template title="upload status"
 	js="details/shared, lib/jquery.dataTables.min"
-	css="details/shared, common/table">
+	css="details/shared, common/table, details/uploadStatus">
 	<fieldset>
 		<legend>details</legend>
 		<table class="shaded">

@@ -13,7 +13,7 @@
 	}
 %>
 
-<star:template title="Personal Recycle Bin" js="common/delaySpinner, details/recycleBin, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/delaySpinner, common/table, explore/spaces, details/shared">
+<star:template title="Personal Recycle Bin" js="common/delaySpinner, details/recycleBin, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/delaySpinner, common/table, explore/spaces, details/shared, details/recycleBin">
 		<fieldset id="recycledSolverField">
 			<legend class="expd" id="recycledSolverExpd"><span>0</span> recycled solvers</legend>
 			<table id="rsolvers" uid="${userId}">

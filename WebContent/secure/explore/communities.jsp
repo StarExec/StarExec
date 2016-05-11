@@ -19,7 +19,7 @@
 	request.setAttribute("sentFromCommunityPage", Web.SENT_FROM_COMMUNITY_PAGE);
 %>
 
-<star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common">			
+<star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common, explore/communities">
 	<span id="leaderResponse" value="${leaderResponseParameterName}" hidden></span>
 	<span id="emailCode" value="${emailCodeParameterName}" hidden></span>
 	<span id="approveRequest" value="${approveCommunityRequestName}" hidden></span>

@@ -36,8 +36,13 @@ fieldset {
 		width: 100%;
 	}
 
+	#pairTbl {
+		font-size: 12px;
+	}
+
 	#pairTbl td, #pairTbl th {
 		width: 25%;
+		text-align: center;
 	}
 	#pairTbl tr > *:nth-child(4) {
 		display: none;

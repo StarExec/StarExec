@@ -145,6 +145,13 @@ input[type="text"] {
 		width: 0%;
 	}
 
+	body td, body th {
+		text-align: center;
+	}
+
+	#settingActions button {
+		margin: 0 5px 5px 0;
+	}
 
 	#wrapper #showPicture {
 		display: none;

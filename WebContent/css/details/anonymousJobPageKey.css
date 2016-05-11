@@ -11,4 +11,8 @@
 		width: 50%;
 	}
 
+	td, th {
+		text-align: center;
+	}
+
 }

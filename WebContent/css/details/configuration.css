@@ -36,3 +36,9 @@ textarea {
 	height: 100px;
 	font-family: monospace;
 }
+
+@media only screen and (max-width: 767px) {
+	th, td {
+		text-align: center;
+	}
+}
