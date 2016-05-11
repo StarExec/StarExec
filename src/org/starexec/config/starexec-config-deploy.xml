@@ -19,16 +19,13 @@
 			<!-- TODO: We should move this directory under the STAREXEC_DATA_DIR and delete this configuration -->
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
-			<!-- Misc. Configuration -->
+			<!-- Email Configuration -->
 			<property key="EMAIL_USER" value="gmailaccount@gmail.com" />
 			<property key="EMAIL_PWD" value="GMAIL_PASSWORD" />
-			
 			<property key="EMAIL_SMTP" value="smtp.gmail.com" />
 			<property key="EMAIL_SMTP_PORT" value="587" />
-			
-			
-			
-			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
+			<!-- Address that Starexec will use to send emails to Starexec administrators. Also where users are directed with questions or bug reports -->
+			<property key="CONTACT_EMAIL" value="adminemail@gmail.com" />
 			<property key="DEFAULT_DISK_QUOTA" value="5368709120" />	
 			<property key="DEFAULT_PAIR_QUOTA" value="750000"/>
 			<property key="DEBUG_MODE_ACTIVE" value="false" />
@@ -38,6 +35,8 @@
             <property key="ALLOW_TESTING" value="false"/>
             <!-- backend Configuration -->
             <!-- Directory containing SGE on head node. This is not required to use the OAR or local backends -->
+			<!-- Describes which backend Starexec will be using. Must be one of 'sge' 'oar' or 'local' -->
+            <property key="BACKEND_TYPE" value="sge"/>
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			
 			<!-- Directory on compute nodes in which to execute jobs -->

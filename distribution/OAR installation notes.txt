@@ -19,6 +19,7 @@ It is probably easiest to do this directly in the OAR database.
 delete from queues; -- delete all existing OAR queues
 
 -- insert a new queue. Other queues may created like this or through the web interface
+
 insert into queues values ('all.q', 1,'oar_sched_gantt_with_timesharing', 'Active');
 
 3) Add resources

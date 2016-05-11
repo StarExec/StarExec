@@ -18,6 +18,24 @@ version based on the system you are installing on.
 
 
 
+********************************** BACKEND ************************************
+
+Starexec's backend refers to the utility that is responsible for accepting
+new jobs from the web app and distributing them over the available compute nodes.
+Starexec supports 3 different backend implementations, and which one you use
+can be configured using the BACKEND_TYPE field in starexec-config.xml. You have
+the option to use SGE (https://arc.liv.ac.uk/trac/SGE), OAR (https://oar.imag.fr/),
+or a simple local backend implemented in Starexec itself.
+
+To install SGE or OAR, you will need to refer to their documentation. In the case
+of OAR, the document 'OAR installation notes.txt' describes extra installation
+steps you should take to configure OAR for use with Starexec.
+
+
+The local backend is a primitive solution if you only want to run jobs on the same
+machine that Starexec is running off of. The local backend does not support multiple
+queues or nodes, and only a single job will run at a time.
+
 ********************************** EMAIL **************************************
 
 Starexec sends automated emails for several purposes, such as sending notifications
@@ -39,3 +57,7 @@ beneficial if you do not want to change your settings.
 Starexec has been tested using Gmail, but other email servers should also work
 provided you look up the correct SMTP server and port. Various settings may
 need to be changed in other email providers as well.
+
+Starexec is also configured to use a CONTACT_EMAIL, which is intended to
+receive emails directed at Starexec admins. This email address will appear
+on the site for users who want to send bug reports or ask questions.

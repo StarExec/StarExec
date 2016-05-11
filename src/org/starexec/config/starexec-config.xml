@@ -24,6 +24,8 @@
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             <property key="ALLOW_TESTING" value="true"/>
             <!-- backend Configuration -->
+            <!-- Describes which backend Starexec will be using. Must be one of 'sge' 'oar' or 'local' -->
+            <property key="BACKEND_TYPE" value="sge"/>
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
 			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->

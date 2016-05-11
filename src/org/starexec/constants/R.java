@@ -3,6 +3,10 @@ import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
 import org.starexec.backend.Backend;
+import org.starexec.backend.GridEngineBackend;
+import org.starexec.backend.LocalBackend;
+import org.starexec.backend.OARBackend;
+import org.starexec.exceptions.StarExecException;
 
 /**
  * Class which holds static resources (R) available for use
@@ -63,7 +67,25 @@ public class R {
 	public static String getBatchSpaceXMLDir() {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
 	}
+	
+	/**
+	 * Returns a Backend of the class corresponding to the BACKEND_TYPE set
+	 * @return
+	 * @throws StarExecException 
+	 */
+	public static Backend getBackendFromType() throws StarExecException {
+		if (BACKEND_TYPE.equals("sge")) {
+			return new GridEngineBackend();
+		} else if (BACKEND_TYPE.equals("oar")) {
+			return new OARBackend();
+		} else if (BACKEND_TYPE.equals("local")) {
+			return new LocalBackend();
+		} else {
+			throw new StarExecException("BACKEND_TYPE was configured as "+BACKEND_TYPE+", but one of 'sge' 'oar' or 'local' is required");
+		}
+	}
 
+	public static String BACKEND_TYPE = null;
 	public static Backend BACKEND = null;
 	
     //maximum length properties

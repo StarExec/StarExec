@@ -30,6 +30,7 @@ import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.test.integration.TestManager;
@@ -87,7 +88,6 @@ public class Starexec implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
-		R.BACKEND = new GridEngineBackend();
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
@@ -111,6 +111,12 @@ public class Starexec implements ServletContextListener {
 			log.error(e.getMessage(),e);
 		}
 		
+		try {
+			R.BACKEND = R.getBackendFromType();
+			log.info("backend = "+R.BACKEND.getClass());
+		} catch (StarExecException e) {
+			log.error(e.getMessage(),e);
+		}
 		
 		// Initialize the datapool after properties are loaded
 		Common.initialize();
