@@ -209,7 +209,7 @@ public abstract class JobManager {
 				HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
 				
 				if (!quotaExceededUsers.containsKey(job.getUserId())) {
-					//TODO: Handle in a new thread perhaps? 
+					//TODO: Handle in a new thread if this looks slow on Starexec
 					quotaExceededUsers.put(job.getUserId(), Users.isDiskQuotaExceeded(job.getUserId()));
 					if (quotaExceededUsers.get(job.getUserId())) {
 						Jobs.pauseAllUserJobs(job.getUserId());

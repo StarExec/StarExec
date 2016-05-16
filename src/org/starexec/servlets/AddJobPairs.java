@@ -43,7 +43,6 @@ import org.starexec.util.Validator;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-//TODO: Update job pair count at the end?
 public class AddJobPairs extends HttpServlet {
 	private static final Logger log = Logger.getLogger(AddJobPairs.class);	
 	private static final LogUtil logUtil = new LogUtil( log );

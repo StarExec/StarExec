@@ -3,6 +3,9 @@ Installation Notes
 This document describes how to describe StarExec and its
 dependencies on a Linux system. 
 
+********************************** Ant ****************************************
+
+Starexec requires Ant to build. 
 
 ********************************** MySQL **************************************
 
@@ -14,9 +17,20 @@ http://dev.mysql.com/downloads/mysql/
 
 Clicking the button 'Looking for previous GA versions?' will allow you to
 select version 5.5.49, and then you will need to select the appropriate
-version based on the system you are installing on.
+version based on the system you are installing on. Alternatively, you can
+install MySQL through any package manager you may have available.
 
+In starexec-config.xml, you must specify MYSQL_USERNAME and 
+COMPUTE_NODE_MYSQL_USERNAME. These are MySQL users that must have access to the 
+MySQL database. If desired, they can be the same user-- the only difference is that
+COMPUTE_NODE_MYSQL_USERNAME requires fewer permissions. The user set as
+MYSQL_USERNAME will require ALL permissions in the Starexec database, excluding
+server administration permissions. The user COMPUTE_NODE_MYSQL_USERNAME will 
+require SELECT, INSERT, UPDATE, and EXECUTE permissions.
 
+A description of MySQL permissions can be found at the link below.
+
+http://dev.mysql.com/doc/refman/5.7/en/privileges-provided.html
 
 ********************************** BACKEND ************************************
 

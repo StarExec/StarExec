@@ -14,7 +14,7 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			
 			<!-- Directory at which Starexec will save data (solvers, benchmarks, job results, and so on) -->
-			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />	
+			<property key="STAREXEC_DATA_DIR" value="/home/starexec/data" />	
 			
 			<!-- TODO: We should move this directory under the STAREXEC_DATA_DIR and delete this configuration -->
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
