@@ -420,16 +420,23 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws IOException
 	 */
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
-		ZipEntry entry=new ZipEntry(zipFileName);
-		zos.putNextEntry(entry);
-		FileInputStream input=new FileInputStream(srcFile);
-		entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
-		IOUtils.copy(input, zos);
-		zos.closeEntry();
-		input.close();
-	}
-	
+    public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+         ZipEntry entry=new ZipEntry(zipFileName);
+         try{
+             zos.putNextEntry(entry);
+             FileInputStream input=new FileInputStream(srcFile);
+             entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
+             IOUtils.copy(input, zos);
+             zos.closeEntry();
+             input.close();
+         } catch(java.io.FileNotFoundException e) {
+             if(srcFile.getCanonicalPath() == srcFile.getAbsolutePath()) {
+                 throw e;
+             }
+             log.debug("File not found exception probably broken symlink for: " + srcFile.getAbsolutePath());
+         }
+        
+    }	
 	/**
 	 * Given a zip file, returns the file that was modified most recently. Directories are not checked.
 	 * @param file
@@ -511,6 +518,8 @@ public class ArchiveUtil {
 				addFileToArchive(stream,f,newFileName);
 			}
 		}
+        stream.finish();
+        stream.flush();
 		stream.close();
 	}
 	/**
