@@ -835,7 +835,9 @@ function sandboxWorkspace {
 		log "sandboxing workspace with first sandbox user"
 		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
-	ls -lR "$WORKING_DIR"
+	sudo chown -R `whoami` $LOCAL_BENCH_PATH
+    chmod 644 $LOCAL_BENCH_PATH
+    ls -lR "$WORKING_DIR"
 	return 0
 }
 
