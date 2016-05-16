@@ -1,11 +1,41 @@
 Installation Notes
 
-This document describes how to describe StarExec and its
+This document describes how to describe Starexec and its
 dependencies on a Linux system. 
+
+********************************** Java ***************************************
+
+Starexec depends on the Java 8 JDK and has been tested with version 1.8.0_u77.
+Java 8 can be found at the site below or can be installed through various
+package managers
+
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
 
 ********************************** Ant ****************************************
 
-Starexec requires Ant to build. 
+Starexec requires Ant to build, and has been tested with version 1.9.3. An
+installation guide for Ant is below, or you may use any applicable package manager.
+
+http://ant.apache.org/manual/install.html
+
+********************************** Apache Tomcat ******************************
+
+Starexec depends on Apache Tomcat 7.0.64. While newer versions may work, we have
+frequently seen that even minor version releases of Tomcat can have breaking
+changes for Starexec, so using a different version of Tomcat is not recommended.
+
+A full release of Tomcat is included in the starexec package under the 'distribution'
+directory. This is identical to a release that you can download from Apache,
+with the exception that the mysql-connector-java-5.1.22-bin.jar file is included
+in the lib directory. This .jar file is required for Starexec to connect to 
+its database, and as such we recommend that you install Tomcat using the provided
+archive. If you would like to install a clean copy of Tomcat, you will need to copy
+the MySQL connector to the new lib directory.
+
+If you install Tomcat using the provided archive, you may need to update permissions
+on the install directory to make Tomcat's scripts executable. This can be done, for
+example, by using 'chmod 700 -R tomcat_directory'
+
 
 ********************************** MySQL **************************************
 
@@ -50,7 +80,7 @@ The local backend is a primitive solution if you only want to run jobs on the sa
 machine that Starexec is running off of. The local backend does not support multiple
 queues or nodes, and only a single job will run at a time.
 
-********************************** EMAIL **************************************
+********************************** Email **************************************
 
 Starexec sends automated emails for several purposes, such as sending notifications
 when new users are registered or sending weekly status updates. To do this, Starexec
@@ -75,3 +105,27 @@ need to be changed in other email providers as well.
 Starexec is also configured to use a CONTACT_EMAIL, which is intended to
 receive emails directed at Starexec admins. This email address will appear
 on the site for users who want to send bug reports or ask questions.
+
+********************************** Starexec Configuration **********************
+
+After all of the above dependencies have been installed, you can take the following
+steps to configure and deploy Starexec.
+
+1) Under src/org/starexec/config you will see the file starexec-config.xml. This file
+contains the bulk of Starexec configuration, including specifying Starexec data directories,
+email settings, database connection settings, and several other items. You will need
+to go through this file and configure Starexec as you want, according to the documentation
+provided in that file.
+
+2) In the top-level file local.properties, you will need to provide several configurable values.
+These values are mostly identical to values in starexec-config.xml.
+
+3) Run 'ant' at the top level. This will cause Ant to build starexec according to the rules
+specified in build.xml.
+
+4) In the deployed-sql directory, which should have been created by the Ant build, you
+will need to execute the NewInstall.sql script in MySQL. This script will create the
+Starexec database and stored procedures, along with creating a few data entries that
+Starexec expects by default. For example, you can execute
+
+mysql -u"username" -p"password" < NewInstall.sql
