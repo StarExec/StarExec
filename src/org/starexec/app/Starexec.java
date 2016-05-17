@@ -77,7 +77,7 @@ public class Starexec implements ServletContextListener {
 			     +"terminated successfully.");
 		    log.info("StarExec successfully shutdown");
 		} catch (Exception e) {
-		    log.error(e);
+		    log.error(e.getMessage(),e);
 		    log.error("StarExec unclean shutdown");
 		}		
 	}
