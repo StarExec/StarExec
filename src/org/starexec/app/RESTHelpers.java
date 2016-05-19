@@ -730,7 +730,7 @@ public class RESTHelpers {
 
 			query.setTotalRecordsAfterQuery(totals[1]);
 	    	
-			return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,query,wallclock,stageNumber);
+			return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,query,wallclock,stageNumber, jobSpaceId);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -1150,7 +1150,7 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 	
-	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons,DataTablesQuery query, boolean useWallclock, int stageNumber) {
+	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons,DataTablesQuery query, boolean useWallclock, int stageNumber, int jobSpaceId) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1185,9 +1185,23 @@ public class RESTHelpers {
         		entry.add(new JsonPrimitive(display2 + " s"));
         		entry.add(new JsonPrimitive(displayDiff + " s"));
     		}
-    		
-    		entry.add(new JsonPrimitive(c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult()));    	
-    		entry.add(new JsonPrimitive(c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult()));    		
+    		String link1 = getPairsInSpaceHtml(
+                            "all",
+                            jobSpaceId,
+                            c.getFirstPair().getPrimaryConfiguration().getId(),
+                            1,
+                            c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult(),
+                            PrimitivesToAnonymize.NONE);
+
+    		String link2 = getPairsInSpaceHtml(
+                            "all",
+                            jobSpaceId,
+                            c.getSecondPair().getPrimaryConfiguration().getId(),
+                            1,
+                            c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult(),
+                            PrimitivesToAnonymize.NONE);
+    		entry.add(new JsonPrimitive(link1));
+    		entry.add(new JsonPrimitive(link2));
     		if (c.doResultsMatch(stageNumber)) {
         		entry.add(new JsonPrimitive(1));    		
     		} else {
