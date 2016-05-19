@@ -4,12 +4,17 @@
 	<configuration name="common_core">
 		<!-- This class must encapsulate all declared properties -->
 		<class name="org.starexec.constants.R">
-			<!-- MYSQL Configuration -->			
+			<!-- MYSQL Configuration -->	
+			<!-- Name of the MySQL database for storing Starexec data -->		
 			<property key="MYSQL_DATABASE" value="starexec" />
+			
+			<!-- MySQL username and password that the web app should use to connect to the database-->
 			<property key="MYSQL_USERNAME" value="MYSQL_USERNAME" />
 			<property key="MYSQL_PASSWORD" value="MYSQL_PASSWORD" />
 			<!-- URL at which to connect to MySQL server -->
 			<property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec" />
+			
+			<!-- Min and max number of active MySQL connections to keep at a time. -->
 			<property key="MYSQL_POOL_MAX_SIZE" value="125" />			
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			
@@ -19,7 +24,7 @@
 			<!-- TODO: We should move this directory under the STAREXEC_DATA_DIR and delete this configuration -->
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
-			<!-- Email Configuration -->
+			<!-- Email Configuration. See installation documentation for details -->
 			<property key="EMAIL_USER" value="gmailaccount@gmail.com" />
 			<property key="EMAIL_PWD" value="GMAIL_PASSWORD" />
 			<property key="EMAIL_SMTP" value="smtp.gmail.com" />
@@ -34,9 +39,10 @@
             <!-- Whether tests can be initialized through the web interface. Tests can alter the database and should not be used on any production instance -->
             <property key="ALLOW_TESTING" value="false"/>
             <!-- backend Configuration -->
-            <!-- Directory containing SGE on head node. This is not required to use the OAR or local backends -->
 			<!-- Describes which backend Starexec will be using. Must be one of 'sge' 'oar' or 'local' -->
             <property key="BACKEND_TYPE" value="sge"/>
+            
+            <!-- Directory containing SGE on head node. This is not required to use the OAR or local backends -->
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			
 			<!-- Directory on compute nodes in which to execute jobs -->
@@ -58,14 +64,13 @@
 	
 	<!-- You can have multiple configs, and configs can inherit from other configs. Inheritance means undeclared properties default to the parent values -->	
 	<configuration name="production" inherit="common_core">
-   		<class name="org.starexec.constants.R">   		
-   			<property key="PUBLIC_USER_ID" value="2" /> 
-	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
-			<property key="TEST_COMMUNITY_ID" value="12007"/>
-	  		<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
-            <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
-            <property key="STAREXEC_APPNAME" value="starexec"/>
-			<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
+   		<class name="org.starexec.constants.R">
+   		<!-- ID of community that is created my MinimalData.sql and can be used for testing. Will be 2 unless that file is changed -->
+		<property key="TEST_COMMUNITY_ID" value="2"/>
+	  	<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
+        <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
+        <property key="STAREXEC_APPNAME" value="starexec"/>
+		<property key="CLUSTER_UPDATE_PERIOD" value="1200" />
    		</class>
     </configuration>
   
