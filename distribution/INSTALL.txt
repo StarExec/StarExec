@@ -26,29 +26,24 @@ changes for Starexec, so using a different version of Tomcat is not recommended.
 
 A full release of Tomcat is included in the starexec package under the 'distribution'
 directory. This is identical to a release that you can download from Apache,
-with the exception that the mysql-connector-java-5.1.22-bin.jar file is included
-in the lib directory. This .jar file is required for Starexec to connect to 
-its database, and as such we recommend that you install Tomcat using the provided
-archive. If you would like to install a clean copy of Tomcat, you will need to copy
-the MySQL connector to the new lib directory.
+with the exception that the mysql-connector-java-5.1.22-bin.jar and drmaa.jar
+files are included in the lib directory. These .jar files are required for Starexec
+to connect to its database and backend, and as such we recommend that you install 
+Tomcat using the provided archive. If you would like to install a clean copy of
+Tomcat, you will need to copy the MySQL connector and DRMAA files to the new lib directory.
 
 If you install Tomcat using the provided archive, you may need to update permissions
 on the install directory to make Tomcat's scripts executable. This can be done, for
 example, by using 'chmod 700 -R tomcat_directory'
 
 
-********************************** MySQL **************************************
+********************************** MySQL and MariaDB **************************************
 
-StarExec depends on MySQL Community Server 5.5.49. It is possible that newer
-versions may also work, but this can't be guaranteed. MySQL can be obtained
-at
+StarExec depends on MariaDB 5.5.47. It is possible that newer
+versions, like 5.5.49, may also work, but this can't be guaranteed. MariaDB can
+be obtained at the following iste.
 
-http://dev.mysql.com/downloads/mysql/
-
-Clicking the button 'Looking for previous GA versions?' will allow you to
-select version 5.5.49, and then you will need to select the appropriate
-version based on the system you are installing on. Alternatively, you can
-install MySQL through any package manager you may have available.
+https://downloads.mariadb.org/
 
 In starexec-config.xml, you must specify MYSQL_USERNAME and 
 COMPUTE_NODE_MYSQL_USERNAME. These are MySQL users that must have access to the 
@@ -129,3 +124,8 @@ Starexec database and stored procedures, along with creating a few data entries 
 Starexec expects by default. For example, you can execute
 
 mysql -u"username" -p"password" < NewInstall.sql
+
+5) Certain users and groups will need to exist to give Starexec appropriate permissions.
+
+Create the 'star-web' group. Add the users SANDBOX_USER_ONE and SANDBOX_USER_TWO, configured
+in starexec-config.xml, to this group.

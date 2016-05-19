@@ -9,3 +9,7 @@ used only to deploy Starexec on our specific systems.
 3) In the scripts-common directory, delete the stardeploy.sh, starjobs.sh, and updateSQL scripts.
 
 4) Delete the local-properties directory.
+
+5) Under sql/new-install, delete the MinimalData.sql file and rename MinimalDataDistribute.sql to MinimalData.sql.
+
+6) Delete this file.
