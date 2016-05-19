@@ -53,10 +53,12 @@ export DISK_QUOTA_EXCEEDED=0
 # DB username and password for status reporting
 export DB_USER="$$DB_USER$$"
 export DB_PASS="$$DB_PASS$$"
+export SCRIPT_DIR="$$SCRIPT_DIR$$"
+
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
-. /home/starexec/sge_scripts/functions.bash
+. $SCRIPT_DIR/functions.bash
 
 
 # Array of secondary benchmarks starexec paths

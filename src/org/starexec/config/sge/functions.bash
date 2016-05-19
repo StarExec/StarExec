@@ -16,7 +16,7 @@
 # /////////////////////////////////////////////
 
 # Include the predefined status codes and functions
-. /home/starexec/sge_scripts/status_codes.bash
+. $SCRIPT_DIR/status_codes.bash
 
 #################################################################################
 # base64 decode some names which could otherwise have nasty characters in them

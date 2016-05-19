@@ -158,8 +158,7 @@ public abstract class JobManager {
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_TWO$$", R.SANDBOX_USER_TWO);
 			mainTemplate = mainTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
-
-
+			mainTemplate = mainTemplate.replace("$$SCRIPT_DIR$$", R.getScriptDir());
 		}
 	}
 

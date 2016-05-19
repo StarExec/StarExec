@@ -68,6 +68,10 @@ public class R {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
 	}
 	
+	public static String getScriptDir() {
+		return STAREXEC_DATA_DIR+"/sge_scripts";
+	}
+	
 	/**
 	 * Returns a Backend of the class corresponding to the BACKEND_TYPE set
 	 * @return
@@ -194,7 +198,6 @@ public class R {
     public static boolean ALLOW_TESTING=false;								// whether tests should be allowed to run on this instance. False for production.
     //Public user info
     public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
-    public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_CPU_LIMIT = 30;
     public static int PUBLIC_CLOCK_TIMEOUT = 30;
     public static String PUBLIC_USER_EMAIL = "public";
