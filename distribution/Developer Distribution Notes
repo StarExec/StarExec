@@ -12,4 +12,6 @@ used only to deploy Starexec on our specific systems.
 
 5) Under sql/new-install, delete the MinimalData.sql file and rename MinimalDataDistribute.sql to MinimalData.sql.
 
-6) Delete this file.
+6) Delete the local-lib directory
+
+7) Delete this file.
