@@ -95,7 +95,11 @@ public class Starexec implements ServletContextListener {
 		log = Logger.getLogger(Starexec.class);
 		
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
-
+		try {
+			log.info("Starexec running as "+Util.executeCommand("whoami"));
+		} catch (IOException e1) {
+			log.error("unable to execute whoami");
+		}
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 
@@ -141,8 +145,6 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
-		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
-		
 	}	
 	
 	/**
