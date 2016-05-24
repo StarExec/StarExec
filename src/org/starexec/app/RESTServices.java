@@ -4476,7 +4476,7 @@ public class RESTServices {
 	}
 	
 	/**
-	 * Restarts Tomcat, causing a restart of STarexec
+	 * Restarts Tomcat, causing a restart of Starexec
 	 * @param request
 	 * @return json ValidatorStatusCode object
 	 * @throws Exception

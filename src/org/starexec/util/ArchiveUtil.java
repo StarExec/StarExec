@@ -147,7 +147,7 @@ public class ArchiveUtil {
 				String[] unzipCmd = new String[7];
 				unzipCmd[0] = "sudo";
 				unzipCmd[1] = "-u";
-				unzipCmd[2] = "sandbox";
+				unzipCmd[2] = R.SANDBOX_USER_ONE;
 				unzipCmd[3] = "unzip";
 				unzipCmd[4] = fileName;
 				unzipCmd[5] = "-d";
@@ -163,7 +163,7 @@ public class ArchiveUtil {
 			        String[] tarCmd = new String[8];
 				tarCmd[0] = "sudo";
 				tarCmd[1] = "-u";
-				tarCmd[2] = "sandbox";
+				tarCmd[2] = R.SANDBOX_USER_ONE;
 				tarCmd[3] = "tar";
 				tarCmd[4] = "-xf";
 				tarCmd[5] = fileName;
