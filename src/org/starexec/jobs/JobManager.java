@@ -85,10 +85,17 @@ public abstract class JobManager {
 	
     public synchronized static boolean checkPendingJobs(){
     	try {
+            Boolean devJobsOnly = false;
     		log.debug("about to check if the system is paused");
 		    if (Jobs.isSystemPaused()) { 
-	    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
-	    	    	return false;
+	    	    	if(Queues.developerJobsExist()) {
+                            log.info("Submitting only developer jobs");
+                            devJobsOnly = true;
+                    }
+                    else {
+	    	    	        log.info("Not adding more job pairs to any queues, as the system is paused");
+                            return false;
+                    }
 	    	}
 		    Common.logConnectionsOpen();
 		    log.debug("about to get all queues");
@@ -103,7 +110,12 @@ public abstract class JobManager {
 				int queueSize = Queues.getSizeOfQueue(qId);
 				log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
 				if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
-				    List<Job> joblist = Queues.getPendingJobs(qId);
+				    List<Job> joblist;
+                    if (devJobsOnly) {
+                            joblist = Queues.getPendingDeveloperJobs(qId);
+                    } else {
+                            joblist = Queues.getPendingJobs(qId);
+                    }
 				    log.debug("about to submit this many jobs "+joblist.size());
 				    if (joblist.size() > 0) {
 				    	submitJobs(joblist, q, queueSize,nodeCount);

@@ -40,6 +40,20 @@ CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 		FROM jobs WHERE queue_id = _queueId 
 		AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
 	END //
+
+--Retreives all pending job pairs for a give queue owned by a developer
+DROP PROCEDURE IF EXISTS GetPendingDeveloperJobs;
+CREATE PROCEDURE GetPendingDeveloperJobs(IN _queueId INT)
+    BEGIN
+        SELECT DISTINCT  jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout, jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies, jobs.buildJob
+        FROM users u
+        INNER JOIN user_roles ur 
+            ON u.email = ur.email
+        INNER JOIN jobs
+            ON jobs.user_id = u.id 
+        WHERE ur.role = 'developer' OR ur.role = 'admin' AND queue_id = _queueId
+        AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
+    END //
 		
 -- Retrieves the number of enqueued job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
