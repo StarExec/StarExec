@@ -29,7 +29,7 @@
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
 			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->
-			<property key="MAX_PAIR_FILE_WRITE" value="20" /> <!-- in GB --> 
+			<property key="MAX_PAIR_FILE_WRITE" value="600" /> <!-- in GB --> 
 			<property key="SANDBOX_USER_ONE" value="sandbox"/>
 			<property key="SANDBOX_USER_TWO" value="sandbox2"/>
 			<property key="COMPUTE_NODE_MYSQL_USERNAME" value="star_report"/>
