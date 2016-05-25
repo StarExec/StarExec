@@ -110,30 +110,32 @@ public class UploadSpaceXML extends HttpServlet {
 	 */
     public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
 		try {
+            log.debug("Handling Upload of XML File from User " + userId);
+            PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
+            // Don't need to keep file long - just using download directory
+            File uniqueDir = new File(R.getBatchSpaceXMLDir(), "" + userId);
+            uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
+            uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+            
+            uniqueDir.mkdirs();
+            
+            //Process the archive file and extract
+        
+            File archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
+            new File(archiveFile.getParent()).mkdir();
+            item.write(archiveFile);
+            final String archivePath = uniqueDir.getCanonicalPath();
 			Util.threadPoolExecute(new Runnable() {
 				@Override
 				public void run(){
 					try{ 
-						log.debug("Handling Upload of XML File from User " + userId);
-						PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
-						// Don't need to keep file long - just using download directory
-						File uniqueDir = new File(R.getBatchSpaceXMLDir(), "" + userId);
-						uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
-						uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-						
-						uniqueDir.mkdirs();
-						
-						//Process the archive file and extract
-					
-						File archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
-						new File(archiveFile.getParent()).mkdir();
-						item.write(archiveFile);
 						ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 						archiveFile.delete();
 						Uploads.XMLFileUploadComplete(statusId);
+                        //create new file reference for inside the scope of the Runnable, same as uniqueDir:
+						File archiveLocation = new File(archivePath);
 						//Typically there will just be 1 file, but might as well allow more
-						
-						for (File file:uniqueDir.listFiles())
+						for (File file:archiveLocation.listFiles())
 						{
 							List<Integer> current=new ArrayList<Integer>();
 							if (!file.isFile()) {
