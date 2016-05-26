@@ -141,6 +141,8 @@
                 <copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
                 <replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
                 <replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
+        		<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
+
 		<chmod file="soft-deploy.sh" perm="774"/>
 
                 <!-- Copy the context template and fill it in -->

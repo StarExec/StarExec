@@ -5,10 +5,10 @@
 # filled in by running ant with build.xml:
 APPNAME=the_appname
 STAREXEC_DATA_DIR=the_data_dir
+WEB_HOME=the_web_home
 
 
 SGE_SCRIPT_DIR=$STAREXEC_DATA_DIR/sge_scripts
-WEB_HOME=/project/tomcat-webapps/webapps
 WAR=$APPNAME.war
 APPDIR=$WEB_HOME/$APPNAME
 STAR_WAR=$WEB_HOME/$WAR
