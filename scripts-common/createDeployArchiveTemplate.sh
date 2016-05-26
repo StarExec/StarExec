@@ -14,8 +14,8 @@ fi
 
 
 #Directory into which starexec has been checked out
-STAREXEC_CHECKOUT_DIR="/home/starexec/starexec_eaburns"
-STAREXEC_VERSION_NUMBER="1"
+STAREXEC_CHECKOUT_DIR="current_checkout_dir"
+STAREXEC_VERSION_NUMBER="current_starexec_version"
 
 
 

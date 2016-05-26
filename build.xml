@@ -144,7 +144,14 @@
         		<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
 
 		<chmod file="soft-deploy.sh" perm="774"/>
+		
+		<!-- Fill in the createDeployArchive.sh template -->
+		<delete file="createDeployArchive.sh" />
+		<copy file="${script-dir}createDeployArchiveTemplate.sh" tofile="createDeployArchive.sh"/>
+		<replaceregexp file="createDeployArchive.sh" match="current_checkout_dir" replace="${basedir}"/>
+		<replaceregexp file="createDeployArchive.sh" match="current_starexec_vesion" replace="${svnversion}"/>
 
+		<chmod file="createDeployArchive.sh" perm="774"/>
                 <!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
                 <copy file="context.template" tofile="${meta-inf}/context.xml"/>
