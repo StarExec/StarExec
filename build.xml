@@ -145,13 +145,13 @@
 
 		<chmod file="soft-deploy.sh" perm="774"/>
 		
-		<!-- Fill in the createDeployArchive.sh template -->
-		<delete file="createDeployArchive.sh" />
-		<copy file="${scripts-dir}/createDeployArchiveTemplate.sh" tofile="createDeployArchive.sh"/>
-		<replaceregexp file="createDeployArchive.sh" match="current_checkout_dir" replace="${basedir}"/>
-		<replaceregexp file="createDeployArchive.sh" match="current_starexec_version" replace="${svnversion}"/>
+		<!-- Fill in the createDistroArchive.sh template -->
+		<delete file="createDistroArchive.sh" />
+		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>
+		<replaceregexp file="createDistroArchive.sh" match="current_checkout_dir" replace="${basedir}"/>
+		<replaceregexp file="createDistroArchive.sh" match="current_starexec_vesion" replace="${svnversion}"/>
 
-		<chmod file="createDeployArchive.sh" perm="774"/>
+		<chmod file="createDistroArchive.sh" perm="774"/>
                 <!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
                 <copy file="context.template" tofile="${meta-inf}/context.xml"/>

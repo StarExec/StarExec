@@ -19,5 +19,5 @@ used only to deploy Starexec on our specific systems.
 8) Delete this file.
 
 
-The file createDeployArchive.sh creates an archive and performs all of these steps automatically.
+The file createDistroArchive.sh creates an archive and performs all of these steps automatically.
 This file will be generated whenever you build the project using Ant.
