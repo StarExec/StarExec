@@ -14,4 +14,10 @@ used only to deploy Starexec on our specific systems.
 
 6) Delete the local-lib directory
 
-7) Delete this file.
+7) Delete the utility-scripts directory
+
+8) Delete this file.
+
+
+The file createDeployArchive.sh creates an archive and performs all of these steps automatically.
+This file will be generated whenever you build the project using Ant.

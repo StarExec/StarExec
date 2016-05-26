@@ -67,6 +67,7 @@
    		<class name="org.starexec.constants.R">
    		<!-- ID of community that is created my MinimalData.sql and can be used for testing. Will be 2 unless that file is changed -->
 		<property key="TEST_COMMUNITY_ID" value="2"/>
+		<!-- This is the host at which the MySQL server is running. Compute nodes need to be able to reach the MySQL server at this host -->
 	  	<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
         <property key="STAREXEC_APPNAME" value="starexec"/>

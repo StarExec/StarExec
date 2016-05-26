@@ -150,6 +150,9 @@ Create the 'sandbox' group, and add SANDBOX_USER_ONE to this group.
 Create another group 'sandbox2' and add SANDBOX_USER_TWO to this group.
 Add the 'tomcat' user to both of these groups.
 
+If you are using SGE as a backend, you need to create the user 'sgeadmin'
+and ensure this user does have administrator privileges in SGE.
+
 6) A sandbox directory will need to be created on the Starexec
 head node. This directory is used to execute user-provided scripts in a 
 sandboxed environment, preventing them from affecting other parts of the
