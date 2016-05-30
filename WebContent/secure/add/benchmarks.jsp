@@ -13,12 +13,14 @@
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
 		userSpaces = Spaces.getSpacesByUser(userId);
+        Integer defaultProc = settings.getBenchProcessorId();
 
 		postProcs.add(Processors.getNoTypeProcessor());
 
 		request.setAttribute("space", Spaces.get(spaceId));
 		request.setAttribute("types", postProcs);
 		request.setAttribute("userSpaces",userSpaces);
+        request.setAttribute("defaultProc", defaultProc);
 		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
@@ -112,8 +114,8 @@
 						<td class="label"><p>benchmark type</p></td>
 						<td><select id="benchType" name="benchType">
 								<c:forEach var="type" items="${types}">
-									<option value="${type.id}">${type.name}</option>
-								</c:forEach>
+                                <option ${type.id == defaultProc ? 'selected' : ''} value="${type.id}">${type.name} ${type.id == defaultProc ? '(community default)' : ''}</option>
+                                </c:forEach>
 						</select></td>
 					</tr>
 					<tr
