@@ -353,7 +353,10 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 				  Instead, an ID for this upload request will be returned. This upload ID can be used to query the
-				  status of the benchmark upload to see its progress using "viewuploadstatus".
+				  status of the benchmark upload to see its progress using "viewuploadstatus". In addition the
+                  upload status of an upload request can be seen through the web interface at
+                  https://www.starexec.org/starexec/secure/details/uploadStatus.jsp?id=XX
+                  Where XX is the upload request ID.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
