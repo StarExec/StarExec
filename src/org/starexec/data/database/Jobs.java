@@ -2597,6 +2597,7 @@ public class Jobs {
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
 				j.setCompleteTime(results.getTimestamp("completed"));
+                j.setDiskSize(results.getLong("disk_size"));
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	

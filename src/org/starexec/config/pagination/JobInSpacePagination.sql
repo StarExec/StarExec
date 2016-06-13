@@ -15,6 +15,7 @@
 						description, 
 						deleted,
 						user_id,
+                        disk_size,
 						jobs.total_pairs 		AS totalPairs,
 						GetCompletePairs(id) 	AS completePairs,
 						GetPendingPairs(id) 	AS pendingPairs,

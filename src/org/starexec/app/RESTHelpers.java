@@ -1492,7 +1492,7 @@ public class RESTHelpers {
 					.getLiteJobPairStats().get("errorPercentage"), true)));
 			
 			entry.add(new JsonPrimitive(job.getCreateTime().toString()));
-
+            entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
 			dataTablePageEntries.add(entry);
 		}
 		
