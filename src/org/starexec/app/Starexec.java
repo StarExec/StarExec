@@ -29,6 +29,7 @@ import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Communities;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
@@ -271,6 +272,14 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 
+        final Runnable updateCommunityStats = new RobustRunnable("updateCommunityStats") {
+            @Override
+            protected void dorun() {
+                log.info("updateCommunityStats (periodic)");
+                Communities.updateCommunityMap();
+            }
+        };
+
 		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
 			@Override
 			protected void dorun() {
@@ -337,6 +346,7 @@ public class Starexec implements ServletContextListener {
 	    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
 	    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
 	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.DAYS);
+        taskScheduler.scheduleAtFixedRate(updateCommunityStats, 0, 6, TimeUnit.HOURS);
 		try {
 			PaginationQueries.loadPaginationQueries();
 
