@@ -12,6 +12,8 @@
 <head>
 	<title>${title} - StarExec</title>
 	<meta charset="utf-8" />
+    <!-- This viewport meta tag should not be deleted. Allows website to render on phones. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	<%
 		try {
 			//try to use a cookie first so we don't always need to ask the database

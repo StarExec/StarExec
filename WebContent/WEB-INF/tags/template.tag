@@ -33,8 +33,6 @@
 <!DOCTYPE html>
 <html lang="en">
 	<star:head title="${title}" css="${css}" js="${js}"/>	
-	<! This viewport meta tag should not be deleted. Allows website to render on phones. >
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	<body>			
 		<div id="wrapper">
 			<star:header />
