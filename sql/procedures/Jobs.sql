@@ -793,7 +793,7 @@ CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID 
 		SELECT path,solver_name,config_name,bench_name,job_pairs.status_code,complete.completion_id, id, primary_jobpair_data FROM job_pairs
 			LEFT JOIN job_pair_completion AS complete ON job_pairs.id=complete.pair_id
 			JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id
-		WHERE job_pairs.job_id=_jobID AND (complete.completion_id>_completionId OR job_pairs.status_code=4) 
+		WHERE job_pairs.job_id=_jobID AND (complete.completion_id>_completionId) 
 		AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
 	END //
 
@@ -983,5 +983,5 @@ CREATE PROCEDURE IncrementTotalJobPairsForJob(IN _jobId INT, IN _increment INT)
 	BEGIN
 		UPDATE jobs SET total_pairs=total_pairs+_increment WHERE id=_jobId;
 	END //
-	
+
 DELIMITER ; -- this should always be at the end of the file
