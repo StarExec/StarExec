@@ -174,47 +174,40 @@ div.selectWrap span {
 			width: 220px;
 			padding: 10px;
 			
-};
-
-@media only screen and (min-width: 768px) {
 }
 
-
-
 @media only screen and (max-width: 767px) {
+	body fieldset {
+		width: 85%;
+	}
 	#explorer {
 		width: 100%;
 		float:none;
 	}
 
-	#jobs tr > *:nth-child(2) {
-		display: none;
+	#jobs tr > *:first-child {
+		width: 100% !important;
 	}
-	#jobs tr > *:nth-child(3) {
-		display: none;
-	}
-	#jobs tr > *:nth-child(4) {
+
+	#jobs tr > *:nth-child(2), #jobs tr > *:nth-child(3), #jobs tr > *:nth-child(4), 
+	#jobs tr > *:nth-child(5), #jobs tr > *:nth-child(6) {
 		display: none;
 	}
 
-	#jobs tr > *:nth-child(5) {
-		display: none;
+	#solvers tr > *:first-child {
+		width: 100% !important;
 	}
 
-	#jobs tr > *:nth-child(6) {
-		display: none;
-	}
-
-	#solvers tr > *:nth-child(2) {
-		display: none;
-	}
-
-	#solvers tr > *:nth-child(3) {
+	#solvers tr > *:nth-child(2), #solvers tr > *:nth-child(3) {
 		display: none;
 	}
 
 	#users tr > *:nth-child(2) {
 		display: none;
+	}
+
+	#spaces tr > *:first-child {
+		width: 100% !important;
 	}
 
 	#spaces tr > *:nth-child(2) {
@@ -227,19 +220,19 @@ div.selectWrap span {
 	}
 	*/
 
-
 	.jstree-icon {
 		width: 30px;
 	}
 
 	#wrapper #detailPanel {
-		width: 75%;
+		width: 100%;
 		float: none;
 		margin: auto;
 		border-left: initial;
 	}
 
-}
+	body th, body td {
+		text-align: center;
+	}
 
-@media only screen and (min-width: 560px) and (max-width: 767px)  {
 }

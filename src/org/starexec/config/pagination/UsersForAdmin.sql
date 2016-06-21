@@ -12,3 +12,8 @@ SELECT 	id,
 	role,
 	subscribed_to_reports
 	FROM	users NATURAL JOIN user_roles
+    WHERE
+                -- Exclude Users whose name and description don't contain the query string
+                (CONCAT(first_name, ' ', last_name) LIKE    CONCAT('%', :query, '%')
+                OR      institution                         LIKE    CONCAT('%', :query, '%')
+                OR      email                               LIKE    CONCAT('%', :query, '%'))

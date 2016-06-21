@@ -227,8 +227,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
 		return;
 	}
-	
-	fillTableWithPaginatedPrimitives(tableName, 'users', idOfSelectedSpace, sSource, aoData, fnCallback);
+	fillTableWithPaginatedPrimitives(tableName, 'usersTable', idOfSelectedSpace, sSource, aoData, fnCallback);
 }
 
 function addUsersPaginationHandler(sSource, aoData, fnCallback) {
@@ -244,7 +243,7 @@ function addUsersPaginationHandler(sSource, aoData, fnCallback) {
 	}
 
 	$.get(starexecRoot + 'services/space/community/' + idOfSelectedSpace, function(communityIdOfSelectedSpace) {
-		fillTableWithPaginatedPrimitives(tableName, 'users', communityIdOfSelectedSpace, sSource, aoData, fnCallback);
+		fillTableWithPaginatedPrimitives(tableName, 'usersTable', communityIdOfSelectedSpace, sSource, aoData, fnCallback);
 	});
 }
 
@@ -323,7 +322,7 @@ function initDataTables(){
 	addFilterOnDoneTyping();
 
 	// Setup the DataTable objects
-	userTable = $('#users').dataTable( {
+	userTable = $('#usersTable').dataTable( {
 		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
@@ -347,7 +346,7 @@ function initDataTables(){
 	var tables=["#users", "#addUsers"];
 
 	function unselectAll(except) {
-		var tables=["#users"];
+		var tables=["#usersTable"];
 		for (x=0;x<tables.length;x++) {
 
 			if (except==tables[x]) {
@@ -366,7 +365,7 @@ function initDataTables(){
 	}
 	
 	//setup user click event
-	$('#users tbody').on("mousedown", "tr", function(){
+	$('#usersTable tbody').on("mousedown", "tr", function(){
 		var uid = $(($(this).find(":input"))[0]).attr('value');
 		var sid = spaceId;
 		lastSelectedUserId = uid;
@@ -789,32 +788,31 @@ function doUserCopyPostCB() {
 }
 
 function checkPermissions(jsonData, id) {
-	if (jsonData.perm.isLeader) {
-		$('#loader').show();
-		$.post(  
-				starexecRoot+"services/space/isSpacePublic/" + id,  
-				function(returnCode){
-					$("#makePublic").show(); //the button may be hidden if the user is coming from another space
-					switch(returnCode){
-					case 0:
+    if (jsonData.isLeader) {
+        $('#loader').show();
+        $.post(  
+                starexecRoot+"services/space/isSpacePublic/" + id,  
+                function(returnCode){
+                    $("#makePublic").show(); //the button may be hidden if the user is coming from another space
+                    switch(returnCode){
+                    case 0:
 
-						currentSpacePublic=false;
-						setJqueryButtonText("#makePublic","make public");
-						break;
-					case 1:
-						currentSpacePublic=true;
-						setJqueryButtonText("#makePublic","make private");
-						break;
-					}	
-				},  
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error getting determining whether space is public",5000);
-			$('#makePublic').fadeOut('fast');
-		});
+                        currentSpacePublic=false;
+                        setJqueryButtonText("#makePublic","make public");
+                        break;
+                    case 1:
+                        currentSpacePublic=true;
+                        setJqueryButtonText("#makePublic","make private");
+                        break;
+                    }   
+                },  
+                "json"
+        ).error(function(){
+            showMessage('error',"Internal error getting determining whether space is public",5000);
+            $('#makePublic').fadeOut('fast');
+        });
     } else {
-		$('#makePublic').fadeOut('fast');
-		return
+        $('#makePublic').fadeOut('fast');
+        return
     }
 }
-

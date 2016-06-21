@@ -10,6 +10,17 @@
 	text-align: center;
 }
 
+#jobs p.stat {
+    margin: auto;
+    text-align: center;
+    width: 80px;
+    height: 30px;
+    padding-top: 10px;
+    color: #111;
+    display: block;
+    border: 1px solid #111;
+}
+
 @media only screen and (max-width: 767px) {
 	#picSection {
 		display: none;
@@ -19,24 +30,21 @@
 		border-left: initial;
 	}
 
-	#jobs tr > *:nth-child(2) {
-		display: none;
+	#jobs tr > *:first-child {
+		width: 100% !important;
 	}
-	#jobs tr > *:nth-child(3) {
-		display: none;
-	}
-	#jobs tr > *:nth-child(4) {
-		display: none;
-	}
-	#jobs tr > *:nth-child(5) {
+
+	#jobs tr > *:nth-child(2), #jobs tr > *:nth-child(3), #jobs tr > *:nth-child(4), 
+	#jobs tr > *:nth-child(5), #jobs tr > *:nth-child(6) {
 		display: none;
 	}
 
-	#jobs tr > *:nth-child(6) {
-		display: none;
+	body button {
+		margin: 0 0 5px 0;
 	}
 
-}
+	body td, body th {
+		text-align: center;
+	}
 
-@media only screen and (min-width: 560px) and (max-width: 767px)  {
 }

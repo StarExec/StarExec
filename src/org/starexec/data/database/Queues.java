@@ -524,18 +524,42 @@ public class Queues {
 	}
 
 	/**
+     * Wrapper method that gets jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     */
+	public static List<Job> getPendingJobs(int queueId) {
+        return getPendingJobsHelper(queueId, false);
+	}
+
+    
+	/**
+     * Wrapper method that only gets developer or admin jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     */
+    public static List<Job> getPendingDeveloperJobs(int queueId) {
+        return getPendingJobsHelper(queueId, true);
+    
+    }
+	/**
      * Gets jobs with pending job pairs for the given queue
      * @param queueId the id of the queue
+     * @param developerOnly true if only developer jobs will be returned
      * @return the list of Jobs for that queue which have pending job pairs
      * @author Ben McCune and Aaron Stump
      */
-	public static List<Job> getPendingJobs(int queueId) {
+	public static List<Job> getPendingJobsHelper(int queueId, Boolean developerOnly) {
 		Connection con = null;		
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
+			con = Common.getConnection();
+            if(developerOnly) {
+                procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
+            } else {
+                procedure = con.prepareCall("{CALL GetPendingJobs(?)}");
+            }
 			procedure.setInt(1, queueId);					
 			 results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
@@ -570,6 +594,34 @@ public class Queues {
 
 		return null;
 	}
+
+	/**
+     * Tests to see if there exist developer jobs in all active queues
+     * @return true if there are developer jobs, false if none are in any queue
+     */
+    public static boolean developerJobsExist() {
+        List<Queue> queues = Queues.getAllActive();
+        for (Queue q : queues) {
+                int queueId = q.getId();
+                Connection con = null;      
+                CallableStatement procedure = null;
+                ResultSet results = null;
+                try {
+                    con = Common.getConnection();       
+                     procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
+                    procedure.setInt(1, queueId);                   
+                     results = procedure.executeQuery();
+                     return results.next(); 
+                } catch (Exception e){          
+                    log.error(e.getMessage(), e);       
+                } finally {
+                    Common.safeClose(con);
+                    Common.safeClose(procedure);
+                    Common.safeClose(results);
+                }
+        }
+        return false;
+    }
 	
 	private static Queue resultSetToQueue(ResultSet results) throws SQLException  {
 		Queue q = new Queue();

@@ -12,24 +12,26 @@
 <star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/anonymousJobPageKey, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/anonymousJobPageKey">		
 
 <p class="noteText">Note: Only the owner of the job can see this page.</p>
-<table id="solverNameKeyTable">
-	<thead>
-		<tr>
-			<th>Solver Name</th>
-			<th>Anonymized Name</th>
-		</tr>
-	</thead>
-	<tbody>
-		<c:forEach var="solverTriple" items="${solverTripleList}">
+<fieldset id="solverNameKeyFieldset">
+	<table id="solverNameKeyTable">
+		<thead>
 			<tr>
-				<td>
-					<a href="${starexecRoot}/secure/details/solver.jsp?id=${solverTriple.getRight()}">${solverTriple.getLeft()}</a>
-					<img class="extLink" src="${starexecRoot}/images/external.png">
-				</td>
-				<td>${solverTriple.getMiddle()}</td>
+				<th>Solver Name</th>
+				<th>Anonymized Name</th>
 			</tr>
-		</c:forEach>
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			<c:forEach var="solverTriple" items="${solverTripleList}">
+				<tr>
+					<td>
+						<a href="${starexecRoot}/secure/details/solver.jsp?id=${solverTriple.getRight()}">${solverTriple.getLeft()}</a>
+						<img class="extLink" src="${starexecRoot}/images/external.png">
+					</td>
+					<td>${solverTriple.getMiddle()}</td>
+				</tr>
+			</c:forEach>
+		</tbody>
+	</table>
+</fieldset>
 
 </star:template>

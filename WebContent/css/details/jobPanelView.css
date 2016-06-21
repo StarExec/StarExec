@@ -57,7 +57,8 @@ table.panel .solvedHead, table.panel .timeHead {
 		max-width: 100%;
 		width: 100%;
 	}
-}
 
-@media only screen and (min-width: 560px) and (max-width: 767px)  {
+	th, td {
+		text-align: center;
+	}
 }

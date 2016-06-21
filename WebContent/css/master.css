@@ -401,6 +401,10 @@ ul.horizontal li {
 	.showMobile {
 		display: none;
 	}
+
+	.mobileBlock {
+		display: inline-block;
+	}
 }
 
 @media only screen and (max-width: 767px) {
@@ -411,6 +415,10 @@ ul.horizontal li {
 	*/
 	.hideMobile {
 		display: none;
+	}
+
+	.mobileBlock {
+		display: block;
 	}
 
 
@@ -467,6 +475,8 @@ ul.horizontal li {
 		width: inherit;
 		/*
 		background-color: purple;
+		*/
+		/*
 		display: block;
 		clear: left;
 		padding: 0;

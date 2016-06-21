@@ -147,7 +147,7 @@ public class ArchiveUtil {
 				String[] unzipCmd = new String[7];
 				unzipCmd[0] = "sudo";
 				unzipCmd[1] = "-u";
-				unzipCmd[2] = "sandbox";
+				unzipCmd[2] = R.SANDBOX_USER_ONE;
 				unzipCmd[3] = "unzip";
 				unzipCmd[4] = fileName;
 				unzipCmd[5] = "-d";
@@ -163,7 +163,7 @@ public class ArchiveUtil {
 			        String[] tarCmd = new String[8];
 				tarCmd[0] = "sudo";
 				tarCmd[1] = "-u";
-				tarCmd[2] = "sandbox";
+				tarCmd[2] = R.SANDBOX_USER_ONE;
 				tarCmd[3] = "tar";
 				tarCmd[4] = "-xf";
 				tarCmd[5] = fileName;
@@ -420,16 +420,23 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws IOException
 	 */
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
-		ZipEntry entry=new ZipEntry(zipFileName);
-		zos.putNextEntry(entry);
-		FileInputStream input=new FileInputStream(srcFile);
-		entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
-		IOUtils.copy(input, zos);
-		zos.closeEntry();
-		input.close();
-	}
-	
+    public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+         ZipEntry entry=new ZipEntry(zipFileName);
+         try{
+             zos.putNextEntry(entry);
+             FileInputStream input=new FileInputStream(srcFile);
+             entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
+             IOUtils.copy(input, zos);
+             zos.closeEntry();
+             input.close();
+         } catch(java.io.FileNotFoundException e) {
+             if(srcFile.getCanonicalPath() == srcFile.getAbsolutePath()) {
+                 throw e;
+             }
+             log.debug("File not found exception probably broken symlink for: " + srcFile.getAbsolutePath());
+         }
+        
+    }	
 	/**
 	 * Given a zip file, returns the file that was modified most recently. Directories are not checked.
 	 * @param file
@@ -511,6 +518,8 @@ public class ArchiveUtil {
 				addFileToArchive(stream,f,newFileName);
 			}
 		}
+        stream.finish();
+        stream.flush();
 		stream.close();
 	}
 	/**

@@ -27,3 +27,17 @@
 table tr td:first-child {
 	width: 160px;
 }
+
+@media only screen and (max-width: 767px) {
+	fieldset {
+		width: 85%;
+	}
+
+	#solverDetails tr > *:first-child {
+		width: 33.33%;
+	}
+
+	#solverDetails tr > *:nth-child(2) {
+		width: 66.66%;
+	}
+}

@@ -373,18 +373,8 @@ public class JobPairs {
 
 		CallableStatement procedure = null;
 		try {
-			List<File> files = JobPairs.getOutputPaths(pairToDelete);
-			// calculating size of job pair on disk so we can subtract this from the disk_size
-			// of the job. Needed because we are not backfilling disk_size for job_pairs.
-			long size = 0;
-			for (File f : files) {
-				if (f!=null && f.exists()) {
-					size+=FileUtils.sizeOf(f);
-				}
-			}
-			procedure = con.prepareCall( "{CALL DeleteJobPair(?,?)}" );
+			procedure = con.prepareCall( "{CALL DeleteJobPair(?)}" );
 			procedure.setInt( 1, pairToDelete.getId() );
-			procedure.setLong(2,size);
 			procedure.executeQuery();
 		} catch ( SQLException e ) {
 			throw e;
@@ -1365,7 +1355,29 @@ public class JobPairs {
 		return setLaterPairStageStatus(pairId,statusCode,-1,con);
 	}
 	
-	
+	/**
+	 * Sets the disk_size for the given job pair to 0, updating the jobpair_stage_data,
+	 * jobs, and users tables
+	 * @param jobPairId
+	 * @return True on success and false otherwise
+	 */
+	public static boolean setJobPairDiskSizeToZero(int jobPairId) {
+		Connection con=null;
+		CallableStatement procedure=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL RemoveJobPairDiskSize(?)}");
+			procedure.setInt(1, jobPairId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
 	
 	/**
 	 * Sets the status of a given job pair to the given status
@@ -1615,6 +1627,7 @@ public class JobPairs {
     public static boolean killPair(int pairId, int execId) {
 	try {	
 	    R.BACKEND.killPair(execId);
+	    JobPairs.setJobPairDiskSizeToZero(pairId);
 	    JobPairs.UpdateStatus(pairId, Status.StatusCode.STATUS_KILLED.getVal());
 	    return true;
 	} catch (Exception e) {

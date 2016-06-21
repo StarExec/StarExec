@@ -29,7 +29,9 @@ import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
+import org.starexec.data.database.Communities;
 import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.test.integration.TestManager;
@@ -76,7 +78,7 @@ public class Starexec implements ServletContextListener {
 			     +"terminated successfully.");
 		    log.info("StarExec successfully shutdown");
 		} catch (Exception e) {
-		    log.error(e);
+		    log.error(e.getMessage(),e);
 		    log.error("StarExec unclean shutdown");
 		}		
 	}
@@ -87,7 +89,6 @@ public class Starexec implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {				
 		// Remember the application's root so we can load properties from it later
-		R.BACKEND = new GridEngineBackend();
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
@@ -95,7 +96,11 @@ public class Starexec implements ServletContextListener {
 		log = Logger.getLogger(Starexec.class);
 		
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
-
+		try {
+			log.info("Starexec running as "+Util.executeCommand("whoami"));
+		} catch (IOException e1) {
+			log.error("unable to execute whoami");
+		}
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 
@@ -111,6 +116,12 @@ public class Starexec implements ServletContextListener {
 			log.error(e.getMessage(),e);
 		}
 		
+		try {
+			R.BACKEND = R.getBackendFromType();
+			log.info("backend = "+R.BACKEND.getClass());
+		} catch (StarExecException e) {
+			log.error(e.getMessage(),e);
+		}
 		
 		// Initialize the datapool after properties are loaded
 		Common.initialize();
@@ -121,8 +132,8 @@ public class Starexec implements ServletContextListener {
 		
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
 		    R.BACKEND.initialize(R.BACKEND_ROOT);
-
 		}
+		R.PUBLIC_USER_ID=Users.get("public").getId();
 		
 		System.setProperty("http.proxyHost",R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort",R.HTTP_PROXY_PORT);
@@ -135,8 +146,6 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
-		event.getServletContext().setAttribute("isProduction", ConfigUtil.getConfigName().equals("production"));
-		
 	}	
 	
 	/**
@@ -263,6 +272,14 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 
+        final Runnable updateCommunityStats = new RobustRunnable("updateCommunityStats") {
+            @Override
+            protected void dorun() {
+                log.info("updateCommunityStats (periodic)");
+                Communities.updateCommunityMap();
+            }
+        };
+
 		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
 			@Override
 			protected void dorun() {
@@ -328,26 +345,15 @@ public class Starexec implements ServletContextListener {
 	    // checks every day if reports need to be sent 
 	    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
 	    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.HOURS);
+	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.DAYS);
+        taskScheduler.scheduleAtFixedRate(updateCommunityStats, 0, 6, TimeUnit.HOURS);
 		try {
 			PaginationQueries.loadPaginationQueries();
 
 		} catch (Exception e) {
 			log.error("unable to correctly load pagination queries");
 			log.error(e.getMessage(),e);
-		}
-		
-		//TODO: Once the backfill completes on Starexec, this can safely be removed
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {	
-					Jobs.backfillJobDiskQuota();
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}	
-			}
-		});	
+		}	
 		
 	}
 	

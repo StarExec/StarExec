@@ -428,8 +428,7 @@ public class JobSecurity {
 			}
 			DefaultSettings settings=Settings.getProfileById(statusId);
 			
-			
-			if (Benchmarks.get(settings.getBenchId())==null) {
+			if (settings.getBenchId() == null || Benchmarks.get(settings.getBenchId())==null)  {
 				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 			}
 			

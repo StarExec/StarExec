@@ -61,3 +61,14 @@ textarea#reason.error{
 	vertical-align: middle;
 	border: solid 1px #ae0000;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper #communityInformation textarea {
+		width: 100%;
+	}
+
+
+	#wrapper #communityInformation tr > *:nth-child(1)  {
+		width: 30%;
+	}
+}

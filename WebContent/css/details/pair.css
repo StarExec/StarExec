@@ -11,4 +11,12 @@
 	#wrapper #detailTable tr > *:nth-child(2) {
 		width: 50%;
 	}
+
+	th, td {
+		text-align: center;
+	}
+
+	#fieldActions a {
+		margin: 0 5px 5px 0;
+	}
 }

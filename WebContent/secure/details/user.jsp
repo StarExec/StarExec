@@ -205,6 +205,7 @@
 						<th>total</th>
 						<th>failed</th>
 						<th>time</th>
+                        <th>disk size</th>
 					</tr>
 				</thead>			
 			</table>

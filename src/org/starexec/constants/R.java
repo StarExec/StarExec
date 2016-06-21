@@ -3,6 +3,10 @@ import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
 import org.starexec.backend.Backend;
+import org.starexec.backend.GridEngineBackend;
+import org.starexec.backend.LocalBackend;
+import org.starexec.backend.OARBackend;
+import org.starexec.exceptions.StarExecException;
 
 /**
  * Class which holds static resources (R) available for use
@@ -63,7 +67,29 @@ public class R {
 	public static String getBatchSpaceXMLDir() {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
 	}
+	
+	public static String getScriptDir() {
+		return STAREXEC_DATA_DIR+"/sge_scripts";
+	}
+	
+	/**
+	 * Returns a Backend of the class corresponding to the BACKEND_TYPE set
+	 * @return
+	 * @throws StarExecException 
+	 */
+	public static Backend getBackendFromType() throws StarExecException {
+		if (BACKEND_TYPE.equals("sge")) {
+			return new GridEngineBackend();
+		} else if (BACKEND_TYPE.equals("oar")) {
+			return new OARBackend();
+		} else if (BACKEND_TYPE.equals("local")) {
+			return new LocalBackend();
+		} else {
+			throw new StarExecException("BACKEND_TYPE was configured as "+BACKEND_TYPE+", but one of 'sge' 'oar' or 'local' is required");
+		}
+	}
 
+	public static String BACKEND_TYPE = null;
 	public static Backend BACKEND = null;
 	
     //maximum length properties
@@ -128,7 +154,7 @@ public class R {
 	
 	public static String JOB_PAIR_PATH_DELIMITER="/";
     // Email properties
-    public static String EMAIL_SMTP = "mta.divms.uiowa.edu";
+    public static String EMAIL_SMTP = null;
     public static int EMAIL_SMTP_PORT = 25;
     public static String EMAIL_USER = null;
     public static String EMAIL_PWD = null;
@@ -150,7 +176,7 @@ public class R {
     public static String REPORT_HOST = "starexec1.star.cs.uiowa.edu";  // where to report job status updates during jobs
 	
     // Global path information
-    public static String SOLVER_BUILD_OUTPUT = null;                        // The name of the file in which we're storing build output
+    public static String SOLVER_BUILD_OUTPUT = "starexec_build_log";                        // The name of the file in which we're storing build output
     public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
     public static String RUNSOLVER_PATH = null;								// The absolute filepath to the runsolver executable
@@ -172,7 +198,6 @@ public class R {
     public static boolean ALLOW_TESTING=false;								// whether tests should be allowed to run on this instance. False for production.
     //Public user info
     public static int PUBLIC_USER_ID = 0;									//user id to use when writing benchmarks, submitting jobs without login
-    public static int PUBLIC_SPACE_ID = 0;                          		//space id to use when writing benchmarks, submitting jobs without login
     public static int PUBLIC_CPU_LIMIT = 30;
     public static int PUBLIC_CLOCK_TIMEOUT = 30;
     public static String PUBLIC_USER_EMAIL = "public";

@@ -1,0 +1,6 @@
+
+@media only screen and (max-width: 767px) {
+	body td, body th {
+		text-align: center;
+	}
+}

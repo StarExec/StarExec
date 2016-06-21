@@ -287,11 +287,11 @@ DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted;
 CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT) 
 	BEGIN
 		UPDATE users
-		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM benchmarks WHERE user_id=_userId AND recycled=true)
+		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM benchmarks WHERE user_id=_userId AND recycled=true AND deleted=false)
 		WHERE users.id=_userId;
 		UPDATE benchmarks
 		SET deleted=true, disk_size=0
-		WHERE user_id = _userId AND recycled=true;
+		WHERE user_id = _userId AND recycled=true AND deleted=false;
 	END //
 	
 -- Gets all recycled benchmark ids a user has

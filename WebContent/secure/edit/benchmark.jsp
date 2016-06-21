@@ -44,11 +44,11 @@
 	}
 %>
 
-<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/shared">				
+<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/shared, edit/benchmark">				
 	<form id="editBenchmarkForm">
 		<fieldset>
 			<legend>benchmark details</legend>
-			<table class="shaded">
+			<table id="editBenchmark" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>

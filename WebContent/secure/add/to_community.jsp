@@ -28,7 +28,7 @@ try {
 	<form method="POST" action="to_community/request" id="inviteForm">
 	<fieldset>
 		<legend>community information</legend>
-			<table class="shaded">
+			<table id="communityInformation" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>

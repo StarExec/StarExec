@@ -227,7 +227,7 @@ table.panel .solvedHead, table.panel .timeHead {
 	}
 
 	#wrapper fieldset {
-		width: 75%;
+		width: 85%;
 	}
 
 	#wrapper fieldset.panelField {
@@ -246,7 +246,25 @@ table.panel .solvedHead, table.panel .timeHead {
 		margin: 0;
 		border-left: initial;
 	}
-}
 
-@media only screen and (min-width: 560px) and (max-width: 767px)  {
+	#wrapper #solveTbl tr > *:nth-child(4),#wrapper #solveTbl tr > *:nth-child(5),#wrapper #solveTbl tr > *:nth-child(6),
+  	#wrapper #solveTbl tr > *:nth-child(7),#wrapper #solveTbl tr > *:nth-child(8) {
+		display: none;
+	}
+
+	#wrapper #pairTbl tr > *:nth-child(4), #wrapper #pairTbl tr > *:nth-child(6) {
+		display: none;
+	}
+
+	#wrapper #pairTbl {
+		font-size: 12px;
+	}
+
+	#wrapper #pairActions button {
+		margin: 0 5px 5px 0;
+	}
+
+	th, td {
+		text-align: center;
+	}
 }

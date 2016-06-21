@@ -105,6 +105,8 @@
     	
     	<!-- The default for start-paused is false -->
     	<element name="start-paused" type="tns:booleanInfo" maxOccurs="1" minOccurs="0"></element>
+    	<!-- The default for suppress-timestamps is false -->
+    	<element name="suppress-timestamps" type="tns:booleanInfo" maxOccurs="1" minOccurs="0"></element>
     
     	
     	<!-- Note: Timeouts are in seconds -->

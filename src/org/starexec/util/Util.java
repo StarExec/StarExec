@@ -416,7 +416,7 @@ public class Util {
     	String[] newCommand=new String[command.length+3];
     	newCommand[0]="sudo";
     	newCommand[1]="-u";
-    	newCommand[2]="sandbox";
+    	newCommand[2]=R.SANDBOX_USER_ONE;
     	for (int i=0;i<command.length;i++) {
     		newCommand[i+3]=command[i];
     	}
@@ -973,7 +973,7 @@ public class Util {
 		String[] chmod=new String[7];
 		chmod[0]="sudo";
 		chmod[1]="-u";
-		chmod[2]="sandbox";
+		chmod[2]=R.SANDBOX_USER_ONE;
 		chmod[3]="chmod";
 		chmod[4]="-R";
 		chmod[5]="u+rwx,g+rwx";	
@@ -1063,8 +1063,9 @@ public class Util {
      */
     public static void logSandboxContents() {
     	try {
+    		log.debug("logging sandbox contents");
         	log.debug(Util.executeCommand("ls -l -R "+Util.getSandboxDirectory().getAbsolutePath()));
-
+        	
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     

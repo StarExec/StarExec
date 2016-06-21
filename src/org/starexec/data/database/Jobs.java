@@ -2597,6 +2597,7 @@ public class Jobs {
 				j.setDescription(results.getString("description"));				
 				j.setCreateTime(results.getTimestamp("created"));
 				j.setCompleteTime(results.getTimestamp("completed"));
+                j.setDiskSize(results.getLong("disk_size"));
 				j.setLiteJobPairStats(liteJobPairStats);
 				jobs.add(j);		
 			}	
@@ -3205,6 +3206,7 @@ public class Jobs {
 			if (status.getCode().getVal()<StatusCode.STATUS_COMPLETE.getVal()) {
 				JobPairs.killPair(pairId, p.getBackendExecId());
 			}
+			JobPairs.setJobPairDiskSizeToZero(pairId);
 			JobPairs.removePairFromCompletedTable(pairId);
 			JobPairs.setPairStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
 			JobPairs.setAllPairStageStatus(pairId, Status.StatusCode.STATUS_PENDING_SUBMIT.getVal());
@@ -5166,38 +5168,6 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return false;
-	}
-	
-	/**
-	 * Backfills the disk_size column in the jobs table. For efficiency, does NOT
-	 * backfill the jobpair_stage_data table.
-	 * @return
-	 */
-	public static boolean backfillJobDiskQuota() {
-		try {
-			List<Integer> jobs = Jobs.getAllJobIds();
-			for (Integer i : jobs) {
-				try {
-					log.info("backfilling disk_size for job "+i);
-					Job job = Jobs.getIncludeDeleted(i);
-					if (job==null || job.isDeleted() || job.getDiskSize()>0) {
-						continue;
-					}
-					File f = new File(Jobs.getDirectory(i));
-					if (f.exists()) {
-						long size = FileUtils.sizeOfDirectory(f);
-						setJobDiskSize(i,size);
-					}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-			}
-			return true;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-		
 		return false;
 	}
 }

@@ -12,9 +12,10 @@
 			<property key="MYSQL_POOL_MIN_SIZE" value="20" />
 			<property key="STAREXEC_DATA_DIR" value="/home/starexec" />	
 			<property key="SANDBOX_DIRECTORY" value="/local/sandbox"/>
-			<property key="SOLVER_BUILD_OUTPUT" value="starexec_build_log"/>;
 			<property key="STAREXEC_URL_PREFIX" value="https"/>									
 			<!-- Misc. Configuration -->
+			<property key="EMAIL_SMTP" value="mta.divms.uiowa.edu" />
+			<property key="EMAIL_SMTP_PORT" value="25" />
 			<property key="EMAIL_USER" value="noreply@divms.uiowa.edu" />
 			<property key="CONTACT_EMAIL" value="starexec-admin@uiowa.edu" />
 			<property key="DEFAULT_DISK_QUOTA" value="5368709120" />	
@@ -23,6 +24,8 @@
             <property key="IS_FULL_STAREXEC_INSTANCE" value="true"/>
             <property key="ALLOW_TESTING" value="true"/>
             <!-- backend Configuration -->
+            <!-- Describes which backend Starexec will be using. Must be one of 'sge' 'oar' or 'local' -->
+            <property key="BACKEND_TYPE" value="sge"/>
 			<property key="BACKEND_ROOT" value="/cluster/gridengine-8.1.8" />
 			<property key="BACKEND_WORKING_DIR" value="/export/starexec"/>
 			<property key="JOB_SUBMISSION_PERIOD" value="20" /> <!-- in seconds -->
@@ -35,8 +38,6 @@
 	</configuration>
 	<configuration name="production" inherit="common_core">
    		<class name="org.starexec.constants.R">   		
-   			<property key="PUBLIC_USER_ID" value="2" /> 
-	  		<property key="PUBLIC_SPACE_ID" value="4" /> 
 			<property key="TEST_COMMUNITY_ID" value="12007"/>
 	  		<property key="REPORT_HOST" value="starexec2.star.cs.uiowa.edu" />
                         <property key="STAREXEC_SERVERNAME" value="www.starexec.org" />
@@ -47,9 +48,7 @@
     </configuration>
 	<configuration name="stardev" inherit="common_core">
    		<class name="org.starexec.constants.R">   		
-			<property key="PUBLIC_USER_ID" value="3" /> 
 			<property key="CLUSTER_UPDATE_PERIOD" value="60" />
-	  		<property key="PUBLIC_SPACE_ID" value="3" />
 			<property key="TEST_COMMUNITY_ID" value="2"/>
 			<property key="REPORT_HOST" value="stardev.cs.uiowa.edu" />;
                         <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
@@ -63,7 +62,6 @@
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_astump" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_astump" />
-		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_astump"/>
 		<property key="STAREXEC_DATA_DIR" value="/home/astump/starexec_astump_data" />	
@@ -75,7 +73,6 @@
                 <property key="MYSQL_DATABASE" value="starexec_tinelli" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_tinelli" />
 		<property key="SANDBOX_DIRECTORY" value="/home/tinelli/starexec_tinelli_data/sandbox"/>
-		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_tinelli"/>
 		<property key="STAREXEC_DATA_DIR" value="/home/tinelli/starexec_tinelli_data" />	
@@ -86,7 +83,6 @@
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_eaburns" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_eaburns" />
-		<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_eaburns"/>
 		<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_eaburns/data_dir" />
@@ -97,7 +93,6 @@
                 <!-- MYSQL Configuration -->
                 <property key="MYSQL_DATABASE" value="starexec_alubinus" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_alubinus" />
-                <property key="PUBLIC_USER_ID" value="3" />
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_alubinus"/>
                 <property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_alubinus/data_dir" />
@@ -108,7 +103,6 @@
                 <!-- MYSQL Configuration -->   
                 <property key="MYSQL_DATABASE" value="starexec_agiegerich" />
                 <property key="MYSQL_URL" value="jdbc:mysql://localhost/starexec_agiegerich" />
-				<property key="PUBLIC_USER_ID" value="3" /> 
                 <property key="STAREXEC_SERVERNAME" value="stardev.cs.uiowa.edu" />
                 <property key="STAREXEC_APPNAME" value="starexec_agiegerich"/>
 				<property key="STAREXEC_DATA_DIR" value="/home/starexec/starexec_agiegerich/data_dir" />
@@ -138,15 +132,12 @@
 	  <property key="DOWNLOAD_FILE_DIR" value="/secure/files/" />
  <!--   Misc. Configuration     --> 
 	  <property key="CONTACT_EMAIL" value="aaron.stump@gmail.com" />    
-	  <property key="PUBLIC_USER_ID" value="3" /> 
-	  <property key="PUBLIC_SPACE_ID" value="4" /> 
   	</class>
   </configuration>
   
   
 	<configuration name="eric_dev" inherit="local">
    		<class name="org.starexec.constants.R">   		
-   		
  <!--   MYSQL Configuration   --> 
   		<property key="MYSQL_DATABASE" value="starexec" /> 
 		<property key="MYSQL_USERNAME" value="root" /> 
@@ -156,8 +147,6 @@
 		<property key="MYSQL_POOL_MIN_SIZE" value="20" />    
  <!--   Misc. Configuration     --> 
 	  <property key="CONTACT_EMAIL" value="eric-burns@uiowa.edu" />    
-	  <property key="PUBLIC_USER_ID" value="3" /> 
-	  <property key="PUBLIC_SPACE_ID" value="4" /> 
   	</class>
   </configuration>
   

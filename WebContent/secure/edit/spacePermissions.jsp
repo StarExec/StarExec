@@ -63,12 +63,12 @@
 		<p id="spaceID" class="accent"></p>																			
 		<fieldset  id="userField">
 			<legend id="usersLegend" class="userExpd"><span>0</span> users</legend>
-			<table id="users">
+			<table id="usersTable">
 				<thead>
 					<tr>
 						<th>name</th>
 						<th>institution</th>
-						<th style="width:270px;">email</th>
+						<th>email</th>
 					</tr>
 				</thead>			
 			</table>
@@ -215,7 +215,7 @@
 					<tr>
 						<th>name</th>
 						<th>institution</th>
-						<th style="width:270px;">email</th>
+						<th>email</th>
 					</tr>
 				</thead>			
 			</table>

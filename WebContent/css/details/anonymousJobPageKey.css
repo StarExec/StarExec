@@ -1,3 +1,18 @@
 .noteText {
 	padding: 10px 0 10px 0;
 }
+
+@media only screen and (max-width: 767px) {
+	#solverNameKeyFieldset {
+		width: 85%;
+	}
+
+	#solverNameKeyTable th, #solverNameKeyTable td {
+		width: 50%;
+	}
+
+	td, th {
+		text-align: center;
+	}
+
+}
