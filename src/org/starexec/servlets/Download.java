@@ -815,14 +815,19 @@ public class Download extends HttpServlet {
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 			log.debug("confirmed user can download job = "+jobId);
-			
+            log.debug("Previous last modified time:" + lastModified);
+            log.debug("since: " + since);
+		    Boolean jobCopiesBackIncrementally = Jobs.doesJobCopyBackIncrementally(jobId);
+            log.debug("This job wants to copy back output incrementally: " + jobCopiesBackIncrementally);
 
 			//if we only want the new job pairs
 			if (since!=null) {
 				if (lastModified==null) {
 					log.warn("handleJobOutputs called to get new results, but lastModified is null");
 					lastModified=0l;
-				}
+				} else if (!jobCopiesBackIncrementally) {
+                    lastModified=0l;
+                }
 				log.debug("Getting incremental job output results");
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 				List<JobPair> pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
@@ -832,6 +837,7 @@ public class Download extends HttpServlet {
 				// pairsFound is defined as the number of pairs that completed since "since"
 				// it does NOT include running pairs
 				int pairsFound = 0;
+                List<JobPair> pairsToRemove = new ArrayList<JobPair>();
 				for (JobPair x : pairs) {
 					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
@@ -839,8 +845,20 @@ public class Download extends HttpServlet {
 					}
 					if (x.getStatus().getCode().finishedRunning()) {
 						pairsFound++;
-					}
-				}	
+					} else if (!jobCopiesBackIncrementally) {
+                        pairsToRemove.add(x);
+                    }
+				}
+                //If they do not want the output of running pairs
+                if (!jobCopiesBackIncrementally) {
+                    for(JobPair x : pairsToRemove) {
+                        pairs.remove(x);
+                    }
+                }
+                log.debug("Older pairs: " + String.valueOf(olderPairs));
+                log.debug("Pairs-Found: " + String.valueOf(pairsFound));
+                log.debug("Total-Pairs : " + String.valueOf(Jobs.getPairCount(jobId)));
+                log.debug("Max Completion: " + String.valueOf(maxCompletion));
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairsFound)));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));

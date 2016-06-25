@@ -5170,4 +5170,27 @@ public class Jobs {
 		}
 		return false;
 	}
+
+    public static boolean doesJobCopyBackIncrementally(int jobId) {
+            Connection con=null;
+            CallableStatement procedure=null;
+            ResultSet results = null;
+            Boolean jobCopiesBackResultsIncrementally = null;
+            try {
+                con = Common.getConnection();
+                procedure = con.prepareCall("{CALL DoesJobCopyBackIncrementally(?,?)}");
+                procedure.setInt(1, jobId);
+                procedure.registerOutParameter(2, java.sql.Types.BOOLEAN);
+                results = procedure.executeQuery();
+                jobCopiesBackResultsIncrementally = procedure.getBoolean(2);
+            } catch (Exception e) {
+                log.error(e.getMessage(),e);
+            }  finally {
+                Common.safeClose(con);
+                Common.safeClose(procedure);
+                Common.safeClose(results);
+            }
+            return jobCopiesBackResultsIncrementally;
+        }
+
 }
