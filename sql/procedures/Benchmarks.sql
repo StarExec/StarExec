@@ -405,4 +405,17 @@ CREATE PROCEDURE GetPublicBenchmarks()
 		WHERE public_access=1 AND deleted=false AND recycled=false
 		GROUP BY benchmarks.id;
 	END //
+
+DROP PROCEDURE IF EXISTS GetBrokenBenchDependencies;
+CREATE PROCEDURE GetBrokenBenchDependencies(IN _benchId INT)
+    BEGIN
+        SELECT DISTINCT benchmarks.id 
+        FROM benchmarks join bench_dependency 
+            ON benchmarks.id=bench_dependency.secondary_bench_id 
+        WHERE 
+            benchmarks.deleted = 1 
+            OR benchmarks.recycled = 1 
+            AND primary_bench_id = _benchId;
+    END //
+
 DELIMITER ; -- This should always be at the end of this file
