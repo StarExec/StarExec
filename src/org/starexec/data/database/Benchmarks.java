@@ -2516,6 +2516,27 @@ public class Benchmarks {
         return null;
     }
 
+    public static Boolean benchHasBrokenDependencies(int benchId) {
+        Connection con = null;  
+        CallableStatement procedure = null;
+        ResultSet results = null;
+        try {
+            con = Common.getConnection();
+             procedure = con.prepareCall("{CALL GetBrokenBenchDependencies(?)}");
+             procedure.setInt(1, benchId);
+             results = procedure.executeQuery();
+            List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
+            return results.isBeforeFirst();
+        } catch (Exception e){          
+            log.error(e.getMessage(), e);       
+        } finally {
+            Common.safeClose(con);
+            Common.safeClose(procedure);
+            Common.safeClose(results);
+        }
+        return null;
+    }
+
 }
 
 
