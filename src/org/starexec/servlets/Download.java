@@ -290,7 +290,7 @@ public class Download extends HttpServlet {
 				}
 				shortName="Job"+jobId+"_output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success= handleJobOutputs(jobId, u.getId(), response,since, lastModified);
+				success= handleJobOutputs(jobId, u.getId(), response,since);
 				
 			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
@@ -811,18 +811,15 @@ public class Download extends HttpServlet {
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since, Long lastModified) throws Exception {    	
+	private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since) throws Exception {    	
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 			log.debug("confirmed user can download job = "+jobId);
-			
+            log.debug("since: " + since);
+            Boolean jobCopiesBackIncrementally = Jobs.doesJobCopyBackIncrementally(jobId);
 
 			//if we only want the new job pairs
 			if (since!=null) {
-				if (lastModified==null) {
-					log.warn("handleJobOutputs called to get new results, but lastModified is null");
-					lastModified=0l;
-				}
 				log.debug("Getting incremental job output results");
 				int olderPairs = Jobs.countOlderPairs(jobId,since);
 				List<JobPair> pairs=Jobs.getNewCompletedPairsShallow(jobId, since);
@@ -832,6 +829,8 @@ public class Download extends HttpServlet {
 				// pairsFound is defined as the number of pairs that completed since "since"
 				// it does NOT include running pairs
 				int pairsFound = 0;
+                int runningPairsFound = 0;
+                List<JobPair> pairsToRemove = new ArrayList<JobPair>();
 				for (JobPair x : pairs) {
 					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
@@ -839,17 +838,36 @@ public class Download extends HttpServlet {
 					}
 					if (x.getStatus().getCode().finishedRunning()) {
 						pairsFound++;
-					}
-				}	
+					} else if (!jobCopiesBackIncrementally) {
+                        pairsToRemove.add(x);
+                        runningPairsFound++;
+                    } else {
+                        runningPairsFound++;
+                    }
+				}
+                //If they do not want the output of running pairs
+                if (!jobCopiesBackIncrementally) {
+                    for(JobPair x : pairsToRemove) {
+                        pairs.remove(x);
+                    }
+                }
+                log.debug("Older pairs: " + String.valueOf(olderPairs));
+                log.debug("Pairs-Found: " + String.valueOf(pairsFound));
+                if(jobCopiesBackIncrementally) {
+                    log.debug("Running Pairs : " + String.valueOf(runningPairsFound));
+                }
+                log.debug("Total-Pairs : " + String.valueOf(Jobs.getPairCount(jobId)));
+                log.debug("Max Completion: " + String.valueOf(maxCompletion));
 				response.addCookie(new Cookie("Older-Pairs",String.valueOf(olderPairs)));
 				response.addCookie(new Cookie("Pairs-Found",String.valueOf(pairsFound)));
 				response.addCookie(new Cookie("Total-Pairs",String.valueOf(Jobs.getPairCount(jobId))));
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
+				response.addCookie(new Cookie("Running-Pairs",String.valueOf(runningPairsFound)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
 				String baseName="Job"+String.valueOf(jobId)+"_output_new";
 
 				// get all files in between 
-				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified);
+				Download.addJobPairsToZipOutput(pairs,response,baseName,true, 0l);
 			
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);

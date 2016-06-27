@@ -2013,6 +2013,7 @@ public class Connection {
 			Integer totalPairs=null;
 			Integer pairsFound=null;
 			Integer oldPairs=null;
+            Integer runningPairsFound=null;
 			int lastSeen=-1;
 			//if we're sending 'since,' it means this is a request for new job data
 			boolean isNewJobRequest=urlParams.containsKey(C.FORMPARAM_SINCE);
@@ -2022,6 +2023,7 @@ public class Connection {
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
 				oldPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Older-Pairs"));
+				runningPairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Running-Pairs"));
 				
 				//check to see if the job is complete
 				done=totalPairs==(pairsFound+oldPairs);
@@ -2056,7 +2058,6 @@ public class Connection {
 			}
 			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
 			
-			
 			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
 			if (urlParams.containsKey(C.FORMPARAM_SINCE) && lastSeen>=0) {
@@ -2066,7 +2067,12 @@ public class Connection {
 				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen,lastModified));
 				}
-				System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+                if(pairsFound != 0) {
+				    System.out.println("completed pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+                }
+                if(runningPairsFound != 0) {
+                    System.out.println("output from running pairs found="+runningPairsFound); 
+                }
 
 			}
 			if (done) {

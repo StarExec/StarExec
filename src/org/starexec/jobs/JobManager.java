@@ -43,6 +43,7 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
 
@@ -361,7 +362,11 @@ public abstract class JobManager {
 							    JobPairs.setStatusForPairAndStages(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
 							}
 							queueSize++; 
-						} catch(Exception e) {
+						} catch(BenchmarkDependencyMissingException e) {
+                            log.error("submitJobs() received exception " + e.getMessage());
+                            log.error("setting pair with following ID to benchmark fail "+pair.getId());
+                            JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCHMARK.getVal());
+                        } catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
 							log.error("setting pair with following ID to submit_fail "+pair.getId());
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
@@ -487,8 +492,13 @@ public abstract class JobManager {
 		//Dependencies
 		if (pair.getBench().getUsesDependencies())
 		{
+            int pairBenchId = pair.getBench().getId();
+            log.debug("Benchmark has broken deps:"+ Benchmarks.benchHasBrokenDependencies(pairBenchId));
+            if(Benchmarks.benchHasBrokenDependencies(pairBenchId)) {
+                throw new BenchmarkDependencyMissingException(pairBenchId);
+            }
 			replacements.put("$$HAS_DEPENDS$$", "1");
-			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pair.getBench().getId()));	
+			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pairBenchId));	
 		}
 		else{
 			replacements.put("$$HAS_DEPENDS$$", "0");

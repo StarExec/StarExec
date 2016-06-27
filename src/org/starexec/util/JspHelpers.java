@@ -457,6 +457,7 @@ public class JspHelpers {
 			userCanSeeBench = Permissions.canUserSeeBench( benchId, userId );
 			request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 			downloadable = BenchmarkSecurity.canUserDownloadBenchmark( benchId,userId ).isSuccess();
+            request.setAttribute("brokenBenchDeps", Benchmarks.getBrokenBenchDependencies(benchId));
 		}
 		request.setAttribute( "downloadable", downloadable );
 

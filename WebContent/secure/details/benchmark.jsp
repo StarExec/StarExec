@@ -28,6 +28,15 @@
 		<span style="display:none;" id="benchId" value="${bench.id}"></span>
 	</c:if>
 	<c:if test="${!isAnonymousPage}">
+        <c:if test="${not empty brokenBenchDeps}">
+            <fieldset>
+                <legend>Warning</legend>
+                <span> Missing bench dependency:</span>
+                <c:forEach var="brokeBench" items="${brokenBenchDeps}">
+                    <br>${brokeBench.getName()}<span>
+                </c:forEach>
+            </fieldset>
+        </c:if>
 		<fieldset>
 			<legend>details</legend>
 			<table class="shaded">
