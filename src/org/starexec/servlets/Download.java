@@ -305,9 +305,11 @@ public class Download extends HttpServlet {
 			
 			if (success) {
 				response.getOutputStream().close();
+				logUtil.exit(methodName);
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
+				logUtil.exit(methodName);
 				return;
 			}
 											
@@ -480,17 +482,20 @@ public class Download extends HttpServlet {
     private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response) throws Exception {
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		Job j=null;
+		final String methodName = "handlePairOutputs";
+		logUtil.entry(methodName);
+
 		for (Integer id : pairIds) {
 			JobPair jp = JobPairs.getPair(id);
 			if (jp==null) {
-				return false;
+			    return false;
 			}
 			pairs.add(jp);
 			if (j==null) {
 				j=Jobs.get(jp.getJobId());
 				//make sure the user can see the job
-				if (!Permissions.canUserSeeJob(id, userId)) {
-					return false;
+				if (!Permissions.canUserSeeJob(j.getId(), userId)) {
+				    return false;
 				}
 			} else {
 				//for now, only get pairs if they are part of one job
@@ -503,23 +508,26 @@ public class Download extends HttpServlet {
 
 		String baseName="Job"+String.valueOf(j.getId())+"_output";
 
-		Download.addJobPairsToZipOutput(pairs,response,baseName,false,null);
+		Download.addJobPairsToZipOutput(pairs,response,baseName,true,null);
+		logUtil.exit(methodName);
     	return true;
     }
 
 	/**
-	 * Processes a job pair's output to be downloaded. The output is archived in a format that is
-	 * specified by the user, given a random name, and placed in a secure folder on the server.
+	 * Processes a job pair's output to be downloaded. 
 	 * @param jp the job pair whose output is to be downloaded
 	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
-	 * @return a file representing the archive to send back to the client
-	 * @author Tyler Jensen
+	 * @param response 
+	 * @return a boolean for whether or not this succeeded
 	 */
 	
 	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response) throws Exception {    	
-			ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
-			return true;
+	    ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
+	    return true;
+	    /* for later:
+	    List<Integer> l = new List<Integer>();
+	    l.add(pairId);
+	    return handlePairOutputs(l, userId, response); */
 	}
 
 	/**

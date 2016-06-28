@@ -493,10 +493,10 @@ public abstract class JobManager {
 		if (pair.getBench().getUsesDependencies())
 		{
             int pairBenchId = pair.getBench().getId();
-            log.debug("Benchmark has broken deps:"+ Benchmarks.benchHasBrokenDependencies(pairBenchId));
+	    /*            log.debug("Benchmark has broken deps:"+ Benchmarks.benchHasBrokenDependencies(pairBenchId));
             if(Benchmarks.benchHasBrokenDependencies(pairBenchId)) {
                 throw new BenchmarkDependencyMissingException(pairBenchId);
-            }
+		}*/
 			replacements.put("$$HAS_DEPENDS$$", "1");
 			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pairBenchId));	
 		}
