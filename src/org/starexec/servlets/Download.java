@@ -290,7 +290,7 @@ public class Download extends HttpServlet {
 				}
 				shortName="Job"+jobId+"_output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success= handleJobOutputs(jobId, u.getId(), response,since);
+				success= handleJobOutputs(jobId, u.getId(), response,since,lastModified);
 				
 			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
@@ -729,11 +729,11 @@ public class Download extends HttpServlet {
 	 * @param baseName The top level name to give to the archive
 	 * @param useSpacePath If true, pair output will be in a directory including the pair space path. If false, they will simply
 	 * be in a flat list of directories with job pair IDs
-	 * @param lastModified Only retrieve files that were modified after the given date
+	 * @param lastModified Only retrieve files that were modified after the given date, for running job pairs only
 	 * @return
 	 */
 	private static boolean addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response,String baseName,boolean useSpacePath, 
-			Long earlyDate) {
+			Long lastModified) {
 		if (pairs.size()==0) {
 			return true; // don't try to make a zip if there are no pairs
 		}
@@ -759,6 +759,7 @@ public class Download extends HttpServlet {
 					zipFileName.append(p.getId());
 				}
 				List<File> files = JobPairs.getOutputPaths(p);
+				boolean running = p.getStatus().getCode().running();
 				for (File file : files) {
 					StringBuilder singleFileName = new StringBuilder(zipFileName);
 					if (file.exists()) {
@@ -768,20 +769,20 @@ public class Download extends HttpServlet {
 								singleFileName.append(File.separator);
 								singleFileName.append("additional_output");
 							}
-							if (earlyDate==null){
+							if (!running || lastModified==null){
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
 
 							} else {
-								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), earlyDate);
+								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), lastModified);
 							}
 						} else {
 							singleFileName.append(File.separator);
 							singleFileName.append(p.getBench().getName());
-							if (earlyDate==null) {
+							if (!running || lastModified==null) {
 								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
 
 							} else {
-								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString(), earlyDate);
+								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString(), lastModified);
 							}
 						}
 						
@@ -807,11 +808,12 @@ public class Download extends HttpServlet {
 	 * @param userId The user the job belongs to
 	 * @param format The compress format for the user to download
 	 * @param response The servlet response sent back
+	 * @param lastModified The time to use as a cutoff for output for running job pairs
 	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-	private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since) throws Exception {    	
+    private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since, Long lastModified) throws Exception { 
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 			log.debug("confirmed user can download job = "+jobId);
@@ -840,7 +842,6 @@ public class Download extends HttpServlet {
 						pairsFound++;
 					} else if (!jobCopiesBackIncrementally) {
                         pairsToRemove.add(x);
-                        runningPairsFound++;
                     } else {
                         runningPairsFound++;
                     }
@@ -867,7 +868,7 @@ public class Download extends HttpServlet {
 				String baseName="Job"+String.valueOf(jobId)+"_output_new";
 
 				// get all files in between 
-				Download.addJobPairsToZipOutput(pairs,response,baseName,true, 0l);
+				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified);
 			
 			} else {
 				log.debug("preparing to create archive for job = "+jobId);
