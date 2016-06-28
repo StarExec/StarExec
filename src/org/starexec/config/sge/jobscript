@@ -422,15 +422,15 @@ STDOUT_FILE="$OUT_DIR"/stdout.txt
 
 if [ ! -f $WATCHFILE ]; then
     log "Runsolver watchfile could not be found. Terminating job pair."
-    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
+    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
 fi
 
 if [ ! -f $VARFILE ]; then
     echo "Runsolver varfile could not be found. Terminating job pair."
-    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
+    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
 fi
 
