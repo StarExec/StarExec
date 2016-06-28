@@ -60,6 +60,10 @@ public class Status {
 		    return (val<=6 || val>=19);
 		}
 		
+		public boolean running() {
+		    return val == 4;
+		}
+
 		public void setCount(int c) {
 			this.count=c;
 		}
