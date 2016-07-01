@@ -1932,6 +1932,8 @@ public class Benchmarks {
 			b.setDescription(results.getString("description"));
 			b.setDownloadable(results.getBoolean("downloadable"));
 			b.setDiskSize(results.getLong("disk_size"));
+            b.setRecycled(results.getBoolean("recycled"));
+            b.setDeleted(results.getBoolean("deleted"));
 		} else {
 			b.setId(results.getInt(prefix+".id"));
 			b.setUserId(results.getInt(prefix+".user_id"));
@@ -1941,6 +1943,8 @@ public class Benchmarks {
 			b.setDescription(results.getString(prefix+".description"));
 			b.setDownloadable(results.getBoolean(prefix+".downloadable"));
 			b.setDiskSize(results.getLong(prefix+".disk_size"));
+            b.setRecycled(results.getBoolean(prefix+".recycled"));
+            b.setDeleted(results.getBoolean(prefix+".deleted"));
 		}
 		return b;
 	}
