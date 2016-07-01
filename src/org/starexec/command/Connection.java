@@ -1736,7 +1736,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSolver(Integer solverId, String filePath) {
-		return downloadArchive(solverId, R.SOLVER,null,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(solverId, R.SOLVER,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads job pair output for one pair from StarExec in the form of a zip file
@@ -1744,8 +1744,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobPair(Integer pairId, String filePath) {
-		return downloadArchive(pairId,R.PAIR_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null);
+	public int downloadJobPair(Integer pairId, String filePath, Boolean longPath) {
+		return downloadArchive(pairId,R.PAIR_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null,longPath);
 	}
 	
 	/**
@@ -1767,7 +1767,6 @@ public class Connection {
 			String ids=sb.substring(0,sb.length()-1);
 			
 			urlParams.put(C.FORMPARAM_ID+"[]",ids);
-			
 			
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
@@ -1822,7 +1821,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobOutput(Integer jobId, String filePath) {
-		return downloadArchive(jobId,R.JOB_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(jobId,R.JOB_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file
@@ -1833,7 +1832,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) {
-		return downloadArchive(jobId,R.JOB,null,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null);
+		return downloadArchive(jobId,R.JOB,null,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null,false);
 	}
 	/**
 	 * Downloads a space XML file from StarExec in the form of a zip file
@@ -1844,7 +1843,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSpaceXML(Integer spaceId, String filePath,boolean getAttributes, Integer updateId) {
-		return downloadArchive(spaceId, R.SPACE_XML,null,null,filePath,false,false,false,false,null,false,getAttributes,updateId);
+		return downloadArchive(spaceId, R.SPACE_XML,null,null,filePath,false,false,false,false,null,false,getAttributes,updateId,false);
 	}
 	/**
 	 * Downloads the data contained in a single space 
@@ -1855,7 +1854,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) {
-		return downloadArchive(spaceId, R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null);
+		return downloadArchive(spaceId, R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads the data contained in a space hierarchy rooted at the given space 
@@ -1866,7 +1865,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSpaceHierarchy(Integer spaceId, String filePath,boolean excludeSolvers,boolean excludeBenchmarks) {
-		return downloadArchive(spaceId,R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null);
+		return downloadArchive(spaceId,R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null,false);
 	}
 	/**
 	 * Downloads a pre processor from StarExec in the form of a zip file
@@ -1875,7 +1874,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadPreProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"pre",false,false,null);
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"pre",false,false,null,false);
 	}
 	/**
 	 * Downloads a benchmark processor from StarExec in the form of a zip file
@@ -1884,7 +1883,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadBenchProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null);
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null,false);
 	}
 	/**
 	 * Downloads a post processor from StarExec in the form of a zip file
@@ -1893,7 +1892,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadPostProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"post",false,false,null);
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"post",false,false,null,false);
 	}
 	/**
 	 * Downloads a benchmark from StarExec in the form of a zip file
@@ -1902,7 +1901,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadBenchmark(Integer benchId,String filePath) {
-		return downloadArchive(benchId,R.BENCHMARK,null,null,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(benchId,R.BENCHMARK,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file. Only job pairs
@@ -1914,7 +1913,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) {
-		return downloadArchive(jobId,R.JOB,since,null,filePath,false,false,includeIds,false,null,false,false,null);
+		return downloadArchive(jobId,R.JOB,since,null,filePath,false,false,includeIds,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads output from a job from StarExec in the form of a zip file. Only job pairs
@@ -1925,7 +1924,7 @@ public class Connection {
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) {
-		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null);
+		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	
 	/**
@@ -1944,7 +1943,7 @@ public class Connection {
 	 */
 	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, String filePath,
 			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy,
-			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId) {
+			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId, Boolean longPath) {
 		HttpResponse response=null;
 		
 		try {
@@ -1983,6 +1982,9 @@ public class Connection {
 			if (excludeSolvers) {
 				urlParams.put("includesolvers","false");
 			}
+            if (longPath) {
+                urlParams.put("longpath","true");
+            }
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
 			

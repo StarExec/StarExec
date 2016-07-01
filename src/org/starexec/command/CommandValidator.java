@@ -30,7 +30,7 @@ public class CommandValidator {
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{C.PARAM_ID,C.PARAM_FROM};
 	private static String[] allowedRemoveSubspaceParams = new String[] {C.PARAM_ID, C.PARAM_RECYCLE_PRIMS};
-	private static String[] allowedDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE};
+	private static String[] allowedDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_LONG_PATH};
 	private static String[] allowedDownloadSpaceXMLParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_GET_ATTRIBUTES,C.PARAM_PROCID};
 
 	private static String[] allowedNewDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_SINCE};

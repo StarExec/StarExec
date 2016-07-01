@@ -224,6 +224,7 @@ public class C {
 	public static String PARAM_TYPE="type";
 	public static String PARAM_SUPPRESS_TIMESTAMPS = "suppresstime";
 	public static String PARAM_RESULTS_INTERVAL = "interval";
+    public static String PARAM_LONG_PATH = "longpath";
 	public static String ARG_ROUNDROBIN="r";
 	public static String ARG_DEPTHFIRST="d";
 	

@@ -87,6 +87,10 @@ corresponds to a dependent bench space.
 
 "lock" -Sets a newly created subspace as locked.
 
+"longpath" - When set to "true" uses a alternative zip directory path for getjobpair command. The longer path
+            format is: Job##_output/SpaceName/SolverName/PairId/
+            whereas the shorter path format is: Job##_output/
+
 "mem" -Sets the maximum memory, in gigabytes, that each pair of a job is allowed to utilize.
 
 "n" -Specifies a name. When optional, the default is the date.
@@ -253,7 +257,7 @@ OPTIONAL: "ow"
 
 --getjobpair -Downloads the output from the job pair associated with the given id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow", "longpath"
 
 --getjobpairs -Downloads the output from every pair in the given list. Every pair must belong to the same job. 
 The value of the "id" parameter should be a comma-separated list of job pair ids.
