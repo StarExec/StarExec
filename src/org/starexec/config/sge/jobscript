@@ -459,7 +459,7 @@ fi
 JOB_ERROR="1";
 
 
-if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
+if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
   true 
 elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
   log "epilog detects wall clock time exceeded"
