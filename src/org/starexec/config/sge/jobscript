@@ -294,7 +294,7 @@ else
 fi
 
 createDir "$OUT_DIR/output_files"
-
+chmod g+w "$OUT_DIR/output_files"
 
 checkCache
 copyDependencies
