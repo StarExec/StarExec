@@ -54,6 +54,8 @@ corresponding permission should be set to true. None requires a value.
 
 "cpu" -Specifies the cpu timeout that should be used for a new job, in seconds.
 
+"copyprimitives" -When set to true copyspace command copies primitives instead of linking
+
 "d" -Specifies a description. When optional, the empty string is used as a default.
 
 "recycleprims" -When removing a subspace from an existing space, specifies that all the solvers and benchmarks
@@ -530,7 +532,7 @@ OPTIONAL: "from"
 
 --copyspace -Copies an existing space or space hierarchy rooted at "id" from to the space space given by "to"
 REQUIRED: "id" "to"
-OPTIONAL: "hier"
+OPTIONAL: "hier","copyprimitives"
 
 --linkuser -Associates an existing user with a space. "id" is a user id, and "to" is a
 space id.

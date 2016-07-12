@@ -41,7 +41,7 @@ public class CommandValidator {
 	private static String[] allowedLoginParams=new String[]{C.PARAM_USER,C.PARAM_PASSWORD,C.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{C.PARAM_ID};
     private static String[] allowedCopyUserParams=new String[]{C.PARAM_TO,C.PARAM_ID,C.PARAM_HIERARCHY};
-	private static String[] allowedCopySpaceParams=new String[]{C.PARAM_TO,C.PARAM_ID, C.PARAM_FROM};
+	private static String[] allowedCopySpaceParams=new String[]{C.PARAM_TO,C.PARAM_ID, C.PARAM_FROM, C.PARAM_COPY_PRIMITIVES};
 
     private static String[] allowedCopySolverParams=new String[]{C.PARAM_ID,C.PARAM_FROM,C.PARAM_TO,C.PARAM_HIERARCHY};
     private static String[] allowedCopyBenchmarkParams=new String[]{C.PARAM_ID,C.PARAM_FROM,C.PARAM_TO};

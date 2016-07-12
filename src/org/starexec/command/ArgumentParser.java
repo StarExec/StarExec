@@ -237,10 +237,14 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
+
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(C.PARAM_ID));
+            Boolean copyPrimitives = commandParams.containsKey(C.PARAM_COPY_PRIMITIVES) ? Boolean.parseBoolean(commandParams.get(C.PARAM_COPY_PRIMITIVES)) : false;
 			return con.copyPrimitives(ids,getParamFrom(commandParams),
 						  Integer.parseInt(commandParams.get(C.PARAM_TO)),
-						  commandParams.containsKey(C.PARAM_HIERARCHY),type);
+						  commandParams.containsKey(C.PARAM_HIERARCHY),
+                          copyPrimitives,
+                          type);
 		
 		} catch (Exception e) {
 			fail.add(Status.ERROR_INTERNAL);

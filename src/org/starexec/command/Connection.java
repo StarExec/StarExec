@@ -1287,7 +1287,7 @@ public class Connection {
 	 */
 	
 	public List<Integer> copySolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,R.SOLVER);
+		return copyPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,false,R.SOLVER);
 	}
 	
 	
@@ -1300,7 +1300,7 @@ public class Connection {
 	 */
 	
 	public List<Integer> copyBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
-		return copyPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,"benchmark");
+		return copyPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,false,"benchmark");
 	}
 	
 	/**
@@ -1313,8 +1313,8 @@ public class Connection {
 	 */
 	
 	
-	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,R.SPACE);
+	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy, Boolean copyPrimitives) {
+		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,copyPrimitives,R.SPACE);
 	}
 	
 	/**
@@ -1327,8 +1327,8 @@ public class Connection {
 	 * @return A list of positive IDs on success, or size 1 list with a negative error code on failure
 	 */
 	
-	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
-		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, true, hierarchy, type);
+	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, Boolean copyPrimitives, String type) {
+		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, true, hierarchy, copyPrimitives, type);
 	}
 	
 	/**
@@ -1343,7 +1343,7 @@ public class Connection {
 	
 	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
 
-		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, type).get(0);
+		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, false, type).get(0);
 	}
 	
 	/**
@@ -1354,7 +1354,7 @@ public class Connection {
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
-	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, String type) {
+	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, Boolean copyPrimitives, String type) {
 		List<Integer> fail=new ArrayList<Integer>();
 		HttpResponse response = null;
 		try {
@@ -1390,6 +1390,7 @@ public class Connection {
 			
 			params.add(new BasicNameValuePair("copy",copy.toString()));
 			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(hierarchy.toString())));
+            params.add(new BasicNameValuePair("copyPrimitives", String.valueOf(copyPrimitives.toString())));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			post=(HttpPost) setHeaders(post);
