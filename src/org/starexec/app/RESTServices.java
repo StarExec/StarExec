@@ -4015,7 +4015,7 @@ public class RESTServices {
 		// Get the id of the user who initiated the request
 		int requestUserId = SessionUtil.getUserId(request);
 		
-		
+		boolean copyPrimitives = Boolean.parseBoolean(request.getParameter("copyPrimitives"));
 		
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
 		
@@ -4031,7 +4031,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId);
+					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId, copyPrimitives);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
@@ -4043,7 +4043,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId);
+					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId, copyPrimitives);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
@@ -4894,5 +4894,5 @@ public class RESTServices {
 		
 		return gson.toJson(new ValidatorStatusCode(false,"Invalid type specified"));
 	}
-	
+
 }

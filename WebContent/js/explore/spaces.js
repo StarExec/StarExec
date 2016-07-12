@@ -265,6 +265,13 @@ function onSpaceDrop(event, ui) {
 				$('#dialog-confirm-copy-txt').text(
 						'do you want to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
 			}
+            $("#dialog-confirm-copy-txt").after('<span id="copyOptions">\
+                    <br>\
+                    <br>\
+                    <input type="radio" name="copyPrimitives" value="false" checked="checked">Link Primitives\
+                    <input type="radio" name="copyPrimitives" value="true">Copy Primitives\
+                    <br>\
+                    </ span>');
 		}
 		else if(ui.draggable.data('type')[0] == 's'){
 			if (destIsLeafSpace) {
@@ -452,6 +459,7 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 
 	spaceCopyDialogButtons['cancel'] = function() {
 		log('user canceled copy action');
+        $('#copyOptions').remove();
 		$(this).dialog('close');
 	};
 
@@ -499,9 +507,11 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 }
 
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
+    var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
+    $('#copyOptions').remove();
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-			{selectedIds : ids, copyHierarchy: copyHierarchy},
+			{selectedIds : ids, copyHierarchy: copyHierarchy, copyPrimitives: copyPrimitives},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {							
