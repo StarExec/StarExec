@@ -84,12 +84,11 @@
 	min-height: 70px;
 }
 
-#dialog-confirm-copy-txt,
-#dialog-confirm-delete-txt {
-	position: absolute;
-}
-
 .ui-icon-info, .ui-icon-alert {
 	float: left; 
 	margin: 0 7px 20px 0;
+}
+
+#dialog-confirm-copy .ui-icon-info {
+    margin: 0 7px 0 0;
 }
