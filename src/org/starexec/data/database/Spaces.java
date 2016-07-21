@@ -424,7 +424,7 @@ public class Spaces {
 	 * @return A list of benchmark IDs if successful, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithBenchmarks(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId) {
+	public static List<Integer> addWithBenchmarks(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps) {
 		ArrayList<Integer> ids=new ArrayList<Integer>();
 		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
@@ -438,7 +438,7 @@ public class Spaces {
 			
 			// Add any new benchmarks in the space to the database
 			if (parent.getBenchmarks().size()>0){
-				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId));
+				ids.addAll(Benchmarks.processAndAddOptionalDeps(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId, usesDeps));
 			}
 			
 			// We're done (notice that 'parent' is never added because it should already exist)

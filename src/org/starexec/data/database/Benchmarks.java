@@ -413,10 +413,28 @@ public class Benchmarks {
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param statusId statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @return True if the operation was a success, false otherwise
-	 * @author Benton McCune
 	 */
 	public static List<Integer> processAndAdd(List<Benchmark> benchmarks, Integer spaceId,Integer depRootSpaceId, 
 						Boolean linked, Integer statusId) {
+        return processAndAddOptionalDeps(benchmarks, spaceId, depRootSpaceId, linked, statusId, true);
+    }
+
+	/**
+	 * Runs the given benchmark processor on the list of benchmarks before 
+	 * adding them to the database and associates them with the given spaceId.
+	 * The benchmark types are also processed based on the type of the first benchmark only.
+	 * This method will also introduced dependencies if the benchmark processor produces the right attributes.
+	 * @param benchmarks The list of benchmarks to add
+	 * @param spaceId The space the benchmarks will belong to. If null, it is not added to a space
+	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
+	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
+	 * @param statusId statusId The ID of an upload status if one exists for this operation, null otherwise
+     * @param usesDeps if set to true check dependencies, otherwise ignore dependency related messages
+	 * @return True if the operation was a success, false otherwise
+	 * @author Benton McCune
+	 */
+	public static List<Integer> processAndAddOptionalDeps(List<Benchmark> benchmarks, Integer spaceId,Integer depRootSpaceId, 
+						Boolean linked, Integer statusId, Boolean usesDeps) {
 		if (benchmarks.size()>0){
 			try {			
 				
@@ -428,12 +446,14 @@ public class Benchmarks {
 				log.info("About to attach attributes to " + benchmarks.size());
 				
 				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
+                if(usesDeps){
+                    boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
+                    if (!success) {
+                        Uploads.setBenchmarkErrorMessage(statusId, "Benchmark dependencies failed to validate. Please check your processor output");
+                        return null;
+                    }
+                }
 				
-				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
-				if (!success) {
-					Uploads.setBenchmarkErrorMessage(statusId, "Benchmark dependencies failed to validate. Please check your processor output");
-					return null;
-				}
 				// Next add them to the database (must happen AFTER they are processed and have dependencies validated);
 				List<Integer> ids = Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
 				return ids;
