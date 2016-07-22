@@ -102,6 +102,8 @@ public class JspHelpers {
 
 
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );	
+        Solvers.sortConfigs(solvers);
+        Solvers.sortConfigs(usersSolvers);
 		Solvers.makeDefaultConfigsFirst( solvers );
 		Solvers.makeDefaultConfigsFirst( usersSolvers );
 
