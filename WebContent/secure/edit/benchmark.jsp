@@ -72,7 +72,7 @@
 							<select id="benchType" name="benchType">
 								<c:forEach var="type" items="${types}">
 										<c:choose>
-											<c:when test="${type.name == bench.type.name}">
+											<c:when test="${type.id == bench.type.id}">
 												<option selected value="${type.id}">${type.name}</option>	
 											</c:when>
 											<c:otherwise>
