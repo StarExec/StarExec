@@ -5193,4 +5193,57 @@ public class Jobs {
             return jobCopiesBackResultsIncrementally;
         }
 
+    public static List<String> getJobAttributesTableHeader(int jobSpaceId) {
+        Connection con=null;
+        CallableStatement procedure=null;
+        ResultSet results=null;
+        List<String> headers=new ArrayList<String>();
+        try {
+            con=Common.getConnection();
+            procedure=con.prepareCall("{CALL GetJobAttributesTableHeaders(?)}");
+            procedure.setInt(1, jobSpaceId);
+            results= procedure.executeQuery();
+            while (results.next()) {
+                headers.add(results.getString("attr_value"));
+            }
+            return headers;
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        }finally {
+            Common.safeClose(con);
+            Common.safeClose(procedure);
+            Common.safeClose(results);
+        }
+        return null;
+    }
+
+    public static List<HashMap<String, String>> getJobAttributesTable(int jobSpaceId) {
+        Connection con=null;
+        CallableStatement procedure=null;
+        ResultSet results=null;
+        List<HashMap<String, String>> tableEntries=new ArrayList<HashMap<String, String>>();
+        try {
+            con=Common.getConnection();
+            procedure=con.prepareCall("{CALL GetJobAttributesTable(?)}");
+            procedure.setInt(1, jobSpaceId);
+            results= procedure.executeQuery();
+            while (results.next()) {
+                HashMap<String,String> tableEntry = new HashMap<String, String>();
+                tableEntry.put("solver_name", results.getString("solver_name"));
+                tableEntry.put("config_name", results.getString("config_name"));
+                tableEntry.put("attr_count", results.getString("attr_count"));
+                //tableEntry.put("attr_value", results.getString("attr_value"));
+                tableEntries.add(tableEntry);
+            }
+            return tableEntries;
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        }finally {
+            Common.safeClose(con);
+            Common.safeClose(procedure);
+            Common.safeClose(results);
+        }
+        return null;
+    }
+
 }
