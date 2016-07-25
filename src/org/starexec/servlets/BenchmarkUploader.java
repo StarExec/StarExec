@@ -275,7 +275,7 @@ public class BenchmarkUploader extends HttpServlet {
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 			
-			benchmarkIds.addAll(Benchmarks.processAndAddOptionalDeps(benchmarks, spaceId, depRootSpaceId, linked, statusId, hasDependencies));
+			benchmarkIds.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId, hasDependencies));
 			
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);	

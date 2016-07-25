@@ -416,7 +416,7 @@ public class Benchmarks {
 	 */
 	public static List<Integer> processAndAdd(List<Benchmark> benchmarks, Integer spaceId,Integer depRootSpaceId, 
 						Boolean linked, Integer statusId) {
-        return processAndAddOptionalDeps(benchmarks, spaceId, depRootSpaceId, linked, statusId, true);
+        return processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId, true);
     }
 
 	/**
@@ -433,7 +433,7 @@ public class Benchmarks {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> processAndAddOptionalDeps(List<Benchmark> benchmarks, Integer spaceId,Integer depRootSpaceId, 
+	public static List<Integer> processAndAdd(List<Benchmark> benchmarks, Integer spaceId,Integer depRootSpaceId, 
 						Boolean linked, Integer statusId, Boolean usesDeps) {
 		if (benchmarks.size()>0){
 			try {			

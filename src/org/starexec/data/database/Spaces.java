@@ -438,7 +438,7 @@ public class Spaces {
 			
 			// Add any new benchmarks in the space to the database
 			if (parent.getBenchmarks().size()>0){
-				ids.addAll(Benchmarks.processAndAddOptionalDeps(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId, usesDeps));
+				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId, usesDeps));
 			}
 			
 			// We're done (notice that 'parent' is never added because it should already exist)
