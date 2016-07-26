@@ -176,6 +176,10 @@ div.selectWrap span {
 			
 }
 
+.copy-options-hidden {
+    display : none;
+}
+    
 @media only screen and (max-width: 767px) {
 	body fieldset {
 		width: 85%;

@@ -237,10 +237,14 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
+
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(C.PARAM_ID));
+            Boolean copyPrimitives = commandParams.containsKey(C.PARAM_COPY_PRIMITIVES) ? Boolean.parseBoolean(commandParams.get(C.PARAM_COPY_PRIMITIVES)) : false;
 			return con.copyPrimitives(ids,getParamFrom(commandParams),
 						  Integer.parseInt(commandParams.get(C.PARAM_TO)),
-						  commandParams.containsKey(C.PARAM_HIERARCHY),type);
+						  commandParams.containsKey(C.PARAM_HIERARCHY),
+                          copyPrimitives,
+                          type);
 		
 		} catch (Exception e) {
 			fail.add(Status.ERROR_INTERNAL);
@@ -428,7 +432,7 @@ class ArgumentParser {
 				//First, put in the request for the server to generate the desired archive			
 				return con.downloadArchive(id, type, since,lastModified, location, commandParams.containsKey(C.PARAM_EXCLUDE_SOLVERS),
 						commandParams.containsKey(C.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(C.PARAM_INCLUDE_IDS),
-						hierarchy,procClass,commandParams.containsKey(C.PARAM_ONLY_COMPLETED),commandParams.containsKey(C.PARAM_GET_ATTRIBUTES),updateId);
+						hierarchy,procClass,commandParams.containsKey(C.PARAM_ONLY_COMPLETED),commandParams.containsKey(C.PARAM_GET_ATTRIBUTES),updateId,Boolean.parseBoolean(commandParams.get(C.PARAM_LONG_PATH)));
 			}
 			
 

@@ -258,13 +258,15 @@ function onSpaceDrop(event, ui) {
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
+            $('#copy-primitives-options').removeClass('copy-options-hidden');
 			if (allSpacesBeingCopiedAreLeaves) {
 				$('#dialog-confirm-copy-txt').text(
-						'do you want to copy ' + ui.draggable.data('name') + ' to' + destName +'?');
+						'about to copy ' + ui.draggable.data('name') + ' to' + destName +'.');
 			} else {
 				$('#dialog-confirm-copy-txt').text(
-						'do you want to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
-			}
+						'would you like to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
+                $('#hier-copy-options').removeClass('copy-options-hidden');
+            }
 		}
 		else if(ui.draggable.data('type')[0] == 's'){
 			if (destIsLeafSpace) {
@@ -293,12 +295,14 @@ function onSpaceDrop(event, ui) {
 		}
 	} else {
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+            $('#copy-primitives-options').removeClass('copy-options-hidden');
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
 			if (allSpacesBeingCopiedAreLeaves) {
 				$('#dialog-confirm-copy-txt').text('do you want to copy the '+ ids.length + ' selected spaces to' + destName + '?');
 			} else {
+                $('#hier-copy-options').removeClass('copy-options-hidden');
 				$('#dialog-confirm-copy-txt').text(
 						'do you want to copy the ' + ids.length + ' selected spaces only or the hierarchy to' + destName +'?');
 			}
@@ -440,26 +444,30 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	if (allSpacesBeingCopiedAreLeaves) {
 		spaceCopyDialogButtons['confirm'] = singleSpaceCopy;
 	} else {
-		spaceCopyDialogButtons['space'] = singleSpaceCopy;
-
-		spaceCopyDialogButtons['hierarchy'] = function() {
-			// If the user actually confirms, close the dialog right away
-			$('#dialog-confirm-copy').dialog('close');
-			// Making the request
-			doSpaceCopyPost(ids,destSpace,true,destName);
-		};
+        spaceCopyDialogButtons['confirm'] = function() {
+            var copyHierOption = $("input[type='radio'][name='copySpace']:checked").val(); 
+            if(copyHierOption == "hier") {
+                $('#dialog-confirm-copy').dialog('close');
+                doSpaceCopyPost(ids,destSpace,true,destName);
+            } else {
+                singleSpaceCopy();
+            }
+            $('#hier-copy-options').addClass('copy-options-hidden');
+        } 
 	}
 
 	spaceCopyDialogButtons['cancel'] = function() {
 		log('user canceled copy action');
+        $('#hier-copy-options').addClass('copy-options-hidden');
+        $('#copy-primitives-options').addClass('copy-options-hidden');
 		$(this).dialog('close');
 	};
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
-		width: 500,
-		height: 200,
+		width: 700,
+		height: 300,
 		buttons: spaceCopyDialogButtons
 	});
 }
@@ -499,9 +507,11 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 }
 
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
+    var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
+    $('#copy-primitives-options').addClass('copy-options-hidden');
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-			{selectedIds : ids, copyHierarchy: copyHierarchy},
+			{selectedIds : ids, copyHierarchy: copyHierarchy, copyPrimitives: copyPrimitives},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {							

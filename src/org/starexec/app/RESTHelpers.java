@@ -2184,4 +2184,39 @@ public class RESTHelpers {
 		int currentUserId = SessionUtil.getUserId(httpRequest);
 		return convertCommunityRequestsToJsonObject(requests, query, currentUserId);
 	}
+
+    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) {
+        JsonArray dataTablePageEntries = new JsonArray();
+        List<HashMap<String, String>> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
+        HashMap<String,List<String>> valueCounts = new HashMap<>();
+        for(HashMap<String,String> tableEntry : jobAttributes) {
+            String key = tableEntry.get("solver_name") + tableEntry.get("config_name");
+            if(valueCounts.containsKey(key)) {
+                List<String> counts = valueCounts.get(key);
+                counts.add(tableEntry.get("attr_count"));
+                valueCounts.put(key, counts);
+            } else {
+                List<String> counts = new ArrayList<>();
+                counts.add(tableEntry.get("attr_count"));
+                valueCounts.put(key,counts);
+            }
+        }
+        for(HashMap<String,String> tableEntry : jobAttributes) {
+            JsonArray entry = new JsonArray();
+            String solverName = tableEntry.get("solver_name");
+            String configName = tableEntry.get("config_name");
+            if(valueCounts.containsKey(solverName+configName)) {
+                entry.add(new JsonPrimitive(solverName));
+                entry.add(new JsonPrimitive(configName));
+                for(String count : valueCounts.get(solverName+configName)){
+                    entry.add(new JsonPrimitive(count));
+                }
+                valueCounts.remove(solverName+configName);
+                dataTablePageEntries.add(entry);
+            }
+        }
+        JsonObject jo = new JsonObject();
+        jo.add("aaData", dataTablePageEntries);
+        return (jo);
+    }
 }

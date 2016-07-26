@@ -270,12 +270,12 @@ public class BenchmarkUploader extends HttpServlet {
 				return null;
 			}
 			
-			benchmarkIds.addAll(Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId));
+			benchmarkIds.addAll(Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,hasDependencies));
 			
 		} else if(uploadMethod.equals("dump")) {
 			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 			
-			benchmarkIds.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId));
+			benchmarkIds.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId, hasDependencies));
 			
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);	

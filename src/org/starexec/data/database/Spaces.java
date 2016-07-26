@@ -424,7 +424,7 @@ public class Spaces {
 	 * @return A list of benchmark IDs if successful, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithBenchmarks(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId) {
+	public static List<Integer> addWithBenchmarks(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps) {
 		ArrayList<Integer> ids=new ArrayList<Integer>();
 		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
@@ -438,7 +438,7 @@ public class Spaces {
 			
 			// Add any new benchmarks in the space to the database
 			if (parent.getBenchmarks().size()>0){
-				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId));
+				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId, usesDeps));
 			}
 			
 			// We're done (notice that 'parent' is never added because it should already exist)
@@ -829,18 +829,32 @@ public class Spaces {
 	/**
 	 * Copy a space into another space
 	 * 
-	 * @param srcId
-	 *            The Id of the space which is being copied.
-	 * @param desId
-	 *            The Id of the destination space which is copied into.
-	 * @param usrId
-	 *            The Id of the user doing the copy.
+	 * @param srcId The Id of the space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
 	 * @return The Id of the new copy of the space.
 	 * @throws StarExecException if space copy fails.
 	 * @author Ruoyu Zhang
 	 */
 
 	public static int copySpace(int srcId, int desId, int usrId) throws StarExecException {
+        //invoke helper method assuming final paramater of copyPrimites is set to false
+        return copySpace(srcId, desId, usrId, false);
+    }
+
+	/**
+	 * Copy a space into another space
+	 * 
+	 * @param srcId The Id of the space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
+     * @param copyPrimitives if true copy the primitives to the new space
+	 * @return The Id of the new copy of the space.
+	 * @throws StarExecException if space copy fails.
+	 * @author Ruoyu Zhang
+	 */
+
+	public static int copySpace(int srcId, int desId, int usrId, Boolean copyPrimitives) throws StarExecException {
 		if (srcId == desId) {
 			throw new StarExecException("A space can't be copied into itself.");
 		}
@@ -870,26 +884,34 @@ public class Spaces {
 			// Copying the references of benchmarks
 			List<Benchmark> benchmarks = sourceSpace.getBenchmarks();
 			List<Integer> benchmarkIds = new LinkedList<Integer>();
-			int benchId = 0;
-			for (Benchmark benchmark : benchmarks) {
-				benchId = benchmark.getId();
-				if (Permissions.canUserSeeBench(benchId, usrId)) {
-					benchmarkIds.add(benchId);
-				}
-			}
-			Benchmarks.associate(benchmarkIds, newSpaceId);
+            if(copyPrimitives){
+                benchmarkIds = Benchmarks.copyBenchmarks(benchmarks, usrId, newSpaceId);
+            } else {
+                int benchId = 0;
+                for (Benchmark benchmark : benchmarks) {
+                    benchId = benchmark.getId();
+                    if (Permissions.canUserSeeBench(benchId, usrId)) {
+                        benchmarkIds.add(benchId);
+                    }
+                }
+                Benchmarks.associate(benchmarkIds, newSpaceId);
+            }
 
 			// Copying the references of solvers
 			List<Solver> solvers = sourceSpace.getSolvers();
 			List<Integer> solverIds = new LinkedList<Integer>();
-			int solverId = 0;
-			for (Solver solver : solvers) {
-				solverId = solver.getId();
-				if (Permissions.canUserSeeSolver(solverId, usrId)) {
-					solverIds.add(solverId);
-				}
-			}
-			Solvers.associate(solverIds, newSpaceId);
+            if(copyPrimitives){
+                solverIds = Solvers.copySolvers(solvers,usrId, newSpaceId);
+            } else {
+                int solverId = 0;
+                for (Solver solver : solvers) {
+                    solverId = solver.getId();
+                    if (Permissions.canUserSeeSolver(solverId, usrId)) {
+                        solverIds.add(solverId);
+                    }
+                }
+                Solvers.associate(solverIds, newSpaceId);
+            }
 
 			// Copying the references of jobs
 			List<Job> jobs = sourceSpace.getJobs();
@@ -914,20 +936,33 @@ public class Spaces {
 	}
 
 	/**
-	 * Copy a hierarchy of the space into another space
+	 * Copy a hierarchy of the space into another space helper method.
 	 * 
 	 * @param srcId The Id of the source space which is being copied.
 	 * @param desId The Id of the destination space which is copied into.
 	 * @param usrId The Id of the user doing the copy.
 	 * @return The Id of the root space of the copied hierarchy.
-	 * @author Ruoyu Zhang
 	 * @throws StarExecException If the source and destination are the same
 	 */
 	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
+        return copyHierarchy(srcId, desId, usrId, false);
+    }
+
+	/**
+	 * Copy a hierarchy of the space into another space
+	 * 
+	 * @param srcId The Id of the source space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
+     * @param copyPrimitives if true copy primitives instead of linking
+	 * @return The Id of the root space of the copied hierarchy.
+	 * @author Ruoyu Zhang
+	 * @throws StarExecException If the source and destination are the same
+	 */
+	public static int copyHierarchy(int srcId, int desId, int usrId, Boolean copyPrimitives) throws StarExecException {
 		if (srcId == desId) {
 			throw new StarExecException("You can't copy a space into itself.");
 		}
-
 
 		Space sourceSpace = Spaces.get(srcId);
 		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
@@ -956,6 +991,18 @@ public class Spaces {
 	}
 
 	/**
+	 * Copies a whole space tree (helper method).
+	 * @param spaceTree The tree to copy
+	 * @param desId the id of the space which will be the parent of the root of the space tree.
+	 * @param usrId the id of the user who is copying the space tree.
+	 * @return the id of the root of the new space tree.
+	 * @throws StarExecException if something went wrong while copying the space tree.
+	 */
+	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId) throws StarExecException {
+        return copySpaceTree(spaceTree, desId, usrId, false);
+    }
+
+	/**
 	 * Copies a whole space tree.
 	 * @param spaceTree The tree to copy
 	 * @param desId the id of the space which will be the parent of the root of the space tree.
@@ -964,12 +1011,12 @@ public class Spaces {
 	 * @throws StarExecException if something went wrong while copying the space tree.
 	 * @author Albert Giegerich
 	 */
-	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId) throws StarExecException {
+	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId, Boolean copyPrimitives) throws StarExecException {
 		Space rootSpace = spaceTree.getData();
-		int newSpaceId = copySpace(rootSpace.getId(), desId, usrId);
+		int newSpaceId = copySpace(rootSpace.getId(), desId, usrId, copyPrimitives);
 		for (TreeNode<Space> child : spaceTree) {
 			// Recursively copy each child into the newly created space.
-			copySpaceTree(child, newSpaceId, usrId);
+			copySpaceTree(child, newSpaceId, usrId, copyPrimitives);
 		}
 		return newSpaceId;
 	}

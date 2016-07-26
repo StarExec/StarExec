@@ -695,10 +695,8 @@ function copyOutputNoStats {
 # $2 the stdout copy option (1 means don't save, otherwise save)
 # $3 the other output copy option (same as above)
 function copyOutput {
-	copyOutputNoStats $1 $2 $3
-	
-	log "job output copy complete - now sending stats"
 	updateStats $VARFILE $WATCHFILE $2 $3
+
 	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"
 		mkdir $OUT_DIR/postProcessor
@@ -706,10 +704,14 @@ function copyOutput {
 		chmod -R gu+rwx $OUT_DIR/postProcessor
 		cd "$OUT_DIR"/postProcessor
 		log "executing post processor"
-		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
+		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH "$OUT_DIR/output_files" > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
+
+	copyOutputNoStats $1 $2 $3
+
+	log "copying job output complete"
 
 	return $?	
 }

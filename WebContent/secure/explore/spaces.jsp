@@ -163,7 +163,20 @@
 	<br class=".clear" />
 	
 	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
-		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
+        <p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
+        <div id="hier-copy-options" class="copy-options-hidden">
+            <input type="radio" value="false" name="copySpace" checked />copy space
+            <input type="radio" value="true" name="copySpace" />copy hierarchy
+        </div>
+        <br class=".clear" />
+        <div id="copy-primitives-options" class="copy-options-hidden">
+            <span class="ui-icon ui-icon-info"></span>
+            <span>would you like to copy or link primitives to new space?<span>
+            <div>
+                <input type="radio" value="false" name="copyPrimitives" checked />link primitives
+                <input type="radio" value="true" name="copyPrimitives" />copy primitives
+            </div>
+        </div>
 	</div>
 	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>

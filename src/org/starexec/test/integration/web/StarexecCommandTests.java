@@ -530,7 +530,7 @@ public class StarexecCommandTests extends TestSequence {
 		Integer[] spaceArr=new Integer[1];
 		List<Space> before=Spaces.getSubSpaces(space2.getId(), user.getId());
 		spaceArr[0]=space1.getId();
-		int status=Math.min(0,con.copySpaces(spaceArr, Spaces.getParentSpace(space1.getId()), space2.getId(), false).get(0));
+		int status=Math.min(0,con.copySpaces(spaceArr, Spaces.getParentSpace(space1.getId()), space2.getId(), false, false).get(0));
 		Assert.assertEquals(0, status);
 		List<Space> after=Spaces.getSubSpaces(space2.getId(), user.getId());
 		Assert.assertTrue(after.size()>before.size());

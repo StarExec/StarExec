@@ -30,7 +30,7 @@ public class CommandValidator {
 	//command or set of commands
 	private static String[] allowedRemoveParams=new String[]{C.PARAM_ID,C.PARAM_FROM};
 	private static String[] allowedRemoveSubspaceParams = new String[] {C.PARAM_ID, C.PARAM_RECYCLE_PRIMS};
-	private static String[] allowedDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE};
+	private static String[] allowedDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_LONG_PATH};
 	private static String[] allowedDownloadSpaceXMLParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_GET_ATTRIBUTES,C.PARAM_PROCID};
 
 	private static String[] allowedNewDownloadParams=new String[]{C.PARAM_ID,C.PARAM_OUTPUT_FILE,C.PARAM_OVERWRITE,C.PARAM_SINCE};
@@ -41,7 +41,7 @@ public class CommandValidator {
 	private static String[] allowedLoginParams=new String[]{C.PARAM_USER,C.PARAM_PASSWORD,C.PARAM_BASEURL};
 	private static String[] allowedDeleteParams=new String[]{C.PARAM_ID};
     private static String[] allowedCopyUserParams=new String[]{C.PARAM_TO,C.PARAM_ID,C.PARAM_HIERARCHY};
-	private static String[] allowedCopySpaceParams=new String[]{C.PARAM_TO,C.PARAM_ID, C.PARAM_FROM};
+	private static String[] allowedCopySpaceParams=new String[]{C.PARAM_TO,C.PARAM_ID, C.PARAM_FROM, C.PARAM_COPY_PRIMITIVES};
 
     private static String[] allowedCopySolverParams=new String[]{C.PARAM_ID,C.PARAM_FROM,C.PARAM_TO,C.PARAM_HIERARCHY};
     private static String[] allowedCopyBenchmarkParams=new String[]{C.PARAM_ID,C.PARAM_FROM,C.PARAM_TO};

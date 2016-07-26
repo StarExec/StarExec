@@ -82,6 +82,8 @@ import org.starexec.util.Validator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
 
 /**
@@ -4015,7 +4017,7 @@ public class RESTServices {
 		// Get the id of the user who initiated the request
 		int requestUserId = SessionUtil.getUserId(request);
 		
-		
+		boolean copyPrimitives = Boolean.parseBoolean(request.getParameter("copyPrimitives"));
 		
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
 		
@@ -4031,7 +4033,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId);
+					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId, copyPrimitives);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
@@ -4043,7 +4045,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId);
+					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId, copyPrimitives);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
@@ -4894,5 +4896,47 @@ public class RESTServices {
 		
 		return gson.toJson(new ValidatorStatusCode(false,"Invalid type specified"));
 	}
-	
+
+	/**
+	 * Gets table of starexec-result attributes summary
+	 * @param jobSpaceId The ID of the primitive 
+	 * @param request 
+	 * @return json table entries for starexec-result summary
+	 */
+    @POST
+    @Path("/jobs/attributes/{jobSpaceId}")
+    @Produces("application/json")
+    public String getJobSpaceAttributesSummary(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+        int userId = SessionUtil.getUserId(request);
+        JsonObject nextDataTablesPage = null;
+        ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+        if (!status.isSuccess()) {
+            return gson.toJson(status);
+        }
+        nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
+        return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+    }	
+
+	/**
+	 * Gets headers of the table of starexec-result attributes summary
+	 * @param jobSpaceId The ID of the primitive 
+	 * @param request 
+	 * @return json table headers
+	 */
+    @POST
+    @Path("/jobs/attributes/header/{jobSpaceId}")
+    @Produces("application/json")
+    public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+        int userId = SessionUtil.getUserId(request);
+        JsonArray tableHeaders = new JsonArray();
+        List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
+        for(String item : headers) {
+            tableHeaders.add(new JsonPrimitive(item));
+        }
+        ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+        if (!status.isSuccess()) {
+            return gson.toJson(status);
+        }
+        return headers == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(headers);
+    }
 }

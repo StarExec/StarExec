@@ -583,6 +583,19 @@ public class JobUtil {
 						
 					//permissions check on the benchmark for this job pair
 					Benchmark b = Benchmarks.get(benchmarkId);
+                    if(b == null) {
+                        Benchmark errorBench = Benchmarks.get(benchmarkId, true, true);
+                        if(errorBench == null) {
+                            errorMessage = "Found null reference to benchmark: " + benchmarkId;
+                        } else if(errorBench.isDeleted()) {
+                            errorMessage = errorBench.getName() + " has been deleted by it's user.";
+                        } else if (errorBench.isRecycled()) {
+                            errorMessage = errorBench.getName() + " has been reycled by it's user.";
+                        } else {
+                            errorMessage = "Unknown problem with benchmark: " + benchmarkId;
+                        }
+                        return -1;
+                    }
 					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
 					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
 					    return -1;
@@ -591,7 +604,16 @@ public class JobUtil {
 					if (!configIdsToSolvers.containsKey(configId)) {
 						//permissions check on the solver for the pair. Configurations do
 						//not have permissions by themselves-- their permissions are identical to the solver permissions
-						Solver s = Solvers.getSolverByConfig(configId, false);
+						Solver s = Solvers.getSolverByConfig(configId, true);
+                        if(s == null) {
+                            errorMessage = "Found null reference to solver referenced by config id: " + configId;
+                            return -1;
+                        }
+                        if(s.isDeleted() || s.isRecycled()) {
+                            errorMessage = "This solver associated with config " + configId + " has been deleted or recycled, solverId: " + s.getId();
+                            return -1;
+                        }
+                        
 						if (!Permissions.canUserSeeSolver(s.getId(), userId)){
 						    errorMessage = "You do not have permission to see the solver " + s.getId();
 						    return -1;

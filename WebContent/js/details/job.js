@@ -346,6 +346,7 @@ function initUI(){
 	if (isLocalJobPage) {
 		$('#actionField').hide();
 		$('#matrixViewButton').hide();
+        $('#jobPairAttributes').hide();
 		$('#downloadJobPageButton').hide();
 		$('#anonymousLink').hide();
 	}
@@ -467,6 +468,12 @@ function initUI(){
 		}
 	});
 
+    $("#jobPairAttributes").button({
+        icons: {
+            primary: "ui-icon-newwin"
+        }
+    });
+
 	$("#solverNameKeyButton").button({
 		icons: {
 			primary: "ui-icon-newwin"
@@ -499,6 +506,15 @@ function initUI(){
 		}
 	});
 
+	$("#jobPairAttributes").click(function() {
+		var url = DETAILS_JOB.starexecUrl+'secure/details/JobAttributes.jsp?id='+curSpaceId;
+		if (isLocalJobPage) {
+			window.location.href = url;
+		} else {
+			popup(url);
+		}
+	});
+
 	$("#solverNameKeyButton").click(function() {
 		var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?anonId='+DETAILS_JOB.anonymousLinkUuid;
 		popup(url);
@@ -517,6 +533,7 @@ function initUI(){
 			primary: "ui-icon-arrowrefresh-1-e"
 		}
 	});
+
 	$("#solverComparisonUpdate").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"

@@ -172,15 +172,17 @@ public class Download extends HttpServlet {
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				success = handleBenchmark(b, u.getId(), response);
 			} else if (request.getParameter(PARAM_TYPE).equals(R.PAIR_OUTPUT)) {
+                Boolean longPath = Boolean.parseBoolean(request.getParameter("longpath"));
+                log.debug("Long path value = " + longPath);
 				int id =Integer.parseInt(request.getParameter(PARAM_ID));
 				shortName="Pair_"+id;
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handlePairOutput(id, u.getId(), response);				
+				success = handlePairOutput(id, u.getId(), response,longPath);				
 			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUTS)) {
 				List<Integer> ids=Validator.convertToIntList(request.getParameter("id[]"));
 				shortName="Pair_Output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success=handlePairOutputs(ids,u.getId(),response);
+				success=handlePairOutputs(ids,u.getId(),response,true);
 			} else if (request.getParameter(PARAM_TYPE).equals(R.SPACE_XML)) {
 
 				Space space = Spaces.get(Integer.parseInt(request.getParameter(PARAM_ID)));
@@ -479,7 +481,7 @@ public class Download extends HttpServlet {
      * @return
      * @throws Exception
      */
-    private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response) throws Exception {
+    private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response, Boolean longPath) throws Exception {
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		Job j=null;
 		final String methodName = "handlePairOutputs";
@@ -508,7 +510,7 @@ public class Download extends HttpServlet {
 
 		String baseName="Job"+String.valueOf(j.getId())+"_output";
 
-		Download.addJobPairsToZipOutput(pairs,response,baseName,true,null);
+		Download.addJobPairsToZipOutput(pairs,response,baseName,longPath,null);
 		logUtil.exit(methodName);
     	return true;
     }
@@ -517,17 +519,15 @@ public class Download extends HttpServlet {
 	 * Processes a job pair's output to be downloaded. 
 	 * @param jp the job pair whose output is to be downloaded
 	 * @param userId the id of the user making the download request
-	 * @param response 
+	 * @param response
+     * @param longPath directory structure is long version
 	 * @return a boolean for whether or not this succeeded
 	 */
 	
-	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response) throws Exception {    	
-	    ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
-	    return true;
-	    /* for later:
-	    List<Integer> l = new List<Integer>();
-	    l.add(pairId);
-	    return handlePairOutputs(l, userId, response); */
+	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response, Boolean longPath) throws Exception {    	
+	    //ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
+	    //return true;
+	    return handlePairOutputs(Arrays.asList(pairId), userId, response,longPath);
 	}
 
 	/**
