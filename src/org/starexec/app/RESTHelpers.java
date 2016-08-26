@@ -1773,7 +1773,6 @@ public class RESTHelpers {
 	 * 
 	 * @param stats The SolverStats that will be the rows of the table
 	 * @param query a DataTablesQuery object
-	 * @param jobSpaceId The space
 	 * @param shortFormat Whether to include all fields (false) or only fields for the subspace overview (true)
 	 * @param wallTime Whether to use wallclock times (true) or cpu times (false).
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
@@ -2167,12 +2166,11 @@ public class RESTHelpers {
 	/**
 	 * Provides an abstraction so the same code can be used when we want to get all pending community requests or
 	 * just requests for a given community.
-	 * @param request The http request.
-	 * @param getAllCommunityRequests True if we want all community requests, false if we only want ones for a specific community.
-	 * @param communityId The community to get pending requests for. Ignored if getAllCommunityRequests is false.
+	 * @param httpRequest The http request.
 	 * @author Unknown, Albert Giegerich
 	 */
-	private static JsonObject setupAttrMapAndConvertRequestsToJson(List<CommunityRequest> requests,DataTablesQuery query, HttpServletRequest httpRequest) {
+	private static JsonObject setupAttrMapAndConvertRequestsToJson(
+			List<CommunityRequest> requests,DataTablesQuery query, HttpServletRequest httpRequest) {
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		if (!query.hasSearchQuery()) {
 			query.setTotalRecordsAfterQuery(query.getTotalRecords());
