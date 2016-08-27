@@ -1,57 +1,31 @@
 package org.starexec.app;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.annotations.Expose;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
-import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.Permission;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverComparison;
-import org.starexec.data.to.SolverStats;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.DataTablesQuery;
-import org.starexec.util.SessionUtil;
 import org.starexec.util.LogUtil;
+import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.annotations.Expose;
-import com.google.gson.Gson;
+import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Holds all helper methods and classes for our restful web services
@@ -1823,6 +1797,8 @@ public class RESTHelpers {
 				} else {
 					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
+
+				entries.add(String.valueOf(js.getConflicts()));
 			} else {
 				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
 				if (wallTime) {
