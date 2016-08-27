@@ -141,10 +141,10 @@ CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
 DROP PROCEDURE IF EXISTS AddJobStats;
-CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT, IN _stage INT)
+CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _conflicts INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT, IN _stage INT)
 	BEGIN
-		INSERT IGNORE INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, wallclock,cpu,resource_out, incomplete,stage_number)
-		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _wallclock, _cpu,_resource, _incomplete,_stage);
+		INSERT IGNORE INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, conflicts, wallclock,cpu,resource_out, incomplete,stage_number)
+		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _conflicts, _wallclock, _cpu,_resource, _incomplete,_stage);
 	END //	
 
 -- Gets the cached job results for the hierarchy rooted at the given job space
