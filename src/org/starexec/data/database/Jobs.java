@@ -25,21 +25,10 @@ import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverComparison;
-import org.starexec.data.to.SolverStats;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -4367,16 +4356,19 @@ public class Jobs {
 						
 						//update stats info for entry that current job-pair belongs to
 						curSolver=SolverStats.get(key);
-						addStageToSolverStats(curSolver,stage);
 					}
+					populateConflictsForSolverStat(curSolver, pairs, jp, stage);
 				}
-				}
+			}
 				
 			
 			List<SolverStats> returnValues=new LinkedList<SolverStats>();
 			for (SolverStats js : SolverStats.values()) {
 				returnValues.add(js);
 			}
+
+
+
 			return returnValues;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -4384,6 +4376,31 @@ public class Jobs {
 		return null;
 		
 	}
+
+	private static void populateConflictsForSolverStat(SolverStats curSolver, List<JobPair> pairs, JobPair jp, JoblineStage stage) {
+		// Run through all the pairs again and check which ones conflict with the current ones.
+		for (JobPair innerJp : pairs) {
+			for (JoblineStage innerStage : innerJp.getStages()) {
+				// For a conflict to occur the benchmark and solver/config must be the same between the pairs
+				// but the results must be different. the starexec-unknown result does not count as a conflict.
+				if (innerStage.getConfiguration().getId() == stage.getConfiguration().getId()
+						&& innerJp.getBench().getId() == jp.getBench().getId()
+						&& !innerStage.getStarexecResult().equals(stage.getStarexecResult())
+						&& !innerStage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)
+						&& !stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN) ) {
+					curSolver.incrementConflicts();
+//					curSolver.getConflicts().add(new Conflict(
+//							stage.getSolver(),
+//							innerStage.getSolver(),
+//							jp.getBench(),
+//							stage.getStarexecResult(),
+//							innerStage.getStarexecResult())
+//					);
+				}
+			}
+		}
+	}
+
 
 	
 	/**
