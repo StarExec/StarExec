@@ -10,6 +10,8 @@ pushsolver f=CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
 pushsolver f=catsolver.zip id=2 n=catsolver
 pushsolver f=spinsolver.zip id=2 n=spinsolver
 pushsolver f=incremental-output-solver.zip id=2 n=incremental-output-solver
+pushsolver f=always-sat-solver.zip id=2 n=always-sat-solver
+pushsolver f=always-unsat-solver.zip id=2 n=always-unsat-solver
 logout
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks.zip bt=2 hier=
