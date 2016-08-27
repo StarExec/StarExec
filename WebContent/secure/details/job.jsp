@@ -107,6 +107,7 @@
 										<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 										<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
 										<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
+										<th class="conflictsHead"><span title="Number of job pairs that had conflicting results for this solver/config.">conflics</span></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -124,6 +125,7 @@
 												<span class="wallclockTime">${stats.getWallTime()}</span>
 												<span class="cpuTime">${stats.getCpuTime()}</span>
 											</td>
+											<td>${stats.getConflicts()}</td>
 										</tr>
 									</c:forEach>
 								</tbody>
@@ -144,6 +146,7 @@
 									<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 									<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
 									<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
+									<th class="conflictsHead"><span title="Number of job pairs that had conflicting results for this solver/config.">conflics</span></th>
 								</tr>
 							</thead>
 							<tbody>
