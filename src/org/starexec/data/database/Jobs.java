@@ -2658,6 +2658,7 @@ public class Jobs {
 			while (results.next()) {
 				SolverStats s=new SolverStats();
 				s.setCompleteJobPairs(results.getInt("complete"));
+				s.setConflicts(results.getInt("conflicts"));
 				s.setIncompleteJobPairs(results.getInt("incomplete")); 
 				s.setWallTime(results.getDouble("wallclock"));
 				s.setCpuTime(results.getDouble("cpu"));
@@ -4377,6 +4378,13 @@ public class Jobs {
 		
 	}
 
+	/**
+	 *
+	 * @param curSolver The solver stats to be populated.
+	 * @param pairs The job pairs to search for conflicts from.
+	 * @param jp The job pair relating to the solver stats.
+	 * @param stage The stage of the job pair that we're interested in.
+	 */
 	private static void populateConflictsForSolverStat(SolverStats curSolver, List<JobPair> pairs, JobPair jp, JoblineStage stage) {
 		// Run through all the pairs again and check which ones conflict with the current ones.
 		for (JobPair innerJp : pairs) {
@@ -4696,11 +4704,12 @@ public class Jobs {
 			procedure.setInt(4,stats.getCorrectJobPairs());
 			procedure.setInt(5,stats.getIncorrectJobPairs());
 			procedure.setInt(6,stats.getFailedJobPairs());
-			procedure.setDouble(7,stats.getWallTime());
-			procedure.setDouble(8,stats.getCpuTime());
-			procedure.setInt(9,stats.getResourceOutJobPairs());
-			procedure.setInt(10, stats.getIncompleteJobPairs());
-			procedure.setInt(11,stats.getStageNumber());
+			procedure.setInt(7, stats.getConflicts());
+			procedure.setDouble(8,stats.getWallTime());
+			procedure.setDouble(9,stats.getCpuTime());
+			procedure.setInt(10,stats.getResourceOutJobPairs());
+			procedure.setInt(11, stats.getIncompleteJobPairs());
+			procedure.setInt(12,stats.getStageNumber());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {

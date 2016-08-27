@@ -39,6 +39,10 @@ public class SolverStats extends Identifiable {
 		return conflicts;
 	}
 
+	public void setConflicts(final int conflicts) {
+	    this.conflicts = conflicts;
+    }
+
 	
 	public int getTotalJobPairs() {
 		return completeJobPairs+failedJobPairs+incompleteJobPairs;
