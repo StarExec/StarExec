@@ -299,7 +299,7 @@ public class Jobs {
 	/**
 	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that doesn't already contain the configuration.
 	 * @param jobId the id of the job.
-	 * @param configId  the configurations to add to the job.
+	 * @param configIds  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
 	public static void addJobPairsFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
@@ -412,7 +412,7 @@ public class Jobs {
 	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that contains the solver
 	 * associated with the configuration.
 	 * @param jobId the id of the job.
-	 * @param configId  the configurations to add to the job.
+	 * @param configIds  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
 	public static void addJobPairsFromConfigIdsForPairedBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
@@ -821,8 +821,6 @@ public class Jobs {
 	/**
 	 * Permanently removes a job from the database. This is a helper function and should NOT be called to delete a job!
 	 * It will not delete a job on disk
-	 * @param solverId The ID of the solver to remove
-	 * @param con The open connection to make the SQL call on
 	 * @return True on success and false otherwise
 	 */
 	
@@ -1460,7 +1458,7 @@ public class Jobs {
 	 * Gets all the the attributes for every job pair in a job, and returns a HashMap
 	 * mapping pair IDs a map of their stages to the stage's attributes
 	 * @param con The connection to make the query on
-	 * @param The ID of the job to get attributes of
+	 * @param jobId The ID of the job to get attributes of
 	 * @return A HashMap mapping pair IDs to properties. Some values may be null
 	 * @author Eric Burns
 	 */
@@ -2540,14 +2538,7 @@ public class Jobs {
 
 	/**
 	 * Gets the minimal number of Jobs necessary in order to service the client's
-	 * request for the next page of Jobs in their DataTables object
-	 * 
-	 * @param startingRecord the record to start getting the next page of Jobs from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param id the id of the space or user to get jobs for
+	 * request for the next page of Jobs in their DataTables objects
 	 * @return a list of 10, 25, 50, or 100 Jobs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
@@ -3022,7 +3013,6 @@ public class Jobs {
 	 * only the job pairs that have been completed after the argument "since" Only primary stages are populated
 	 * (Worker node, status, benchmark and solver WILL be populated) 
 	 * @param jobId The id of the job to get pairs for
-	 * @param since The completion ID to get all the pairs after. If null, gets all pairs
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
@@ -3870,7 +3860,6 @@ public class Jobs {
 	
 	/**
 	 * Returns the IDs of all jobs in the system
-	 * @param jobId 
 	 * @return
 	 */
 	public static List<Integer> getAllJobIds() {
@@ -4415,8 +4404,6 @@ public class Jobs {
 	 * Given the result set from a SQL query containing job pair info, produces a list of job pairs
 	 * for which all the necessary fields for solver stat production have been created
 	 * @param results A resultset containing SQL data
-	 * @param jobId The ID of the job in question
-	 * @param con The connection to request pair attributes on
 	 * @return A list of job pairs
 	 * @throws Exception
 	 * @author Eric Burns
@@ -4687,7 +4674,6 @@ public class Jobs {
 	 * Given a SolverStats object, saves it in the database so that it does not need to be generated again
 	 * This function is currently called only when the job is complete, as we do not want to cache stats
 	 * for incomplete jobs. 
-	 * @param jobSpaceId The ID of the job space that this stats object was accumulated for
 	 * @param stats The stats object to save
 	 * @param con The open connection to make the update on
 	 * @return True if the save was successful, false otherwise
