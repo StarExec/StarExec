@@ -4682,7 +4682,7 @@ public class Jobs {
 	private static boolean saveStats(SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,stats.getJobSpaceId());
 			procedure.setInt(2,stats.getConfiguration().getId());
 			procedure.setInt(3,stats.getCompleteJobPairs());
