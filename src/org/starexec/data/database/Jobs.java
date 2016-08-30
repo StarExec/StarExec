@@ -4380,8 +4380,7 @@ public class Jobs {
 			for (JoblineStage innerStage : innerJp.getStages()) {
 				// For a conflict to occur the benchmark and solver/config must be the same between the pairs
 				// but the results must be different. the starexec-unknown result does not count as a conflict.
-				if (innerStage.getConfiguration().getId() == stage.getConfiguration().getId()
-						&& innerJp.getBench().getId() == jp.getBench().getId()
+				if (innerJp.getBench().getId() == jp.getBench().getId()
 						&& !innerStage.getStarexecResult().equals(stage.getStarexecResult())
 						&& !innerStage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)
 						&& !stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN) ) {
