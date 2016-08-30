@@ -1,11 +1,8 @@
 package org.starexec.test.integration.database;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -17,11 +14,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
@@ -45,6 +38,16 @@ public class BenchmarkTests extends TestSequence {
 									   // needed for single tests
 	private List<Benchmark> benchmarks=null; //owned by user. Should be the only benchmarks in space
 	Processor benchProcessor = null;
+
+	private Solver solver=null; //solver to use for the job
+	private Job job=null;
+	private Processor postProc=null; //post processor to use for the job
+	//private List<Integer> benchmarkIds=null; // benchmarks to use for the job
+	private int cpuTimeout=100;
+	private int gbMemory=1;
+
+	private Job job2=null;
+	private Random rand = new Random();
 	
 	
 	@Override
@@ -71,6 +74,24 @@ public class BenchmarkTests extends TestSequence {
 		for (Benchmark b : benches) {
 			log.debug(b.getId());
 			Assert.assertTrue(containsBenchmark(benchmarks,b));
+		}
+	}
+
+	@StarexecTest
+	private void GetByJobTest() {
+		// This is the method we're testing. It retrieves all the benchmarks in a job.
+		Set<Benchmark> benchmarks = Benchmarks.getByJob(job.getId());
+
+		// Convert the benchmarks to their ids.
+		Set<Integer> benchmarkIds = benchmarks.stream()
+				.map((benchmark) -> benchmark.getId())
+				.collect(Collectors.toSet());
+
+		// Assert that all the benchmarks in the job are in the benchmarks we retrieved.
+		for (JobPair pair : job.getJobPairs()) {
+			Assert.assertTrue(
+					"Job pair had bench with bench id: " + pair.getBench().getId() + " but this benchmark was contained in benchmarks retrieved.",
+					benchmarkIds.contains(pair.getBench().getId()));
 		}
 	}
 	
@@ -532,10 +553,15 @@ public class BenchmarkTests extends TestSequence {
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+
 		List<Integer> ids=new ArrayList<Integer>();
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
+		List<Integer> solverIds=new ArrayList<Integer>();
+		solverIds.add(solver.getId());
+		int wallclockTimeout=100;
+		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, ids,cpuTimeout,wallclockTimeout,gbMemory);
 	}
 	
 

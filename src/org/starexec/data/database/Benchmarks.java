@@ -7,15 +7,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -1133,6 +1125,11 @@ public class Benchmarks {
 		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
 		return null;
 	}
+
+	// TODO Finish implementation.
+	public static Set<Benchmark> getByJob(int jobId) {
+		return null;
+	}
 	
 	
 	
@@ -2075,7 +2072,6 @@ public class Benchmarks {
 	 * @param benchmarks The list of benchmarks that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
 	 * @return the data structure that has information about depedencies
 	 * @author Eric Burns
 	 */
@@ -2098,7 +2094,6 @@ public class Benchmarks {
 	 * @param bench The benchmark that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
 	 * @return True if the dependencies are valid and false otherwise
 	 * @author Benton McCune
 	 */
@@ -2467,7 +2462,6 @@ public class Benchmarks {
 	
 	/**
 	 * Filters a list of benchmarks using the given query
-	 * @param Benchmarks The list of Benchmarks to filter
 	 * @param searchQuery Query for the Benchmarks. Not case sensitive
 	 * @return A subset of the given Benchmarks where, for every Benchmark returned, either the name
 	 * or the description includes the search query.
