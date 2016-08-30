@@ -4239,7 +4239,8 @@ public class Jobs {
 	 * @return A mapping from pair ids to Properties
 	 * @author Eric Burns
 	 */
-	private static HashMap<Integer,HashMap<Integer,Properties>> processAttrResults(ResultSet results) {
+	private static HashMap<Integer,HashMap<Integer,Properties>> processAttrResults(ResultSet results)
+	{
 		try {
 			HashMap<Integer,HashMap<Integer,Properties>> props=new HashMap<Integer,HashMap<Integer,Properties>>();
 			int id;

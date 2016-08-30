@@ -39,12 +39,7 @@ public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
 	private static final LogUtil logUtil = new LogUtil( log );
 	
-	/**
-	 * 
-	 * @param pairs
-	 * @param con
-	 * @return
-	 */
+
 	private static boolean addJobPairInputs(List<JobPair> pairs, Connection con) {
 		final String methodName = "addJobPairInputs";
 		CallableStatement procedure=null;
@@ -211,7 +206,6 @@ public class JobPairs {
 	/**
 	 * Adds a job pair record to the database. This is a helper method for the Jobs.add method
 	 * @param con The connection the update will take place on
-	 * @param pair The pair to add
 	 * @return True if the operation was successful
 	 */
 	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
@@ -1192,6 +1186,30 @@ public class JobPairs {
 
 		return null;		
 	}
+
+	public static List<JobPair> getPairsInJobContainingBenchmark(int jobId, int benchmarkId) throws SQLException {
+		Connection con = null;
+		CallableStatement procedure= null;
+		ResultSet results=null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetJobPairById(?, ?)}");
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, benchmarkId);
+			results = procedure.executeQuery();
+			List<JobPair> jobPairs = new ArrayList<>();
+			while (results.next()) {
+				JobPair pair = resultToPair(results);
+				jobPairs.add(pair);
+			}
+			return jobPairs;
+		} catch (SQLException e) {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			throw e;
+		}
+	}
 	
 	/**
 	 * Extracts query informaiton into a JoblineStage. Does NOT get deep information like
@@ -1220,7 +1238,7 @@ public class JobPairs {
 	 * @param result The resultset that is the results from querying for job pairs
 	 * @return A job pair object populated with data from the result set
 	 */
-	protected static JobPair resultToPair(ResultSet result) throws Exception {
+	protected static JobPair resultToPair(ResultSet result) throws SQLException {
 
 		JobPair jp = new JobPair();
 
