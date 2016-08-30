@@ -28,7 +28,19 @@ CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, 
 		
 		INSERT IGNORE INTO bench_assoc (space_id, bench_id) VALUES (_spaceId, _benchId);
 
-	END //	
+	END //
+
+-- Gets all benchmarks that are in a job (in job pairs in that job)
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetBenchmarksByJob;
+CREATE PROCEDURE GetBenchmarksByJob(IN _jobId INT)
+	BEGIN
+		SELECT benchmarks.*
+		FROM benchmarks
+			INNER JOIN job_pairs
+			ON benchmarks.id=job_pairs.bench_id
+		WHERE job_id=_jobId;
+	END //
 		
 -- Adds a new attribute to a benchmark 
 -- Author: Tyler Jensen
