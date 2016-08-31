@@ -75,6 +75,8 @@ public class Common {
 			// Ignore any errors
 		}
 	}
+
+
 	
 	/**
 	 * Turns on auto-commit
@@ -187,6 +189,32 @@ public class Common {
 			log.debug("Datapool successfully created!");
 		} catch (Exception e) {
 			log.fatal(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * IMPORTANT: This method must only be used for queries and not updates. No transaction will be started and no rollback will
+	 * occur on failure.
+	 * This function accepts a QueryProducer lambda and queries the database. It handles the opening and closing
+	 * of the connection and closing other resources.
+	 * @param queryProducer The query lambda (Connection, CallableStatement, ResultSet) -> T
+	 * @param <T> The type parameter that determines what exactly we are querying for and returning.
+	 * @return Whatever we queried for and assembled from our ResultSet.
+	 * @throws SQLException
+	 */
+	public static <T> T queryDatabase(QueryProducer<T> queryProducer) throws SQLException {
+		Connection con = null;
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			return queryProducer.query(con, procedure, results);
+		} catch (SQLException e) {
+			throw e;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 	}
 	
