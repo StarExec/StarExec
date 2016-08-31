@@ -1210,6 +1210,11 @@ public class JobPairs {
 			throw e;
 		}
 	}
+
+	// TODO implement method.
+	public static List<JobPair> getPairsInJobContainingSolver(int jobId, int solverId) throws SQLException {
+		return null;
+	}
 	
 	/**
 	 * Extracts query informaiton into a JoblineStage. Does NOT get deep information like

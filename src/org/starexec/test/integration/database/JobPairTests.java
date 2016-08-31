@@ -19,6 +19,8 @@ import org.starexec.test.integration.TestSequence;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Tests for org.starexec.data.database.JobPairs.java
  * @author Eric
@@ -244,10 +246,29 @@ public class JobPairTests extends TestSequence {
 		int benchId = job.getJobPairs().get(0).getBench().getId();
 		int jobId = job.getId();
 		try {
-			List<JobPair> jobPairsContainingBench = JobPairs.getPairsInJobContainingBenchmark(benchId, jobId);
+			List<JobPair> jobPairsContainingBench = JobPairs.getPairsInJobContainingBenchmark(jobId, benchId);
 			for (JobPair pair : jobPairsContainingBench) {
 				Assert.assertEquals("Job pair did not contain benchmark.", pair.getBench().getId(), benchId);
 				Assert.assertEquals("Job pair was not in job.", pair.getJobId(), jobId);
+			}
+		} catch (SQLException e) {
+			Assert.fail("SQL Exception was thrown.");
+		}
+	}
+
+	@StarexecTest
+	private void getPairsInJobContainingSolverTest() {
+		int solverId = job.getJobPairs().get(0).getPrimaryStage().getSolver().getId();
+		int jobId = job.getId();
+		try {
+			List<JobPair> jobPairsContainingSolver = JobPairs.getPairsInJobContainingSolver(jobId, solverId);
+			for (JobPair pair : jobPairsContainingSolver) {
+				boolean atLeastOneHadSolver = false;
+				for (JoblineStage stage : pair.getStages()) {
+					atLeastOneHadSolver = atLeastOneHadSolver || stage.getSolver().getId() == solverId;
+				}
+				Assert.assertTrue("Pair with id : " + pair.getId() + " did not contain solver with id: " + solverId, atLeastOneHadSolver);
+				Assert.assertEquals("Pair was not in job with id: " + jobId, pair.getJobId(), jobId);
 			}
 		} catch (SQLException e) {
 			Assert.fail("SQL Exception was thrown.");
