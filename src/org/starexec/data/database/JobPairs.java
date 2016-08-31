@@ -1193,7 +1193,7 @@ public class JobPairs {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairById(?, ?)}");
+			procedure = con.prepareCall("{CALL GetJobPairsInJobContainingBenchmark(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, benchmarkId);
 			results = procedure.executeQuery();
