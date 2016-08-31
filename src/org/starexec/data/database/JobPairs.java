@@ -1213,7 +1213,16 @@ public class JobPairs {
 
 	// TODO implement method.
 	public static List<JobPair> getPairsInJobContainingSolver(int jobId, int solverId) throws SQLException {
-		return null;
+		return Common.query("{CALL GetJobPairsInJobContainingSolver(?, ?)}", procedure -> {
+		    procedure.setInt(1, jobId);
+            procedure.setInt(2, solverId);
+        }, results -> {
+            List<JobPair> jobPairs = new ArrayList<>();
+            while (results.next()) {
+                jobPairs.add(resultToPair(results));
+            }
+            return jobPairs;
+        });
 	}
 	
 	/**

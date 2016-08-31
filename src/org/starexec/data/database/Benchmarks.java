@@ -1133,9 +1133,9 @@ public class Benchmarks {
 	 * @throws SQLException if something goes wrong with the database.
 	 */
 	public static List<Benchmark> getByJob(int jobId) throws SQLException {
-		return Common.queryDatabase( "{CALL GetBenchmarksByJob(?)}", (CallableStatement procedure, ResultSet results) -> {
+		return Common.query( "{CALL GetBenchmarksByJob(?)}", procedure -> {
 			procedure.setInt(1, jobId);
-			results = procedure.executeQuery();
+		}, results -> {
 			List<Benchmark> benchmarks = new ArrayList<>();
 			while (results.next()) {
 				benchmarks.add(resultToBenchmark(results));
@@ -1143,7 +1143,6 @@ public class Benchmarks {
 			return benchmarks;
 		});
 	}
-
 	
 	/**
 	 * Gets the IDs of every space that is associated with the given benchmark

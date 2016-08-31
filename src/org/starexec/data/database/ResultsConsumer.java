@@ -9,6 +9,6 @@ import java.sql.SQLException;
  * Created by agieg on 8/30/2016.
  */
 @FunctionalInterface
-public 	interface QueryProducer<T> {
-    T query(CallableStatement procedure, ResultSet results) throws SQLException;
+public 	interface ResultsConsumer<T> {
+    T query(ResultSet results) throws SQLException;
 }

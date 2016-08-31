@@ -195,21 +195,23 @@ public class Common {
 	/**
 	 * IMPORTANT: This method must only be used for queries and not updates. No transaction will be started and no rollback will
 	 * occur on failure.
-	 * This function accepts a QueryProducer lambda and queries the database. It handles the opening and closing
+	 * This function accepts a ResultsConsumer lambda and queries the database. It handles the opening and closing
 	 * of the connection and closing other resources.
-	 * @param queryProducer The query lambda (Connection, CallableStatement, ResultSet) -> T
+	 * @param resultsConsumer The query lambda (Connection, CallableStatement, ResultSet) -> T
 	 * @param <T> The type parameter that determines what exactly we are querying for and returning.
 	 * @return Whatever we queried for and assembled from our ResultSet.
 	 * @throws SQLException
 	 */
-	public static <T> T queryDatabase(String callPreparationSql, QueryProducer<T> queryProducer) throws SQLException {
+	public static <T> T query(String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		Connection con = null;
 		CallableStatement procedure=null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall(callPreparationSql);
-			return queryProducer.query(procedure, results);
+			procedureConsumer.setupProcedure(procedure);
+			results = procedure.executeQuery();
+			return resultsConsumer.query(results);
 		} catch (SQLException e) {
 			throw e;
 		} finally {
